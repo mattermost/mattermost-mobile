@@ -89,6 +89,62 @@ async function lookupTest({baseUrl, repo, testId, branch, excludePr, framework})
 }
 
 /**
+ * Was this cluster's test failing on the baseline branch?
+ *
+ * `unknown` is a first-class answer and covers three distinct situations that a
+ * boolean flattened into "no": the lookup failed, no member carried a stable ID
+ * to look up, or TSIO answered successfully with no recorded runs. The last is
+ * the common one on a new test or a freshly migrated deployment, and it is the
+ * one that previously read as "this test is green on main".
+ *
+ * `failing` requires every identified member to be failing, matching the old
+ * boolean: one stale member must not make a mixed cluster pre-existing.
+ */
+function baselineStatus(entries) {
+    if (entries.length === 0 || entries.some((e) => e.history_error)) {
+        return 'unknown';
+    }
+
+    // lookupTest stores `history.data.summary` directly, so the run count and
+    // failing_since_commit are both properties of `e.history`. A successful
+    // response with runs === 0 is the case this whole field exists for: TSIO
+    // answered, and the answer is that it has never seen this test.
+    const observed = entries.filter((e) => e.history && e.history.runs > 0);
+    if (observed.length !== entries.length) {
+        return 'unknown';
+    }
+    return entries.every((e) => e.history.failing_since_commit) ? 'failing' : 'passing';
+}
+
+/**
+ * Is the same test failing on unrelated pull requests right now?
+ *
+ * `isolated` is a real finding — it is what makes "this PR caused it" credible.
+ * It must therefore not be returned when the question was never asked, which is
+ * what the boolean did.
+ */
+function concurrentFailure(entries) {
+    // There is no separate failing_elsewhere_error: lookupTest sets the field to
+    // null both when the request failed and when no PR number was supplied, so a
+    // null entry is precisely "not answered" and covers both.
+    if (entries.length === 0) {
+        return 'unknown';
+    }
+
+    // A present object is not an answer. Without a PR number the endpoint is
+    // still called and returns a body with no distinct_prs, and `undefined > 0`
+    // is false — which would report "no other PR is affected" on the strength of
+    // a field that was never populated. Require the count to actually be a
+    // number.
+    const answered = entries.filter((e) => e.failing_elsewhere &&
+        Number.isFinite(e.failing_elsewhere.distinct_prs));
+    if (answered.length !== entries.length) {
+        return 'unknown';
+    }
+    return answered.some((e) => e.failing_elsewhere.distinct_prs > 0) ? 'elsewhere' : 'isolated';
+}
+
+/**
  * Enrich a classified result in place-ish (returns a new object).
  *
  * Only tests carrying a stable ID can be looked up; the rest keep null history,
@@ -142,6 +198,20 @@ async function enrich(classified, {repo, baselineBranch = 'main', prNumber, base
             any_failing_elsewhere: entries.some(
                 (e) => e.failing_elsewhere && e.failing_elsewhere.distinct_prs > 0,
             ),
+
+            // The tri-state forms of the two booleans above, and the reason they
+            // exist: `false` there means both "measured, and it is not so" and
+            // "never measured". The adjudication prompt documents only the true
+            // case, so a model reading false concluded the negative had been
+            // established. On mattermost-mobile#9996 run 31874108751 that turned
+            // an empty history — a freshly migrated TSIO, no main runs recorded —
+            // into "this test passes on main", and from there into PR_REGRESSION
+            // against a pull request whose diff was entirely CI configuration.
+            //
+            // A field that cannot say "unknown" does not fail closed. It fails
+            // silently, in whichever direction the reader assumes.
+            baseline_status: baselineStatus(entries),
+            concurrent_failure: concurrentFailure(entries),
 
             // A cluster without a stable test ID cannot be granted amnesty:
             // there is no durable identity against which to count waivers.

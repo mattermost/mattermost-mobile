@@ -145,6 +145,77 @@ test('a TSIO deployment without the triage routes is unavailable, not valid', as
     );
 });
 
+// The field that produced the bad verdict on run 31874108751. TSIO answered
+// successfully; the answer was that it has never seen this test. The boolean
+// rendered that identically to "measured, and it passes on main".
+test('a successful history response with no runs is unknown, not passing', async (t) => {
+    mockTsio(t, {
+        '/api/v1/tests/history': {status: 200, data: {summary: {runs: 0, series: []}}},
+        '/api/v1/tests/failing-elsewhere': {status: 200, data: {distinct_prs: 0}},
+        '/api/v1/triage/amnesty': {status: 200, data: {granted: true}},
+    });
+
+    const cluster = (await enrich(classified(['MM-T1000']), {
+        repo: 'mattermost/mattermost-mobile', prNumber: '9996',
+    })).clusters[0];
+
+    assert.equal(cluster.baseline_status, 'unknown');
+    assert.equal(cluster.all_failing_on_baseline, false,
+        'the legacy boolean still reads false — which is the defect being replaced');
+});
+
+test('baseline_status distinguishes failing, passing, and unreachable', async (t) => {
+    const cases = [
+        [{status: 200, data: {summary: {runs: 12, failing_since_commit: 'abc123'}}}, 'failing'],
+        [{status: 200, data: {summary: {runs: 12}}}, 'passing'],
+        [{status: 503}, 'unknown'],
+    ];
+
+    for (const [historyResponse, expected] of cases) {
+        mockTsio(t, {
+            '/api/v1/tests/history': historyResponse,
+            '/api/v1/tests/failing-elsewhere': {status: 200, data: {distinct_prs: 0}},
+            '/api/v1/triage/amnesty': {status: 200, data: {granted: true}},
+        });
+
+        // Sequential by necessity: mockTsio swaps the global fetch, so running
+        // these concurrently would race on which case's responses are installed.
+        // eslint-disable-next-line no-await-in-loop
+        const cluster = (await enrich(classified(['MM-T1000']), {
+            repo: 'mattermost/mattermost-mobile', prNumber: '9996',
+        })).clusters[0];
+
+        assert.equal(cluster.baseline_status, expected);
+    }
+});
+
+test('concurrent_failure is unknown when the question was never asked', async (t) => {
+    // No prNumber, so failing-elsewhere is never queried and the entry stays
+    // null. "isolated" here would assert that no other PR is affected.
+    mockTsio(t, {
+        '/api/v1/tests/history': {status: 200, data: {summary: {runs: 5}}},
+        '/api/v1/triage/amnesty': {status: 200, data: {granted: true}},
+    });
+
+    const cluster = (await enrich(classified(['MM-T1000']), {
+        repo: 'mattermost/mattermost-mobile',
+    })).clusters[0];
+
+    assert.equal(cluster.concurrent_failure, 'unknown');
+    assert.equal(cluster.any_failing_elsewhere, false);
+});
+
+test('a cluster with no identifiable test is unknown on both axes', async (t) => {
+    mockTsio(t);
+
+    const cluster = (await enrich(classified([]), {
+        repo: 'mattermost/mattermost-mobile', prNumber: '9996',
+    })).clusters[0];
+
+    assert.equal(cluster.baseline_status, 'unknown');
+    assert.equal(cluster.concurrent_failure, 'unknown');
+});
+
 test('unavailable amnesty remains exhausted', async (t) => {
     mockTsio(t, {
         '/api/v1/tests/history': {

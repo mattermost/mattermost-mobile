@@ -163,6 +163,15 @@ function mergeRerun(evidence, repetitions) {
             // model is about the error text — this is the measurement overruling
             // the inference, which is the whole reason the rerun exists.
             reproduced_on_rerun: outcome === OUTCOME.DETERMINISTIC,
+
+            // The same measurement, stated so that "we did not look" is legible.
+            // reproduced_on_rerun is a boolean, and every cluster that was never
+            // rerun carries it as false — identical to a cluster the rerun
+            // actively cleared. The waiver guard reads that boolean, so for a
+            // never-rerun cluster the strongest anti-false-green check in the
+            // system is silently inert rather than merely unhelpful. Maestro
+            // clusters are never rerun at all, so this is their permanent state.
+            determinism: outcome === OUTCOME.DETERMINISTIC ? 'reproduced' : 'cleared',
         };
 
         if (!rerunComplete) {

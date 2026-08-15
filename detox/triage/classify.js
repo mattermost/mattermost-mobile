@@ -80,6 +80,13 @@ function cluster(failures) {
                 shards: [...shards],
                 platforms: [...platforms],
                 specs: [...specs],
+
+                // Every cluster starts unmeasured and only the rerun stage may
+                // say otherwise. Stated here rather than left absent so that a
+                // consumer reading the bundle cannot mistake a missing field for
+                // a negative one — which is exactly what the reproduced_on_rerun
+                // boolean allowed, and it guards the waiver.
+                determinism: 'not_measured',
             };
         }).
         sort((a, b) => b.member_count - a.member_count);
