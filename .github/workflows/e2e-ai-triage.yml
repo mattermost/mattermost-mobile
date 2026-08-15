@@ -137,7 +137,21 @@ on:
         required: false
       TSIO_API_KEY:
         required: false
+      # `WEBHOOK_URL` is not a secret this repository defines, so the toolkit's
+      # notification step has been silently disabled on every run — the adjudicate
+      # job logs `HAS_WEBHOOK: false`. The real webhooks are per-channel and
+      # per-run-type, following the routing detox/utils/cmt-channel-notify.js
+      # already documents.
       WEBHOOK_URL:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        description: "PR-run notifications"
+        required: false
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        description: "Main/MASTER-run notifications"
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        description: "Release-run notifications"
         required: false
 
 # Ceiling for the nested toolkit workflow, which posts the status, applies the
@@ -673,7 +687,26 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TSIO_API_KEY: ${{ secrets.TSIO_API_KEY }}
-      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      # Routed by run type, matching cmt-channel-notify.js: PR runs go to the
+      # mobile E2E channel, main to master-health, release to the release channel.
+      #
+      # Every arm is gated on its own run type, so a missing secret can never
+      # resolve to a *different channel's* secret — only to the generic
+      # WEBHOOK_URL override, and past that to silence. GitHub's `a && b || c` is not
+      # a ternary — it falls through whenever `b` is falsy, and an unset secret is
+      # the empty string. Written as a plain chain, a missing PR webhook would
+      # have posted PR triage into the main-health channel. That is precisely the
+      # misrouting cmt-channel-notify.js warns about: "Named groups never fall
+      # back ... avoids posting CMT/PR/main to the wrong channel when a dedicated
+      # secret is missing." Silence is the correct failure here.
+      WEBHOOK_URL: >-
+        ${{
+          (inputs.run_type == 'PR' && secrets.MM_MOBILE_E2E_WEBHOOK_URL) ||
+          (inputs.run_type == 'RELEASE' && secrets.MM_E2E_RELEASE_WEBHOOK_URL) ||
+          ((inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL) ||
+          secrets.WEBHOOK_URL ||
+          ''
+        }}
 
   # Re-publish every platform with its independently aggregated diagnosis while
   # preserving the test counts and report URL from the raw status.

@@ -93,6 +93,33 @@ test('triage still runs under E2E/Override, but only observes', () => {
     assert.match(job, /mode: \$\{\{ needs\.resolve-e2e-policy\.outputs\.e2e_override == 'true' && 'shadow' \|\| 'gate' \}\}/);
 });
 
+test('a missing webhook secret goes silent, never to another channel', () => {
+    // secrets.WEBHOOK_URL is not defined in this repository, which is why every
+    // run so far logged HAS_WEBHOOK: false and no triage notification was ever
+    // sent. The real webhooks are per-channel, and cmt-channel-notify.js is
+    // explicit that named groups must not fall back to one another.
+    for (const secret of [
+        'MM_MOBILE_E2E_WEBHOOK_URL',
+        'MM_E2E_RELEASE_WEBHOOK_URL',
+        'MM_E2E_MASTER_HEALTH_WEBHOOK_URL',
+    ]) {
+        assert.match(triageWorkflow, new RegExp(`${secret}:\\n\\s+description:`),
+            `${secret} must be declared, or inherit resolves it to an empty string`);
+    }
+
+    // GitHub's `a && b || c` falls through whenever b is falsy, and an unset
+    // secret is ''. Each arm therefore has to be gated on its own run type: an
+    // ungated tail would post PR triage into the main-health channel the moment
+    // the PR webhook was missing.
+    assert.match(triageWorkflow,
+        /\(inputs\.run_type == 'PR' && secrets\.MM_MOBILE_E2E_WEBHOOK_URL\)/);
+    assert.match(triageWorkflow,
+        /\(inputs\.run_type == 'RELEASE' && secrets\.MM_E2E_RELEASE_WEBHOOK_URL\)/);
+    assert.match(triageWorkflow,
+        /\(\(inputs\.run_type == 'MAIN' \|\| inputs\.run_type == 'MASTER'\) && secrets\.MM_E2E_MASTER_HEALTH_WEBHOOK_URL\)/);
+    assert.doesNotMatch(triageWorkflow, /WEBHOOK_URL: \$\{\{ secrets\.WEBHOOK_URL \}\}/);
+});
+
 test('the triage context exists before it has an answer', () => {
     const prWorkflow = fs.readFileSync(
         path.join(repoRoot, '.github/workflows/e2e-detox-pr.yml'), 'utf8');
