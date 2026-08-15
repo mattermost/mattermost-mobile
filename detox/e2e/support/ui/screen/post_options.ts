@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
@@ -132,8 +132,7 @@ class PostOptionsScreen {
     // never fires and Jest hits 300s (MM-T4909_5 / MM-T4911_3). Disable sync
     // before any matcher, then poll. Corner tap avoids the row-center miss.
     private tapSheetRowIos = async (option: Detox.NativeElement) => {
-        await device.disableSynchronization();
-        try {
+        await withSynchronizationDisabled(async () => {
             await waitForElementToExist(this.postOptionsScreen, timeouts.TEN_SEC);
             await waitForElementToExist(option, timeouts.TEN_SEC);
             await option.tap({x: 1, y: 1});
@@ -143,9 +142,7 @@ class PostOptionsScreen {
                 await option.tap({x: 1, y: 1});
                 await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
             }
-        } finally {
-            await safeEnableSynchronization();
-        }
+        });
     };
 
     private tapPostOption = async (

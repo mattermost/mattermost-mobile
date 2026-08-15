@@ -28,7 +28,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, isIos, timeouts, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -102,26 +102,23 @@ describe('Smoke Test - Search', () => {
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-        await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.tapPinPost();
-        await Post.waitForPostPinned(siteOneUrl, testChannel.id, post.id);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
+        await withSynchronizationDisabled(async () => {
+            await ChannelScreen.openPostOptionsFor(post.id, message);
+            await PostOptionsScreen.tapPinPost();
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, post.id);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
 
-        // * Verify on pinned messages screen and pinned message is displayed
-        await PinnedMessagesScreen.toBeVisible();
-        const {postListPostItem: pinnedPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
-        await device.disableSynchronization();
-        try {
+            // * Verify on pinned messages screen and pinned message is displayed
+            await PinnedMessagesScreen.toBeVisible();
+            const {postListPostItem: pinnedPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
             await waitForElementToExist(pinnedPostItem, timeouts.TEN_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
 
-        // # Go back to channel list screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
+            // # Go back to channel list screen
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+        }, {reenable: !isIos()});
     });
 
     it('MM-T4911_4 - should be able to search for a message and display on search results screen', async () => {

@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -105,15 +105,12 @@ class ChannelInfoScreen {
         if (isIos()) {
             // Keyboard + leftover sheet animations keep Detox idle busy, so
             // waitFor(headerTitle).toBeVisible() can sit until Jest's 300s cap.
-            await device.disableSynchronization();
-            try {
+            await withSynchronizationDisabled(async () => {
                 await ChannelScreen.dismissKeyboard();
                 await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
                 await ChannelScreen.headerTitle.tap();
                 await waitForElementToExist(this.channelInfoScreen, timeouts.HALF_MIN);
-            } finally {
-                await safeEnableSynchronization();
-            }
+            });
             return this.channelInfoScreen;
         }
 
@@ -125,14 +122,11 @@ class ChannelInfoScreen {
 
     close = async () => {
         if (isIos()) {
-            await device.disableSynchronization();
-            try {
+            await withSynchronizationDisabled(async () => {
                 await waitForElementToExist(this.closeButton, timeouts.TEN_SEC);
                 await this.closeButton.tap();
                 await waitForElementToNotExist(this.channelInfoScreen, timeouts.TEN_SEC);
-            } finally {
-                await safeEnableSynchronization();
-            }
+            });
             return;
         }
 

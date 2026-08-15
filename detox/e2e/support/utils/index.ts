@@ -60,6 +60,59 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
+// Nest-safe sync-off for the iOS post-options pin path. reenable:false leaves
+// sync off so the wrapper exit cannot hang on setSyncSettings({enabled:true})
+// over a lingering Gorhom/Reanimated animation. Later wrappers in this Jest
+// file skip enable until setup.ts launchApp + safeEnableSynchronization().
+let syncDisableDepth = 0;
+let syncLeftOff = false;
+
+// Retry enableSynchronization after Android Fabric ReactContext null races.
+export async function safeEnableSynchronization(): Promise<void> {
+    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i <= delays.length; i++) {
+        try {
+            await device.enableSynchronization();
+            syncLeftOff = false;
+            return;
+        } catch (error) {
+            const message = (error as Error)?.message ?? String(error);
+            if (!message.includes('ReactContext is null')) {
+                throw error;
+            }
+            if (i === delays.length) {
+                throw error;
+            }
+            await wait(delays[i]!);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
+export async function withSynchronizationDisabled<T>(
+    fn: () => Promise<T>,
+    options: {reenable?: boolean} = {},
+): Promise<T> {
+    const reenable = options.reenable !== false;
+    if (syncDisableDepth === 0 && !syncLeftOff) {
+        await device.disableSynchronization();
+    }
+    syncDisableDepth += 1;
+    try {
+        return await fn();
+    } finally {
+        syncDisableDepth -= 1;
+        if (syncDisableDepth === 0) {
+            if (!reenable) {
+                syncLeftOff = true;
+            } else if (!syncLeftOff) {
+                await safeEnableSynchronization();
+            }
+        }
+    }
+}
+
 export async function retryWithReload(
     func: () => Promise<void>,
     retries: number = 2,
@@ -114,8 +167,7 @@ export async function scrollElementIntoView(
     const {expect: detoxExpect} = require('detox');
 
     if (isIos()) {
-        await device.disableSynchronization();
-        try {
+        await withSynchronizationDisabled(async () => {
             /* eslint-disable no-await-in-loop -- bounded scroll; waitFor(whileElement) can ignore withTimeout */
             // Inverted channel list: down travels toward older posts/intro, up toward newest.
             // Alternating directions nets ~0 movement and never reveals an off-screen row.
@@ -135,9 +187,7 @@ export async function scrollElementIntoView(
                 }
             }
             /* eslint-enable no-await-in-loop */
-        } finally {
-            await safeEnableSynchronization();
-        }
+        });
         await waitForElementToBeVisible(target, timeouts.FIVE_SEC, timeouts.HALF_SEC, visibilityThreshold);
         return;
     }
@@ -203,33 +253,31 @@ export async function longPressWithScrollRetry(
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.FIVE_SEC;
         await wait(waitDuration);
 
-        if (isIos()) {
-            await device.disableSynchronization();
-        }
-        let longPressFailed = false;
-        try {
-            await target.longPress(pressDuration);
-        } catch (pressError) {
-            if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
-                longPressFailed = true;
-            } else {
+        const pressAndAwaitSheet = async (): Promise<boolean> => {
+            try {
+                await target.longPress(pressDuration);
+            } catch (pressError) {
+                if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
+                    return false;
+                }
                 throw pressError;
             }
-        } finally {
-            if (isIos()) {
-                await safeEnableSynchronization();
+            try {
+                await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+                return true;
+            } catch {
+                if (attempt === maxAttempts) {
+                    throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
+                }
+                return false;
             }
-        }
-        if (longPressFailed) {
-            continue;
-        }
-        try {
-            await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+        };
+
+        // Keep sync off through the sheet wait. Re-enabling after the press lets
+        // the next expect()/disableSynchronization() sit on a wedged idle timer.
+        const opened = isIos() ? await withSynchronizationDisabled(pressAndAwaitSheet) : await pressAndAwaitSheet();
+        if (opened) {
             return;
-        } catch {
-            if (attempt === maxAttempts) {
-                throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
-            }
         }
     }
     /* eslint-enable no-await-in-loop */
@@ -256,9 +304,37 @@ export async function longPressWithRetry(
 
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.TWO_SEC;
 
-        if (isAndroid()) {
-            await device.disableSynchronization();
+        const pressAndAwaitSheet = async (): Promise<boolean> => {
+            try {
+                await target.longPress(pressDuration);
+            } catch (error) {
+                if (attempt === maxAttempts) {
+                    throw error;
+                }
+                await wait(timeouts.THREE_SEC);
+                return false;
+            }
+            try {
+                await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+                return true;
+            } catch {
+                if (attempt === maxAttempts) {
+                    throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
+                }
+                await wait(timeouts.THREE_SEC);
+                return false;
+            }
+        };
+
+        if (isIos()) {
+            const opened = await withSynchronizationDisabled(pressAndAwaitSheet);
+            if (opened) {
+                return;
+            }
+            continue;
         }
+
+        await device.disableSynchronization();
         try {
             try {
                 await target.longPress(pressDuration);
@@ -270,9 +346,7 @@ export async function longPressWithRetry(
                 continue;
             }
         } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
+            await safeEnableSynchronization();
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
@@ -393,28 +467,6 @@ export async function waitForElementToHaveText(
     }
     /* eslint-enable no-await-in-loop */
     await detoxExpect(detoxElement).toHaveText(text);
-}
-
-// Retry enableSynchronization after Android Fabric ReactContext null races.
-export async function safeEnableSynchronization(): Promise<void> {
-    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
-    /* eslint-disable no-await-in-loop */
-    for (let i = 0; i <= delays.length; i++) {
-        try {
-            await device.enableSynchronization();
-            return;
-        } catch (error) {
-            const message = (error as Error)?.message ?? String(error);
-            if (!message.includes('ReactContext is null')) {
-                throw error;
-            }
-            if (i === delays.length) {
-                throw error;
-            }
-            await wait(delays[i]!);
-        }
-    }
-    /* eslint-enable no-await-in-loop */
 }
 
 // Platform back: Android uses hardware back; iOS taps the native-stack chevron.

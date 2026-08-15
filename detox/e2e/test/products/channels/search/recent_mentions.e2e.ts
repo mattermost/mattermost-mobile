@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, isIos, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -180,52 +180,48 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // # Open post options for the fixture mention and tap Pin to Channel
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.tapPinPost();
-        await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
-
-        // # Navigate to the channel's Pinned Messages screen
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-
-        // * Verify mention is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await device.disableSynchronization();
-        try {
+
+        // Keep sync off from long-press through pin/unpin asserts. Do not
+        // re-enable on iOS: setSyncSettings({enabled:true}) hangs on leftover
+        // sheet/nav animation (CI 300s). Next file's launchApp resets sync.
+        await withSynchronizationDisabled(async () => {
+            // # Open post options for the fixture mention and tap Pin to Channel
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+            await PostOptionsScreen.tapPinPost();
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
+
+            // # Navigate to the channel's Pinned Messages screen
+            await ChannelListScreen.open();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
+
+            // * Verify mention is displayed on pinned messages screen
             await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
 
-        // # Unpin and verify removal
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-        await RecentMentionsScreen.open();
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.tapUnpinPost();
-        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
+            // # Unpin and verify removal
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+            await RecentMentionsScreen.open();
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+            await PostOptionsScreen.tapUnpinPost();
+            await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
 
-        // * Verify mention is no longer pinned
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-        await device.disableSynchronization();
-        try {
+            // * Verify mention is no longer pinned
+            await ChannelListScreen.open();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
             await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
 
-        // # Go back to channel list screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-        await ChannelListScreen.open();
+            // # Go back to channel list screen
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+            await ChannelListScreen.open();
+        }, {reenable: !isIos()});
     });
 
     // Must run last — mutates the shared mention fixture. Mentions list observes

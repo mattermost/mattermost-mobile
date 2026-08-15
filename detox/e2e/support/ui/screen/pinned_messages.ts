@@ -6,7 +6,7 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect} from 'detox';
 
 class PinnedMessagesScreen {
@@ -38,12 +38,9 @@ class PinnedMessagesScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         if (isIos()) {
-            await device.disableSynchronization();
-            try {
+            await withSynchronizationDisabled(async () => {
                 await waitForElementToExist(this.pinnedMessagesScreen, timeout);
-            } finally {
-                await safeEnableSynchronization();
-            }
+            });
             return this.pinnedMessagesScreen;
         }
         await waitForElementToExist(this.pinnedMessagesScreen, timeout);
@@ -54,14 +51,20 @@ class PinnedMessagesScreen {
     open = async () => {
         // # Open pinned messages screen
         if (isIos()) {
-            await device.disableSynchronization();
-            try {
+            await withSynchronizationDisabled(async () => {
                 await waitForElementToExist(ChannelInfoScreen.pinnedMessagesOption, timeouts.TEN_SEC);
-                await ChannelInfoScreen.pinnedMessagesOption.tap();
-                await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
-            } finally {
-                await safeEnableSynchronization();
-            }
+
+                // Channel Info is still translating when the pin journey keeps Detox
+                // sync off. A center tap then misses TouchableOpacity onPress.
+                await wait(timeouts.TWO_SEC);
+                await ChannelInfoScreen.pinnedMessagesOption.tap({x: 1, y: 1});
+                try {
+                    await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+                } catch {
+                    await ChannelInfoScreen.pinnedMessagesOption.tap({x: 1, y: 1});
+                    await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+                }
+            });
             return this.pinnedMessagesScreen;
         }
 
@@ -78,13 +81,17 @@ class PinnedMessagesScreen {
             return;
         }
 
-        await device.disableSynchronization();
-        try {
+        await withSynchronizationDisabled(async () => {
+            await wait(timeouts.TWO_SEC);
             await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
-            await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
+            try {
+                await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            } catch {
+                // Edge-swipe missed under sync-off — tap the pushed header back chevron.
+                await tapNativeBackButton();
+                await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            }
+        });
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {

@@ -17,6 +17,7 @@ import {
     wait,
     waitForElementToExist,
     waitForElementToNotExist,
+    withSynchronizationDisabled,
 } from '@support/utils';
 import {waitFor} from 'detox';
 
@@ -266,30 +267,24 @@ class ChannelListScreen {
     };
 
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
-        try {
-            if (isIos()) {
-                await device.disableSynchronization();
-                try {
+        const recoverAndWait = async () => {
+            try {
+                if (isIos()) {
                     await this.dismissPostOptionsIfOpen();
-                } finally {
-                    await safeEnableSynchronization();
                 }
+                await this.dismissAnyOpenModals();
+                await this.popBackUntilChannelList();
+            } catch {
+                // Recovery is best-effort.
             }
-            await this.dismissAnyOpenModals();
-            await this.popBackUntilChannelList();
-        } catch {
-            // Recovery is best-effort.
-        }
+            await waitForElementToExist(this.channelListScreen, timeout);
+        };
+
         try {
             if (isIos()) {
-                await device.disableSynchronization();
-                try {
-                    await waitForElementToExist(this.channelListScreen, timeout);
-                } finally {
-                    await safeEnableSynchronization();
-                }
+                await withSynchronizationDisabled(recoverAndWait);
             } else {
-                await waitForElementToExist(this.channelListScreen, timeout);
+                await recoverAndWait();
             }
         } catch (firstError) {
             // eslint-disable-next-line no-console
@@ -321,7 +316,6 @@ class ChannelListScreen {
                 /* eslint-enable no-await-in-loop */
 
                 await waitForElementToExist(this.channelListScreen, timeouts.TWO_MIN);
-                await device.disableSynchronization();
             } catch (recoveryError) {
                 // eslint-disable-next-line no-console
                 console.warn('[ChannelListScreen.toBeVisible] Recovery relaunch also failed:', recoveryError);
@@ -335,15 +329,12 @@ class ChannelListScreen {
     open = async () => {
         // # Open channel list screen
         if (isIos()) {
-            await device.disableSynchronization();
-            try {
+            return withSynchronizationDisabled(async () => {
                 await this.dismissPostOptionsIfOpen();
                 await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
-            } finally {
-                await safeEnableSynchronization();
-            }
-            return this.toBeVisible();
+                return this.toBeVisible();
+            });
         }
 
         await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
