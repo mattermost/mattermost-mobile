@@ -747,14 +747,6 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.unsetCustomStatus();
-
-        // The server stores a cleared custom status as Props["customStatus"] = "" (see
-        // model.User.ClearCustomStatus) and only that copy is authoritative. Callers follow
-        // this with an optimistic updateLocalCustomStatus, but that write races any
-        // user_updated / profile sync still carrying the old props, which leaves the
-        // account row showing a status the server no longer has. Persist the server user
-        // here so the local record converges regardless of who wins that race.
-        await fetchMe(serverUrl);
         return {};
     } catch (error) {
         logDebug('error on unsetCustomStatus', getFullErrorMessage(error));
