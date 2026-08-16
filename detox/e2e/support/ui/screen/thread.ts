@@ -235,10 +235,18 @@ class ThreadScreen {
     };
 
     tapSendButton = async () => {
-        // # Tap send button
+        // # Tap send button.
+        // Poll for visibility first, the same way ChannelScreen.tapSendButton does: a bare
+        // tap() enforces the 100% visibility threshold, and in a thread opened from Pinned
+        // Messages the button is only partly on screen, so MM-T4918_3 failed with "View is
+        // not hittable at its visible point" (view bounds {{312, 65}, {88, 32}}).
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
         await this.sendButton.tap();
-        await expect(this.sendButton).not.toExist();
-        await expect(this.sendButtonDisabled).toBeVisible();
+
+        // Waited, not instantaneous: the send round-trip has to land before the button
+        // swaps to its disabled variant.
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.sendButtonDisabled).toBeVisible().withTimeout(timeouts.FIVE_SEC);
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {
