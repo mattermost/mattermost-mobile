@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
@@ -206,31 +206,29 @@ describe('Search - Search Message Post Actions', () => {
 
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // Same sync-off envelope the other pin journeys use: any matcher run with Detox
-        // sync on while a Gorhom/Reanimated sheet is animating blocks until the 300s Jest
-        // timeout. Do not re-enable on iOS — the next spec's launchApp resets it.
-        await withSynchronizationDisabled(async () => {
-            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-            await PostOptionsScreen.tapPinPost();
+        // Do NOT wrap this journey in withSynchronizationDisabled: PostOptionsScreen's own
+        // helpers already manage sync per sheet interaction, and nesting an outer
+        // {reenable: false} envelope around three openPostOptionsFor round trips turned a
+        // 30s assertion failure into a 300s Jest timeout (run 31919670392, iOS).
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await PostOptionsScreen.tapPinPost();
 
-            // Wait for pin to land on the server before asserting.
-            await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
+        // Wait for pin to land on the server before asserting.
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
 
-            // Assert the pin through the post options menu, not a "Pinned" pre-header:
-            // search results render through PostWithChannelInfo, which passes
-            // skipPinnedHeader={true}, so post_pre_header.text never exists here.
-            // (Navigating ChannelInfo → Pinned Messages instead hung iOS ~600s.)
-            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-            await waitForElementToExist(PostOptionsScreen.unpinPostOption, timeouts.HALF_MIN);
-            await expect(PostOptionsScreen.pinPostOption).not.toExist();
+        // Assert the pin through the post options menu, not a "Pinned" pre-header: search
+        // results render through PostWithChannelInfo, which passes skipPinnedHeader={true},
+        // so post_pre_header.text never exists here.
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await waitForElementToExist(PostOptionsScreen.unpinPostOption, timeouts.HALF_MIN);
+        await expect(PostOptionsScreen.pinPostOption).not.toExist();
 
-            // * Verify the post can be unpinned again from the search results screen
-            await PostOptionsScreen.tapUnpinPost();
-            await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
-            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-            await waitForElementToExist(PostOptionsScreen.pinPostOption, timeouts.HALF_MIN);
-            await PostOptionsScreen.close();
-        }, {reenable: !isIos()});
+        // * Verify the post can be unpinned again from the search results screen
+        await PostOptionsScreen.tapUnpinPost();
+        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
+        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+        await waitForElementToExist(PostOptionsScreen.pinPostOption, timeouts.HALF_MIN);
+        await PostOptionsScreen.close();
 
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.removeRecentSearchItem(searchTerm);

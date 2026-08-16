@@ -59,18 +59,33 @@ class DraftScreen {
         },
     };
 
+    // `draft_post` is not unique on this screen: DraftAndScheduledPost renders it for both
+    // drafts and scheduled posts, and while the tutorial tooltip is up
+    // react-native-walkthrough-tooltip renders a second copy of the first row inside its
+    // modal. Dismissing the tooltip was not enough — MM-T5637/MM-T5762 still failed with
+    // "Multiple elements found for draft_post" (run 31919670392). Scope the row to the list
+    // container that owns it so the matcher is unambiguous by construction.
+    private getListScrollMatcher = async () => {
+        // Prefer scheduled list when on that tab; fall back to drafts list.
+        const scheduled = by.id(this.testID.scheduledList);
+        try {
+            await waitFor(element(scheduled)).toExist().withTimeout(timeouts.ONE_SEC);
+            return scheduled;
+        } catch {
+            return by.id(this.testID.draftScreen);
+        }
+    };
+
+    private getScopedDraftPost = (listMatcher: Detox.NativeMatcher) => {
+        return element(by.id(this.testID.draftPost).withAncestor(listMatcher));
+    };
+
     openDraftPostActions = async () => {
         await this.dismissTutorialTooltip();
 
-        // Prefer scheduled list when on that tab; fall back to drafts list.
-        let scrollMatcher = by.id(this.testID.scheduledList);
-        try {
-            await waitFor(element(scrollMatcher)).toExist().withTimeout(timeouts.ONE_SEC);
-        } catch {
-            scrollMatcher = by.id(this.testID.draftScreen);
-        }
+        const scrollMatcher = await this.getListScrollMatcher();
         await longPressWithScrollRetry(
-            this.draftPost,
+            this.getScopedDraftPost(scrollMatcher),
             scrollMatcher,
             element(by.id(this.testID.draftOptions)),
         );
@@ -78,7 +93,8 @@ class DraftScreen {
 
     swipeDraftPostLeft = async () => {
         await this.dismissTutorialTooltip();
-        await this.draftPost.swipe('left');
+        const scrollMatcher = await this.getListScrollMatcher();
+        await this.getScopedDraftPost(scrollMatcher).swipe('left');
     };
 
     deleteDraftPost = async (deleteAction: any) => {

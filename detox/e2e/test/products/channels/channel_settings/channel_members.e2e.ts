@@ -260,20 +260,14 @@ describe('Channels', () => {
         // Assert existence, not visibility: the dismissing manage-members modal can still
         // overlay post_list and fail the visibility threshold.
         //
-        // This channel already has several membership system posts, so the removal folds
-        // into a CombinedUserActivity row and renders the combined_system_message string
-        // "{firstUser} was **removed from the channel**." — i.e. "@user was removed from
-        // the channel." (android-results-inojer4jev-19 testFnFailure.png). Detox `by.text`
-        // is an exact full-string match, so the bare-username form can never hit that.
-        // Accept the combined form first and fall back to the standalone system post
-        // (which MM-T3205 gets, in a channel with no preceding membership activity).
-        const combinedMessage = `@${removedUser.username} was removed from the channel.`;
-        const standaloneMessage = `${removedUser.username} was removed from the channel`;
-        try {
-            await waitForElementToExist(element(by.text(combinedMessage).withAncestor(by.id('post_list'))), timeouts.HALF_MIN);
-        } catch {
-            await waitForElementToExist(element(by.text(standaloneMessage).withAncestor(by.id('post_list'))), timeouts.TEN_SEC);
-        }
+        // Match with a regex, not an exact string. This channel already has several
+        // membership system posts, so the removal folds into a CombinedUserActivity row
+        // rendering "{firstUser} was **removed from the channel**." — the node text
+        // carries an "@" prefix, a trailing period, and markdown-bold splitting, and both
+        // exact forms missed it (runs 31835719224 and 31919670392, both platforms).
+        // Same regex approach ChannelScreen.assertPostMessageEdited uses.
+        const removalPattern = new RegExp(`${removedUser.username}[\\s\\S]*removed from the channel`, 'i');
+        await waitForElementToExist(element(by.text(removalPattern).withAncestor(by.id('post_list'))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 

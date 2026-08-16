@@ -36,17 +36,20 @@ import {expect} from 'detox';
 
 const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
-// Expand the server-list bottom sheet before touching a row. A bare `swipe('up')` leaves
-// the sheet partially collapsed on iOS, so rows exist but are clipped and `.tap()` fails
-// with "View is not hittable at its visible point" (MM-T4691_3) — which then leaves the
-// app on the wrong server and cascades into MM-T4691_4's header assertion. Same partial
-// swipe the smoke-test suite uses.
+// Expand the server-list bottom sheet before touching a row.
+//
+// Swipe the sheet container, not `server_list.title`: on iOS the title is fully clipped
+// by the collapsed sheet — run 31919670392 reports `visible bounds: {{inf, inf}, {0, 0}}`
+// and "clipped by one or more of its superviews' bounds" — so every gesture on it fails
+// the 100% hittability threshold no matter what swipe parameters are passed. MM-T4691_2
+// already swipes `serverListScreen` and is green.
 const revealServerListItems = async () => {
     if (isIos()) {
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+        await ServerListScreen.serverListScreen.swipe('up');
     } else if (isAndroid()) {
-        await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        // Pixel 8 API 35 gesture nav: start mid-screen so the swipe does not begin in the
+        // system home-gesture hot zone and background the app.
+        await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
     }
     await wait(timeouts.ONE_SEC);
 };
