@@ -187,7 +187,7 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
+        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
             toBeVisible();
         await ChannelScreen.back();
 
@@ -221,7 +221,7 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
+        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
             toBeVisible();
         await ChannelScreen.back();
     });
@@ -267,7 +267,7 @@ describe('Channels', () => {
         // exact forms missed it (runs 31835719224 and 31919670392, both platforms).
         // Same regex approach ChannelScreen.assertPostMessageEdited uses.
         const removalPattern = new RegExp(`${removedUser.username}[\\s\\S]*removed from the channel`, 'i');
-        await waitForElementToExist(element(by.text(removalPattern).withAncestor(by.id('post_list'))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(removalPattern).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -300,7 +300,7 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
+        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
             toBeVisible();
 
         await ChannelScreen.back();
@@ -337,7 +337,7 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const systemMessage = `${removedUser.username} was removed from the channel`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
+        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
             toBeVisible();
 
         await ChannelScreen.back();

@@ -17,7 +17,12 @@ class DraftScreen {
         // Long-press target is the Pressable wrapper (draft_post), not the
         // nested markdown body — body can sit under the nav/tab header on iOS.
         draftPost: 'draft_post',
-        draftOptions: 'draft_options',
+
+        // BottomSheet renders its content as `${testID}.screen`
+        // (app/screens/bottom_sheet/index.tsx), so the sheet raised by
+        // <BottomSheet testID='draft_options'> is draft_options.screen. Matching the bare
+        // id found 0 nodes, so every long press was retried 8 times and then failed.
+        draftOptions: 'draft_options.screen',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
         requestACKIcon: 'drafts.requested_ack.icon',

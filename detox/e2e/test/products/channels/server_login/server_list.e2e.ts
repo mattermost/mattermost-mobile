@@ -160,8 +160,12 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
 
-        // # Go back to first server
-        await tapServerItem(ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0));
+        // # Go back to first server.
+        // switchToServer, not a bare tap: it waits for channel_list_header.server_display_name
+        // to actually read "Server 1". A bare tap let MM-T4691_2 finish while the app was
+        // still on Server 3, so MM-T4691_3's opening header assertion failed before it ever
+        // reached its own steps.
+        await ServerListScreen.switchToServer(serverOneDisplayName);
     });
 
     itWithThreeServers('MM-T4691_3 - should be able to switch to another existing server', async () => {
