@@ -36,28 +36,32 @@ import {expect} from 'detox';
 
 const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
-// Expand the server-list bottom sheet before touching a row.
+// Do NOT try to expand the servers bottom sheet by swiping it.
 //
-// Swipe the sheet container, not `server_list.title`: on iOS the title is fully clipped
-// by the collapsed sheet — run 31919670392 reports `visible bounds: {{inf, inf}, {0, 0}}`
-// and "clipped by one or more of its superviews' bounds" — so every gesture on it fails
-// the 100% hittability threshold no matter what swipe parameters are passed. MM-T4691_2
-// already swipes `serverListScreen` and is green.
+// Verified locally on iOS with a hierarchy dump: the sheet opens at a collapsed snap
+// point (server_list.screen is 362x393 of an 874pt screen) and NO element inside it is
+// full-height, so a swipe on either server_list.title (visible bounds {{inf,inf},{0,0}})
+// or server_list.screen anchors outside the visible area and is not hittable. MM-T4691_2
+// fails the same way, so it is not a working reference either.
+//
+// The server rows live in an inner @gorhom/bottom-sheet FlatList (testID 'server_list')
+// which IS scrollable, so bring rows into view by scrolling that list instead.
 const revealServerListItems = async () => {
-    if (isIos()) {
-        await ServerListScreen.serverListScreen.swipe('up');
-    } else if (isAndroid()) {
-        // Pixel 8 API 35 gesture nav: start mid-screen so the swipe does not begin in the
-        // system home-gesture hot zone and background the app.
-        await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
+    try {
+        await ServerListScreen.serverList.scroll(120, 'down');
+    } catch {
+        // Few enough servers that the list is already at its boundary.
     }
     await wait(timeouts.ONE_SEC);
 };
 
-// toExist() is not enough before a tap on a sheet row: the row can be in the tree while
-// still clipped by the collapsed sheet.
+// toExist() is not enough before a tap: an off-screen FlatList row may not be rendered at
+// all. Scroll the inner list until the row is on screen, then corner-tap it.
 const tapServerItem = async (item: Detox.NativeElement) => {
-    await waitForElementToBeVisible(item, timeouts.TEN_SEC, timeouts.HALF_SEC, 40);
+    await waitFor(item).
+        toBeVisible(40).
+        whileElement(by.id(ServerListScreen.testID.serverList)).
+        scroll(120, 'down');
     await item.tap({x: 1, y: 1});
 };
 
@@ -107,15 +111,7 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListScreen.swipe('up');
-        } else if (isAndroid()) {
-            // Pixel 8 API 35 uses gesture nav; a default swipe('up') on the
-            // full-screen bottom sheet starts in the system home-gesture hot
-            // zone and backgrounds the app. Use explicit coords with startY
-            // mid-screen to stay clear of the edge.
-            await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await revealServerListItems();
 
         // * Verify first server is active
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);

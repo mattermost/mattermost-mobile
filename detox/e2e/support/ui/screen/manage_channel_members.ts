@@ -3,7 +3,7 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
@@ -105,27 +105,33 @@ class ManageChannelMembersScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
-
+    // Tap the coach mark away on BOTH platforms — never device.pressBack().
+    //
+    // TutorialHighlight is a full-screen RN <Modal> whose onRequestClose is wired to the
+    // dismiss handler, but the app ships without android:enableOnBackInvokedCallback, so
+    // Android logs "OnBackInvokedCallback is not enabled for the application" and the back
+    // press never reaches onRequestClose. The modal then stays up indefinitely and hides
+    // manage_members.screen from Espresso — MM-T3196_1 polled it for 30s / 174 times and
+    // never saw it, even though the screen was mounted and intact behind the overlay
+    // (proven locally: tapping the overlay revealed the full member list).
+    //
+    // tutorial_swipe_left has pointerEvents='none', so the tap falls through to
+    // HighlightItem's <Svg onPress={onDismiss}> and only hides the modal — it does not
+    // navigate. This is the path iOS already used successfully.
     dismissLongPressProfileTutorial = async () => {
         try {
-            await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
-            await device.pressBack();
-            await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            await waitFor(this.tutorialSwipeLeft).toExist().withTimeout(timeouts.THREE_SEC);
         } catch {
-            // Tutorial not shown or already dismissed.
+            // Tutorial not shown or already dismissed on this app install.
+            return;
         }
+        await this.tutorialSwipeLeft.tap();
+        await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
     };
 
     closeTutorial = async () => {
         try {
-            if (isIos()) {
-                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.HALF_MIN);
-                await this.tutorialSwipeLeft.tap();
-                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
-            } else {
-                await this.dismissLongPressProfileTutorial();
-            }
+            await this.dismissLongPressProfileTutorial();
         } catch {
             // Tutorial may not appear if already dismissed in a previous run
         }

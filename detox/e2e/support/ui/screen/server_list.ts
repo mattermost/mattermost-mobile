@@ -10,6 +10,9 @@ class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
         serverListTitle: 'server_list.title',
+
+        // Inner @gorhom/bottom-sheet FlatList that actually holds the server rows.
+        serverList: 'server_list',
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
@@ -17,6 +20,7 @@ class ServerListScreen {
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
     serverListTitle = element(by.id(this.testID.serverListTitle));
+    serverList = element(by.id(this.testID.serverList));
 
     // Footer label is what CI actually finds. The footer testID is not
     // visible on Android (MM-T4691_7 / MM-T4675_2 on 21ea481).
