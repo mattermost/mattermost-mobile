@@ -1,0 +1,36 @@
+# Sub-flow: return to the test channel from an unknown screen (browser hand-off recovery).
+# Usage: - runFlow: ../../subflows/browser/reopen_channel_screen.yml
+# Requires: TEST_CHANNEL_NAME env var
+#
+# Mirrors reopen_settings_screen.yml. `openLink` -> `tryOpenURL` -> `Linking.openURL`
+# hands off to the *external* browser, so Mattermost is suspended and may not come back
+# on the channel screen (iOS can also cold-start it). Relaunch with the session intact
+# and walk back to the channel instead of assuming the screen survived.
+appId: ${MAESTRO_APP_ID}
+---
+# # Relaunch the app, keeping the session (iOS may stopApp; Android must not)
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          stopApp: false
+          clearState: false
+- waitForAnimationToEnd:
+    timeout: 30000
+
+# # Re-anchor on the Home tab, then walk back into the test channel
+- extendedWaitUntil:
+    visible:
+      id: "tab_bar.home.tab"
+    timeout: 30000
+- tapOn:
+    id: "tab_bar.home.tab"
+- runFlow: ../navigation/navigate_to_channel.yml

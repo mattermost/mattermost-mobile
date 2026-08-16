@@ -36,13 +36,32 @@ class DraftScreen {
     draftMessageContent = element(by.id(this.testID.draftMessageContent));
     deleteDraft = element(by.id(this.testID.deleteDraft));
 
+    // The drafts tutorial tooltip is shown once per app install, 300ms after the list
+    // mounts. While it is up, react-native-walkthrough-tooltip renders a *second copy*
+    // of the first row inside its modal (renderChildInTooltip), so `draft_post` matches
+    // twice on iOS ("Multiple elements found") and on Android the modal overlay swallows
+    // the long press so `draft_options` never opens. Settle it before touching a row.
+    dismissTutorialTooltip = async () => {
+        const closeButton = element(by.id(this.testID.draftTooltipCloseButton));
+        try {
+            await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Tutorial already watched on this app install — nothing to dismiss.
+            return;
+        }
+        await closeButton.tap();
+        await waitFor(closeButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    };
+
     draftTooltipCloseButton = {
         tap: async () => {
-            await element(by.id(this.testID.draftTooltipCloseButton)).tap();
+            await this.dismissTutorialTooltip();
         },
     };
 
     openDraftPostActions = async () => {
+        await this.dismissTutorialTooltip();
+
         // Prefer scheduled list when on that tab; fall back to drafts list.
         let scrollMatcher = by.id(this.testID.scheduledList);
         try {
@@ -58,6 +77,7 @@ class DraftScreen {
     };
 
     swipeDraftPostLeft = async () => {
+        await this.dismissTutorialTooltip();
         await this.draftPost.swipe('left');
     };
 

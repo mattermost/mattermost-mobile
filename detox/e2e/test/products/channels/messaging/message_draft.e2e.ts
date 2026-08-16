@@ -29,11 +29,19 @@ import {
 import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-function requirePositiveIntMaxPostSize(config: {ServiceSettings?: {MaxPostSize?: string}} | undefined): number {
-    const raw = config?.ServiceSettings?.MaxPostSize;
+// MaxPostSize is not a ServiceSettings field: the server computes it from the Posts.Message
+// column size and only publishes it on the *client* config (see ClientConfigWithComputed).
+// The app reads the same value via observeConfigIntValue(database, 'MaxPostSize'), so the
+// client config is the only source that matches what the composer enforces.
+async function getMaxPostSize(): Promise<number> {
+    const {config, error} = await System.apiGetClientConfigOld(siteOneUrl);
+    if (error || !config) {
+        throw new Error(`Expected client config for MaxPostSize, got ${JSON.stringify(error)}`);
+    }
+    const raw = config.MaxPostSize;
     const maxPostSize = Number(raw);
     if (!Number.isInteger(maxPostSize) || maxPostSize <= 0) {
-        throw new Error(`Expected a positive integer ServiceSettings.MaxPostSize, got ${String(raw)}`);
+        throw new Error(`Expected a positive integer MaxPostSize, got ${String(raw)}`);
     }
     return maxPostSize;
 }
@@ -139,11 +147,7 @@ describe('Messaging - Message Draft', () => {
     });
 
     it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
-        const {config} = await System.apiGetConfig(siteOneUrl);
-        if (!config) {
-            throw new Error('Expected server config for MaxPostSize');
-        }
-        const maxPostSize = requirePositiveIntMaxPostSize(config);
+        const maxPostSize = await getMaxPostSize();
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);
         const atLimitMessage = 'a'.repeat(maxPostSize);
 
@@ -171,13 +175,9 @@ describe('Messaging - Message Draft', () => {
     });
 
     it('MM-T107 - should show alert when message exceeds character limit', async () => {
-        // MaxPostSize comes from server config, so a hard-coded 4001 chars does not exceed the
+        // MaxPostSize comes from the server, so a hard-coded 4001 chars does not exceed the
         // common 16383 value and the send button stays enabled.
-        const {config} = await System.apiGetConfig(siteOneUrl);
-        if (!config) {
-            throw new Error('Expected server config for MaxPostSize');
-        }
-        const maxPostSize = requirePositiveIntMaxPostSize(config);
+        const maxPostSize = await getMaxPostSize();
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);
 
         // # Open a channel and type a message over the character limit

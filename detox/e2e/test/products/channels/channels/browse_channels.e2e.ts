@@ -97,8 +97,11 @@ describe('Channels - Browse Channels', () => {
             withTimeout(timeouts.TEN_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
-        // # Tap on the new public channel item
-        await BrowseChannelsScreen.getChannelItemDisplayName(channel.name).tap({x: 1, y: 1});
+        // # Tap on the new public channel item.
+        // Keep the row (not its display_name label) as the tap target and keep multiTap:
+        // a single tap on the label left the app on Browse Channels and `channel.screen`
+        // never mounted, while this form has been green on main.
+        await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
         await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.dismissScheduledPostTooltip();
 

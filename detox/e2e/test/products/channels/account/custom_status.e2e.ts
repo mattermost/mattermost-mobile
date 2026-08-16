@@ -214,6 +214,13 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
+    // Was failing on both platforms with the clear control still in the tree 10s after the
+    // tap. Evidence (ios-results-gl6zupuras-7 device.log + testFnFailure.png): the tap was
+    // dispatched (20:51:07.367 / 20:51:08.341 "Sending UIEvent" + "send gesture actions"),
+    // the handler ran (DELETE /users/me/status/custom at 20:51:07.554 and 20:51:08.390,
+    // both 200), but the row still showed "In a meeting (Until 9:51 PM)" — the local user
+    // never dropped props.customStatus. unsetCustomStatus now refetches the server user so
+    // the local record converges. See app/actions/remote/user.ts.
     it('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 

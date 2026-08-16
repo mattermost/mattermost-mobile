@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
 
 describe('Search - Search Message Post Actions', () => {
@@ -205,23 +205,32 @@ describe('Search - Search Message Post Actions', () => {
         await wait(timeouts.TWO_SEC);
 
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
 
-        await PostOptionsScreen.tapPinPost();
+        // Same sync-off envelope the other pin journeys use: any matcher run with Detox
+        // sync on while a Gorhom/Reanimated sheet is animating blocks until the 300s Jest
+        // timeout. Do not re-enable on iOS — the next spec's launchApp resets it.
+        await withSynchronizationDisabled(async () => {
+            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+            await PostOptionsScreen.tapPinPost();
 
-        // Wait for pin to land on the server before navigating — iOS hung
-        // ~10m on an empty pinned list (channel info still showed Pinned Messages: 0).
-        await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
+            // Wait for pin to land on the server before asserting.
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
 
-        // Assert pin on the search result (Pinned pre-header). Navigating
-        // ChannelInfo → Pinned Messages hung iOS ~600s on an empty list.
-        const {postListPostItemPreHeaderText} = SearchMessagesScreen.getPostListPostItem(searchedPost.id, message);
-        await waitFor(postListPostItemPreHeaderText).toHaveText('Pinned').withTimeout(timeouts.HALF_MIN);
+            // Assert the pin through the post options menu, not a "Pinned" pre-header:
+            // search results render through PostWithChannelInfo, which passes
+            // skipPinnedHeader={true}, so post_pre_header.text never exists here.
+            // (Navigating ChannelInfo → Pinned Messages instead hung iOS ~600s.)
+            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+            await waitForElementToExist(PostOptionsScreen.unpinPostOption, timeouts.HALF_MIN);
+            await expect(PostOptionsScreen.pinPostOption).not.toExist();
 
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-        await PostOptionsScreen.tapUnpinPost();
-        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
-        await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
+            // * Verify the post can be unpinned again from the search results screen
+            await PostOptionsScreen.tapUnpinPost();
+            await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
+            await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
+            await waitForElementToExist(PostOptionsScreen.pinPostOption, timeouts.HALF_MIN);
+            await PostOptionsScreen.close();
+        }, {reenable: !isIos()});
 
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.removeRecentSearchItem(searchTerm);

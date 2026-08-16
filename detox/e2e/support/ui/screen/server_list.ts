@@ -66,6 +66,18 @@ class ServerListScreen {
 
     open = async () => {
         await dismissKnownModals(2);
+
+        // Switching servers from the sheet does not always dismiss it, and on iOS the
+        // sheet is its own window — `channel_list.servers.server_icon` behind it is then
+        // unmatchable and the wait below times out with the list already on screen
+        // (MM-T4675_2, ios-results-gl6zupuras-7). Treat an open sheet as already open.
+        try {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            return this.serverListScreen;
+        } catch {
+            // Sheet is closed — open it from the channel list header below.
+        }
+
         const iconTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitForElementToExist(ChannelListScreen.serverIcon, iconTimeout);
 

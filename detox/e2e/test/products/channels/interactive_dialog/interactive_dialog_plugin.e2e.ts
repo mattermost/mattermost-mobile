@@ -684,9 +684,21 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.fillTextElement('description', 'A test web application');
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
-        await wait(2000);
-        const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
-        const successPost = posts.find((p: any) => p.message && p.message.includes('created a new') && p.message.includes('My Web App'));
+
+        // The plugin writes the confirmation post asynchronously. Poll for it instead of a
+        // single fixed wait — a slow server turned the missing post into an unguarded
+        // `Cannot read properties of undefined (reading 'id')` instead of a useful failure.
+        let successPost;
+        for (let attempt = 0; attempt < 10 && !successPost; attempt++) {
+            const {posts} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
+            successPost = posts.find((p: any) => p.message && p.message.includes('created a new') && p.message.includes('My Web App'));
+            if (!successPost) {
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        if (!successPost) {
+            throw new Error('Expected a "created a new ... My Web App" confirmation post after submitting the field-refresh dialog');
+        }
         const postElement = element(by.id(`channel.post_list.post.${successPost.id}`));
         await waitFor(postElement).toBeVisible().whileElement(by.id('channel.post_list.flat_list')).scroll(500, 'down');
     });

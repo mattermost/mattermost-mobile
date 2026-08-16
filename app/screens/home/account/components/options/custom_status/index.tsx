@@ -6,7 +6,6 @@ import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {unsetCustomStatus} from '@actions/remote/user';
-import ClearButton from '@components/custom_status/clear_button';
 import {Events, Screens} from '@constants';
 import {SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {useServerUrl} from '@context/server';
@@ -32,13 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         body: {
             flexDirection: 'row',
-            alignItems: 'center',
             marginVertical: 18,
-        },
-        option: {
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
         },
     };
 });
@@ -76,8 +69,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
             return;
         }
 
-        // Await so observers emit before Detox asserts clear.button left the tree.
-        await updateLocalCustomStatus(serverUrl, currentUser, undefined);
+        updateLocalCustomStatus(serverUrl, currentUser, undefined);
     }, [currentUser, serverUrl]));
 
     const goToCustomStatusScreen = usePreventDoubleTap(useCallback(() => {
@@ -90,32 +82,23 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
     }, [isTablet]));
 
     return (
-        <View style={styles.body}>
-            <TouchableOpacity
-                onPress={goToCustomStatusScreen}
-                style={styles.option}
-                testID='account.custom_status.option'
-            >
+        <TouchableOpacity
+            onPress={goToCustomStatusScreen}
+            testID='account.custom_status.option'
+        >
+            <View style={styles.body}>
                 <CustomStatusEmoji
                     emoji={customStatus?.emoji}
                     isStatusSet={Boolean(isStatusSet)}
                 />
                 <CustomLabel
                     customStatus={customStatus!}
-                    hideClearButton={true}
                     isStatusSet={Boolean(isStatusSet)}
                     onClearCustomStatus={clearCustomStatus}
                     showRetryMessage={showRetryMessage}
                 />
-            </TouchableOpacity>
-            {Boolean(isStatusSet) && (
-                <ClearButton
-                    handlePress={clearCustomStatus}
-                    theme={theme}
-                    testID='account.custom_status.clear.button'
-                />
-            )}
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 };
 

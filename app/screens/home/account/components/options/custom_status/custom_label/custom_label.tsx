@@ -20,9 +20,6 @@ type CustomLabelProps = {
     isStatusSet: boolean;
     onClearCustomStatus: () => void;
     showRetryMessage: boolean;
-
-    // Parent renders clear as a sibling so nested TouchableOpacity does not steal the tap.
-    hideClearButton?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -51,14 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomLabel = ({
-    customStatus,
-    isCustomStatusExpirySupported,
-    isStatusSet,
-    onClearCustomStatus,
-    showRetryMessage,
-    hideClearButton = false,
-}: CustomLabelProps) => {
+const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage}: CustomLabelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -89,7 +79,7 @@ const CustomLabel = ({
                     testID='account.custom_status.failure_message'
                 />
             )}
-            {isStatusSet && !hideClearButton && (
+            {isStatusSet && (
                 <View style={styles.clearButton}>
                     <ClearButton
                         handlePress={onClearCustomStatus}

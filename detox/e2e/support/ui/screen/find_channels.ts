@@ -55,6 +55,10 @@ class FindChannelsScreen {
         return element(by.id(`${this.testID.filteredChannelItemPrefix}${channelName}.display_name`));
     };
 
+    getFilteredUserItem = (userId: string) => {
+        return element(by.id(`${this.testID.findChannelsScreenPrefix}filtered_list.user_item.${userId}`));
+    };
+
     getFilteredUserItemDisplayName = (userId: string) => {
         return element(by.id(`${this.testID.findChannelsScreenPrefix}filtered_list.user_item.${userId}.display_name`));
     };

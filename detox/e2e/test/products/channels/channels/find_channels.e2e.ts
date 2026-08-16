@@ -127,14 +127,17 @@ describe('Channels - Find Channels', () => {
         // * Verify search returns a result for the target direct message channel.
         // When the DM is synced via WS it shows as channel_item; if not yet synced
         // searchProfiles stores the user profile and it shows as user_item.
+        // Do NOT tap the result here — opening the DM unmounts Find Channels, and the
+        // group-message search below needs the same search input still on screen.
         await wait(timeouts.TWO_SEC);
         try {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(directMessageChannel.name)).
                 toExist().
                 withTimeout(timeouts.TWENTY_SEC);
-            await FindChannelsScreen.getFilteredChannelItemDisplayName(directMessageChannel.name).tap();
         } catch {
-            await FindChannelsScreen.tapFilteredUserItem(testOtherUser1.id);
+            await waitFor(FindChannelsScreen.getFilteredUserItem(testOtherUser1.id)).
+                toExist().
+                withTimeout(timeouts.HALF_MIN);
         }
 
         // # Search for the group message channel

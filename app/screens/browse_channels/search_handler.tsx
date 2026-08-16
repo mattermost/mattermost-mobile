@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
-import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchArchivedChannels, searchChannels} from '@actions/remote/channel';
+import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
@@ -223,11 +223,11 @@ export default function SearchHandler(props: Props) {
             invalidatePendingSearch();
             const requestId = searchRequestId.current;
 
-            // Autocomplete omits deleted channels; archived browse must use search_archived
-            // or the list shows "No matches" after filtering delete_at !== 0.
-            const searchFn = typeOfChannels === ARCHIVED ? searchArchivedChannels : searchChannels;
+            // `POST /teams/{id}/channels/search` already searches with includeDeleted=true,
+            // so archived rows come back here and filterChannelsByType keeps the ones with
+            // delete_at !== 0. There is no `/channels/search_archived` route on the server.
             searchTimeout.current = setTimeout(async () => {
-                const results = await searchFn(serverUrl, text, currentTeamId);
+                const results = await searchChannels(serverUrl, text, currentTeamId);
                 if (requestId !== searchRequestId.current) {
                     return;
                 }
@@ -242,7 +242,7 @@ export default function SearchHandler(props: Props) {
         } else {
             stopSearch();
         }
-    }, [invalidatePendingSearch, serverUrl, currentTeamId, stopSearch, typeOfChannels]);
+    }, [invalidatePendingSearch, serverUrl, currentTeamId, stopSearch]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);

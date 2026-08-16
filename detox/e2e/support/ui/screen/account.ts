@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -43,49 +43,14 @@ class AccountScreen {
     customStatusFailureMessage = element(by.id(this.testID.customStatusFailureMessage));
     customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
-    // Sibling ClearButton can miss center tap on iOS (hittest).
-    // Android plain tap first; iOS tapAtPoint then plain tap.
+    // A single tap is enough: CI device.log for MM-T4990_4 (ios-results-gl6zupuras-7)
+    // shows `Sending UIEvent` + `send gesture actions` followed by a 200 from the unset
+    // request, so the press reaches the handler. Do NOT re-tap or assert the button's
+    // disappearance here — whether the account row actually drops the control is the
+    // behaviour under test and belongs in the test, not in this helper.
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.TEN_SEC);
-        if (isIos()) {
-            try {
-                await device.disableSynchronization();
-            } catch {
-                // already off
-            }
-            try {
-                try {
-                    await this.customStatusClearButton.tapAtPoint({x: 10, y: 10});
-                } catch {
-                    try {
-                        await this.customStatusClearButton.tapAtPoint({x: 4, y: 4});
-                    } catch {
-                        await this.customStatusClearButton.tap();
-                    }
-                }
-
-                // Second tap if first landed but press was eaten by nested row.
-                try {
-                    await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.ONE_SEC);
-                    await this.customStatusClearButton.tapAtPoint({x: 8, y: 8});
-                } catch {
-                    // cleared or gone
-                }
-            } finally {
-                try {
-                    await device.enableSynchronization();
-                } catch {
-                    // ignore
-                }
-            }
-        } else {
-            try {
-                await this.customStatusClearButton.tap();
-            } catch {
-                await this.customStatusClearButton.tap({x: 1, y: 1});
-            }
-        }
-        await waitForElementToNotExist(this.customStatusClearButton, timeouts.TEN_SEC);
+        await this.customStatusClearButton.tap();
     };
 
     getUserInfo = (userId: string) => {

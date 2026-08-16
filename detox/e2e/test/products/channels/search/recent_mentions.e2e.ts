@@ -250,8 +250,14 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
-        // Force a mentions refetch so the list shows the edited body
-        // (matched /edit$/ against a stale row that never updated).
+        // Force a real mentions refetch. recent_mentions.tsx only calls
+        // fetchRecentMentions on an isFocused false->true transition, so re-tapping the
+        // already-focused Mentions tab is a no-op — and when the post_edited event is
+        // missed (android-results-inojer4jev-5 logs a websocket close at 17:32:47 and a
+        // reconnect at 17:32:51, right between the save and this assert) the row keeps the
+        // pre-edit body. Blur to Home first so the focus transition actually happens.
+        await ChannelListScreen.open();
+        await ChannelListScreen.toBeVisible();
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
