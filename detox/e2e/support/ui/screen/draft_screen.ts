@@ -59,12 +59,6 @@ class DraftScreen {
         },
     };
 
-    // `draft_post` is not unique on this screen: DraftAndScheduledPost renders it for both
-    // drafts and scheduled posts, and while the tutorial tooltip is up
-    // react-native-walkthrough-tooltip renders a second copy of the first row inside its
-    // modal. Dismissing the tooltip was not enough — MM-T5637/MM-T5762 still failed with
-    // "Multiple elements found for draft_post" (run 31919670392). Scope the row to the list
-    // container that owns it so the matcher is unambiguous by construction.
     private getListScrollMatcher = async () => {
         // Prefer scheduled list when on that tab; fall back to drafts list.
         const scheduled = by.id(this.testID.scheduledList);
@@ -76,8 +70,18 @@ class DraftScreen {
         }
     };
 
-    private getScopedDraftPost = (listMatcher: Detox.NativeMatcher) => {
-        return element(by.id(this.testID.draftPost).withAncestor(listMatcher));
+    // Do NOT scope this with withAncestor(global_drafts_list): in the *native* tree the
+    // FlatList's ScrollView is a sibling of the global_drafts_list view, both under
+    // draft_list_container, so that matcher resolves to ZERO nodes and every
+    // openDraftPostActions call fails on both platforms (verified locally: uiautomator
+    // ancestor walk is draft_post < ScrollView < draft_list_container).
+    //
+    // atIndex(0) instead: dismissTutorialTooltip normally leaves exactly one draft_post
+    // (verified locally across 25 hierarchy dumps), but if the tooltip dismissal ever
+    // misses, react-native-walkthrough-tooltip's duplicate row would otherwise raise
+    // "Multiple elements found". Indexing tolerates both without ever matching zero.
+    private getFirstDraftPost = () => {
+        return element(by.id(this.testID.draftPost)).atIndex(0);
     };
 
     openDraftPostActions = async () => {
@@ -85,7 +89,7 @@ class DraftScreen {
 
         const scrollMatcher = await this.getListScrollMatcher();
         await longPressWithScrollRetry(
-            this.getScopedDraftPost(scrollMatcher),
+            this.getFirstDraftPost(),
             scrollMatcher,
             element(by.id(this.testID.draftOptions)),
         );
@@ -93,8 +97,7 @@ class DraftScreen {
 
     swipeDraftPostLeft = async () => {
         await this.dismissTutorialTooltip();
-        const scrollMatcher = await this.getListScrollMatcher();
-        await this.getScopedDraftPost(scrollMatcher).swipe('left');
+        await this.getFirstDraftPost().swipe('left');
     };
 
     deleteDraftPost = async (deleteAction: any) => {
