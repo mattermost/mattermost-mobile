@@ -92,7 +92,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.assertPostMessageEdited(post.id, updatedMessage);
 
         // # Open post options for the updated message, tap delete option and confirm
-        await element(by.id(`channel.post_list.post.${post.id}`)).longPress();
+        await element(by.id(`channel.post_list.post.${post.id}`)).longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify post message is deleted

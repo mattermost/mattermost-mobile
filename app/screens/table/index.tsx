@@ -4,7 +4,7 @@
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, ScrollView, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
@@ -18,6 +18,9 @@ export type TableScreenProps = {
     renderAsFlex: boolean;
     width: number;
 }
+
+// The navigation header already accounts for the top inset
+const SAFE_AREA_EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -88,6 +91,7 @@ const Table = ({renderAsFlex, width}: TableScreenProps) => {
 
     return (
         <SafeAreaView
+            edges={SAFE_AREA_EDGES}
             style={styles.container}
             testID='table.screen'
         >

@@ -21,6 +21,7 @@ class ChannelBookmarkScreen {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
+        optionsSheet: 'undefined.screen',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -59,46 +60,16 @@ class ChannelBookmarkScreen {
     deleteConfirmCancelButton = element(by.text('Cancel'));
 
     /**
-     * Bookmark options is a bottom sheet with no Cancel row, so dismiss it by swiping a row.
+     * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route).
      */
     dismissOptionsSheet = async () => {
-        const swipeTargets = [this.deleteOption, this.editOption, this.copyLinkOption, this.shareOption];
-        let sheetVisible = false;
-        /* eslint-disable no-await-in-loop -- probe which option rows are on this sheet */
-        for (const target of swipeTargets) {
-            try {
-                await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                sheetVisible = true;
-                break;
-            } catch {
-                // Row not present on this sheet variant.
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        if (!sheetVisible) {
-            return;
-        }
-
+        const sheet = element(by.id(this.testID.optionsSheet));
         if (isAndroid()) {
             await device.pressBack();
         } else {
-            /* eslint-disable no-await-in-loop -- swipe the first visible sheet row */
-            for (const target of swipeTargets) {
-                try {
-                    await waitFor(target).toBeVisible().withTimeout(timeouts.TWO_SEC);
-                    await target.swipe('down', 'fast', 0.9, 0.5, 0.1);
-                    await wait(timeouts.ONE_SEC);
-                    break;
-                } catch {
-                    // Try next row.
-                }
-            }
-            /* eslint-enable no-await-in-loop */
+            await sheet.swipe('down');
         }
-
-        await waitFor(this.editOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        await waitFor(this.copyLinkOption).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(sheet).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     // Error alert
