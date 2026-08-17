@@ -314,7 +314,7 @@ export const leaveCallConfirmation = async (
     leaveCb?: () => void) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     const channel = database ? await getChannelById(database, channelId) : undefined;
-    const isNotDMChannel = !isDMChannel(channel?.type);
+    const isNotDMChannel = Boolean(channel) && !isDMChannel(channel?.type);
 
     const showHostControls = isNotDMChannel && (isHost || isAdmin) && otherParticipants;
     if (!showHostControls) {

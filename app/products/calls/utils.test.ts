@@ -245,7 +245,7 @@ describe('getHandsRaised', () => {
 describe('hasOtherUserJoined', () => {
     const mySession = {sessionId: '1', userId: 'me', muted: true, raisedHand: 0};
 
-    it('returns false when only the same user has multiple sessions in the call', () => {
+    it('should return false when only the same user has multiple sessions in the call', () => {
         const sessions = {
             1: mySession,
             2: {sessionId: '2', userId: 'me', muted: true, raisedHand: 0},
@@ -254,7 +254,7 @@ describe('hasOtherUserJoined', () => {
         expect(hasOtherUserJoined(sessions, 'me')).toBe(false);
     });
 
-    it('returns true when another user is in the call', () => {
+    it('should return true when another user is in the call', () => {
         const sessions = {
             1: mySession,
             2: {sessionId: '2', userId: 'user2', muted: true, raisedHand: 0},

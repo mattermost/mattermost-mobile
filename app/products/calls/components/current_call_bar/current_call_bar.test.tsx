@@ -142,9 +142,10 @@ describe('CurrentCallBar', () => {
     });
 
     it('should show the speaker and the channel name for a regular call', () => {
+        const baseProps = getBaseProps();
         const props = {
-            ...getBaseProps(),
-            currentCall: {...getBaseProps().currentCall!, voiceOn: {'speaker-session': true}},
+            ...baseProps,
+            currentCall: {...DefaultCurrentCall, ...baseProps.currentCall, voiceOn: {'speaker-session': true}},
             sessionsDict: {'speaker-session': speakerSession},
         };
         const {getByTestId, getByText} = renderWithIntlAndTheme(<CurrentCallBar {...props}/>);
@@ -156,9 +157,10 @@ describe('CurrentCallBar', () => {
 
     it('should not crash when the speaker has no session yet', () => {
         // voiceOn can arrive before the speaker's session does.
+        const baseProps = getBaseProps();
         const props = {
-            ...getBaseProps(),
-            currentCall: {...getBaseProps().currentCall!, voiceOn: {'unknown-session': true}},
+            ...baseProps,
+            currentCall: {...DefaultCurrentCall, ...baseProps.currentCall, voiceOn: {'unknown-session': true}},
             sessionsDict: {},
         };
         const {getByText} = renderWithIntlAndTheme(<CurrentCallBar {...props}/>);

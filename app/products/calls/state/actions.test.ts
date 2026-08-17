@@ -174,8 +174,11 @@ const callDM: Call = {
 const ANSWERED_AT = 1700000000000;
 const atAnsweredTime = (fn: () => void) => {
     const now = jest.spyOn(Date, 'now').mockReturnValue(ANSWERED_AT);
-    fn();
-    now.mockRestore();
+    try {
+        fn();
+    } finally {
+        now.mockRestore();
+    }
 };
 
 describe('useCallsState', () => {
@@ -350,7 +353,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
-    it('joinedCall stamps dmCalleeAnsweredAt the first time the call holds two distinct users', () => {
+    it('should stamp dmCalleeAnsweredAt the first time the call holds two distinct users', () => {
         const emptyCall: Call = {
             ...callDM,
             channelId: 'channel-1',

@@ -35,7 +35,7 @@ const enhanced = withObservables([], () => {
     const dmUser = combineLatest([callDatabase, currentCall, channel]).pipe(
         switchMap(([db, cc, chan]) => {
             if (db && chan?.type === General.DM_CHANNEL) {
-                const teammateId = getUserIdFromChannelName(cc?.myUserId || '', chan.name);
+                const teammateId = getUserIdFromChannelName(cc?.myUserId ?? '', chan.name);
                 return observeUser(db, teammateId);
             }
 

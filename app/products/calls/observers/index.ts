@@ -131,9 +131,7 @@ export const observeCurrentSessionsDict = () => {
 export const observeDMCallingState = () => {
     const currentCall = observeCurrentCall();
     const database = observeCallDatabase();
-    const channel = combineLatest([database, currentCall]).pipe(
-        switchMap(([db, call]) => (db && call ? observeChannel(db, call.channelId) : of$(undefined))),
-    );
+    const channel = observeCallChannel();
 
     // The callee isn't in the call yet, so they come from the DM channel rather than from the sessions.
     // Empty when this isn't a DM, or is a DM with yourself: there's then no other party to wait for.

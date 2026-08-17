@@ -300,5 +300,5 @@ export function getCallCardState(callProps: CallsPostProps, numUsers: number, ca
  * from more than one client. Mirrors numUsersInCallInChannel in the webapp (webapp/src/selectors.ts).
  */
 export function getNumUsersInCall(call?: Call): number {
-    return new Set(Object.values(call?.sessions || {}).map((session) => session.userId)).size;
+    return new Set(Object.values(call?.sessions ?? {}).map((session) => session.userId)).size;
 }

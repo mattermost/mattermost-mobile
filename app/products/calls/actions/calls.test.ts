@@ -338,7 +338,7 @@ describe('Actions.Calls', () => {
         assert.equal((result.current[1] as CurrentCall | null), null);
     });
 
-    it('leaveCallConfirmation leaves immediately for non-hosts without showing an alert', async () => {
+    it('should leave immediately for non-hosts without showing an alert', async () => {
         // setup
         addFakeCall('server1', 'channel-id');
         await act(async () => {
@@ -389,7 +389,7 @@ describe('Actions.Calls', () => {
         });
     };
 
-    it('leaveCallConfirmation leaves immediately in a DM even for the host', async () => {
+    it('should leave immediately in a DM even for the host', async () => {
         await joinCallInChannel(General.DM_CHANNEL);
 
         const disconnectMock = getConnectionForTesting()!.disconnect;
@@ -414,7 +414,7 @@ describe('Actions.Calls', () => {
         mockAlert.mockRestore();
     });
 
-    it('leaveCallConfirmation still asks the host in a channel call', async () => {
+    it('should still ask the host in a channel call', async () => {
         await joinCallInChannel(General.OPEN_CHANNEL);
 
         const disconnectMock = getConnectionForTesting()!.disconnect;

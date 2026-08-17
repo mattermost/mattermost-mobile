@@ -470,7 +470,7 @@ describe('alerts', () => {
             formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
         };
 
-        it('shows the host end call choice, with no separate confirmation step', async () => {
+        it('should show the host end call choice, with no separate confirmation step', async () => {
             const mockAlert = jest.spyOn(Alert, 'alert');
             const promise = endCallConfirmationAlert(intl as any);
 

@@ -280,6 +280,9 @@ export const useCallLimitRestrictedInfo = (serverUrl: string, channelId: string)
     const [limitRestrictedInfo, setLimitRestrictedInfo] = useState(DEFAULT_LIMIT_RESTRICTED_INFO);
 
     useEffect(() => {
+        // Without this the old value survives until the new observer emits
+        setLimitRestrictedInfo(DEFAULT_LIMIT_RESTRICTED_INFO);
+
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database) {
             return undefined;
