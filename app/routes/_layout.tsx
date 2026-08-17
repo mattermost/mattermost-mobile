@@ -19,7 +19,7 @@ import {useThemeByAppearanceWithDefault} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {cleanup, initialize} from '@init/app';
-import {hideLaunchSplash} from '@init/splash';
+import {armLaunchSplashFallback} from '@init/splash';
 import InAppNotificationContainer from '@screens/in_app_notification';
 import ReviewAppContainer from '@screens/review_app';
 import ShareFeedbackContainer from '@screens/share_feedback';
@@ -79,8 +79,10 @@ export default function RootLayout() {
                 RNUtils.lockPortrait();
 
                 setAppReady(true);
+                armLaunchSplashFallback();
             } catch (error) {
                 setAppReady(true); // Still show UI with error state
+                armLaunchSplashFallback();
             }
         }
 
@@ -90,12 +92,6 @@ export default function RootLayout() {
             cleanup();
         };
     });
-
-    useEffect(() => {
-        if (appReady) {
-            hideLaunchSplash();
-        }
-    }, [appReady]);
 
     useEffect(() => {
         const handleKeyboardHide = () => {

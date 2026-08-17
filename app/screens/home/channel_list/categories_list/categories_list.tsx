@@ -20,6 +20,7 @@ import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
 import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamsLoading} from '@hooks/teams_loading';
+import {hideLaunchSplashAfterChannelsPainted} from '@init/splash';
 import PlaybooksButton from '@playbooks/components/playbooks_button';
 import {getDefaultTeamId} from '@queries/servers/team';
 import {logDebug} from '@utils/log';
@@ -45,6 +46,7 @@ type ScreenType = typeof Screens.GLOBAL_DRAFTS | typeof Screens.GLOBAL_THREADS |
 
 type ChannelListProps = {
     hasChannels: boolean;
+    hasTeams: boolean;
     iconPad?: boolean;
     isCRTEnabled?: boolean;
     moreThanOneTeam: boolean;
@@ -65,6 +67,7 @@ const edges: Edge[] = ['right'];
 
 const CategoriesList = ({
     hasChannels,
+    hasTeams,
     iconPad,
     isCRTEnabled,
     moreThanOneTeam,
@@ -112,6 +115,13 @@ const CategoriesList = ({
             }
         })();
     }, [hasChannels, isTeamLoading, serverUrl]);
+
+    // Covers teams-with-no-channels first paint (LoadChannelsError).
+    useEffect(() => {
+        if (hasTeams && !hasChannels && !isInitialSync && !isTeamLoading) {
+            hideLaunchSplashAfterChannelsPainted();
+        }
+    }, [hasTeams, hasChannels, isInitialSync, isTeamLoading]);
 
     useEffect(() => {
         if (isTablet) {

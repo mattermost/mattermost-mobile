@@ -15,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamSwitch} from '@hooks/team_switch';
+import {hideLaunchSplashAfterChannelsPainted} from '@init/splash';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {isDMorGM} from '@utils/channel';
 import {logDebug} from '@utils/log';
@@ -203,6 +204,14 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
     }, []);
 
     const showEmptyState = onlyUnreads && flattenedItems.length === 0 && !isTablet;
+    const showLoading = switchingTeam || initialLoad || (isInitialSync && flattenedItems.length === 0);
+
+    useEffect(() => {
+        if (showLoading) {
+            return;
+        }
+        hideLaunchSplashAfterChannelsPainted();
+    }, [showLoading]);
 
     const ListEmptyComponent = useMemo(() => {
         if (showEmptyState) {
@@ -218,8 +227,6 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
     if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads && !isInitialSync) {
         return <LoadCategoriesError/>;
     }
-
-    const showLoading = switchingTeam || initialLoad || (isInitialSync && flattenedItems.length === 0);
 
     return (
         <>

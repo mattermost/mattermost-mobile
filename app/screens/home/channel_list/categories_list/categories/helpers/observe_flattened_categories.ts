@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {of as of$, combineLatest, type Observable} from 'rxjs';
-import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
+import {of as of$, combineLatest, merge, type Observable} from 'rxjs';
+import {switchMap, map, distinctUntilChanged, take, startWith, tap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
+import {launchMark} from '@init/launch_profiler';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
@@ -29,6 +30,7 @@ import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
+import type UserModel from '@typings/database/models/servers/user';
 
 const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
     // observe delete_at to react to channel archive/unarchive
@@ -54,6 +56,51 @@ const observeCategoryChannels = (category: CategoryModel, myChannels: Observable
         }),
     );
 };
+
+type CategoryFilterInputs = {
+    channelId: string;
+    unreadId?: string;
+    notifyProps: Record<string, Partial<ChannelNotifyProps>>;
+    manuallyClosedDms: PreferenceModel[];
+    autoclose: PreferenceModel[];
+    deactivatedUsers?: Map<string, UserModel | undefined>;
+    maxDms: number;
+};
+
+const FAST_PAINT_INPUTS: CategoryFilterInputs = {
+    channelId: '',
+    notifyProps: {},
+    manuallyClosedDms: [],
+    autoclose: [],
+    maxDms: Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT,
+};
+
+let fastPaintDone = false;
+
+function toCategoryData(
+    category: CategoryModel,
+    currentUserId: string,
+    locale: string,
+    cwms: ChannelWithMyChannel[],
+    catData: {sorting: CategoryModel['sorting']; collapsed: boolean; type: CategoryModel['type']},
+    inputs: CategoryFilterInputs,
+): CategoryData {
+    let channelsW = cwms;
+    channelsW = filterArchivedChannels(channelsW, inputs.channelId);
+    channelsW = filterManuallyClosedDms(channelsW, inputs.notifyProps, inputs.manuallyClosedDms, currentUserId, inputs.unreadId);
+    channelsW = filterAutoclosedDMs(catData.type, inputs.maxDms, currentUserId, inputs.channelId, channelsW, inputs.autoclose, inputs.notifyProps, inputs.deactivatedUsers, inputs.unreadId);
+
+    const sortedChannels = sortChannels(catData.sorting, channelsW, inputs.notifyProps, locale);
+    const unreadIds = getUnreadIds(cwms, inputs.notifyProps, inputs.unreadId);
+    const allUnreadChannels = sortedChannels.filter((c) => unreadIds.has(c.id));
+
+    return {
+        category,
+        sortedChannels,
+        unreadIds,
+        allUnreadChannels,
+    };
+}
 
 const observeCategoryData = (
     category: CategoryModel,
@@ -107,7 +154,7 @@ const observeCategoryData = (
 
     const deactivated = (category.type === DMS_CATEGORY) ? observeDeactivatedUsers(database) : of$(undefined);
 
-    return combineLatest([
+    const fullCategoryData = combineLatest([
         channelsWithMyChannel,
         categoryObservable,
         currentChannelId,
@@ -118,24 +165,32 @@ const observeCategoryData = (
         deactivated,
         limit,
     ]).pipe(
+        tap(() => {
+            fastPaintDone = true;
+        }),
         map(([cwms, catData, channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedUsers, maxDms]) => {
-            let channelsW = cwms;
-            channelsW = filterArchivedChannels(channelsW, channelId);
-            channelsW = filterManuallyClosedDms(channelsW, notifyProps, manuallyClosedDms, currentUserId, unreadId);
-            channelsW = filterAutoclosedDMs(catData.type, maxDms, currentUserId, channelId, channelsW, autoclose, notifyProps, deactivatedUsers, unreadId);
-
-            const sortedChannels = sortChannels(catData.sorting, channelsW, notifyProps, locale);
-            const unreadIds = getUnreadIds(cwms, notifyProps, unreadId);
-            const allUnreadChannels = sortedChannels.filter((c) => unreadIds.has(c.id));
-
-            return {
+            return toCategoryData(
                 category,
-                sortedChannels,
-                unreadIds,
-                allUnreadChannels,
-            };
+                currentUserId,
+                locale,
+                cwms,
+                catData,
+                {channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedUsers, maxDms},
+            );
         }),
     );
+
+    if (fastPaintDone) {
+        return fullCategoryData;
+    }
+
+    // First paint from cached memberships; prefs/deactivated users refine afterwards.
+    const fastCategoryData = combineLatest([channelsWithMyChannel, categoryObservable]).pipe(
+        map(([cwms, catData]) => toCategoryData(category, currentUserId, locale, cwms, catData, FAST_PAINT_INPUTS)),
+        take(1),
+    );
+
+    return merge(fastCategoryData, fullCategoryData);
 };
 
 export type FlattenedCategoriesData = {
@@ -252,11 +307,11 @@ const observeFlattenedCategoriesNormal = (
         return of$({items: [], unreadChannelIds: new Set<string>()});
     }
 
-    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-        observeWithColumns(['value']).
-        pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
+    const unreadsOnTopSource = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        observeWithColumns(['value']).pipe(
+            switchMap((prefs) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
         );
+    const unreadsOnTop = fastPaintDone ? unreadsOnTopSource : unreadsOnTopSource.pipe(startWith(false));
 
     const categoryDataObservables = categories.map((category) =>
         observeCategoryData(category, database, currentUserId, locale, isTablet),
@@ -312,6 +367,16 @@ const sortCategories = (categories: CategoryModel[]) => {
     return categories.sort((a, b) => a.sortOrder - b.sortOrder);
 };
 
+let flattenFirstMarked = false;
+
+const markFlattenFirst = (itemCount: number) => {
+    if (flattenFirstMarked) {
+        return;
+    }
+    flattenFirstMarked = true;
+    launchMark('flatten_first', `${itemCount} items`);
+};
+
 // Routes to the appropriate observable based on onlyUnreads mode
 export const observeFlattenedCategories = (
     database: Database,
@@ -321,14 +386,16 @@ export const observeFlattenedCategories = (
     onlyUnreads: boolean,
     currentTeamId: string,
 ): Observable<FlattenedCategoriesData> => {
+    let source: Observable<FlattenedCategoriesData>;
     if (onlyUnreads) {
-        return observeFlattenedUnreads(database, currentTeamId, isTablet);
+        source = observeFlattenedUnreads(database, currentTeamId, isTablet);
+    } else {
+        source = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']).pipe(
+            switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
+        );
     }
 
-    // Observe categories for the current team
-    const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']);
-
-    return categories.pipe(
-        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
+    return source.pipe(
+        tap((data) => markFlattenFirst(data.items.length)),
     );
 };
