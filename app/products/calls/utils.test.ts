@@ -6,7 +6,7 @@ import assert from 'assert';
 import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
-import {CallCardState, type CallsConfigState, type CallsPostProps, DefaultCallsConfig} from '@calls/types/calls';
+import {CallCardState, CallPostStatus, type CallsConfigState, type CallsPostProps, DefaultCallsConfig} from '@calls/types/calls';
 import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
@@ -552,11 +552,11 @@ describe('getCallCardState', () => {
     });
 
     it('should be calling when the call is ringing and only the caller is connected', () => {
-        expect(getCallCardState(makeCallProps({call_status: 'calling'}), 1, false)).toBe(CallCardState.Calling);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 1, false)).toBe(CallCardState.Calling);
     });
 
     it('should be active once the callee answers, even though call_status is still calling', () => {
-        expect(getCallCardState(makeCallProps({call_status: 'calling'}), 2, false)).toBe(CallCardState.Active);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 2, false)).toBe(CallCardState.Active);
     });
 
     it('should be active for an ongoing call with no call_status', () => {
@@ -564,19 +564,19 @@ describe('getCallCardState', () => {
     });
 
     it('should be ended once the call is torn down, before the post has an end_at', () => {
-        expect(getCallCardState(makeCallProps({call_status: 'calling'}), 1, true)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 1, true)).toBe(CallCardState.Ended);
     });
 
     it('should be no answer for a call that timed out while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: 'no_answer'}), 0, true)).toBe(CallCardState.NoAnswer);
+        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), 0, true)).toBe(CallCardState.NoAnswer);
     });
 
     it('should be canceled for a call the caller hung up while ringing', () => {
-        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: 'canceled_by_caller'}), 0, true)).toBe(CallCardState.Canceled);
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), 0, true)).toBe(CallCardState.Canceled);
     });
 
     it('should be ended for a call that was answered and then hung up', () => {
-        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: 'ended'}), 0, true)).toBe(CallCardState.Ended);
+        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), 0, true)).toBe(CallCardState.Ended);
     });
 
     it('should be ended for an ended call with an unhandled status, such as declined', () => {

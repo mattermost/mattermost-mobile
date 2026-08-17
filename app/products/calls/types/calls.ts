@@ -18,15 +18,13 @@ import type UserModel from '@typings/database/models/servers/user';
 // Calling for DM channels, but every terminal transition sets it for all channel types.
 // Note: the plugin can also send 'declined', but nothing triggers that flow yet (MM-69931), so it
 // is intentionally not listed here and falls through to the generic "Call ended" card.
-export const CallPostStatus = {
-    Calling: 'calling',
-    Ended: 'ended',
-    NoAnswer: 'no_answer',
-    CanceledByCaller: 'canceled_by_caller',
-} as const;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
-export type CallPostStatus = typeof CallPostStatus[keyof typeof CallPostStatus];
+export enum CallPostStatus {
+    Calling = 'calling',
+    Ended = 'ended',
+    NoAnswer = 'no_answer',
+    CanceledByCaller = 'canceled_by_caller',
+    Declined = 'declined',
+}
 
 // CallPostProps comes from calls-common, which has no knowledge of call_status yet.
 export type CallsPostProps = CallPostProps & {
@@ -34,16 +32,13 @@ export type CallsPostProps = CallPostProps & {
 }
 
 // The state the call post card renders, derived from the post props and the live session count.
-export const CallCardState = {
-    Calling: 'calling',
-    Active: 'active',
-    NoAnswer: 'no_answer',
-    Canceled: 'canceled',
-    Ended: 'ended',
-} as const;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
-export type CallCardState = typeof CallCardState[keyof typeof CallCardState];
+export enum CallCardState {
+    Calling = 'calling',
+    Active = 'active',
+    NoAnswer = 'no_answer',
+    Canceled = 'canceled',
+    Ended = 'ended',
+}
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
