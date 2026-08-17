@@ -1,0 +1,127 @@
+# Detox E2E v2 — reusable dispatcher.
+# Called from e2e-pr-v2.yml after builds and e2e-test-stack create.
+# Templates download ios-build-simulator-* / android-build-files-* via artifact_run_id.
+#
+# Phase 0: PR detox-ios. Android / iPad jobs can be enabled later with the same
+# worker_site_urls + shared extras inputs.
+name: Detox E2E v2
+
+on:
+  workflow_call:
+    inputs:
+      MOBILE_VERSION:
+        required: true
+        type: string
+      PLATFORM:
+        required: false
+        type: string
+        default: "ios"
+      run_type:
+        required: false
+        type: string
+        default: "PR"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded build artifacts"
+        required: true
+        type: string
+      context_suffix:
+        description: >
+          Suffix appended to e2e-test/detox-* contexts (/main, /release, /release-cut).
+          Empty for PR runs.
+        required: false
+        type: string
+        default: ""
+      branch:
+        description: "Branch segment for Test System IO composite identity"
+        required: true
+        type: string
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        required: true
+        type: string
+      batch_id:
+        description: "e2e-test-stack batch id"
+        required: false
+        type: string
+        default: ""
+      worker_site_urls:
+        description: "JSON array of dedicated SITE_1 URLs"
+        required: false
+        type: string
+        default: ""
+      site_2_url:
+        required: false
+        type: string
+        default: ""
+      site_3_url:
+        required: false
+        type: string
+        default: ""
+      detox-include-tags:
+        required: false
+        type: string
+        default: "@ios_pr"
+      detox-exclude-tags:
+        required: false
+        type: string
+        default: "@ipad_only"
+      parallelism:
+        required: false
+        type: string
+        default: "8"
+      lambda_alias:
+        required: false
+        type: string
+        default: "v1"
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+  issues: read
+
+env:
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+
+jobs:
+  run-ios-tests:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    name: iOS
+    uses: ./.github/workflows/e2e-ios-template-v2.yml
+    with:
+      run-type: ${{ inputs.run_type || 'PR' }}
+      context_name: e2e-test/detox-ios${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
+      search_path: detox/e2e/test
+      detox-include-tags: ${{ inputs.detox-include-tags }}
+      detox-exclude-tags: ${{ inputs.detox-exclude-tags }}
+      parallelism: ${{ inputs.parallelism }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_TEST_SERVER_URL_2: ${{ inputs.site_2_url }}
+      MM_TEST_SERVER_URL_3: ${{ inputs.site_3_url }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      batch_id: ${{ inputs.batch_id }}
+      worker_site_urls: ${{ inputs.worker_site_urls }}
+      site_2_url: ${{ inputs.site_2_url }}
+      site_3_url: ${{ inputs.site_3_url }}
+      lambda_alias: ${{ inputs.lambda_alias }}
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
