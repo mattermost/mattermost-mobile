@@ -4,8 +4,7 @@
 import {withObservables} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, createContext} from 'react';
 import {IntlProvider} from 'react-intl';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, startWith} from 'rxjs';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -61,7 +60,9 @@ export function useUserLocale(): string {
 
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
     locale: observeCurrentUser(database).pipe(
-        switchMap((user) => of$(user?.locale || DEFAULT_LOCALE)),
+        map((user) => user?.locale || DEFAULT_LOCALE),
+        startWith(DEFAULT_LOCALE),
+        distinctUntilChanged(),
     ),
 }));
 
