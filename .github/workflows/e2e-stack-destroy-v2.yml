@@ -1,0 +1,47 @@
+# Release a batch leased by e2e-stack-create-v2.yml.
+# Safe to repeat: a batch that is already gone is not an error.
+name: E2E stack destroy v2
+
+on:
+  workflow_call:
+    inputs:
+      batch_id:
+        description: "Batch returned by e2e-stack-create-v2"
+        required: true
+        type: string
+      lambda_alias:
+        required: false
+        type: string
+        default: "v1"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  destroy:
+    name: Release test stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Require stack AWS role
+        env:
+          ROLE_ARN: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN is empty — cannot destroy the test stack"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+
+      - name: Destroy test stack
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-destroy@319ff17cb6e3b6e3bf4465443d51c7bda7570d7f # e2e-test-stack-actions
+        with:
+          batch_id: ${{ inputs.batch_id }}
+          lambda_alias: ${{ inputs.lambda_alias }}

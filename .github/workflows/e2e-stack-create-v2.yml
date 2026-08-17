@@ -1,0 +1,247 @@
+# Lease Mattermost test servers via e2e-test-stack-actions.
+# One SITE_1 per worker, plus extra_count shared servers (SITE_2, SITE_3).
+# Base stack only: server + postgres + inbucket (empty `services`).
+#
+# Admin passwords stay in this job. Callers receive URLs and batch_id;
+# workers fetch credentials themselves with e2e-test-stack-credentials.
+name: E2E stack create v2
+
+on:
+  workflow_call:
+    inputs:
+      instance_key:
+        description: "Stack hostname prefix (<= 24 chars)"
+        required: true
+        type: string
+      worker_count:
+        description: "Dedicated SITE_1 servers (one per worker)"
+        required: true
+        type: string
+      extra_count:
+        description: "Shared extra servers (SITE_2, SITE_3, …)"
+        required: false
+        type: string
+        default: "2"
+      server_image:
+        description: "Mattermost server image (Docker Hub tag, no digest)"
+        required: false
+        type: string
+        default: "mattermostdevelopment/mattermost-enterprise-edition:master"
+      ttl:
+        description: "Lease lifetime before the reaper (ceiling 4h)"
+        required: false
+        type: string
+        default: "4h"
+      license:
+        description: "Licence SKU (empty = unlicensed)"
+        required: false
+        type: string
+        default: "enterprise-advanced"
+      lambda_alias:
+        required: false
+        type: string
+        default: "v1"
+      commit_sha:
+        description: "Commit to check out for provision fixtures"
+        required: true
+        type: string
+    outputs:
+      batch_id:
+        description: "Handle for destroy / credentials"
+        value: ${{ jobs.create.outputs.batch_id }}
+      worker_site_urls:
+        description: "JSON array of SITE_1 URLs, index = worker shard - 1"
+        value: ${{ jobs.create.outputs.worker_site_urls }}
+      site_2_url:
+        description: "Shared SITE_2 URL"
+        value: ${{ jobs.create.outputs.site_2_url }}
+      site_3_url:
+        description: "Shared SITE_3 URL"
+        value: ${{ jobs.create.outputs.site_3_url }}
+      extra_site_urls:
+        description: "JSON array of shared extra URLs"
+        value: ${{ jobs.create.outputs.extra_site_urls }}
+
+permissions:
+  contents: read
+  id-token: write
+  actions: write
+
+jobs:
+  create:
+    name: Lease test stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      batch_id: ${{ steps.stack.outputs.batch_id }}
+      worker_site_urls: ${{ steps.split.outputs.worker_site_urls }}
+      site_2_url: ${{ steps.split.outputs.site_2_url }}
+      site_3_url: ${{ steps.split.outputs.site_3_url }}
+      extra_site_urls: ${{ steps.split.outputs.extra_site_urls }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Resolve server_env
+        id: env
+        run: |
+          set -euo pipefail
+          SERVER_ENV=$(jq -c . .github/actions/e2e-v2-server-env/server-env.json)
+          {
+            echo "server_env<<EOF"
+            echo "${SERVER_ENV}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Compute instance count
+        id: count
+        env:
+          WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
+            echo "::error::worker_count must be a positive integer, got '${WORKERS}'"
+            exit 1
+          fi
+          if ! [[ "$EXTRAS" =~ ^[0-9]+$ ]] || [ "$EXTRAS" -lt 2 ]; then
+            echo "::error::extra_count must be >= 2 (SITE_2 and SITE_3), got '${EXTRAS}'"
+            exit 1
+          fi
+          TOTAL=$((WORKERS + EXTRAS))
+          if [ "$TOTAL" -gt 40 ]; then
+            echo "::error::worker_count + extra_count is ${TOTAL}, ceiling is 40"
+            exit 1
+          fi
+          echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
+          echo "Leasing ${TOTAL} servers (${WORKERS} workers + ${EXTRAS} extras)"
+
+      - name: Require stack AWS role
+        env:
+          ROLE_ARN: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN is empty — E2E v2 cannot lease test servers"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+
+      - name: Create test stack
+        id: stack
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-create@319ff17cb6e3b6e3bf4465443d51c7bda7570d7f # e2e-test-stack-actions
+        with:
+          instance_key: ${{ inputs.instance_key }}
+          server_image: ${{ inputs.server_image }}
+          count: ${{ steps.count.outputs.total }}
+          lambda_alias: ${{ inputs.lambda_alias }}
+          services: ""
+          ttl: ${{ inputs.ttl }}
+          os: ubuntu-24.04
+          license: ${{ inputs.license }}
+          server_env: ${{ steps.env.outputs.server_env }}
+          wait_for_migrations: "true"
+          shared_admin_password: "true"
+
+      - name: Split worker and extra sites
+        id: split
+        env:
+          SITES: ${{ steps.stack.outputs.sites }}
+          WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+          READY: ${{ steps.stack.outputs.ready }}
+          TOTAL: ${{ steps.count.outputs.total }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SITES" ] || [ "$SITES" = "[]" ]; then
+            echo "::error::create returned no sites"
+            exit 1
+          fi
+          if [ "${READY}" -lt "$TOTAL" ]; then
+            echo "::error::only ${READY}/${TOTAL} instances ready"
+            exit 1
+          fi
+
+          SPLIT=$(node .github/actions/e2e-v2-split-sites/split.js "$SITES" "$WORKERS" "$EXTRAS")
+          WORKER_URLS=$(jq -c '.workerSiteUrls' <<< "$SPLIT")
+          EXTRA_URLS=$(jq -c '.extraSiteUrls' <<< "$SPLIT")
+          SITE_2=$(jq -r '.site2Url' <<< "$SPLIT")
+          SITE_3=$(jq -r '.site3Url' <<< "$SPLIT")
+
+          {
+            echo "worker_site_urls=${WORKER_URLS}"
+            echo "extra_site_urls=${EXTRA_URLS}"
+            echo "site_2_url=${SITE_2}"
+            echo "site_3_url=${SITE_3}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Workers (${WORKERS}): ${WORKER_URLS}"
+          echo "SITE_2 and SITE_3 assigned as shared extras"
+
+      - name: Fetch admin credentials
+        id: creds
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-credentials@319ff17cb6e3b6e3bf4465443d51c7bda7570d7f # e2e-test-stack-actions
+        with:
+          batch_id: ${{ steps.stack.outputs.batch_id }}
+          indexes: "0"
+          lambda_alias: ${{ inputs.lambda_alias }}
+
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Provision servers (license + plugins)
+        env:
+          SITES: ${{ steps.stack.outputs.sites }}
+          ADMIN_USERNAME: ${{ steps.creds.outputs.admin_username }}
+          ADMIN_PASSWORD: ${{ steps.creds.outputs.admin_password }}
+          ADMIN_EMAIL: ${{ steps.creds.outputs.admin_email }}
+        run: |
+          set -euo pipefail
+          cd detox
+          npm ci
+          declare -A provisioned=()
+          while read -r url; do
+            [ -z "$url" ] && continue
+            if [ -z "${provisioned[$url]+x}" ]; then
+              echo "--- Provisioning ---"
+              npm run provision -- "$url"
+              provisioned["$url"]=1
+            fi
+          done < <(jq -r '.[]' <<< "$SITES")
+
+      - name: Stack summary
+        env:
+          BATCH_ID: ${{ steps.stack.outputs.batch_id }}
+          WORKERS: ${{ steps.split.outputs.worker_site_urls }}
+          SITE_2: ${{ steps.split.outputs.site_2_url }}
+          SITE_3: ${{ steps.split.outputs.site_3_url }}
+        run: |
+          {
+            echo "## E2E v2 test stack"
+            echo ""
+            echo "- batch_id: \`${BATCH_ID}\`"
+            echo "- worker SITE_1 count: $(jq 'length' <<< "$WORKERS")"
+            echo "- SITE_2: ${SITE_2}"
+            echo "- SITE_3: ${SITE_3}"
+          } >> "$GITHUB_STEP_SUMMARY"
