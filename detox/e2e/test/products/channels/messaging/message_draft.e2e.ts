@@ -180,11 +180,14 @@ describe('Messaging - Message Draft', () => {
         const maxPostSize = await getMaxPostSize();
         const overLimitMessage = 'a'.repeat(maxPostSize + 1);
 
-        // # Open a channel and type a message over the character limit
+        // # Open a channel and type a message over the character limit.
+        // replaceText alone already exceeds the limit and fires the alert, which then
+        // covers the input — a following typeText cannot find a VISIBLE post input.
+        // MM-T4781_3 above uses this same clearText + replaceText sequence and is green.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
+        await ChannelScreen.postInput.clearText();
         await ChannelScreen.postInput.replaceText(overLimitMessage);
-        await ChannelScreen.postInput.typeText('a');
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();
