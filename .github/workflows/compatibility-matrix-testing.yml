@@ -525,7 +525,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Classify failures via Test System IO
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triagee5908c4aaf3787f669657414598cc3060a86d51@e2f09bf03350a105e814d691ee9bd5306dbf6d57
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@24e59084aaf3787f669657414598cc3060a86d51
         if: always()
         with:
           composite-identity: ${{ matrix.identity }}
