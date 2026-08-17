@@ -112,7 +112,7 @@ jobs:
         env:
           TSIO_BASE: ${{ needs.cmt-identity.outputs.tsio-base-config }}
         run: |
-          URL=$(jq -nr --argjson cfg "$TSIO_BASE" --arg base "https://test-io.test.mattermost.com" '
+          URL=$(jq -nr --argjson cfg "$TSIO_BASE" --arg base "https://staging-test-io.test.mattermost.com" '
             ($cfg.composite_identity) as $id
             | ($id.repository | split("/") | .[-1]) as $repo
             | ($id.branch // "main"
@@ -599,6 +599,7 @@ jobs:
           UPSTREAM_SUCCEEDED: ${{ steps.upstream.outputs.succeeded }}
         run: |
           node detox/utils/tsio-channel-notify-rollup.js \
+            --use-staging=true \
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM_SUCCEEDED" \
             --poll-attempts=6 || true

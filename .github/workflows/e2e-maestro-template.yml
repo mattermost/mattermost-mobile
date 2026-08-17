@@ -518,6 +518,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
+          # Staging dogfood with ai-triage (Option A); revert before merge to main.
+          use-staging: true
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
           framework: maestro
@@ -563,6 +565,7 @@ jobs:
             --e2e-override="$E2E_OVERRIDE" \
             --ai-waiver="$AI_WAIVER" \
             --ai-waiver-reason="automated triage waiver" \
+            --use-staging=true \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
@@ -1071,6 +1074,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') != '' && steps.tsio-cfg.outputs.config != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
+          # Staging dogfood with ai-triage (Option A); revert before merge to main.
+          use-staging: true
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
           framework: maestro
@@ -1116,6 +1121,7 @@ jobs:
             --e2e-override="$E2E_OVERRIDE" \
             --ai-waiver="$AI_WAIVER" \
             --ai-waiver-reason="automated triage waiver" \
+            --use-staging=true \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

@@ -214,7 +214,13 @@ when needed, one model call per cluster decide **flaky** vs **bug**.
 - Cost scales with distinct signatures, not with failure count or shard count.
   There is no candidate/rerun path.
 
-Manual corrections use `/e2e-triage-override` (toolkit override workflow).
+**Staging dogfood (this PR):** report upload, status polling, channel rollup, and
+ai-triage all target `https://staging-test-io.test.mattermost.com`. Deploy
+mattermost-test-system-io#101 to staging before expecting triage APIs to work.
+Revert `use-staging` / staging URL pins before merging to main.
+
+Manual corrections use `/e2e-triage-override` (toolkit override workflow; still
+points at production ledger).
 
 ## Webhook sidecar (mm_blocks / interactive dialog specs)
 

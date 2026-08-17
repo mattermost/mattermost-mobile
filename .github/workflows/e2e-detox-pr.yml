@@ -1291,4 +1291,5 @@ jobs:
           node detox/utils/tsio-channel-notify-rollup.js \
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
+            --use-staging=true \
             --poll-attempts=6 || true
