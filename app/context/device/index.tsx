@@ -11,7 +11,11 @@ type Props = {
 
 const emitter = new NativeEventEmitter(RNUtils);
 
-let info = RNUtils.isRunningInSplitView();
+const DEFAULT_DEVICE_INFO: SplitViewResult = {isSplit: false, isTablet: false};
+
+// Native can return nil before window metrics exist.
+const raw = RNUtils.isRunningInSplitView() as SplitViewResult | null;
+let info = raw ?? DEFAULT_DEVICE_INFO;
 
 export const DeviceContext = createContext(info);
 const {Provider} = DeviceContext;
@@ -19,7 +23,10 @@ const {Provider} = DeviceContext;
 const DeviceInfoProvider = ({children}: Props) => {
     const [deviceInfo, setDeviceInfo] = useState(info);
     useEffect(() => {
-        const listener = emitter.addListener('SplitViewChanged', (result: SplitViewResult) => {
+        const listener = emitter.addListener('SplitViewChanged', (result: SplitViewResult | null) => {
+            if (result == null) {
+                return;
+            }
             setDeviceInfo(result);
             info = result;
         });
