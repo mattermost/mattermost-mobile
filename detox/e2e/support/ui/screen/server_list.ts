@@ -11,8 +11,10 @@ class ServerListScreen {
         serverListScreen: 'server_list.screen',
         serverListTitle: 'server_list.title',
 
-        // Inner @gorhom/bottom-sheet FlatList that actually holds the server rows.
-        serverList: 'server_list',
+        // The scrollable FlatList holding the server rows. NOT 'server_list' — that id goes
+        // to BottomSheetContent, which renders it as `${testID}.screen` (content.tsx:69) on
+        // a plain, non-scrollable View. Same .screen trap as draft_options and post_list.
+        serverList: 'server_list.flat_list',
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
@@ -136,11 +138,27 @@ class ServerListScreen {
         }
     };
 
+    // Server rows are variable height. server_item renders a push-proxy alert line
+    // ("Notifications cannot be received from this server because of its configuration…")
+    // only for servers whose push proxy is unverified, and that status is per-server and
+    // resolved at runtime — so the same row sits on screen for one server set and below
+    // the fold for another. Never assume a row is already visible: scroll the inner
+    // server_list FlatList until it is. No-op when the row is already on screen.
+    scrollServerItemIntoView = async (item: Detox.NativeElement) => {
+        await waitFor(item).
+            toBeVisible(40).
+            whileElement(by.id(this.testID.serverList)).
+            scroll(120, 'down');
+    };
+
     swipeRevealOption = async (
         row: {atIndex: (index: number) => Detox.NativeElement},
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        await row.atIndex(0).swipe('left', 'slow');
+        // A swipe on an off-screen row is silently dropped and the option never appears.
+        const target = row.atIndex(0);
+        await this.scrollServerItemIntoView(target);
+        await target.swipe('left', 'slow');
         const revealed = option.atIndex(0);
         await waitForElementToExist(revealed, timeouts.TEN_SEC);
         return revealed;
@@ -155,15 +173,17 @@ class ServerListScreen {
     };
 
     switchToServer = async (serverDisplayName: string) => {
-        const inactive = this.getServerItemInactive(serverDisplayName);
-        const active = this.getServerItemActive(serverDisplayName);
+        // Pick the matcher with toExist(), which is scroll-independent, so the choice is
+        // made before any scrolling; then scroll that row into view and corner-tap it.
+        let target = this.getServerItemInactive(serverDisplayName).atIndex(0);
         try {
-            await waitForElementToExist(inactive, timeouts.FOUR_SEC);
-            await inactive.atIndex(0).tap();
+            await waitForElementToExist(target, timeouts.FOUR_SEC);
         } catch {
-            await waitForElementToExist(active, timeouts.FOUR_SEC);
-            await active.atIndex(0).tap();
+            target = this.getServerItemActive(serverDisplayName).atIndex(0);
+            await waitForElementToExist(target, timeouts.FOUR_SEC);
         }
+        await this.scrollServerItemIntoView(target);
+        await target.tap({x: 1, y: 1});
         await waitFor(ChannelListScreen.headerServerDisplayName).
             toHaveText(serverDisplayName).
             withTimeout(timeouts.HALF_MIN);

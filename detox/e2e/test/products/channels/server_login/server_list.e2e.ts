@@ -58,10 +58,7 @@ const revealServerListItems = async () => {
 // toExist() is not enough before a tap: an off-screen FlatList row may not be rendered at
 // all. Scroll the inner list until the row is on screen, then corner-tap it.
 const tapServerItem = async (item: Detox.NativeElement) => {
-    await waitFor(item).
-        toBeVisible(40).
-        whileElement(by.id(ServerListScreen.testID.serverList)).
-        scroll(120, 'down');
+    await ServerListScreen.scrollServerItemIntoView(item);
     await item.tap({x: 1, y: 1});
 };
 
