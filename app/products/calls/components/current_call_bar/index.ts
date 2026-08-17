@@ -20,7 +20,7 @@ import {CurrentCallBar} from './current_call_bar';
 const enhanced = withObservables([], () => {
     const currentCall = observeCurrentCall();
     const displayName = observeCallChannel().pipe(
-        switchMap((c) => of$(c?.displayName || '')),
+        switchMap((c) => of$(c?.displayName ?? '')),
         distinctUntilChanged(),
     );
     const teammateNameDisplay = observeCallDatabase().pipe(

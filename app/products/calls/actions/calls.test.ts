@@ -42,6 +42,7 @@ import {errorAlert} from '@calls/utils';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getChannelById} from '@queries/servers/channel';
 import TestHelper from '@test/test_helper';
 
 import type {CallJobState} from '@mattermost/calls/lib/types';
@@ -228,6 +229,10 @@ describe('Actions.Calls', () => {
         ));
         mockClient.enableChannelCalls.mockClear();
 
+        // Reset rather than clear: tests that set a persistent channel here must not leak it
+        // into the tests that follow.
+        jest.mocked(getChannelById).mockReset();
+
         // reset to default state for each test
         act(() => {
             setCallsState('server1', DefaultCallsState);
@@ -372,8 +377,7 @@ describe('Actions.Calls', () => {
     });
 
     const joinCallInChannel = async (channelType: ChannelType) => {
-        const mockGetChannelById = require('@queries/servers/channel').getChannelById as jest.Mock;
-        mockGetChannelById.mockResolvedValue(TestHelper.fakeChannelModel({
+        jest.mocked(getChannelById).mockResolvedValue(TestHelper.fakeChannelModel({
             id: 'channel-id',
             type: channelType,
         }));
@@ -392,7 +396,8 @@ describe('Actions.Calls', () => {
     it('should leave immediately in a DM even for the host', async () => {
         await joinCallInChannel(General.DM_CHANNEL);
 
-        const disconnectMock = getConnectionForTesting()!.disconnect;
+        const disconnectMock = getConnectionForTesting()?.disconnect;
+        expect(disconnectMock).toBeDefined();
         const mockAlert = jest.spyOn(Alert, 'alert');
         const leaveCb = jest.fn();
 
@@ -417,7 +422,8 @@ describe('Actions.Calls', () => {
     it('should still ask the host in a channel call', async () => {
         await joinCallInChannel(General.OPEN_CHANNEL);
 
-        const disconnectMock = getConnectionForTesting()!.disconnect;
+        const disconnectMock = getConnectionForTesting()?.disconnect;
+        expect(disconnectMock).toBeDefined();
         const leaveCb = jest.fn();
 
         // Press "Cancel", which is the first button on both platforms.
@@ -926,8 +932,7 @@ describe('Actions.Calls', () => {
                         roles: 'system_admin',
                     });
 
-                    const getChannelById = require('@queries/servers/channel').getChannelById;
-                    getChannelById.mockResolvedValueOnce({
+                    (getChannelById as jest.Mock).mockResolvedValueOnce({
                         id: 'channel1',
                         type: 'O',
                         displayName: 'Test Channel',
@@ -1194,14 +1199,12 @@ describe('Actions.Calls', () => {
             messages: {},
         });
 
-        const getChannelById = require('@queries/servers/channel').getChannelById;
-
         // Test when server cannot be found.
         const result1 = await CallsActions.getEndCallMessage('server2', 'channel-1', 'user1', intl);
         expect(result1).toContain('Are you sure you want to end the call?');
 
         // Test regular channel
-        getChannelById.mockResolvedValueOnce({
+        (getChannelById as jest.Mock).mockResolvedValueOnce({
             id: 'channel-1',
             type: 'O',
             displayName: 'Test Channel',
@@ -1278,7 +1281,7 @@ describe('Actions.Calls', () => {
         });
 
         // Test DM channel
-        getChannelById.mockResolvedValueOnce({
+        (getChannelById as jest.Mock).mockResolvedValueOnce({
             id: 'channel-2',
             type: 'D',
             displayName: 'User Two',

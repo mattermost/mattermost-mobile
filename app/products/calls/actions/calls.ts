@@ -252,12 +252,17 @@ export const joinCall = async (
 
     // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
     // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
-    // reject long after the user has started or answered a different call. Everything in the
-    // catch below must act on *this* connection, never on whatever is current by then.
+    // reject long after the user has started or answered a different call. The close callback and
+    // the catch below must act on *this* connection, never on whatever is current by then.
     let conn: CallsConnection;
     try {
         conn = await newConnection(serverUrl, channelId, (err?: Error) => {
-            myselfLeftCall();
+            // Tearing down the call state is only ours to do while we're still the current
+            // connection: an abandoned join closing late would otherwise drop the user out of
+            // the call they moved on to.
+            if (connection === conn) {
+                myselfLeftCall();
+            }
             endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
                 logDebug('calls: error on close', getFullErrorMessage(err));
