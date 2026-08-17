@@ -102,35 +102,30 @@ on:
       spec_list:
         description: >-
           Explicit spec files to run instead of discovering them under search_path.
-          Used by failure-triage reruns, which re-execute only the specs that
-          failed. Empty means normal discovery.
+          Empty means normal discovery.
         required: false
         type: string
         default: ""
       extra_detox_args:
         description: >-
           Extra flags appended to the Detox CLI invocation, forwarded to
-          create_android_emulator.sh as EXTRA_DETOX_ARGS. Failure-triage reruns
-          pass `--record-videos failing`; recording the full suite is far too
-          expensive, but a rerun is a handful of specs.
+          create_android_emulator.sh as EXTRA_DETOX_ARGS.
         required: false
         type: string
         default: ""
       artifact_suffix:
         description: >-
-          Appended to the results artifact name. A rerun executes inside the same
-          workflow run as the original, so without a suffix its upload collides
-          with the original shard's artifact and fails.
+          Appended to the results artifact name (e.g. CMT per-server legs share
+          one workflow run and need distinct artifact names).
         required: false
         type: string
         default: ""
       run_quarantined:
         description: >-
           Run the quarantined tests — the ones normally skipped because they are
-          known to fail. Off by default; used by the triage smoke validation,
-          which needs a run that is guaranteed to contain real failures, and for
-          periodically re-checking whether a quarantined test still fails.
-          Surfaces as RUN_QUARANTINED_TESTS to the test process.
+          known to fail. Off by default; use when re-checking whether a
+          quarantined test still fails. Surfaces as RUN_QUARANTINED_TESTS to the
+          test process.
         required: false
         type: boolean
         default: false

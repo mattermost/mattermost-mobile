@@ -284,13 +284,8 @@ run_detox_tests() {
     echo "Running Detox tests... $@"
 
     # EXTRA_DETOX_ARGS lets a caller append Detox CLI flags without changing this
-    # script. Failure-triage reruns use it to pass `--record-videos failing`:
-    # recording the whole suite is far too expensive, but a rerun is a handful of
-    # specs and a recording of the moment a failure reproduced is the single most
-    # useful artifact for diagnosing it.
-    #
-    # Word-split deliberately (flags are separate argv entries), and guarded so an
-    # empty value expands to nothing rather than to an empty argument.
+    # script (e.g. `--record-videos failing`). Word-split deliberately so flags
+    # are separate argv entries; an empty value expands to nothing.
     local extra_args=()
     if [[ -n "${EXTRA_DETOX_ARGS:-}" ]]; then
         read -ra extra_args <<< "$EXTRA_DETOX_ARGS"

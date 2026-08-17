@@ -50,6 +50,7 @@ jobs:
     outputs:
       tsio-base-config: ${{ steps.id.outputs.tsio-base-config }}
       tsio-job-configs: ${{ steps.id.outputs.tsio-job-configs }}
+      triage-matrix: ${{ steps.id.outputs.triage-matrix }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -86,6 +87,8 @@ jobs:
             process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
           ')
           echo "tsio-job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
+          TRIAGE_MATRIX=$(echo "$JOB_CONFIGS" | jq -c '[to_entries[] | {key: .key, status_context: .value.status_context, identity: (.value.composite_identity | tostring)}]')
+          echo "triage-matrix=$TRIAGE_MATRIX" >> "$GITHUB_OUTPUT"
 
   update-initial-status:
     runs-on: ubuntu-24.04
@@ -498,12 +501,12 @@ jobs:
       record_tests_in_zephyr: true
       artifact_suffix: -Server_${{ matrix.server.version }}
 
-  # One triage decision per server version keeps compatibility failures separate
-  # instead of clustering identical assertions across unrelated server releases.
+  # Per-shard TSIO triage (no reruns). Matrix rows come from cmt-identity.
   cmt-ai-triage:
-    name: AI triage Server ${{ matrix.server.version }}
-    if: always() && !cancelled()
+    name: AI triage (${{ matrix.key }})
+    if: always() && !cancelled() && needs.cmt-identity.result == 'success'
     needs:
+      - cmt-identity
       - calculate-commit-hash
       - detox-e2e
       - detox-ipad-e2e
@@ -512,33 +515,27 @@ jobs:
       - maestro-android-e2e
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(inputs.CMT_MATRIX) }}
+      matrix:
+        include: ${{ fromJSON(needs.cmt-identity.outputs.triage-matrix) }}
     permissions:
       contents: read
       actions: read
       statuses: write
       id-token: write
-    uses: ./.github/workflows/e2e-ai-triage.yml
-    with:
-      MOBILE_VERSION: ${{ needs.calculate-commit-hash.outputs.MOBILE_SHA }}
-      artifact_run_id: ${{ github.run_id }}
-      artifact_pattern: "*-Server_${{ matrix.server.version }}*"
-      artifact_namespace: -Server_${{ matrix.server.version }}
-      run_type: RELEASE
-      version_name: ${{ inputs.MOBILE_VERSION }}
-      platform: both
-      status_context: e2e-test/ai-triage-Server_${{ matrix.server.version }}
-      expected_detox_ios_reports: ${{ matrix.server.latest && '10' || '1' }}
-      expected_detox_ipad_reports: "1"
-      expected_detox_android_reports: ${{ matrix.server.latest && '10' || '1' }}
-      expected_maestro_ios_reports: ${{ matrix.server.latest && '1' || '0' }}
-      expected_maestro_android_reports: ${{ matrix.server.latest && '1' || '0' }}
-      IOS_SITE_1_URL: ${{ matrix.server.ios_site_1_url }}
-      IOS_SITE_2_URL: ${{ matrix.server.ios_site_2_url }}
-      ANDROID_SITE_1_URL: ${{ matrix.server.android_site_1_url }}
-      ANDROID_SITE_2_URL: ${{ matrix.server.android_site_2_url }}
-      SITE_3_URL: ${{ matrix.server.site_3_url }}
-    secrets: inherit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Classify failures via Test System IO
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@e2f09bf03350a105e814d691ee9bd5306dbf6d57
+        if: always()
+        with:
+          composite-identity: ${{ matrix.identity }}
+          original-commit-status-contexts: ${{ matrix.status_context }}
+          run-type: RELEASE
+          mode: gate
+          use-staging: true
+          commit-status-context: e2e-test/ai-triage-${{ matrix.key }}
+          github-token: ${{ secrets.GH_TOKEN || github.token }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 
   update-final-status:
     runs-on: ubuntu-24.04

@@ -57,12 +57,6 @@ jobs:
         # rather than riding along with the main suite.
         run: |
           node --test \
-            detox/triage/triage.test.js \
-            detox/triage/triage-artifacts.test.js \
-            detox/triage/triage-cli.test.js \
-            detox/triage/history.test.js \
-            detox/triage/rerun-filter.test.js \
-            detox/triage/workflow-policy.test.js \
             detox/utils/tsio-report-status.test.js \
             .github/actions/generate-specs/split-tests-node.test.cjs \
             .github/actions/capture-server-diagnostics/sanitize-logs.test.cjs

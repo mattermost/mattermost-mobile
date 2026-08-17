@@ -32,12 +32,10 @@ jobs:
       github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/e2e-triage-override') &&
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
-    # Pin to a commit SHA once the reusable workflow is stable. Using @main during
-    # initial rollout, matching pr-test-analysis-override.yml.
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@2f28942501a043402a25c526ff251fca91cf4c3e
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/e2e-ai-triage-override.yml@22f9caa807d1040a3750560ab0730a19d597f3c3
     with:
       # Keep this aligned with the immutable `uses:` SHA above.
-      toolkit_ref: 2f28942501a043402a25c526ff251fca91cf4c3e
+      toolkit_ref: 22f9caa807d1040a3750560ab0730a19d597f3c3
       target_repo: mattermost/mattermost-mobile
       pr_number: ${{ github.event.issue.number }}
       comment_body: ${{ github.event.comment.body }}
@@ -45,10 +43,7 @@ jobs:
       sender: ${{ github.event.comment.user.login }}
       # Production, unconditionally. This workflow is triggered by a maintainer
       # commenting on a real PR, so the verdict it corrects is a production
-      # ledger row; there is no dispatch input to thread a staging choice
-      # through, and pointing a correction at staging would silently fail to
-      # correct the row that actually exists. Staging exercises go through the
-      # dispatchable replay workflow, which does expose use_staging.
+      # ledger row.
       tsio_url: "https://test-io.test.mattermost.com"
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}

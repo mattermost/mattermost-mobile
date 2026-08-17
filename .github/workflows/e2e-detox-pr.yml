@@ -282,6 +282,7 @@ jobs:
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      triage-matrix: ${{ steps.id.outputs.triage-matrix }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -358,6 +359,9 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          # One matrix row per report group for the TSIO ai-triage action.
+          TRIAGE_MATRIX=$(echo "$JOB_CONFIGS" | jq -c '[to_entries[] | {key: .key, status_context: .value.status_context, identity: (.value.composite_identity | tostring)}]')
+          echo "triage-matrix=$TRIAGE_MATRIX" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -395,21 +399,10 @@ jobs:
               -f target_url="$TARGET_URL"
           done
 
-      # Claim the triage context up front, for the benefit of the automations
-      # that read this commit rather than the humans who do.
-      #
-      # `e2e-test/ai-triage` was posted only when adjudication finished, roughly
-      # two hours after the platform contexts go red — reruns are two repetitions
-      # on real devices. For that whole window an agent polling this SHA saw
-      # per-platform failures and no triage context at all, and an absent context
-      # is indistinguishable from a triage that ran and had no opinion.
-      #
-      # The consequence is not cosmetic. The PR babysitter reacts to a red E2E
-      # check by pushing an empty commit to retrigger, and a push cancels the
-      # in-flight run through its concurrency group — so the retrigger kills the
-      # very run that was about to explain the failure, produces another red, and
-      # loops. Pending states that plainly, so "still working" and "no opinion"
-      # stop looking the same.
+      # Claim the triage context up front so agents and the PR babysitter see
+      # "still classifying" instead of an absent context (indistinguishable from
+      # "no opinion"). Without this, a red platform check can trigger an empty
+      # commit retrigger that cancels the in-flight triage run via concurrency.
       - name: Post pending status for AI triage
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -1014,63 +1007,97 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
-  # Failure triage runs after every test job so it can classify the complete run.
+  # Failure triage: TSIO clusters failures and decides flake vs bug.
+  # No test reruns. Cost scales with distinct error signatures.
   #
-  # It runs under E2E/Override too. Skipping it there conflated two different
-  # things: the override decides whether the PR may merge, triage decides what
-  # the failure *was*. Suppressing the diagnosis at exactly the moment a
-  # maintainer has decided to bypass the gate throws away the case most worth
-  # recording — and the ledger it writes is what the false-green metric is
-  # computed from, so an overridden run leaving no row makes triage's accuracy
-  # permanently unmeasurable on the runs humans disagreed with.
+  # One matrix leg per report group (detox-ios, maestro-android, …). Each
+  # leg flips only that group's commit-status context when every failure
+  # is a waived flake. A rollup job resolves the shared e2e-test/ai-triage
+  # context the babysitter watches.
   #
-  # Authority is what changes, not participation: an overridden run triages in
-  # shadow, so it records a verdict and posts its own context without waiving or
-  # touching the platform contexts the override has already resolved.
+  # Under E2E/Override, calculate-tsio-identity is skipped and so is the
+  # matrix; the rollup still clears the pending e2e-test/ai-triage row.
   e2e-ai-triage:
-    name: AI failure triage
-    if: always() && !cancelled()
+    name: AI triage (${{ matrix.key }})
+    if: >-
+      always() && !cancelled()
+      && needs.calculate-tsio-identity.result == 'success'
     needs:
       - resolve-e2e-policy
-      - resolve-server-topology
+      - calculate-tsio-identity
       - run-detox-ios
       - run-detox-android
       - run-maestro-ios
       - run-maestro-android
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.calculate-tsio-identity.outputs.triage-matrix) }}
     permissions:
       contents: read
       actions: read
       statuses: write
-      pull-requests: write
-      issues: write
       id-token: write
-    uses: ./.github/workflows/e2e-ai-triage.yml
-    with:
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      artifact_run_id: ${{ github.run_id }}
-      pr_number: ${{ inputs.pr_number }}
-      run_type: ${{ inputs.run_type }}
-      version_name: ${{ inputs.version_name }}
-      platform: ${{ inputs.PLATFORM }}
-      # An overridden run is observed, not adjudicated. The maintainer has
-      # already made the merge decision, so triage must not also be flipping the
-      # contexts that decision resolved.
-      mode: ${{ needs.resolve-e2e-policy.outputs.e2e_override == 'true' && 'shadow' || 'gate' }}
-      # PR #101 is deployed to staging for pre-merge integration testing.
-      # Revert to false after the TSIO changes merge to production.
-      use_staging: true
-      # A selected platform with no count is unknown, not zero.
-      expected_detox_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ios_reports || '-1') || '0' }}
-      expected_detox_ipad_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && (needs.run-detox-ios.outputs.expected_ipad_reports || '-1') || '0' }}
-      expected_detox_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && (needs.run-detox-android.outputs.expected_android_reports || '-1') || '0' }}
-      expected_maestro_ios_reports: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && '1' || '0' }}
-      expected_maestro_android_reports: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && '1' || '0' }}
-      IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
-      IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
-      ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
-      ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
-      SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
-    secrets: inherit
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Classify failures via Test System IO
+        id: triage
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@e2f09bf03350a105e814d691ee9bd5306dbf6d57
+        if: always()
+        with:
+          composite-identity: ${{ matrix.identity }}
+          original-commit-status-contexts: ${{ matrix.status_context }}
+          run-type: ${{ inputs.run_type == 'MASTER' && 'MAIN' || (inputs.run_type || 'PR') }}
+          mode: ${{ needs.resolve-e2e-policy.outputs.e2e_override == 'true' && 'shadow' || 'gate' }}
+          # PR #101 staging until triage APIs are on production.
+          use-staging: true
+          commit-status-context: e2e-test/ai-triage-${{ matrix.key }}
+          github-token: ${{ secrets.GH_TOKEN || github.token }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  e2e-ai-triage-rollup:
+    name: AI failure triage
+    if: always() && !cancelled()
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - e2e-ai-triage
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Resolve e2e-test/ai-triage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          REPO: ${{ github.repository }}
+          TRIAGE_RESULT: ${{ needs.e2e-ai-triage.result }}
+          CALC_RESULT: ${{ needs.calculate-tsio-identity.result }}
+          OVERRIDE: ${{ needs.resolve-e2e-policy.outputs.e2e_override }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "${OVERRIDE}" = "true" ] || [ "${CALC_RESULT}" = "skipped" ]; then
+            STATE=success
+            DESC="triage skipped under E2E/Override"
+          elif [ "${TRIAGE_RESULT}" = "success" ]; then
+            STATE=success
+            DESC="triage complete — see e2e-test/ai-triage-* for details"
+          elif [ "${TRIAGE_RESULT}" = "skipped" ]; then
+            STATE=success
+            DESC="triage skipped (no platforms)"
+          else
+            STATE=failure
+            DESC="unwaived failures remain — see e2e-test/ai-triage-*"
+          fi
+          # GitHub descriptions max out at 140 characters.
+          DESC=$(printf '%s' "$DESC" | cut -c1-140)
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state="$STATE" \
+            -f context=e2e-test/ai-triage \
+            -f description="$DESC" \
+            -f target_url="$TARGET_URL"
 
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR

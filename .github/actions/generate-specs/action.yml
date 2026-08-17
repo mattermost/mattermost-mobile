@@ -26,8 +26,9 @@ inputs:
     default: ""
   spec_list:
     description: >-
-      Explicit whitespace/newline-separated spec files. Used by targeted reruns
-      to bypass discovery. Missing files are an error.
+      Explicit whitespace/newline-separated spec files. When set, only these
+      files are scheduled instead of discovering the full suite. Missing files
+      are an error.
     required: false
     default: ""
 

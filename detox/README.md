@@ -190,18 +190,31 @@ RUN_QUARANTINED_TESTS=true npm run e2e:ios-test
 ```
 
 In CI, the `run_quarantined` input on the iOS and Android templates does the
-same. Two things use it:
-
-- **Failure-triage validation** (`e2e-triage-smoke.yml`) needs a run that is
-  guaranteed to contain real failures. A run with nothing failing proves nothing
-  about triage.
-- **Re-checking the quarantine list**, so an entry does not silently become
-  permanent after the underlying bug is fixed.
+same — re-check the quarantine list so an entry does not silently become
+permanent after the underlying bug is fixed.
 
 Only use these hooks for "this test is broken". A test that does not apply to a
 platform or a server topology is not quarantined — keep an explicit condition
 such as `isIos() ? it.skip : it`, which stays skipped even when quarantined tests
 are enabled.
+
+## AI failure triage (no reruns)
+
+After each platform finishes uploading reports to Test System IO and posting its
+`e2e-test/*` commit status, CI runs the TSIO `test-system-io-ai-triage` action
+(`mode: gate`). Failures are clustered by normalized error signature on the
+server (identical messages share one investigation). Deterministic rules and,
+when needed, one model call per cluster decide **flaky** vs **bug**.
+
+- **Flake** (in-run recovery, or history + screenshots with policy thresholds and
+  amnesty) → the original platform check is flipped to success so the PR can
+  merge when every failure is a waived flake.
+- **Bug / inconclusive / MAIN·RELEASE / amnesty denied** → the original check
+  stays red (fail closed).
+- Cost scales with distinct signatures, not with failure count or shard count.
+  There is no candidate/rerun path.
+
+Manual corrections use `/e2e-triage-override` (toolkit override workflow).
 
 ## Webhook sidecar (mm_blocks / interactive dialog specs)
 
