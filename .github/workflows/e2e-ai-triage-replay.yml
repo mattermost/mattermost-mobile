@@ -1,0 +1,62 @@
+# Re-run ONLY TSIO AI triage against an existing report group.
+# Does not rebuild the app or re-execute Detox/Maestro (~minutes, not hours).
+#
+# Use this to dogfood waiver/flip changes after a full E2E already uploaded
+# reports to staging. Paste the composite-identity JSON from the triage job
+# log (or from calculate-tsio-identity outputs).
+#
+# Example (from run 31990330011 / detox-ios):
+#   composite_identity: {"repository":"mattermost/mattermost-mobile",...,"name":"mobile-pr-detox-ios",...}
+#   original_commit_status_contexts: e2e-test/detox-ios
+name: E2E AI triage replay (no tests)
+
+on:
+  workflow_dispatch:
+    inputs:
+      composite_identity:
+        description: Full composite-identity JSON for an existing TSIO report group
+        required: true
+        type: string
+      original_commit_status_contexts:
+        description: Comma-separated e2e-test/* contexts to flip when every failure is waived
+        required: true
+        type: string
+      run_type:
+        description: PR | MAIN | RELEASE
+        required: false
+        type: string
+        default: PR
+      mode:
+        description: gate (flip originals) or shadow (triage status only)
+        required: false
+        type: string
+        default: gate
+      use_staging:
+        description: Target staging-test-io (must match where reports were uploaded)
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+  id-token: write
+
+jobs:
+  triage-replay:
+    name: Replay AI triage
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Classify failures via Test System IO
+        # Pin bumped with TSIO #101; uses: cannot be dynamic from inputs.
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@3b5d621d8be31e6713ef6e3898f0e32585ffb735
+        with:
+          composite-identity: ${{ inputs.composite_identity }}
+          original-commit-status-contexts: ${{ inputs.original_commit_status_contexts }}
+          run-type: ${{ inputs.run_type }}
+          mode: ${{ inputs.mode }}
+          use-staging: ${{ inputs.use_staging }}
+          commit-status-context: e2e-test/ai-triage-replay
+          github-token: ${{ secrets.GH_TOKEN || github.token }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

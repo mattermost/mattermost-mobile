@@ -1042,7 +1042,7 @@ jobs:
     steps:
       - name: Classify failures via Test System IO
         id: triage
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@24e59084aaf3787f669657414598cc3060a86d51
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@3b5d621d8be31e6713ef6e3898f0e32585ffb735
         if: always()
         with:
           composite-identity: ${{ matrix.identity }}
