@@ -8,20 +8,31 @@ import {DeviceEventEmitter} from 'react-native';
 import {FullWindowOverlay} from 'react-native-screens';
 
 import {Navigation} from '@constants';
-import {withServerDatabase} from '@database/components';
+import DeviceInfoProvider from '@context/device';
+import {CustomThemeProvider} from '@context/theme';
+import UserLocaleProvider from '@context/user_locale';
+import DatabaseManager from '@database/manager';
 import useDidMount from '@hooks/did_mount';
+import {getCachedActiveServer} from '@init/session_cache';
+import EphemeralStore from '@store/ephemeral_store';
 import SnackBarStore from '@store/snackbar_store';
+import {secureGetFromRecord} from '@utils/types';
 
 import SnackBar from './snack_bar';
 
 function SnackBarContainer() {
-    const [state, setState] = useState(SnackBarStore.getState());
+    const [state, setState] = useState(() => SnackBarStore.getState());
+    const [theme, setTheme] = useState(() => EphemeralStore.getTheme());
     const pathname = usePathname();
 
     // Subscribe to store changes
     useDidMount(() => {
         const sub = SnackBarStore.observe().subscribe(setState);
-        return () => sub.unsubscribe();
+        const themeSub = EphemeralStore.observeTheme().subscribe(setTheme);
+        return () => {
+            sub.unsubscribe();
+            themeSub.unsubscribe();
+        };
     });
 
     // Auto-dismiss on navigation changes
@@ -55,16 +66,29 @@ function SnackBarContainer() {
         return null;
     }
 
+    const cached = getCachedActiveServer();
+    const database = cached ? secureGetFromRecord(DatabaseManager.serverDatabases, cached.url)?.database : undefined;
+
+    let tree = (
+        <CustomThemeProvider theme={theme}>
+            <Portal hostName='snack_bar'>
+                <FullWindowOverlay>
+                    <SnackBar
+                        {...state.config}
+                        onDismiss={SnackBarStore.dismiss}
+                    />
+                </FullWindowOverlay>
+            </Portal>
+        </CustomThemeProvider>
+    );
+    if (database) {
+        tree = <UserLocaleProvider database={database}>{tree}</UserLocaleProvider>;
+    }
     return (
-        <Portal hostName='snack_bar'>
-            <FullWindowOverlay>
-                <SnackBar
-                    {...state.config}
-                    onDismiss={SnackBarStore.dismiss}
-                />
-            </FullWindowOverlay>
-        </Portal>
+        <DeviceInfoProvider>
+            {tree}
+        </DeviceInfoProvider>
     );
 }
 
-export default withServerDatabase(SnackBarContainer);
+export default SnackBarContainer;
