@@ -128,7 +128,10 @@ describe('Teams - Invite', () => {
 
         // * Validate summary report sent
         await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(Invite.getSummaryReportSent()).toBeVisible();
+
+        // Threshold 40: the summary panel is only partly on screen on iOS, so the default
+        // 75 can never be met (MM-T5363, run 31977498176).
+        await expect(Invite.getSummaryReportSent()).toBeVisible(40);
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportTextItem(noUserEmailFormat)).toBeVisible();
         await expect(Invite.getSummaryReportTextItemText(noUserEmailFormat)).toHaveText(noUserEmailFormat);
@@ -156,7 +159,10 @@ describe('Teams - Invite', () => {
 
         // * Validate summary report sent
         await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(Invite.getSummaryReportSent()).toBeVisible();
+
+        // Threshold 40: the summary panel is only partly on screen on iOS, so the default
+        // 75 can never be met (MM-T5363, run 31977498176).
+        await expect(Invite.getSummaryReportSent()).toBeVisible(40);
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
         await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(testUser1.username);
@@ -218,17 +224,24 @@ describe('Teams - Invite', () => {
         await Invite.sendButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Validate summary
-        waitFor(Invite.screenSummary).toBeVisible();
+        // * Validate summary.
+        // These waitFor chains were neither awaited nor given a withTimeout, so they never
+        // ran and asserted nothing. Threshold 40 because the summary panel is only partly on
+        // screen on iOS — the default 75 is unreachable (MM-T5365, run 31977498176).
+        await waitFor(Invite.screenSummary).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
 
         // * Validate summary report not sent
-        await expect(Invite.getSummaryReportNotSent()).toBeVisible();
-        await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toBeVisible(testUser.username1);
+        await expect(Invite.getSummaryReportNotSent()).toBeVisible(40);
+        await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible(40);
+
+        // toHaveText, not toBeVisible(<string>): toBeVisible takes a visibility percentage,
+        // and `username1` does not exist on these fixtures, so the argument was undefined
+        // and the username was never actually checked.
+        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toHaveText(testUser.username);
 
         // * Validate summary report sent
-        waitFor(Invite.getSummaryReportSent()).toBeVisible();
-        await expect(Invite.getSummaryReportUserItem(testUser3.id)).toBeVisible();
-        await expect(Invite.getSummaryReportUserItemText(testUser3.id)).toBeVisible(testUser3.username1);
+        await waitFor(Invite.getSummaryReportSent()).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await expect(Invite.getSummaryReportUserItem(testUser3.id)).toBeVisible(40);
+        await expect(Invite.getSummaryReportUserItemText(testUser3.id)).toHaveText(testUser3.username);
     });
 });
