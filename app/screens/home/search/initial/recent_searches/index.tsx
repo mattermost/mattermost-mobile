@@ -80,7 +80,7 @@ const RecentSearches = ({setRecentValue, recentSearches, teamName}: Props) => {
             ListHeaderComponent={header}
             renderItem={renderRecentItem}
             testID='search.recents_list'
-            removeClippedSubviews={false}
+            removeClippedSubviews={true}
         />
     );
 };
