@@ -4,15 +4,17 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, Pressable} from 'react-native';
+import Animated from 'react-native-reanimated';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
-import CallDuration from '@calls/components/call_duration';
+import {CallStatusText} from '@calls/components/call_status_text';
+import {CallStatusTimer} from '@calls/components/call_status_timer';
 import MessageBar from '@calls/components/message_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
-import {usePermissionsChecker} from '@calls/hooks';
+import {useCallingPulseAnimationStyle, usePermissionsChecker} from '@calls/hooks';
 import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed, useCallsConfig} from '@calls/state';
 import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
@@ -23,9 +25,9 @@ import {useTheme} from '@context/theme';
 import {navigateToScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
 
 import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
+import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     displayName: string;
@@ -36,6 +38,10 @@ type Props = {
     otherParticipants: boolean;
     isAdmin: boolean;
     isHost: boolean;
+    isDMCall: boolean;
+    isDMCalling: boolean;
+    dmCallee?: UserModel;
+    dmCalleeAnsweredAt: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
@@ -134,7 +140,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     };
 });
 
-const CurrentCallBar = ({
+export const CurrentCallBar = ({
     displayName,
     currentCall,
     sessionsDict,
@@ -143,6 +149,10 @@ const CurrentCallBar = ({
     otherParticipants,
     isAdmin,
     isHost,
+    isDMCall,
+    isDMCalling,
+    dmCallee,
+    dmCalleeAnsweredAt,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -150,7 +160,6 @@ const CurrentCallBar = ({
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
     const intl = useIntl();
-    const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
 
     const goToCallScreen = useCallback(async () => {
@@ -162,35 +171,12 @@ const CurrentCallBar = ({
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const mySession = currentCall?.sessions[currentCall.mySessionId];
+    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isDMCalling);
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
     const talkingUsers = Object.keys(currentCall?.voiceOn || {});
     const speaker = talkingUsers.length > 0 ? talkingUsers[0] : '';
-    let talkingMessage = (
-        <Text style={style.speakingUser}>
-            {formatMessage({
-                id: 'mobile.calls_noone_talking',
-                defaultMessage: 'No one is talking',
-            })}
-        </Text>);
-    if (speaker) {
-        talkingMessage = (
-            <Text
-                style={style.speakingUser}
-                numberOfLines={1}
-                ellipsizeMode='middle'
-            >
-                {displayUsername(sessionsDict[speaker].userModel, intl.locale, teammateNameDisplay)}
-                {' '}
-                <Text style={style.speakingPostfix}>{
-                    formatMessage({
-                        id: 'mobile.calls_name_is_talking_postfix',
-                        defaultMessage: 'is talking...',
-                    })}
-                </Text>
-            </Text>);
-    }
 
     const muteUnmute = () => {
         if (mySession?.muted) {
@@ -227,28 +213,50 @@ const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    <View style={[!speaker && style.avatarOutline]}>
-                        <CallAvatar
-                            userModel={sessionsDict[speaker || '']?.userModel}
-                            speaking={Boolean(speaker)}
-                            serverUrl={currentCall?.serverUrl || ''}
-                            size={speaker ? 40 : 24}
-                        />
-                    </View>
+                    {isDMCalling ? (
+                        <Animated.View style={callingPulseAnimationStyle}>
+                            <CallAvatar
+                                userModel={dmCallee}
+                                serverUrl={currentCall?.serverUrl || ''}
+                                size={40}
+                            />
+                        </Animated.View>
+                    ) : (
+                        <View style={[!speaker && style.avatarOutline]}>
+                            <CallAvatar
+                                userModel={sessionsDict[speaker || '']?.userModel}
+                                speaking={Boolean(speaker)}
+                                serverUrl={currentCall?.serverUrl || ''}
+                                size={speaker ? 40 : 24}
+                            />
+                        </View>
+                    )}
                     <View style={style.text}>
-                        {talkingMessage}
+                        <CallStatusText
+                            speaker={speaker}
+                            sessionsDict={sessionsDict}
+                            teammateNameDisplay={teammateNameDisplay}
+                            isDMCalling={isDMCalling}
+                            dmCallee={dmCallee}
+                            speakingUserStyle={style.speakingUser}
+                            speakingPostfixStyle={style.speakingPostfix}
+                        />
                         <Text
                             style={style.channelAndTime}
                             numberOfLines={1}
                             ellipsizeMode='middle'
                         >
-                            {`~${displayName}`}
-                            <Text style={style.separator}>{'  •  '}</Text>
-                            <CallDuration
+                            <CallStatusTimer
+                                isCalling={isDMCalling}
+                                value={dmCalleeAnsweredAt || currentCall?.startTime || Date.now()}
                                 style={style.channelAndTime}
-                                value={currentCall?.startTime || Date.now()}
-                                updateIntervalInSeconds={1}
                             />
+                            {!isDMCall && (
+                                <>
+                                    <Text style={style.separator}>{'  •  '}</Text>
+                                    {displayName}
+                                </>
+                            )}
                         </Text>
                     </View>
                     <View style={style.buttonContainer}>
@@ -295,5 +303,3 @@ const CurrentCallBar = ({
         </>
     );
 };
-
-export default CurrentCallBar;

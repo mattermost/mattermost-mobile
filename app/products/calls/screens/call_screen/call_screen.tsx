@@ -28,8 +28,8 @@ import {
     stopRecordingConfirmationAlert,
 } from '@calls/alerts';
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
-import CallDuration from '@calls/components/call_duration';
 import CallNotification from '@calls/components/call_notification';
+import {CallStatusTimer} from '@calls/components/call_status_timer';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import Captions from '@calls/components/captions';
 import EmojiList from '@calls/components/emoji_list';
@@ -39,6 +39,7 @@ import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {useHostMenus, usePermissionsChecker} from '@calls/hooks';
 import {HeaderCenter} from '@calls/screens/call_screen/header_center';
 import {ParticipantCard} from '@calls/screens/call_screen/participant_card';
+import {ParticipantLoadingCard} from '@calls/screens/call_screen/participant_loading_card';
 import {
     setCallQualityAlertDismissed,
     setMicPermissionsErrorDismissed,
@@ -61,6 +62,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import type UserModel from '@typings/database/models/servers/user';
+
 export const avatarL = 96;
 export const avatarM = 72;
 export const usernameL = 110;
@@ -77,6 +80,9 @@ export type Props = {
     otherParticipants: boolean;
     isAdmin: boolean;
     isHost: boolean;
+    isDMCalling: boolean;
+    dmCallee?: UserModel;
+    dmCalleeAnsweredAt: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -127,6 +133,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         color: theme.buttonColor,
         ...typography('Heading', 200),
         width: 56,
+    },
+    callingText: {
+        color: theme.buttonColor,
+        ...typography('Heading', 200),
     },
     headerPortraitSpacer: {
         height: 12,
@@ -307,6 +317,9 @@ const CallScreen = ({
     otherParticipants,
     isAdmin,
     isHost,
+    isDMCalling,
+    dmCallee,
+    dmCalleeAnsweredAt,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -333,7 +346,9 @@ const CallScreen = ({
     const isLandscape = width > height;
     const smallerAvatar = isLandscape || screenShareOn || showCC || contentOverflow;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
-    const numSessions = Object.keys(sessionsDict).length;
+
+    // While calling we also render a card for the person we're calling, who has no session yet.
+    const numSessions = Object.keys(sessionsDict).length + (isDMCalling ? 1 : 0);
     const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
@@ -594,6 +609,14 @@ const CallScreen = ({
                                 onLongPress={onLongPress(sess)}
                             />
                         ))}
+                        {isDMCalling &&
+                            <ParticipantLoadingCard
+                                callee={dmCallee}
+                                smallerAvatar={smallerAvatar}
+                                teammateNameDisplay={teammateNameDisplay}
+                                serverUrl={currentCall.serverUrl}
+                            />
+                        }
                     </Pressable>
                 </ScrollView>
             </View>
@@ -621,13 +644,13 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            <View style={[style.headerLeft, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}>
+            <View style={[style.headerLeft, !(waitingForRecording || recording || isDMCalling) && style.headerLeftRightRecOff]}>
                 {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                 {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
-                <CallDuration
-                    style={style.time}
-                    value={currentCall.startTime}
-                    updateIntervalInSeconds={1}
+                <CallStatusTimer
+                    isCalling={isDMCalling}
+                    style={isDMCalling ? style.callingText : style.time}
+                    value={dmCalleeAnsweredAt}
                     truncateWhenLong={true}
                 />
             </View>
@@ -641,7 +664,7 @@ const CallScreen = ({
             <Pressable
                 testID='calls.collapse.button'
                 onPress={navigateBack}
-                style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
+                style={[style.headerRight, !(waitingForRecording || recording || isDMCalling) && style.headerLeftRightRecOff]}
             >
                 <CompassIcon
                     name='arrow-collapse'
