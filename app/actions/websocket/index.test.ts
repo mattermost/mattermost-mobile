@@ -22,6 +22,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {setTeamLoading} from '@store/team_load_store';
 import TestHelper from '@test/test_helper';
 
 import {handleFirstConnect, handleReconnect} from './index';
@@ -163,6 +164,33 @@ describe('WebSocket Index Actions', () => {
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should release team loading before deferred entry actions', async () => {
+            jest.mocked(entry).mockResolvedValue({
+                models: [],
+                initialTeamId: currentTeamId,
+                initialChannelId: currentChannelId,
+                prefData: {preferences: []},
+                teamData: {memberships: [], teams: []},
+                chData: {memberships: [], channels: []},
+                gmConverted: false,
+            });
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({
+                id: currentUserId,
+                locale: 'en',
+            }));
+            jest.mocked(getConfig).mockResolvedValue({Version: '9.0.0'} as ClientConfig);
+
+            await handleReconnect(serverUrl);
+
+            const loadEndOrder = jest.mocked(setTeamLoading).mock.calls.findIndex((call) => call[1] === false);
+            expect(loadEndOrder).toBeGreaterThan(-1);
+            expect(jest.mocked(setTeamLoading).mock.invocationCallOrder[loadEndOrder]).toBeLessThan(
+                jest.mocked(deferredAppEntryActions).mock.invocationCallOrder[0],
+            );
+            const releaseCalls = jest.mocked(setTeamLoading).mock.calls.filter((call) => call[1] === false);
+            expect(releaseCalls).toHaveLength(1);
         });
 
         it('should fetch posts for channel screen', async () => {
