@@ -226,8 +226,10 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     }
 };
 
-// Whether the user wants to hear call sounds at all. Gates both the incoming ringtone and the
-// outbound ringback tone, so turning call sounds off in Settings silences both.
+// Whether the user wants a sound when a call comes in ("Notification sound for incoming calls" in
+// Settings). Absent on users who have never opened that screen, which reads as off. Deliberately
+// not applied to the outbound ringback: that's progress feedback for a call you just placed, not a
+// notification about someone else's.
 const callSoundsEnabled = (user: UserModel) => {
     return user.notifyProps?.calls_mobile_sound ? user.notifyProps.calls_mobile_sound === 'true' : user.notifyProps?.calls_desktop_sound === 'true';
 };
@@ -318,6 +320,12 @@ const stopIncomingCallsRinging = () => {
 let ringbackChannelId: string | null = null;
 let ringbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
+// When the local call attempt began, on the device clock, used to expire the tone on the same
+// schedule as the callee's ring. Deliberately not derived from currentCall.startTime: that's the
+// server's start_at, and subtracting it from Date.now() makes the window collapse to nothing
+// whenever the device clock runs ahead of the server's.
+let ringbackWindowStartedAt = 0;
+
 export const stopRingback = () => {
     if (ringbackTimeout) {
         clearTimeout(ringbackTimeout);
@@ -358,11 +366,7 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
         if (!getDMCalleeId(currentCall.myUserId, channel)) {
-            return;
-        }
-
-        const user = await getCurrentUser(database);
-        if (!user || !callSoundsEnabled(user)) {
+            logDebug('startRingbackIfNeeded skipped: not a 1:1 DM with someone else');
             return;
         }
     } catch (error: unknown) {
@@ -370,7 +374,7 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         return;
     }
 
-    // Re-check nothing changed while we were awaiting the database lookups.
+    // Re-check nothing changed while we were awaiting the channel lookup.
     const latestCall = getCurrentCall();
     if (
         !latestCall ||
@@ -378,6 +382,14 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         ringbackChannelId === channelId ||
         !isRingingPhase(latestCall)
     ) {
+        return;
+    }
+
+    // The callee's phone rings from the moment the call is placed, so the tone gets the remainder
+    // of that window rather than a full timeout from whenever the media connection came up. Once
+    // the window is gone there's nothing left to play.
+    const remaining = Calls.RINGBACK_TONE_TIMEOUT - (Date.now() - ringbackWindowStartedAt);
+    if (remaining <= 0) {
         return;
     }
 
@@ -392,8 +404,6 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         }
     });
 
-    const elapsed = latestCall.startTime ? Date.now() - latestCall.startTime : 0;
-    const remaining = Math.max(0, Calls.RINGBACK_TONE_TIMEOUT - elapsed);
     ringbackTimeout = setTimeout(stopRingback, remaining);
 };
 
@@ -571,8 +581,10 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         existingCall = callsState.calls[channelId];
     }
 
-    // Silence any tone left over from a previous call.
+    // Silence any tone left over from a previous call, and open this call's ringback window: the
+    // callee starts ringing off the back of this attempt, so it's the anchor the tone expires on.
     stopRingback();
+    ringbackWindowStartedAt = Date.now();
 
     setCurrentCall({
         ...DefaultCurrentCall,

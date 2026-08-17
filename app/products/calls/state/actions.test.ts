@@ -1883,7 +1883,6 @@ describe('useCallsState', () => {
     describe('ringback', () => {
         // A 1:1 DM between myUserId and other-user, per the userId1__userId2 channel name convention.
         const dmChannel = {type: 'D', name: 'myUserId__other-user'};
-        const soundsOnUser = {notifyProps: {calls_mobile_sound: 'true'}};
 
         let callIOwn: Call;
 
@@ -1904,10 +1903,8 @@ describe('useCallsState', () => {
         beforeEach(async () => {
             enableFakeTimers();
             jest.mocked(getChannelById).mockResolvedValue(dmChannel as never);
-            jest.mocked(getCurrentUser).mockResolvedValue(soundsOnUser as never);
             await DatabaseManager.init(['server1']);
 
-            // The ringback window is measured from the call's start, so the call has to start "now".
             callIOwn = {
                 id: 'call-ringback',
                 sessions: {
@@ -2002,11 +1999,14 @@ describe('useCallsState', () => {
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         });
 
-        it('does not ring back when the user has turned call sounds off', async () => {
+        it('rings back regardless of the incoming-call notification sound setting', async () => {
+            // That setting governs the tone for calls arriving at this device. The ringback is
+            // feedback for a call the user just placed, and most accounts have never set the prop
+            // at all, which would otherwise read as "off".
             jest.mocked(getCurrentUser).mockResolvedValue({notifyProps: {calls_mobile_sound: 'false'}} as never);
 
             await connect();
-            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
         });
 
         it('stops automatically when the call reaches the ringback timeout', async () => {
@@ -2020,6 +2020,27 @@ describe('useCallsState', () => {
 
             await act(async () => {
                 await advanceTimers(halfway - 1);
+            });
+            expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
+
+            await act(async () => {
+                await advanceTimers(1);
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
+        });
+
+        it('rings for the full window when the device clock runs ahead of the server clock', async () => {
+            // startTime is the server's start_at. Measuring the window against it meant a device an
+            // hour ahead of the server saw the window as long gone and killed the tone immediately.
+            const skewed = {...callIOwn, startTime: Date.now() - (60 * 60 * 1000)};
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': skewed}});
+            newCurrentCall('server1', 'channel-ringback', 'myUserId');
+
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+
+            await act(async () => {
+                await advanceTimers(Calls.RINGBACK_TONE_TIMEOUT - 1);
             });
             expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
 
