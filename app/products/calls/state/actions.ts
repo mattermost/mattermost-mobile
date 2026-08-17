@@ -404,6 +404,11 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         }
     });
 
+    // stopRingback() clears this on the normal path, but a second call reaching here without one
+    // in between would orphan the pending timeout and stop the new tone early.
+    if (ringbackTimeout) {
+        clearTimeout(ringbackTimeout);
+    }
     ringbackTimeout = setTimeout(stopRingback, remaining);
 };
 
