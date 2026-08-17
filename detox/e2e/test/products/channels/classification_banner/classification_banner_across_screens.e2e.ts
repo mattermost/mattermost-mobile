@@ -26,7 +26,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
-import {by, device, element, waitFor} from 'detox';
+import {by, device, element, expect, waitFor} from 'detox';
 
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
