@@ -8,6 +8,7 @@ import {SelectedTrackType, TextTrackType, type ISO639_1, type SelectedTrack, typ
 
 import {buildFileUrl} from '@actions/remote/file';
 import {
+    type Call,
     CallCardState,
     CallPostStatus,
     type CallsConfigState,
@@ -262,17 +263,20 @@ export function getCallPropsFromPost(post: PostModel | Post): CallsPostProps {
 }
 
 /**
- * Derives which state the call post card should render.
- * The server keeps call_status at 'calling' after the callee answers, so the live session count is
- * what tells a ringing call apart from a connected one.
+ * Derives which state the call post card should render. Mirrors getCallCardState in the webapp
+ * (webapp/src/components/custom_post_types/post_type_event.tsx).
+ * The server keeps call_status at 'calling' after the callee answers, so the number of people in
+ * the call is what tells a ringing call apart from a connected one.
  */
-export function getCallCardState(callProps: CallsPostProps, numSessions: number, callTornDown: boolean): CallCardState {
+export function getCallCardState(callProps: CallsPostProps, numUsers: number, callExists: boolean): CallCardState {
     if (callProps.end_at > 0) {
         switch (callProps.call_status) {
             case CallPostStatus.NoAnswer:
                 return CallCardState.NoAnswer;
             case CallPostStatus.CanceledByCaller:
                 return CallCardState.Canceled;
+            case CallPostStatus.Declined:
+                return CallCardState.Declined;
             default:
                 return CallCardState.Ended;
         }
@@ -280,13 +284,21 @@ export function getCallCardState(callProps: CallsPostProps, numSessions: number,
 
     // The call_end event lands before the post is updated with end_at, so without this the card
     // would fall back to "Calling..." (with a Cancel button) for the rest of that window.
-    if (callTornDown) {
+    if (!callExists) {
         return CallCardState.Ended;
     }
 
-    if (callProps.call_status === CallPostStatus.Calling && numSessions <= 1) {
+    if (callProps.call_status === CallPostStatus.Calling && numUsers <= 1) {
         return CallCardState.Calling;
     }
 
     return CallCardState.Active;
+}
+
+/**
+ * Counts the distinct users in a call rather than their sessions, since one user can be connected
+ * from more than one client. Mirrors numUsersInCallInChannel in the webapp (webapp/src/selectors.ts).
+ */
+export function getNumUsersInCall(call?: Call): number {
+    return new Set(Object.values(call?.sessions || {}).map((session) => session.userId)).size;
 }

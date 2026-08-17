@@ -45,7 +45,8 @@ describe('CallsCustomMessage', () => {
             isAdmin: false,
             isHost: true,
             ccChannelId: CHANNEL_ID,
-            numSessions: 1,
+            numUsers: 1,
+            callExists: true,
         };
     }
 
@@ -81,7 +82,7 @@ describe('CallsCustomMessage', () => {
 
     it('should show a started call once the callee answers, even though call_status is still calling', () => {
         const props = getBaseProps();
-        props.numSessions = 2;
+        props.numUsers = 2;
         const {getByText} = renderWithIntlAndTheme(<CallsCustomMessage {...props}/>);
 
         getByText('Call started');
@@ -90,8 +91,8 @@ describe('CallsCustomMessage', () => {
 
     it('should show a bare ended call once the call is torn down, before the post has an end_at', () => {
         const props = getBaseProps();
-        props.numSessions = 2;
-        props.callTornDown = true;
+        props.numUsers = 0;
+        props.callExists = false;
         const {getByText, queryByTestId} = renderWithIntlAndTheme(<CallsCustomMessage {...props}/>);
 
         getByText('Call ended');
@@ -131,6 +132,22 @@ describe('CallsCustomMessage', () => {
 
         const callee = renderWithIntlAndTheme(<CallsCustomMessage {...asCallee(props)}/>);
         callee.getByText('Canceled by leonard');
+    });
+
+    it('should name the callee when telling the caller the call was declined', () => {
+        const props = getBaseProps();
+        props.callee = TestHelper.fakeUserModel({id: CALLEE_ID, username: 'arjun'});
+        props.post = TestHelper.fakePostModel({
+            channelId: CHANNEL_ID,
+            userId: CALLER_ID,
+            props: {start_at: 1000, end_at: 4000, call_status: 'declined'},
+        });
+
+        const caller = renderWithIntlAndTheme(<CallsCustomMessage {...props}/>);
+        caller.getByText('Declined by arjun');
+
+        const callee = renderWithIntlAndTheme(<CallsCustomMessage {...asCallee(props)}/>);
+        callee.getByText('You declined the call');
     });
 
     it('should show the duration for a call that was answered and then ended, with no buttons', () => {

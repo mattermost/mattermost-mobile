@@ -35,11 +35,12 @@ type Props = {
     isHost: boolean;
     currentUser?: UserModel;
     caller?: UserModel;
+    callee?: UserModel;
     teammateNameDisplay?: string;
     limitRestrictedInfo?: LimitRestrictedInfo;
     ccChannelId?: string;
-    numSessions?: number;
-    callTornDown?: boolean;
+    numUsers?: number;
+    callExists?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -140,6 +141,7 @@ export const CallsCustomMessage = ({
     post,
     currentUser,
     caller,
+    callee,
     teammateNameDisplay,
     isMilitaryTime,
     ccChannelId,
@@ -148,8 +150,10 @@ export const CallsCustomMessage = ({
     otherParticipants,
     isAdmin,
     isHost,
-    numSessions = 0,
-    callTornDown = false,
+    numUsers = 0,
+
+    // An ended call post has no live call to observe, so the HOC does not pass this through.
+    callExists = false,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -180,7 +184,7 @@ export const CallsCustomMessage = ({
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId]);
 
     const callProps = getCallPropsFromPost(post);
-    const cardState = getCallCardState(callProps, numSessions, callTornDown);
+    const cardState = getCallCardState(callProps, numUsers, callExists);
 
     // The author of the call post is the caller.
     const isCaller = Boolean(currentUser && currentUser.id === post.userId);
@@ -264,6 +268,24 @@ export const CallsCustomMessage = ({
                     id={'mobile.calls_canceled_by'}
                     defaultMessage={'Canceled by {user}'}
                     values={{user: displayUsername(caller, intl.locale, teammateNameDisplay)}}
+                    style={style.timeText}
+                    testID='calls_custom_message.sub_heading'
+                />
+            );
+            break;
+        case CallCardState.Declined:
+            subHeading = isCaller ? (
+                <FormattedText
+                    id={'mobile.calls_declined_by'}
+                    defaultMessage={'Declined by {user}'}
+                    values={{user: displayUsername(callee, intl.locale, teammateNameDisplay)}}
+                    style={style.timeText}
+                    testID='calls_custom_message.sub_heading'
+                />
+            ) : (
+                <FormattedText
+                    id={'mobile.calls_you_declined_call'}
+                    defaultMessage={'You declined the call'}
                     style={style.timeText}
                     testID='calls_custom_message.sub_heading'
                 />
