@@ -100,7 +100,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
-        fetchClassificationBanner(serverUrl);
+        fetchClassificationBanner(serverUrl, true);
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
