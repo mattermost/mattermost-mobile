@@ -4,6 +4,7 @@
 import {RUNNING_E2E} from '@env';
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {ExpoRoot} from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
 import {AppRegistry, LogBox, Platform} from 'react-native';
 import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
@@ -59,6 +60,10 @@ if (Platform.OS === 'android') {
     const ShareExtension = require('./share_extension/index.tsx').default;
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
 }
+
+// Before ExpoRoot; NavigationContainer onReady otherwise hides splash.
+SplashScreen.setOptions({fade: true});
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 // Must be exported or Fast Refresh won't update the context
 export function App() {

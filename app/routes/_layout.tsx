@@ -46,10 +46,6 @@ const styles = StyleSheet.create({
     },
 });
 
-// Prevent splash screen from auto-hiding
-SplashScreen.setOptions({fade: true});
-SplashScreen.preventAutoHideAsync();
-
 export default function RootLayout() {
     const [appReady, setAppReady] = useState(false);
     const navigationRef = useNavigationContainerRef();
