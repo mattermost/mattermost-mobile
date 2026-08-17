@@ -4,11 +4,11 @@
 import {useState} from 'react';
 
 import useDidMount from '@hooks/did_mount';
-import {getAllServerCredentials} from '@init/credentials';
+import {getAllServerCredentials, hasCachedCredentials} from '@init/credentials';
 import {logError} from '@utils/log';
 
 export function useHasCredentials(): boolean | null {
-    const [hasCredentials, setHasCredentials] = useState<boolean | null>(null);
+    const [hasCredentials, setHasCredentials] = useState<boolean | null>(() => hasCachedCredentials());
 
     useDidMount(() => {
         let mounted = true;

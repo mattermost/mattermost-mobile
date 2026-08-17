@@ -4,15 +4,17 @@
 import {renderHook, waitFor} from '@testing-library/react-native';
 
 import {useHasCredentials} from '@hooks/use_has_credentials';
-import {getAllServerCredentials} from '@init/credentials';
+import {getAllServerCredentials, hasCachedCredentials} from '@init/credentials';
 
 jest.mock('@init/credentials');
 
 const mockGetAllServerCredentials = jest.mocked(getAllServerCredentials);
+const mockHasCachedCredentials = jest.mocked(hasCachedCredentials);
 
 describe('useHasCredentials', () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        mockHasCachedCredentials.mockReturnValue(null);
     });
 
     it('should return null initially before credentials are loaded', () => {
@@ -97,5 +99,14 @@ describe('useHasCredentials', () => {
 
         // Should still only have called once
         expect(mockGetAllServerCredentials).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return cached credentials immediately without waiting on keychain', async () => {
+        mockHasCachedCredentials.mockReturnValue(true);
+        mockGetAllServerCredentials.mockResolvedValue([{serverUrl: 'https://server1.com', userId: 'user1', token: 'token1'}]);
+
+        const {result} = renderHook(() => useHasCredentials());
+
+        expect(result.current).toBe(true);
     });
 });
