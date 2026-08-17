@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, type StyleProp, type TextStyle} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession} from '@calls/types/calls';
@@ -52,22 +53,20 @@ export function CallStatusText({
             >
                 {displayUsername(sessionsDict[speaker]?.userModel, intl.locale, teammateNameDisplay)}
                 {' '}
-                <Text style={speakingPostfixStyle}>{
-                    intl.formatMessage({
-                        id: 'mobile.calls_name_is_talking_postfix',
-                        defaultMessage: 'is talking...',
-                    })}
-                </Text>
+                <FormattedText
+                    id='mobile.calls_name_is_talking_postfix'
+                    defaultMessage='is talking...'
+                    style={speakingPostfixStyle}
+                />
             </Text>
         );
     }
 
     return (
-        <Text style={speakingUserStyle}>
-            {intl.formatMessage({
-                id: 'mobile.calls_noone_talking',
-                defaultMessage: 'No one is talking',
-            })}
-        </Text>
+        <FormattedText
+            id='mobile.calls_noone_talking'
+            defaultMessage='No one is talking'
+            style={speakingUserStyle}
+        />
     );
 }

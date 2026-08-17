@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {type StyleProp, type TextStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {ElapsedTimer} from '@calls/components/elapsed_timer';
 import {useCallingPulseAnimationStyle} from '@calls/hooks';
-import FormattedText from '@components/formatted_text';
 
 type Props = {
     isCalling: boolean;
@@ -21,19 +21,21 @@ type Props = {
  * Timer starts at answer, excluding ring time.
  */
 export function CallStatusTimer({isCalling, value, style, truncateWhenLong}: Props) {
+    const intl = useIntl();
     const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isCalling);
 
     if (isCalling) {
         return (
-            <Animated.View style={callingPulseAnimationStyle}>
-                <FormattedText
-                    id='mobile.calls_calling'
-                    defaultMessage='Calling...'
-                    style={style}
-                    numberOfLines={1}
-                    testID='calls.calling_text'
-                />
-            </Animated.View>
+            <Animated.Text
+                style={[style, callingPulseAnimationStyle]}
+                numberOfLines={1}
+                testID='calls.calling_text'
+            >
+                {intl.formatMessage({
+                    id: 'mobile.calls_calling',
+                    defaultMessage: 'Calling...',
+                })}
+            </Animated.Text>
         );
     }
 
