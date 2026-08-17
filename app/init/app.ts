@@ -16,7 +16,7 @@ import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getActiveServer, getAllServers} from '@queries/app/servers';
+import {getActiveServer, queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -45,10 +45,9 @@ export async function initialize() {
         baseAppInitialized = true;
 
         await DatabaseManager.initAppDatabase();
-        const servers = await getAllServers();
 
-        // Logout zeroes identifier and lastActiveAt; this is the logged-in set.
-        const activeUrls = servers.filter((s) => s.identifier && s.lastActiveAt > 0).map((s) => s.url);
+        // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
+        const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
         const activeServer = await getActiveServer();
         setCachedActiveServer(activeServer ? {
             url: activeServer.url,

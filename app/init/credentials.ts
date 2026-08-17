@@ -11,11 +11,6 @@ import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 // After initialize(), this is the logged-in DB-active set — not a live Keystore listing.
 let cachedServerCredentials: ServerCredential[] | undefined;
-const serversWithPreauth = new Set<string>();
-
-type GetServerCredentialsOptions = {
-    includePreauth?: boolean;
-};
 
 export const hasCachedCredentials = (): boolean | null => {
     if (cachedServerCredentials === undefined) {
@@ -34,7 +29,7 @@ const replaceCachedCredential = (serverUrl: string, credential: ServerCredential
     }
 
     const rest = cachedServerCredentials.filter((c) => c.serverUrl !== serverUrl);
-    cachedServerCredentials = credential ? [...rest, {...credential}] : rest;
+    cachedServerCredentials = credential ? [...rest, credential] : rest;
 };
 
 const getAllKeychainServerUrls = async (): Promise<string[]> => {
@@ -50,6 +45,8 @@ export const getAllServerCredentials = async (knownServerUrls?: string[]): Promi
     }
 
     let serverUrls: string[];
+
+    // Empty knownServerUrls intentionally lists (wiped/fresh DB).
     if (knownServerUrls?.length) {
         serverUrls = knownServerUrls;
         launchMark('credentials_list', 'skipped');
@@ -59,24 +56,12 @@ export const getAllServerCredentials = async (knownServerUrls?: string[]): Promi
         launchMark('credentials_list', `${serverUrls.length} urls ${Date.now() - listStarted}ms`);
     }
 
-    const internetStarted = Date.now();
     const serverCredentials = (await Promise.all(
-        serverUrls.map((serverUrl) => getServerCredentials(serverUrl, {includePreauth: false})),
+        serverUrls.map((serverUrl) => getServerCredentials(serverUrl)),
     )).filter((credential): credential is ServerCredential => Boolean(credential));
-    launchMark('credentials_internet', `${serverUrls.length} urls ${Date.now() - internetStarted}ms`);
 
-    const preauthStarted = Date.now();
-    const withPreauth = await Promise.all(serverCredentials.map(async (credential) => {
-        const preauthSecret = await getPreauthSecret(credential.serverUrl);
-        if (preauthSecret) {
-            serversWithPreauth.add(credential.serverUrl);
-        }
-        return {...credential, preauthSecret};
-    }));
-    launchMark('credentials_preauth', `${withPreauth.length} probes ${Date.now() - preauthStarted}ms`);
-
-    cachedServerCredentials = withPreauth;
-    return withPreauth.map((c) => ({...c}));
+    cachedServerCredentials = serverCredentials;
+    return serverCredentials.map((c) => ({...c}));
 };
 
 export const getActiveServerUrl = async () => {
@@ -112,13 +97,11 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
 
         // Store preauth secret separately if provided
         if (preauthSecret) {
-            serversWithPreauth.add(serverUrl);
             KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
                 server: serverUrl,
                 ...options,
             });
         } else {
-            serversWithPreauth.delete(serverUrl);
             KeyChain.resetGenericPassword({
                 server: serverUrl,
                 ...options,
@@ -136,10 +119,9 @@ export const removeServerCredentials = async (serverUrl: string) => {
 
 export const removePreauthSecret = async (serverUrl: string) => {
     try {
-        serversWithPreauth.delete(serverUrl);
         const existing = cachedServerCredentials?.find((c) => c.serverUrl === serverUrl);
         if (existing) {
-            replaceCachedCredential(serverUrl, {...existing, preauthSecret: undefined});
+            existing.preauthSecret = undefined;
         }
         await KeyChain.resetGenericPassword({server: serverUrl});
     } catch (e) {
@@ -166,14 +148,11 @@ export const removeActiveServerCredentials = async () => {
     }
 };
 
-export const getServerCredentials = async (serverUrl: string, options?: GetServerCredentialsOptions): Promise<ServerCredential|null> => {
+export const getServerCredentials = async (serverUrl: string): Promise<ServerCredential|null> => {
     const cached = cachedServerCredentials?.find((c) => c.serverUrl === serverUrl);
     if (cached) {
         return {...cached};
     }
-
-    const includePreauth = options?.includePreauth ?? true;
-    const shouldProbePreauth = includePreauth || serversWithPreauth.has(serverUrl);
 
     try {
         // Get main credentials
@@ -194,20 +173,16 @@ export const getServerCredentials = async (serverUrl: string, options?: GetServe
             return null;
         }
 
+        // Get preauth secret separately
         let preauthSecret: string | undefined;
-        if (shouldProbePreauth) {
-            try {
-                const preauthCredentials = await KeyChain.getGenericPassword({
-                    server: serverUrl,
-                });
-                preauthSecret = preauthCredentials ? preauthCredentials.password : undefined;
-                if (preauthSecret) {
-                    serversWithPreauth.add(serverUrl);
-                }
-            } catch (e) {
-                // Preauth secret is optional, so ignore errors
-                preauthSecret = undefined;
-            }
+        try {
+            const preauthCredentials = await KeyChain.getGenericPassword({
+                server: serverUrl,
+            });
+            preauthSecret = preauthCredentials ? preauthCredentials.password : undefined;
+        } catch (e) {
+            // Preauth secret is optional, so ignore errors
+            preauthSecret = undefined;
         }
 
         return {

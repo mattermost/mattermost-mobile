@@ -402,12 +402,22 @@ describe('credentials', () => {
                 service: 'https://server1.com',
                 storage: 'keychain' as any,
             });
-            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue(false);
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue({
+                username: 'preshared_secret',
+                password: mockPreauthSecret,
+                service: 'https://server1.com',
+                storage: 'keychain' as any,
+            });
 
             const result = await getAllServerCredentials(['https://server1.com']);
 
             expect(result).toHaveLength(1);
-            expect(result[0].serverUrl).toBe('https://server1.com');
+            expect(result[0]).toEqual({
+                serverUrl: 'https://server1.com',
+                userId: 'user1',
+                token: 'token1',
+                preauthSecret: mockPreauthSecret,
+            });
             expect(KeyChain.getAllGenericPasswordServices).not.toHaveBeenCalled();
             expect(KeyChain.getInternetCredentials).toHaveBeenCalledWith('https://server1.com');
             expect(KeyChain.getGenericPassword).toHaveBeenCalledWith({server: 'https://server1.com'});
@@ -429,6 +439,7 @@ describe('credentials', () => {
             expect(result).toHaveLength(1);
             expect((KeyChain as any).getAllInternetPasswordServers).not.toHaveBeenCalled();
             expect(KeyChain.getInternetCredentials).toHaveBeenCalledWith('https://server1.com');
+            expect(KeyChain.getGenericPassword).toHaveBeenCalledWith({server: 'https://server1.com'});
         });
 
         it('should fall back to listing when known URLs is empty', async () => {
