@@ -111,12 +111,27 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
-    try {
-        const formatted = date.toLocaleString(currentUserLocale, options);
-        return formatted === 'Invalid Date' ? '' : formatted;
-    } catch {
-        return '';
+    const format = (opts: Intl.DateTimeFormatOptions) => {
+        try {
+            const formatted = date.toLocaleString(currentUserLocale, opts);
+            return formatted === 'Invalid Date' ? '' : formatted;
+        } catch {
+            return '';
+        }
+    };
+
+    const formatted = format(options);
+    if (formatted) {
+        return formatted;
     }
+
+    // Hermes (iOS) returns the literal "Invalid Date" when it cannot honour an option,
+    // and timeZone is the usual culprit — Android's engine accepts the same input. An
+    // empty result makes DraftAndScheduledPostHeader drop the whole "Send on ..." row,
+    // so the label vanishes instead of merely being in the wrong zone (MM-T5720, iOS
+    // only, run 31977498176). Retry in the device zone rather than lose the label.
+    delete options.timeZone;
+    return format(options);
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {
