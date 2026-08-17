@@ -10,6 +10,7 @@ import {handleFirstConnect, handleReconnect} from '@actions/websocket';
 import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
+import {launchMark} from '@init/launch_profiler';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
@@ -30,6 +31,9 @@ jest.mock('@calls/native_call_mappings', () => ({
 }));
 jest.mock('@client/websocket');
 jest.mock('@database/manager');
+jest.mock('@init/launch_profiler', () => ({
+    launchMark: jest.fn(),
+}));
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/log');
@@ -172,6 +176,7 @@ describe('WebsocketManager', () => {
     describe('connection handling', () => {
         beforeEach(async () => {
             await manager.init(mockCredentials);
+            jest.mocked(handleFirstConnect).mockResolvedValue(undefined);
         });
 
         it('should handle first connect correctly', async () => {
@@ -179,12 +184,66 @@ describe('WebsocketManager', () => {
 
             await manager.initializeClient(mockServerUrl);
 
-            expect(mockWebSocketClient.initialize).toHaveBeenCalledWith({}, true);
+            expect(mockWebSocketClient.initialize).toHaveBeenCalledWith({skipConfigWait: false}, true);
             expect(handleFirstConnect).toHaveBeenCalledWith(mockServerUrl, 'WebSocket Reconnect');
 
             if (mockCallbacks.firstConnect) {
                 mockCallbacks.firstConnect();
             }
+        });
+
+        it('should pass skipConfigWait on first connect and mark ws_connecting', async () => {
+            mockWebSocketClient.isConnected.mockReturnValue(false);
+
+            await manager.initializeClient(mockServerUrl, 'Cold Start', {skipConfigWait: true});
+
+            expect(mockWebSocketClient.initialize).toHaveBeenCalledWith({skipConfigWait: true}, true);
+            expect(handleFirstConnect).toHaveBeenCalledWith(mockServerUrl, 'Cold Start');
+            expect(launchMark).toHaveBeenCalledWith('ws_connecting');
+        });
+
+        it('should still run handleFirstConnect when already connected but not yet synced', async () => {
+            mockWebSocketClient.isConnected.mockReturnValue(true);
+
+            await manager.initializeClient(mockServerUrl, 'Cold Start');
+
+            expect(mockWebSocketClient.initialize).not.toHaveBeenCalled();
+            expect(handleFirstConnect).toHaveBeenCalledWith(mockServerUrl, 'Cold Start');
+        });
+
+        it('should return the same in-flight promise for concurrent initializeClient calls', async () => {
+            mockWebSocketClient.isConnected.mockReturnValue(false);
+            let release = () => {};
+            jest.mocked(handleFirstConnect).mockImplementation(() => new Promise((resolve) => {
+                release = () => resolve(undefined);
+            }));
+
+            const first = manager.initializeClient(mockServerUrl, 'Cold Start');
+            const second = manager.initializeClient(mockServerUrl, 'Login');
+
+            expect(second).toBe(first);
+            expect(handleFirstConnect).toHaveBeenCalledTimes(1);
+            expect(handleFirstConnect).toHaveBeenCalledWith(mockServerUrl, 'Cold Start');
+            expect(mockWebSocketClient.initialize).toHaveBeenCalledTimes(1);
+
+            release();
+            await Promise.all([first, second]);
+
+            expect(handleFirstConnect).toHaveBeenCalledTimes(1);
+        });
+
+        it('should allow initializeClient to sync again after invalidateClient', async () => {
+            mockWebSocketClient.isConnected.mockReturnValue(false);
+
+            await manager.initializeClient(mockServerUrl);
+            expect(handleFirstConnect).toHaveBeenCalledTimes(1);
+
+            await manager.invalidateClient(mockServerUrl);
+            await manager.createClient(mockServerUrl, mockToken);
+            mockWebSocketClient.isConnected.mockReturnValue(false);
+
+            await manager.initializeClient(mockServerUrl);
+            expect(handleFirstConnect).toHaveBeenCalledTimes(2);
         });
 
         it('should handle reconnect correctly', async () => {

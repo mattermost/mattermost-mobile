@@ -94,6 +94,39 @@ describe('WebSocketClient', () => {
         expect(logInfo).toHaveBeenCalledWith('websocket connecting to wss://example.com/api/v4/websocket');
     });
 
+    it('should skip waiting for config and not force reliable websockets when skipConfigWait is set', async () => {
+        mockedHasReliableWebsocket.mockReturnValue(false);
+
+        await client.initialize({skipConfigWait: true}, true);
+
+        expect(mockedGetConfigValue).not.toHaveBeenCalled();
+        expect(mockedHasReliableWebsocket).toHaveBeenCalledWith(undefined, undefined);
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenCalledWith(
+            'wss://example.com/api/v4/websocket',
+            {headers: {origin: 'https://example.com'}, timeoutInterval: 30000},
+        );
+    });
+
+    it('should read DB config on retry after a skipConfigWait connect', async () => {
+        DatabaseManager.serverDatabases[serverUrl] = {database: {} as any, operator: {} as any};
+
+        await client.initialize({skipConfigWait: true}, true);
+        expect(mockedGetConfigValue).not.toHaveBeenCalled();
+
+        mockedGetConfigValue.mockResolvedValueOnce('wss://ws.example.com');
+        mockedGetConfigValue.mockResolvedValueOnce('5.0.0');
+        mockedGetConfigValue.mockResolvedValueOnce('false');
+
+        mockConn.close();
+        await advanceTimers(6000);
+
+        expect(mockedGetConfigValue).toHaveBeenCalled();
+        expect(mockedGetOrCreateWebSocketClient).toHaveBeenLastCalledWith(
+            'wss://ws.example.com/api/v4/websocket',
+            {headers: {origin: 'wss://ws.example.com'}, timeoutInterval: 30000},
+        );
+    });
+
     it('should handle WebSocket open event - skip sync', async () => {
         const firstConnectCallback = jest.fn();
         client.setFirstConnectCallback(firstConnectCallback);

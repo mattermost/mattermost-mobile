@@ -20,8 +20,14 @@ const PING_INTERVAL = toMilliseconds({seconds: 30});
 const WAIT_FOR_CLOSE_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
     forceConnection: true,
+    skipConfigWait: false,
 };
 const TLS_HANDSHARE_ERROR = 1015;
+
+type WebSocketInitializeOpts = {
+    forceConnection?: boolean;
+    skipConfigWait?: boolean;
+};
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
@@ -68,8 +74,8 @@ export default class WebSocketClient {
         this.preauthSecret = preauthSecret;
     }
 
-    public async initialize(opts = {}, shouldSkipSync = false) {
-        const {forceConnection} = Object.assign({}, DEFAULT_OPTIONS, opts);
+    public async initialize(opts: WebSocketInitializeOpts = {}, shouldSkipSync = false) {
+        const {forceConnection, skipConfigWait} = Object.assign({}, DEFAULT_OPTIONS, opts);
 
         if (forceConnection) {
             this.stop = false;
@@ -79,20 +85,28 @@ export default class WebSocketClient {
             return;
         }
 
-        const database = DatabaseManager.serverDatabases[this.serverUrl]?.database;
-        if (!database) {
-            return;
-        }
+        let websocketUrl: string | undefined;
+        let version: string | undefined;
+        let reliableWebsocketConfig: string | undefined;
 
-        const [websocketUrl, version, reliableWebsocketConfig] = await Promise.all([
-            getConfigValue(database, 'WebsocketURL'),
-            getConfigValue(database, 'Version'),
-            getConfigValue(database, 'EnableReliableWebSockets'),
-        ]);
+        if (skipConfigWait) {
+            websocketUrl = this.serverUrl;
+        } else {
+            const database = DatabaseManager.serverDatabases[this.serverUrl]?.database;
+            if (!database) {
+                return;
+            }
 
-        // Bail if teardown started while we were awaiting config values
-        if (this.stop) {
-            return;
+            [websocketUrl, version, reliableWebsocketConfig] = await Promise.all([
+                getConfigValue(database, 'WebsocketURL'),
+                getConfigValue(database, 'Version'),
+                getConfigValue(database, 'EnableReliableWebSockets'),
+            ]);
+
+            // Bail if teardown started while we were awaiting config values
+            if (this.stop) {
+                return;
+            }
         }
 
         const connectionUrl = (websocketUrl || this.serverUrl) + '/api/v4/websocket';
@@ -289,7 +303,7 @@ export default class WebSocketClient {
                         clearTimeout(this.connectionTimeout);
                         return;
                     }
-                    this.initialize(opts);
+                    this.initialize({...opts, skipConfigWait: false});
                 },
                 retryTime,
             );

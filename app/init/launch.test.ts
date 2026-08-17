@@ -20,6 +20,48 @@ jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/preference');
 jest.mock('@queries/servers/team');
 jest.mock('@store/ephemeral_store');
+jest.mock('@actions/remote/entry', () => ({
+    appEntry: jest.fn(),
+    pushNotificationEntry: jest.fn(),
+}));
+jest.mock('@managers/websocket_manager', () => ({
+    __esModule: true,
+    default: {
+        initializeClient: jest.fn(),
+    },
+}));
+
+describe('startColdStartEntry', () => {
+    it('should kick off websocket and appEntry without waiting for initializeClient', async () => {
+        await jest.isolateModulesAsync(async () => {
+            const {startColdStartEntry: start} = require('./launch') as typeof import('./launch');
+            const {appEntry: entry} = require('@actions/remote/entry') as {appEntry: jest.Mock};
+            const WebsocketManager = require('@managers/websocket_manager').default as {initializeClient: jest.Mock};
+
+            const order: string[] = [];
+            WebsocketManager.initializeClient.mockImplementation(() => {
+                order.push('ws');
+                return Promise.resolve();
+            });
+            entry.mockImplementation(() => {
+                order.push('entry');
+            });
+
+            start('https://hub.example.com');
+            start('https://hub.example.com');
+
+            expect(WebsocketManager.initializeClient).toHaveBeenCalledTimes(2);
+            expect(WebsocketManager.initializeClient).toHaveBeenCalledWith(
+                'https://hub.example.com',
+                'Cold Start',
+                {skipConfigWait: true},
+            );
+            expect(entry).toHaveBeenCalledTimes(2);
+            expect(entry).toHaveBeenCalledWith('https://hub.example.com');
+            expect(order).toEqual(['ws', 'entry', 'ws', 'entry']);
+        });
+    });
+});
 
 describe('determineRouteFromLaunchProps', () => {
     const serverUrl = 'https://server-1.com';

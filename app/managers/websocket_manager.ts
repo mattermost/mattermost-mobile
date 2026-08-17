@@ -15,6 +15,7 @@ import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import {launchMark} from '@init/launch_profiler';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
@@ -36,6 +37,7 @@ class WebsocketManagerSingleton {
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundTimerId: ReturnType<typeof BackgroundTimer.setTimeout> | undefined;
     private firstConnectionSynced: Record<string, boolean> = {};
+    private initializingClients = new Map<string, Promise<void>>();
 
     private appStateSubscription: NativeEventSubscription | undefined;
     private netStateSubscription: NetInfoSubscription | undefined;
@@ -77,6 +79,7 @@ class WebsocketManagerSingleton {
         delete this.connectionTimerIDs[serverUrl];
         delete this.clients[serverUrl];
         delete this.firstConnectionSynced[serverUrl];
+        this.initializingClients.delete(serverUrl);
         this.stopPeriodicStatusUpdates(serverUrl);
 
         if (client) {
@@ -135,7 +138,9 @@ class WebsocketManagerSingleton {
             } else {
                 queued += 1;
                 this.getConnectedSubject(clientUrl).next('connecting');
-                this.connectionTimerIDs[clientUrl] = setTimeout(() => this.initializeClient(clientUrl, groupLabel), WAIT_UNTIL_NEXT * queued);
+                this.connectionTimerIDs[clientUrl] = setTimeout(() => {
+                    this.initializeClient(clientUrl, groupLabel);
+                }, WAIT_UNTIL_NEXT * queued);
             }
         }
     };
@@ -165,28 +170,63 @@ class WebsocketManagerSingleton {
         }
     };
 
-    public initializeClient = async (serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') => {
+    public initializeClient = (
+        serverUrl: string,
+        groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect',
+        opts?: {skipConfigWait?: boolean},
+    ): Promise<void> => {
+        const existing = this.initializingClients.get(serverUrl);
+        if (existing) {
+            return existing;
+        }
+
+        const promise = this.runInitializeClient(serverUrl, groupLabel, opts);
+        this.initializingClients.set(serverUrl, promise);
+        promise.finally(() => {
+            if (this.initializingClients.get(serverUrl) === promise) {
+                this.initializingClients.delete(serverUrl);
+            }
+        }).then(undefined, (error) => {
+            logDebug('WebsocketManager.initializeClient', error);
+        });
+        return promise;
+    };
+
+    private runInitializeClient = async (
+        serverUrl: string,
+        groupLabel: BaseRequestGroupLabel,
+        opts?: {skipConfigWait?: boolean},
+    ) => {
         const client = this.clients[serverUrl];
         clearTimeout(this.connectionTimerIDs[serverUrl]);
         delete this.connectionTimerIDs[serverUrl];
         if (!client) {
             return;
         }
-        if (!client.isConnected()) {
-            const hasSynced = this.firstConnectionSynced[serverUrl];
-            client.initialize({}, !hasSynced);
-            if (!hasSynced) {
-                const error = await handleFirstConnect(serverUrl, groupLabel);
-                if (error) {
-                    // This will try to reconnect and try to sync again
-                    client.close(false);
-                }
 
-                // Makes sure a client still exist, and therefore we haven't been logged out
-                if (this.clients[serverUrl]) {
-                    this.firstConnectionSynced[serverUrl] = true;
+        if (!this.firstConnectionSynced[serverUrl]) {
+            if (!client.isConnected()) {
+                client.initialize({skipConfigWait: Boolean(opts?.skipConfigWait)}, true);
+                if (opts?.skipConfigWait) {
+                    launchMark('ws_connecting');
                 }
             }
+
+            const error = await handleFirstConnect(serverUrl, groupLabel);
+            if (error) {
+                // This will try to reconnect and try to sync again
+                client.close(false);
+            }
+
+            // Makes sure a client still exist, and therefore we haven't been logged out
+            if (this.clients[serverUrl]) {
+                this.firstConnectionSynced[serverUrl] = true;
+            }
+            return;
+        }
+
+        if (!client.isConnected()) {
+            client.initialize({}, false);
         }
     };
 

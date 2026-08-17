@@ -13,8 +13,11 @@ import {DeepLink, Events, Launch, PushNotification, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {getActiveServerUrl, getServerCredentials} from '@init/credentials';
+import {getActiveServerUrl, getServerCredentials, hasCachedCredentials} from '@init/credentials';
+import {launchMark} from '@init/launch_profiler';
+import {getCachedActiveServer} from '@init/session_cache';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getLastViewedChannelIdAndServer, getLastViewedTeamIdAndServer, getLastViewedThreadIdAndServer, getOnboardingViewed} from '@queries/app/global';
 import {getActiveServer, getAllServers, getServer} from '@queries/app/servers';
 import {queryPostsByType} from '@queries/servers/post';
@@ -23,7 +26,7 @@ import {queryMyTeams} from '@queries/servers/team';
 import {getExpoRouterPath} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {handleDeepLink, getLaunchPropsFromDeepLink} from '@utils/deep_link';
-import {logInfo} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 import {removeProtocol} from '@utils/url';
 
@@ -39,12 +42,30 @@ export type ExpoRouterLaunchResult = {
 };
 
 const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION];
+const AFTER_FIRST_PAINT_MS = 500;
+
+function deferAfterFirstPaint(task: () => void) {
+    setTimeout(task, AFTER_FIRST_PAINT_MS);
+}
+
+/**
+ * Start websocket/sync as soon as we know the active server, without waiting
+ * on notification/deeplink routing. Safe to call more than once per launch.
+ */
+export function startColdStartEntry(serverUrl: string) {
+    launchMark('cold_start_entry');
+    WebsocketManager.initializeClient(serverUrl, 'Cold Start', {skipConfigWait: true}).catch((error) => {
+        logDebug('startColdStartEntry', error);
+    });
+    appEntry(serverUrl);
+}
 
 /**
  * Determine initial route for Expo Router based on app launch conditions
  */
 export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResult> {
-    const activeServer = await getActiveServer();
+    const startedAt = Date.now();
+    const activeServer = getCachedActiveServer() ?? await getActiveServer();
     if (activeServer && activeServer.persistenceFlag === 'wiped') {
         return {
             route: getExpoRouterPath(Screens.DATA_ERASED)!,
@@ -52,14 +73,20 @@ export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResul
         };
     }
 
-    // Check for deep link launch
-    const deepLinkUrl = await Linking.getInitialURL();
+    if (activeServer && hasCachedCredentials()) {
+        startColdStartEntry(activeServer.url);
+    }
+
+    launchMark('route_start');
+    const [deepLinkUrl, notification] = await Promise.all([
+        Linking.getInitialURL(),
+        Notifications.getInitialNotification(),
+    ]);
+    launchMark('link_ms');
+    launchMark('notif_ms');
     if (deepLinkUrl) {
         return determineRouteFromDeeplink(deepLinkUrl);
     }
-
-    // Check for notification launch
-    const notification = await Notifications.getInitialNotification();
     let tapped = Platform.select({android: true, ios: false})!;
     if (Platform.OS === 'ios' && notification) {
         // when a notification is received on iOS, getInitialNotification, will return the notification
@@ -78,7 +105,10 @@ export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResul
 
     // Normal launch
     const coldStart = notification ? (tapped || AppState.currentState === 'active') : true;
-    return determineRoute({launchType: Launch.Normal, coldStart});
+    const result = await determineRoute({launchType: Launch.Normal, coldStart});
+    logDebug('determineInitialExpoRoute completed', `${Date.now() - startedAt}ms`);
+    launchMark('route_done');
+    return result;
 }
 
 async function determineRouteFromDeeplink(deepLinkUrl: string): Promise<ExpoRouterLaunchResult> {
@@ -174,7 +204,9 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
         serverUrl = await getActiveServerUrl();
     }
 
-    cleanupEphemeralPosts();
+    deferAfterFirstPaint(() => {
+        cleanupEphemeralPosts();
+    });
 
     return determineRouteFromLaunchProps({...props, serverUrl});
 };
@@ -227,7 +259,7 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
     switch (props.launchType) {
         case Launch.DeepLink: {
             if (props.extra?.type !== DeepLink.MagicLink) {
-                appEntry(props.serverUrl!);
+                startColdStartEntry(props.serverUrl!);
             }
             break;
         }
@@ -239,25 +271,31 @@ async function determineAuthenticatedRoute(props: LaunchProps): Promise<ExpoRout
                 break;
             }
 
-            appEntry(props.serverUrl!);
+            startColdStartEntry(props.serverUrl!);
             break;
         }
         case Launch.Normal:
             if (props.coldStart) {
-                const lastViewedChannel = await getLastViewedChannelIdAndServer();
-                const lastViewedThread = await getLastViewedThreadIdAndServer();
+                startColdStartEntry(props.serverUrl!);
+
+                const [lastViewedChannel, lastViewedThread] = await Promise.all([
+                    getLastViewedChannelIdAndServer(),
+                    getLastViewedThreadIdAndServer(),
+                ]);
 
                 if (lastViewedThread && lastViewedThread.server_url === props.serverUrl && lastViewedThread.thread_id) {
                     PerformanceMetricsManager.setLoadTarget('THREAD');
-                    fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
+                    deferAfterFirstPaint(() => {
+                        fetchAndSwitchToThread(props.serverUrl!, lastViewedThread.thread_id);
+                    });
                 } else if (lastViewedChannel && lastViewedChannel.server_url === props.serverUrl && lastViewedChannel.channel_id) {
                     PerformanceMetricsManager.setLoadTarget('CHANNEL');
-                    switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+                    deferAfterFirstPaint(() => {
+                        switchToChannelById(props.serverUrl!, lastViewedChannel.channel_id);
+                    });
                 } else {
                     PerformanceMetricsManager.setLoadTarget('HOME');
                 }
-
-                appEntry(props.serverUrl!);
             }
             break;
     }
