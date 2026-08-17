@@ -11,7 +11,10 @@ export const updatePlaybooksSettings = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const settings = await client.fetchPlaybooksSettings();
-        await setPlaybooksTaskRequirementsEnabled(serverUrl, Boolean(settings.enable_task_requirements));
+        const {error} = await setPlaybooksTaskRequirementsEnabled(serverUrl, Boolean(settings.enable_task_requirements));
+        if (error) {
+            return {error};
+        }
         return {data: settings};
     } catch (error) {
         logDebug('error on updatePlaybooksSettings', getFullErrorMessage(error));

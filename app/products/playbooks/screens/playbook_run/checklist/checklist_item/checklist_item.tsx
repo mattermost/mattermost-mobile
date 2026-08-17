@@ -19,6 +19,7 @@ import {restoreChecklistItem, runChecklistItem, skipChecklistItem, updateCheckli
 import {goToFillRequirements} from '@playbooks/screens/navigation';
 import {isDueSoon, isOverdue} from '@playbooks/utils/run';
 import {bottomSheet, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {openUserProfile} from '@utils/navigation';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
@@ -190,7 +191,7 @@ const ChecklistItem = ({
         const res = await updateChecklistItem(serverUrl, playbookRunId, item.id, checklistNumber, itemNumber, checked ? '' : 'closed');
         if (res.error) {
             showPlaybookErrorSnackbar();
-            logDebug('updateChecklistItem error', res.error);
+            logDebug('ChecklistItem.toggleChecked: update failed', getFullErrorMessage(res.error));
         }
         setIsChecking(false);
     }, [checked, checklistNumber, isChecking, item.id, itemNumber, openFillRequirements, playbookRunId, serverUrl, showRequirements]);

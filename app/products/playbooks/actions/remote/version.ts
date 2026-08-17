@@ -16,7 +16,10 @@ export const updatePlaybooksVersion = async (serverUrl: string) => {
         const manifest = manifests.find((m) => m.id === PLAYBOOKS_PLUGIN_ID);
         await setPlaybooksVersion(serverUrl, manifest?.version || '');
         if (manifest?.version) {
-            await updatePlaybooksSettings(serverUrl);
+            const {error} = await updatePlaybooksSettings(serverUrl);
+            if (error) {
+                return {error};
+            }
         }
         return {data: true};
     } catch (error) {

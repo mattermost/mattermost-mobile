@@ -3,6 +3,7 @@
 
 import {setPlaybooksTaskRequirementsEnabled} from '@playbooks/actions/local/settings';
 import {updatePlaybooksSettings} from '@playbooks/actions/remote/settings';
+import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -20,13 +21,19 @@ export async function handlePlaybooksSettingsChanged(serverUrl: string, msg: Web
     }
 
     if ('enable_task_requirements' in settingsUpdate) {
-        await setPlaybooksTaskRequirementsEnabled(
+        const {error} = await setPlaybooksTaskRequirementsEnabled(
             serverUrl,
             Boolean((settingsUpdate as PlaybooksGlobalSettings).enable_task_requirements),
         );
+        if (error) {
+            logDebug('handlePlaybooksSettingsChanged: failed to persist settings', getFullErrorMessage(error));
+        }
         return;
     }
 
     // Fallback when only a partial unrelated settings update arrived.
-    await updatePlaybooksSettings(serverUrl);
+    const {error} = await updatePlaybooksSettings(serverUrl);
+    if (error) {
+        logDebug('handlePlaybooksSettingsChanged: failed to refresh settings', getFullErrorMessage(error));
+    }
 }

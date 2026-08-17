@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, ScrollView, Text, View} from 'react-native';
 
@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {updateChecklistItem} from '@playbooks/actions/remote/checklist';
 import {navigateBack} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -65,7 +66,7 @@ const FillRequirements = ({
     checklistNumber,
     itemNumber,
     taskTitle,
-    requirements,
+    requirements = [],
     currentState,
     editMode,
 }: FillRequirementsProps) => {
@@ -75,6 +76,7 @@ const FillRequirements = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+    const savingRef = useRef(false);
 
     const isTaskComplete = currentState === 'closed';
     const [values, setValues] = useState<Record<string, string>>(() => {
@@ -119,28 +121,32 @@ const FillRequirements = ({
     }, [formatMessage, requirements]);
 
     const save = useCallback(async (state: ChecklistItemState, requirementValues: Record<string, string>) => {
-        if (saving) {
+        if (savingRef.current) {
             return;
         }
+        savingRef.current = true;
         setSaving(true);
-        const res = await updateChecklistItem(
-            serverUrl,
-            playbookRunId,
-            itemId,
-            checklistNumber,
-            itemNumber,
-            state,
-            requirementValues,
-        );
-        if (res.error) {
-            showPlaybookErrorSnackbar();
-            logDebug('FillRequirements save error', res.error);
+        try {
+            const res = await updateChecklistItem(
+                serverUrl,
+                playbookRunId,
+                itemId,
+                checklistNumber,
+                itemNumber,
+                state,
+                requirementValues,
+            );
+            if (res.error) {
+                showPlaybookErrorSnackbar();
+                logDebug('FillRequirements save error', getFullErrorMessage(res.error));
+                return;
+            }
+            close();
+        } finally {
+            savingRef.current = false;
             setSaving(false);
-            return;
         }
-        setSaving(false);
-        close();
-    }, [checklistNumber, itemId, itemNumber, playbookRunId, saving, serverUrl]);
+    }, [checklistNumber, itemId, itemNumber, playbookRunId, serverUrl]);
 
     const handleSave = useCallback(async () => {
         setErrors({});
@@ -154,25 +160,6 @@ const FillRequirements = ({
         }
         await save('closed', trimmed);
     }, [getTrimmedValues, save, validateAllFilled]);
-
-    const title = useMemo(() => {
-        if (editMode || isTaskComplete) {
-            return formatMessage({
-                id: 'playbooks.checklist_item.requirements.edit_title',
-                defaultMessage: 'Edit requirements',
-            });
-        }
-        return formatMessage({
-            id: 'playbooks.checklist_item.requirements.complete_title',
-            defaultMessage: 'Complete requirements',
-        });
-    }, [editMode, formatMessage, isTaskComplete]);
-
-    useEffect(() => {
-        navigation.setOptions({
-            title,
-        });
-    }, [navigation, title]);
 
     const description = editMode || isTaskComplete ?
         formatMessage(

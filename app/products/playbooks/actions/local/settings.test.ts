@@ -24,6 +24,7 @@ describe('setPlaybooksTaskRequirementsEnabled', () => {
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const systemValues = await querySystemValue(database, SYSTEM_IDENTIFIERS.PLAYBOOKS_TASK_REQUIREMENTS_ENABLED);
+        expect(systemValues).toHaveLength(1);
         expect(systemValues[0].value).toBe(true);
     });
 });

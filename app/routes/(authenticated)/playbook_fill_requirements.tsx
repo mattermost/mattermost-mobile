@@ -13,16 +13,22 @@ export default function PlaybookFillRequirementsRoute() {
     const intl = useIntl();
     const theme = useTheme();
     const props = usePropsFromParams<FillRequirementsProps>();
+    const editTitle = props.editMode || props.currentState === 'closed';
 
     useNavigationHeader({
         showWhenPushed: true,
         headerOptions: {
             headerTitle: () => (
                 <NavigationHeaderTitle
-                    title={intl.formatMessage({
-                        id: 'playbooks.checklist_item.requirements.complete_title',
-                        defaultMessage: 'Complete requirements',
-                    })}
+                    title={intl.formatMessage(
+                        editTitle ? {
+                            id: 'playbooks.checklist_item.requirements.edit_title',
+                            defaultMessage: 'Edit requirements',
+                        } : {
+                            id: 'playbooks.checklist_item.requirements.complete_title',
+                            defaultMessage: 'Complete requirements',
+                        },
+                    )}
                 />
             ),
             ...getHeaderOptions(theme),

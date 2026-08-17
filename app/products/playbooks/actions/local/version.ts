@@ -23,7 +23,11 @@ export const setPlaybooksVersion = async (serverUrl: string, version: string) =>
         });
 
         if (version === '') {
-            await setPlaybooksTaskRequirementsEnabled(serverUrl, false);
+            const {error: settingsError} = await setPlaybooksTaskRequirementsEnabled(serverUrl, false);
+            if (settingsError) {
+                return {error: settingsError};
+            }
+
             const {error} = await purgePlaybooks(serverUrl);
             if (error) {
                 return {error};

@@ -4,6 +4,7 @@
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setPlaybooksVersion} from '@playbooks/actions/local/version';
+import {updatePlaybooksSettings} from '@playbooks/actions/remote/settings';
 import {PLAYBOOKS_PLUGIN_ID} from '@playbooks/constants/plugin';
 
 import {updatePlaybooksVersion} from './version';
@@ -34,6 +35,8 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+    jest.clearAllMocks();
+    jest.mocked(updatePlaybooksSettings).mockResolvedValue({data: true});
     await DatabaseManager.init([serverUrl]);
 });
 
@@ -58,6 +61,16 @@ describe('updatePlaybooksVersion', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(setPlaybooksVersion).toHaveBeenCalledWith(serverUrl, '2.0.0');
+        expect(updatePlaybooksSettings).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should return settings refresh errors', async () => {
+        mockClient.getPluginsManifests.mockResolvedValueOnce([mockManifest]);
+        jest.mocked(updatePlaybooksSettings).mockResolvedValueOnce({error: new Error('settings failed')});
+
+        const result = await updatePlaybooksVersion(serverUrl);
+        expect(result.error).toBeTruthy();
+        expect(result.data).toBeUndefined();
     });
 
     it('should handle when playbooks manifest not found', async () => {
@@ -70,6 +83,7 @@ describe('updatePlaybooksVersion', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(setPlaybooksVersion).toHaveBeenCalledWith(serverUrl, '');
+        expect(updatePlaybooksSettings).not.toHaveBeenCalled();
     });
 
     it('should handle empty manifests array', async () => {
@@ -80,5 +94,6 @@ describe('updatePlaybooksVersion', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toBe(true);
         expect(setPlaybooksVersion).toHaveBeenCalledWith(serverUrl, '');
+        expect(updatePlaybooksSettings).not.toHaveBeenCalled();
     });
 });

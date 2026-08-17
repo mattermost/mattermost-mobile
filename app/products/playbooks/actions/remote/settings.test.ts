@@ -1,15 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {setPlaybooksTaskRequirementsEnabled} from '@playbooks/actions/local/settings';
+import {querySystemValue} from '@queries/servers/system';
 
 import {updatePlaybooksSettings} from './settings';
 
 const serverUrl = 'baseHandler.test.com';
-
-jest.mock('@playbooks/actions/local/settings');
 
 const mockClient = {
     fetchPlaybooksSettings: jest.fn(),
@@ -42,6 +41,10 @@ describe('updatePlaybooksSettings', () => {
                 enable_task_requirements: true,
             },
         });
-        expect(setPlaybooksTaskRequirementsEnabled).toHaveBeenCalledWith(serverUrl, true);
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const systemValues = await querySystemValue(database, SYSTEM_IDENTIFIERS.PLAYBOOKS_TASK_REQUIREMENTS_ENABLED);
+        expect(systemValues).toHaveLength(1);
+        expect(systemValues[0].value).toBe(true);
     });
 });
