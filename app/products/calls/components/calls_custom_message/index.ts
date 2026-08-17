@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, scan, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
 import {observeEndCallDetails, observeIsCallLimitRestricted} from '@calls/observers';
@@ -59,6 +59,19 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         distinctUntilChanged(),
     );
 
+    // The post is updated with end_at after the call_end event, so the card would fall back to
+    // "Calling..." during teardown.
+    const callTornDown = observeCallsState(serverUrl).pipe(
+        map((state) => Boolean(state.calls[post.channelId])),
+        distinctUntilChanged(),
+        scan(
+            (acc, callExists) => ({seen: acc.seen || callExists, tornDown: acc.seen && !callExists}),
+            {seen: false, tornDown: false},
+        ),
+        map(({tornDown}) => tornDown),
+        distinctUntilChanged(),
+    );
+
     return {
         currentUser,
         isMilitaryTime,
@@ -68,6 +81,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         ccChannelId,
         joiningChannelId,
         numSessions,
+        callTornDown,
         ...observeEndCallDetails(),
     };
 });

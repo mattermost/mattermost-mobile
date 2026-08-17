@@ -263,14 +263,10 @@ export function getCallPropsFromPost(post: PostModel | Post): CallsPostProps {
 
 /**
  * Derives which state the call post card should render.
- *
  * The server keeps call_status at 'calling' after the callee answers, so the live session count is
  * what tells a ringing call apart from a connected one.
- *
- * @param callProps the props of the custom_calls post, from getCallPropsFromPost
- * @param numSessions the number of sessions currently connected to the call in that channel
  */
-export function getCallCardState(callProps: CallsPostProps, numSessions: number): CallCardState {
+export function getCallCardState(callProps: CallsPostProps, numSessions: number, callTornDown: boolean): CallCardState {
     if (callProps.end_at > 0) {
         switch (callProps.call_status) {
             case CallPostStatus.NoAnswer:
@@ -280,6 +276,12 @@ export function getCallCardState(callProps: CallsPostProps, numSessions: number)
             default:
                 return CallCardState.Ended;
         }
+    }
+
+    // The call_end event lands before the post is updated with end_at, so without this the card
+    // would fall back to "Calling..." (with a Cancel button) for the rest of that window.
+    if (callTornDown) {
+        return CallCardState.Ended;
     }
 
     if (callProps.call_status === CallPostStatus.Calling && numSessions <= 1) {
