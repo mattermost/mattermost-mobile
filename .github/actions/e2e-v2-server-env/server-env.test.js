@@ -18,5 +18,6 @@ describe('e2e-v2 server-env', () => {
         }
         expect(env.MM_SERVICEENVIRONMENT).toBe('test');
         expect(env.MM_SERVICESETTINGS_ENABLETUTORIAL).toBe('false');
+        expect(env.MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS).toBe('true');
     });
 });
