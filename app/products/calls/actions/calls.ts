@@ -50,6 +50,7 @@ import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
@@ -319,7 +320,11 @@ export const leaveCallConfirmation = async (
     serverUrl: string,
     channelId: string,
     leaveCb?: () => void) => {
-    const showHostControls = (isHost || isAdmin) && otherParticipants;
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const channel = database ? await getChannelById(database, channelId) : undefined;
+    const isNotDMChannel = !isDMChannel(channel?.type);
+
+    const showHostControls = isNotDMChannel && (isHost || isAdmin) && otherParticipants;
     if (!showHostControls) {
         leaveCall();
         leaveCb?.();
