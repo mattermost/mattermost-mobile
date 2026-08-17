@@ -19,10 +19,19 @@ export default function GenericBottomSheetRoute() {
         snapPoints[1] += (isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN);
     }
 
+    // BottomSheetStore.reset() clears this callback — logging out and switching servers
+    // both do it — and the route can still render afterwards. Passing undefined through
+    // crashed the app: "RCTFatalException: Unhandled JS Exception: TypeError: undefined
+    // is not a function ... at GenericBottomSheetRoute" (MM-T4675_2, run 31977498176).
+    // Nothing to show is not a crash; render nothing.
+    if (!renderContent) {
+        return null;
+    }
+
     return (
         <BottomSheet
             screen={Screens.GENERIC_BOTTOM_SHEET}
-            renderContent={renderContent!}
+            renderContent={renderContent}
             footerComponent={BottomSheetStore.getFooterComponent()}
             snapPoints={snapPoints}
         />
