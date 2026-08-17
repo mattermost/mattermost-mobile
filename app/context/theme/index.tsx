@@ -4,6 +4,7 @@
 import {withObservables} from '@nozbe/watermelondb/react';
 import React, {type ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance} from 'react-native';
+import {startWith} from 'rxjs';
 
 import {Preferences} from '@constants';
 import useDidUpdate from '@hooks/did_update';
@@ -145,8 +146,8 @@ export function useThemeByAppearanceWithDefault(themeProp?: Theme): Theme {
 }
 
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
-    currentTeamId: observeCurrentTeamId(database),
-    themes: queryThemePreferences(database).observeWithColumns(['value']),
+    currentTeamId: observeCurrentTeamId(database).pipe(startWith<string | undefined>(undefined)),
+    themes: queryThemePreferences(database).observeWithColumns(['value']).pipe(startWith<PreferenceModel[]>([])),
 }));
 
 export default enhancedThemeProvider(ThemeProvider);

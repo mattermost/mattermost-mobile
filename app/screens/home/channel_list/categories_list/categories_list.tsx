@@ -84,8 +84,9 @@ const CategoriesList = ({
     const isTablet = useIsTablet();
     const isTeamLoading = useTeamsLoading(serverUrl);
     const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
-    const [activeScreen, setActiveScreen] = useState<ScreenType>(isTablet && lastChannelId ? lastChannelId : Screens.CHANNEL);
+    const [activeScreen, setActiveScreen] = useState<ScreenType>(Screens.CHANNEL);
     const [listHeight, setListHeight] = useState(0);
+    const restoredRef = useRef(false);
 
     const healedRef = useRef(false);
     useEffect(() => {
@@ -122,7 +123,16 @@ const CategoriesList = ({
     }, [isTablet, moreThanOneTeam]);
 
     useEffect(() => {
+        if (restoredRef.current || !isTablet || !lastChannelId) {
+            return;
+        }
+        restoredRef.current = true;
+        setActiveScreen(lastChannelId);
+    }, [isTablet, lastChannelId]);
+
+    useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.ACTIVE_SCREEN, (screen: string) => {
+            restoredRef.current = true;
             if (screen === Screens.GLOBAL_DRAFTS || screen === Screens.GLOBAL_THREADS || screen === Screens.PARTICIPANT_PLAYBOOKS || screen === Screens.AGENT_CHAT) {
                 setActiveScreen(screen);
             } else {

@@ -45,7 +45,7 @@ type ChannelProps = {
     coldStart?: boolean;
     currentUserId?: string;
     currentTeamId: string;
-    hasCurrentUser: boolean;
+    hasCurrentUser?: boolean;
     showIncomingCalls: boolean;
 };
 
@@ -165,13 +165,10 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [props.showToS]);
 
     useEffect(() => {
-        if (!props.hasCurrentUser || !props.currentUserId) {
+        if (props.hasCurrentUser === false || (props.hasCurrentUser && !props.currentUserId)) {
             refetchCurrentUser(serverUrl, props.currentUserId);
         }
-
-    // - serverUrl is stable from useServerUrl hook
-    // - We only need to re-run when the current user state changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.currentUserId, props.hasCurrentUser]);
 
     useEffect(() => {

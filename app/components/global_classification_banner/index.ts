@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {map} from 'rxjs/operators';
+import {map, startWith} from 'rxjs/operators';
 
 import {observeClassificationBannerState} from '@queries/servers/properties';
 import {observeConfigBooleanValue} from '@queries/servers/system';
@@ -12,12 +12,14 @@ import GlobalClassificationBannerContainer, {GLOBAL_BANNER_PORTAL_HOST} from './
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const state$ = observeClassificationBannerState(database);
+    const state$ = observeClassificationBannerState(database).pipe(
+        startWith({visible: false, levelName: '', color: ''}),
+    );
     return {
         visible: state$.pipe(map((s) => s.visible)),
         levelName: state$.pipe(map((s) => s.levelName)),
         color: state$.pipe(map((s) => s.color)),
-        classificationEnabled: observeConfigBooleanValue(database, 'FeatureFlagClassificationMarkings'),
+        classificationEnabled: observeConfigBooleanValue(database, 'FeatureFlagClassificationMarkings').pipe(startWith(false)),
     };
 });
 

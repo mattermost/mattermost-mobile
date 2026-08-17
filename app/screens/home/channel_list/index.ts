@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
+import {of as of$, startWith} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeIncomingCalls} from '@calls/state';
@@ -26,17 +26,16 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const showIncomingCalls = observeIncomingCalls().pipe(
         switchMap((ics) => of$(ics.incomingCalls.length > 0)),
+        startWith(false),
         distinctUntilChanged(),
     );
 
     return {
-        isCRTEnabled: observeIsCRTEnabled(database),
+        isCRTEnabled: observeIsCRTEnabled(database).pipe(startWith(false)),
+
+        // Real SQLite values; seeding would skip select_team or paint a hollow list
         hasTeams: teamsCount.pipe(
             switchMap((v) => of$(v > 0)),
-            distinctUntilChanged(),
-        ),
-        hasMoreThanOneTeam: teamsCount.pipe(
-            switchMap((v) => of$(v > 1)),
             distinctUntilChanged(),
         ),
         hasChannels: observeCurrentTeamId(database).pipe(
@@ -44,15 +43,27 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((v) => of$(v > 0)),
             distinctUntilChanged(),
         ),
-        isLicensed,
-        showToS: observeShowToS(database).pipe(distinctUntilChanged()),
-        currentUserId: observeCurrentUserId(database),
+        hasMoreThanOneTeam: teamsCount.pipe(
+            switchMap((v) => of$(v > 1)),
+            startWith(false),
+            distinctUntilChanged(),
+        ),
+        isLicensed: isLicensed.pipe(startWith(false)),
+        showToS: observeShowToS(database).pipe(
+            startWith(false),
+            distinctUntilChanged(),
+        ),
+        currentUserId: observeCurrentUserId(database).pipe(startWith<string | undefined>(undefined)),
         hasCurrentUser: observeCurrentUser(database).pipe(
             switchMap((u) => of$(Boolean(u))),
+            startWith<boolean | undefined>(undefined),
             distinctUntilChanged(),
         ),
         showIncomingCalls,
-        currentTeamId: observeCurrentTeamId(database).pipe(distinctUntilChanged()),
+        currentTeamId: observeCurrentTeamId(database).pipe(
+            startWith(''),
+            distinctUntilChanged(),
+        ),
     };
 });
 
