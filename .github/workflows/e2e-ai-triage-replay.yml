@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Classify failures via Test System IO
         # Pin bumped with TSIO #101; uses: cannot be dynamic from inputs.
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@ff4760a5aef66ff9ff13b54bd53527084fbfdce2
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@c85d4baea3b8f3be46f11418ce33018804ffb5ad
         with:
           composite-identity: ${{ inputs.composite_identity }}
           original-commit-status-contexts: ${{ inputs.original_commit_status_contexts }}
