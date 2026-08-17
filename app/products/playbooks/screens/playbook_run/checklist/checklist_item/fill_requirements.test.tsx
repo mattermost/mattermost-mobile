@@ -56,7 +56,7 @@ describe('FillRequirements', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(updateChecklistItem).mockResolvedValue({});
+        jest.mocked(updateChecklistItem).mockResolvedValue({data: true});
     });
 
     it('should save a draft with the current state and trimmed values', async () => {

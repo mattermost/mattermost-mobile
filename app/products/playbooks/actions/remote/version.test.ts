@@ -18,7 +18,12 @@ const mockManifest = {
 
 jest.mock('@playbooks/actions/local/version');
 jest.mock('@playbooks/actions/remote/settings', () => ({
-    updatePlaybooksSettings: jest.fn().mockResolvedValue({data: true}),
+    updatePlaybooksSettings: jest.fn().mockResolvedValue({
+        data: {
+            enable_experimental_features: false,
+            enable_task_requirements: true,
+        },
+    }),
 }));
 
 const mockClient = {
@@ -36,7 +41,12 @@ beforeAll(() => {
 
 beforeEach(async () => {
     jest.clearAllMocks();
-    jest.mocked(updatePlaybooksSettings).mockResolvedValue({data: true});
+    jest.mocked(updatePlaybooksSettings).mockResolvedValue({
+        data: {
+            enable_experimental_features: false,
+            enable_task_requirements: true,
+        },
+    });
     await DatabaseManager.init([serverUrl]);
 });
 
