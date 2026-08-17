@@ -63,7 +63,7 @@ on:
       detox-include-tags:
         required: false
         type: string
-        default: "@ios_pr"
+        default: ""
       detox-exclude-tags:
         required: false
         type: string
@@ -71,7 +71,7 @@ on:
       parallelism:
         required: false
         type: string
-        default: "8"
+        default: "20"
       lambda_alias:
         required: false
         type: string

@@ -21,15 +21,15 @@ on:
         type: boolean
         default: false
       detox-include-tags:
-        description: "Detox include tags (empty = full suite). Default @ios_pr for the subset."
+        description: "Detox include tags (empty = full phone suite). @ipad_only stays excluded."
         required: false
         type: string
-        default: "@ios_pr"
+        default: ""
       parallelism:
         description: "Detox iOS workers (and dedicated SITE_1 servers)"
         required: false
         type: string
-        default: "8"
+        default: "20"
       server_image:
         description: "Mattermost server image for the test stack"
         required: false
@@ -106,13 +106,14 @@ jobs:
           fi
           KEY=$(printf '%s' "$KEY" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-24)
 
-          WORKERS="${DISPATCH_WORKERS:-8}"
+          WORKERS="${DISPATCH_WORKERS:-20}"
           if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
             echo "::error::parallelism must be a positive integer, got '${WORKERS}'"
             exit 1
           fi
 
-          TAGS="${DISPATCH_TAGS:-@ios_pr}"
+          # Empty include tags = full phone suite. Callers still pass detox-exclude-tags=@ipad_only.
+          TAGS="${DISPATCH_TAGS:-}"
           IMAGE="${DISPATCH_IMAGE:-mattermostdevelopment/mattermost-enterprise-edition:master}"
 
           {
