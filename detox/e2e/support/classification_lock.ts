@@ -7,11 +7,14 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
+const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
 
-// Callers acquire from beforeAll, so this must stay under the Jest testTimeout
-// (240s) or the hook dies first and the timeout error below is never reported.
-const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 2;
-const DEFAULT_TTL_MS = timeouts.ONE_MIN * 30;
+// Must outlast the longest hold a caller can legitimately take, or the lock expires
+// mid-suite and a waiting shard steals it while the owner is still mutating shared
+// server config. Every caller sets jest.setTimeout(30m), so the TTL covers that plus
+// margin. Recovering a lock leaked by a cancelled run is the acquire budget's job,
+// not the TTL's.
+const DEFAULT_TTL_MS = timeouts.ONE_MIN * 35;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
 
 type ClassificationLock = {

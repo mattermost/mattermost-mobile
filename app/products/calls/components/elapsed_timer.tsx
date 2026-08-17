@@ -7,14 +7,14 @@ import {Text, type StyleProp, type TextStyle} from 'react-native';
 
 import {toMilliseconds} from '@utils/datetime';
 
-type CallDurationProps = {
+type Props = {
     style: StyleProp<TextStyle>;
     value: number;
     truncateWhenLong?: boolean;
     updateIntervalInSeconds?: number;
 }
 
-const CallDuration = ({value, style, truncateWhenLong, updateIntervalInSeconds}: CallDurationProps) => {
+export const ElapsedTimer = ({value, style, truncateWhenLong, updateIntervalInSeconds}: Props) => {
     const getCallDuration = () => {
         const now = moment();
         const startTime = moment(value);
@@ -39,6 +39,10 @@ const CallDuration = ({value, style, truncateWhenLong, updateIntervalInSeconds}:
 
     const [formattedTime, setFormattedTime] = useState(() => getCallDuration());
     useEffect(() => {
+        // The interval closes over the value it was created with, so it has to be recreated whenever the
+        // value changes (e.g. a call being answered moves its start time forward).
+        setFormattedTime(getCallDuration());
+
         if (updateIntervalInSeconds) {
             const interval = setInterval(
                 () => setFormattedTime(getCallDuration()),
@@ -55,7 +59,7 @@ const CallDuration = ({value, style, truncateWhenLong, updateIntervalInSeconds}:
     // We don't care about `getCallDuration` changes as long as
     // it is up to date when the effect runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateIntervalInSeconds]);
+    }, [updateIntervalInSeconds, value]);
 
     return (
         <Text
@@ -67,5 +71,3 @@ const CallDuration = ({value, style, truncateWhenLong, updateIntervalInSeconds}:
         </Text>
     );
 };
-
-export default CallDuration;

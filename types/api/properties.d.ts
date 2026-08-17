@@ -57,6 +57,19 @@ type PropertyField = {
     updated_by?: string;
 };
 
+type PropertyFieldSearchOpts = {
+    object_types: PropertyFieldObjectType[];
+    channel_id?: string;
+    team_id?: string;
+    target_type?: PropertyFieldTargetLevel;
+    target_id?: string;
+    since?: number;
+    cursor_id?: string;
+    cursor_create_at?: number;
+    cursor_update_at?: number;
+    per_page?: number;
+};
+
 type PropertyValue<T = unknown> = {
     id: string;
     field_id: string;

@@ -476,7 +476,7 @@ describe('Account - Custom Status', () => {
 
         // # Tap display name to open user profile (more reliable than avatar tap)
         await expect(postListPostItemHeaderDisplayName).toBeVisible();
-        await postListPostItemHeaderDisplayName.longPress();
+        await postListPostItemHeaderDisplayName.longPress(timeouts.TWO_SEC);
         await wait(timeouts.ONE_SEC);
         await UserProfileScreen.toBeVisible();
         await UserProfileScreen.close();

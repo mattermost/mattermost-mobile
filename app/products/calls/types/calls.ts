@@ -101,6 +101,7 @@ export type CurrentCall = Call & {
     callQualityAlert: boolean;
     callQualityAlertDismissed: number;
     captions: Dictionary<LiveCaptionMobile>;
+    dmCalleeAnsweredAt?: number;
 }
 
 export const DefaultCurrentCall: CurrentCall = {

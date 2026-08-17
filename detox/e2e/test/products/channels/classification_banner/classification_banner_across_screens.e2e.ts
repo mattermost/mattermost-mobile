@@ -22,10 +22,11 @@ import {
     SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
+    TableScreen,
     ThreadScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {by, device, element, waitFor} from 'detox';
+import {by, device, element, expect, waitFor} from 'detox';
 
 // Lock wait is up to 20m; leave headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
@@ -34,12 +35,14 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
+    let lockAcquired = false;
     let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
@@ -61,6 +64,10 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     });
 
     afterAll(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
         try {
             // Each step runs even if an earlier one fails, so a cleanup error cannot leave
             // the feature flag enabled or the session logged in for later suites.
@@ -147,6 +154,44 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await GlobalClassificationBanner.toBeVisible();
 
         await ThreadScreen.back();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T6214_1 - should display the classification banner on the expanded Table screen without covering its controls or content', async () => {
+        // # Post a small markdown table
+        const markdownTable =
+            '| BannerColA | BannerColB |\n' +
+            '| :-- | :-- |\n' +
+            '| BannerCellOne | BannerCellTwo |\n';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: markdownTable,
+        });
+
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.open('channels', testChannel.name);
+
+        // # Expand the table to full view
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
+        await expect(postListPostItemTable).toBeVisible(50);
+        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await postListPostItemTableExpandButton.tap();
+        await TableScreen.toBeVisible();
+
+        // * Verify the classification banner is visible on the Table screen
+        await GlobalClassificationBanner.toBeVisible();
+
+        // * Verify the banner does not cover the Table screen controls or content:
+        // the back button and the table cells remain visible beneath it.
+        await expect(TableScreen.backButton).toBeVisible();
+        await expect(element(by.text('BannerColA'))).toBeVisible(50);
+        await expect(element(by.text('BannerCellOne'))).toBeVisible(50);
+
+        // # Go back to channel list screen
+        await TableScreen.back();
         await ChannelScreen.back();
     });
 });
