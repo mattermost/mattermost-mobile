@@ -1,0 +1,365 @@
+# E2E v2 — PR entry (independent of Matterwick / e2e-detox-pr.yml).
+#
+# Starts after mobile CI (lint, format, tsc, unit tests) succeeds. Does not
+# modify ci.yml: a wait job polls that workflow for this SHA.
+#
+# Phase 0 scope: PR only. Reusable templates (e2e-build-v2, e2e-stack-*-v2,
+# e2e-detox-v2, e2e-ios-template-v2) take run-type / context suffix so main,
+# release, and CMT can call them later without rewriting this file.
+#
+# Topology: one dedicated SITE_1 per worker, plus two shared extras (SITE_2,
+# SITE_3) for the whole matrix. Servers come from e2e-test-stack-actions.
+name: E2E v2
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      skip_wait_for_ci:
+        description: "Skip waiting for the ci workflow (manual debug only)"
+        required: false
+        type: boolean
+        default: false
+      detox-include-tags:
+        description: "Detox include tags (empty = full suite). Default @ios_pr for the subset."
+        required: false
+        type: string
+        default: "@ios_pr"
+      parallelism:
+        description: "Detox iOS workers (and dedicated SITE_1 servers)"
+        required: false
+        type: string
+        default: "8"
+      server_image:
+        description: "Mattermost server image for the test stack"
+        required: false
+        type: string
+        default: "mattermostdevelopment/mattermost-enterprise-edition:master"
+
+# Default least-privilege; jobs that post statuses, mint OIDC, or call nested
+# reusable workflows declare the extra scopes they need.
+permissions:
+  contents: read
+  actions: read
+  statuses: write
+  id-token: write
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: e2e-v2-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  INTUNE_ENABLED: 'false'
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  E2E_STACK_ACTION_REF: "319ff17cb6e3b6e3bf4465443d51c7bda7570d7f"
+
+jobs:
+  resolve:
+    name: Resolve PR identity
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    outputs:
+      commit_sha: ${{ steps.vars.outputs.commit_sha }}
+      pr_number: ${{ steps.vars.outputs.pr_number }}
+      branch: ${{ steps.vars.outputs.branch }}
+      cache_scope: ${{ steps.vars.outputs.cache_scope }}
+      context_suffix: ${{ steps.vars.outputs.context_suffix }}
+      parallelism: ${{ steps.vars.outputs.parallelism }}
+      detox_include_tags: ${{ steps.vars.outputs.detox_include_tags }}
+      server_image: ${{ steps.vars.outputs.server_image }}
+      instance_key: ${{ steps.vars.outputs.instance_key }}
+    steps:
+      - name: Resolve identity
+        id: vars
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DISPATCH_TAGS: ${{ inputs.detox-include-tags }}
+          DISPATCH_WORKERS: ${{ inputs.parallelism }}
+          DISPATCH_IMAGE: ${{ inputs.server_image }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          SHA="${PR_HEAD_SHA:-$GITHUB_SHA}"
+          PR_DIGITS=$(printf '%s' "${PR_NUMBER:-}" | tr -cd '0-9')
+
+          if [ -n "$PR_DIGITS" ]; then
+            BRANCH="pr-${PR_DIGITS}"
+            SCOPE="pr-${PR_DIGITS}"
+          else
+            raw="${GITHUB_REF_NAME:-main}"
+            slug=$(printf '%s' "$raw" | tr -c 'a-zA-Z0-9._-' '-' | cut -c1-60)
+            BRANCH="$slug"
+            SCOPE="branch-${slug}"
+          fi
+
+          # instance_key prefixes every hostname and must be <= 24 chars.
+          if [ -n "$PR_DIGITS" ]; then
+            KEY="mpr${PR_DIGITS}r${RUN_ID: -6}"
+          else
+            KEY="m${SHA:0:7}r${RUN_ID: -6}"
+          fi
+          KEY=$(printf '%s' "$KEY" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-24)
+
+          WORKERS="${DISPATCH_WORKERS:-8}"
+          if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
+            echo "::error::parallelism must be a positive integer, got '${WORKERS}'"
+            exit 1
+          fi
+
+          TAGS="${DISPATCH_TAGS:-@ios_pr}"
+          IMAGE="${DISPATCH_IMAGE:-mattermostdevelopment/mattermost-enterprise-edition:master}"
+
+          {
+            echo "commit_sha=${SHA}"
+            echo "pr_number=${PR_DIGITS}"
+            echo "branch=${BRANCH}"
+            echo "cache_scope=${SCOPE}"
+            echo "context_suffix="
+            echo "parallelism=${WORKERS}"
+            echo "detox_include_tags=${TAGS}"
+            echo "server_image=${IMAGE}"
+            echo "instance_key=${KEY}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "sha=${SHA} branch=${BRANCH} workers=${WORKERS} tags='${TAGS}' key=${KEY}"
+
+  wait-for-ci:
+    name: Wait for CI checks
+    needs: resolve
+    if: >-
+      needs.resolve.result == 'success'
+      && (github.event_name != 'workflow_dispatch' || inputs.skip_wait_for_ci != true)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.commit_sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-v2-wait-for-ci
+      - name: Wait for lint / format / tsc / unit tests
+        uses: ./.github/actions/e2e-v2-wait-for-ci
+        with:
+          commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+
+  detox-check:
+    name: Detox lint / typecheck
+    needs: [resolve, wait-for-ci]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Pending status
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+          context: e2e-test/detox-check
+          description: Detox lint and typecheck
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Install detox dependencies
+        run: cd detox && npm ci
+
+      - name: Detox lint and typecheck
+        run: |
+          echo "::group::detox-check"
+          cd detox && npm run check
+          echo "::endgroup::"
+
+      - name: Publish status
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+          context: e2e-test/detox-check
+          description: ${{ job.status == 'success' && 'Detox lint and typecheck passed' || 'Detox lint or typecheck failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  maestro-check:
+    name: Maestro lint / typecheck
+    needs: [resolve, wait-for-ci]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ needs.resolve.outputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Pending status
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+          context: e2e-test/maestro-check
+          description: Maestro typecheck and flow headers
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: ci/setup-node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+          cache-dependency-path: detox/maestro/package-lock.json
+
+      - name: Install maestro dependencies
+        run: cd detox/maestro && npm ci
+
+      - name: Maestro typecheck
+        run: |
+          echo "::group::maestro-tsc"
+          cd detox/maestro && npm run check
+          echo "::endgroup::"
+
+      - name: Validate Maestro flow headers
+        run: bash detox/maestro/scripts/validate-flow-headers.sh
+
+      - name: Publish status
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+          context: e2e-test/maestro-check
+          description: ${{ job.status == 'success' && 'Maestro checks passed' || 'Maestro checks failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  build-ios:
+    name: E2E iOS artifacts
+    needs: [resolve, wait-for-ci]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    uses: ./.github/workflows/e2e-build-v2.yml
+    with:
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      cache_scope: ${{ needs.resolve.outputs.cache_scope }}
+      platform: ios
+    secrets: inherit
+
+  build-android:
+    name: E2E Android artifacts
+    needs: [resolve, wait-for-ci]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    uses: ./.github/workflows/e2e-build-v2.yml
+    with:
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      cache_scope: ${{ needs.resolve.outputs.cache_scope }}
+      platform: android
+    secrets: inherit
+
+  create-servers:
+    name: Create test servers
+    needs: [resolve, wait-for-ci]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
+    uses: ./.github/workflows/e2e-stack-create-v2.yml
+    with:
+      instance_key: ${{ needs.resolve.outputs.instance_key }}
+      worker_count: ${{ needs.resolve.outputs.parallelism }}
+      extra_count: "2"
+      server_image: ${{ needs.resolve.outputs.server_image }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+    secrets: inherit
+
+  run-detox-ios:
+    name: Detox iOS E2E
+    needs:
+      - resolve
+      - detox-check
+      - build-ios
+      - create-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled()
+      && needs.resolve.result == 'success'
+      && needs.detox-check.result == 'success'
+      && needs.build-ios.result == 'success'
+      && needs.create-servers.result == 'success'
+    uses: ./.github/workflows/e2e-detox-v2.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit_sha }}
+      PLATFORM: ios
+      run_type: PR
+      artifact_run_id: ${{ github.run_id }}
+      context_suffix: ${{ needs.resolve.outputs.context_suffix }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      batch_id: ${{ needs.create-servers.outputs.batch_id }}
+      worker_site_urls: ${{ needs.create-servers.outputs.worker_site_urls }}
+      site_2_url: ${{ needs.create-servers.outputs.site_2_url }}
+      site_3_url: ${{ needs.create-servers.outputs.site_3_url }}
+      detox-include-tags: ${{ needs.resolve.outputs.detox_include_tags }}
+      detox-exclude-tags: '@ipad_only'
+      parallelism: ${{ needs.resolve.outputs.parallelism }}
+    secrets: inherit
+
+  destroy-servers:
+    name: Destroy test servers
+    needs:
+      - create-servers
+      - run-detox-ios
+    if: always() && needs.create-servers.outputs.batch_id != ''
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/e2e-stack-destroy-v2.yml
+    with:
+      batch_id: ${{ needs.create-servers.outputs.batch_id }}
+    secrets: inherit
