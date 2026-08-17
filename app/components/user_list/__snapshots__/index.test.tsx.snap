@@ -740,7 +740,6 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 "paddingTop": 4,
               },
               {
-                "backgroundColor": "#ffffff",
                 "opacity": 1,
               },
               undefined,
@@ -1100,7 +1099,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                 "paddingTop": 4,
               },
               {
-                "backgroundColor": "#ffffff",
                 "opacity": 1,
               },
               undefined,
@@ -1498,7 +1496,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 "paddingTop": 4,
               },
               {
-                "backgroundColor": "#ffffff",
                 "opacity": 1,
               },
               undefined,
@@ -1756,7 +1753,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
                 "paddingTop": 4,
               },
               {
-                "backgroundColor": "#ffffff",
                 "opacity": 1,
               },
               undefined,
