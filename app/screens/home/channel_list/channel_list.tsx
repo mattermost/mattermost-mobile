@@ -20,7 +20,9 @@ import {HOME_TAB_SCREENS} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
+import {launchMark} from '@init/launch_profiler';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateToScreen} from '@screens/navigation';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
@@ -184,13 +186,11 @@ const ChannelListScreen = (props: ChannelProps) => {
         }
     }, [props.launchType, props.coldStart]);
 
-    useEffect(() => {
+    useDidMount(() => {
+        launchMark('home_mounted');
         PerformanceMetricsManager.finishLoad('HOME', serverUrl);
         PerformanceMetricsManager.measureTimeToInteraction();
-
-        // Only needed on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     return (
         <Animated.View
@@ -217,6 +217,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                         isCRTEnabled={props.isCRTEnabled}
                         moreThanOneTeam={props.hasMoreThanOneTeam}
                         hasChannels={props.hasChannels}
+                        hasTeams={props.hasTeams}
                     />
                     {isTablet && props.hasChannels &&
                     <AdditionalTabletView/>

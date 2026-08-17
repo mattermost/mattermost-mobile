@@ -46,6 +46,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostHasError={false}
@@ -63,6 +64,7 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={0}
@@ -81,6 +83,7 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={1}
                 scheduledPostCount={0}
@@ -105,6 +108,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={0}
@@ -135,6 +139,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={true}
+                hasTeams={true}
                 hasChannels={false}
                 draftsCount={0}
                 scheduledPostCount={0}
@@ -156,6 +161,7 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={1}
@@ -172,6 +178,7 @@ describe('components/categories_list', () => {
             <CategoriesList
                 isCRTEnabled={true}
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={1}
@@ -187,6 +194,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={0}
@@ -202,6 +210,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={true}
                 draftsCount={0}
                 scheduledPostCount={0}
@@ -219,6 +228,7 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 moreThanOneTeam={false}
+                hasTeams={true}
                 hasChannels={false}
                 draftsCount={0}
                 scheduledPostCount={0}
