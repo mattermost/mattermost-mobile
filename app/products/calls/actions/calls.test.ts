@@ -39,8 +39,10 @@ import {
     DefaultCallsState,
 } from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import TestHelper from '@test/test_helper';
 
 import type {CallJobState} from '@mattermost/calls/lib/types';
 
@@ -118,6 +120,7 @@ jest.mock('@calls/alerts', () => {
         needsRecordingWillBePostedAlert: jest.fn(),
         showErrorAlertOnClose: alerts.showErrorAlertOnClose,
         leaveAndJoinWithAlert: alerts.leaveAndJoinWithAlert,
+        endCallConfirmationAlert: alerts.endCallConfirmationAlert,
     };
 });
 
@@ -366,6 +369,84 @@ describe('Actions.Calls', () => {
         expect(mockAlert).not.toHaveBeenCalled();
         expect(disconnectMock).toHaveBeenCalled();
         expect(leaveCb).toHaveBeenCalled();
+    });
+
+    const joinCallInChannel = async (channelType: ChannelType) => {
+        const mockGetChannelById = require('@queries/servers/channel').getChannelById as jest.Mock;
+        mockGetChannelById.mockResolvedValue(TestHelper.fakeChannelModel({
+            id: 'channel-id',
+            type: channelType,
+        }));
+
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+            userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
+        });
+    };
+
+    it('leaveCallConfirmation leaves immediately in a DM even for the host', async () => {
+        await joinCallInChannel(General.DM_CHANNEL);
+
+        const disconnectMock = getConnectionForTesting()!.disconnect;
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        const leaveCb = jest.fn();
+
+        await act(async () => {
+            await leaveCallConfirmation(
+                createIntl({locale: 'en', messages: {}}),
+                true,
+                false,
+                true,
+                'server1',
+                'channel-id',
+                leaveCb,
+            );
+        });
+
+        expect(mockAlert).not.toHaveBeenCalled();
+        expect(disconnectMock).toHaveBeenCalled();
+        expect(leaveCb).toHaveBeenCalled();
+        mockAlert.mockRestore();
+    });
+
+    it('leaveCallConfirmation still asks the host in a channel call', async () => {
+        await joinCallInChannel(General.OPEN_CHANNEL);
+
+        const disconnectMock = getConnectionForTesting()!.disconnect;
+        const leaveCb = jest.fn();
+
+        // Press "Cancel", which is the first button on both platforms.
+        const mockAlert = jest.spyOn(Alert, 'alert').mockImplementation((title, message, buttons) => {
+            buttons?.[0].onPress?.();
+        });
+
+        await act(async () => {
+            await leaveCallConfirmation(
+                createIntl({locale: 'en', messages: {}}),
+                true,
+                false,
+                true,
+                'server1',
+                'channel-id',
+                leaveCb,
+            );
+        });
+
+        expect(mockAlert).toHaveBeenCalled();
+        expect(disconnectMock).not.toHaveBeenCalled();
+        expect(leaveCb).not.toHaveBeenCalled();
+        mockAlert.mockRestore();
+
+        // Cancelling kept the call, so tear it down for the tests that follow.
+        await act(async () => {
+            CallsActions.leaveCall();
+            myselfLeftCall();
+        });
     });
 
     it('muteMyself', async () => {
