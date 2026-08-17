@@ -45,7 +45,17 @@ describe('ScheduledPostOptions', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.useFakeTimers();
+
+        // Pin the clock. ScheduledPostCoreOptions picks its options from the current
+        // weekday, so an unpinned clock makes this suite pass or fail depending on the
+        // day CI happens to run: on a Sunday the picker offers only "Tomorrow at" and
+        // every /Monday at/ query below fails.
+        //
+        // 1735693200000 is 2024-12-31 20:00 in America/New_York — the timezone these
+        // tests run under — which is a Tuesday, so the picker offers both
+        // "Tomorrow at" and "Monday at". (It is 2025-01-01 01:00 in UTC; the weekday
+        // that matters is the one in the user's timezone, not the process TZ.)
+        jest.useFakeTimers({now: 1735693200000});
     });
 
     afterEach(() => {
