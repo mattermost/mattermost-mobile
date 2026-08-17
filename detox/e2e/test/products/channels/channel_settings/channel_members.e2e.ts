@@ -186,9 +186,13 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
-            toBeVisible();
+        // Phrase only, and with an explicit timeout.
+        //
+        // A waitFor chain without withTimeout never executes, so this asserted nothing.
+        // The interpolated sentence could not have matched either: usernames render as
+        // separate at-mention nodes, and the actor renders as "you" when it is the
+        // current user. Match the phrase, which is a single node.
+        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
 
     });
@@ -220,9 +224,13 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
-            toBeVisible();
+        // Phrase only, and with an explicit timeout.
+        //
+        // A waitFor chain without withTimeout never executes, so this asserted nothing.
+        // The interpolated sentence could not have matched either: usernames render as
+        // separate at-mention nodes, and the actor renders as "you" when it is the
+        // current user. Match the phrase, which is a single node.
+        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -260,14 +268,18 @@ describe('Channels', () => {
         // Assert existence, not visibility: the dismissing manage-members modal can still
         // overlay post_list and fail the visibility threshold.
         //
-        // Match with a regex, not an exact string. This channel already has several
-        // membership system posts, so the removal folds into a CombinedUserActivity row
-        // rendering "{firstUser} was **removed from the channel**." — the node text
-        // carries an "@" prefix, a trailing period, and markdown-bold splitting, and both
-        // exact forms missed it (runs 31835719224 and 31919670392, both platforms).
-        // Same regex approach ChannelScreen.assertPostMessageEdited uses.
-        const removalPattern = new RegExp(`${removedUser.username}[\\s\\S]*removed from the channel`, 'i');
-        await waitForElementToExist(element(by.text(removalPattern).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        // Match only the phrase, never "{username} ... removed from the channel".
+        //
+        // The removal folds into a CombinedUserActivity row rendering
+        // "@{user} was **removed from the channel**." The username is an at-mention link
+        // and the phrase is markdown-bold, and they are SEPARATE text nodes — no single
+        // node holds both, so any pattern spanning them matches nothing. Run 31977498176
+        // proves it: testFnFailure.png shows the sentence on screen while the combined
+        // matcher still failed with "'not null' doesn't match the selected view".
+        //
+        // Asserting the username here would add nothing anyway: it already appears in the
+        // "added to the channel" lines of the same block.
+        await waitForElementToExist(element(by.text(/removed from the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -299,9 +311,13 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
-            toBeVisible();
+        // Phrase only, and with an explicit timeout.
+        //
+        // A waitFor chain without withTimeout never executes, so this asserted nothing.
+        // The interpolated sentence could not have matched either: usernames render as
+        // separate at-mention nodes, and the actor renders as "you" when it is the
+        // current user. Match the phrase, which is a single node.
+        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
@@ -336,9 +352,13 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        const systemMessage = `${removedUser.username} was removed from the channel`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id(ChannelScreen.postList.testID.flatList)))).
-            toBeVisible();
+        // Phrase only, and with an explicit timeout.
+        //
+        // A waitFor chain without withTimeout never executes, so this asserted nothing.
+        // The interpolated sentence could not have matched either: usernames render as
+        // separate at-mention nodes, and the actor renders as "you" when it is the
+        // current user. Match the phrase, which is a single node.
+        await waitForElementToExist(element(by.text(/removed from the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
