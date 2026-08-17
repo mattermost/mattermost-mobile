@@ -184,6 +184,14 @@ export function userIds<T extends HasUserId>(hasUserId: T[]): string[] {
     return ids;
 }
 
+/**
+ * Returns true if anyone other than myUserId is in the call.
+ * Compares distinct users rather than sessions.
+ */
+export function hasOtherUserJoined(sessions: Dictionary<CallSession>, myUserId: string): boolean {
+    return Object.values(sessions).some((session) => session.userId !== myUserId);
+}
+
 export function fillUserModels(sessions: Dictionary<CallSession>, models: UserModel[]) {
     const idToModel = models.reduce((accum, cur) => {
         accum[cur.id] = cur;

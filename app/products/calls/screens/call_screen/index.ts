@@ -5,7 +5,13 @@ import {withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, combineLatest, combineLatestWith} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCallChannel, observeCallDatabase, observeCurrentSessionsDict, observeEndCallDetails} from '@calls/observers';
+import {
+    observeCallChannel,
+    observeCallDatabase,
+    observeCurrentSessionsDict,
+    observeDMCallingState,
+    observeEndCallDetails,
+} from '@calls/observers';
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {General} from '@constants';
@@ -55,6 +61,7 @@ const enhanced = withObservables([], () => {
         isOwnDirectMessage,
         isDM,
         ...observeEndCallDetails(),
+        ...observeDMCallingState(),
     };
 });
 

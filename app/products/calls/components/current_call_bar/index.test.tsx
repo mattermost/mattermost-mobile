@@ -10,7 +10,7 @@ import DatabaseManager from '@database/manager';
 import {act, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CurrentCallBar from './current_call_bar';
+import {CurrentCallBar} from './current_call_bar';
 
 import CurrentCallBarIndex from './index';
 

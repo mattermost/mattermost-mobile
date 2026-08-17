@@ -17,6 +17,7 @@ import {
     sortSessions,
     getHandsRaised,
     getHandsRaisedNames,
+    hasOtherUserJoined,
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
@@ -236,6 +237,28 @@ describe('getHandsRaised', () => {
         const raised = getHandsRaised(sessions);
         expect(raised.length).toBe(2);
         expect(raised.map((s) => s.sessionId).sort()).toEqual(['2', '3']);
+    });
+});
+
+describe('hasOtherUserJoined', () => {
+    const mySession = {sessionId: '1', userId: 'me', muted: true, raisedHand: 0};
+
+    it('returns false when only the same user has multiple sessions in the call', () => {
+        const sessions = {
+            1: mySession,
+            2: {sessionId: '2', userId: 'me', muted: true, raisedHand: 0},
+        };
+
+        expect(hasOtherUserJoined(sessions, 'me')).toBe(false);
+    });
+
+    it('returns true when another user is in the call', () => {
+        const sessions = {
+            1: mySession,
+            2: {sessionId: '2', userId: 'user2', muted: true, raisedHand: 0},
+        };
+
+        expect(hasOtherUserJoined(sessions, 'me')).toBe(true);
     });
 });
 

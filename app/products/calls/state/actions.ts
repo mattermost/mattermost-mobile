@@ -35,6 +35,7 @@ import {
     type LiveCaptionMobile,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
+import {hasOtherUserJoined} from '@calls/utils';
 import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -380,6 +381,15 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         if (userId === nextCurrentCall.myUserId && !nextCurrentCall.connected) {
             nextCurrentCall.connected = true;
             nextCurrentCall.mySessionId = sessionId;
+        }
+
+        // TODO: Since this is a synchronous event path, we should only set dmCalleeAnsweredAt for DM calls.
+        // Make changes so that we only set dmCalleeAnsweredAt for DM calls by passing the channel type to this function
+        // in the function parent call chain.
+        if (
+            !nextCurrentCall.dmCalleeAnsweredAt &&
+            hasOtherUserJoined(nextCurrentCall.sessions, nextCurrentCall.myUserId)) {
+            nextCurrentCall.dmCalleeAnsweredAt = Date.now();
         }
 
         setCurrentCall(nextCurrentCall);
