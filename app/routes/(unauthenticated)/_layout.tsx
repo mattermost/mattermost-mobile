@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Stack, Redirect} from 'expo-router';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import tinycolor from 'tinycolor2';
@@ -10,6 +10,7 @@ import tinycolor from 'tinycolor2';
 import {Screens} from '@constants';
 import {useThemeByAppearanceWithDefault} from '@context/theme';
 import {useHasCredentials} from '@hooks/use_has_credentials';
+import {hideLaunchSplash} from '@init/splash';
 
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 
@@ -35,6 +36,13 @@ export default function UnauthenticatedLayout() {
         headerBackButtonMenuEnabled: false,
         ...Platform.select({android: {statusBarBackgroundColor: theme.centerChannelBg, statusBarTranslucent: true, statusBarStyle: tinycolor(theme.centerChannelBg).isLight() ? 'dark' : 'light'}}),
     }), [theme]);
+
+    useEffect(() => {
+        // null: credentials not resolved yet. Stay on splash until we know this is login.
+        if (hasCredentials === false) {
+            hideLaunchSplash();
+        }
+    }, [hasCredentials]);
 
     // Redirect to authenticated if has credentials
     if (hasCredentials) {

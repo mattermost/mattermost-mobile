@@ -13,6 +13,7 @@ import Alert from '@components/illustrations/alert';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {usePreventDoubleTap} from '@hooks/utils';
+import {hideLaunchSplash} from '@init/splash';
 import Servers from '@screens/home/channel_list/servers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -89,6 +90,7 @@ const DataErased = ({serverUrl, displayName}: DataErasedProps) => {
     const [hasError, setHasError] = useState(false);
 
     useDidMount(() => {
+        hideLaunchSplash();
         const sub = AppState.addEventListener('change', (state) => {
             if (state === 'active') {
                 setHasError(false);
