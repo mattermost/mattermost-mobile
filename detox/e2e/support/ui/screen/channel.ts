@@ -637,15 +637,19 @@ class ChannelScreen {
 
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        if (isAndroid()) {
-            const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, 'is');
-            const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
-            await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        } else {
-            const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
-            const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-            await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        // Assert the body and the "Edited" marker separately, never as one pattern.
+        //
+        // "Edited" renders as its own Text node beside the message, so a combined
+        // `${message}.*Edited` matcher has to span two nodes and matches nothing — that is
+        // the iOS MM-T4909_3 failure in run 31977498176. Two assertions are satisfied under
+        // either render shape: if one node happens to hold both, each pattern still matches
+        // it. Both are scoped to the same post testID, so this is no weaker than before —
+        // and it no longer needs a per-platform branch.
+        const messageMatcher = by.text(new RegExp(escapedMessage, 'i')).withAncestor(postItemMatcher);
+        await waitFor(element(messageMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+
+        const editedMatcher = by.text(/Edited/i).withAncestor(postItemMatcher);
+        await waitFor(element(editedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 
