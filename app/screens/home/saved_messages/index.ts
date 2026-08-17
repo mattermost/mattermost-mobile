@@ -1,44 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {observePostsById, observeSavedPostsByIds} from '@queries/servers/post';
-import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 
 import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
-function getPostIDs(preferences: PreferenceModel[]) {
-    return preferences.map((preference) => preference.name);
-}
-
+// `posts` is deliberately NOT wired through withObservables. Saved Messages is a
+// freezeOnBlur bottom-tab that mounts once and stays mounted, so a subscription
+// created here at mount time predates every later save. On the SQLite/JSI
+// (device) adapter a pre-existing PREFERENCE-table Query.observe() is not
+// reliably notified of a preference CREATE — a fresh .fetch() sees the new row,
+// the live subscription never emits — so the screen stayed empty after saving a
+// message. LokiJS re-emits, which is why unit tests never caught it.
+//
+// The component owns the same pipeline instead and re-subscribes on every focus
+// (see saved_messages.tsx). A fresh subscription reads current DB state when it
+// subscribes, which sidesteps the missed notify entirely.
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
-        posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
-            switchMap((rows) => {
-                const ids = getPostIDs(rows);
-                if (!ids.length) {
-                    return of$(new Set<string>());
-                }
-                return observeSavedPostsByIds(database, ids);
-            }),
-            switchMap((savedPostIds) => {
-                const ids = [...savedPostIds];
-                if (!ids.length) {
-                    return of$([]);
-                }
-                return observePostsById(database, ids, Q.asc);
-            }),
-        ),
         currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
