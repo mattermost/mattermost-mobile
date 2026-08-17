@@ -240,8 +240,13 @@ class ThreadScreen {
         // tap() enforces the 100% visibility threshold, and in a thread opened from Pinned
         // Messages the button is only partly on screen, so MM-T4918_3 failed with "View is
         // not hittable at its visible point" (view bounds {{312, 65}, {88, 32}}).
-        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        await this.sendButton.tap();
+        // Threshold 40, not the iOS default of 75. The button is only PARTLY on screen here,
+        // so polling at 75 can never succeed no matter how long it waits — MM-T4918_3 still
+        // failed with "does not pass visibility percent threshold (75)" (run 31977498176).
+        // Android's default is already 15; this brings iOS into a range the layout can meet.
+        // Corner-tap for the same reason: a bare tap() enforces 100%.
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC, timeouts.HALF_SEC, 40);
+        await this.sendButton.tap({x: 1, y: 1});
 
         // Waited, not instantaneous: the send round-trip has to land before the button
         // swaps to its disabled variant.
