@@ -10,22 +10,25 @@ import ThemeProvider from '@context/theme';
 import UserLocaleProvider from '@context/user_locale';
 import DatabaseManager from '@database/manager';
 import {subscribeActiveServers} from '@database/subscription/servers';
+import {getCachedActiveServer, setCachedActiveServer, type CachedActiveServer} from '@init/session_cache';
 import {secureGetFromRecord} from '@utils/types';
 
 import type {Database} from '@nozbe/watermelondb';
-import type {PersistenceFlag} from '@typings/database/models/app/servers';
 import type ServersModel from '@typings/database/models/app/servers';
 
-type State = {
-    database: Database;
-    serverUrl: string;
-    serverDisplayName: string;
-    persistenceFlag: PersistenceFlag;
-};
+type State = { database: Database; server: CachedActiveServer };
+
+function toState(server: CachedActiveServer): State | undefined {
+    const database = secureGetFromRecord(DatabaseManager.serverDatabases, server.url)?.database;
+    return database ? {database, server} : undefined;
+}
 
 export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
     return function ServerDatabaseComponent(props: T) {
-        const [state, setState] = useState<State | undefined>();
+        const [state, setState] = useState<State | undefined>(() => {
+            const cached = getCachedActiveServer();
+            return cached && toState(cached);
+        });
 
         const observer = (servers: ServersModel[]) => {
             const server = servers?.length ? servers.reduce((a, b) =>
@@ -33,18 +36,18 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
             ) : undefined;
 
             if (server) {
-                const database =
-                    secureGetFromRecord(DatabaseManager.serverDatabases, server.url)?.database;
-
-                if (database) {
-                    setState({
-                        database,
-                        serverUrl: server.url,
-                        serverDisplayName: server.displayName,
-                        persistenceFlag: server.persistenceFlag,
-                    });
+                const active: CachedActiveServer = {
+                    url: server.url,
+                    displayName: server.displayName,
+                    persistenceFlag: server.persistenceFlag,
+                };
+                setCachedActiveServer(active);
+                const next = toState(active);
+                if (next) {
+                    setState(next);
                 }
             } else {
+                setCachedActiveServer(undefined);
                 setState(undefined);
             }
         };
@@ -64,7 +67,7 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
         // Flip the key when the adapter changes (on-disk ↔ in-memory) so React unmounts and
         // remounts the subtree; withObservables uses empty triggerProps and only binds to the
         // database at mount, so without a remount it would stay subscribed to the dropped instance.
-        const dbKey = state.persistenceFlag === 'zero-persistence' ? `${state.serverUrl}.mem` : state.serverUrl;
+        const dbKey = state.server.persistenceFlag === 'zero-persistence' ? `${state.server.url}.mem` : state.server.url;
 
         return (
             <DatabaseProvider
@@ -73,7 +76,7 @@ export function withServerDatabase<T extends React.JSX.IntrinsicAttributes>(Comp
             >
                 <DeviceInfoProvider>
                     <UserLocaleProvider database={state.database}>
-                        <ServerProvider server={{displayName: state.serverDisplayName, url: state.serverUrl}}>
+                        <ServerProvider server={{displayName: state.server.displayName, url: state.server.url}}>
                             <ThemeProvider database={state.database}>
                                 <Component {...props}/>
                             </ThemeProvider>
