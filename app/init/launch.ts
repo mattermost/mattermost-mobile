@@ -60,6 +60,13 @@ export function startColdStartEntry(serverUrl: string) {
     appEntry(serverUrl);
 }
 
+function dataErasedResult(server: {url: string; displayName: string}): ExpoRouterLaunchResult {
+    return {
+        route: getExpoRouterPath(Screens.DATA_ERASED)!,
+        params: {serverUrl: server.url, displayName: server.displayName || server.url},
+    };
+}
+
 /**
  * Determine initial route for Expo Router based on app launch conditions
  */
@@ -67,10 +74,7 @@ export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResul
     const startedAt = Date.now();
     const activeServer = getCachedActiveServer() ?? await getActiveServer();
     if (activeServer && activeServer.persistenceFlag === 'wiped') {
-        return {
-            route: getExpoRouterPath(Screens.DATA_ERASED)!,
-            params: {serverUrl: activeServer.url, displayName: activeServer.displayName || activeServer.url},
-        };
+        return dataErasedResult(activeServer);
     }
 
     if (activeServer && hasCachedCredentials()) {
@@ -109,6 +113,20 @@ export async function determineInitialExpoRoute(): Promise<ExpoRouterLaunchResul
     logDebug('determineInitialExpoRoute completed', `${Date.now() - startedAt}ms`);
     launchMark('route_done');
     return result;
+}
+
+export function getOptimisticLaunchResult(): ExpoRouterLaunchResult | null {
+    const server = getCachedActiveServer();
+    if (server?.persistenceFlag === 'wiped') {
+        return dataErasedResult(server);
+    }
+    if (hasCachedCredentials()) {
+        return {
+            route: '/(authenticated)/(home)',
+            params: {launchType: Launch.Normal, coldStart: true, serverUrl: server?.url},
+        };
+    }
+    return null;
 }
 
 async function determineRouteFromDeeplink(deepLinkUrl: string): Promise<ExpoRouterLaunchResult> {
