@@ -35,7 +35,7 @@ import {
     type LiveCaptionMobile,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {hasOtherUserJoined} from '@calls/utils';
+import {getDMCalleeId, hasOtherUserJoined} from '@calls/utils';
 import {Calls, General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -44,12 +44,13 @@ import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissBottomSheet, navigateBack} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {isDMorGM} from '@utils/channel';
+import {getFullErrorMessage} from '@utils/errors';
 import {generateId} from '@utils/general';
 import {isMainActivity} from '@utils/helpers';
-import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
+import type UserModel from '@typings/database/models/servers/user';
 
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     // Reconcile native overlays: any previously-tracked call that's no longer
@@ -88,6 +89,7 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
         voiceOn: {},
     };
     setCurrentCall(nextCall);
+    stopRingbackIfAnswered(nextCall);
 };
 
 export const processIncomingCalls = async (serverUrl: string, calls: Call[], keepExisting = true) => {
@@ -216,10 +218,18 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     switch (appState) {
         case 'inactive':
         case 'background':
-            CallsNative.stopRingtone();
-            setIncomingCalls({...getIncomingCalls(), currentRingingCallId: undefined});
+            // The incoming ring and the outbound ringback share the one native player, so stop
+            // whichever is playing through its own owner
+            stopRingback();
+            stopIncomingCallsRinging();
             break;
     }
+};
+
+// Whether the user wants to hear call sounds at all. Gates both the incoming ringtone and the
+// outbound ringback tone, so turning call sounds off in Settings silences both.
+const callSoundsEnabled = (user: UserModel) => {
+    return user.notifyProps?.calls_mobile_sound ? user.notifyProps.calls_mobile_sound === 'true' : user.notifyProps?.calls_desktop_sound === 'true';
 };
 
 const getRingtoneOrNone = async (serverUrl: string) => {
@@ -227,13 +237,9 @@ const getRingtoneOrNone = async (serverUrl: string) => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const user = await getCurrentUser(database);
-        if (!user) {
-            // This shouldn't happen, so don't bother localizing and displaying an alert.
-            return 'none';
-        }
 
-        const enabled = user.notifyProps?.calls_mobile_sound ? user.notifyProps.calls_mobile_sound === 'true' : user.notifyProps?.calls_desktop_sound === 'true';
-        if (!enabled) {
+        // No user shouldn't happen, so don't bother localizing and displaying an alert.
+        if (!user || !callSoundsEnabled(user)) {
             return 'none';
         }
 
@@ -308,18 +314,8 @@ const stopIncomingCallsRinging = () => {
     setIncomingCalls({...incomingCalls, currentRingingCallId: undefined});
 };
 
-// Ringback: the outbound tone the DM/GM call owner hears while waiting for the
-// first other participant to answer. Scoped to a single global slot since a
-// device can only be in one call at a time (mirrors the incoming-ring state above).
-//
-// seconds=0 loops the 'ringback' asset indefinitely (CallsNative behaviour on both platforms).
-//
 // The channel currently playing the ringback tone, or null if none is playing.
 let ringbackChannelId: string | null = null;
-
-// The channel of a call that's already been answered (another session joined),
-// so ringback must never (re)start for it — even if that session later leaves.
-let ringbackHandledChannelId: string | null = null;
 let ringbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export const stopRingback = () => {
@@ -327,62 +323,78 @@ export const stopRingback = () => {
         clearTimeout(ringbackTimeout);
         ringbackTimeout = null;
     }
-    if (ringbackChannelId) {
+    if (ringbackChannelId !== null) {
         CallsNative.stopRingtone();
         ringbackChannelId = null;
     }
 };
 
-const otherSessionHasJoined = (currentCall: CurrentCall) => {
-    return Object.values(currentCall.sessions).some((session) => session.userId !== currentCall.myUserId);
+const stopRingbackIfAnswered = (call: CurrentCall) => {
+    if (hasOtherUserJoined(call.sessions, call.myUserId)) {
+        stopRingback();
+    }
+};
+
+// The caller is in the ringing phase while they own a connected DM call that nobody else has
+// joined or answered yet.
+const isRingingPhase = (call: CurrentCall) => {
+    return call.connected &&
+        call.ownerId === call.myUserId &&
+        !call.dmCalleeAnsweredAt &&
+        !hasOtherUserJoined(call.sessions, call.myUserId);
 };
 
 export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
-    if (!currentCall.connected || currentCall.ownerId !== currentCall.myUserId) {
-        return;
-    }
-
     const {channelId, serverUrl} = currentCall;
-    if (ringbackChannelId === channelId || ringbackHandledChannelId === channelId) {
+    if (ringbackChannelId === channelId || !isRingingPhase(currentCall)) {
         return;
     }
 
-    if (!getCallsConfig(serverUrl).EnableRinging || otherSessionHasJoined(currentCall)) {
+    if (!getCallsConfig(serverUrl).EnableRinging) {
         return;
     }
 
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
-        if (!channel || !isDMorGM(channel)) {
+        if (!getDMCalleeId(currentCall.myUserId, channel)) {
+            return;
+        }
+
+        const user = await getCurrentUser(database);
+        if (!user || !callSoundsEnabled(user)) {
             return;
         }
     } catch (error: unknown) {
-        logError('failed to getServerDatabase in startRingbackIfNeeded', getFullErrorMessage(error));
+        logError('startRingbackIfNeeded', getFullErrorMessage(error));
         return;
     }
 
-    // Re-check nothing changed while we were awaiting the channel lookup.
+    // Re-check nothing changed while we were awaiting the database lookups.
     const latestCall = getCurrentCall();
     if (
         !latestCall ||
         latestCall.channelId !== channelId ||
-        !latestCall.connected ||
-        otherSessionHasJoined(latestCall) ||
         ringbackChannelId === channelId ||
-        ringbackHandledChannelId === channelId
+        !isRingingPhase(latestCall)
     ) {
         return;
     }
 
     ringbackChannelId = channelId;
-    CallsNative.startRingtone('ringback', 0);
-    ringbackTimeout = setTimeout(() => {
-        ringbackTimeout = null;
+
+    // seconds=0 loops the 'ringback' asset indefinitely on Android; iOS ignores the argument
+    // and always loops. Either way the timeout below is what stops it.
+    CallsNative.startRingtone('ringback', 0).catch((error: unknown) => {
+        logDebug('startRingbackIfNeeded failed to start the ringback tone', getFullErrorMessage(error));
         if (ringbackChannelId === channelId) {
             stopRingback();
         }
-    }, Calls.RINGBACK_TIMEOUT);
+    });
+
+    const elapsed = latestCall.startTime ? Date.now() - latestCall.startTime : 0;
+    const remaining = Math.max(0, Calls.RINGBACK_TONE_TIMEOUT - elapsed);
+    ringbackTimeout = setTimeout(stopRingback, remaining);
 };
 
 export const setCallForChannel = (serverUrl: string, channelId: string, call?: Call, enabled?: boolean) => {
@@ -400,10 +412,12 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
         // In case we got a complete update on the currentCall
         const currentCall = getCurrentCall();
         if (currentCall?.channelId === channelId) {
-            setCurrentCall({
+            const nextCurrentCall = {
                 ...currentCall,
                 ...call,
-            });
+            };
+            setCurrentCall(nextCurrentCall);
+            stopRingbackIfAnswered(nextCurrentCall);
         }
     } else {
         delete nextCalls[channelId];
@@ -475,8 +489,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         if (userId === nextCurrentCall.myUserId) {
             startRingbackIfNeeded(nextCurrentCall);
         } else {
-            ringbackHandledChannelId = channelId;
-            stopRingback();
+            stopRingbackIfAnswered(nextCurrentCall);
         }
     }
 
@@ -558,10 +571,8 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         existingCall = callsState.calls[channelId];
     }
 
-    // Fresh call setup for this channel — clear any leftover ringback guards
-    // from a previous call in the same channel.
+    // Silence any tone left over from a previous call.
     stopRingback();
-    ringbackHandledChannelId = null;
 
     setCurrentCall({
         ...DefaultCurrentCall,
@@ -620,6 +631,13 @@ export const callStarted = async (serverUrl: string, call: Call) => {
         ...call,
     };
     setCurrentCall(nextCurrentCall);
+
+    // This is the first point at which ownerId is correct for the person who started the call:
+    // newCurrentCall seeds it from DefaultCall ('') when the channel had no call yet. Ringback
+    // has to be (re)evaluated here or the initiator never hears it. Idempotent with the other
+    // call sites, so whichever websocket event arrives first wins.
+    stopRingbackIfAnswered(nextCurrentCall);
+    startRingbackIfNeeded(nextCurrentCall);
 
     // We started the call, and it succeeded, so follow the call thread.
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;

@@ -75,7 +75,7 @@ import {License} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
-import {getUserById} from '@queries/servers/user';
+import {getCurrentUser, getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
@@ -113,7 +113,6 @@ jest.mock('@queries/servers/channel', () => ({
         type: 'D',
     })),
 }));
-
 
 jest.mock('@queries/servers/user', () => ({
     getUserById: jest.fn(),
@@ -214,6 +213,9 @@ describe('useCallsState', () => {
     });
 
     afterEach(async () => {
+        // Several actions leave long-lived timers behind (reaction, caption and ring expiry).
+        // Dropping the fake clock discards them so Jest can exit.
+        disableFakeTimers();
         await DatabaseManager.destroyServerDatabase('server1');
     });
 
@@ -1242,6 +1244,9 @@ describe('useCallsState', () => {
     });
 
     it('user reactions', () => {
+        // userReacted schedules a REACTION_TIMEOUT cleanup per reaction.
+        enableFakeTimers();
+
         const initialCallsState = {
             ...DefaultCallsState,
             serverUrl: 'server1',
@@ -1599,15 +1604,14 @@ describe('useCallsState', () => {
             });
             AppState.currentState = 'active';
 
-            const getCurrentUser = require('@queries/servers/user').getCurrentUser;
-            getCurrentUser.mockResolvedValue({
+            jest.mocked(getCurrentUser).mockResolvedValue({
                 id: 'user-5',
                 roles: 'user',
                 notifyProps: {
                     calls_mobile_sound: 'true',
                     calls_mobile_notification_sound: 'Calm',
                 },
-            });
+            } as never);
 
             // should not ring when in DND
             await act(async () => {
@@ -1797,6 +1801,9 @@ describe('useCallsState', () => {
     });
 
     it('captions', () => {
+        // receivedCaption schedules a CAPTION_TIMEOUT cleanup per caption.
+        enableFakeTimers();
+
         const initialCallsState = {
             ...DefaultCallsState,
             serverUrl: 'server1',
@@ -1874,39 +1881,65 @@ describe('useCallsState', () => {
     });
 
     describe('ringback', () => {
-        const callIOwn: Call = {
-            id: 'call-ringback',
-            sessions: {
-                mySession: {sessionId: 'mySession', userId: 'myUserId', muted: false, raisedHand: 0},
-            },
-            channelId: 'channel-ringback',
-            startTime: 123,
-            screenOn: '',
-            threadId: 'thread-ringback',
-            ownerId: 'myUserId',
-            hostId: 'myUserId',
-            dismissed: {},
+        // A 1:1 DM between myUserId and other-user, per the userId1__userId2 channel name convention.
+        const dmChannel = {type: 'D', name: 'myUserId__other-user'};
+        const soundsOnUser = {notifyProps: {calls_mobile_sound: 'true'}};
+
+        let callIOwn: Call;
+
+        // startRingbackIfNeeded awaits the channel and the current user before it starts the tone,
+        // so give the microtask queue a couple of rounds to drain.
+        const settle = async () => {
+            await act(async () => {
+                await advanceTimers(0);
+                await advanceTimers(0);
+            });
+        };
+
+        const connect = async () => {
+            act(() => setCurrentCallConnected('channel-ringback', 'mySession'));
+            await settle();
         };
 
         beforeEach(async () => {
-            jest.clearAllMocks();
-            jest.mocked(getChannelById).mockResolvedValue({type: 'D'} as never);
+            enableFakeTimers();
+            jest.mocked(getChannelById).mockResolvedValue(dmChannel as never);
+            jest.mocked(getCurrentUser).mockResolvedValue(soundsOnUser as never);
             await DatabaseManager.init(['server1']);
+
+            // The ringback window is measured from the call's start, so the call has to start "now".
+            callIOwn = {
+                id: 'call-ringback',
+                sessions: {
+                    mySession: {sessionId: 'mySession', userId: 'myUserId', muted: false, raisedHand: 0},
+                },
+                channelId: 'channel-ringback',
+                startTime: Date.now(),
+                screenOn: '',
+                threadId: 'thread-ringback',
+                ownerId: 'myUserId',
+                hostId: 'myUserId',
+                dismissed: {},
+            };
+
             setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: true});
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': callIOwn}});
+
+            // Earlier tests leave a ringing incoming call behind in the store, which would make
+            // the backgrounding path stop that ringtone too.
+            setIncomingCalls(DefaultIncomingCalls);
             newCurrentCall('server1', 'channel-ringback', 'myUserId');
         });
 
         afterEach(() => {
             stopRingback();
             disableFakeTimers();
+            jest.mocked(getChannelById).mockReset();
+            jest.mocked(getCurrentUser).mockReset();
         });
 
-        it('starts ringback when the owner connects on a DM/GM call, and never resumes once another participant joins', async () => {
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+        it('starts ringback when the owner connects on a DM call, and never resumes once another participant joins', async () => {
+            await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
             expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
 
@@ -1915,10 +1948,7 @@ describe('useCallsState', () => {
             expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
 
             // a duplicate/late "connected" event for the same call must not restart it
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
 
             // even after the other participant leaves, ringback must not resume
@@ -1926,59 +1956,81 @@ describe('useCallsState', () => {
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
         });
 
+        it('starts ringback for the call initiator, whose ownerId is only filled in by callStarted', async () => {
+            // Starting a call: there's no call in callsState yet, so newCurrentCall seeds
+            // currentCall from DefaultCall and ownerId is ''.
+            setCallsState('server1', {...DefaultCallsState, calls: {}});
+            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
+
+            await connect();
+            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+
+            // The call_start event brings the authoritative call, ownerId included.
+            await act(async () => {
+                await callStarted('server1', callIOwn);
+            });
+            await settle();
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+        });
+
         it('does not ring back for a call the current user does not own', async () => {
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': {...callIOwn, ownerId: 'someone-else'}}});
             newCurrentCall('server1', 'channel-ringback', 'myUserId');
 
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         });
 
-        it('does not ring back outside DM/GM channels', async () => {
-            jest.mocked(getChannelById).mockResolvedValueOnce({type: 'O'} as never);
+        it('does not ring back outside 1:1 DM channels', async () => {
+            jest.mocked(getChannelById).mockResolvedValue({type: 'G', name: 'group-channel'} as never);
 
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
+            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+        });
+
+        it('does not ring back in a DM with yourself, which nobody can answer', async () => {
+            jest.mocked(getChannelById).mockResolvedValue({type: 'D', name: 'myUserId__myUserId'} as never);
+
+            await connect();
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         });
 
         it('does not ring back when ringing is disabled server-side', async () => {
             setCallsConfig('server1', {...DefaultCallsConfig, EnableRinging: false});
 
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
             expect(CallsNative.startRingtone).not.toHaveBeenCalled();
         });
 
-        it('stops automatically after the ringback timeout', async () => {
-            enableFakeTimers();
+        it('does not ring back when the user has turned call sounds off', async () => {
+            jest.mocked(getCurrentUser).mockResolvedValue({notifyProps: {calls_mobile_sound: 'false'}} as never);
 
-            act(() => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-            });
-            await act(async () => {
-                await advanceTimers(0);
-            });
+            await connect();
+            expect(CallsNative.startRingtone).not.toHaveBeenCalled();
+        });
+
+        it('stops automatically when the call reaches the ringback timeout', async () => {
+            // Half the ring window has already elapsed by the time the media connection is up,
+            // so the tone should stop after the remainder, not a full timeout later.
+            const halfway = Calls.RINGBACK_TONE_TIMEOUT / 2;
+            jest.advanceTimersByTime(halfway);
+
+            await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
 
             await act(async () => {
-                await advanceTimers(Calls.RINGBACK_TIMEOUT);
+                await advanceTimers(halfway - 1);
+            });
+            expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
+
+            await act(async () => {
+                await advanceTimers(1);
             });
             expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
         });
 
         it('stops ringback when the caller leaves the call', async () => {
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
 
             await act(async () => {
@@ -1987,11 +2039,41 @@ describe('useCallsState', () => {
             expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
         });
 
-        it('does not restart ringback for a new call in the same channel after being handled, but does for a later fresh call', async () => {
+        it('stops ringback when a reconnect snapshot already contains the answering user', async () => {
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
+
+            // We missed the user_joined event while the websocket was down; the snapshot has it.
+            const answered = {
+                ...callIOwn,
+                sessions: {
+                    ...callIOwn.sessions,
+                    theirSession: {sessionId: 'theirSession', userId: 'other-user', muted: false, raisedHand: 0},
+                },
+            };
             await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
+                await setCalls('server1', 'myUserId', {'channel-ringback': answered}, {});
             });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
+        });
+
+        it('clears ringback state when the app is backgrounded, so a later call can still ring', async () => {
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
+
+            await act(async () => {
+                await callsOnAppStateChange('background');
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
+
+            // A fresh call in the same channel must not be blocked by stale ringback state.
+            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
+            await connect();
+            expect(CallsNative.startRingtone).toHaveBeenCalledTimes(2);
+        });
+
+        it('does not restart ringback for a call already answered, but does for a later fresh call', async () => {
+            await connect();
             act(() => userJoinedCall('server1', 'channel-ringback', 'other-user', 'their-session'));
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
             expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
@@ -1999,10 +2081,7 @@ describe('useCallsState', () => {
             // a brand new call in the same channel should be able to ring back again
             setCallsState('server1', {...DefaultCallsState, calls: {'channel-ringback': callIOwn}});
             act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
-            await act(async () => {
-                setCurrentCallConnected('channel-ringback', 'mySession');
-                await TestHelper.wait(50);
-            });
+            await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(2);
         });
     });
