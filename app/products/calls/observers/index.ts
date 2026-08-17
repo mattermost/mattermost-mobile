@@ -126,6 +126,8 @@ export const observeCurrentSessionsDict = () => {
 // DM call phases for the caller: first 'calling' (waiting for pickup), then 'connected'.
 // All other calls (GMs, channels, callee-side DMs) are always 'connected'.
 // isDMCalling is true if I've started a DM call, am connected, and nobody else has joined yet.
+// The ring phase ends for good at the first answer: if the callee later hangs up while I stay in the
+// call, their session goes away but dmCalleeAnsweredAt doesn't, so we don't fall back to 'calling'.
 export const observeDMCallingState = () => {
     const currentCall = observeCurrentCall();
     const database = observeCallDatabase();
@@ -162,6 +164,7 @@ export const observeDMCallingState = () => {
             isDM &&
             call.connected &&
             call.ownerId === call.myUserId &&
+            !call.dmCalleeAnsweredAt &&
             !hasOtherUserJoined(call.sessions, call.myUserId),
         ))),
         distinctUntilChanged(),

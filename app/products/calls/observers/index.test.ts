@@ -373,6 +373,14 @@ describe('Calls Observers', () => {
             expect(state.dmCalleeAnsweredAt).toBe(5000);
         });
 
+        it('should not go back to calling after the callee answers and then leaves', async () => {
+            // Their session is gone again, but the call was answered, so the ring phase is over.
+            const state = await getState({...dmCall, dmCalleeAnsweredAt: 5000});
+
+            expect(state.isDMCalling).toBe(false);
+            expect(state.dmCalleeAnsweredAt).toBe(5000);
+        });
+
         it('should not be calling for the callee of the DM call', async () => {
             const state = await getState({...dmCall, ownerId: 'user2', myUserId: 'user1'});
 
