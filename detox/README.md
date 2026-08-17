@@ -209,8 +209,10 @@ when needed, one model call per cluster decide **flaky** vs **bug**.
 - **Flake** (in-run recovery, or history + screenshots with policy thresholds and
   amnesty) → the original platform check is flipped to success so the PR can
   merge when every failure is a waived flake.
-- **Bug / inconclusive / MAIN·RELEASE / amnesty denied** → the original check
-  stays red (fail closed).
+- **Bug / inconclusive / RELEASE / amnesty denied** → the original check stays
+  red (fail closed). **MAIN** uses the same flake-waiver bar as PR so required
+  `e2e-test/*` checks on `main` can go green (Create Release Branches has no
+  PR labels).
 - Cost scales with distinct signatures, not with failure count or shard count.
   There is no candidate/rerun path.
 
