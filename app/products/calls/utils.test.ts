@@ -18,6 +18,7 @@ import {
     getHandsRaised,
     getHandsRaisedNames,
     hasOtherUserJoined,
+    getDMCalleeId,
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
@@ -30,6 +31,7 @@ import {
     getTranscriptionUri,
 } from './utils';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
 
 describe('getICEServersConfigs', () => {
@@ -259,6 +261,29 @@ describe('hasOtherUserJoined', () => {
         };
 
         expect(hasOtherUserJoined(sessions, 'me')).toBe(true);
+    });
+});
+
+describe('getDMCalleeId', () => {
+    it('returns the other user in a DM', () => {
+        const channel = {type: 'D', name: 'me__them'} as ChannelModel;
+
+        expect(getDMCalleeId('me', channel)).toBe('them');
+    });
+
+    it('returns empty for a DM with yourself, which has no other party to wait for', () => {
+        const channel = {type: 'D', name: 'me__me'} as ChannelModel;
+
+        expect(getDMCalleeId('me', channel)).toBe('');
+    });
+
+    it('returns empty for group and open channels', () => {
+        expect(getDMCalleeId('me', {type: 'G', name: 'group'} as ChannelModel)).toBe('');
+        expect(getDMCalleeId('me', {type: 'O', name: 'town-square'} as ChannelModel)).toBe('');
+    });
+
+    it('returns empty when the channel is unknown', () => {
+        expect(getDMCalleeId('me', undefined)).toBe('');
     });
 });
 
