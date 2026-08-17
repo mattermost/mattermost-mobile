@@ -6,17 +6,20 @@ import assert from 'assert';
 import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
-import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
+import {CallCardState, CallPostStatus, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
 import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
 
 import {
     getICEServersConfigs,
+    getCallCardState,
+    getNumUsersInCall,
     getCallPropsFromPost,
     sortSessions,
     getHandsRaised,
     getHandsRaisedNames,
+    hasOtherUserJoined,
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
@@ -239,6 +242,28 @@ describe('getHandsRaised', () => {
     });
 });
 
+describe('hasOtherUserJoined', () => {
+    const mySession = {sessionId: '1', userId: 'me', muted: true, raisedHand: 0};
+
+    it('returns false when only the same user has multiple sessions in the call', () => {
+        const sessions = {
+            1: mySession,
+            2: {sessionId: '2', userId: 'me', muted: true, raisedHand: 0},
+        };
+
+        expect(hasOtherUserJoined(sessions, 'me')).toBe(false);
+    });
+
+    it('returns true when another user is in the call', () => {
+        const sessions = {
+            1: mySession,
+            2: {sessionId: '2', userId: 'user2', muted: true, raisedHand: 0},
+        };
+
+        expect(hasOtherUserJoined(sessions, 'me')).toBe(true);
+    });
+});
+
 describe('getHandsRaisedNames', () => {
     const locale = 'en';
     const teammateNameDisplay = 'username';
@@ -420,6 +445,7 @@ describe('getCallPropsFromPost', () => {
         expect(props.title).toBe('');
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
+        expect(props.call_status).toBe('');
         expect(props.recordings).toStrictEqual({});
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
@@ -433,6 +459,7 @@ describe('getCallPropsFromPost', () => {
         expect(props.title).toBe('');
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
+        expect(props.call_status).toBe('');
         expect(props.recordings).toStrictEqual({});
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
@@ -443,6 +470,7 @@ describe('getCallPropsFromPost', () => {
             title: {},
             start_at: 'invalid',
             end_at: [],
+            call_status: 'not_a_status',
             recordings: null,
             transcriptions: 45,
             participants: 'invalid',
@@ -457,6 +485,7 @@ describe('getCallPropsFromPost', () => {
         expect(props.title).toBe('');
         expect(props.start_at).toBe(0);
         expect(props.end_at).toBe(0);
+        expect(props.call_status).toBe('');
         expect(props.recordings).toStrictEqual({});
         expect(props.transcriptions).toStrictEqual({});
         expect(props.participants.length).toBe(0);
@@ -467,6 +496,7 @@ describe('getCallPropsFromPost', () => {
             title: 'call title',
             start_at: 1000,
             end_at: 1045,
+            call_status: 'no_answer',
             recordings: {
                 recA: {
                     file_id: 'recAFileID',
@@ -503,8 +533,79 @@ describe('getCallPropsFromPost', () => {
         expect(props.title).toBe(post.props?.title);
         expect(props.start_at).toBe(post.props?.start_at);
         expect(props.end_at).toBe(post.props?.end_at);
+        expect(props.call_status).toBe(post.props?.call_status);
         expect(props.recordings).toBe(post.props?.recordings);
         expect(props.transcriptions).toBe(post.props?.transcriptions);
         expect(props.participants).toBe(post.props?.participants);
+    });
+});
+
+describe('getCallCardState', () => {
+    const makeCallProps = (overrides: Partial<CallsPostProps> = {}): CallsPostProps => ({
+        title: '',
+        start_at: 1000,
+        end_at: 0,
+        call_status: '',
+        recordings: {},
+        transcriptions: {},
+        participants: [],
+        ...overrides,
+    });
+
+    it('should be calling when the call is ringing and only the caller is in it', () => {
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 1, true)).toBe(CallCardState.Calling);
+    });
+
+    it('should be active once the callee answers, even though call_status is still calling', () => {
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 2, true)).toBe(CallCardState.Active);
+    });
+
+    it('should be active for an ongoing call with no call_status', () => {
+        expect(getCallCardState(makeCallProps(), 2, true)).toBe(CallCardState.Active);
+    });
+
+    it('should be ended once the call is gone, before the post has an end_at', () => {
+        expect(getCallCardState(makeCallProps({call_status: CallPostStatus.Calling}), 0, false)).toBe(CallCardState.Ended);
+    });
+
+    it('should be no answer for a call that timed out while ringing', () => {
+        expect(getCallCardState(makeCallProps({end_at: 31000, call_status: CallPostStatus.NoAnswer}), 0, false)).toBe(CallCardState.NoAnswer);
+    });
+
+    it('should be canceled for a call the caller hung up while ringing', () => {
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.CanceledByCaller}), 0, false)).toBe(CallCardState.Canceled);
+    });
+
+    it('should be declined for a call the callee turned down', () => {
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: CallPostStatus.Declined}), 0, false)).toBe(CallCardState.Declined);
+    });
+
+    it('should be ended for a call that was answered and then hung up', () => {
+        expect(getCallCardState(makeCallProps({end_at: 500000, call_status: CallPostStatus.Ended}), 0, false)).toBe(CallCardState.Ended);
+    });
+
+    it('should be ended for an ended call with no call_status, such as a channel call', () => {
+        expect(getCallCardState(makeCallProps({end_at: 3000, call_status: ''}), 0, false)).toBe(CallCardState.Ended);
+    });
+});
+
+describe('getNumUsersInCall', () => {
+    const session = (sessionId: string, userId: string): CallSession => ({sessionId, userId, muted: false, raisedHand: 0});
+
+    it('should count a user connected from more than one client once', () => {
+        const call = {
+            ...DefaultCall,
+            sessions: {
+                session1: session('session1', 'user-1'),
+                session2: session('session2', 'user-1'),
+                session3: session('session3', 'user-2'),
+            },
+        };
+
+        expect(getNumUsersInCall(call)).toBe(2);
+    });
+
+    it('should be zero when there is no call', () => {
+        expect(getNumUsersInCall(undefined)).toBe(0);
     });
 });

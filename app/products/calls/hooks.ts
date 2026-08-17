@@ -7,6 +7,7 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
+import {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
@@ -152,6 +153,39 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
     return hasPermission;
 };
 
+const CALLING_PULSE_ANIMATION_MIN_OPACITY = 0.4;
+const CALLING_PULSE_ANIMATION_DURATION = 800;
+const CALLING_PULSE_ANIMATION_EASEOUT_DURATION = 200;
+const CALLING_PULSE_ANIMATION_EASING_FUNCTION = Easing.inOut(Easing.ease);
+export const useCallingPulseAnimationStyle = (active: boolean) => {
+    const opacity = useSharedValue(1);
+    const animatedStyle = useAnimatedStyle(() => ({opacity: opacity.value}));
+
+    useEffect(() => {
+        if (active) {
+            opacity.value = withRepeat(
+                withTiming(CALLING_PULSE_ANIMATION_MIN_OPACITY,
+                    {
+                        duration: CALLING_PULSE_ANIMATION_DURATION,
+                        easing: CALLING_PULSE_ANIMATION_EASING_FUNCTION,
+                    }),
+                -1,
+                true,
+            );
+        } else {
+            opacity.value = withTiming(1, {
+                duration: CALLING_PULSE_ANIMATION_EASEOUT_DURATION,
+            });
+        }
+
+        return () => {
+            cancelAnimation(opacity);
+        };
+    }, [active, opacity]);
+
+    return animatedStyle;
+};
+
 export const useCallsAdjustment = (serverUrl: string, channelId: string): number => {
     const incomingCalls = useIncomingCalls().incomingCalls;
     const channelsWithCalls = useChannelsWithCalls(serverUrl);
@@ -283,7 +317,10 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
 
         setIsJoiningOrStarting(true);
         try {
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            if (joined) {
+                navigateToScreen(Screens.CALL);
+            }
         } catch (error) {
             logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
         } finally {

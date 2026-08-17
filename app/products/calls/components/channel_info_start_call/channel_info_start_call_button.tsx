@@ -65,10 +65,6 @@ const ChannelInfoStartCallButton = ({
     const styles = getStyleSheet(theme);
     const isLimitRestricted = limitRestrictedInfo.limitRestricted;
     const [connecting, setConnecting] = useState(false);
-    const [joiningMsg, setJoiningMsg] = useState('');
-
-    const starting = intl.formatMessage({id: 'mobile.calls_starting', defaultMessage: 'Starting...'});
-    const joining = intl.formatMessage({id: 'mobile.calls_joining', defaultMessage: 'Joining...'});
 
     const toggleJoinLeave = useCallback(async () => {
         if (alreadyInCall) {
@@ -77,7 +73,6 @@ const ChannelInfoStartCallButton = ({
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
             dismissChannelInfo();
         } else {
-            setJoiningMsg(isACallInCurrentChannel ? joining : starting);
             setConnecting(true);
 
             await leaveAndJoinWithAlert(intl, serverUrl, channelId);
@@ -95,13 +90,15 @@ const ChannelInfoStartCallButton = ({
         channelId,
         dismissChannelInfo,
         limitRestrictedInfo,
-        isACallInCurrentChannel,
-        joining,
-        starting,
     ]);
 
-    const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
+    const startingMsg = intl.formatMessage({id: 'mobile.calls_starting', defaultMessage: 'Starting...'});
+    const joiningMsg = intl.formatMessage({id: 'mobile.calls_joining', defaultMessage: 'Joining...'});
+    const [tryJoin, msgPostfix, checkingCallsEnabled] = useTryCallsFunction(toggleJoinLeave);
     const onPress = usePreventDoubleTap(tryJoin);
+    const willJoinOrStart = !alreadyInCall && !isLimitRestricted;
+    const isConnecting = connecting || (checkingCallsEnabled && willJoinOrStart);
+    const connectingMsg = isACallInCurrentChannel ? joiningMsg : startingMsg;
 
     const joinText = intl.formatMessage({id: 'mobile.calls_join_call', defaultMessage: 'Join call'});
     const startText = intl.formatMessage({id: 'mobile.calls_start_call', defaultMessage: 'Start call'});
@@ -109,12 +106,12 @@ const ChannelInfoStartCallButton = ({
     const text = isACallInCurrentChannel ? joinText + msgPostfix : startText + msgPostfix;
     const icon = isACallInCurrentChannel ? 'phone-in-talk' : 'phone';
 
-    if (connecting) {
+    if (isConnecting) {
         return (
             <Loading
                 color={theme.buttonBg}
                 size={'small'}
-                footerText={joiningMsg}
+                footerText={connectingMsg}
                 containerStyle={styles.container}
                 footerTextStyles={styles.text}
             />
