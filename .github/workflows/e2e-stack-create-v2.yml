@@ -84,17 +84,6 @@ jobs:
           ref: ${{ inputs.commit_sha }}
           persist-credentials: false
 
-      - name: Resolve server_env
-        id: env
-        run: |
-          set -euo pipefail
-          SERVER_ENV=$(jq -c . .github/actions/e2e-v2-server-env/server-env.json)
-          {
-            echo "server_env<<EOF"
-            echo "${SERVER_ENV}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Compute instance count
         id: count
         env:
@@ -146,9 +135,43 @@ jobs:
           ttl: ${{ inputs.ttl }}
           os: ubuntu-24.04
           license: ${{ inputs.license }}
-          server_env: ${{ steps.env.outputs.server_env }}
-          wait_for_migrations: "true"
           shared_admin_password: "true"
+          server_env: |
+            {
+              "MM_SERVICEENVIRONMENT": "test",
+              "MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS": "true",
+              "MM_EXPERIMENTALSETTINGS_ENABLEWATERMARK": "false",
+              "MM_EXPERIMENTALSETTINGS_RESTRICTSYSTEMADMIN": "false",
+              "MM_FEATUREFLAGS_CHANNELBOOKMARKS": "true",
+              "MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES": "true",
+              "MM_FEATUREFLAGS_INTERACTIVEDIALOGAPPSFORM": "true",
+              "MM_FEATUREFLAGS_MMBLOCKSENABLED": "true",
+              "MM_FILESETTINGS_ENABLEPUBLICLINK": "true",
+              "MM_PASSWORDSETTINGS_MINIMUMLENGTH": "8",
+              "MM_PLUGINSETTINGS_ENABLEMARKETPLACE": "true",
+              "MM_PLUGINSETTINGS_ENABLEREMOTEMARKETPLACE": "true",
+              "MM_PLUGINSETTINGS_ENABLEUPLOADS": "true",
+              "MM_RATELIMITSETTINGS_ENABLE": "true",
+              "MM_RATELIMITSETTINGS_MAXBURST": "50000",
+              "MM_RATELIMITSETTINGS_MEMORYSTORESIZE": "10000",
+              "MM_RATELIMITSETTINGS_PERSEC": "10000",
+              "MM_RATELIMITSETTINGS_VARYBYREMOTEADDR": "false",
+              "MM_RATELIMITSETTINGS_VARYBYUSER": "false",
+              "MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION": "true",
+              "MM_SERVICESETTINGS_ENABLECHANNELBOOKMARKS": "true",
+              "MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW": "false",
+              "MM_SERVICESETTINGS_ENABLETUTORIAL": "false",
+              "MM_SERVICESETTINGS_ENABLEUSERTYPINGMESSAGES": "false",
+              "MM_SERVICESETTINGS_MAXIMUMACTIVEUSERS": "999999",
+              "MM_SERVICESETTINGS_MAXIMUMLOGINATTEMPTS": "999999",
+              "MM_SERVICESETTINGS_SESSIONCACHEINMINUTES": "180",
+              "MM_SERVICESETTINGS_SESSIONLENGTHMOBILEINHOURS": "5000",
+              "MM_SERVICESETTINGS_SESSIONLENGTHWEBINHOURS": "4320",
+              "MM_SUPPORTSETTINGS_HELPLINK": "https://docs.mattermost.com/",
+              "MM_SUPPORTSETTINGS_REPORTAPROBLEMTYPE": "default",
+              "MM_TEAMSETTINGS_EXPERIMENTALENABLEAUTOMATICREPLIES": "true",
+              "MM_TEAMSETTINGS_MAXUSERSPERTEAM": "999999"
+            }
 
       - name: Split worker and extra sites
         id: split
