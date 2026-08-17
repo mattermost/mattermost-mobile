@@ -1007,13 +1007,9 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
-  # Failure triage: TSIO clusters failures and decides flake vs bug.
-  # No test reruns. Cost scales with distinct error signatures.
-  #
-  # One matrix leg per report group (detox-ios, maestro-android, …). Each
-  # leg flips only that group's commit-status context when every failure
-  # is a waived flake. A rollup job resolves the shared e2e-test/ai-triage
-  # context the babysitter watches.
+  # Failure triage: rewrite each platform's e2e-test/* commit status.
+  # Flaky → success on that context. Product/test bug → keep failure with
+  # an annotated description. No separate red ai-triage-* merge blockers.
   #
   # Under E2E/Override, calculate-tsio-identity is skipped and so is the
   # matrix; the rollup still clears the pending e2e-test/ai-triage row.
@@ -1042,7 +1038,7 @@ jobs:
     steps:
       - name: Classify failures via Test System IO
         id: triage
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@c85d4baea3b8f3be46f11418ce33018804ffb5ad
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@4588e27fc39cb401bfc2f456f8fb5118b6939469
         if: always()
         with:
           composite-identity: ${{ matrix.identity }}
@@ -1051,6 +1047,7 @@ jobs:
           mode: ${{ needs.resolve-e2e-policy.outputs.e2e_override == 'true' && 'shadow' || 'gate' }}
           # PR #101 staging until triage APIs are on production.
           use-staging: true
+          # Neutralize prior ai-triage-* rows; real signal is matrix.status_context.
           commit-status-context: e2e-test/ai-triage-${{ matrix.key }}
           github-token: ${{ secrets.GH_TOKEN || github.token }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -1078,20 +1075,15 @@ jobs:
           TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
+          # Always success — merge blockers are the platform e2e-test/* rows only.
+          STATE=success
           if [ "${OVERRIDE}" = "true" ] || [ "${CALC_RESULT}" = "skipped" ]; then
-            STATE=success
             DESC="triage skipped under E2E/Override"
-          elif [ "${TRIAGE_RESULT}" = "success" ]; then
-            STATE=success
-            DESC="triage complete — see e2e-test/ai-triage-* for details"
           elif [ "${TRIAGE_RESULT}" = "skipped" ]; then
-            STATE=success
             DESC="triage skipped (no platforms)"
           else
-            STATE=failure
-            DESC="unwaived failures remain — see e2e-test/ai-triage-*"
+            DESC="triage finished — see e2e-test/detox-* and e2e-test/maestro-*"
           fi
-          # GitHub descriptions max out at 140 characters.
           DESC=$(printf '%s' "$DESC" | cut -c1-140)
           gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
             -f state="$STATE" \
