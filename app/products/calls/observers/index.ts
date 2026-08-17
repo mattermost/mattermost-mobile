@@ -10,15 +10,15 @@ import {
     observeCurrentCall,
     observeIncomingCalls,
 } from '@calls/state';
-import {fillUserModels, hasOtherUserJoined, userIds} from '@calls/utils';
-import {General, License} from '@constants';
+import {fillUserModels, getDMCalleeId, hasOtherUserJoined, userIds} from '@calls/utils';
+import {License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
 import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeUser, queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
+import {isSystemAdmin} from '@utils/user';
 
 import type {CallSession} from '@calls/types/calls';
 import type {Database} from '@nozbe/watermelondb';
@@ -138,14 +138,7 @@ export const observeDMCallingState = () => {
     // The callee isn't in the call yet, so they come from the DM channel rather than from the sessions.
     // Empty when this isn't a DM, or is a DM with yourself: there's then no other party to wait for.
     const dmCalleeId = combineLatest([currentCall, channel]).pipe(
-        switchMap(([call, chan]) => {
-            if (!call || chan?.type !== General.DM_CHANNEL) {
-                return of$('');
-            }
-
-            const calleeId = getUserIdFromChannelName(call.myUserId, chan.name);
-            return of$(calleeId === call.myUserId ? '' : calleeId);
-        }),
+        switchMap(([call, chan]) => of$(call ? getDMCalleeId(call.myUserId, chan) : '')),
         distinctUntilChanged(),
     );
 
