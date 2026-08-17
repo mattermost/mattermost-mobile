@@ -45,6 +45,7 @@ import {NavigationStore} from '@store/navigation_store';
 import {isDMorGM} from '@utils/channel';
 import {generateId} from '@utils/general';
 import {isMainActivity} from '@utils/helpers';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
@@ -355,8 +356,8 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         if (!channel || !isDMorGM(channel)) {
             return;
         }
-    } catch (error) {
-        logError('failed to getServerDatabase in startRingbackIfNeeded', error);
+    } catch (error: unknown) {
+        logError('failed to getServerDatabase in startRingbackIfNeeded', getFullErrorMessage(error));
         return;
     }
 
