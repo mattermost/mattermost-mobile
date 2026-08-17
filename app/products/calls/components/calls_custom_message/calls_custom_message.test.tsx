@@ -88,6 +88,20 @@ describe('CallsCustomMessage', () => {
         getByText('Leave');
     });
 
+    it('should show a bare ended call once the call is torn down, before the post has an end_at', () => {
+        const props = getBaseProps();
+        props.numSessions = 2;
+        props.callTornDown = true;
+        const {getByText, queryByTestId} = renderWithIntlAndTheme(<CallsCustomMessage {...props}/>);
+
+        getByText('Call ended');
+
+        // Without an end_at there are no timings to show, and the call can no longer be joined or left.
+        expect(queryByTestId('calls_custom_message.sub_heading')).toBeNull();
+        expect(queryByTestId('calls_custom_message.join_button')).toBeNull();
+        expect(queryByTestId('calls_custom_message.hangup_button')).toBeNull();
+    });
+
     it('should show no answer to the caller and a missed call to the callee', () => {
         const props = getBaseProps();
         props.post = TestHelper.fakePostModel({

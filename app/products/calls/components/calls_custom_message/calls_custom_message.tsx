@@ -39,6 +39,7 @@ type Props = {
     limitRestrictedInfo?: LimitRestrictedInfo;
     ccChannelId?: string;
     numSessions?: number;
+    callTornDown?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -148,6 +149,7 @@ export const CallsCustomMessage = ({
     isAdmin,
     isHost,
     numSessions = 0,
+    callTornDown = false,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -178,7 +180,7 @@ export const CallsCustomMessage = ({
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, post.channelId]);
 
     const callProps = getCallPropsFromPost(post);
-    const cardState = getCallCardState(callProps, numSessions);
+    const cardState = getCallCardState(callProps, numSessions, callTornDown);
 
     // The author of the call post is the caller.
     const isCaller = Boolean(currentUser && currentUser.id === post.userId);
@@ -267,7 +269,13 @@ export const CallsCustomMessage = ({
                 />
             );
             break;
-        case CallCardState.Ended:
+        case CallCardState.Ended: {
+            if (callProps.end_at === 0) {
+                break;
+            }
+
+            // The card reaches this state from the call_end event, before the post is updated with
+            // end_at, so the timings are only rendered once they are known.
             subHeading = (
                 <View
                     style={style.endCallInfo}
@@ -295,6 +303,7 @@ export const CallsCustomMessage = ({
                 </View>
             );
             break;
+        }
         default:
             subHeading = (
                 <FormattedRelativeTime
