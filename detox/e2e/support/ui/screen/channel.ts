@@ -637,19 +637,24 @@ class ChannelScreen {
 
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        // Assert the body and the "Edited" marker separately, never as one pattern.
+        // Message and "Edited" must be matched as ONE pattern against ONE node.
         //
-        // "Edited" renders as its own Text node beside the message, so a combined
-        // `${message}.*Edited` matcher has to span two nodes and matches nothing — that is
-        // the iOS MM-T4909_3 failure in run 31977498176. Two assertions are satisfied under
-        // either render shape: if one node happens to hold both, each pattern still matches
-        // it. Both are scoped to the same post testID, so this is no weaker than before —
-        // and it no longer needs a per-platform branch.
-        const messageMatcher = by.text(new RegExp(escapedMessage, 'i')).withAncestor(postItemMatcher);
-        await waitFor(element(messageMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-
-        const editedMatcher = by.text(/Edited/i).withAncestor(postItemMatcher);
-        await waitFor(element(editedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        // A regex passed to by.text() is matched against the whole of a node's text,
+        // not searched within it. The message and the "Edited" marker render into the
+        // same text node, so `/message/i` on its own matches nothing — the node reads
+        // "message…Edited" and the anchored pattern fails. Only `message.*Edited`
+        // spans it.
+        //
+        // Splitting this into two assertions is what broke MM-T4783_1, MM-T4783_3 and
+        // MM-T4786_1, which pass on main (report 01a00ea6-c2f1-73fd-974f-6d966c8ff716)
+        // and failed here on both platforms at this line — the split's premise, that
+        // "Edited" is a separate node, is contradicted by main passing with the
+        // combined pattern.
+        //
+        // `s` on Android so `.` also crosses newlines in the flattened text.
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 

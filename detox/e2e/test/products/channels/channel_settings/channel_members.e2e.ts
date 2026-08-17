@@ -192,7 +192,7 @@ describe('Channels', () => {
         // The interpolated sentence could not have matched either: usernames render as
         // separate at-mention nodes, and the actor renders as "you" when it is the
         // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
 
     });
@@ -230,7 +230,7 @@ describe('Channels', () => {
         // The interpolated sentence could not have matched either: usernames render as
         // separate at-mention nodes, and the actor renders as "you" when it is the
         // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -279,7 +279,7 @@ describe('Channels', () => {
         //
         // Asserting the username here would add nothing anyway: it already appears in the
         // "added to the channel" lines of the same block.
-        await waitForElementToExist(element(by.text(/removed from the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(/.*removed from the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -317,7 +317,7 @@ describe('Channels', () => {
         // The interpolated sentence could not have matched either: usernames render as
         // separate at-mention nodes, and the actor renders as "you" when it is the
         // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/added to the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
@@ -358,7 +358,7 @@ describe('Channels', () => {
         // The interpolated sentence could not have matched either: usernames render as
         // separate at-mention nodes, and the actor renders as "you" when it is the
         // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/removed from the channel/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.text(/.*removed from the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
