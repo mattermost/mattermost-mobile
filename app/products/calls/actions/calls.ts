@@ -250,8 +250,13 @@ export const joinCall = async (
     // inbound-push flow and the native layer already reported the call.
     const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
 
+    // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
+    // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
+    // reject long after the user has started or answered a different call. Everything in the
+    // catch below must act on *this* connection, never on whatever is current by then.
+    let conn: CallsConnection;
     try {
-        connection = await newConnection(serverUrl, channelId, (err?: Error) => {
+        conn = await newConnection(serverUrl, channelId, (err?: Error) => {
             myselfLeftCall();
             endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
@@ -259,6 +264,7 @@ export const joinCall = async (
                 showErrorAlertOnClose(err, intl);
             }
         }, setScreenShareURL, hasMicPermission, intl, title, rootId);
+        connection = conn;
     } catch (error) {
         endNativeCall(serverUrl, channelId, 'failed');
         await forceLogoutIfNecessary(serverUrl, error);
@@ -266,7 +272,7 @@ export const joinCall = async (
     }
 
     try {
-        const sessionId = await connection.waitForPeerConnection();
+        const sessionId = await conn.waitForPeerConnection();
 
         setCurrentCallConnected(channelId, sessionId);
         reportNativeCallConnected(ownedNativeUUID);
@@ -291,8 +297,10 @@ export const joinCall = async (
 
         return {data: channelId};
     } catch (e) {
-        connection.disconnect();
-        connection = null;
+        conn.disconnect();
+        if (connection === conn) {
+            connection = null;
+        }
         return {error: `unable to connect to the voice call: ${e}`};
     }
 };

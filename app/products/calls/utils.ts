@@ -16,12 +16,13 @@ import {
     type CallsPostProps,
     type CallsTheme,
 } from '@calls/types/calls';
-import {Calls, Post} from '@constants';
+import {Calls, Post, General} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '@utils/types';
-import {displayUsername} from '@utils/user';
+import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
@@ -194,6 +195,19 @@ export function userIds<T extends HasUserId>(hasUserId: T[]): string[] {
  */
 export function hasOtherUserJoined(sessions: Dictionary<CallSession>, myUserId: string): boolean {
     return Object.values(sessions).some((session) => session.userId !== myUserId);
+}
+
+/**
+ * Returns the id of the other party in a 1:1 DM call, or '' when there is no other
+ * party to wait for: the channel isn't a DM, or it's a DM with yourself.
+ */
+export function getDMCalleeId(myUserId: string, channel?: ChannelModel): string {
+    if (channel?.type !== General.DM_CHANNEL) {
+        return '';
+    }
+
+    const calleeId = getUserIdFromChannelName(myUserId, channel.name);
+    return calleeId === myUserId ? '' : calleeId;
 }
 
 export function fillUserModels(sessions: Dictionary<CallSession>, models: UserModel[]) {

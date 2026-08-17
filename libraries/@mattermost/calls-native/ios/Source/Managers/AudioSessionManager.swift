@@ -92,6 +92,8 @@ import WebRTC
     /// registration failed and `didDeactivate` will never fire, this is the only
     /// teardown path.
     @objc public func resetSession() {
+        rtcSession.lockForConfiguration()
+        defer { rtcSession.unlockForConfiguration() }
         do {
             rtcSession.isAudioEnabled = false
             try rtcSession.setActive(false)
