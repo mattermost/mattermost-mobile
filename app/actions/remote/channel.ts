@@ -766,25 +766,18 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
  * server, a dropped connection, ...) we leave the server state alone. The local optimistic clear
  * done by markChannelAsViewed is then repaired by the next membership sync, which recomputes
  * is_unread from the server counters, and the read is retried once the posts do arrive.
+ *
+ * Once the posts are in we send the read even if the user has already left the channel. This call
+ * does not touch local state, and a stale active channel on the server is corrected by the next
+ * channel view or by unsetActiveChannelOnServer; skipping the read instead would leave the channel
+ * unread on the server after the local state was already cleared, so it would come back as unread
+ * on the next sync.
  */
 export async function markChannelAsReadOnceFetched(serverUrl: string, channelId: string, postsRequest: Promise<PostsForChannel>, groupLabel?: RequestGroupLabel) {
     const {error: fetchError} = await postsRequest;
     if (fetchError) {
         logDebug('skipping markChannelAsRead, the posts fetch failed for channel', channelId);
         return {error: fetchError};
-    }
-
-    try {
-        // The fetch may have outlived the channel the user is looking at. Viewing a channel also sets
-        // it as the active one on the server, so marking a channel the user already left would
-        // suppress its push notifications.
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database || (await getCurrentChannelId(database)) !== channelId) {
-            return {};
-        }
-    } catch (error) {
-        logDebug('error on markChannelAsReadOnceFetched', getFullErrorMessage(error));
-        return {error};
     }
 
     return markChannelAsRead(serverUrl, channelId, false, groupLabel);

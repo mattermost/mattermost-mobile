@@ -450,8 +450,6 @@ describe('app/actions/remote/channel', () => {
 
         describe('markChannelAsReadOnceFetched', () => {
             it('should mark the channel as read when the posts were fetched', async () => {
-                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
-
                 const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
 
                 expect(mockClient.viewMyChannel).toHaveBeenCalledWith(channelId, undefined, undefined);
@@ -459,21 +457,12 @@ describe('app/actions/remote/channel', () => {
             });
 
             it('should not mark the channel as read when the posts fetch failed', async () => {
-                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: channelId}], prepareRecordsOnly: false});
                 const fetchError = new Error('Too many requests');
 
                 const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({error: fetchError}));
 
                 expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
                 expect(result).toEqual({error: fetchError});
-            });
-
-            it('should not mark the channel as read when the user already left the channel', async () => {
-                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'another-channel-id'}], prepareRecordsOnly: false});
-
-                await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
-
-                expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
             });
         });
 

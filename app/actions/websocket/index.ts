@@ -166,9 +166,9 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
                     markChannelAsViewed(serverUrl, currentChannelId, true);
                 }
             } else {
-                // The user switched channels while the posts were being fetched. Viewing a channel
-                // also sets it as the active one on the server, so marking the one they left would
-                // suppress its push notifications.
+                // The user switched channels while the posts were being fetched. Unlike the channel
+                // switch flow, this clears the local unread state too, so going ahead would wipe the
+                // unread flag and the mention badge of a channel the user is no longer looking at.
                 logDebug('skipped marking channel as read after reconnect, the user left channel', currentChannelId);
             }
             EphemeralStore.setNotificationTapped(false);
