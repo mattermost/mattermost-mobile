@@ -1,6 +1,8 @@
 # Lease Mattermost test servers via e2e-test-stack-actions.
 # instances[0..worker_count-1] = per-worker SITE_1
-# instances[-2], instances[-1] = shared SITE_2 and SITE_3
+# When extra_count > 0: instances[-2], instances[-1] = shared SITE_2 and SITE_3
+# iPad passes extra_count=0 (SITE_1 only).
+# Each platform (ios / android / ipad) calls this workflow for its own batch.
 # Base stack only: server + postgres + inbucket (empty `services`).
 name: E2E stack create v2
 
@@ -8,7 +10,7 @@ on:
   workflow_call:
     inputs:
       instance_key:
-        description: "Hostname prefix: mobile-pr-<n>, mobile-main, mobile-release, or mobile-release-cut (<= 24 chars)"
+        description: "Hostname prefix: mobile-pr-<n>-ios|and|ipad (or main/release/release-cut). Toolkit max 24 chars."
         required: true
         type: string
       worker_count:
@@ -16,10 +18,14 @@ on:
         required: true
         type: string
       extra_count:
-        description: "Shared extra servers (SITE_2, SITE_3, …)"
+        description: "Shared extra servers (SITE_2, SITE_3). 0 = SITE_1 only (iPad)."
         required: false
         type: string
         default: "2"
+      platform:
+        description: "ios, android, or ipad — suffixes commit-status contexts"
+        required: true
+        type: string
       server_image:
         description: "Mattermost server image (Docker Hub tag, no digest)"
         required: false
@@ -76,8 +82,8 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/test-servers-created
-          description: Leasing and provisioning test servers
+          context: e2e-test/test-servers-created/${{ inputs.platform }}
+          description: Leasing and provisioning ${{ inputs.platform }} test servers
           status: pending
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
@@ -219,15 +225,21 @@ jobs:
           BATCH_ID: ${{ steps.stack.outputs.batch_id }}
           INSTANCES_FILE: ${{ runner.temp }}/e2e-instances.json
           WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+          PLATFORM: ${{ inputs.platform }}
         run: |
           INSTANCES=$(cat "$INSTANCES_FILE")
           {
-            echo "## E2E v2 test stack"
+            echo "## E2E v2 test stack (${PLATFORM})"
             echo ""
             echo "- batch_id: \`${BATCH_ID}\`"
             echo "- SITE_1 workers: ${WORKERS}"
-            echo "- SITE_2: $(jq -r '.[length-2].site_url' <<< "$INSTANCES")"
-            echo "- SITE_3: $(jq -r '.[length-1].site_url' <<< "$INSTANCES")"
+            if [ "${EXTRAS}" -gt 0 ]; then
+              echo "- SITE_2: $(jq -r '.[length-2].site_url' <<< "$INSTANCES")"
+              echo "- SITE_3: $(jq -r '.[length-1].site_url' <<< "$INSTANCES")"
+            else
+              echo "- extras: none (SITE_1 only)"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish test-servers-created
@@ -236,7 +248,7 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/test-servers-created
-          description: ${{ job.status == 'success' && 'Test servers provisioned' || 'Test server create or provision failed' }}
+          context: e2e-test/test-servers-created/${{ inputs.platform }}
+          description: ${{ job.status == 'success' && format('{0} test servers provisioned', inputs.platform) || format('{0} test server create or provision failed', inputs.platform) }}
           status: ${{ job.status == 'success' && 'success' || 'failure' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

@@ -14,7 +14,11 @@ on:
         type: string
         default: "v1"
       commit_sha:
-        description: "Commit to post e2e-test/test-servers-destroyed on"
+        description: "Commit to post e2e-test/test-servers-destroyed/<platform> on"
+        required: true
+        type: string
+      platform:
+        description: "ios, android, or ipad — suffixes commit-status contexts"
         required: true
         type: string
 
@@ -41,8 +45,8 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/test-servers-destroyed
-          description: Releasing test servers
+          context: e2e-test/test-servers-destroyed/${{ inputs.platform }}
+          description: Releasing ${{ inputs.platform }} test servers
           status: pending
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
@@ -74,7 +78,7 @@ jobs:
         with:
           repository_full_name: ${{ github.repository }}
           commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/test-servers-destroyed
-          description: ${{ job.status == 'success' && 'Test servers released' || 'Test server destroy failed' }}
+          context: e2e-test/test-servers-destroyed/${{ inputs.platform }}
+          description: ${{ job.status == 'success' && format('{0} test servers released', inputs.platform) || format('{0} test server destroy failed', inputs.platform) }}
           status: ${{ job.status == 'success' && 'success' || 'failure' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

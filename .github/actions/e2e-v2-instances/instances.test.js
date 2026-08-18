@@ -64,4 +64,29 @@ describe('e2e v2 instances', () => {
     it('should list admin passwords for masking', () => {
         expect(passwords(extract(response, {workerCount: 1, extraCount: 2}))).toEqual(['pw-1', 'pw-2', 'pw-3']);
     });
+
+    it('should extract SITE_1 only when extra_count is 0', () => {
+        const one = {
+            batch: {instances: [fakeInstance(1)]},
+        };
+        expect(extract(one, {workerCount: 1, extraCount: 0})).toHaveLength(1);
+    });
+
+    it('should bind SITE_1 only and omit SITE_2 / SITE_3 when extra_count is 0', () => {
+        const one = {
+            batch: {instances: [fakeInstance(1)]},
+        };
+        const bound = bindWorker(extract(one, {workerCount: 1, extraCount: 0}), 1, 0);
+        expect(bound.server_1.site_url).toBe('https://site-1.example');
+        expect(bound.server_2).toBeUndefined();
+        expect(bound.server_3).toBeUndefined();
+        expect(envLines(bound)).toBe([
+            'SITE_1_URL=https://site-1.example',
+            'ADMIN_USERNAME=sysadmin',
+            'ADMIN_EMAIL=sysadmin@example.com',
+            'ADMIN_PASSWORD=pw-1',
+        ].join('\n'));
+        expect(envLines(bound)).not.toContain('SITE_2_URL=');
+        expect(envLines(bound)).not.toContain('SITE_3_URL=');
+    });
 });

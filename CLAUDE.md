@@ -169,7 +169,7 @@ E2E results are orchestrated via Test System IO (`dispatch-begin` / `dispatch-ru
 
 | Flow | Context(s) | Test System IO group name(s) |
 |------|------------|---------------------|
-| PR E2E | `e2e-test/detox-check`, `e2e-test/maestro-check`, `e2e-test/ios-build` or `ios-build-cache`, `e2e-test/android-build` or `android-build-cache`, `e2e-test/test-servers-created`, `e2e-test/test-servers-destroyed`, `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad` (later maestro) | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
+| PR E2E | `e2e-test/detox-check`, `e2e-test/maestro-check`, `e2e-test/ios-build` or `ios-build-cache`, `e2e-test/android-build` or `android-build-cache`, `e2e-test/test-servers-created/{ios,android,ipad}`, `e2e-test/test-servers-destroyed/{ios,android,ipad}`, `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad` (later maestro) | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
 | Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
 | Compatibility matrix | per leg `e2e-test/<platform>/cmt-server-${version}` | `<platform>-cmt-server-${version}` (derived from context) |
 

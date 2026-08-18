@@ -1,6 +1,7 @@
 # Detox iOS E2E v2 — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
-# Each worker downloads the create response artifact, binds instances[shard-1]
-# as SITE_1, and the last two entries as SITE_2 / SITE_3.
+# Each worker downloads this platform's create response artifact and binds
+# instances[shard-1] as SITE_1. When stack_extra_count is 2, the last two
+# entries are SITE_2 / SITE_3. iPad passes stack_extra_count=0 (SITE_1 only).
 # Called from e2e-detox-v2.yml. Independent of the Matterwick v1 template.
 name: Detox iOS E2E Tests Template v2
 
@@ -119,6 +120,11 @@ on:
         required: false
         type: string
         default: ""
+      stack_extra_count:
+        description: "Extra servers after SITE_1s (2 = SITE_2/SITE_3, 0 = SITE_1 only)"
+        required: false
+        type: string
+        default: "2"
 
 env:
   AWS_REGION: "us-east-1"
@@ -317,14 +323,15 @@ jobs:
         env:
           RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
           SHARD_ID: ${{ matrix.shard }}
+          EXTRAS: ${{ inputs.stack_extra_count }}
         run: |
           set -euo pipefail
           while read -r pw; do
             [ -n "$pw" ] && echo "::add-mask::${pw}"
           done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
           node .github/actions/e2e-v2-instances/instances.js bind \
-            --response "$RESPONSE" --shard "$SHARD_ID" >> "$GITHUB_ENV"
-          echo "Worker ${SHARD_ID}: server_1_instance index $((10#$SHARD_ID - 1)); extras are last two instances"
+            --response "$RESPONSE" --shard "$SHARD_ID" --extras "$EXTRAS" >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: server_1_instance index $((10#$SHARD_ID - 1)); extras=${EXTRAS}"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

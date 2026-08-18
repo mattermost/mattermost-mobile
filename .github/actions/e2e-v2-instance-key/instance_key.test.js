@@ -3,19 +3,23 @@
 const {instanceKey, scopeLabel, MAX_LENGTH} = require('./instance_key');
 
 describe('e2e v2 instance_key', () => {
-    it('should format a PR key as mobile-pr-<n>', () => {
-        expect(instanceKey({prNumber: '1234'})).toBe('mobile-pr-1234');
+    it('should format a PR key as mobile-pr-<n>-<platform>', () => {
+        expect(instanceKey({prNumber: '1234', platform: 'ios'})).toBe('mobile-pr-1234-ios');
+        expect(instanceKey({prNumber: '1234', platform: 'android'})).toBe('mobile-pr-1234-and');
+        expect(instanceKey({prNumber: '1234', platform: 'ipad'})).toBe('mobile-pr-1234-ipad');
     });
 
     it('should format main, release, and release-cut keys', () => {
-        expect(instanceKey({runType: 'MAIN'})).toBe('mobile-main');
-        expect(instanceKey({runType: 'MASTER'})).toBe('mobile-main');
-        expect(instanceKey({runType: 'RELEASE'})).toBe('mobile-release');
-        expect(instanceKey({runType: 'RELEASE_CUT'})).toBe('mobile-release-cut');
+        expect(instanceKey({runType: 'MAIN', platform: 'ios'})).toBe('mobile-main-ios');
+        expect(instanceKey({runType: 'MASTER', platform: 'android'})).toBe('mobile-main-and');
+        expect(instanceKey({runType: 'RELEASE', platform: 'ipad'})).toBe('mobile-release-ipad');
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ios'})).toBe('mobile-release-cut-ios');
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'android'})).toBe('mobile-release-cut-and');
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ipad'})).toBe('mobile-release-cut-ipad');
     });
 
     it('should prefer the PR number over run type', () => {
-        expect(instanceKey({prNumber: '10054', runType: 'MAIN'})).toBe('mobile-pr-10054');
+        expect(instanceKey({prNumber: '10054', runType: 'MAIN', platform: 'ios'})).toBe('mobile-pr-10054-ios');
     });
 
     it('should strip non-digits from the PR number', () => {
@@ -29,11 +33,18 @@ describe('e2e v2 instance_key', () => {
     });
 
     it('should stay within the toolkit hostname prefix limit', () => {
-        expect(instanceKey({prNumber: '10054'}).length).toBeLessThanOrEqual(MAX_LENGTH);
-        expect(instanceKey({runType: 'RELEASE_CUT'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({prNumber: '10054', platform: 'ipad'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ios'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'android'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ipad'}).length).toBeLessThanOrEqual(MAX_LENGTH);
     });
 
     it('should reject an unknown scope', () => {
-        expect(() => instanceKey({refName: 'cursor/e2e'})).toThrow(/PR number/);
+        expect(() => instanceKey({refName: 'cursor/e2e', platform: 'ios'})).toThrow(/PR number/);
+    });
+
+    it('should reject a missing or unknown platform', () => {
+        expect(() => instanceKey({prNumber: '1'})).toThrow(/platform/);
+        expect(() => instanceKey({prNumber: '1', platform: 'macos'})).toThrow(/platform/);
     });
 });

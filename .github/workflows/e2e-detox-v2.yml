@@ -2,8 +2,9 @@
 # Called from e2e-pr-v2.yml after builds and e2e-test-stack create.
 # Templates download ios-build-simulator-* / android-build-files-* via artifact_run_id.
 #
-# PR: detox-ios, detox-android, and detox-ipad share one create response
-# artifact (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
+# Each platform binds its own create-response artifact (one stack per
+# platform). iOS/Android: SITE_1 per worker + SITE_2/SITE_3 extras.
+# iPad: SITE_1 only.
 name: Detox E2E v2
 
 on:
@@ -100,6 +101,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       response_artifact: ${{ inputs.response_artifact }}
+      stack_extra_count: "2"
     secrets:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
@@ -129,6 +131,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       response_artifact: ${{ inputs.response_artifact }}
+      stack_extra_count: "2"
     secrets:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
@@ -162,6 +165,7 @@ jobs:
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
       response_artifact: ${{ inputs.response_artifact }}
+      stack_extra_count: "0"
     secrets:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}

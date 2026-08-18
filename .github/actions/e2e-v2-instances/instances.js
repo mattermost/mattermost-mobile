@@ -21,8 +21,8 @@ function extract(response, {workerCount, extraCount = EXTRA_COUNT} = {}) {
     if (!Number.isInteger(workers) || workers < 1) {
         throw new Error(`worker_count must be a positive integer, got '${workerCount}'`);
     }
-    if (!Number.isInteger(extras) || extras < 1) {
-        throw new Error(`extra_count must be a positive integer, got '${extraCount}'`);
+    if (!Number.isInteger(extras) || extras < 0) {
+        throw new Error(`extra_count must be a non-negative integer, got '${extraCount}'`);
     }
 
     const instances = readyInstances(response);
@@ -35,15 +35,25 @@ function extract(response, {workerCount, extraCount = EXTRA_COUNT} = {}) {
 
 function bindWorker(instances, shardId, extraCount = EXTRA_COUNT) {
     const extras = Number(extraCount);
+    if (!Number.isInteger(extras) || extras < 0) {
+        throw new Error(`extra_count must be a non-negative integer, got '${extraCount}'`);
+    }
+
     const n = Array.isArray(instances) ? instances.length : 0;
     if (n < extras + 1) {
-        throw new Error(`instances must include SITE_1 plus ${extras} extras, got ${n}`);
+        throw new Error(extras === 0 ?
+            `instances must include at least one SITE_1, got ${n}` :
+            `instances must include SITE_1 plus ${extras} extras, got ${n}`);
     }
 
     const idx = Number(shardId) - 1;
     const site1Count = n - extras;
     if (!Number.isInteger(idx) || idx < 0 || idx >= site1Count) {
         throw new Error(`worker ${shardId} index ${idx} is outside SITE_1 range 0..${site1Count - 1}`);
+    }
+
+    if (extras === 0) {
+        return {server_1: instances[idx]};
     }
 
     return {
@@ -54,18 +64,23 @@ function bindWorker(instances, shardId, extraCount = EXTRA_COUNT) {
 }
 
 function envLines(bound) {
-    const missing = ['server_1', 'server_2', 'server_3'].filter((key) => !bound[key]?.site_url);
-    if (missing.length) {
-        throw new Error(`${missing.join('/')} instance is missing site_url`);
+    if (!bound?.server_1?.site_url) {
+        throw new Error('server_1 instance is missing site_url');
     }
-    return [
+    const lines = [
         `SITE_1_URL=${bound.server_1.site_url}`,
-        `SITE_2_URL=${bound.server_2.site_url}`,
-        `SITE_3_URL=${bound.server_3.site_url}`,
         `ADMIN_USERNAME=${bound.server_1.admin?.username ?? ''}`,
         `ADMIN_EMAIL=${bound.server_1.admin?.email ?? ''}`,
         `ADMIN_PASSWORD=${bound.server_1.admin?.password ?? ''}`,
-    ].join('\n');
+    ];
+    if (bound.server_2 || bound.server_3) {
+        const missing = ['server_2', 'server_3'].filter((key) => !bound[key]?.site_url);
+        if (missing.length) {
+            throw new Error(`${missing.join('/')} instance is missing site_url`);
+        }
+        lines.splice(1, 0, `SITE_2_URL=${bound.server_2.site_url}`, `SITE_3_URL=${bound.server_3.site_url}`);
+    }
+    return lines.join('\n');
 }
 
 function passwords(instances) {

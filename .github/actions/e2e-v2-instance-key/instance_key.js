@@ -3,11 +3,19 @@
 /**
  * Stack hostname prefix. The toolkit refuses more than 24 characters.
  *
- *   mobile-pr-<n>
- *   mobile-main
- *   mobile-release
- *   mobile-release-cut
+ *   mobile-pr-<n>-ios|and|ipad
+ *   mobile-main-ios|and|ipad
+ *   mobile-release-ios|and|ipad
+ *   mobile-release-cut-ios|and|ipad
+ *
+ * Android is `and` so `mobile-release-cut-and` stays within 24 characters.
  */
+
+const PLATFORM_SUFFIX = {
+    ios: 'ios',
+    android: 'and',
+    ipad: 'ipad',
+};
 
 const MAX_LENGTH = 24;
 
@@ -46,8 +54,12 @@ function scopeLabel({prNumber, runType, refName} = {}) {
     throw new Error('instance_key needs a PR number or a main/release/release-cut run type');
 }
 
-function instanceKey({prNumber, runType, refName} = {}) {
-    const key = `mobile-${scopeLabel({prNumber, runType, refName})}`;
+function instanceKey({prNumber, runType, refName, platform} = {}) {
+    const suffix = PLATFORM_SUFFIX[platform];
+    if (!suffix) {
+        throw new Error('instance_key needs platform ios, android, or ipad');
+    }
+    const key = `mobile-${scopeLabel({prNumber, runType, refName})}-${suffix}`;
     if (key.length > MAX_LENGTH) {
         throw new Error(`instance_key is ${key.length} characters (${key}); keep it to ${MAX_LENGTH} or fewer`);
     }
@@ -68,6 +80,9 @@ function parseArgs(argv) {
         } else if (a === '--ref') {
             out.refName = next;
             i += 1;
+        } else if (a === '--platform') {
+            out.platform = next;
+            i += 1;
         }
     }
     return out;
@@ -79,6 +94,7 @@ if (require.main === module) {
 
 module.exports = {
     MAX_LENGTH,
+    PLATFORM_SUFFIX,
     scopeLabel,
     instanceKey,
     parseArgs,
