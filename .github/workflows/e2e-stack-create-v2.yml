@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       instance_key:
-        description: "Stack hostname prefix (<= 24 chars)"
+        description: "Hostname prefix: mobile-pr-<n>-<run_number>, mobile-main-<run_number>, mobile-release-<run_number>, or mobile-release-cut-<run_number> (<= 24 chars)"
         required: true
         type: string
       worker_count:

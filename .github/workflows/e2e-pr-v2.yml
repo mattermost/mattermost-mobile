@@ -97,6 +97,12 @@ jobs:
       server_image: ${{ steps.vars.outputs.server_image }}
       instance_key: ${{ steps.vars.outputs.instance_key }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-v2-instance-key
+
       - name: Resolve identity
         id: vars
         env:
@@ -107,7 +113,7 @@ jobs:
           DISPATCH_TAGS: ${{ inputs.detox-include-tags }}
           DISPATCH_WORKERS: ${{ inputs.parallelism }}
           DISPATCH_IMAGE: ${{ inputs.server_image }}
-          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           SHA="${PR_HEAD_SHA:-$GITHUB_SHA}"
@@ -126,13 +132,13 @@ jobs:
             SCOPE="branch-${slug}"
           fi
 
-          # instance_key prefixes every hostname and must be <= 24 chars.
-          if [ -n "$PR_DIGITS" ]; then
-            KEY="mpr${PR_DIGITS}r${RUN_ID: -6}"
-          else
-            KEY="m${SHA:0:7}r${RUN_ID: -6}"
-          fi
-          KEY=$(printf '%s' "$KEY" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c1-24)
+          # Hostname prefix: mobile-pr-<n>-<run_number>, mobile-main-<run_number>,
+          # mobile-release-<run_number>, mobile-release-cut-<run_number>.
+          # Toolkit limit is 24 characters. run_number is github.run_number.
+          KEY=$(node .github/actions/e2e-v2-instance-key/instance_key.js \
+            --pr "${PR_NUMBER:-}" \
+            --ref "${GITHUB_REF_NAME:-}" \
+            --run-number "${RUN_NUMBER}")
 
           WORKERS="${DISPATCH_WORKERS:-20}"
           if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
