@@ -5,7 +5,6 @@ import {Platform} from 'react-native';
 import * as KeyChain from 'react-native-keychain';
 
 import DatabaseManager from '@database/manager';
-import {launchMark} from '@init/launch_profiler';
 import {logWarning} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
@@ -42,11 +41,8 @@ export const getAllServerCredentials = async (knownServerUrls?: string[]): Promi
     // Empty knownServerUrls intentionally lists (wiped/fresh DB).
     if (knownServerUrls?.length) {
         serverUrls = knownServerUrls;
-        launchMark('credentials_list', 'skipped');
     } else {
-        const listStarted = Date.now();
         serverUrls = await getAllKeychainServerUrls();
-        launchMark('credentials_list', `${serverUrls.length} urls ${Date.now() - listStarted}ms`);
     }
 
     const serverCredentials = (await Promise.all(

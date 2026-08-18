@@ -41,9 +41,6 @@ jest.mock('@database/manager', () => ({
     getActiveServerUrl: jest.fn().mockResolvedValue('https://example.com'),
     serverDatabases: {},
 }));
-jest.mock('@init/launch_profiler', () => ({
-    launchMark: jest.fn(),
-}));
 
 describe('credentials', () => {
     const mockServerUrl = 'https://example.com';
