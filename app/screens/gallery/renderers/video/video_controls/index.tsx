@@ -31,7 +31,7 @@ interface VideoControlsWithSeekProps {
     onRewind: () => void;
     onForward: () => void;
     onSpeedChange: (rate: number) => void;
-    onFullscreen: () => void;
+    onFullscreenChange: (fullscreen: boolean) => void;
     onCaptionsToggle?: () => void;
     setShowCustomControls: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -81,7 +81,7 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
     onRewind,
     onForward,
     onSpeedChange,
-    onFullscreen,
+    onFullscreenChange,
     onCaptionsToggle,
     captionsEnabled,
     hasCaptions = false,
@@ -142,6 +142,10 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
         scheduleAutoHideControls(control);
     }, [cancelHideControls, scheduleAutoHideControls, visible]);
 
+    const onFullscreen = useCallback(() => {
+        onFullscreenChange(!isFullscreen);
+    }, [isFullscreen, onFullscreenChange]);
+
     const handleBackgroundPress = useCallback(() => {
         if (isInteractingWithControlsRef.current) {
             // If the user is interacting with the controls, do not hide them
@@ -150,14 +154,19 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
 
         cancelHideControls();
 
+        // The gallery header and footer follow the controls so that tapping the
+        // video gives the player the whole screen instead of leaving them pinned
+        // over it, which is most noticeable in landscape.
         if (visible) {
             setShowCustomControls(false);
             setShowSpeedMenu(false);
+            onFullscreenChange(true);
         } else {
             setShowCustomControls(true);
             scheduleAutoHideControls();
+            onFullscreenChange(false);
         }
-    }, [cancelHideControls, scheduleAutoHideControls, setShowCustomControls, visible]);
+    }, [cancelHideControls, onFullscreenChange, scheduleAutoHideControls, setShowCustomControls, visible]);
 
     const onShowSpeedMenu = useCallback((value?: boolean) => {
         setShowSpeedMenu(value || !showSpeedMenu);

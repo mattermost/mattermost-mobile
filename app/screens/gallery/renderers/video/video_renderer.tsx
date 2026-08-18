@@ -102,11 +102,16 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
         updateLocalFilePath(serverUrl, item.id, path);
     }, [serverUrl, item.id]);
 
+    const onFullscreenChange = useCallback((fullscreen: boolean) => {
+        hideHeaderAndFooter(fullscreen);
+        StatusBar.setHidden(fullscreen, 'slide');
+    }, [hideHeaderAndFooter]);
+
     const onEnd = useCallback(() => {
-        hideHeaderAndFooter(false);
+        onFullscreenChange(false);
         setPaused(true);
         setShowCustomControls(true);
-    }, [hideHeaderAndFooter]);
+    }, [onFullscreenChange]);
 
     const onError = useCallback(() => {
         setHasError(true);
@@ -171,11 +176,6 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
         setPlaybackRate(rate);
     }, []);
 
-    const onFullscreenToggle = useCallback(() => {
-        hideHeaderAndFooter(!headerAndFooterHiddenValue);
-        StatusBar.setHidden(!headerAndFooterHiddenValue, 'slide');
-    }, [headerAndFooterHiddenValue, hideHeaderAndFooter]);
-
     const onCaptionsPress = useCallback(() => {
         setCaptionsEnabled((prev) => !prev);
     }, []);
@@ -223,6 +223,10 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
 
     useEffect(() => {
         return () => {
+            // Hiding the chrome also hides the status bar, so it has to be put
+            // back or it stays hidden for the rest of the session.
+            StatusBar.setHidden(false, 'slide');
+
             const hideControlsTimeout = hideControlsTimeoutRef.current;
             const playbackStateDebounceTimeout = playbackStateDebounceTimeoutRef.current;
             const progressDebounceTimeout = progressDebounceTimeoutRef.current;
@@ -279,7 +283,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
                     onRewind={onRewind}
                     onForward={onForward}
                     onSpeedChange={onRateChange}
-                    onFullscreen={onFullscreenToggle}
+                    onFullscreenChange={onFullscreenChange}
                     onCaptionsToggle={onCaptionsPress}
                     hasCaptions={videoHasCaptions}
                     captionsEnabled={selected.type !== SelectedTrackType.DISABLED && captionsEnabled}
