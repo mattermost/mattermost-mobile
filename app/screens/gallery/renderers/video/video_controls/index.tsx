@@ -68,13 +68,6 @@ const styles = StyleSheet.create({
         right: 0,
         bottom: 0,
     },
-    touchArea: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-    },
 });
 
 const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
@@ -193,21 +186,15 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
         };
     }, [cancelHideControls]);
 
+    // The tap handler lives on the outer view rather than on the controls themselves,
+    // because iOS skips hit testing on views with an alpha near zero: a handler inside
+    // the faded subtree stops responding once the controls have faded out.
     return (
-        <Animated.View style={[StyleSheet.absoluteFill, containerStyle]}>
-            {/*
-              * The tap target is kept outside the faded subtree below: iOS skips
-              * hit testing on views with an alpha near zero, so a handler inside it
-              * stops responding once the controls have faded out.
-              */}
-            <View
-                onTouchEnd={handleBackgroundPress}
-                style={styles.touchArea}
-            />
-            <Animated.View
-                pointerEvents='box-none'
-                style={[styles.container, controlsOpacityStyle]}
-            >
+        <Animated.View
+            onTouchEnd={handleBackgroundPress}
+            style={[StyleSheet.absoluteFill, containerStyle]}
+        >
+            <Animated.View style={[styles.container, controlsOpacityStyle]}>
                 <ViewPositionProvider>
                     <View
                         style={[styles.controlsArea, styles.controlsBackground]}
