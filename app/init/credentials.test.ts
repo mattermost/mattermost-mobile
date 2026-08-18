@@ -425,8 +425,9 @@ describe('credentials', () => {
             });
             jest.mocked(KeyChain.getGenericPassword).mockResolvedValue(false);
 
-            await getAllServerCredentials([]);
+            const result = await getAllServerCredentials([]);
 
+            expect(result).toHaveLength(1);
             expect((KeyChain as any).getAllInternetPasswordServers).toHaveBeenCalled();
         });
 
