@@ -50,11 +50,16 @@ export type CallCardState = typeof CallCardState[keyof typeof CallCardState];
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
     joiningChannelId: string | null;
+
+    // Channel id of a call whose full-screen view is about to be pushed. Suppresses that call's
+    // floating bar so it never flickers into view ahead of the screen it is being replaced by.
+    pendingCallScreenChannelId: string | null;
 }
 
 export const DefaultGlobalCallsState: GlobalCallsState = {
     micPermissionsGranted: false,
     joiningChannelId: null,
+    pendingCallScreenChannelId: null,
 };
 
 export type CallsState = {

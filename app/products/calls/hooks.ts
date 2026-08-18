@@ -16,6 +16,7 @@ import {
     getCallsConfig,
     getCurrentCall,
     setMicPermissionsGranted,
+    setPendingCallScreenChannelId,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
@@ -206,10 +207,14 @@ export const useCallsAdjustment = (serverUrl: string, channelId: string): number
         getNumServers();
     }, []);
 
-    // Do we have calls banners?
-    const currentCallBarVisible = Boolean(currentCall);
-    const micPermissionsError = !micPermissionsGranted && (currentCall && !currentCall.micPermissionsErrorDismissed);
-    const callQualityAlert = Boolean(currentCall?.callQualityAlert);
+    // Do we have calls banners? This has to match FloatingCallContainer's own gate (see
+    // observeCallStateInChannel), or we reserve space for a bar that isn't rendered. The mic
+    // permissions and call quality rows live inside CurrentCallBar, so they go with it.
+    const currentCallBarVisible = Boolean(
+        currentCall?.connected && currentCall.channelId !== globalCallsState.pendingCallScreenChannelId,
+    );
+    const micPermissionsError = currentCallBarVisible && !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+    const callQualityAlert = currentCallBarVisible && Boolean(currentCall?.callQualityAlert);
     const incomingCallsShowing = incomingCalls.filter((ic) => ic.channelID !== channelId);
     const notificationBarHeight = CALL_NOTIFICATION_BAR_HEIGHT + (numServers > 1 ? 8 : 0);
     const callsIncomingAdjustment = (incomingCallsShowing.length * notificationBarHeight) + (incomingCallsShowing.length * 8);
@@ -319,12 +324,20 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
         }
 
         setIsJoiningOrStarting(true);
+
+        // Keep this call's floating bar off screen for the whole join: it would otherwise appear the
+        // moment we connect, a beat before the call screen is pushed. Cleared by the call screen on
+        // mount, so nothing paints in the gap; cleared here if we never get that far.
+        setPendingCallScreenChannelId(channelId);
         try {
             const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
             if (joined) {
                 navigateToScreen(Screens.CALL);
+            } else {
+                setPendingCallScreenChannelId(null);
             }
         } catch (error) {
+            setPendingCallScreenChannelId(null);
             logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
         } finally {
             setIsJoiningOrStarting(false);

@@ -7,9 +7,10 @@ import {
     observeCallsState,
     observeChannelsWithCalls,
     observeCurrentCall,
+    observeGlobalCallsState,
     observeIncomingCalls,
 } from '@calls/state';
-import {DefaultCallsState} from '@calls/types/calls';
+import {DefaultCallsState, DefaultGlobalCallsState} from '@calls/types/calls';
 import {General, License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
@@ -155,6 +156,10 @@ describe('Calls Observers', () => {
     });
 
     describe('observeCallStateInChannel', () => {
+        beforeEach(() => {
+            (observeGlobalCallsState as jest.Mock).mockReturnValue(of$(DefaultGlobalCallsState));
+        });
+
         it('should not show banner when no call in channel', async () => {
             (observeChannelsWithCalls as jest.Mock).mockReturnValue(of$({}));
             (observeCurrentCall as jest.Mock).mockReturnValue(of$(null));
@@ -206,6 +211,42 @@ describe('Calls Observers', () => {
             expect(bannerVisible).toBe(true);
             expect(inCall).toBe(true);
             expect(hasIncoming).toBe(false);
+        });
+
+        it('should hide the current call bar while the call screen for that call is pending', async () => {
+            (observeChannelsWithCalls as jest.Mock).mockReturnValue(of$({}));
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$({
+                channelId,
+                connected: true,
+            }));
+            (observeCallsState as jest.Mock).mockReturnValue(of$({calls: {}, myUserId: 'user1'}));
+            (observeIncomingCalls as jest.Mock).mockReturnValue(of$({incomingCalls: []}));
+            (observeGlobalCallsState as jest.Mock).mockReturnValue(of$({
+                ...DefaultGlobalCallsState,
+                pendingCallScreenChannelId: channelId,
+            }));
+
+            const {isInACall} = observeCallStateInChannel(serverUrl, database, of$(channelId));
+
+            expect(await firstValueFrom(isInACall)).toBe(false);
+        });
+
+        it('should keep showing the current call bar while the call screen pending for another call', async () => {
+            (observeChannelsWithCalls as jest.Mock).mockReturnValue(of$({}));
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$({
+                channelId,
+                connected: true,
+            }));
+            (observeCallsState as jest.Mock).mockReturnValue(of$({calls: {}, myUserId: 'user1'}));
+            (observeIncomingCalls as jest.Mock).mockReturnValue(of$({incomingCalls: []}));
+            (observeGlobalCallsState as jest.Mock).mockReturnValue(of$({
+                ...DefaultGlobalCallsState,
+                pendingCallScreenChannelId: 'other-channel',
+            }));
+
+            const {isInACall} = observeCallStateInChannel(serverUrl, database, of$(channelId));
+
+            expect(await firstValueFrom(isInACall)).toBe(true);
         });
     });
 

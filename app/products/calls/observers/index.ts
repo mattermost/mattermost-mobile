@@ -8,6 +8,7 @@ import {
     observeCallsState,
     observeChannelsWithCalls,
     observeCurrentCall,
+    observeGlobalCallsState,
     observeIncomingCalls,
 } from '@calls/state';
 import {fillUserModels, getDMCalleeId, hasOtherUserJoined, userIds} from '@calls/utils';
@@ -189,8 +190,13 @@ export const observeCallStateInChannel = (serverUrl: string, database: Database,
         switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
-    const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call?.connected))),
+
+    // A call whose full-screen view is on its way in stays hidden here: otherwise the bar paints in
+    // the gap between the connection completing and the screen being pushed.
+    const isInACall = combineLatest([currentCall, observeGlobalCallsState()]).pipe(
+        switchMap(([call, gs]) => of$(Boolean(
+            call?.connected && call.channelId !== gs.pendingCallScreenChannelId,
+        ))),
         distinctUntilChanged(),
     );
     const dismissed = combineLatest([channelId, observeCallsState(serverUrl)]).pipe(

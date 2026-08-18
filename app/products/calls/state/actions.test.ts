@@ -25,6 +25,7 @@ import {
     setHost,
     setIncomingCalls,
     setJoiningChannelId,
+    setPendingCallScreenChannelId,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
     setRecordingState,
@@ -1026,6 +1027,7 @@ describe('useCallsState', () => {
         const expectedGlobalState: GlobalCallsState = {
             micPermissionsGranted: true,
             joiningChannelId: null,
+            pendingCallScreenChannelId: null,
         };
 
         // setup
@@ -1089,6 +1091,48 @@ describe('useCallsState', () => {
         // end joining call
         act(() => setJoiningChannelId(null));
         assert.deepEqual(result.current[0], initialGlobalState);
+    });
+
+    it('pending call screen', async () => {
+        const expectedGlobalState: GlobalCallsState = {
+            ...DefaultGlobalCallsState,
+            pendingCallScreenChannelId: 'channel-1',
+        };
+
+        const {result} = renderHook(() => {
+            return [useGlobalCallsState()];
+        });
+
+        act(() => setPendingCallScreenChannelId('channel-1'));
+        assert.deepEqual(result.current[0], expectedGlobalState);
+
+        // Leaving the call releases the bar even if the call screen never opened.
+        await act(async () => {
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            await myselfLeftCall();
+        });
+        assert.deepEqual(result.current[0], DefaultGlobalCallsState);
+    });
+
+    it('pending call screen survives leaving a different call', async () => {
+        const expectedGlobalState: GlobalCallsState = {
+            ...DefaultGlobalCallsState,
+            pendingCallScreenChannelId: 'channel-2',
+        };
+
+        const {result} = renderHook(() => {
+            return [useGlobalCallsState()];
+        });
+
+        // Leave-and-join: we're on our way into channel-2 while channel-1's call is torn down.
+        act(() => setPendingCallScreenChannelId('channel-2'));
+        await act(async () => {
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            await myselfLeftCall();
+        });
+        assert.deepEqual(result.current[0], expectedGlobalState);
+
+        act(() => setPendingCallScreenChannelId(null));
     });
 
     it('CallQuality', async () => {

@@ -616,8 +616,17 @@ export const setCurrentCallConnected = (channelId: string, sessionId: string) =>
 };
 
 export const myselfLeftCall = async () => {
+    const leftChannelId = getCurrentCall()?.channelId;
+
     stopRingback();
     setCurrentCall(null);
+
+    // Backstop: a join that never reached the call screen must not leave the floating bar
+    // suppressed. Scoped to the call we're leaving, so tearing down a previous call as part of a
+    // leave-and-join doesn't release the bar for the call we're on our way into.
+    if (leftChannelId && getGlobalCallsState().pendingCallScreenChannelId === leftChannelId) {
+        setPendingCallScreenChannelId(null);
+    }
 
     if (NavigationStore.isScreenInStack(Screens.CALL)) {
         await dismissBottomSheet();
@@ -838,6 +847,14 @@ export const setJoiningChannelId = (joiningChannelId: string | null) => {
     setGlobalCallsState({
         ...globalCallsState,
         joiningChannelId,
+    });
+};
+
+export const setPendingCallScreenChannelId = (pendingCallScreenChannelId: string | null) => {
+    const globalCallsState = getGlobalCallsState();
+    setGlobalCallsState({
+        ...globalCallsState,
+        pendingCallScreenChannelId,
     });
 };
 
