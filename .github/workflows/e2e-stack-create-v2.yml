@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       instance_key:
-        description: "Hostname prefix: mobile-pr-<n>-<run_number>, mobile-main-<run_number>, mobile-release-<run_number>, or mobile-release-cut-<run_number> (<= 24 chars)"
+        description: "Hostname prefix: mobile-pr-<n>, mobile-main, mobile-release, or mobile-release-cut (<= 24 chars)"
         required: true
         type: string
       worker_count:
@@ -47,11 +47,9 @@ on:
       batch_id:
         description: "Handle for destroy"
         value: ${{ jobs.create.outputs.batch_id }}
-      instances:
-        description: >
-          JSON array from the create response_artifact, in create order. Each
-          entry is {site_url, admin: {username, email, password}}.
-        value: ${{ jobs.create.outputs.instances }}
+      response_artifact:
+        description: "Create response artifact name (e2e-create-<batch_id>). Workers download this instead of passing admin JSON through workflow outputs."
+        value: ${{ jobs.create.outputs.response_artifact }}
 
 permissions:
   contents: read
@@ -66,7 +64,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       batch_id: ${{ steps.stack.outputs.batch_id }}
-      instances: ${{ steps.instances.outputs.instances }}
+      response_artifact: ${{ steps.stack.outputs.response_artifact }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
@@ -169,34 +167,13 @@ jobs:
           EXTRAS: ${{ inputs.extra_count }}
         run: |
           set -euo pipefail
-          if [ ! -f "$RESPONSE" ]; then
-            echo "::error::create response artifact is missing"
-            exit 1
-          fi
-
-          INSTANCES=$(jq -c '
-            [ .batch.instances[]? | select(. != null and .state == "ready")
-              | {site_url, admin}
-            ]
-          ' "$RESPONSE")
-
+          INSTANCES=$(node .github/actions/e2e-v2-instances/instances.js extract \
+            --response "$RESPONSE" --workers "$WORKERS" --extras "$EXTRAS")
+          printf '%s\n' "$INSTANCES" > "${RUNNER_TEMP}/e2e-instances.json"
           while read -r pw; do
             [ -n "$pw" ] && echo "::add-mask::${pw}"
-          done < <(jq -r '.[].admin.password // empty' <<< "$INSTANCES")
-
-          n=$(jq 'length' <<< "$INSTANCES")
-          expected=$((WORKERS + EXTRAS))
-          if [ "$n" -ne "$expected" ]; then
-            echo "::error::expected ${expected} ready instances, got ${n}"
-            exit 1
-          fi
-
-          {
-            echo "instances<<EOF"
-            echo "${INSTANCES}"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Exported ${n} instances (${WORKERS} SITE_1 + ${EXTRAS} extras)"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          echo "Exported $(jq 'length' <<< "$INSTANCES") instances (${WORKERS} SITE_1 + ${EXTRAS} extras)"
 
       - name: Cache demo plugin fixture
         id: demo-plugin-cache
@@ -217,9 +194,10 @@ jobs:
 
       - name: Provision servers (license + plugins)
         env:
-          INSTANCES: ${{ steps.instances.outputs.instances }}
+          INSTANCES_FILE: ${{ runner.temp }}/e2e-instances.json
         run: |
           set -euo pipefail
+          INSTANCES=$(cat "$INSTANCES_FILE")
           ADMIN_USERNAME=$(jq -r '.[0].admin.username' <<< "$INSTANCES")
           ADMIN_PASSWORD=$(jq -r '.[0].admin.password' <<< "$INSTANCES")
           ADMIN_EMAIL=$(jq -r '.[0].admin.email' <<< "$INSTANCES")
@@ -239,9 +217,10 @@ jobs:
       - name: Stack summary
         env:
           BATCH_ID: ${{ steps.stack.outputs.batch_id }}
-          INSTANCES: ${{ steps.instances.outputs.instances }}
+          INSTANCES_FILE: ${{ runner.temp }}/e2e-instances.json
           WORKERS: ${{ inputs.worker_count }}
         run: |
+          INSTANCES=$(cat "$INSTANCES_FILE")
           {
             echo "## E2E v2 test stack"
             echo ""

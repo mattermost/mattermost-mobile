@@ -3,7 +3,7 @@
 # Templates download ios-build-simulator-* / android-build-files-* via artifact_run_id.
 #
 # Phase 0: PR detox-ios. Android / iPad jobs can be enabled later with the
-# same instances array (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
+# same create response artifact (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
 name: Detox E2E v2
 
 on:
@@ -42,11 +42,8 @@ on:
       commit_sha:
         required: true
         type: string
-      instances:
-        description: >
-          JSON array from e2e-stack-create-v2: per-worker SITE_1 followed by
-          shared SITE_2 and SITE_3. Each entry has site_url and admin
-          {username, email, password}.
+      response_artifact:
+        description: "Create response artifact from e2e-stack-create-v2 (e2e-create-<batch_id>)"
         required: true
         type: string
       detox-include-tags:
@@ -90,7 +87,7 @@ jobs:
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      instances: "${{ inputs.instances }}"
+      response_artifact: ${{ inputs.response_artifact }}
     secrets:
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}

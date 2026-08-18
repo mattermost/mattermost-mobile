@@ -3,12 +3,10 @@
 /**
  * Stack hostname prefix. The toolkit refuses more than 24 characters.
  *
- *   mobile-pr-<n>-<run_number>
- *   mobile-main-<run_number>
- *   mobile-release-<run_number>
- *   mobile-release-cut-<run_number>
- *
- * run_number is github.run_number (the per-workflow counter), not run_id.
+ *   mobile-pr-<n>
+ *   mobile-main
+ *   mobile-release
+ *   mobile-release-cut
  */
 
 const MAX_LENGTH = 24;
@@ -48,13 +46,8 @@ function scopeLabel({prNumber, runType, refName} = {}) {
     throw new Error('instance_key needs a PR number or a main/release/release-cut run type');
 }
 
-function instanceKey({prNumber, runType, refName, runNumber} = {}) {
-    const n = String(runNumber ?? '').trim();
-    if (!/^[0-9]+$/.test(n)) {
-        throw new Error(`instance_key run_number must be a positive integer, got '${runNumber}'`);
-    }
-
-    const key = `mobile-${scopeLabel({prNumber, runType, refName})}-${n}`;
+function instanceKey({prNumber, runType, refName} = {}) {
+    const key = `mobile-${scopeLabel({prNumber, runType, refName})}`;
     if (key.length > MAX_LENGTH) {
         throw new Error(`instance_key is ${key.length} characters (${key}); keep it to ${MAX_LENGTH} or fewer`);
     }
@@ -74,9 +67,6 @@ function parseArgs(argv) {
             i += 1;
         } else if (a === '--ref') {
             out.refName = next;
-            i += 1;
-        } else if (a === '--run-number') {
-            out.runNumber = next;
             i += 1;
         }
     }

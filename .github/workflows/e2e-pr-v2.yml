@@ -113,7 +113,6 @@ jobs:
           DISPATCH_TAGS: ${{ inputs.detox-include-tags }}
           DISPATCH_WORKERS: ${{ inputs.parallelism }}
           DISPATCH_IMAGE: ${{ inputs.server_image }}
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           SHA="${PR_HEAD_SHA:-$GITHUB_SHA}"
@@ -132,13 +131,11 @@ jobs:
             SCOPE="branch-${slug}"
           fi
 
-          # Hostname prefix: mobile-pr-<n>-<run_number>, mobile-main-<run_number>,
-          # mobile-release-<run_number>, mobile-release-cut-<run_number>.
-          # Toolkit limit is 24 characters. run_number is github.run_number.
+          # Hostname prefix: mobile-pr-<n>, mobile-main, mobile-release,
+          # mobile-release-cut. Toolkit limit is 24 characters.
           KEY=$(node .github/actions/e2e-v2-instance-key/instance_key.js \
             --pr "${PR_NUMBER:-}" \
-            --ref "${GITHUB_REF_NAME:-}" \
-            --run-number "${RUN_NUMBER}")
+            --ref "${GITHUB_REF_NAME:-}")
 
           WORKERS="${DISPATCH_WORKERS:-20}"
           if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
@@ -377,7 +374,7 @@ jobs:
       branch: ${{ needs.resolve.outputs.branch }}
       pr_number: ${{ needs.resolve.outputs.pr_number }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
-      instances: "${{ needs.create-servers.outputs.instances }}"
+      response_artifact: ${{ needs.create-servers.outputs.response_artifact }}
       detox-include-tags: ${{ needs.resolve.outputs.detox_include_tags }}
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ needs.resolve.outputs.parallelism }}

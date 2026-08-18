@@ -1,5 +1,6 @@
 # Detox iOS E2E v2 — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
-# Each worker reads instances[shard-1] as SITE_1 and the last two entries as SITE_2 / SITE_3.
+# Each worker downloads the create response artifact, binds instances[shard-1]
+# as SITE_1, and the last two entries as SITE_2 / SITE_3.
 # Called from e2e-detox-v2.yml. Independent of the Matterwick v1 template.
 name: Detox iOS E2E Tests Template v2
 
@@ -25,12 +26,8 @@ on:
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
     inputs:
-      instances:
-        description: >
-          JSON array from e2e-stack-create-v2. Each worker binds server_1_instance
-          to instances[shard-1], server_2_instance to the second-to-last entry,
-          and server_3_instance to the last. Each object has site_url and admin
-          {username, email, password}.
+      response_artifact:
+        description: "Create response artifact from e2e-stack-create-v2 (e2e-create-<batch_id>)"
         required: true
         type: string
       MOBILE_VERSION:
@@ -303,50 +300,26 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
+      - name: Download create response
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ${{ inputs.response_artifact }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/e2e-create
+
       - name: Apply server instances
         env:
-          INSTANCES: ${{ inputs.instances }}
+          RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
           SHARD_ID: ${{ matrix.shard }}
         run: |
           set -euo pipefail
-          n=$(jq 'length' <<< "$INSTANCES")
-          idx=$((10#$SHARD_ID - 1))
-          if [ "$n" -lt 3 ]; then
-            echo "::error::instances must include SITE_1 plus SITE_2 and SITE_3, got ${n}"
-            exit 1
-          fi
-          if [ "$idx" -lt 0 ] || [ "$idx" -ge $((n - 2)) ]; then
-            echo "::error::worker ${SHARD_ID} index ${idx} is outside SITE_1 range 0..$((n - 3))"
-            exit 1
-          fi
-
-          # server_1 = this worker's SITE_1; extras are the last two indexes (extra_count).
-          server_1_instance=$(jq -c --argjson i "$idx" '.[$i]' <<< "$INSTANCES")
-          server_2_instance=$(jq -c '.[length - 2]' <<< "$INSTANCES")
-          server_3_instance=$(jq -c '.[length - 1]' <<< "$INSTANCES")
-
-          for blob in "$server_1_instance" "$server_2_instance" "$server_3_instance"; do
-            pw=$(jq -r '.admin.password // empty' <<< "$blob")
+          while read -r pw; do
             [ -n "$pw" ] && echo "::add-mask::${pw}"
-          done
-
-          SITE_1=$(jq -r '.site_url // empty' <<< "$server_1_instance")
-          SITE_2=$(jq -r '.site_url // empty' <<< "$server_2_instance")
-          SITE_3=$(jq -r '.site_url // empty' <<< "$server_3_instance")
-          if [ -z "$SITE_1" ] || [ -z "$SITE_2" ] || [ -z "$SITE_3" ]; then
-            echo "::error::server_1/2/3 instance is missing site_url"
-            exit 1
-          fi
-
-          {
-            echo "SITE_1_URL=${SITE_1}"
-            echo "SITE_2_URL=${SITE_2}"
-            echo "SITE_3_URL=${SITE_3}"
-            echo "ADMIN_USERNAME=$(jq -r '.admin.username' <<< "$server_1_instance")"
-            echo "ADMIN_EMAIL=$(jq -r '.admin.email' <<< "$server_1_instance")"
-            echo "ADMIN_PASSWORD=$(jq -r '.admin.password' <<< "$server_1_instance")"
-          } >> "$GITHUB_ENV"
-          echo "Worker ${SHARD_ID}: server_1_instance index ${idx}; extras are last two instances"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          node .github/actions/e2e-v2-instances/instances.js bind \
+            --response "$RESPONSE" --shard "$SHARD_ID" >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: server_1_instance index $((10#$SHARD_ID - 1)); extras are last two instances"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
