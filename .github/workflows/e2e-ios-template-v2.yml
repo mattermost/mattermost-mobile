@@ -1,17 +1,11 @@
 # Detox iOS E2E v2 — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
-# Per-worker SITE_1 from e2e-test-stack-actions; SITE_2 and SITE_3 are shared extras.
+# Each worker reads instances[shard-1] as SITE_1 and the last two entries as SITE_2 / SITE_3.
 # Called from e2e-detox-v2.yml. Independent of the Matterwick v1 template.
 name: Detox iOS E2E Tests Template v2
 
 on:
   workflow_call:
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL:
-        required: false
-      MM_MOBILE_E2E_ADMIN_USERNAME:
-        required: false
-      MM_MOBILE_E2E_ADMIN_PASSWORD:
-        required: false
       MM_MOBILE_E2E_ZEPHYR_API_KEY:
         required: false
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
@@ -31,25 +25,13 @@ on:
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
     inputs:
-      MM_TEST_SERVER_URL:
-        description: "The test server URL (SITE_1)"
-        required: false
-        type: string
-      MM_TEST_SERVER_URL_2:
-        description: "The second test server URL (SITE_2); optional, no automatic fallback"
-        required: false
-        type: string
-      MM_TEST_SERVER_URL_3:
-        description: "The third test server URL (SITE_3); optional, no automatic fallback"
-        required: false
-        type: string
-      MM_TEST_USER_NAME:
-        description: "The admin username of the test instance"
-        required: false
-        type: string
-      MM_TEST_PASSWORD:
-        description: "The admin password of the test instance"
-        required: false
+      instances:
+        description: >
+          JSON array from e2e-stack-create-v2. Each worker binds server_1_instance
+          to instances[shard-1], server_2_instance to the second-to-last entry,
+          and server_3_instance to the last. Each object has site_url and admin
+          {username, email, password}.
+        required: true
         type: string
       MOBILE_VERSION:
         description: "The mobile version to test"
@@ -135,37 +117,9 @@ on:
         required: false
         type: string
         default: ""
-      batch_id:
-        description: "e2e-test-stack batch; workers fetch admin credentials from it"
-        required: false
-        type: string
-        default: ""
-      worker_site_urls:
-        description: "JSON array of dedicated SITE_1 URLs, index = shard - 1"
-        required: false
-        type: string
-        default: ""
-      site_2_url:
-        description: "Shared SITE_2 URL for every worker"
-        required: false
-        type: string
-        default: ""
-      site_3_url:
-        description: "Shared SITE_3 URL for every worker"
-        required: false
-        type: string
-        default: ""
-      lambda_alias:
-        description: "e2e-test-stack lambda alias (must match create)"
-        required: false
-        type: string
-        default: "v1"
 
 env:
   AWS_REGION: "us-east-1"
-  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
   DEVICE_OS_VERSION: ${{ inputs.ios_device_os_name }}
   HEADLESS: "true"
@@ -349,67 +303,50 @@ jobs:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      - name: Assign per-worker SITE_1 and shared extras
+      - name: Apply server instances
         env:
-          WORKER_URLS: ${{ inputs.worker_site_urls }}
-          SITE_2: ${{ inputs.site_2_url || inputs.MM_TEST_SERVER_URL_2 }}
-          SITE_3: ${{ inputs.site_3_url || inputs.MM_TEST_SERVER_URL_3 }}
-          FALLBACK_SITE_1: ${{ inputs.MM_TEST_SERVER_URL }}
+          INSTANCES: ${{ inputs.instances }}
           SHARD_ID: ${{ matrix.shard }}
         run: |
           set -euo pipefail
+          n=$(jq 'length' <<< "$INSTANCES")
           idx=$((10#$SHARD_ID - 1))
-          if [ -n "$WORKER_URLS" ] && [ "$WORKER_URLS" != "[]" ]; then
-            SITE_1=$(jq -r --argjson i "$idx" '.[$i] // empty' <<< "$WORKER_URLS")
-            if [ -z "$SITE_1" ]; then
-              echo "::error::no SITE_1 for worker ${SHARD_ID} (index ${idx}) in worker_site_urls"
-              exit 1
-            fi
-          else
-            SITE_1="$FALLBACK_SITE_1"
-          fi
-          if [ -z "$SITE_1" ]; then
-            echo "::error::SITE_1_URL is empty for worker ${SHARD_ID}"
+          if [ "$n" -lt 3 ]; then
+            echo "::error::instances must include SITE_1 plus SITE_2 and SITE_3, got ${n}"
             exit 1
           fi
+          if [ "$idx" -lt 0 ] || [ "$idx" -ge $((n - 2)) ]; then
+            echo "::error::worker ${SHARD_ID} index ${idx} is outside SITE_1 range 0..$((n - 3))"
+            exit 1
+          fi
+
+          # server_1 = this worker's SITE_1; extras are the last two indexes (extra_count).
+          server_1_instance=$(jq -c --argjson i "$idx" '.[$i]' <<< "$INSTANCES")
+          server_2_instance=$(jq -c '.[length - 2]' <<< "$INSTANCES")
+          server_3_instance=$(jq -c '.[length - 1]' <<< "$INSTANCES")
+
+          for blob in "$server_1_instance" "$server_2_instance" "$server_3_instance"; do
+            pw=$(jq -r '.admin.password // empty' <<< "$blob")
+            [ -n "$pw" ] && echo "::add-mask::${pw}"
+          done
+
+          SITE_1=$(jq -r '.site_url // empty' <<< "$server_1_instance")
+          SITE_2=$(jq -r '.site_url // empty' <<< "$server_2_instance")
+          SITE_3=$(jq -r '.site_url // empty' <<< "$server_3_instance")
+          if [ -z "$SITE_1" ] || [ -z "$SITE_2" ] || [ -z "$SITE_3" ]; then
+            echo "::error::server_1/2/3 instance is missing site_url"
+            exit 1
+          fi
+
           {
-            echo "SITE_1_URL=$SITE_1"
-            echo "SITE_2_URL=${SITE_2:-}"
-            echo "SITE_3_URL=${SITE_3:-}"
-            echo "STACK_INDEX=${idx}"
+            echo "SITE_1_URL=${SITE_1}"
+            echo "SITE_2_URL=${SITE_2}"
+            echo "SITE_3_URL=${SITE_3}"
+            echo "ADMIN_USERNAME=$(jq -r '.admin.username' <<< "$server_1_instance")"
+            echo "ADMIN_EMAIL=$(jq -r '.admin.email' <<< "$server_1_instance")"
+            echo "ADMIN_PASSWORD=$(jq -r '.admin.password' <<< "$server_1_instance")"
           } >> "$GITHUB_ENV"
-          echo "Worker ${SHARD_ID}: SITE_1 assigned (extras shared)"
-
-      - name: Configure AWS credentials
-        if: inputs.batch_id != ''
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
-        with:
-          role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
-          aws-region: us-east-1
-          role-duration-seconds: 3600
-
-      - name: Fetch worker admin credentials
-        if: inputs.batch_id != ''
-        id: stack-creds
-        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-credentials@319ff17cb6e3b6e3bf4465443d51c7bda7570d7f # e2e-test-stack-actions
-        with:
-          batch_id: ${{ inputs.batch_id }}
-          indexes: ${{ env.STACK_INDEX }}
-          lambda_alias: ${{ inputs.lambda_alias }}
-
-      - name: Apply stack admin credentials
-        if: inputs.batch_id != ''
-        env:
-          STACK_USER: ${{ steps.stack-creds.outputs.admin_username }}
-          STACK_EMAIL: ${{ steps.stack-creds.outputs.admin_email }}
-          STACK_PASS: ${{ steps.stack-creds.outputs.admin_password }}
-        run: |
-          set -euo pipefail
-          {
-            echo "ADMIN_USERNAME=${STACK_USER}"
-            echo "ADMIN_EMAIL=${STACK_EMAIL}"
-            echo "ADMIN_PASSWORD=${STACK_PASS}"
-          } >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: server_1_instance index ${idx}; extras are last two instances"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

@@ -2,8 +2,8 @@
 # Called from e2e-pr-v2.yml after builds and e2e-test-stack create.
 # Templates download ios-build-simulator-* / android-build-files-* via artifact_run_id.
 #
-# Phase 0: PR detox-ios. Android / iPad jobs can be enabled later with the same
-# worker_site_urls + shared extras inputs.
+# Phase 0: PR detox-ios. Android / iPad jobs can be enabled later with the
+# same instances array (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
 name: Detox E2E v2
 
 on:
@@ -42,24 +42,13 @@ on:
       commit_sha:
         required: true
         type: string
-      batch_id:
-        description: "e2e-test-stack batch id"
-        required: false
+      instances:
+        description: >
+          JSON array from e2e-stack-create-v2: per-worker SITE_1 followed by
+          shared SITE_2 and SITE_3. Each entry has site_url and admin
+          {username, email, password}.
+        required: true
         type: string
-        default: ""
-      worker_site_urls:
-        description: "JSON array of dedicated SITE_1 URLs"
-        required: false
-        type: string
-        default: ""
-      site_2_url:
-        required: false
-        type: string
-        default: ""
-      site_3_url:
-        required: false
-        type: string
-        default: ""
       detox-include-tags:
         required: false
         type: string
@@ -72,10 +61,6 @@ on:
         required: false
         type: string
         default: "20"
-      lambda_alias:
-        required: false
-        type: string
-        default: "v1"
 
 permissions:
   contents: read
@@ -104,18 +89,9 @@ jobs:
       parallelism: ${{ inputs.parallelism }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.site_2_url }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.site_3_url }}
       artifact_run_id: ${{ inputs.artifact_run_id }}
-      batch_id: ${{ inputs.batch_id }}
-      worker_site_urls: ${{ inputs.worker_site_urls }}
-      site_2_url: ${{ inputs.site_2_url }}
-      site_3_url: ${{ inputs.site_3_url }}
-      lambda_alias: ${{ inputs.lambda_alias }}
+      instances: "${{ inputs.instances }}"
     secrets:
-      MM_MOBILE_E2E_ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-      MM_MOBILE_E2E_ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-      MM_MOBILE_E2E_ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
       MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
       MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
       MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}

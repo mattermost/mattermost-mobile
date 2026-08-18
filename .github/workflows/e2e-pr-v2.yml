@@ -53,7 +53,6 @@ concurrency:
 env:
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  E2E_STACK_ACTION_REF: "319ff17cb6e3b6e3bf4465443d51c7bda7570d7f"
 
 jobs:
   resolve:
@@ -342,10 +341,7 @@ jobs:
       branch: ${{ needs.resolve.outputs.branch }}
       pr_number: ${{ needs.resolve.outputs.pr_number }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
-      batch_id: ${{ needs.create-servers.outputs.batch_id }}
-      worker_site_urls: ${{ needs.create-servers.outputs.worker_site_urls }}
-      site_2_url: ${{ needs.create-servers.outputs.site_2_url }}
-      site_3_url: ${{ needs.create-servers.outputs.site_3_url }}
+      instances: "${{ needs.create-servers.outputs.instances }}"
       detox-include-tags: ${{ needs.resolve.outputs.detox_include_tags }}
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ needs.resolve.outputs.parallelism }}
