@@ -12,13 +12,6 @@ import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 // After initialize(), this is the logged-in DB-active set — not a live Keystore listing.
 let cachedServerCredentials: ServerCredential[] | undefined;
 
-export const hasCachedCredentials = (): boolean | null => {
-    if (cachedServerCredentials === undefined) {
-        return null;
-    }
-    return cachedServerCredentials.length > 0;
-};
-
 export const clearCachedServerCredentials = () => {
     cachedServerCredentials = undefined;
 };

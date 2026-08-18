@@ -8,7 +8,6 @@ import {getAllServerCredentials} from '@init/credentials';
 import {launchMark} from '@init/launch_profiler';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
-import {setCachedActiveServer} from '@init/session_cache';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import GlobalEventHandler from '@managers/global_event_handler';
 import NetworkManager from '@managers/network_manager';
@@ -16,7 +15,7 @@ import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getActiveServer, queryAllActiveServers} from '@queries/app/servers';
+import {queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -48,13 +47,6 @@ export async function initialize() {
 
             // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
             const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
-            const activeServer = await getActiveServer();
-            setCachedActiveServer(activeServer ? {
-                url: activeServer.url,
-                displayName: activeServer.displayName,
-                persistenceFlag: activeServer.persistenceFlag,
-            } : undefined);
-
             const credStarted = Date.now();
             serverCredentials = await getAllServerCredentials(activeUrls);
             launchMark('credentials', `${serverCredentials.length} servers ${Date.now() - credStarted}ms`);
