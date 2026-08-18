@@ -38,31 +38,39 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
     let userToSave = user;
 
     if (user.id === currentUser.id) {
-        if (user.update_at > (currentUser?.updateAt || 0)) {
-            // ESR: 6.5
-            if (!user.notify_props || !Object.keys(user.notify_props).length) {
-                // Current user is sanitized so we fetch it from the server
-                // Need to request me to make sure we don't override with sanitized fields from the
-                // websocket event
-                const me = await fetchMe(serverUrl, true);
-                if (me.user) {
-                    userToSave = me.user;
+        // Ignore an event that is not newer than the record we already hold. This freshness
+        // check has to gate the save below, not just the work in this block: some local
+        // writes deliberately change the user without bumping update_at (clearing the custom
+        // status writes props.customStatus directly), so persisting a stale or re-delivered
+        // copy of ourselves resurrects the value we just cleared and the Account row keeps
+        // showing the old status (MM-T4990_4 / MM-T3891, both platforms).
+        if (user.update_at <= (currentUser.updateAt || 0)) {
+            return;
+        }
+
+        // ESR: 6.5
+        if (!user.notify_props || !Object.keys(user.notify_props).length) {
+            // Current user is sanitized so we fetch it from the server
+            // Need to request me to make sure we don't override with sanitized fields from the
+            // websocket event
+            const me = await fetchMe(serverUrl, true);
+            if (me.user) {
+                userToSave = me.user;
+            }
+        }
+
+        // Update GMs display name if locale has changed
+        if (user.locale !== currentUser.locale) {
+            const channels = await queryChannelsByTypes(database, [General.GM_CHANNEL]).fetch();
+            if (channels.length) {
+                const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
+                if (models?.length) {
+                    modelsToBatch.push(...models);
                 }
             }
 
-            // Update GMs display name if locale has changed
-            if (user.locale !== currentUser.locale) {
-                const channels = await queryChannelsByTypes(database, [General.GM_CHANNEL]).fetch();
-                if (channels.length) {
-                    const {models} = await updateChannelsDisplayName(serverUrl, channels, [user], true);
-                    if (models?.length) {
-                        modelsToBatch.push(...models);
-                    }
-                }
-
-                // Delete posts for all channels with user autotranslation enabled when locale changes
-                await deletePostsForChannelsWithAutotranslation(serverUrl);
-            }
+            // Delete posts for all channels with user autotranslation enabled when locale changes
+            await deletePostsForChannelsWithAutotranslation(serverUrl);
         }
     } else {
         const channels = await queryUserChannelsByTypes(database, user.id, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
