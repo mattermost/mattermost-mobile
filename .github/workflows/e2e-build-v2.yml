@@ -1,6 +1,9 @@
 # Dedicated E2E artifact build (iOS simulator + Android Detox APK).
 # Called from e2e-pr-v2.yml. Reusable for main / release / CMT later.
 #
+# Fingerprint + S3 restore run on ubuntu-24.04. macos-26 / ubuntu-latest-8-cores
+# only start when that check misses.
+#
 # Commit statuses:
 #   e2e-test/ios-build          — fresh iOS simulator build
 #   e2e-test/ios-build-cache    — iOS binary restored from S3
@@ -44,10 +47,10 @@ on:
     outputs:
       ios-cache-hit:
         description: "true when the iOS artifact was restored from S3"
-        value: ${{ jobs.build-ios.outputs.cache-hit }}
+        value: ${{ jobs.check-cache.outputs.ios-cache-hit }}
       android-cache-hit:
         description: "true when the Android Detox artifact was restored from S3"
-        value: ${{ jobs.build-android.outputs.cache-hit }}
+        value: ${{ jobs.check-cache.outputs.android-cache-hit }}
 
 permissions:
   contents: read
@@ -59,12 +62,18 @@ env:
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
 
 jobs:
-  compute-build-fingerprints:
-    name: Compute build fingerprints
+  check-cache:
+    name: Check build cache
     runs-on: ubuntu-24.04
     outputs:
       ios: ${{ steps.ios.outputs.fingerprint }}
       android-detox: ${{ steps.android-detox.outputs.fingerprint }}
+      ios-cache-hit: ${{ steps.ios-hit.outputs.hit || 'false' }}
+      android-cache-hit: ${{ steps.android-hit.outputs.hit || 'false' }}
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
@@ -72,26 +81,115 @@ jobs:
           persist-credentials: false
 
       - name: Compute iOS fingerprint
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
         id: ios
         uses: ./.github/actions/compute-e2e-build-fingerprint
         with:
           platform: ios
 
       - name: Compute Android Detox fingerprint
+        if: inputs.platform == 'android' || inputs.platform == 'both'
         id: android-detox
         uses: ./.github/actions/compute-e2e-build-fingerprint
         with:
           platform: android-detox
+
+      - name: Restore iOS build from S3
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
+        id: ios-cache
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.ios.outputs.fingerprint }}
+          scope: ${{ inputs.cache_scope }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: restore
+
+      - name: Record iOS cache result
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
+        id: ios-hit
+        run: |
+          if [ "${{ steps.ios-cache.outputs.cache-hit }}" = "true" ] && ls Mattermost-simulator-*.app.zip >/dev/null 2>&1; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload cached iOS simulator build
+        if: steps.ios-hit.outputs.hit == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+      - name: Publish iOS cache status
+        if: always() && (inputs.platform == 'ios' || inputs.platform == 'both') && steps.ios-hit.outputs.hit == 'true'
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/ios-build-cache
+          description: iOS simulator artifact restored from S3 cache
+          status: success
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Restore Android Detox build from S3
+        if: inputs.platform == 'android' || inputs.platform == 'both'
+        id: android-cache
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.android-detox.outputs.fingerprint }}
+          scope: ${{ inputs.cache_scope }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: restore
+
+      - name: Record Android cache result
+        if: inputs.platform == 'android' || inputs.platform == 'both'
+        id: android-hit
+        run: |
+          if [ "${{ steps.android-cache.outputs.cache-hit }}" = "true" ] && [ -d android/app/build ]; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload cached Android build
+        if: steps.android-hit.outputs.hit == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+      - name: Publish Android cache status
+        if: always() && (inputs.platform == 'android' || inputs.platform == 'both') && steps.android-hit.outputs.hit == 'true'
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-build-cache
+          description: Android Detox APK restored from S3 cache
+          status: success
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   build-ios:
     name: iOS simulator
     if: >-
       !cancelled()
       && (inputs.platform == 'ios' || inputs.platform == 'both')
+      && needs.check-cache.outputs.ios-cache-hit != 'true'
     runs-on: macos-26
-    needs: compute-build-fingerprints
-    outputs:
-      cache-hit: ${{ steps.cache-check.outputs.cache-hit }}
+    needs: check-cache
     permissions:
       contents: read
       actions: write
@@ -102,27 +200,7 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.commit_sha }}
 
-      - name: Check for cached iOS build
-        id: cache-check
-        continue-on-error: true
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
-          scope: ${{ inputs.cache_scope }}
-          platform: ios
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'Mattermost-simulator-*.app.zip'
-          mode: restore
-
-      - name: Skip build if cache hit
-        if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
-
       - name: Pending iOS build status
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/update-commit-status
         with:
           repository_full_name: ${{ github.repository }}
@@ -133,18 +211,15 @@ jobs:
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Prepare iOS Build
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-ios-build
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
 
       - name: Set .env with RUNNING_E2E=true
-        if: env.SKIP_BUILD != 'true'
         run: echo "RUNNING_E2E=true" > .env
 
       - name: Build iOS Simulator
-        if: env.SKIP_BUILD != 'true'
         env:
           TAG: ${{ inputs.commit_sha }}
           GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
@@ -159,33 +234,22 @@ jobs:
           path: Mattermost-simulator-*.app.zip
 
       - name: Save iOS build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        if: hashFiles('Mattermost-simulator-*.app.zip') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
           DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.ios }}
+          fingerprint: ${{ needs.check-cache.outputs.ios }}
           scope: ${{ inputs.cache_scope }}
           platform: ios
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'Mattermost-simulator-*.app.zip'
           mode: save
 
-      - name: Publish iOS cache status
-        if: always() && steps.cache-check.outputs.cache-hit == 'true'
-        uses: ./.github/actions/update-commit-status
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/ios-build-cache
-          description: iOS simulator artifact restored from S3 cache
-          status: ${{ hashFiles('Mattermost-simulator-*.app.zip') != '' && 'success' || 'failure' }}
-          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
       - name: Publish iOS build status
-        if: always() && steps.cache-check.outputs.cache-hit != 'true'
+        if: always()
         uses: ./.github/actions/update-commit-status
         with:
           repository_full_name: ${{ github.repository }}
@@ -200,10 +264,9 @@ jobs:
     if: >-
       !cancelled()
       && (inputs.platform == 'android' || inputs.platform == 'both')
+      && needs.check-cache.outputs.android-cache-hit != 'true'
     runs-on: ubuntu-latest-8-cores
-    needs: compute-build-fingerprints
-    outputs:
-      cache-hit: ${{ steps.cache-check.outputs.cache-hit }}
+    needs: check-cache
     permissions:
       contents: read
       actions: write
@@ -219,27 +282,7 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.commit_sha }}
 
-      - name: Check for cached Android Detox build
-        id: cache-check
-        continue-on-error: true
-        uses: ./.github/actions/s3-build-cache
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
-          scope: ${{ inputs.cache_scope }}
-          platform: android-detox
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          cache-path: 'android/app/build'
-          mode: restore
-
-      - name: Skip build if cache hit
-        if: steps.cache-check.outputs.cache-hit == 'true'
-        run: echo "SKIP_BUILD=true" >> "$GITHUB_ENV"
-
       - name: Pending Android build status
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/update-commit-status
         with:
           repository_full_name: ${{ github.repository }}
@@ -250,7 +293,6 @@ jobs:
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Prepare Android Build
-        if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
@@ -259,7 +301,6 @@ jobs:
           MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
 
       - name: Cache Gradle dependencies
-        if: env.SKIP_BUILD != 'true'
         uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
         with:
           path: /home/runner/.gradle/caches/modules-2/
@@ -267,7 +308,6 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Detox build
-        if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
           npm ci
@@ -281,33 +321,22 @@ jobs:
           path: "android/app/build/**/*"
 
       - name: Save Android Detox build to S3
-        if: env.SKIP_BUILD != 'true' && hashFiles('android/app/build/**/*') != ''
+        if: hashFiles('android/app/build/**/*') != ''
         continue-on-error: true
         uses: ./.github/actions/s3-build-cache
         env:
           DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
           DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
         with:
-          fingerprint: ${{ needs.compute-build-fingerprints.outputs.android-detox }}
+          fingerprint: ${{ needs.check-cache.outputs.android-detox }}
           scope: ${{ inputs.cache_scope }}
           platform: android-detox
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           cache-path: 'android/app/build'
           mode: save
 
-      - name: Publish Android cache status
-        if: always() && steps.cache-check.outputs.cache-hit == 'true'
-        uses: ./.github/actions/update-commit-status
-        with:
-          repository_full_name: ${{ github.repository }}
-          commit_sha: ${{ inputs.commit_sha }}
-          context: e2e-test/android-build-cache
-          description: Android Detox APK restored from S3 cache
-          status: ${{ hashFiles('android/app/build/**/*') != '' && 'success' || 'failure' }}
-          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
       - name: Publish Android build status
-        if: always() && steps.cache-check.outputs.cache-hit != 'true'
+        if: always()
         uses: ./.github/actions/update-commit-status
         with:
           repository_full_name: ${{ github.repository }}
