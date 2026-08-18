@@ -2,8 +2,8 @@
 # Called from e2e-pr-v2.yml after builds and e2e-test-stack create.
 # Templates download ios-build-simulator-* / android-build-files-* via artifact_run_id.
 #
-# Phase 0: PR detox-ios. Android / iPad jobs can be enabled later with the
-# same create response artifact (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
+# PR: detox-ios, detox-android, and detox-ipad share one create response
+# artifact (SITE_1 per worker, last two indexes = SITE_2 / SITE_3).
 name: Detox E2E v2
 
 on:
@@ -13,6 +13,7 @@ on:
         required: true
         type: string
       PLATFORM:
+        description: "ios, android, ipad, or both (ios + android + ipad)"
         required: false
         type: string
         default: "ios"
@@ -54,10 +55,21 @@ on:
         required: false
         type: string
         default: "@ipad_only"
-      parallelism:
+      ios_parallelism:
+        description: "Detox iOS phone workers"
+        required: false
+        type: string
+        default: "30"
+      android_parallelism:
+        description: "Detox Android workers"
         required: false
         type: string
         default: "20"
+      ipad_parallelism:
+        description: "Detox iPad workers (1 for now)"
+        required: false
+        type: string
+        default: "1"
 
 permissions:
   contents: read
@@ -83,7 +95,69 @@ jobs:
       search_path: detox/e2e/test
       detox-include-tags: ${{ inputs.detox-include-tags }}
       detox-exclude-tags: ${{ inputs.detox-exclude-tags }}
-      parallelism: ${{ inputs.parallelism }}
+      parallelism: ${{ inputs.ios_parallelism }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      response_artifact: ${{ inputs.response_artifact }}
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+
+  run-android-tests:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    name: Android
+    uses: ./.github/workflows/e2e-android-template-v2.yml
+    with:
+      run-type: ${{ inputs.run_type || 'PR' }}
+      context_name: e2e-test/detox-android${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
+      search_path: detox/e2e/test
+      detox-include-tags: ${{ inputs.detox-include-tags }}
+      detox-exclude-tags: '@ipad_only,@ios_only'
+      parallelism: ${{ inputs.android_parallelism }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      response_artifact: ${{ inputs.response_artifact }}
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+
+  run-ios-ipad-tests:
+    if: inputs.PLATFORM == 'ipad' || inputs.PLATFORM == 'both'
+    name: iOS iPad
+    uses: ./.github/workflows/e2e-ios-template-v2.yml
+    with:
+      run-type: ${{ inputs.run_type || 'PR' }}
+      context_name: e2e-test/detox-ipad${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
+      search_path: detox/e2e/test
+      detox-include-tags: '@ipad_only'
+      detox-exclude-tags: ''
+      parallelism: ${{ inputs.ipad_parallelism }}
+      detox_config: "ios.ipad.debug"
+      ios_device_name: "iPad Pro 13-inch (M5)"
+      ios_device_os_name: "iOS 26.2"
+      worker_name_prefix: "detox-ipad-worker"
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       artifact_run_id: ${{ inputs.artifact_run_id }}

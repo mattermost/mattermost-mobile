@@ -6,7 +6,7 @@
 #   e2e-test/ios-build or ios-build-cache,
 #   e2e-test/android-build or android-build-cache,
 #   e2e-test/test-servers-created, e2e-test/test-servers-destroyed,
-#   e2e-test/detox-ios (later android, ipad, maestro).
+#   e2e-test/detox-ios, e2e-test/detox-android, e2e-test/detox-ipad (later maestro).
 #
 # TEMPORARY: `pull_request` is enabled so this feature-branch file runs
 # while remaining phases are still in progress. That attaches Actions job
@@ -20,11 +20,14 @@
 # `workflow_dispatch` stays so the GitHub Actions UI can run a chosen ref.
 #
 # Phase 0 scope: PR only. Reusable templates (e2e-build-v2, e2e-stack-*-v2,
-# e2e-detox-v2, e2e-ios-template-v2) take run-type / context suffix so main,
-# release, and CMT can call them later without rewriting this file.
+# e2e-detox-v2, e2e-ios-template-v2, e2e-android-template-v2) take run-type /
+# context suffix so main, release, and CMT can call them later without rewriting
+# this file.
 #
 # Topology: one dedicated SITE_1 per worker, plus two shared extras (SITE_2,
-# SITE_3) for the whole matrix. Servers come from e2e-test-stack-actions.
+# SITE_3) for the whole matrix. Platforms share the same create response
+# (instances[shard-1] = SITE_1). Stack size is max(iOS, Android, iPad) SITE_1s
+# plus extras. Servers come from e2e-test-stack-actions.
 name: E2E v2
 
 on:
@@ -43,10 +46,10 @@ on:
         type: string
         default: ""
       parallelism:
-        description: "Detox iOS workers (and dedicated SITE_1 servers)"
+        description: "Override iOS and Android worker counts (default: iOS 30, Android 20). iPad stays at 1."
         required: false
         type: string
-        default: "20"
+        default: ""
       server_image:
         description: "Mattermost server image for the test stack"
         required: false
@@ -92,7 +95,10 @@ jobs:
       branch: ${{ steps.vars.outputs.branch }}
       cache_scope: ${{ steps.vars.outputs.cache_scope }}
       context_suffix: ${{ steps.vars.outputs.context_suffix }}
-      parallelism: ${{ steps.vars.outputs.parallelism }}
+      worker_count: ${{ steps.vars.outputs.worker_count }}
+      ios_parallelism: ${{ steps.vars.outputs.ios_parallelism }}
+      android_parallelism: ${{ steps.vars.outputs.android_parallelism }}
+      ipad_parallelism: ${{ steps.vars.outputs.ipad_parallelism }}
       detox_include_tags: ${{ steps.vars.outputs.detox_include_tags }}
       server_image: ${{ steps.vars.outputs.server_image }}
       instance_key: ${{ steps.vars.outputs.instance_key }}
@@ -137,11 +143,27 @@ jobs:
             --pr "${PR_NUMBER:-}" \
             --ref "${GITHUB_REF_NAME:-}")
 
-          WORKERS="${DISPATCH_WORKERS:-20}"
-          if ! [[ "$WORKERS" =~ ^[0-9]+$ ]] || [ "$WORKERS" -lt 1 ]; then
-            echo "::error::parallelism must be a positive integer, got '${WORKERS}'"
-            exit 1
+          DEFAULT_IOS=30
+          DEFAULT_ANDROID=20
+          # iPad stays at 1 until we scale it; dispatch parallelism does not bump it.
+          DEFAULT_IPAD=1
+          if [ -n "${DISPATCH_WORKERS}" ]; then
+            if ! [[ "$DISPATCH_WORKERS" =~ ^[0-9]+$ ]] || [ "$DISPATCH_WORKERS" -lt 1 ]; then
+              echo "::error::parallelism must be a positive integer, got '${DISPATCH_WORKERS}'"
+              exit 1
+            fi
+            IOS_N="$DISPATCH_WORKERS"
+            ANDROID_N="$DISPATCH_WORKERS"
+            IPAD_N="$DEFAULT_IPAD"
+          else
+            IOS_N="$DEFAULT_IOS"
+            ANDROID_N="$DEFAULT_ANDROID"
+            IPAD_N="$DEFAULT_IPAD"
           fi
+
+          WORKER_COUNT=$IOS_N
+          if [ "$ANDROID_N" -gt "$WORKER_COUNT" ]; then WORKER_COUNT=$ANDROID_N; fi
+          if [ "$IPAD_N" -gt "$WORKER_COUNT" ]; then WORKER_COUNT=$IPAD_N; fi
 
           # Empty include tags = full phone suite. Callers still pass detox-exclude-tags=@ipad_only.
           TAGS="${DISPATCH_TAGS:-}"
@@ -153,13 +175,16 @@ jobs:
             echo "branch=${BRANCH}"
             echo "cache_scope=${SCOPE}"
             echo "context_suffix="
-            echo "parallelism=${WORKERS}"
+            echo "worker_count=${WORKER_COUNT}"
+            echo "ios_parallelism=${IOS_N}"
+            echo "android_parallelism=${ANDROID_N}"
+            echo "ipad_parallelism=${IPAD_N}"
             echo "detox_include_tags=${TAGS}"
             echo "server_image=${IMAGE}"
             echo "instance_key=${KEY}"
           } >> "$GITHUB_OUTPUT"
 
-          echo "sha=${SHA} branch=${BRANCH} workers=${WORKERS} tags='${TAGS}' key=${KEY}"
+          echo "sha=${SHA} branch=${BRANCH} ios=${IOS_N} android=${ANDROID_N} ipad=${IPAD_N} stack=${WORKER_COUNT} tags='${TAGS}' key=${KEY}"
 
   wait-for-ci:
     name: Wait for CI checks
@@ -339,12 +364,14 @@ jobs:
     uses: ./.github/workflows/e2e-stack-create-v2.yml
     with:
       instance_key: ${{ needs.resolve.outputs.instance_key }}
-      worker_count: ${{ needs.resolve.outputs.parallelism }}
+      worker_count: ${{ needs.resolve.outputs.worker_count }}
       extra_count: "2"
       server_image: ${{ needs.resolve.outputs.server_image }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
     secrets: inherit
 
+  # iOS, Android, and iPad start independently so Android does not wait for
+  # the iOS build (and iPad does not wait for Android).
   run-detox-ios:
     name: Detox iOS E2E
     needs:
@@ -377,7 +404,80 @@ jobs:
       response_artifact: ${{ needs.create-servers.outputs.response_artifact }}
       detox-include-tags: ${{ needs.resolve.outputs.detox_include_tags }}
       detox-exclude-tags: '@ipad_only'
-      parallelism: ${{ needs.resolve.outputs.parallelism }}
+      ios_parallelism: ${{ needs.resolve.outputs.ios_parallelism }}
+      android_parallelism: ${{ needs.resolve.outputs.android_parallelism }}
+      ipad_parallelism: ${{ needs.resolve.outputs.ipad_parallelism }}
+    secrets: inherit
+
+  run-detox-android:
+    name: Detox Android E2E
+    needs:
+      - resolve
+      - detox-check
+      - build-android
+      - create-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled()
+      && needs.resolve.result == 'success'
+      && needs.detox-check.result == 'success'
+      && needs.build-android.result == 'success'
+      && needs.create-servers.result == 'success'
+    uses: ./.github/workflows/e2e-detox-v2.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit_sha }}
+      PLATFORM: android
+      run_type: PR
+      artifact_run_id: ${{ github.run_id }}
+      context_suffix: ${{ needs.resolve.outputs.context_suffix }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      response_artifact: ${{ needs.create-servers.outputs.response_artifact }}
+      detox-include-tags: ${{ needs.resolve.outputs.detox_include_tags }}
+      ios_parallelism: ${{ needs.resolve.outputs.ios_parallelism }}
+      android_parallelism: ${{ needs.resolve.outputs.android_parallelism }}
+      ipad_parallelism: ${{ needs.resolve.outputs.ipad_parallelism }}
+    secrets: inherit
+
+  run-detox-ipad:
+    name: Detox iPad E2E
+    needs:
+      - resolve
+      - detox-check
+      - build-ios
+      - create-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled()
+      && needs.resolve.result == 'success'
+      && needs.detox-check.result == 'success'
+      && needs.build-ios.result == 'success'
+      && needs.create-servers.result == 'success'
+    uses: ./.github/workflows/e2e-detox-v2.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit_sha }}
+      PLATFORM: ipad
+      run_type: PR
+      artifact_run_id: ${{ github.run_id }}
+      context_suffix: ${{ needs.resolve.outputs.context_suffix }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      response_artifact: ${{ needs.create-servers.outputs.response_artifact }}
+      ios_parallelism: ${{ needs.resolve.outputs.ios_parallelism }}
+      android_parallelism: ${{ needs.resolve.outputs.android_parallelism }}
+      ipad_parallelism: ${{ needs.resolve.outputs.ipad_parallelism }}
     secrets: inherit
 
   destroy-servers:
@@ -386,6 +486,8 @@ jobs:
       - resolve
       - create-servers
       - run-detox-ios
+      - run-detox-android
+      - run-detox-ipad
     if: always() && needs.create-servers.outputs.batch_id != ''
     permissions:
       contents: read
