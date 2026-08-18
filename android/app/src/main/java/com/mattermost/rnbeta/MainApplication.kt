@@ -68,6 +68,9 @@ class MainApplication : Application(), ReactApplication, INotificationsApplicati
         OkHttpClientProvider.setOkHttpClientFactory(RCTOkHttpClientFactory())
         ExpoImageOkHttpClientGlideModule.okHttpClient = RCTOkHttpClientFactory().createNewNetworkModuleClient()
 
+        // ShareWorker can run without React Native loaded, so ApiClientModuleImpl may never
+        // initialize the session attributes engine.
+        SessionAttributes.init(this)
         ShareWorker.getSessionAttributesHeader = SessionAttributes::getOutboundHeader
 
         loadReactNative(this)
