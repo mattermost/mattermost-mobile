@@ -194,14 +194,16 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
         await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
-        await wait(timeouts.ONE_SEC);
 
-        // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation
-        // (MM-T4691_4: "Multiple elements found"). All sibling taps in this
-        // file already use .atIndex(0).
-        await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
+        // swipeRevealAndTapOption instead of swipe + fixed wait + tap: it scrolls the row
+        // on screen first (a swipe on an off-screen row is silently dropped, so the option
+        // never appears), then waits for the revealed option to exist rather than guessing
+        // one second, and corner-taps it. .atIndex(0) is handled inside — the revealed Edit
+        // can briefly render twice on iOS during the swipe-pan animation.
+        await ServerListScreen.swipeRevealAndTapOption(
+            ServerListScreen.getServerItemActive(serverOneDisplayName),
+            ServerListScreen.getServerItemEditOption(serverOneDisplayName),
+        );
 
         // * Verify on edit server screen
         await EditServerScreen.toBeVisible();
@@ -219,15 +221,21 @@ describe('Server Login - Server List', () => {
         // # Tap on save button
         await EditServerScreen.saveButton.tap();
 
-        // * Verify the new first server display name
-        await expect(ServerListScreen.getServerItemActive(newServerOneDisplayName)).toBeVisible();
+        // * Verify the new first server display name.
+        // Scroll it into view rather than asserting a bare toBeVisible(): the rename itself
+        // succeeds — run 32089683192 on Android matched
+        // tag=server_list.server_item.server_1_new.active with visibility=VISIBLE — but the
+        // row sat clipped at the top of the sheet (y=0, height=252) and so missed the
+        // default visibility threshold. scrollServerItemIntoView waits for toBeVisible(40)
+        // while scrolling the inner list, which asserts the rename and tolerates the clip.
+        const renamedServerRow = ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0);
+        await ServerListScreen.scrollServerItemIntoView(renamedServerRow);
 
         // # Revert back to original first server display name and go back to first server
-        await ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0).swipe('left', 'slow');
-        await wait(timeouts.ONE_SEC);
-
-        // .atIndex(0) for the same reason as the first tap above.
-        await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+        await ServerListScreen.swipeRevealAndTapOption(
+            ServerListScreen.getServerItemActive(newServerOneDisplayName),
+            ServerListScreen.getServerItemEditOption(newServerOneDisplayName),
+        );
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
         await tapServerItem(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
