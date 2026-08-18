@@ -8,7 +8,7 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
-import {updateScheduledPost} from '@actions/remote/scheduled_post';
+import {updateScheduledPost, type UpdateSchedulingInfo} from '@actions/remote/scheduled_post';
 import DateTimeSelector from '@components/date_time_selector';
 import Loading from '@components/loading';
 import NavigationButton from '@components/navigation_button';
@@ -19,7 +19,9 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
+import PickerOption from '@screens/post_priority_picker/components/picker_option';
 import {logDebug} from '@utils/log';
+import {getScheduledPostRecurrence, isRecurringScheduledPost, repeatWeeklyLabel} from '@utils/scheduled_post';
 import {showSnackBar} from '@utils/snack_bar';
 import {getTimezone} from '@utils/user';
 
@@ -28,9 +30,15 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 type Props = {
     currentUserTimezone?: UserTimezone | null;
     draft: ScheduledPostModel;
+    isRecurringEnabled: boolean;
 }
 
 const safeAreaEdges: Edge[] = ['bottom', 'left', 'right'];
+
+const TOGGLE_OPTION_MARGIN_TOP = 16;
+
+// Matches the horizontal gutter DateTimeSelector gives its own rows so the toggle lines up with them.
+const TOGGLE_OPTION_HORIZONTAL_PADDING = 15;
 
 const styles = StyleSheet.create({
     container: {
@@ -44,11 +52,16 @@ const styles = StyleSheet.create({
     optionsContainer: {
         paddingTop: 12,
     },
+    toggleOptionContainer: {
+        marginTop: TOGGLE_OPTION_MARGIN_TOP,
+        paddingHorizontal: TOGGLE_OPTION_HORIZONTAL_PADDING,
+    },
 });
 
 const RescheduledDraft: React.FC<Props> = ({
     currentUserTimezone,
     draft,
+    isRecurringEnabled,
 }) => {
     const navigation = useNavigation();
     const theme = useTheme();
@@ -58,6 +71,13 @@ const RescheduledDraft: React.FC<Props> = ({
     const [isUpdating, setIsUpdating] = useState(false);
     const selectedTime = useRef<string | null>(null);
     const userTimezone = getTimezone(currentUserTimezone);
+    const wasRepeatingWeekly = isRecurringScheduledPost(draft);
+    const [repeatWeekly, setRepeatWeekly] = useState(wasRepeatingWeekly);
+
+    // The server refuses to make a post with attachments recurring, since a file belongs to the first
+    // post it is sent with. An existing weekly post therefore never has files, so this only stops a
+    // one-time post with attachments from being turned into a series.
+    const offerRepeatWeekly = isRecurringEnabled && draft.files.length === 0;
 
     const onClose = useCallback(() => {
         Keyboard.dismiss();
@@ -93,9 +113,15 @@ const RescheduledDraft: React.FC<Props> = ({
             return;
         }
 
-        const res = await updateScheduledPost(serverUrl, draft, parseInt(selectedTime.current, 10));
+        // When the toggle was never offered, omit the recurrence so the post keeps whatever it has.
+        let schedulingInfo: UpdateSchedulingInfo = {scheduled_at: parseInt(selectedTime.current, 10)};
+        if (offerRepeatWeekly) {
+            schedulingInfo = {...schedulingInfo, ...getScheduledPostRecurrence(repeatWeekly, currentUserTimezone)};
+        }
+
+        const res = await updateScheduledPost(serverUrl, draft, schedulingInfo);
         handleUIUpdates(res);
-    }, [draft, handleUIUpdates, intl, selectedTime, serverUrl]));
+    }, [currentUserTimezone, draft, handleUIUpdates, intl, offerRepeatWeekly, repeatWeekly, selectedTime, serverUrl]));
 
     useEffect(() => {
         navigation.setOptions({
@@ -112,11 +138,24 @@ const RescheduledDraft: React.FC<Props> = ({
 
     useAndroidHardwareBackHandler(Screens.RESCHEDULE_DRAFT, onClose);
 
+    const updateCanSave = useCallback((time: string, weekly: boolean) => {
+        setCanSave(parseInt(time, 10) !== draft.scheduledAt || weekly !== wasRepeatingWeekly);
+    }, [draft.scheduledAt, wasRepeatingWeekly]);
+
     const handleCustomTimeChange = useCallback((updatedSelectedTime: Moment) => {
         const newSelecteTime = updatedSelectedTime.valueOf().toString();
         selectedTime.current = newSelecteTime;
-        setCanSave(parseInt(newSelecteTime, 10) !== draft.scheduledAt);
-    }, [draft.scheduledAt]);
+        updateCanSave(newSelecteTime, repeatWeekly);
+    }, [repeatWeekly, updateCanSave]);
+
+    const onToggleRepeatWeekly = useCallback((value: boolean) => {
+        setRepeatWeekly(value);
+
+        // Changing only the recurrence leaves the time picker untouched, so keep the post's own time.
+        const time = selectedTime.current ?? draft.scheduledAt.toString();
+        selectedTime.current = time;
+        updateCanSave(time, value);
+    }, [draft.scheduledAt, updateCanSave]);
 
     if (isUpdating) {
         return (
@@ -140,6 +179,18 @@ const RescheduledDraft: React.FC<Props> = ({
                     showInitially='date'
                     initialDate={moment(draft.scheduledAt)}
                 />
+                {offerRepeatWeekly && (
+                    <View style={styles.toggleOptionContainer}>
+                        <PickerOption
+                            action={onToggleRepeatWeekly}
+                            label={intl.formatMessage(repeatWeeklyLabel)}
+                            selected={repeatWeekly}
+                            testID='reschedule_draft.repeat_weekly'
+                            type='toggle'
+                            value='repeat_weekly'
+                        />
+                    </View>
+                )}
             </View>
         </SafeAreaView>
     );

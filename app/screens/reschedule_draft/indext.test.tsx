@@ -75,4 +75,18 @@ describe('EnhancedRescheduledDraft', () => {
         expect(getByTestId('reschedule-draft')).toBeTruthy();
         expect(getByTestId('reschedule-draft').props.currentUserTimezone).toBeUndefined();
     });
+
+    it('should enable recurrence from the feature flag', async () => {
+        await operator.handleScheduledPosts({scheduledPosts: [TestHelper.fakeScheduledPost({id: 'draft1'})], actionType: 'create', prepareRecordsOnly: false});
+        await operator.handleConfigs({configs: [{id: 'FeatureFlagRecurringScheduledPosts', value: 'true'}], configsToDelete: [], prepareRecordsOnly: false});
+
+        const {getByTestId} = renderWithEverything(
+            <EnhancedRescheduledDraft
+                draftId='draft1'
+            />,
+            {database},
+        );
+
+        expect(getByTestId('reschedule-draft').props.isRecurringEnabled).toBe(true);
+    });
 });

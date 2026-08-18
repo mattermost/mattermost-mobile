@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {emptyFunction} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {isRecurringScheduledPost} from '@utils/scheduled_post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -50,6 +51,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const TITLE_HEIGHT = 64;
 const ITEM_HEIGHT = 48;
 
+// Copy text and delete render for every draft type; every other option is conditional.
+const ALWAYS_SHOWN_ITEMS = 2;
+
 const DraftScheduledPostOptions: React.FC<Props> = ({
     draftType,
     channel,
@@ -60,11 +64,20 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {bottom} = useSafeAreaInsets();
+
+    const showEditDraft = draftType === DRAFT_TYPE_DRAFT;
+    const showRescheduleDraft = draftType === DRAFT_TYPE_SCHEDULED;
+
+    // Sending a recurring scheduled post now would end or fork the series, so the option is
+    // absent rather than disabled, matching the webapp.
+    const showSend = !isRecurringScheduledPost(draft);
+
     const snapPoints = useMemo(() => {
         const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
-        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(4, ITEM_HEIGHT);
+        const itemCount = ALWAYS_SHOWN_ITEMS + (showEditDraft ? 1 : 0) + (showRescheduleDraft ? 1 : 0) + (showSend ? 1 : 0);
+        const componentHeight = TITLE_HEIGHT + bottomSheetSnapPoint(itemCount, ITEM_HEIGHT);
         return [1, componentHeight + snapBottom];
-    }, [bottom]);
+    }, [bottom, showEditDraft, showRescheduleDraft, showSend]);
 
     const renderContent = () => {
         return (
@@ -89,31 +102,33 @@ const DraftScheduledPostOptions: React.FC<Props> = ({
                     sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
                     key={draft.id}
                 />
-                {draftType === DRAFT_TYPE_DRAFT &&
+                {showEditDraft &&
                     <EditDraft
                         channel={channel}
                         rootId={rootId}
                     />
                 }
-                <SendHandler
-                    channelId={channel.id}
-                    rootId={rootId}
-                    files={draft.files}
-                    value={draft.message}
-                    draftReceiverUserName={draftReceiverUserName}
-                    isFromDraftView={true}
-                    uploadFileError={null}
-                    cursorPosition={0}
-                    draftType={draftType}
-                    postId={draft.id}
-                    clearDraft={emptyFunction}
-                    updateCursorPosition={emptyFunction}
-                    updatePostInputTop={emptyFunction}
-                    addFiles={emptyFunction}
-                    setIsFocused={emptyFunction}
-                    updateValue={emptyFunction}
-                />
-                {draftType === DRAFT_TYPE_SCHEDULED &&
+                {showSend &&
+                    <SendHandler
+                        channelId={channel.id}
+                        rootId={rootId}
+                        files={draft.files}
+                        value={draft.message}
+                        draftReceiverUserName={draftReceiverUserName}
+                        isFromDraftView={true}
+                        uploadFileError={null}
+                        cursorPosition={0}
+                        draftType={draftType}
+                        postId={draft.id}
+                        clearDraft={emptyFunction}
+                        updateCursorPosition={emptyFunction}
+                        updatePostInputTop={emptyFunction}
+                        addFiles={emptyFunction}
+                        setIsFocused={emptyFunction}
+                        updateValue={emptyFunction}
+                    />
+                }
+                {showRescheduleDraft &&
                     <RescheduledDraft draftId={draft.id}/>
                 }
                 <DeleteDraft

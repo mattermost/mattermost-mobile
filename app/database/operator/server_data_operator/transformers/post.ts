@@ -192,8 +192,13 @@ export const transformSchedulePostsRecord = ({action, database, value}: Transfor
         scheduledPost.createAt = raw.create_at;
         scheduledPost.scheduledAt = raw.scheduled_at;
         scheduledPost.processedAt = raw.processed_at ?? 0;
-        scheduledPost.errorCode = raw.error_code || scheduledPost.errorCode;
-        scheduledPost.type = raw.type || '';
+
+        // The server clears error_code on every successful update, so this has to overwrite
+        // rather than merge. Otherwise a recurring post that failed once keeps its error forever.
+        scheduledPost.errorCode = raw.error_code ?? '';
+        scheduledPost.type = raw.type ?? '';
+        scheduledPost.repeatType = raw.repeat_type ?? '';
+        scheduledPost.repeatTimezone = raw.repeat_timezone ?? '';
     };
 
     return prepareBaseRecord({
