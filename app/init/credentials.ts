@@ -73,7 +73,7 @@ export const getActiveServerUrl = async () => {
     return serverUrl || undefined;
 };
 
-export const setServerCredentials = (serverUrl: string, token: string, preauthSecret?: string) => {
+export const setServerCredentials = async (serverUrl: string, token: string, preauthSecret?: string) => {
     if (!(serverUrl && token)) {
         return;
     }
@@ -90,23 +90,30 @@ export const setServerCredentials = (serverUrl: string, token: string, preauthSe
             securityLevel: KeyChain.SECURITY_LEVEL.SECURE_SOFTWARE,
         };
 
-        // Store main token credentials (clean format)
-        KeyChain.setInternetCredentials(serverUrl, token, token, options);
+        const stored = await KeyChain.setInternetCredentials(serverUrl, token, token, options);
+        if (stored === false) {
+            throw new Error('failed to store credentials');
+        }
+
+        if (preauthSecret) {
+            const storedSecret = await KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
+                server: serverUrl,
+                ...options,
+            });
+            if (storedSecret === false) {
+                throw new Error('failed to store preauth secret');
+            }
+        } else {
+            const reset = await KeyChain.resetGenericPassword({
+                server: serverUrl,
+                ...options,
+            });
+            if (reset === false) {
+                throw new Error('failed to reset preauth secret');
+            }
+        }
 
         replaceCachedCredential(serverUrl, {serverUrl, userId: token, token, preauthSecret});
-
-        // Store preauth secret separately if provided
-        if (preauthSecret) {
-            KeyChain.setGenericPassword('preshared_secret', preauthSecret, {
-                server: serverUrl,
-                ...options,
-            });
-        } else {
-            KeyChain.resetGenericPassword({
-                server: serverUrl,
-                ...options,
-            });
-        }
     } catch (e) {
         logWarning('could not set credentials', e);
     }
@@ -119,11 +126,14 @@ export const removeServerCredentials = async (serverUrl: string) => {
 
 export const removePreauthSecret = async (serverUrl: string) => {
     try {
+        const reset = await KeyChain.resetGenericPassword({server: serverUrl});
+        if (reset === false) {
+            return;
+        }
         const existing = cachedServerCredentials?.find((c) => c.serverUrl === serverUrl);
         if (existing) {
             existing.preauthSecret = undefined;
         }
-        await KeyChain.resetGenericPassword({server: serverUrl});
     } catch (e) {
         // Preauth secret might not exist, ignore errors
     }

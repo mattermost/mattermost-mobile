@@ -55,11 +55,20 @@ describe('credentials', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         clearCachedServerCredentials();
+        jest.mocked(KeyChain.setInternetCredentials).mockResolvedValue({
+            service: mockServerUrl,
+            storage: 'keychain',
+        } as any);
+        jest.mocked(KeyChain.setGenericPassword).mockResolvedValue({
+            service: mockServerUrl,
+            storage: 'keychain',
+        } as any);
+        jest.mocked(KeyChain.resetGenericPassword).mockResolvedValue(true);
     });
 
     describe('setServerCredentials', () => {
-        it('should store credentials with pre-auth secret', () => {
-            setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
+        it('should store credentials with pre-auth secret', async () => {
+            await setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
 
             expect(KeyChain.setInternetCredentials).toHaveBeenCalledWith(
                 mockServerUrl,
@@ -80,8 +89,8 @@ describe('credentials', () => {
             );
         });
 
-        it('should store credentials without pre-auth secret', () => {
-            setServerCredentials(mockServerUrl, mockToken);
+        it('should store credentials without pre-auth secret', async () => {
+            await setServerCredentials(mockServerUrl, mockToken);
 
             expect(KeyChain.setInternetCredentials).toHaveBeenCalledWith(
                 mockServerUrl,
@@ -97,24 +106,24 @@ describe('credentials', () => {
             );
         });
 
-        it('should not store credentials when serverUrl is missing', () => {
-            setServerCredentials('', mockToken, mockPreauthSecret);
+        it('should not store credentials when serverUrl is missing', async () => {
+            await setServerCredentials('', mockToken, mockPreauthSecret);
 
             expect(KeyChain.setInternetCredentials).not.toHaveBeenCalled();
             expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
         });
 
-        it('should not store credentials when token is missing', () => {
-            setServerCredentials(mockServerUrl, '', mockPreauthSecret);
+        it('should not store credentials when token is missing', async () => {
+            await setServerCredentials(mockServerUrl, '', mockPreauthSecret);
 
             expect(KeyChain.setInternetCredentials).not.toHaveBeenCalled();
             expect(KeyChain.setGenericPassword).not.toHaveBeenCalled();
         });
 
-        it('should use iOS app group on iOS platform', () => {
+        it('should use iOS app group on iOS platform', async () => {
             Platform.OS = 'ios';
 
-            setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
+            await setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
 
             expect(KeyChain.setInternetCredentials).toHaveBeenCalledWith(
                 mockServerUrl,
@@ -126,10 +135,10 @@ describe('credentials', () => {
             );
         });
 
-        it('should not use app group on Android platform', () => {
+        it('should not use app group on Android platform', async () => {
             Platform.OS = 'android';
 
-            setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
+            await setServerCredentials(mockServerUrl, mockToken, mockPreauthSecret);
 
             expect(KeyChain.setInternetCredentials).toHaveBeenCalledWith(
                 mockServerUrl,
@@ -139,6 +148,54 @@ describe('credentials', () => {
                     accessGroup: undefined,
                 }),
             );
+        });
+
+        it('should leave cached credentials unchanged when the Keychain write is rejected', async () => {
+            Platform.OS = 'ios';
+            jest.mocked((KeyChain as any).getAllInternetPasswordServers).mockResolvedValue([mockServerUrl]);
+            jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
+                username: mockUserId,
+                password: mockToken,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue(false);
+            await getAllServerCredentials();
+
+            jest.mocked(KeyChain.setInternetCredentials).mockRejectedValue(new Error('Keychain error'));
+            await setServerCredentials(mockServerUrl, 'new-token', mockPreauthSecret);
+
+            const result = await getServerCredentials(mockServerUrl);
+            expect(result).toEqual({
+                serverUrl: mockServerUrl,
+                userId: mockUserId,
+                token: mockToken,
+                preauthSecret: undefined,
+            });
+        });
+
+        it('should leave cached credentials unchanged when the Keychain write returns false', async () => {
+            Platform.OS = 'ios';
+            jest.mocked((KeyChain as any).getAllInternetPasswordServers).mockResolvedValue([mockServerUrl]);
+            jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
+                username: mockUserId,
+                password: mockToken,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue(false);
+            await getAllServerCredentials();
+
+            jest.mocked(KeyChain.setInternetCredentials).mockResolvedValue(false);
+            await setServerCredentials(mockServerUrl, 'new-token', mockPreauthSecret);
+
+            const result = await getServerCredentials(mockServerUrl);
+            expect(result).toEqual({
+                serverUrl: mockServerUrl,
+                userId: mockUserId,
+                token: mockToken,
+                preauthSecret: undefined,
+            });
         });
     });
 
@@ -551,7 +608,7 @@ describe('credentials', () => {
             jest.mocked(KeyChain.getGenericPassword).mockResolvedValue(false);
 
             await getAllServerCredentials();
-            setServerCredentials(mockServerUrl, 'new-token', mockPreauthSecret);
+            await setServerCredentials(mockServerUrl, 'new-token', mockPreauthSecret);
 
             const result = await getServerCredentials(mockServerUrl);
 
@@ -612,6 +669,31 @@ describe('credentials', () => {
             expect(KeyChain.resetGenericPassword).toHaveBeenCalledWith({
                 server: mockServerUrl,
             });
+        });
+
+        it('should leave cached preauthSecret unchanged when resetGenericPassword returns false', async () => {
+            Platform.OS = 'ios';
+            jest.mocked((KeyChain as any).getAllInternetPasswordServers).mockResolvedValue([mockServerUrl]);
+            jest.mocked(KeyChain.getInternetCredentials).mockResolvedValue({
+                username: mockUserId,
+                password: mockToken,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue({
+                username: 'preshared_secret',
+                password: mockPreauthSecret,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+
+            await getAllServerCredentials();
+            jest.mocked(KeyChain.resetGenericPassword).mockResolvedValue(false);
+
+            await removePreauthSecret(mockServerUrl);
+            const result = await getServerCredentials(mockServerUrl);
+
+            expect(result?.preauthSecret).toBe(mockPreauthSecret);
         });
 
         it('should not let callers mutate cached credentials', async () => {

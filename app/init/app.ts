@@ -43,35 +43,39 @@ export async function initialize() {
     launchMark('initialize_start');
     if (!baseAppInitialized) {
         baseAppInitialized = true;
+        try {
+            await DatabaseManager.initAppDatabase();
 
-        await DatabaseManager.initAppDatabase();
+            // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
+            const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
+            const activeServer = await getActiveServer();
+            setCachedActiveServer(activeServer ? {
+                url: activeServer.url,
+                displayName: activeServer.displayName,
+                persistenceFlag: activeServer.persistenceFlag,
+            } : undefined);
 
-        // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
-        const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
-        const activeServer = await getActiveServer();
-        setCachedActiveServer(activeServer ? {
-            url: activeServer.url,
-            displayName: activeServer.displayName,
-            persistenceFlag: activeServer.persistenceFlag,
-        } : undefined);
+            const credStarted = Date.now();
+            serverCredentials = await getAllServerCredentials(activeUrls);
+            launchMark('credentials', `${serverCredentials.length} servers ${Date.now() - credStarted}ms`);
 
-        const credStarted = Date.now();
-        serverCredentials = await getAllServerCredentials(activeUrls);
-        launchMark('credentials', `${serverCredentials.length} servers ${Date.now() - credStarted}ms`);
+            const dbStarted = Date.now();
+            await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
+            launchMark('database', `${serverCredentials.length} servers ${Date.now() - dbStarted}ms`);
+            const netStarted = Date.now();
+            await NetworkManager.init(serverCredentials);
+            launchMark('network', `${Date.now() - netStarted}ms`);
 
-        const dbStarted = Date.now();
-        await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
-        launchMark('database', `${serverCredentials.length} servers ${Date.now() - dbStarted}ms`);
-        const netStarted = Date.now();
-        await NetworkManager.init(serverCredentials);
-        launchMark('network', `${Date.now() - netStarted}ms`);
-
-        // EphemeralModeManager init runs before WS init so any pending wipes
-        // complete before WebSocket clients start populating server databases.
-        await EphemeralModeManager.init(serverCredentials);
-        const wsStarted = Date.now();
-        await WebsocketManager.init(serverCredentials);
-        launchMark('websocket_init', `${Date.now() - wsStarted}ms`);
+            // EphemeralModeManager init runs before WS init so any pending wipes
+            // complete before WebSocket clients start populating server databases.
+            await EphemeralModeManager.init(serverCredentials);
+            const wsStarted = Date.now();
+            await WebsocketManager.init(serverCredentials);
+            launchMark('websocket_init', `${Date.now() - wsStarted}ms`);
+        } catch (error) {
+            baseAppInitialized = false;
+            throw error;
+        }
     }
 
     NavigationStore.reset();
