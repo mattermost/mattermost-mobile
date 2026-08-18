@@ -2,11 +2,35 @@
 // See LICENSE.txt for license information.
 
 import {Calls} from '@constants';
+import {getFullErrorMessage} from '@utils/errors';
 
 import * as ClientConstants from './constants';
 import ClientTracking from './tracking';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
+
+// Cloud load balancers close idle keep-alive sockets (~40s), so the next request sent down a
+// pooled connection fails with NSURLError -1005 "network connection was lost" before it ever
+// reaches the server (response_status=-1, 0 response bytes). Reproduced against the PR cloud
+// servers: the custom-status PUT failed 2/2 that way, and one retry — which establishes a
+// fresh connection — made it pass 4/4.
+//
+// The native client is *supposed* to cover this already: getSessionInterceptor attaches a
+// RuntimeRetrier, which delegates to `request.request?.retryPolicy ?? session.retryPolicy`,
+// and the session policy we configure in NetworkManager (EXPONENTIAL_RETRY, retryLimit 3)
+// inherits Alamofire's defaultRetryableURLErrorCodes — which includes .networkConnectionLost.
+// Why that path does not fire in practice is unresolved, so treat this as a mitigation rather
+// than the root-cause fix, and keep it cheap: ONE extra attempt, which is all a dead pooled
+// socket needs. Anything more would stack on top of the native retryLimit.
+//
+// Restricted to idempotent methods, and callers that must not retry already pass `noRetry`.
+// Match on the message text only — never on the raw codes: "-1005"/"-1001" appear as
+// substrings in our own hostnames (mobile-pr-10050…, mobile-pr-10010…), which would retry
+// permanent 4xx/5xx errors.
+const RETRYABLE_METHODS = new Set(['get', 'put', 'patch', 'delete']);
+const isTransientTransportError = (error: unknown) =>
+    /network connection was lost|the request timed out/i.test(getFullErrorMessage(error));
+const TRANSIENT_RETRY_ATTEMPTS = 2;
 
 export default class ClientBase extends ClientTracking {
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string, preauthSecret?: string) {
@@ -232,6 +256,26 @@ export default class ClientBase extends ClientTracking {
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
-        return this.doFetchWithTracking(url, options, returnDataOnly);
+        const method = options.method?.toLowerCase();
+        if (options.noRetry || method == null || !RETRYABLE_METHODS.has(method)) {
+            return this.doFetchWithTracking(url, options, returnDataOnly);
+        }
+        let lastError: unknown;
+        for (let attempt = 0; attempt < TRANSIENT_RETRY_ATTEMPTS; attempt++) {
+            try {
+                // Sequential by design: each attempt only runs if the previous one failed with a
+                // transient transport error, so the awaits cannot be parallelised.
+                // eslint-disable-next-line no-await-in-loop
+                return await this.doFetchWithTracking(url, options, returnDataOnly);
+            } catch (error) {
+                lastError = error;
+                if (!isTransientTransportError(error) || attempt === TRANSIENT_RETRY_ATTEMPTS - 1) {
+                    throw error;
+                }
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => setTimeout(resolve, 400 * Math.pow(2, attempt)));
+            }
+        }
+        throw lastError;
     };
 }

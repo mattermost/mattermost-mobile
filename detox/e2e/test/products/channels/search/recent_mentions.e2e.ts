@@ -267,8 +267,14 @@ describe('Search - Recent Mentions', () => {
         // matchers (verifyPostEdited's by.text('edit')/'Edited') miss the combined node.
         await ChannelScreen.assertPostMessageEdited(ownMentionPost.id, updatedMessage, 'recent_mentions_page');
 
-        // # Open post options via header date_time long-press (avoids the @mention tap handler)
-        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);
+        // # Open post options. openPostOptionsFor, not a bare longPress on post_header.date_time:
+        // the bare version has no scroll, no wait for the sheet and no retry, and it left
+        // post_options.screen unopened so replyPostOption was never there. The helper scrolls the
+        // row in, then longPressWithRetry's until post_options.screen actually appears — and it
+        // already opened options for this same post earlier in this test, so it clears the
+        // @mention handler that the date_time target was chosen to avoid. Pass the edited body,
+        // which is what the row renders now.
+        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id, updatedMessage);
         await PostOptionsScreen.replyPostOption.tap();
         await ThreadScreen.toBeVisible();
 
@@ -285,8 +291,8 @@ describe('Search - Recent Mentions', () => {
         await ThreadScreen.back();
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TEN_SEC);
 
-        // # Delete the post via post options
-        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);
+        // # Delete the post via post options (same helper, same reason as above)
+        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id, updatedMessage);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify mention is removed
