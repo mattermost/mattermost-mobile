@@ -13,6 +13,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import {hideLaunchSplash} from '@init/splash';
 import {navigateToScreen} from '@screens/navigation';
 import {logDebug} from '@utils/log';
 import {alertTeamAddError} from '@utils/navigation';
@@ -122,6 +123,7 @@ const SelectTeam = ({
     }, [shouldRedirectToHome]);
 
     useDidMount(() => {
+        hideLaunchSplash();
         loadTeams();
     });
 

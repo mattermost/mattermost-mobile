@@ -5,7 +5,6 @@ import {PortalHost, PortalProvider} from '@gorhom/portal';
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import RNUtils from '@mattermost/rnutils';
 import {Stack, useNavigationContainerRef} from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Keyboard, Platform, StyleSheet} from 'react-native';
@@ -20,6 +19,7 @@ import {useThemeByAppearanceWithDefault} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {cleanup, initialize} from '@init/app';
+import {hideLaunchSplash} from '@init/splash';
 import InAppNotificationContainer from '@screens/in_app_notification';
 import ReviewAppContainer from '@screens/review_app';
 import ShareFeedbackContainer from '@screens/share_feedback';
@@ -93,7 +93,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         if (appReady) {
-            SplashScreen.hideAsync();
+            hideLaunchSplash();
         }
     }, [appReady]);
 
