@@ -670,12 +670,27 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Moved before node/Maestro/seed: zero deps on checkout beyond the action,
-      # and apt-get update can be slow (~38m).
+      # Moved before node/Maestro/seed: zero deps on checkout beyond the action.
+      #
+      # Only libpulse0 is a real dependency (emulator audio); xvfb already ships in the
+      # runner image. ffmpeg and scrot were dropped — Maestro records no video here and
+      # captures screenshots itself, and neither tool is referenced anywhere else in the
+      # repo. ffmpeg alone pulled ~110 packages / 114 MB, and that download is what made
+      # this step take tens of minutes on some runners and seconds on others.
+      #
+      # `apt-get update` has also blocked outright on these runners, which is what forced
+      # this job's 90m timeout. The image ships a populated apt cache, so try the install
+      # first and only run `apt-get update` when a package cannot be resolved from it; the
+      # step cap turns a wedged apt into a fast failure instead of a stalled suite.
       - name: Install system dependencies
+        timeout-minutes: 6
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}"
+          }
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
