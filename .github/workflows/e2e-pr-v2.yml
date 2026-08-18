@@ -1,17 +1,23 @@
 # E2E v2 — PR entry (independent of Matterwick / e2e-detox-pr.yml).
 #
 # Starts after mobile CI (lint, format, tsc, unit tests) succeeds.
-# Triggered by workflow_run on `ci` (not pull_request) so GitHub does not
-# attach Actions job rows such as "E2E v2 / Resolve PR identity" or
-# "detox-ios-worker-N" to the PR. Merge checks are commit statuses only:
+# Merge-facing results are commit statuses:
 #   e2e-test/detox-check, e2e-test/maestro-check,
 #   e2e-test/ios-build or ios-build-cache,
 #   e2e-test/android-build or android-build-cache,
 #   e2e-test/test-servers-created, e2e-test/test-servers-destroyed,
 #   e2e-test/detox-ios (later android, ipad, maestro).
 #
-# workflow_run always executes the copy of this file on the default branch.
-# workflow_dispatch runs the file from the selected ref (manual / this PR).
+# TEMPORARY: `pull_request` is enabled so this feature-branch file runs
+# while remaining phases are still in progress. That attaches Actions job
+# rows (Resolve PR identity, detox-ios-worker-N, …) to the PR.
+#
+# BEFORE REVIEW: switch `on:` back to `workflow_run` on `ci` completed
+# (plus keep `workflow_dispatch`). `workflow_run` always executes the
+# default-branch copy, so it cannot start E2E from this PR until the file
+# is on main. Do not leave `pull_request` on for review.
+#
+# `workflow_dispatch` stays so the GitHub Actions UI can run a chosen ref.
 #
 # Phase 0 scope: PR only. Reusable templates (e2e-build-v2, e2e-stack-*-v2,
 # e2e-detox-v2, e2e-ios-template-v2) take run-type / context suffix so main,
@@ -22,11 +28,8 @@
 name: E2E v2
 
 on:
-  workflow_run:
-    workflows:
-      - ci
-    types:
-      - completed
+  # TEMPORARY — remove before review; replace with workflow_run on `ci`.
+  pull_request:
   workflow_dispatch:
     inputs:
       skip_wait_for_ci:
@@ -66,7 +69,7 @@ permissions:
   issues: read
 
 concurrency:
-  group: e2e-v2-${{ github.event.workflow_run.head_sha || github.ref }}
+  group: e2e-v2-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -79,9 +82,8 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch'
       || (
-        github.event_name == 'workflow_run'
-        && github.event.workflow_run.conclusion == 'success'
-        && github.event.workflow_run.head_repository.full_name == github.repository
+        github.event_name == 'pull_request'
+        && github.event.pull_request.head.repo.full_name == github.repository
       )
     runs-on: ubuntu-24.04
     outputs:
@@ -99,9 +101,9 @@ jobs:
         id: vars
         env:
           EVENT_NAME: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr_number }}
-          PR_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          WF_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WF_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           DISPATCH_TAGS: ${{ inputs.detox-include-tags }}
           DISPATCH_WORKERS: ${{ inputs.parallelism }}
           DISPATCH_IMAGE: ${{ inputs.server_image }}
