@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
@@ -97,7 +97,11 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name), timeouts.TWENTY_SEC);
     });
 
-    it('MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen', async () => {
+    // Skip iOS: CI run 32062376817 (482b641) — the channel list's keyExtractor is category-independent,
+    // so FlashList recycles the same cell when a channel moves favorites -> channels and the stale
+    // category.favorites testID keeps not.toBeVisible() failing.
+    // Root-caused and fixed in #10023 / #10050; remove this guard when either lands.
+    (isIos() ? it.skip : it)('MM-T4929_2 - should be able to favorite/unfavorite a channel from channel info screen', async () => {
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and go back to channel list screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();

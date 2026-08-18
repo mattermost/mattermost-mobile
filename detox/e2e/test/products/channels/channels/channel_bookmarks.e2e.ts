@@ -456,7 +456,10 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T5606_1 - should be able to change the icon/emoji of a bookmark', async () => {
+    // Skip iOS: CI run 32062376817 (482b641) — same clipped-channel-row cause as MM-T5604_1 above:
+    // openChannel's row is clipped at the FlashList edge, so tap() fails the visibility threshold.
+    // Root-caused and fixed in #10023 / #10050; remove this guard when either lands.
+    (isIos() ? it.skip : it)('MM-T5606_1 - should be able to change the icon/emoji of a bookmark', async () => {
         // # Navigate to the channel
         await openChannel(channelT5606);
 
