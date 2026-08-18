@@ -109,17 +109,19 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Both platforms push the right-side column beyond the viewport, so pan the table to
-        // reveal it.
+        // The right-side column sits beyond the viewport — the content is 3 * CELL_MAX_WIDTH =
+        // 576pt against a ~402pt viewport — so scroll the table horizontally to reveal it.
         //
-        // Use swipe(), not scroll()/scrollTo(): this table is 3 columns, so the content is
-        // 3 * CELL_MAX_WIDTH = 576pt against a 402pt viewport, leaving only ~174pt of
-        // scrollable extent. Detox will not drive a 150pt scroll that close to the edge —
-        // it throws "Unable to scroll right" without moving at all — and scrollTo('right')
-        // is a no-op here too. A swipe works: verified by hand on iPhone 17 Pro / iOS 26.2,
-        // where one swipe brings the right column fully on screen and it pans back again.
-        // MM-T4899_5 gets away with scroll() because its 8-column table has ~558pt of extent.
-        await TableScreen.tableScrollView.swipe('left', 'slow', 0.6);
+        // startPositionY is pinned near the top of the scroll view so the gesture lands on the
+        // table. This table is only two rows (~125pt) tall inside a full-height scroll view, and
+        // Detox's default start point is the scroll view's vertical centre, ~250pt of empty space
+        // below the table. On iOS a touch there never reaches the scroll view: RN's Fabric
+        // ScrollView hit-tests only the content container's children and otherwise returns the
+        // wrapper component view, which is the parent of the underlying UIScrollView, so its pan
+        // recogniser never sees the gesture and the content offset stays at 0. MM-T4899_3/_5 get
+        // away with the default start point because their 8-column tables are tall enough that
+        // the centre of the scroll view is still on the table.
+        await TableScreen.tableScrollView.scroll(150, 'right', NaN, 0.05);
         await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
 
