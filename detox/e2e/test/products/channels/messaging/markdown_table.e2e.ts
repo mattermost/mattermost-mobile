@@ -124,13 +124,15 @@ describe('Messaging - Markdown Table', () => {
         // of the scroll view is still on the table.
         //
         // Android keeps the default start point: there table.scroll_view is a real horizontal
-        // ScrollView sized to the content, so its centre is already on the table, and 5% of that
-        // view's ~125pt height is too close to its edge for the gesture to take — run 32136583714
-        // left the table at offset 0.
+        // ScrollView sized to the content, so its centre is already on the table.
+        //
+        // Keep the waitFor/whileElement form: one 150pt scroll is not enough on Android, where the
+        // viewport is narrower relative to the 576pt table and a single scroll leaves the column
+        // only ~38% visible, under the 50% threshold. The retry scrolls again and reaches the
+        // content edge. On iOS one scroll already clears the threshold, so the loop stops there.
         const scrollStartPositionY = isIos() ? 0.05 : NaN;
-        await TableScreen.tableScrollView.scroll(150, 'right', NaN, scrollStartPositionY);
-        await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
-        await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right', NaN, scrollStartPositionY);
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right', NaN, scrollStartPositionY);
 
         // # Go back to channel list screen
         await TableScreen.back();
