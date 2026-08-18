@@ -106,7 +106,7 @@ const mockClient = {
     getChannelMember: jest.fn((_channelId: string, userId: string) => ({id: userId + '-' + _channelId, user_id: userId, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
     getMyChannelMember: jest.fn((_channelId: string) => ({id: user1.id + '-' + _channelId, user_id: user1.id, channel_id: _channelId, roles: '', msg_count: 100, mention_count: 0})),
     markPostAsUnread: jest.fn(),
-    patchPost: jest.fn((message: string, postId: string) => ({...post1, id: postId, message})),
+    patchPost: jest.fn(({message, id, file_ids}) => ({...post1, id, message, file_ids})),
     acknowledgePost: jest.fn(() => ({acknowledged_at: acknowledgedTime})),
     unacknowledgePost: jest.fn(),
     revealBoRPost: jest.fn((_postId: string) => ({
@@ -514,6 +514,27 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.post).toBeDefined();
+    });
+
+    it('editPost - should update message in database', async () => {
+        const {database} = operator;
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        const originalPost = await getPostById(database, post1.id);
+        expect(originalPost?.message).toBe(post1.message);
+
+        const newMessage = 'edited message content';
+        const result = await editPost(serverUrl, post1.id, newMessage, [], []);
+        expect(result.error).toBeUndefined();
+
+        // Verify the message was persisted in the database
+        const editedPost = await getPostById(database, post1.id);
+        expect(editedPost?.message).toBe(newMessage);
     });
 
     it('editPost - delete files', async () => {
