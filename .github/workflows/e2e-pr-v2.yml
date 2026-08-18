@@ -5,9 +5,14 @@
 #   e2e-test/detox-check, e2e-test/maestro-check,
 #   e2e-test/ios-build or ios-build-cache,
 #   e2e-test/android-build or android-build-cache,
-#   e2e-test/test-servers-created/{ios,android,ipad},
-#   e2e-test/test-servers-destroyed/{ios,android,ipad},
-#   e2e-test/detox-ios, e2e-test/detox-android, e2e-test/detox-ipad (later maestro).
+#   e2e-test/android-maestro-build or android-maestro-build-cache,
+#   e2e-test/test-servers-created/{ios,android,ipad,maestro-ios,maestro-android},
+#   e2e-test/test-servers-destroyed/{ios,android,ipad,maestro-ios,maestro-android},
+#   e2e-test/detox-ios, e2e-test/detox-android, e2e-test/detox-ipad,
+#   e2e-test/maestro-ios, e2e-test/maestro-android.
+#
+# Builds run before stack create. A failed build skips only that
+# platform/framework (e.g. iOS build fail does not block Android Detox).
 #
 # TEMPORARY: `pull_request` is enabled so this feature-branch file runs
 # while remaining phases are still in progress. That attaches Actions job
@@ -21,13 +26,14 @@
 # `workflow_dispatch` stays so the GitHub Actions UI can run a chosen ref.
 #
 # Phase 0 scope: PR only. Reusable templates (e2e-build-v2, e2e-stack-*-v2,
-# e2e-detox-v2, e2e-ios-template-v2, e2e-android-template-v2) take run-type /
-# context suffix so main, release, and CMT can call them later without rewriting
-# this file.
+# e2e-detox-v2, e2e-ios-template-v2, e2e-android-template-v2, e2e-maestro-v2)
+# take run-type / context suffix so main, release, and CMT can call them later
+# without rewriting this file.
 #
-# Topology: each Detox platform leases and releases its own stack.
-# iOS / Android: one SITE_1 per worker plus two extras (SITE_2, SITE_3).
-# iPad: SITE_1 only (no SITE_2 / SITE_3). Servers come from e2e-test-stack-actions.
+# Topology: each platform/framework leases and releases its own stack after
+# its app artifact is ready, so a failed build never leases servers.
+# Detox iOS / Android: one SITE_1 per worker plus SITE_2 / SITE_3.
+# Detox iPad, Maestro iOS, Maestro Android: SITE_1 only.
 name: E2E v2
 
 on:
@@ -103,6 +109,9 @@ jobs:
       ios_instance_key: ${{ steps.vars.outputs.ios_instance_key }}
       android_instance_key: ${{ steps.vars.outputs.android_instance_key }}
       ipad_instance_key: ${{ steps.vars.outputs.ipad_instance_key }}
+      maestro_ios_instance_key: ${{ steps.vars.outputs.maestro_ios_instance_key }}
+      maestro_android_instance_key: ${{ steps.vars.outputs.maestro_android_instance_key }}
+      maestro_parallelism: ${{ steps.vars.outputs.maestro_parallelism }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
@@ -138,8 +147,7 @@ jobs:
             SCOPE="branch-${slug}"
           fi
 
-          # Hostname prefix: mobile-pr-<n>, mobile-main, mobile-release,
-          # mobile-release-cut. Toolkit limit is 24 characters.
+          # Hostname prefix: mobile-pr-<n>-<platform>, toolkit limit 24 chars.
           KEY_IOS=$(node .github/actions/e2e-v2-instance-key/instance_key.js \
             --pr "${PR_NUMBER:-}" \
             --ref "${GITHUB_REF_NAME:-}" \
@@ -152,11 +160,20 @@ jobs:
             --pr "${PR_NUMBER:-}" \
             --ref "${GITHUB_REF_NAME:-}" \
             --platform ipad)
+          KEY_MIOS=$(node .github/actions/e2e-v2-instance-key/instance_key.js \
+            --pr "${PR_NUMBER:-}" \
+            --ref "${GITHUB_REF_NAME:-}" \
+            --platform maestro-ios)
+          KEY_MAND=$(node .github/actions/e2e-v2-instance-key/instance_key.js \
+            --pr "${PR_NUMBER:-}" \
+            --ref "${GITHUB_REF_NAME:-}" \
+            --platform maestro-android)
 
           DEFAULT_IOS=30
           DEFAULT_ANDROID=20
-          # iPad stays at 1 until we scale it; dispatch parallelism does not bump it.
+          # iPad and Maestro stay at 1; dispatch parallelism does not bump them.
           DEFAULT_IPAD=1
+          DEFAULT_MAESTRO=1
           if [ -n "${DISPATCH_WORKERS}" ]; then
             if ! [[ "$DISPATCH_WORKERS" =~ ^[0-9]+$ ]] || [ "$DISPATCH_WORKERS" -lt 1 ]; then
               echo "::error::parallelism must be a positive integer, got '${DISPATCH_WORKERS}'"
@@ -165,10 +182,12 @@ jobs:
             IOS_N="$DISPATCH_WORKERS"
             ANDROID_N="$DISPATCH_WORKERS"
             IPAD_N="$DEFAULT_IPAD"
+            MAESTRO_N="$DEFAULT_MAESTRO"
           else
             IOS_N="$DEFAULT_IOS"
             ANDROID_N="$DEFAULT_ANDROID"
             IPAD_N="$DEFAULT_IPAD"
+            MAESTRO_N="$DEFAULT_MAESTRO"
           fi
 
           # Empty include tags = full phone suite. Callers still pass detox-exclude-tags=@ipad_only.
@@ -189,9 +208,12 @@ jobs:
             echo "ios_instance_key=${KEY_IOS}"
             echo "android_instance_key=${KEY_AND}"
             echo "ipad_instance_key=${KEY_IPAD}"
+            echo "maestro_ios_instance_key=${KEY_MIOS}"
+            echo "maestro_android_instance_key=${KEY_MAND}"
+            echo "maestro_parallelism=${MAESTRO_N}"
           } >> "$GITHUB_OUTPUT"
 
-          echo "sha=${SHA} branch=${BRANCH} ios=${IOS_N} android=${ANDROID_N} ipad=${IPAD_N} keys=${KEY_IOS},${KEY_AND},${KEY_IPAD} tags='${TAGS}'"
+          echo "sha=${SHA} branch=${BRANCH} ios=${IOS_N} android=${ANDROID_N} ipad=${IPAD_N} maestro=${MAESTRO_N} keys=${KEY_IOS},${KEY_AND},${KEY_IPAD},${KEY_MIOS},${KEY_MAND} tags='${TAGS}'"
 
   wait-for-ci:
     name: Wait for CI checks
@@ -356,13 +378,33 @@ jobs:
       platform: android
     secrets: inherit
 
-  create-ios-servers:
-    name: Create iOS test servers
+  build-android-maestro:
+    name: E2E Android Maestro artifacts
     needs: [resolve, wait-for-ci]
     if: >-
       always()
       && needs.resolve.result == 'success'
       && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    uses: ./.github/workflows/e2e-build-v2.yml
+    with:
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      cache_scope: ${{ needs.resolve.outputs.cache_scope }}
+      platform: android-maestro
+    secrets: inherit
+
+  # Stacks start only after the matching app artifact exists.
+  create-ios-servers:
+    name: Create iOS test servers
+    needs: [resolve, wait-for-ci, build-ios]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+      && needs.build-ios.result == 'success'
     permissions:
       contents: read
       id-token: write
@@ -380,11 +422,12 @@ jobs:
 
   create-android-servers:
     name: Create Android test servers
-    needs: [resolve, wait-for-ci]
+    needs: [resolve, wait-for-ci, build-android]
     if: >-
       always()
       && needs.resolve.result == 'success'
       && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+      && needs.build-android.result == 'success'
     permissions:
       contents: read
       id-token: write
@@ -402,11 +445,12 @@ jobs:
 
   create-ipad-servers:
     name: Create iPad test servers
-    needs: [resolve, wait-for-ci]
+    needs: [resolve, wait-for-ci, build-ios]
     if: >-
       always()
       && needs.resolve.result == 'success'
       && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+      && needs.build-ios.result == 'success'
     permissions:
       contents: read
       id-token: write
@@ -418,6 +462,52 @@ jobs:
       worker_count: ${{ needs.resolve.outputs.ipad_parallelism }}
       extra_count: "0"
       platform: ipad
+      server_image: ${{ needs.resolve.outputs.server_image }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+    secrets: inherit
+
+  create-maestro-ios-servers:
+    name: Create Maestro iOS test servers
+    needs: [resolve, wait-for-ci, build-ios]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+      && needs.build-ios.result == 'success'
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
+      statuses: write
+    uses: ./.github/workflows/e2e-stack-create-v2.yml
+    with:
+      instance_key: ${{ needs.resolve.outputs.maestro_ios_instance_key }}
+      worker_count: ${{ needs.resolve.outputs.maestro_parallelism }}
+      extra_count: "0"
+      platform: maestro-ios
+      server_image: ${{ needs.resolve.outputs.server_image }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+    secrets: inherit
+
+  create-maestro-android-servers:
+    name: Create Maestro Android test servers
+    needs: [resolve, wait-for-ci, build-android-maestro]
+    if: >-
+      always()
+      && needs.resolve.result == 'success'
+      && (needs.wait-for-ci.result == 'success' || needs.wait-for-ci.result == 'skipped')
+      && needs.build-android-maestro.result == 'success'
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
+      statuses: write
+    uses: ./.github/workflows/e2e-stack-create-v2.yml
+    with:
+      instance_key: ${{ needs.resolve.outputs.maestro_android_instance_key }}
+      worker_count: ${{ needs.resolve.outputs.maestro_parallelism }}
+      extra_count: "0"
+      platform: maestro-android
       server_image: ${{ needs.resolve.outputs.server_image }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
     secrets: inherit
@@ -583,4 +673,106 @@ jobs:
       batch_id: ${{ needs.create-ipad-servers.outputs.batch_id }}
       commit_sha: ${{ needs.resolve.outputs.commit_sha }}
       platform: ipad
+    secrets: inherit
+
+  run-maestro-ios:
+    name: Maestro iOS E2E
+    needs:
+      - resolve
+      - maestro-check
+      - build-ios
+      - create-maestro-ios-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled()
+      && needs.resolve.result == 'success'
+      && needs.maestro-check.result == 'success'
+      && needs.build-ios.result == 'success'
+      && needs.create-maestro-ios-servers.result == 'success'
+    uses: ./.github/workflows/e2e-maestro-v2.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit_sha }}
+      PLATFORM: ios
+      run_type: PR
+      artifact_run_id: ${{ github.run_id }}
+      context_suffix: ${{ needs.resolve.outputs.context_suffix }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      response_artifact: ${{ needs.create-maestro-ios-servers.outputs.response_artifact }}
+      parallelism: ${{ needs.resolve.outputs.maestro_parallelism }}
+    secrets: inherit
+
+  run-maestro-android:
+    name: Maestro Android E2E
+    needs:
+      - resolve
+      - maestro-check
+      - build-android-maestro
+      - create-maestro-android-servers
+    permissions:
+      contents: read
+      statuses: write
+      actions: read
+      id-token: write
+      issues: read
+    if: >-
+      !cancelled()
+      && needs.resolve.result == 'success'
+      && needs.maestro-check.result == 'success'
+      && needs.build-android-maestro.result == 'success'
+      && needs.create-maestro-android-servers.result == 'success'
+    uses: ./.github/workflows/e2e-maestro-v2.yml
+    with:
+      MOBILE_VERSION: ${{ needs.resolve.outputs.commit_sha }}
+      PLATFORM: android
+      run_type: PR
+      artifact_run_id: ${{ github.run_id }}
+      context_suffix: ${{ needs.resolve.outputs.context_suffix }}
+      branch: ${{ needs.resolve.outputs.branch }}
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      response_artifact: ${{ needs.create-maestro-android-servers.outputs.response_artifact }}
+      parallelism: ${{ needs.resolve.outputs.maestro_parallelism }}
+    secrets: inherit
+
+  destroy-maestro-ios-servers:
+    name: Destroy Maestro iOS test servers
+    needs:
+      - resolve
+      - create-maestro-ios-servers
+      - run-maestro-ios
+    if: always() && needs.create-maestro-ios-servers.outputs.batch_id != ''
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
+    uses: ./.github/workflows/e2e-stack-destroy-v2.yml
+    with:
+      batch_id: ${{ needs.create-maestro-ios-servers.outputs.batch_id }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      platform: maestro-ios
+    secrets: inherit
+
+  destroy-maestro-android-servers:
+    name: Destroy Maestro Android test servers
+    needs:
+      - resolve
+      - create-maestro-android-servers
+      - run-maestro-android
+    if: always() && needs.create-maestro-android-servers.outputs.batch_id != ''
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
+    uses: ./.github/workflows/e2e-stack-destroy-v2.yml
+    with:
+      batch_id: ${{ needs.create-maestro-android-servers.outputs.batch_id }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
+      platform: maestro-android
     secrets: inherit

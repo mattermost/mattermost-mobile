@@ -7,6 +7,8 @@ describe('e2e v2 instance_key', () => {
         expect(instanceKey({prNumber: '1234', platform: 'ios'})).toBe('mobile-pr-1234-ios');
         expect(instanceKey({prNumber: '1234', platform: 'android'})).toBe('mobile-pr-1234-and');
         expect(instanceKey({prNumber: '1234', platform: 'ipad'})).toBe('mobile-pr-1234-ipad');
+        expect(instanceKey({prNumber: '1234', platform: 'maestro-ios'})).toBe('mobile-pr-1234-mios');
+        expect(instanceKey({prNumber: '1234', platform: 'maestro-android'})).toBe('mobile-pr-1234-mand');
     });
 
     it('should format main, release, and release-cut keys', () => {
@@ -16,6 +18,8 @@ describe('e2e v2 instance_key', () => {
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ios'})).toBe('mobile-release-cut-ios');
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'android'})).toBe('mobile-release-cut-and');
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ipad'})).toBe('mobile-release-cut-ipad');
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'maestro-ios'})).toBe('mobile-release-cut-mios');
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'maestro-android'})).toBe('mobile-release-cut-mand');
     });
 
     it('should prefer the PR number over run type', () => {
@@ -37,6 +41,8 @@ describe('e2e v2 instance_key', () => {
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ios'}).length).toBeLessThanOrEqual(MAX_LENGTH);
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'android'}).length).toBeLessThanOrEqual(MAX_LENGTH);
         expect(instanceKey({runType: 'RELEASE_CUT', platform: 'ipad'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'maestro-ios'}).length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(instanceKey({runType: 'RELEASE_CUT', platform: 'maestro-android'}).length).toBeLessThanOrEqual(MAX_LENGTH);
     });
 
     it('should reject an unknown scope', () => {

@@ -3,18 +3,21 @@
 /**
  * Stack hostname prefix. The toolkit refuses more than 24 characters.
  *
- *   mobile-pr-<n>-ios|and|ipad
- *   mobile-main-ios|and|ipad
- *   mobile-release-ios|and|ipad
- *   mobile-release-cut-ios|and|ipad
+ *   mobile-pr-<n>-ios|and|ipad|mios|mand
+ *   mobile-main-ios|and|ipad|mios|mand
+ *   mobile-release-ios|and|ipad|mios|mand
+ *   mobile-release-cut-ios|and|ipad|mios|mand
  *
- * Android is `and` so `mobile-release-cut-and` stays within 24 characters.
+ * Android Detox is `and`, Maestro iOS `mios`, Maestro Android `mand`
+ * so `mobile-release-cut-*` stays within 24 characters.
  */
 
 const PLATFORM_SUFFIX = {
     ios: 'ios',
     android: 'and',
     ipad: 'ipad',
+    'maestro-ios': 'mios',
+    'maestro-android': 'mand',
 };
 
 const MAX_LENGTH = 24;
@@ -57,7 +60,7 @@ function scopeLabel({prNumber, runType, refName} = {}) {
 function instanceKey({prNumber, runType, refName, platform} = {}) {
     const suffix = PLATFORM_SUFFIX[platform];
     if (!suffix) {
-        throw new Error('instance_key needs platform ios, android, or ipad');
+        throw new Error('instance_key needs platform ios, android, ipad, maestro-ios, or maestro-android');
     }
     const key = `mobile-${scopeLabel({prNumber, runType, refName})}-${suffix}`;
     if (key.length > MAX_LENGTH) {

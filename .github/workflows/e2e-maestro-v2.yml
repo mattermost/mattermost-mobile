@@ -1,0 +1,110 @@
+# Maestro E2E v2 — reusable dispatcher.
+# Called from e2e-pr-v2.yml after the matching app build and stack create.
+# iOS downloads ios-build-simulator-*; Android downloads android-maestro-build-files-*.
+# Each platform binds SITE_1 only (no SITE_2 / SITE_3).
+name: Maestro E2E v2
+
+on:
+  workflow_call:
+    inputs:
+      MOBILE_VERSION:
+        required: true
+        type: string
+      PLATFORM:
+        description: "ios, android, or both"
+        required: false
+        type: string
+        default: "ios"
+      run_type:
+        required: false
+        type: string
+        default: "PR"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded build artifacts"
+        required: true
+        type: string
+      context_suffix:
+        description: >
+          Suffix appended to e2e-test/maestro-* contexts (/main, /release, /release-cut).
+          Empty for PR runs.
+        required: false
+        type: string
+        default: ""
+      branch:
+        description: "Branch segment for Test System IO composite identity"
+        required: true
+        type: string
+      pr_number:
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        required: true
+        type: string
+      response_artifact:
+        description: "Create response artifact from e2e-stack-create-v2 (e2e-create-<batch_id>)"
+        required: true
+        type: string
+      parallelism:
+        description: "Maestro workers (1 for now)"
+        required: false
+        type: string
+        default: "1"
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+  issues: read
+
+jobs:
+  run-maestro-ios:
+    if: inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both'
+    name: Maestro iOS
+    uses: ./.github/workflows/e2e-maestro-template-v2.yml
+    with:
+      platform: ios
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_name: e2e-test/maestro-ios${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
+      response_artifact: ${{ inputs.response_artifact }}
+      stack_extra_count: "0"
+      parallelism: ${{ inputs.parallelism }}
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+
+  run-maestro-android:
+    if: inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both'
+    name: Maestro Android
+    uses: ./.github/workflows/e2e-maestro-template-v2.yml
+    with:
+      platform: android
+      run-type: ${{ inputs.run_type || 'PR' }}
+      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      artifact_run_id: ${{ inputs.artifact_run_id }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_name: e2e-test/maestro-android${{ inputs.context_suffix }}
+      branch: ${{ inputs.branch }}
+      pr_number: ${{ inputs.pr_number }}
+      commit_sha: ${{ inputs.commit_sha }}
+      response_artifact: ${{ inputs.response_artifact }}
+      stack_extra_count: "0"
+      parallelism: ${{ inputs.parallelism }}
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+      MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+      MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
