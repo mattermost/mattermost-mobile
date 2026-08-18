@@ -13,10 +13,15 @@ on:
         required: false
         type: string
         default: "v1"
+      commit_sha:
+        description: "Commit to post e2e-test/test-servers-destroyed on"
+        required: true
+        type: string
 
 permissions:
   contents: read
   id-token: write
+  statuses: write
 
 jobs:
   destroy:
@@ -24,6 +29,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/update-commit-status
+
+      - name: Pending test-servers-destroyed
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-destroyed
+          description: Releasing test servers
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
       - name: Require stack AWS role
         env:
           ROLE_ARN: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
@@ -34,7 +56,7 @@ jobs:
           fi
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3 (2026-07-22)
         with:
           role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
           aws-region: us-east-1
@@ -45,3 +67,14 @@ jobs:
         with:
           batch_id: ${{ inputs.batch_id }}
           lambda_alias: ${{ inputs.lambda_alias }}
+
+      - name: Publish test-servers-destroyed
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-destroyed
+          description: ${{ job.status == 'success' && 'Test servers released' || 'Test server destroy failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

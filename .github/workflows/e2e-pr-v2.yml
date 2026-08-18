@@ -1,7 +1,17 @@
 # E2E v2 — PR entry (independent of Matterwick / e2e-detox-pr.yml).
 #
-# Starts after mobile CI (lint, format, tsc, unit tests) succeeds. Does not
-# modify ci.yml: a wait job polls that workflow for this SHA.
+# Starts after mobile CI (lint, format, tsc, unit tests) succeeds.
+# Triggered by workflow_run on `ci` (not pull_request) so GitHub does not
+# attach Actions job rows such as "E2E v2 / Resolve PR identity" or
+# "detox-ios-worker-N" to the PR. Merge checks are commit statuses only:
+#   e2e-test/detox-check, e2e-test/maestro-check,
+#   e2e-test/ios-build or ios-build-cache,
+#   e2e-test/android-build or android-build-cache,
+#   e2e-test/test-servers-created, e2e-test/test-servers-destroyed,
+#   e2e-test/detox-ios (later android, ipad, maestro).
+#
+# workflow_run always executes the copy of this file on the default branch.
+# workflow_dispatch runs the file from the selected ref (manual / this PR).
 #
 # Phase 0 scope: PR only. Reusable templates (e2e-build-v2, e2e-stack-*-v2,
 # e2e-detox-v2, e2e-ios-template-v2) take run-type / context suffix so main,
@@ -12,7 +22,11 @@
 name: E2E v2
 
 on:
-  pull_request:
+  workflow_run:
+    workflows:
+      - ci
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       skip_wait_for_ci:
@@ -35,6 +49,11 @@ on:
         required: false
         type: string
         default: "mattermostdevelopment/mattermost-enterprise-edition:master"
+      pr_number:
+        description: "PR number for Test System IO identity (digits only)"
+        required: false
+        type: string
+        default: ""
 
 # Default least-privilege; jobs that post statuses, mint OIDC, or call nested
 # reusable workflows declare the extra scopes they need.
@@ -47,7 +66,7 @@ permissions:
   issues: read
 
 concurrency:
-  group: e2e-v2-${{ github.event.pull_request.number || github.ref }}
+  group: e2e-v2-${{ github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -59,7 +78,11 @@ jobs:
     name: Resolve PR identity
     if: >-
       github.event_name == 'workflow_dispatch'
-      || github.event.pull_request.head.repo.full_name == github.repository
+      || (
+        github.event_name == 'workflow_run'
+        && github.event.workflow_run.conclusion == 'success'
+        && github.event.workflow_run.head_repository.full_name == github.repository
+      )
     runs-on: ubuntu-24.04
     outputs:
       commit_sha: ${{ steps.vars.outputs.commit_sha }}
@@ -76,8 +99,9 @@ jobs:
         id: vars
         env:
           EVENT_NAME: ${{ github.event_name }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number || inputs.pr_number }}
+          PR_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          WF_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           DISPATCH_TAGS: ${{ inputs.detox-include-tags }}
           DISPATCH_WORKERS: ${{ inputs.parallelism }}
           DISPATCH_IMAGE: ${{ inputs.server_image }}
@@ -86,6 +110,9 @@ jobs:
           set -euo pipefail
           SHA="${PR_HEAD_SHA:-$GITHUB_SHA}"
           PR_DIGITS=$(printf '%s' "${PR_NUMBER:-}" | tr -cd '0-9')
+          if [ -n "$WF_HEAD_BRANCH" ]; then
+            GITHUB_REF_NAME="$WF_HEAD_BRANCH"
+          fi
 
           if [ -n "$PR_DIGITS" ]; then
             BRANCH="pr-${PR_DIGITS}"
@@ -138,7 +165,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
           ref: ${{ needs.resolve.outputs.commit_sha }}
           persist-credentials: false
@@ -161,7 +188,7 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
           ref: ${{ needs.resolve.outputs.commit_sha }}
           persist-credentials: false
@@ -211,7 +238,7 @@ jobs:
       contents: read
       statuses: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
         with:
           ref: ${{ needs.resolve.outputs.commit_sha }}
           persist-credentials: false
@@ -227,7 +254,7 @@ jobs:
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: ci/setup-node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (2026-07-14)
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
@@ -303,6 +330,7 @@ jobs:
       contents: read
       id-token: write
       actions: write
+      statuses: write
     uses: ./.github/workflows/e2e-stack-create-v2.yml
     with:
       instance_key: ${{ needs.resolve.outputs.instance_key }}
@@ -350,13 +378,16 @@ jobs:
   destroy-servers:
     name: Destroy test servers
     needs:
+      - resolve
       - create-servers
       - run-detox-ios
     if: always() && needs.create-servers.outputs.batch_id != ''
     permissions:
       contents: read
       id-token: write
+      statuses: write
     uses: ./.github/workflows/e2e-stack-destroy-v2.yml
     with:
       batch_id: ${{ needs.create-servers.outputs.batch_id }}
+      commit_sha: ${{ needs.resolve.outputs.commit_sha }}
     secrets: inherit
