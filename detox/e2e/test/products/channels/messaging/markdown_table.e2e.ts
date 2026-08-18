@@ -110,18 +110,25 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
         // The right-side column sits beyond the viewport — the content is 3 * CELL_MAX_WIDTH =
-        // 576pt against a ~402pt viewport — so scroll the table horizontally to reveal it.
+        // 576pt against a ~400pt viewport — so scroll the table horizontally to reveal it.
         //
-        // startPositionY is pinned near the top of the scroll view so the gesture lands on the
-        // table. This table is only two rows (~125pt) tall inside a full-height scroll view, and
-        // Detox's default start point is the scroll view's vertical centre, ~250pt of empty space
-        // below the table. On iOS a touch there never reaches the scroll view: RN's Fabric
-        // ScrollView hit-tests only the content container's children and otherwise returns the
-        // wrapper component view, which is the parent of the underlying UIScrollView, so its pan
-        // recogniser never sees the gesture and the content offset stays at 0. MM-T4899_3/_5 get
-        // away with the default start point because their 8-column tables are tall enough that
-        // the centre of the scroll view is still on the table.
-        await TableScreen.tableScrollView.scroll(150, 'right', NaN, 0.05);
+        // iOS pins the gesture's start point near the top of the scroll view so it lands on the
+        // table. The iOS table screen has no horizontal ScrollView: table.scroll_view is a
+        // full-height vertical one holding over-wide content, and this table is only two rows
+        // (~125pt), so Detox's default start point — the scroll view's vertical centre — is
+        // ~250pt of empty space below the table. A touch there never reaches the scroll view:
+        // RN's Fabric ScrollView hit-tests only the content container's children and otherwise
+        // returns the wrapper component view, which is the parent of the underlying UIScrollView,
+        // so its pan recogniser never sees the gesture and the content offset stays at 0.
+        // MM-T4899_3/_5 escape this because their 8-column tables are tall enough that the centre
+        // of the scroll view is still on the table.
+        //
+        // Android keeps the default start point: there table.scroll_view is a real horizontal
+        // ScrollView sized to the content, so its centre is already on the table, and 5% of that
+        // view's ~125pt height is too close to its edge for the gesture to take — run 32136583714
+        // left the table at offset 0.
+        const scrollStartPositionY = isIos() ? 0.05 : NaN;
+        await TableScreen.tableScrollView.scroll(150, 'right', NaN, scrollStartPositionY);
         await expect(element(by.text('Right header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Right text that wraps row'))).toBeVisible(50);
 
