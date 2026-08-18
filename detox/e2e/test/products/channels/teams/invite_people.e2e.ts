@@ -237,7 +237,13 @@ describe('Teams - Invite', () => {
         // toHaveText, not toBeVisible(<string>): toBeVisible takes a visibility percentage,
         // and `username1` does not exist on these fixtures, so the argument was undefined
         // and the username was never actually checked.
-        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toHaveText(testUser.username);
+        //
+        // testUser is the logged-in user (that is why this invite lands in "not sent" —
+        // "This person is already a team member"), and UserItem appends " (you)" to the
+        // current user's display name. It also runs the result through nonBreakingString,
+        // which rewrites every space as U+00A0, so the node reads "<username>[U+00A0](you)"
+        // — the plain username never matched (run 32089683192, both platforms).
+        await expect(Invite.getSummaryReportUserItemText(testUser.id)).toHaveText(`${testUser.username}\u00a0(you)`);
 
         // * Validate summary report sent
         await waitFor(Invite.getSummaryReportSent()).toBeVisible(40).withTimeout(timeouts.TEN_SEC);

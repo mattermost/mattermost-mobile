@@ -186,13 +186,21 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        // Phrase only, and with an explicit timeout.
+        // Android names the user; iOS keeps the phrase alone.
         //
-        // A waitFor chain without withTimeout never executes, so this asserted nothing.
-        // The interpolated sentence could not have matched either: usernames render as
-        // separate at-mention nodes, and the actor renders as "you" when it is the
-        // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        // On Android the phrase is ambiguous: these channels already carry a setup join row
+        // ("You and @memberdeb8ed added to the channel by @admin."), so
+        // /added to the channel/ matched 2 nodes and Detox failed on the ambiguity rather
+        // than on the behaviour under test. Run 32089683192 dumps the matched views as
+        // single ReactTextViews whose text includes the at-mentions, so naming the user
+        // both disambiguates and upgrades this to assert the *right* user was added.
+        //
+        // iOS is left as-is deliberately: these three tests pass there today, meaning the
+        // phrase resolves to exactly one node, and there is no iOS artifact showing whether
+        // the at-mention is part of that node or a sibling. Qualifying the pattern on a
+        // guess could break a passing platform. Revisit if iOS ever goes ambiguous too.
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
 
     });
@@ -224,13 +232,21 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        // Phrase only, and with an explicit timeout.
+        // Android names the user; iOS keeps the phrase alone.
         //
-        // A waitFor chain without withTimeout never executes, so this asserted nothing.
-        // The interpolated sentence could not have matched either: usernames render as
-        // separate at-mention nodes, and the actor renders as "you" when it is the
-        // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        // On Android the phrase is ambiguous: these channels already carry a setup join row
+        // ("You and @memberdeb8ed added to the channel by @admin."), so
+        // /added to the channel/ matched 2 nodes and Detox failed on the ambiguity rather
+        // than on the behaviour under test. Run 32089683192 dumps the matched views as
+        // single ReactTextViews whose text includes the at-mentions, so naming the user
+        // both disambiguates and upgrades this to assert the *right* user was added.
+        //
+        // iOS is left as-is deliberately: these three tests pass there today, meaning the
+        // phrase resolves to exactly one node, and there is no iOS artifact showing whether
+        // the at-mention is part of that node or a sibling. Qualifying the pattern on a
+        // guess could break a passing platform. Revisit if iOS ever goes ambiguous too.
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -311,13 +327,21 @@ describe('Channels', () => {
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 
-        // Phrase only, and with an explicit timeout.
+        // Android names the user; iOS keeps the phrase alone.
         //
-        // A waitFor chain without withTimeout never executes, so this asserted nothing.
-        // The interpolated sentence could not have matched either: usernames render as
-        // separate at-mention nodes, and the actor renders as "you" when it is the
-        // current user. Match the phrase, which is a single node.
-        await waitForElementToExist(element(by.text(/.*added to the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
+        // On Android the phrase is ambiguous: these channels already carry a setup join row
+        // ("You and @memberdeb8ed added to the channel by @admin."), so
+        // /added to the channel/ matched 2 nodes and Detox failed on the ambiguity rather
+        // than on the behaviour under test. Run 32089683192 dumps the matched views as
+        // single ReactTextViews whose text includes the at-mentions, so naming the user
+        // both disambiguates and upgrades this to assert the *right* user was added.
+        //
+        // iOS is left as-is deliberately: these three tests pass there today, meaning the
+        // phrase resolves to exactly one node, and there is no iOS artifact showing whether
+        // the at-mention is part of that node or a sibling. Qualifying the pattern on a
+        // guess could break a passing platform. Revisit if iOS ever goes ambiguous too.
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
