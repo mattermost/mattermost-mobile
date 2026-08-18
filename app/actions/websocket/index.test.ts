@@ -56,7 +56,7 @@ jest.mock('@playbooks/actions/websocket/reconnect');
 
 jest.mock('@managers/draft_sync_manager', () => ({
     __esModule: true,
-    default: {requestReconcile: jest.fn()},
+    default: {requestReconcile: jest.fn(), handleCapabilityChange: jest.fn()},
 }));
 
 describe('WebSocket Index Actions', () => {
@@ -114,6 +114,12 @@ describe('WebSocket Index Actions', () => {
             expect(deferredAppEntryActions).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(DraftSyncManager.requestReconcile).toHaveBeenCalledWith(serverUrl, currentTeamId, 'reconnect');
+
+            // Capability is re-read from the committed entry batch BEFORE reconciling, so a persisted
+            // sync_drafts=false is honored on a fresh login (fix #3).
+            expect(DraftSyncManager.handleCapabilityChange).toHaveBeenCalledWith(serverUrl);
+            expect(jest.mocked(DraftSyncManager.handleCapabilityChange).mock.invocationCallOrder[0]).
+                toBeLessThan(jest.mocked(DraftSyncManager.requestReconcile).mock.invocationCallOrder[0]);
         });
 
         it('should handle error when server database not found', async () => {

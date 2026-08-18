@@ -412,6 +412,10 @@ class DraftSyncManagerSingleton {
      * DM/GM drafts); bursts collapse via reconcile()'s single-flight coalescing. The buffered events
      * themselves are reserved for a future direct-apply optimization. Ignored when disabled/invalidated;
      * enforces the buffer cap (dropping the newest with an overflow log) so a flood cannot grow unbounded.
+     *
+     * The reconcile trigger fires even on overflow: dropping only the push (not the trigger) means a
+     * transient current-team lookup failure that left the buffer full cannot permanently stall
+     * event-triggered reconciliation once the database recovers.
      */
     public enqueueWebSocketEvent = (serverUrl: string, event: WebSocketMessage): void => {
         if (!this.isActive(serverUrl)) {
@@ -421,10 +425,10 @@ class DraftSyncManagerSingleton {
         const buffer = this.eventBuffers[serverUrl];
         if (buffer.length >= MAX_DRAFT_SYNC_EVENT_BUFFER) {
             logDebug('DraftSyncManager.enqueueWebSocketEvent: buffer overflow, dropping event', serverUrl, buffer.length);
-            return;
+        } else {
+            buffer.push(event);
         }
 
-        buffer.push(event);
         this.reconcileCurrentTeam(serverUrl, 'ws_event', true);
     };
 
@@ -439,6 +443,18 @@ class DraftSyncManagerSingleton {
             if (this.isActive(serverUrl)) {
                 this.reconcileCurrentTeam(serverUrl, 'foreground', false);
             }
+        }
+    };
+
+    /**
+     * onReliableReconnect: lifecycle entry point for a reliable WebSocket reconnect (which replays
+     * missed events but does NOT run the full entry/reconnect flow). A GET reconcile is still required
+     * because some server-side cleanup deletes drafts with no WebSocket event, so replay alone cannot
+     * surface those removals. Re-syncs the given server's current team; a no-op when sync is disabled.
+     */
+    public onReliableReconnect = (serverUrl: string): void => {
+        if (this.isActive(serverUrl)) {
+            this.reconcileCurrentTeam(serverUrl, 'reliable_reconnect', false);
         }
     };
 
@@ -502,14 +518,21 @@ class DraftSyncManagerSingleton {
 
         if (wasEnabled && !nowEnabled) {
             // enabled -> disabled: stop scheduling and drop transient state, but keep durable rows.
-            // CRITICAL: clear the baseline and absence candidates so re-enabling cannot drain/POST
-            // against a stale snapshot — a fresh successful GET is required before draining resumes.
+            // CRITICAL: bump the lifecycle epoch (like invalidate) so any GET/POST/DELETE that was
+            // in flight across the disabled interval is rejected on completion and cannot apply results
+            // or set a baseline if the server is re-enabled before it returns. Also reset the reconcile
+            // single-flight so a re-enable starts a fresh pass instead of coalescing behind a stale one.
+            // Clear the baseline and absence candidates so re-enabling requires a fresh successful GET
+            // before any drain/POST.
+            this.lifecycleEpoch[serverUrl] = (this.lifecycleEpoch[serverUrl] ?? 0) + 1;
             this.clearRetryTimer(serverUrl);
             this.clearReconcileTimer(serverUrl);
             this.eventBuffers[serverUrl] = [];
             delete this.baseline[serverUrl];
             this.absenceCandidates[serverUrl] = new Map();
             this.reconcileAttempt[serverUrl] = 0;
+            this.reconcileInFlight[serverUrl] = false;
+            this.reconcilePending[serverUrl] = undefined;
             logDebug('DraftSyncManager.handleCapabilityChange: disabled', serverUrl);
             return;
         }

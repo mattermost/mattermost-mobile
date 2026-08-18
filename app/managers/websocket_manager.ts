@@ -208,6 +208,11 @@ class WebsocketManagerSingleton {
 
     private onReliableReconnect = async (serverUrl: string) => {
         this.getConnectedSubject(serverUrl).next('connected');
+
+        // A reliable reconnect replays missed events but runs no full entry flow. Some server-side draft
+        // cleanup deletes drafts with no WebSocket event, so a GET reconcile is still required to catch
+        // those silent removals. No-op when draft sync is disabled.
+        DraftSyncManager.onReliableReconnect(serverUrl);
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number) => {

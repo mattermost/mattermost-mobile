@@ -96,6 +96,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         handlePlaybookReconnect(serverUrl);
         handleAgentsReconnect(serverUrl);
 
+        // Re-read draft-sync capability from the freshly-committed entry batch BEFORE reconciling: on a
+        // fresh login the manager initialized before preferences were fetched, so an absent sync_drafts
+        // preference defaulted to enabled. handleCapabilityChange re-reads the committed preference so a
+        // persisted sync_drafts=false is honored; requestReconcile then no-ops if now disabled.
+        await DraftSyncManager.handleCapabilityChange(serverUrl);
+
         // Re-sync drafts for the team the user landed on (its GET also returns the user's DM/GM drafts).
         // requestReconcile guards an empty team id and is a no-op when draft sync is disabled.
         DraftSyncManager.requestReconcile(serverUrl, initialTeamId || currentTeamId, 'reconnect');

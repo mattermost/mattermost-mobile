@@ -51,6 +51,7 @@ type ManagerInternals = {
     lifecycleEpoch: Record<string, number>;
     inFlightKeys: Record<string, Set<string>>;
     observationOrdinals: Record<string, Map<string, number>>;
+    enabled: Record<string, boolean>;
 };
 
 const internals = (manager: InstanceType<typeof DraftSyncManagerSingleton>) =>
@@ -319,6 +320,60 @@ describe('DraftSyncManager (Phase 3 shell)', () => {
         await flushMicrotasks();
 
         expect(mockedReconcile).not.toHaveBeenCalled();
+    });
+
+    it('onReliableReconnect reconciles the current team (fix #6a)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+
+        manager.onReliableReconnect(SERVER_URL);
+        await flushMicrotasks();
+
+        expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1', expect.any(Object));
+    });
+
+    it('still triggers a reconcile on buffer overflow so a recovered DB is not permanently stalled (fix #7)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+
+        // Simulate a buffer stuck at capacity (e.g. earlier current-team lookups had failed).
+        internals(manager).eventBuffers[SERVER_URL] = new Array(MAX_DRAFT_SYNC_EVENT_BUFFER).fill(fakeEvent());
+        mockedReconcile.mockClear();
+
+        // An overflowing event drops the push but must STILL trigger the authoritative reconcile.
+        manager.enqueueWebSocketEvent(SERVER_URL, fakeEvent());
+        await flushMicrotasks();
+
+        expect(mockedReconcile).toHaveBeenCalledWith(SERVER_URL, 'team1', expect.any(Object));
+    });
+
+    it('bumps the epoch on disable so a GET crossing the disabled interval cannot set a baseline after re-enable (fix #4)', async () => {
+        await setSyncConfig('true');
+        await setCurrentTeam('team1');
+        await manager.initialize(SERVER_URL);
+
+        // A reconcile GET is in flight (captured the pre-disable epoch).
+        let resolveReconcile: (v: {applied?: number; drafts?: NormalizedDraft[]}) => void = () => {};
+        mockedReconcile.mockReturnValue(new Promise((resolve) => {
+            resolveReconcile = resolve;
+        }));
+        manager.requestReconcile(SERVER_URL, 'team1', 'inflight');
+        await flushMicrotasks();
+        expect(baselineInternals(manager).baseline[SERVER_URL]).toBeUndefined();
+
+        // Disable (bumps the epoch), then simulate the server becoming active again before the old GET
+        // returns — WITHOUT starting new work — so only the stale continuation is exercised.
+        await setSyncConfig('false');
+        await manager.handleCapabilityChange(SERVER_URL);
+        internals(manager).enabled[SERVER_URL] = true;
+
+        // The old GET finally resolves; its continuation is epoch-stale and must NOT set a baseline.
+        resolveReconcile({applied: 0, drafts: []});
+        await flushMicrotasks();
+
+        expect(baselineInternals(manager).baseline[SERVER_URL]).toBeUndefined();
     });
 
     it('handleCapabilityChange clears the baseline gate on disable and requires a fresh GET on re-enable, keeping durable rows', async () => {

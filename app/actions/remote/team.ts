@@ -437,10 +437,6 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         return {};
     }
 
-    // Re-sync drafts for the newly active team (before the tablet fast-path early-return below, so both
-    // paths trigger it). requestReconcile is a no-op when draft sync is disabled.
-    DraftSyncManager.requestReconcile(serverUrl, teamId, 'team_switch');
-
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
     if (isTablet()) {
@@ -448,6 +444,10 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         if (channelId) {
             await switchToChannelById(serverUrl, channelId, teamId);
             DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+
+            // Reconcile AFTER the new team is committed, so a concurrent DB-reading trigger (WS/foreground)
+            // can't read the old current team and coalesce the baseline back onto the previous team.
+            DraftSyncManager.requestReconcile(serverUrl, teamId, 'team_switch');
             return {};
         }
     }
@@ -466,6 +466,9 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
         await operator.batchRecords(models, 'handleTeamChange');
     }
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
+
+    // Reconcile AFTER the new team is committed (see the tablet path above for the same reasoning).
+    DraftSyncManager.requestReconcile(serverUrl, teamId, 'team_switch');
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
