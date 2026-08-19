@@ -114,6 +114,7 @@ const ProfileImagePicker = ({
             onPress={showFileAttachmentOptions}
             hitSlop={hitSlop}
             style={styles.touchable}
+            testID={`edit_profile.${user.id}.profile_picture.picker`}
         >
             <CompassIcon
                 name='camera-outline'
@@ -121,7 +122,6 @@ const ProfileImagePicker = ({
                 color={changeOpacity(theme.centerChannelColor, 0.6)}
             />
         </TouchableOpacity>
-
     );
 };
 

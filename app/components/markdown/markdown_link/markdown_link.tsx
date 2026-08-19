@@ -59,7 +59,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
     const serverUrl = useServerUrl();
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        openLink(href, serverUrl, siteURL, intl);
+        openLink(href, serverUrl, siteURL ?? '', intl);
     }, [href, intl, serverUrl, siteURL]));
 
     const handleLongPress = useCallback(() => {

@@ -58,8 +58,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderWidth: 1,
             borderRadius: 4,
-            marginTop: 8,
-            marginBottom: 8,
             padding: 12,
             shadowOffset: {
                 width: 0,

@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useLocalSearchParams} from 'expo-router';
-
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
+import {usePropsFromParams} from '@hooks/props_from_params';
 import SettingsAboutScreen from '@screens/settings/about';
 
 type Props = {
@@ -12,7 +11,7 @@ type Props = {
 };
 
 export default function SettingsAboutRoute() {
-    const {headerTitle} = useLocalSearchParams<Props>();
+    const {headerTitle} = usePropsFromParams<Props>();
     const theme = useTheme();
 
     useNavigationHeader({

@@ -45,6 +45,7 @@ import {
     useCallsConfig,
     useIncomingCalls,
 } from '@calls/state';
+import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
 import {getHandsRaised, makeCallsTheme, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -59,8 +60,6 @@ import {dismissKeyboard} from '@utils/keyboard';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
-
-import type {CallSession, CallsTheme, CurrentCall} from '@calls/types/calls';
 
 export const avatarL = 96;
 export const avatarM = 72;
@@ -638,6 +637,7 @@ const CallScreen = ({
                 isOwnDirectMessage={isOwnDirectMessage}
             />
             <Pressable
+                testID='calls.collapse.button'
                 onPress={navigateBack}
                 style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
             >
@@ -742,7 +742,7 @@ const CallScreen = ({
                                 iconStyle={[
                                     style.buttonIcon,
                                     isLandscape && style.buttonIconLandscape,
-                                    currentCall.speakerphoneOn && style.buttonOn,
+                                    currentCall.audioDeviceInfo.selectedAudioDevice === AudioDevice.Speakerphone && style.buttonOn,
                                 ]}
                                 buttonTextStyle={style.buttonText}
                                 currentCall={currentCall}

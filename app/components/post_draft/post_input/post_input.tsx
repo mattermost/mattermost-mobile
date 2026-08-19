@@ -310,7 +310,7 @@ export default function PostInput({
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
-            sourceScreen = Screens.HOME;
+            sourceScreen = Screens.CHANNEL_LIST;
         }
         if (currentScreen === sourceScreen) {
             sendMessage();
@@ -322,7 +322,7 @@ export default function PostInput({
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
-            sourceScreen = Screens.HOME;
+            sourceScreen = Screens.CHANNEL_LIST;
         }
 
         if (currentScreen === sourceScreen) {

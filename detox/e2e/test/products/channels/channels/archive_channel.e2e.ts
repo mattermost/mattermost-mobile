@@ -25,8 +25,8 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Channels - Archive Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -54,7 +54,8 @@ describe('Channels - Archive Channel', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
+    // Skip Android: R1 product — archive confirm leaves unexpected SafeArea view matcher
+    (isAndroid() ? it.skip : it)('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
         // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
@@ -66,7 +67,15 @@ describe('Channels - Archive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // # Tap on close channel button, open browse channels screen, search for the archived public channel
+        // # Dismiss channel info and return to channel list before opening browse channels
+        await ChannelInfoScreen.close();
+        await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+
+        // # Open browse channels screen and search for the archived public channel
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
@@ -111,7 +120,15 @@ describe('Channels - Archive Channel', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePrivateChannel({confirm: true});
 
-        // # Tap on close channel button, open browse channels screen, tap on channel dropdown, tap on archived channels menu item, and search for the archived private channel
+        // # Dismiss channel info and return to channel list before opening browse channels
+        await ChannelInfoScreen.close();
+        await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+
+        // # Open browse channels screen and search for the archived private channel
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 

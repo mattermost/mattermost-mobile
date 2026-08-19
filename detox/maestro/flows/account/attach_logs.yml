@@ -1,0 +1,114 @@
+# MM-T67856: Tapping Report a Problem opens the report screen and you can get back to Settings.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#   - Any license tier, including unlicensed / Entry (default Matterwick provisioning)
+#   - AllowDownloadLogs enabled (default Matterwick provisioning)
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - Tapping Report a Problem opens the report screen, on every license tier
+#   - The app logs download is reachable from it
+#   - User can leave the screen and see Report a Problem in Settings again
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - app_logs_download_button
+#   - tab_bar.home.tab
+#
+# Related flows:
+#   - MM-T67856_1 attach_logs_toggle_visible.yml
+#   - MM-T67856_2 attach_logs_toggle_on_surfaces_option.yml
+#   - MM-T67856_4 attach_logs_disabled_when_download_logs_off.yml
+tags:
+  - MM-T67856
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as the test user
+- runFlow: ../../subflows/auth/login.yml
+
+# # Open the Account tab
+- tapOn:
+    id: "tab_bar.account.tab"
+- extendedWaitUntil:
+    visible:
+      id: "account.screen"
+    timeout: 10000
+
+# # Open Settings and reveal Report a Problem.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
+- tapOn:
+    id: "account.settings.option"
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+
+# # Tap Report a Problem
+- tapOn:
+    id: "settings.report_problem.option"
+
+# * Verify the report screen opened rather than an external browser or mail composer.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+- takeScreenshot: report-problem-opened
+
+# * Verify the app logs are reachable from the screen.
+# The logs section sits below the troubleshooting details, so scrolling is required.
+- scrollUntilVisible:
+    element:
+      id: "app_logs_download_button"
+    direction: DOWN
+    timeout: 10000
+
+# # Leave the report screen and return to Settings.
+# On iOS 26.3 Maestro's `back` does not dismiss modal-presented screens; relaunching
+# (stopApp + clearState:false) restarts the app without wiping data, so the user stays
+# logged in and lands on the Home tab.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - launchApp:
+          stopApp: true
+          clearState: false
+      - waitForAnimationToEnd:
+          timeout: 30000
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - extendedWaitUntil:
+          visible:
+            id: "account.settings.option"
+          timeout: 10000
+      - tapOn:
+          id: "account.settings.option"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: Back
+
+# * Verify Settings is visible again with Report a Problem listed
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: report-problem-dismissed

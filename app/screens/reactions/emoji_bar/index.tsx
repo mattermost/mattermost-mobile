@@ -36,6 +36,10 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
     const listRef = useRef<FlatList<string>>(null);
 
     const scrollToIndex = (index: number, animated = false) => {
+        if (index < 0 || !listRef?.current) {
+            return;
+        }
+
         listRef.current?.scrollToIndex({
             animated,
             index,

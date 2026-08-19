@@ -116,6 +116,7 @@ const AddBookmark = ({bookmarksCount, channelId, currentUserId, canUploadFiles, 
             backgroundStyle={showLarge ? styles.largeButton : styles.smallButton}
             onPress={onPress}
             hitSlop={hitSlop}
+            testID='channel_info.add_bookmark.button'
             text={showLarge ? formatMessage({id: 'channel_info.add_bookmark', defaultMessage: 'Add a bookmark'}) : ''}
             textStyle={showLarge ? styles.largeButtonText : styles.smallButtonText}
             theme={theme}

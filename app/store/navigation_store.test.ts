@@ -322,12 +322,31 @@ describe('NavigationStore', () => {
             expect(NavigationStore.isScreenInStack(Screens.ABOUT)).toBe(true);
         });
 
+        it('should resolve waitUntilScreenIsTop when screen becomes visible', async () => {
+            const navState1 = createNavigationState([
+                {key: `${Screens.CHANNEL}-1`, name: Screens.CHANNEL},
+            ]);
+            NavigationStore.updateFromNavigationState(navState1);
+
+            const promise = NavigationStore.waitUntilScreenIsTop(Screens.ABOUT);
+
+            const navState2 = createNavigationState([
+                {key: `${Screens.CHANNEL}-1`, name: Screens.CHANNEL},
+                {key: `${Screens.ABOUT}-2`, name: Screens.ABOUT},
+            ]);
+            NavigationStore.updateFromNavigationState(navState2);
+
+            await promise;
+            expect(NavigationStore.getVisibleScreen()).toBe(Screens.ABOUT);
+        });
+
         it('should resolve immediately if screen is already top', async () => {
             const navState = createNavigationState([
                 {key: `${Screens.ABOUT}-1`, name: Screens.ABOUT},
             ]);
             NavigationStore.updateFromNavigationState(navState);
 
+            await NavigationStore.waitUntilScreenIsTop(Screens.ABOUT);
             expect(NavigationStore.getVisibleScreen()).toBe(Screens.ABOUT);
         });
 

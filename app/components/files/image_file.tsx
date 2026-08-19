@@ -27,6 +27,7 @@ type ImageFileProps = {
     isSingleImage?: boolean;
     contentFit?: ImageContentFit;
     wrapperWidth?: number;
+    testID?: string;
 }
 
 const SMALL_IMAGE_MAX_HEIGHT = 48;
@@ -68,7 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ImageFile = ({
     backgroundColor, file, forwardRef, inViewPort, isSingleImage,
-    contentFit = 'cover', wrapperWidth,
+    contentFit = 'cover', wrapperWidth, testID,
 }: ImageFileProps) => {
     const dimensions = useWindowDimensions();
     const theme = useTheme();
@@ -179,6 +180,8 @@ const ImageFile = ({
 
     return (
         <View
+            testID={testID}
+            collapsable={false}
             style={style.fileImageWrapper}
         >
             {!isSingleImage && <View style={style.boxPlaceholder}/>}

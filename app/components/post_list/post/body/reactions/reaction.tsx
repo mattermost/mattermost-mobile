@@ -45,7 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             height: 32,
             justifyContent: 'center',
-            marginBottom: 12,
             marginRight: 8,
             minWidth: MIN_WIDTH,
         },

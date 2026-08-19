@@ -25,7 +25,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logWarning} from '@utils/log';
-import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
+import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -183,7 +183,12 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
 
     if (outOfOrderWebsocketEvent?.post) {
-        post = outOfOrderWebsocketEvent.post;
+        const editedPost = outOfOrderWebsocketEvent.post;
+        if (post.type === PostTypes.EPHEMERAL || post.type === PostTypes.EPHEMERAL_ADD_TO_CHANNEL) {
+            post = restoreEphemeralIdentityFieldsForEdit(editedPost, post);
+        } else {
+            post = editedPost;
+        }
     }
 
     const postModels = await operator.handlePosts({
@@ -195,7 +200,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    operator.batchRecords(models, 'handleNewPostEvent');
+    await operator.batchRecords(models, 'handleNewPostEvent');
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -228,18 +233,19 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
         // If we have permalink updates but no post to process, batch just the permalinks
         if (permalinkModels.length) {
-            operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
+            await operator.batchRecords(permalinkModels, 'handlePostEdited - permalink sync only');
         }
         return;
     }
 
     const models: Model[] = [...permalinkModels];
 
-    if (post.type === PostTypes.EPHEMERAL && post.create_at === 0) {
-        // Updated ephemeral messages don't have a create_at value
-        // since the server has no persistence for ephemeral messages,
-        // so we need to use the old post's create_at value
-        post.create_at = oldPost.createAt;
+    if (isPostEphemeral(oldPost)) {
+        post = restoreEphemeralIdentityFieldsForEdit(post, {
+            create_at: oldPost.createAt,
+            root_id: oldPost.rootId,
+            user_id: oldPost.userId,
+        });
     }
 
     const oldFileIds = oldPost.metadata?.files?.map((f) => f.id).filter((id): id is string => Boolean(id)) || [];

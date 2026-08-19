@@ -4,7 +4,7 @@
 import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events, Screens} from '@constants';
+import {Events, Navigation, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -15,7 +15,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 export function propsToParams(props: any): Record<string, string> {
     return Object.keys(props || {}).reduce((params, key) => {
-        params[key] = typeof props[key] === 'string' ? props[key] : JSON.stringify(props[key]);
+        params[key] = JSON.stringify(props[key]);
         return params;
     }, {} as Record<string, string>);
 }
@@ -98,6 +98,13 @@ export async function navigateBack() {
     }
 }
 
+export function navigateToHomeTab(params?: Record<string, unknown>) {
+    DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
+        screen: Screens.CHANNEL_LIST,
+        params,
+    });
+}
+
 export async function dismissToStackRoot() {
     if (router && router.canDismiss()) {
         router.dismissAll();
@@ -117,11 +124,16 @@ export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Ar
 }
 
 export async function dismissBottomSheet() {
-    if (!NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET)) {
+    const hasRegularSheet = NavigationStore.isScreenInStack(Screens.BOTTOM_SHEET);
+    const hasGenericSheet = NavigationStore.isScreenInStack(Screens.GENERIC_BOTTOM_SHEET);
+    if (!hasRegularSheet && !hasGenericSheet) {
         return;
     }
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
-    await NavigationStore.waitUntilScreensIsRemoved(Screens.BOTTOM_SHEET);
+
+    // Prefer the regular BOTTOM_SHEET when present (historical contract); fall back to
+    // GENERIC_BOTTOM_SHEET so callers using the generic variant aren't silently ignored.
+    await NavigationStore.waitUntilScreensIsRemoved(hasRegularSheet ? Screens.BOTTOM_SHEET : Screens.GENERIC_BOTTOM_SHEET);
     BottomSheetStore.reset();
     await new Promise((resolve) => setTimeout(resolve, 250));
 }

@@ -1,0 +1,158 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Publish E2E/Verified commit statuses
+description: >-
+  Mark currently-failing e2e-test/* contexts as success when a maintainer
+  applies E2E/Verified to confirm a failure is known flake, not a regression.
+
+  Unlike E2E/Override this only touches contexts that are actually failing —
+  a platform that is genuinely green is left untouched. The real TSIO
+  pass/fail description is preserved and tagged with who verified it, so the
+  check still tells you what ran; it just stops blocking the merge on a
+  known-flaky result.
+
+  Removing the label (mode: reset) must undo exactly what apply did, not more:
+  it only resets contexts whose current description carries this action's
+  verified-flaky marker, so a platform that was never touched — including one
+  that failed again after a later, unrelated push — is never reset by this
+  action. It reports pending, matching the same "re-run for a real result"
+  contract as E2E/Override's removal path.
+
+inputs:
+  commit_sha:
+    description: Commit SHA to post statuses on (the PR head SHA)
+    required: true
+  mode:
+    description: >-
+      apply: mark currently-failing contexts success, keeping the real
+      description. reset: put previously-verified contexts back to pending.
+    required: true
+  actor:
+    description: Login of the user applying E2E/Verified (required for apply)
+    required: false
+    default: ''
+  target_url:
+    description: Link shown on the check
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        MODE: ${{ inputs.mode }}
+        ACTOR: ${{ inputs.actor }}
+        TARGET_URL: ${{ inputs.target_url }}
+      with:
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const sha = process.env.COMMIT_SHA;
+          const mode = process.env.MODE;
+          const actor = process.env.ACTOR || 'unknown';
+          const targetUrl = process.env.TARGET_URL?.trim();
+
+          if (!sha) {
+            throw new Error('e2e-verified-status: commit_sha is required');
+          }
+          if (mode !== 'apply' && mode !== 'reset') {
+            throw new Error(`e2e-verified-status: mode must be 'apply' or 'reset', got '${mode}'`);
+          }
+
+          // Relative requires resolve against the workspace, so the repo must be
+          // checked out before this action runs.
+          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+
+          // Embedded in every description this action writes, so reset can find
+          // (and only touch) the contexts apply actually changed — never a
+          // context that failed independently of E2E/Verified.
+          const VERIFIED_MARKER = ' — verified flaky by ';
+
+          // getCombinedStatusForRef caps statuses at 100 per page. This repo only
+          // has 5 required contexts today, but other tooling can post legacy
+          // statuses on the same SHA — paginate so a busy commit can't silently
+          // hide one of the 5 required contexts past page 1.
+          const statuses = [];
+          for (let page = 1; ; page++) {
+            const {data: combined} = await github.rest.repos.getCombinedStatusForRef({
+              owner, repo, ref: sha, per_page: 100, page,
+            });
+            statuses.push(...combined.statuses);
+            if (combined.statuses.length < 100) {
+              break;
+            }
+          }
+
+          // Only the latest status per context matters — this is current state,
+          // not history.
+          const latestByContext = new Map(
+            statuses.map((status) => [status.context, status]),
+          );
+
+          const failures = [];
+          let touched = 0;
+          for (const statusContext of E2E_STATUS_CONTEXTS) {
+            const latest = latestByContext.get(statusContext);
+            if (!latest) {
+              continue;
+            }
+
+            let state;
+            let description;
+            let statusTargetUrl;
+            if (mode === 'apply') {
+              if (latest.state !== 'failure') {
+                continue;
+              }
+              state = 'success';
+              // Reserve room for the suffix before truncating the base description.
+              // TSIO descriptions are already capped at 140 (see decideStatus in
+              // tsio-report-status.js) — truncating after concatenation could cut
+              // the marker itself off a long one, and reset below would then never
+              // recognize this context as verified, leaving it stuck on success.
+              const suffix = `${VERIFIED_MARKER}${actor}`;
+              const base = (latest.description || '').substring(0, Math.max(0, 140 - suffix.length));
+              description = `${base}${suffix}`.substring(0, 140);
+              // Keep the link to the real TSIO report if there was one — that is
+              // what a maintainer needs to re-check when deciding whether this
+              // "verified flaky" call still holds up, not this action's own run.
+              statusTargetUrl = latest.target_url || targetUrl;
+            } else {
+              if (!(latest.description || '').includes(VERIFIED_MARKER)) {
+                continue;
+              }
+              state = 'pending';
+              description = 'E2E/Verified removed — re-run E2E for a real result';
+              statusTargetUrl = targetUrl;
+            }
+
+            touched++;
+            try {
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha,
+                state,
+                context: statusContext,
+                description,
+                ...(statusTargetUrl ? {target_url: statusTargetUrl} : {}),
+              });
+              core.info(`Published ${state} for ${statusContext} on ${sha}`);
+            } catch (err) {
+              core.warning(`createCommitStatus ${statusContext} on ${sha}: ${err.message}`);
+              failures.push(`${statusContext}: ${err.message}`);
+            }
+          }
+
+          if (touched === 0) {
+            core.info(
+              mode === 'apply' ?
+                `No failing e2e-test/* contexts found for ${sha} — nothing to verify.` :
+                `No e2e-test/* contexts carry the verified-flaky marker for ${sha} — nothing to reset.`,
+            );
+          }
+
+          if (failures.length > 0) {
+            throw new Error(`Failed to publish ${failures.length} E2E/Verified ${mode} status(es): ${failures.join('; ')}`);
+          }

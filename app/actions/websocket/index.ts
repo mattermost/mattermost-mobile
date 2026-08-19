@@ -4,6 +4,7 @@
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
+import {fetchClassificationBanner} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
@@ -20,6 +21,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -63,6 +65,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
     const {database} = operator;
 
     try {
+        await SessionAttributesManager.refreshManifest(serverUrl);
+
         const lastFullSync = await getLastFullSync(database);
         const now = Date.now();
 
@@ -74,6 +78,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         if ('error' in entryData) {
             return entryData.error;
         }
+
         const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
@@ -84,7 +89,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
@@ -99,6 +103,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
+        fetchClassificationBanner(serverUrl, true);
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 

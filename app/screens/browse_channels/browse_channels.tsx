@@ -4,9 +4,9 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 
-import {joinChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchMyChannel, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
 import NavigationButton from '@components/navigation_button';
 import Search from '@components/search';
@@ -36,7 +36,7 @@ const style = StyleSheet.create({
     },
     searchBar: {
         marginLeft: 12,
-        marginRight: Platform.select({ios: 4, default: 12}),
+        marginRight: 12,
         marginTop: 12,
     },
     loadingContainer: {
@@ -117,6 +117,33 @@ export default function BrowseChannels(props: Props) {
     const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);
         setAdding(true);
+
+        // For archived channels, skip `joinChannel`: the server returns a 400 from
+        // `addToChannel` on archived channels ("You cannot add the requested user…
+        // who is in the deactivated channel"), which surfaces here as an error that
+        // shows the "couldn't join" alert and blocks navigation. Users who can see
+        // an archived channel in Browse Channels are existing members (when
+        // ExperimentalViewArchivedChannels is enabled).
+        //
+        // BUT: `switchToChannelById` -> `switchToChannel` (app/actions/local/channel.ts)
+        // requires the channel + membership to be in the local DB via `getMyChannel`,
+        // and Browse Channels' API fetch doesn't persist them — it only populates the
+        // browse list. Calling `switchToChannelById` directly was a no-op on iOS,
+        // leaving the test waiting for `channel.screen` until the 60s timeout
+        // (CI run 26368981355, all 7 tests in
+        // detox/e2e/test/products/channels/channels/archived_channel_interactions.e2e.ts).
+        //
+        // `fetchMyChannel` pulls channel + membership from the server and persists
+        // them via `storeMyChannelsForTeam`, exactly mirroring what joinChannel does
+        // after `addToChannel` succeeds — minus the addToChannel call that fails
+        // for archived channels. Await it so `switchToChannelById` finds the
+        // persisted MyChannel record.
+        if (channel.delete_at && channel.delete_at > 0) {
+            await fetchMyChannel(serverUrl, currentTeamId, channel.id);
+            await close();
+            switchToChannelById(serverUrl, channel.id, currentTeamId);
+            return;
+        }
 
         const result = await joinChannel(serverUrl, currentTeamId, channel.id, '', false);
 

@@ -61,6 +61,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flex: 1,
         },
+        listContainer: {
+            flex: 1,
+            marginLeft: 12,
+            marginRight: 12,
+        },
         searchBar: {
             marginLeft: 12,
             marginRight: Platform.select({ios: 4, default: 12}),
@@ -272,17 +277,19 @@ export default function CreateDirectMessage({
                         value={term}
                     />
                 </View>
-                <ServerUserList
-                    handleSelectProfile={handleSelectProfile}
-                    selectedIds={selectedIds}
-                    term={term}
-                    testID='create_direct_message.user_list'
-                    tutorialWatched={tutorialWatched}
-                    fetchFunction={userFetchFunction}
-                    searchFunction={userSearchFunction}
-                    createFilter={createUserFilter}
-                    location={Screens.CREATE_DIRECT_MESSAGE}
-                />
+                <View style={style.listContainer}>
+                    <ServerUserList
+                        handleSelectProfile={handleSelectProfile}
+                        selectedIds={selectedIds}
+                        term={term}
+                        testID='create_direct_message.user_list'
+                        tutorialWatched={tutorialWatched}
+                        fetchFunction={userFetchFunction}
+                        searchFunction={userSearchFunction}
+                        createFilter={createUserFilter}
+                        location={Screens.CREATE_DIRECT_MESSAGE}
+                    />
+                </View>
                 <SelectedUsers
                     showToast={showToast}
                     setShowToast={setShowToast}

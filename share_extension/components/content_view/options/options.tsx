@@ -63,6 +63,7 @@ const Options = ({channelDisplayName, hasChannels, serverDisplayName, theme}: Pr
                 label={channelLabel}
                 value={channelDisplayName || ''}
                 onPress={onChannelPress}
+                testID='share_extension.channel.option'
                 theme={theme}
             />
         );

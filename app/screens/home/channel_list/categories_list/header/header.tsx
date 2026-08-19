@@ -292,7 +292,7 @@ const ChannelListHeader = ({
                 >
                     <Text
                         style={styles.noTeamHeadingStyles}
-                        testID='channel_list_header.team_display_name'
+                        testID='channel_list_header.logout.label'
                     >
                         {intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}
                     </Text>

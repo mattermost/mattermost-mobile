@@ -5,7 +5,7 @@ import moment from 'moment';
 import React, {type ComponentProps} from 'react';
 import {Keyboard} from 'react-native';
 
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import NavigationButton from '@components/navigation_button';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
@@ -15,7 +15,7 @@ import {act, fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import SelectDate from './select_date';
 
 // Mock dependencies
-jest.mock('@components/data_time_selector', () => ({
+jest.mock('@components/date_time_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));

@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
     testID = {
@@ -64,21 +65,110 @@ class CreateDirectMessageScreen {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
     };
 
-    toBeVisible = async () => {
-        if (isIos()) {
-            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TEN_SEC);
+    longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
+
+    dismissLongPressProfileTutorial = async () => {
+        // The long-press profile tutorial is a RN Modal with pointerEvents='none'; only hardware
+        // Back dismisses it. Press Back exactly once, and only while the tutorial is present.
+        try {
+            await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            await device.pressBack();
+            await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Tutorial not shown or already dismissed.
         }
+    };
+
+    toBeVisible = async () => {
+        // On iOS wait for the screen root and then the search input.
+        // A RNSVGGroup (part of the plus-menu icon animation) sits on top of the
+        // input immediately after navigation and intercepts taps even though the element
+        // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
+        // time to finish its animation.
+        // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
+        // view still exists — dismiss the long-press tooltip before visibility checks.
+        if (isAndroid()) {
+            await this.dismissLongPressProfileTutorial();
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+        } else {
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
+        }
+        try {
+            await waitFor(this.searchInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await waitFor(this.searchInput).toExist().withTimeout(timeouts.TEN_SEC);
+        }
+        await wait(timeouts.HALF_SEC);
 
         return this.createDirectMessageScreen;
     };
 
+    dismissScheduledPostTooltip = async () => {
+        try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+        } catch {
+            // Tooltip is optional on first open
+        }
+    };
+
     open = async () => {
-        // # Open create direct message screen
-        await ChannelListScreen.headerPlusButton.tap();
+        try {
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await this.closeButton.tap();
+            await waitForElementToNotExist(this.createDirectMessageScreen, timeouts.TEN_SEC);
+        } catch {
+            // DM screen is not already open
+        }
+
+        await dismissKnownModals(2);
+        await ChannelListScreen.openPlusMenu();
+
+        const disableSyncForOpen = isAndroid();
+        if (disableSyncForOpen) {
+            await device.disableSynchronization();
+        }
+        try {
+            await waitForElementToExist(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+
+            /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await ChannelListScreen.openDirectMessageItem.tap();
+                    break;
+                } catch (err) {
+                    if (i === 2) {
+                        throw err;
+                    }
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        } finally {
+            if (disableSyncForOpen) {
+                // Re-enable sync before waiting for the screen — navigation must settle while
+                // the bridge is tracked (machine-9 log: 60s toExist timeout with sync off).
+                await safeEnableSynchronization();
+            }
+        }
+
+        if (isAndroid()) {
+            // A long-press tutorial Modal holds the Dialog window focus, so Espresso cannot see
+            // create_direct_message.screen until the tutorial is dismissed.
+            await wait(timeouts.ONE_SEC);
+            await this.dismissLongPressProfileTutorial();
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
+            await this.dismissScheduledPostTooltip();
+        }
+
+        await this.toBeVisible();
+
+        // Wait for any SVG animation overlay to clear before proceeding.
         await wait(timeouts.ONE_SEC);
-        await ChannelListScreen.openDirectMessageItem.tap();
-        await wait(timeouts.FOUR_SEC);
-        return this.toBeVisible();
+        await this.closeTutorial();
+        await this.dismissScheduledPostTooltip();
+
+        return this.createDirectMessageScreen;
     };
 
     close = async () => {
@@ -91,13 +181,14 @@ class CreateDirectMessageScreen {
             if (isIos()) {
                 await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
                 await this.tutorialSwipeLeft.tap();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
-                await device.pressBack();
+                // dismissLongPressProfileTutorial() handles the single guarded pressBack — a blind
+                // pressBack here dismisses create_direct_message.screen underneath the tutorial.
+                await this.dismissLongPressProfileTutorial();
             }
-            await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            // eslint-disable-next-line no-console
-            console.log('Tutorial element not visible, skipping action:');
+            // Tutorial may not appear if already dismissed in a previous run
         }
     };
 }

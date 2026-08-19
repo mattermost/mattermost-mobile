@@ -20,7 +20,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Localization', () => {
@@ -37,11 +37,18 @@ describe('Localization', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+        await waitForElementToBeVisible(element(by.text('Hilos')), timeouts.ONE_MIN);
+    });
+
+    afterAll(async () => {
+        // # Restore the user's locale to English so subsequent tests are not affected
+        await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'en'});
+        await HomeScreen.logout();
     });
 
     it('MM-T303 - Text looks correct when viewed in a non-English language', async () => {
         // * Verify Home screen elements are in Spanish
-        await expect(element(by.text('Hilos'))).toBeVisible();
+        await waitForElementToBeVisible(element(by.text('Hilos')), timeouts.TEN_SEC);
         await expect(element(by.text('CANALES'))).toBeVisible();
         await expect(element(by.text('MENSAJES DIRECTOS'))).toBeVisible();
         await expect(element(by.text('Encontrar canales...'))).toBeVisible();
@@ -82,15 +89,22 @@ describe('Localization', () => {
         // # Change language to zh-TW via API
         await User.apiPatchUser(siteOneUrl, testUser.id, {locale: 'zh-TW'});
 
-        // # Wait for sync (simulating "Wait a few seconds for the RN app to sync")
-        await wait(timeouts.FOUR_SEC);
+        // # Reload the app so it picks up the new locale from the server DB.
+        // Language changes via API are not picked up in real-time without a reload.
+        await device.reloadReactNative();
+
+        // # Wait for channel list to become visible without requiring bridge idle.
+        // After reloadReactNative network sync keeps the bridge busy; poll without idle check.
+        await waitForElementToBeVisible(element(by.id('channel_list.screen')), timeouts.ONE_MIN);
+
+        // # Wait for network sync to settle so subsequent bridge-idle actions don't timeout
+        await wait(timeouts.FIVE_SEC);
 
         // * Verify app is still running and not crashed (check for Home screen visibility)
         await HomeScreen.channelListTab.tap();
         await HomeScreen.toBeVisible();
 
-        // * Verify text update (optional, checking for "Channels" translation in Traditional Chinese)
-        // "Channels" -> "頻道"
+        // * Verify text update — "頻道" is Traditional Chinese for "Channels"
         await expect(element(by.text('頻道'))).toBeVisible();
     });
 });

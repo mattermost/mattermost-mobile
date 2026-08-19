@@ -14,6 +14,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:ignore="SelectedPhotoAccess" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Required to read the current Wi-Fi SSID for session attributes -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -57,6 +61,15 @@
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"
                    android:resource="@xml/app_restrictions" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_viewer_provider_paths" />
+        </provider>
       <activity
         android:name=".MainActivity"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
@@ -106,13 +119,6 @@
               <data android:mimeType="*/*" />
           </intent-filter>
       </activity>
-
-        <!-- For Calls microphone to work in the background -->
-        <service
-                android:name="com.voximplant.foregroundservice.VIForegroundService"
-                android:foregroundServiceType="microphone"
-                android:exported="false"
-        />
 
       <!-- Android 14 requires the correct Foreground Service (FGS) type for RNShare -->
       <service

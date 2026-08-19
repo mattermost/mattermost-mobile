@@ -31,8 +31,8 @@ When testing features that require mobile device interaction:
 
 ```bash
 # Setup
-npm run pod-install           # iOS CocoaPods (or pod-install-m1 for M1 Macs)
-npm run ios-gems              # Ruby gems for iOS (or ios-gems-m1 for M1 Macs)
+npm run pod-install           # iOS CocoaPods
+npm run ios-gems              # Ruby gems for iOS
 
 # Development
 npm start                     # Start Metro bundler
@@ -163,6 +163,15 @@ Located at `libraries/@mattermost/`:
 - Mock database manager at `app/database/manager/__mocks__/index.ts`
 - **E2E tests** in separate `detox/` package (not in main package.json)
 - Add mocks to central `setup.ts` file, not individual test files
+
+### E2E Status Reporting (TSIO)
+E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit statuses. Each platform job owns its own report group (`total_reports_expected=1`) and commit-status context. Contexts are namespaced `e2e-test/*`, matching the mattermost monorepo:
+
+| Flow | Context(s) | TSIO group name(s) |
+|------|------------|---------------------|
+| PR E2E | `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android` | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
+| Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
+| Compatibility matrix | per shard `e2e-test/<tsio-shard-name>` + umbrella `e2e-test/compatibility-matrix-testing` | `mobile-release-<tsio-shard-name>` |
 
 ### Testing Patterns
 
@@ -307,6 +316,10 @@ Located at `libraries/@mattermost/`:
 - Don't ignore potential errors silently - handle them or add intentional comments
 - **Log on early returns in handlers**: When a handler returns early (e.g., empty input), add a `logDebug` call so the no-op is traceable
 - Don't log sensitive information
+- **Logs are user-exportable and sent to Sentry — never log PII.** All `console.*`/`logError/logWarning/logInfo/logDebug` output is captured to rolling log files (TurboLogger `captureConsole`) that users can export via "Report a Problem", and the same args are forwarded as Sentry breadcrumbs. Treat both as destinations that may contain PII.
+  - **Don't log** display names, usernames, emails, message/draft content, push/VoIP tokens, auth tokens/cookies, or raw request/response payloads and event objects.
+  - **Do log** stable identifiers instead (user/channel/team IDs, channel `type`, counts, booleans like `hasFileId`). Channel display names are PII — DM/GM names embed usernames.
+  - **Wrap errors** with `getFullErrorMessage(error)` rather than passing the raw error/event object (which can embed URLs, payloads, or PII).
 - **Add function/class prefix to logs**: e.g., `logError('error on functionName', getFullErrorMessage(error))` or `logError('error on ClassName.methodName', error)` to make debugging easier
 
 ### State Management

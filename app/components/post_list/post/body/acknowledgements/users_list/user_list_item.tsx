@@ -17,10 +17,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 export const USER_ROW_HEIGHT = 60;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
-        paddingLeft: 0,
-        height: USER_ROW_HEIGHT,
-    },
     pictureContainer: {
         alignItems: 'flex-start',
         width: 40,
@@ -69,7 +65,6 @@ const UserListItem = ({
                     style={style.time}
                 />
             }
-            containerStyle={style.container}
             onUserPress={handleUserPress}
             size={40}
             user={user}

@@ -3,10 +3,10 @@
 
 import assert from 'assert';
 
+import CallsNative from '@mattermost/calls-native';
 import {act, renderHook} from '@testing-library/react-native';
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
@@ -90,7 +90,15 @@ jest.mock('@calls/connection/connection', () => ({
         waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),
+        setUserSelectedAudioRoute: jest.fn(),
     })),
+}));
+
+jest.mock('@calls/native_call', () => ({
+    endNativeCall: jest.fn(),
+    registerOutgoingNativeCall: jest.fn(),
+    reportNativeCallConnected: jest.fn(),
+    mirrorMuteToNativeCall: jest.fn(),
 }));
 
 jest.mock('@actions/remote/thread', () => ({
@@ -121,20 +129,10 @@ jest.mock('@actions/remote/session', () => ({
 
 jest.mock('@queries/servers/user', () => ({
     getCurrentUser: jest.fn(),
-    getUserById: jest.fn(),
 }));
 
 jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
-}));
-
-jest.mock('@queries/servers/system', () => ({
-    getLicense: jest.fn(),
-    getConfig: jest.fn(),
-}));
-
-jest.mock('@queries/servers/preference', () => ({
-    queryDisplayNamePreferences: jest.fn(),
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
@@ -196,11 +194,6 @@ describe('Actions.Calls', () => {
     const {newConnection} = require('@calls/connection/connection');
     const {updateThreadFollowing} = require('@actions/remote/thread');
 
-    InCallManager.setSpeakerphoneOn = jest.fn();
-    InCallManager.setForceSpeakerphoneOn = jest.fn();
-    InCallManager.chooseAudioRoute = jest.fn();
-
-    // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
     jest.spyOn(Permissions, 'hasMicrophonePermission').mockReturnValue(Promise.resolve(true));
@@ -276,6 +269,8 @@ describe('Actions.Calls', () => {
         });
 
         // Test error case
+        const {endNativeCall} = require('@calls/native_call');
+        endNativeCall.mockClear();
         newConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
             await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
@@ -283,6 +278,7 @@ describe('Actions.Calls', () => {
                 messages: {},
             }))).resolves.toStrictEqual({error: forceLogoutError});
             expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
+            expect(endNativeCall).toHaveBeenCalledWith('server1', 'channel-id', 'failed');
         });
 
         // Test failure to connect case
@@ -443,7 +439,6 @@ describe('Actions.Calls', () => {
         // setup
         const oldGetCalls = mockClient.getCalls;
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         mockClient.getCalls = jest.fn(() => null);
 
@@ -1086,10 +1081,6 @@ describe('Actions.Calls', () => {
         });
 
         const getChannelById = require('@queries/servers/channel').getChannelById;
-        const getUserById = require('@queries/servers/user').getUserById;
-        const getLicense = require('@queries/servers/system').getLicense;
-        const getConfig = require('@queries/servers/system').getConfig;
-        const queryDisplayNamePreferences = require('@queries/servers/preference').queryDisplayNamePreferences;
 
         // Test when server cannot be found.
         const result1 = await CallsActions.getEndCallMessage('server2', 'channel-1', 'user1', intl);
@@ -1176,27 +1167,11 @@ describe('Actions.Calls', () => {
         getChannelById.mockResolvedValueOnce({
             id: 'channel-2',
             type: 'D',
-            name: 'user1__user2',
             displayName: 'User Two',
         });
 
-        getUserById.mockResolvedValueOnce({
-            id: 'user2',
-            username: 'user2',
-            firstName: 'User',
-            lastName: 'Two',
-        });
-
-        getLicense.mockResolvedValueOnce({});
-        getConfig.mockResolvedValueOnce({
-            TeammateNameDisplay: 'username',
-        });
-        queryDisplayNamePreferences.mockReturnValueOnce({
-            fetch: () => Promise.resolve([]),
-        });
-
         const result3 = await CallsActions.getEndCallMessage('server1', 'channel-2', 'user1', intl);
-        expect(result3).toBe('Are you sure you want to end the call with user2?');
+        expect(result3).toBe('Are you sure you want to end the call with User Two?');
     });
 
     it('endCall', async () => {
@@ -1212,9 +1187,38 @@ describe('Actions.Calls', () => {
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
     });
 
-    it('setPreferredAudioRoute', async () => {
-        await CallsActions.setPreferredAudioRoute(AudioDevice.Speakerphone);
-        expect(InCallManager.chooseAudioRoute).toHaveBeenCalledWith('SPEAKER_PHONE');
+    it('should not pin the route when setPreferredAudioRoute is called without fromUser', async () => {
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth);
+
+        expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).not.toHaveBeenCalled();
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
+    });
+
+    it('should pin the route when setPreferredAudioRoute is called with fromUser', async () => {
+        addFakeCall('server1', 'channel-id');
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        await CallsActions.setPreferredAudioRoute(AudioDevice.Bluetooth, true);
+
+        expect(CallsNative.setAudioRoute).toHaveBeenCalledWith('BLUETOOTH');
+        expect(getConnectionForTesting()?.setUserSelectedAudioRoute).toHaveBeenCalledWith(AudioDevice.Bluetooth);
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
     });
 
     it('initializeVoiceTrack', async () => {

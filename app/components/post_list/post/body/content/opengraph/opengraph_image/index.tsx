@@ -42,7 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.2),
             borderWidth: 1,
             borderRadius: 3,
-            marginTop: 5,
         },
         image: {
             borderRadius: 3,

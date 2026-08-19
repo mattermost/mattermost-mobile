@@ -2,18 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class ReportProblemScreen {
     testID = {
         reportProblemScreen: 'report_problem.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         enableLogAttachmentsToggleOff: 'report_problem.enable_log_attachments.toggled.false.button',
         enableLogAttachmentsToggleOn: 'report_problem.enable_log_attachments.toggled.true.button',
     };
 
     reportProblemScreen = element(by.id(this.testID.reportProblemScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     enableLogAttachmentsToggleOff = element(by.id(this.testID.enableLogAttachmentsToggleOff));
     enableLogAttachmentsToggleOn = element(by.id(this.testID.enableLogAttachmentsToggleOn));
 
@@ -23,6 +30,12 @@ class ReportProblemScreen {
         return this.reportProblemScreen;
     };
 
+    /**
+     * Opens the Report a Problem screen from Settings.
+     *
+     * Every license tier reaches this screen — the license only decides whether the
+     * button at the bottom opens a mail composer or the forums.
+     */
     open = async () => {
         await SettingsScreen.reportProblemOption.tap();
 
@@ -30,7 +43,8 @@ class ReportProblemScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
+        // Native-stack back chevron.
+        await tapNativeBackButton();
         await waitFor(this.reportProblemScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 

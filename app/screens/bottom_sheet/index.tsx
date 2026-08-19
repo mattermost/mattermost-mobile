@@ -10,6 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
 import {navigateBack} from '@screens/navigation';
 import BottomSheetStore from '@store/bottom_sheet_store';
@@ -109,6 +110,7 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const screenStyle = useBottomSheetStyle();
+    const isTablet = useIsTablet();
 
     const animationConfigs = useMemo(() => ({
         ...animatedConfig,
@@ -185,6 +187,7 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
         <View
             style={[styles.content, contentStyle]}
             testID={`${testID}.screen`}
+            accessibilityViewIsModal={!isTablet}
         >
             {renderContent()}
         </View>
@@ -208,6 +211,7 @@ const BottomSheet = forwardRef<BottomSheetRef, Props>(({
             onClose={onBottomSheetClose}
             bottomInset={footerComponent ? 0 : insets.bottom}
             enableDynamicSizing={enableDynamicSizing}
+            accessible={false}
         >
             <View style={[screenStyle, styles.bottomSheet]}>
                 {renderContainerContent()}

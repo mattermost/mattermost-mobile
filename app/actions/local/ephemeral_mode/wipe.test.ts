@@ -2,12 +2,23 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
+import {getServer} from '@queries/app/servers';
+import {getHasEverStartedSyncSubject, setTeamLoading} from '@store/team_load_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
 
-import {wipeServerDatabaseWithRetry, wipeServerFiles} from './wipe';
+import {
+    reconcilePersistenceFlag,
+    wipeServerDatabaseWithRetry,
+    wipeServerFiles,
+} from './wipe';
 
+import type ServersModel from '@typings/database/models/app/servers';
+
+jest.mock('@queries/app/servers', () => ({
+    getServer: jest.fn(),
+}));
 jest.mock('@utils/file', () => ({
     deleteFileCache: jest.fn(),
     deleteFileCacheByDir: jest.fn(),
@@ -62,6 +73,32 @@ describe('wipeServerDatabaseWithRetry', () => {
         expect(logWarning).toHaveBeenCalledTimes(6);
         expect(logError).toHaveBeenCalledWith('wipeServerDatabaseWithRetry: wipe exhausted retries', serverUrl);
     });
+
+    it('resets the hasEverStartedSync latch on successful wipe', async () => {
+        jest.spyOn(DatabaseManager, 'wipeServerData').mockResolvedValue();
+        setTeamLoading(serverUrl, true);
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(true);
+
+        await wipeServerDatabaseWithRetry(serverUrl);
+
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(false);
+    });
+
+    it('does not reset the hasEverStartedSync latch when retries are exhausted', async () => {
+        jest.spyOn(DatabaseManager, 'wipeServerData').mockRejectedValue(new Error('fs broken'));
+        setTeamLoading(serverUrl, true);
+
+        const wipePromise = wipeServerDatabaseWithRetry(serverUrl);
+        for (let i = 0; i < 6; i++) {
+            // eslint-disable-next-line no-await-in-loop
+            await advanceTimers(1000);
+            // eslint-disable-next-line no-await-in-loop
+            await advanceTimers(0);
+        }
+        await wipePromise;
+
+        expect(getHasEverStartedSyncSubject(serverUrl).getValue()).toBe(true);
+    });
 });
 
 describe('wipeServerFiles', () => {
@@ -99,5 +136,89 @@ describe('wipeServerFiles', () => {
         expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
         expect(logWarning).toHaveBeenCalledTimes(1);
         expect(logInfo).not.toHaveBeenCalled();
+    });
+});
+
+describe('reconcilePersistenceFlag', () => {
+    const serverUrl = 'https://server.test';
+    let updatePersistenceFlagSpy: jest.SpyInstance;
+
+    const setStoredFlag = (persistenceFlag: 'zero-persistence' | '' | 'wiped') => {
+        jest.mocked(getServer).mockResolvedValue({persistenceFlag} as ServersModel);
+    };
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        updatePersistenceFlagSpy = jest.spyOn(DatabaseManager, 'updatePersistenceFlag').mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('returns false and skips update when the server record is missing', async () => {
+        jest.mocked(getServer).mockResolvedValue(undefined);
+
+        const result = await reconcilePersistenceFlag(serverUrl, {} as ClientConfig);
+
+        expect(result).toBe(false);
+        expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns false and skips update when the derived flag matches the stored flag', async () => {
+        setStoredFlag('zero-persistence');
+
+        const result = await reconcilePersistenceFlag(serverUrl, {
+            MobileEphemeralModeEnabled: 'true',
+            MobileEphemeralModeAutoCacheCleanupDays: '0',
+        } as ClientConfig);
+
+        expect(result).toBe(false);
+        expect(updatePersistenceFlagSpy).not.toHaveBeenCalled();
+    });
+
+    it('updates the flag to zero-persistence and returns true when MEM is enabled with 0 cleanup days', async () => {
+        setStoredFlag('');
+
+        const result = await reconcilePersistenceFlag(serverUrl, {
+            MobileEphemeralModeEnabled: 'true',
+            MobileEphemeralModeAutoCacheCleanupDays: '0',
+        } as ClientConfig);
+
+        expect(result).toBe(true);
+        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, 'zero-persistence');
+    });
+
+    it('clears the zero-persistence flag and returns true when transitioning away from 0 cleanup days', async () => {
+        setStoredFlag('zero-persistence');
+
+        const result = await reconcilePersistenceFlag(serverUrl, {
+            MobileEphemeralModeEnabled: 'true',
+            MobileEphemeralModeAutoCacheCleanupDays: '5',
+        } as ClientConfig);
+
+        expect(result).toBe(true);
+        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
+    });
+
+    it('clears the zero-persistence flag and returns true when the config is undefined', async () => {
+        setStoredFlag('zero-persistence');
+
+        const result = await reconcilePersistenceFlag(serverUrl, undefined);
+
+        expect(result).toBe(true);
+        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
+    });
+
+    it('clears a wiped flag and returns false without crossing zero-persistence', async () => {
+        setStoredFlag('wiped');
+
+        const result = await reconcilePersistenceFlag(serverUrl, {
+            MobileEphemeralModeEnabled: 'true',
+            MobileEphemeralModeAutoCacheCleanupDays: '5',
+        } as ClientConfig);
+
+        expect(result).toBe(false);
+        expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
     });
 });

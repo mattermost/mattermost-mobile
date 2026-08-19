@@ -28,8 +28,8 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -67,9 +67,10 @@ describe('Smoke Test - Search', () => {
 
         // * Verify on recent mentions screen and recent mention is displayed
         await RecentMentionsScreen.toBeVisible();
+        await RecentMentionsScreen.recentMentionPostListToBeVisible();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = RecentMentionsScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

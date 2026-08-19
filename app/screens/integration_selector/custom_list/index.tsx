@@ -42,7 +42,10 @@ const keyExtractor = (item: any): string => {
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
-        flex: {flex: 1},
+        flex: {
+            flex: 1,
+            paddingLeft: 12,
+        },
         list: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
@@ -84,7 +87,7 @@ function CustomList({
 
     const renderListItem = useCallback(({item}: any): React.ReactElement | null => {
         const props: ListItemProps = {
-            id: item.key,
+            id: item.id || item.key || item.value,
             item,
             selected: item.selected,
             selectable,

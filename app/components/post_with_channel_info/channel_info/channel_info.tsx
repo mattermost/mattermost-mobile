@@ -80,6 +80,7 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
         <View
             style={styles.container}
             testID={testID}
+            collapsable={false}
         >
             <View style={styles.channelContainer}>
                 <TouchableWithFeedback

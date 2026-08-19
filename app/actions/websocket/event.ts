@@ -24,12 +24,21 @@ import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_cat
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
+import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
+import {
+    handleCustomProfileAttributesFieldDeletedEvent,
+    handleCustomProfileAttributesFieldUpdatedEvent,
+    handleCustomProfileAttributesValuesUpdatedEvent,
+    handleSessionAttributesPropertyFieldEvent,
+    handleStatusChangedEvent,
+    handleUserTypingEvent,
+    handleUserUpdatedEvent,
+} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -313,8 +322,19 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.PROPERTY_FIELD_CREATED:
+        case WebsocketEvents.PROPERTY_FIELD_UPDATED:
+            handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+            handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_FIELD_DELETED:
+            handlePropertyFieldDeleted(serverUrl, msg);
+            break;
+
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
+            handlePropertyValuesUpdated(serverUrl, msg);
             break;
 
         // Agents

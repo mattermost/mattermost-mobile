@@ -13,7 +13,7 @@ import {getCurrentCall} from '@calls/state';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, getCurrentChannel, prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, getConfig} from '@queries/servers/system';
+import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, canViewArchivedChannels} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -583,7 +583,7 @@ describe('WebSocket Channel Actions', () => {
             (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValueOnce(false);
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: false});
             (getCurrentChannel as jest.Mock).mockResolvedValue({id: channelId});
-            (getConfig as jest.Mock).mockResolvedValue({ExperimentalViewArchivedChannels: 'false'});
+            (canViewArchivedChannels as jest.Mock).mockResolvedValue(false);
 
             await handleChannelDeletedEvent(serverUrl, msg);
 
@@ -605,7 +605,7 @@ describe('WebSocket Channel Actions', () => {
             (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValueOnce(false);
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: true});
             (getCurrentChannel as jest.Mock).mockResolvedValue({id: channelId});
-            (getConfig as jest.Mock).mockResolvedValue({ExperimentalViewArchivedChannels: 'false'});
+            (canViewArchivedChannels as jest.Mock).mockResolvedValue(false);
 
             await handleChannelDeletedEvent(serverUrl, msg);
 
@@ -615,12 +615,12 @@ describe('WebSocket Channel Actions', () => {
             expect(removeCurrentUserFromChannel).toHaveBeenCalledWith(serverUrl, channelId);
         });
 
-        it('should handle channel deleted event with ExperimentalViewArchivedChannels enabled', async () => {
+        it('should keep the user in the channel when archived channels are viewable', async () => {
             (EphemeralStore.isLeavingChannel as jest.Mock).mockReturnValueOnce(false);
             (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValueOnce(false);
             (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: false});
             (getCurrentChannel as jest.Mock).mockResolvedValue({id: channelId});
-            (getConfig as jest.Mock).mockResolvedValue({ExperimentalViewArchivedChannels: 'true'});
+            (canViewArchivedChannels as jest.Mock).mockResolvedValue(true);
 
             await handleChannelDeletedEvent(serverUrl, msg);
 

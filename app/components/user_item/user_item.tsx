@@ -22,7 +22,6 @@ export type UserItemProps = {
     user?: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
-    includeMargin?: boolean;
     isAgent?: boolean;
     size?: number;
     testID?: string;
@@ -36,7 +35,6 @@ export type UserItemProps = {
     onLayout?: () => void;
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
-    padding?: number;
     hideGuestTags: boolean;
 }
 
@@ -64,13 +62,11 @@ const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
 
 const nonThemedStyles = StyleSheet.create({
     row: {
-        height: 40,
         paddingBottom: 8,
         paddingTop: 4,
         flexDirection: 'row',
         alignItems: 'center',
     },
-    margin: {marginVertical: 8},
     rowInfoBaseContainer: {
         flex: 1,
     },
@@ -106,8 +102,6 @@ const UserItem = ({
     onUserLongPress,
     disabled = false,
     viewRef,
-    padding,
-    includeMargin,
     hideGuestTags,
 }: UserItemProps) => {
     const theme = useTheme();
@@ -136,11 +130,9 @@ const UserItem = ({
             nonThemedStyles.row,
             {
                 opacity: disabled ? 0.32 : 1,
-                paddingHorizontal: padding || undefined,
             },
-            includeMargin && nonThemedStyles.margin,
         ];
-    }, [disabled, padding, includeMargin]);
+    }, [disabled]);
 
     const onPress = useCallback(() => {
         if (user) {
@@ -160,11 +152,11 @@ const UserItem = ({
             onLongPress={onLongPress}
             disabled={!(onUserPress || onUserLongPress)}
             onLayout={onLayout}
+            testID={userItemTestId}
         >
             <View
                 ref={viewRef}
-                style={[containerViewStyle, containerStyle]}
-                testID={userItemTestId}
+                style={[...containerViewStyle, containerStyle]}
             >
                 <ProfilePicture
                     author={user}

@@ -26,6 +26,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         titleContainer: {
             marginLeft: 16,
             flexDirection: 'column',
+            flex: 1,
+            flexShrink: 1,
+            minWidth: 0,
         },
         displayName: {
             color: theme.centerChannelColor,
@@ -45,6 +48,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         purpose: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
+            flexShrink: 1,
         },
     };
 });
@@ -117,7 +121,6 @@ export default function ChannelListRow({
                         style={style.icon}
                     />
                     <View style={style.titleContainer}>
-
                         <Text
                             style={style.displayName}
                             testID={channelDisplayNameTestID}

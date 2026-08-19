@@ -31,6 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderBottomWidth: 1,
         borderBottomColor: changeOpacity(theme.centerChannelColor, 0.08),
         backgroundColor: theme.centerChannelBg,
+        gap: 8,
     },
 }));
 

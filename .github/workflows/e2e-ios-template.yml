@@ -2,6 +2,34 @@ name: Detox iOS E2E Tests Template
 
 on:
   workflow_call:
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      # Channel-notify routing for the per-job TSIO finalize step. Callers that use
+      # an explicit `secrets:` block must forward these or notify silently no-ops.
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      # Webhook sidecar. Unset means mm_blocks specs fall back to trycloudflare.
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
+        required: false
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
+        required: false
     inputs:
       MM_TEST_SERVER_URL:
         description: "The test server URL (SITE_1)"
@@ -26,22 +54,17 @@ on:
       MOBILE_VERSION:
         description: "The mobile version to test"
         required: false
-        default: ${{ github.head_ref || github.ref }}
+        default: ""
         type: string
       run-type:
         type: string
         required: false
         default: "PR"
-      testcase_failure_fatal:
-        description: "Should failures be considered fatal"
+      record_tests_in_zephyr:
+        description: "Record test results in Zephyr, typically for release and main runs"
         required: false
         type: boolean
         default: false
-      record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for nightly and release runs"
-        required: false
-        type: string
-        default: 'false'
       ios_device_name:
         description: "iPhone simulator name"
         required: false
@@ -57,6 +80,45 @@ on:
         required: false
         type: boolean
         default: false
+      search_path:
+        description: "Path to search for test specs (use for smoke test subset)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      parallelism:
+        description: "Number of parallel test shards"
+        required: false
+        type: string
+        default: "20"
+      detox_config:
+        description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
+        required: false
+        type: string
+        default: "ios.sim.debug"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
+        required: false
+        type: string
+        default: ""
+      tsio-config:
+        description: >
+          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
+          Empty disables TSIO upload for this platform.
+        required: false
+        type: string
+        default: ""
+      tsio-shard-name:
+        description: "Display name for this shard in TSIO (e.g. detox-ios-Server_11.9.0-rc3)"
+        required: false
+        type: string
+        default: ""
+      durations_key:
+        description: >
+          Spec-duration manifest key (e.g. detox-ios, detox-ipad). Enables
+          duration-aware shard packing. Empty keeps the even alphabetical split.
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -64,12 +126,22 @@ on:
         value: ${{ jobs.generate-report.outputs.TARGET_URL }}
       FAILURES:
         value: ${{ jobs.generate-report.outputs.FAILURES }}
+      PASSES:
+        value: ${{ jobs.generate-report.outputs.PASSES }}
+      TOTAL:
+        value: ${{ jobs.generate-report.outputs.TOTAL }}
+      SKIPPED:
+        value: ${{ jobs.generate-report.outputs.SKIPPED }}
+      ERRORS:
+        value: ${{ jobs.generate-report.outputs.ERRORS }}
+      PERCENTAGE:
+        value: ${{ jobs.generate-report.outputs.PERCENTAGE }}
 
 env:
   AWS_REGION: "us-east-1"
   ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
-  ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
-  ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
   BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
   COMMIT_HASH: ${{ github.sha }}
   DEVICE_NAME: ${{ inputs.ios_device_name }}
@@ -90,10 +162,11 @@ env:
   FAILURE_MESSAGE: "Something has failed"
   IOS: "true"
   RUNNING_E2E: "true"
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
 
 jobs:
   generate-specs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
@@ -102,7 +175,7 @@ jobs:
       workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -119,17 +192,38 @@ jobs:
           echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
           echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
+      # Duration history from the last main-push run; absent → even split.
+      # continue-on-error: this job gates the entire test matrix, and shard packing
+      # is an optimization — a missing manifest or an AWS hiccup must not stop the
+      # run, it must fall back to the even split.
+      - name: Restore spec-duration manifest
+        if: inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
         with:
-          parallelism: 10
-          search_path: detox/e2e/test
+          parallelism: ${{ inputs.parallelism }}
+          search_path: ${{ inputs.search_path }}
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
+          durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
 
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
+    # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
+    # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
+    # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
+    # TODO: Investigate macos-26 Metro/Detox compatibility and re-enable if resolved.
     runs-on: macos-15
     continue-on-error: true
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
@@ -142,22 +236,77 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
+
+      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
+      # does most of its setup, so pinning every shard to the same server would put
+      # all parallel shards on one instance while the second sits mostly idle —
+      # concurrent setup on one server is what drives API rate limiting and
+      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
+      # that load evenly while still giving each shard two distinct sites for the
+      # multi-server specs.
+      - name: Rotate logical test sites by shard
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+          SHARD_ID: ${{ matrix.runId }}
+        run: |
+          # Single-server topologies leave SERVER_B unset; without this the even
+          # shards would export an empty SITE_1_URL and test_config would silently
+          # fall back to localhost instead of the provisioned server.
+          SERVER_B="${SERVER_B:-$SERVER_A}"
+          if (( 10#$SHARD_ID % 2 == 1 )); then
+            SITE_1_URL="$SERVER_A"
+            SITE_2_URL="$SERVER_B"
+          else
+            SITE_1_URL="$SERVER_B"
+            SITE_2_URL="$SERVER_A"
+          fi
+          {
+            echo "SITE_1_URL=$SITE_1_URL"
+            echo "SITE_2_URL=$SITE_2_URL"
+            echo "SITE_3_URL=$SERVER_SHARED"
+          } >> "$GITHUB_ENV"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
+      # Cache Homebrew packages including applesimutils
+      - name: Cache Homebrew packages
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /opt/homebrew/Cellar/applesimutils
+          key: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-v1
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-brew-applesimutils-
+
       - name: Install Homebrew Dependencies
         run: |
           brew tap wix/brew
-          brew install applesimutils
+          # Homebrew 5.2+/6.0 requires explicit trust before loading third-party formulae.
+          brew trust wix/brew
+          # Cache restores Cellar without /opt/homebrew/bin symlinks. Prefer link-only when
+          # already installed to avoid the noisy "installed, just not linked" brew message.
+          if brew list --formula wix/brew/applesimutils &>/dev/null || brew list --formula applesimutils &>/dev/null; then
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          else
+            brew install applesimutils
+            brew link --overwrite --force wix/brew/applesimutils 2>/dev/null \
+              || brew link --overwrite --force applesimutils
+          fi
+          command -v applesimutils
 
       - name: Download iOS Simulator Build
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ios-build-simulator-${{ github.run_id }}
+          name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
           path: mobile-artifacts
 
       - name: Unzip iOS Simulator Build
@@ -178,8 +327,30 @@ jobs:
           upload_speed: "3300"
           latency: "500"
 
+      - name: Cache detox node_modules
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
       - name: Install Detox Dependencies
         run: cd detox && npm i
+
+      - name: Get Xcode Version
+        id: xcode-version
+        run: echo "version=$(xcodebuild -version | head -1 | sed 's/Xcode //')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Detox Framework
+        id: detox-framework-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Detox/ios
+          key: ${{ runner.os }}-${{ runner.arch }}-detox-framework-${{ hashFiles('detox/package-lock.json') }}-xcode-${{ steps.xcode-version.outputs.version }}
+
+      - name: Build Detox Framework Cache
+        if: steps.detox-framework-cache.outputs.cache-hit != 'true'
+        run: cd detox && npx detox build-framework-cache
 
       - name: Pre-boot iOS Simulator
         run: |
@@ -224,7 +395,11 @@ jobs:
           # Shut down to apply password autofill restrictions
           echo "Shutting down to apply password autofill restrictions..."
           xcrun simctl shutdown "$SIMULATOR_ID"
-          sleep 3
+          for i in 1 2 3 4 5 6; do
+            state=$(xcrun simctl list devices | grep "$SIMULATOR_ID" | sed -E 's/.*\(([^)]+)\)$/\1/')
+            if [ "$state" = "Shutdown" ]; then break; fi
+            sleep 0.5
+          done
 
           echo "Disabling password autofill (simulator is shut down)"
 
@@ -249,11 +424,147 @@ jobs:
           # Wait for boot to complete
           xcrun simctl bootstatus "$SIMULATOR_ID"
 
+          # Suppress the "Save Password?" credential-save prompt on iOS simulators.
+          #
+          # Architecture (iOS 26.x / iOS 18+):
+          #   The "Save Password?" modal is shown by SharedWebCredentialViewService,
+          #   a UIProcess launched on-demand by SpringBoard — NOT a persistent launchd
+          #   service. There is no pre-existing launchd service to kill before login.
+          #   (com.apple.PasswordsCredentialProvider was removed in iOS 18+.)
+          #
+          # Strategy — two layers:
+          # 1. Best-effort defaults writes: seed the Passwords.app and springboard
+          #    defaults domains so that if/when the app reads them it sees AutoFill=NO.
+          #    Keys are silently ignored if the domain or key name doesn't match the
+          #    running iOS version, so this is best-effort only.
+          # 2. Programmatic dismissal (primary): dismissSystemDialogIfVisible() in
+          #    the test login flow taps "Not Now" when the dialog appears, then does
+          #    a sendToHome+launchApp cycle to clear the _alertControllerDimming
+          #    overlay — this is the only reliable cross-version approach.
+          echo "Seeding Passwords.app defaults to suppress credential-save prompt..."
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+          echo "Passwords defaults seeded (keys are best-effort; dialog is also handled programmatically)"
+
+          # Diagnostic: list running password-related launchd services for CI log visibility.
+          # Note: com.apple.PasswordsCredentialProvider does NOT exist on iOS 26.x —
+          # the dialog is shown by the on-demand SharedWebCredentialViewService UIProcess.
+          echo "Password-related launchd services (diagnostic only):"
+          xcrun simctl spawn "${SIMULATOR_ID}" launchctl list 2>/dev/null | grep -i "password\|credential\|SharedWebCred" || echo "  (none found)"
+
+          # Install the app now while the simulator is fully booted.
+          # reinstallApp: false in .detoxrc.json means Detox never installs the app,
+          # and launchApp({newInstance: true}) only launches — it does not install.
+          # simctl install here is the only place the app binary enters the simulator.
+          APP_PATH=$(ls -d mobile-artifacts/*.app 2>/dev/null | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ Error: No .app bundle found in mobile-artifacts/"
+            ls -la mobile-artifacts/
+            exit 1
+          fi
+          echo "Installing $APP_PATH in simulator $SIMULATOR_ID..."
+          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+          echo "✅ App installed: $APP_PATH"
+
+          # Pre-grant app permissions so Detox never calls `simctl privacy` at runtime.
+          # device.launchApp({permissions}) runs one `simctl privacy` command per key
+          # synchronously before simctl launch. On 3-core macOS-15 runners with iOS 26.x,
+          # this takes 6–9s per permission × 4 keys = 24–36s of overhead on EVERY test
+          # file's beforeAll. Under VM neighbour CPU contention this can reach 40–50s,
+          # pushing the total launch budget past the 90s cap and causing ~9/20 shards to
+          # time out. Permissions granted here persist through clearIOSAppData() (which only
+          # clears the data container, not privacy settings), so they never need re-applying.
+          #
+          # NOTE: Only `grant notifications` is applied here. The `deny camera/medialibrary/
+          # photos` commands were removed because on iOS 26.x:
+          #   - `deny medialibrary` returns "Unknown action 'deny'" (unsupported action)
+          #   - `deny camera` throws NSPOSIXErrorDomain code=1 on freshly installed apps
+          # Both errors corrupt the simulator's TCC database, preventing Detox's WebSocket
+          # from ever completing its handshake — causing ALL tests to fail with
+          # "[launch attempt 2] timed out after 90s".
+          # The app's Info.plist does not request camera/photos/medialibrary access at
+          # startup, so no denial is needed to suppress permission dialogs.
+          echo "Pre-granting app permissions..."
+          xcrun simctl privacy "$SIMULATOR_ID" grant notifications com.mattermost.rnbeta || true
+          echo "✅ Permissions pre-granted"
+
+          # Pre-warm: launch the app once to create its data container and establish a
+          # clean SpringBoard registration. A fresh simctl install creates a
+          # "pending-install" record in launchd; without a launch→kill cycle, the first
+          # Detox launchApp call hangs waiting for that record to settle.
+          # The app will crash immediately without Metro — that is expected and fine;
+          # launchd creates the data container before the JS engine starts.
+          #
+          # Both simctl launch and simctl terminate can hang on iOS 26.x — the same bug
+          # we work around in setup.ts. Protect each command:
+          #   - simctl launch: backgrounded with a hard sleep+kill timeout.
+          #   - kill: use simctl spawn launchctl to kill inside the simulator's launchd
+          #     namespace instead of simctl terminate. launchd then sees the SIGCHLD,
+          #     cleans up the service record, and leaves no stale state.
+          echo "Pre-warming app to create data container..."
+
+          # Pre-warm function: launch app briefly to create its data container.
+          # iPad simulators on iOS 26.x can take 10-15s to fully register the app.
+          prewarm_app() {
+            local attempt=$1
+            local sleep_time=$2
+            echo "Pre-warm attempt $attempt (waiting ${sleep_time}s)..."
+            xcrun simctl launch "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null &
+            local LAUNCH_PID=$!
+            sleep "$sleep_time"
+            kill "$LAUNCH_PID" 2>/dev/null || true
+            wait "$LAUNCH_PID" 2>/dev/null || true
+
+            # Kill via launchd (reliable — simctl terminate can hang on iOS 26.x)
+            local APP_PID
+            APP_PID=$(xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | \
+              grep "com.mattermost.rnbeta" | awk '{print $1}' | grep -E '^[0-9]+$' || true)
+            if [ -n "$APP_PID" ]; then
+              xcrun simctl spawn "$SIMULATOR_ID" kill -9 "$APP_PID" 2>/dev/null || true
+              for i in 1 2 3 4; do
+                if ! xcrun simctl spawn "$SIMULATOR_ID" launchctl list 2>/dev/null | grep -q "com.mattermost.rnbeta"; then
+                  break
+                fi
+                sleep 0.25
+              done
+              echo "  Killed app via launchd (PID $APP_PID)"
+            fi
+
+            # Verify data container was created
+            if xcrun simctl get_app_container "$SIMULATOR_ID" com.mattermost.rnbeta data 2>/dev/null; then
+              echo "  ✅ Data container verified"
+              return 0
+            else
+              echo "  ⚠️ Data container not found"
+              return 1
+            fi
+          }
+
+          # First attempt with 15s wait
+          if ! prewarm_app 1 15; then
+            echo "Retrying pre-warm with longer timeout..."
+            # Second attempt with 25s wait
+            if ! prewarm_app 2 25; then
+              echo "⚠️ Pre-warm failed after 2 attempts — tests may fail at launch"
+            fi
+          fi
+          echo "✅ App pre-warmed"
+
           # Open Simulator.app in background to speed up UI rendering
           open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
 
-          # Give Simulator.app time to fully initialize UI (iOS 26.2 needs more time)
-          sleep 5
+          # Poll bootstatus instead of a blind 10s sleep. Cap at 10s so we never
+          # exceed the previous worst case. 5s was empirically too short (~9/20
+          # shards timed out at the Detox 90s launchApp cap), so the minimum wait
+          # is 8s before exiting the loop.
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if xcrun simctl bootstatus "$SIMULATOR_ID" -b 2>/dev/null && [ "$i" -ge 8 ]; then
+              break
+            fi
+            sleep 1
+          done
 
           echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
 
@@ -281,11 +592,52 @@ jobs:
             sleep 3
             xcrun simctl boot "$SIMULATOR_ID"
             xcrun simctl bootstatus "$SIMULATOR_ID"
+
+            # Re-open Simulator.app after reboot
+            open -a Simulator --args -CurrentDeviceUDID "$SIMULATOR_ID"
+            sleep 5
           fi
+
+          # Verify the app is still installed (simctl install can silently fail)
+          if ! xcrun simctl get_app_container "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null; then
+            echo "⚠️ App not found in simulator — reinstalling..."
+            APP_PATH=$(ls -d mobile-artifacts/*.app 2>/dev/null | head -1)
+            if [ -n "$APP_PATH" ]; then
+              xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+              echo "✅ App reinstalled"
+            else
+              echo "❌ No .app bundle found for reinstall"
+              exit 1
+            fi
+          fi
+
+          # Reduce CPU competition: disable Spotlight indexing and other macOS services
+          # that consume CPU on CI runners (3-core M1 with 7 GB RAM)
+          sudo mdutil -a -i off 2>/dev/null || true
 
           echo "✅ Simulator is healthy and ready"
 
+      - name: Start mm_blocks webhook sidecar
+        if: contains(matrix.specs, 'mm_blocks_')
+        continue-on-error: true
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          # Prefer a stable public origin over trycloudflare (optional repo secrets).
+          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+        # mm_blocks specs are sharded alone (split-tests.js). This step must not hang:
+        # the script bounds all curls and exits 0 on tunnel failure so Jest still runs.
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
       - name: Start Metro Bundler and Run Detox E2E Tests
+        # Bumped from 60 to 180 min: with ~6 specs per shard averaging 5-15 min each,
+        # the 60min step timeout was being hit silently — GitHub kills the step but
+        # `continue-on-error: true` masks it, and the tests that didn't run get
+        # dropped from the result count. iOS run 26368981355 had 524 tests vs
+        # Android's 537 (same codebase, same 124 spec files) — the 13-test gap was
+        # tail tests on shards that timed out at this step. 180 matches the job
+        # timeout above so the step uses the full available budget.
+        timeout-minutes: 180
         continue-on-error: true # We want to run all the tests
         run: |
           # Start Metro bundler in background
@@ -327,37 +679,76 @@ jobs:
             tail -30 metro.log
           else
             echo "Metro is serving on http://localhost:8081"
-            # Give Metro extra time to fully initialize for iOS 26.2 (React Native bridge needs more time)
-            echo "Allowing Metro to fully stabilize..."
-            sleep 8
+            # Give Metro time to fully initialize for iOS 26.2 (React Native bridge needs stabilization).
+            # 20s should be sufficient for macos-15 to ensure full Metro compilation.
+            # Without adequate wait, the app may fail with "No script URL provided" on launch.
+            echo "Allowing Metro to fully stabilize (20s on macos-15)..."
+            sleep 20
+
+            # Verify Metro is actually serving the bundle (not just the process is running).
+            # This catches cases where Metro reports ready but hasn't finished compilation.
+            echo "Verifying Metro can serve bundles..."
+            if curl -s http://localhost:8081/index.ios.bundle 2>/dev/null | grep -q "__d("; then
+              echo "✅ Metro is serving bundles successfully"
+            else
+              echo "⚠️ Warning: Could not verify Metro is serving bundles, proceeding anyway"
+              ps aux | grep -E "metro|node.*start" | grep -v grep || echo "Metro process not found"
+            fi
           fi
 
           cd detox
           npm run detox:config-gen
-          npm run e2e:ios-test -- ${{ matrix.specs }}
+          # Ensure the Jest --json output directory exists before the run.
+          mkdir -p artifacts
+          # Use read -ra to safely word-split space-separated spec paths without
+          # glob expansion or shell injection from the matrix value.
+          read -ra SPECS <<< "$MATRIX_SPECS"
+          set +e
+          # `--` separates Detox args from Jest args; --json --outputFile emits
+          # Jest's native JSON report (consumed by the TSIO detox parser) into
+          # the existing detox/artifacts/ upload.
+          if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+          else
+            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+          fi
+          DETOX_EXIT_CODE=$?
+          exit "${DETOX_EXIT_CODE:-1}"
         env:
+          DETOX_CONFIG: ${{ inputs.detox_config }}
+          MATRIX_SPECS: ${{ matrix.specs }}
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
-          DETOX_LOGLEVEL: "debug"
+          DETOX_LOGLEVEL: "info"
           DETOX_DEVICE_TYPE: ${{ env.DEVICE_NAME }}
           DETOX_OS_VERSION: ${{ env.DEVICE_OS_VERSION }}
           LOW_BANDWIDTH_MODE: ${{ inputs.low_bandwidth_mode }}
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          SITE_2_URL: ${{ env.SITE_2_URL }}
+          SITE_3_URL: ${{ env.SITE_3_URL }}
 
       - name: Cleanup Simulator State
         if: always()
+        timeout-minutes: 2
         run: |
           echo "Cleaning up simulator state after tests..."
 
-          # Stop Metro bundler if still running
-          if [ ! -z "$METRO_PID" ]; then
-            echo "Stopping Metro bundler (PID: $METRO_PID)..."
-            kill -9 "$METRO_PID" 2>/dev/null || true
+          # Kill the entire Metro process tree, not just the top-level PID.
+          # `kill -9 $PID` only kills the npm wrapper; the actual Metro Node.js
+          # workers and watchman stay alive. GitHub Actions waits ~10 min for
+          # orphaned processes to die, causing the cleanup step to hang.
+          if [ -n "$METRO_PID" ]; then
+            echo "Stopping Metro bundler (PID: $METRO_PID) and child processes..."
+            kill -9 -"$METRO_PID" 2>/dev/null || true
+            pkill -9 -f "react-native.*start" 2>/dev/null || true
+            pkill -9 -f "metro" 2>/dev/null || true
+            sleep 1
           fi
 
-          # Terminate app gracefully
-          if [ ! -z "$SIMULATOR_ID" ]; then
+          # Terminate app with a timeout — simctl terminate can hang on iOS 26.x
+          if [ -n "$SIMULATOR_ID" ]; then
             echo "Terminating app on simulator..."
-            xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+            timeout 10 xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
             sleep 2
           fi
 
@@ -376,7 +767,7 @@ jobs:
 
       - name: Upload mitmdump Flow Output
         if: ${{ inputs.low_bandwidth_mode }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: |
@@ -385,23 +776,42 @@ jobs:
 
       - name: Upload iOS Test Report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
   generate-report:
-    runs-on: ubuntu-22.04
+    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
+    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+    if: always()
+    runs-on: ubuntu-24.04
     needs:
       - generate-specs
       - e2e-ios
+    permissions:
+      contents: read
+      # test-system-io-report-upload authenticates via the workflow's OIDC
+      # token and resolves gh_job_id via the GitHub API.
+      id-token: write
+      actions: read
+      # Per-job TSIO finalize posts detox-ios|ipad (or CMT <shard>).
+      statuses: write
+      # Finalize re-reads the PR labels so a result landing after E2E/Override was
+      # applied reports success instead of re-blocking the merge.
+      issues: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
       FAILURES: ${{ steps.summary.outputs.FAILURES }}
+      PASSES: ${{ steps.summary.outputs.PASSES }}
+      TOTAL: ${{ steps.summary.outputs.TOTAL }}
+      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+      ERRORS: ${{ steps.summary.outputs.ERRORS }}
+      PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
@@ -409,19 +819,190 @@ jobs:
         uses: ./.github/actions/prepare-node-deps
 
       - name: Download iOS Artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: detox/artifacts/
           pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
+        continue-on-error: true
 
       - name: Generate Report Path
         id: s3
+        env:
+          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
+          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
+          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
         run: |
-          path="${{ needs.generate-specs.outputs.build_id }}-${{ needs.generate-specs.outputs.mobile_sha }}-${{ needs.generate-specs.outputs.mobile_ref }}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> ${GITHUB_OUTPUT}
+          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
+          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
+
+      # ── Spec durations for the next run's shard packing ────────────────────
+      # Must run before e2e:save-report, which deletes the ios-results-* dirs the
+      # per-shard jest-results.json live in. Only main-push publishes (a PR must
+      # not steer how other branches shard); PR runs still compute it so the step
+      # is exercised on every PR that touches this workflow.
+      # Re-fetch the published manifest here: this is a different runner from
+      # generate-specs, so without it the EWMA would have no history to smooth
+      # against and the manifest would collapse to "last run only".
+      - name: Restore previous spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
+      - name: Build spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        env:
+          DURATIONS_KEY: ${{ inputs.durations_key }}
+        run: |
+          node detox/utils/spec-durations.js \
+            --dir detox/artifacts \
+            --previous detox/artifacts/spec-durations.json \
+            --output detox/artifacts/spec-durations.next.json \
+            --key "$DURATIONS_KEY" \
+            --repo-root "$GITHUB_WORKSPACE"
+
+      # spec-durations.js merges the restored manifest into the new one, so the
+      # freshly built manifest already carries every valid entry of the previously
+      # published one — there is nothing to fall back to. (Entries the restored
+      # manifest had that were malformed or non-positive are dropped on purpose.)
+      # An empty/zero manifest is rejected by
+      # the action's `validate` guard rather than published (publishing one would
+      # poison duration packing for every branch until main rewrote it).
+      - name: Publish spec-duration manifest
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          manifest-path: detox/artifacts/spec-durations.next.json
+          mode: save
+
+      # ── TSIO report upload (before e2e:save-report) ────────────────────────
+      # save-report deletes ios-results-* dirs (where Detox PNGs live). Upload
+      # while those artifact trees are still on disk.
+      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
+      # extractDetox expects testFilePath + nested testResults — convert while
+      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-merge
+        run: |
+          set +e
+          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
+          # name + assertionResults). Convert while merging shard JSON files.
+          if ! node detox/utils/merge-jest-results-for-tsio.js \
+            --dir detox/artifacts \
+            --repo-root "${GITHUB_WORKSPACE}" \
+            --output detox/artifacts/jest-results-merged.json; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "No jest-results.json found or merge failed — skipping TSIO upload."
+            exit 0
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Write TSIO failure stub when Detox JSON is missing
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
+        env:
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+        run: |
+          node detox/utils/write-tsio-failure-stub.mjs \
+            --format jest \
+            --output detox/artifacts/jest-results-merged.json \
+            --job-name "$TSIO_SHARD_NAME" \
+            --reason "Detox job failed or was cancelled before jest-results.json was written"
+
+      - name: Resolve per-job TSIO config
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+        id: tsio-cfg
+        env:
+          TSIO_CONFIG: ${{ inputs.tsio-config }}
+          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
+        run: |
+          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
+          {
+            echo "config<<EOF"
+            echo "$CFG"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved TSIO job: $(echo "$CFG" | jq -r '.composite_identity.name') context=$(echo "$CFG" | jq -r '.status_context')"
+
+      - name: Upload report to Test System IO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
+        with:
+          composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
+          total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
+          framework: detox
+          github-token: ${{ github.token }}
+          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
+          json-path: detox/artifacts/jest-results-merged.json
+          screenshots-dir: detox/artifacts/
+
+      # Resolved here rather than inside tsio-report-status.js so the GitHub API
+      # call stays in the Actions layer and the reporter acts on its inputs.
+      - name: Check E2E/Override on the PR
+        id: e2e-override
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        uses: ./.github/actions/e2e-override-label
+        with:
+          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+
+      - name: Post per-job TSIO commit status
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          SPECS_RESULT: ${{ needs.generate-specs.result }}
+          E2E_RESULT: ${{ needs.e2e-ios.result }}
+          JOB_STATUS: ${{ job.status }}
+          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set +e
+          UPSTREAM="true"
+          # This job runs with always(), so job.status stays success when an upstream
+          # job is cancelled — read the needs results to detect that.
+          if [ "$SPECS_RESULT" = "cancelled" ] ||
+             [ "$E2E_RESULT" = "cancelled" ] ||
+             [ "$JOB_STATUS" = "cancelled" ]; then
+            UPSTREAM="false"
+          fi
+          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
+          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-ios"')
+          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
+          node detox/utils/tsio-report-status.js \
+            --composite-identity="$IDENTITY" \
+            --total-reports-expected="$TOTAL" \
+            --github-token="$GITHUB_TOKEN" \
+            --context="$CONTEXT" \
+            --upstream-succeeded="$UPSTREAM" \
+            --e2e-override="$E2E_OVERRIDE" \
+            --poll-attempts=24
+          RC=$?
+          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
+          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
+            echo "::error::TSIO reported test failures for $CONTEXT"
+            exit 1
+          fi
+          exit 0
 
       - name: Save report Detox Dependencies
         id: report-link
+        if: always()
+        continue-on-error: true
         run: |
           cd detox
           npm ci
@@ -437,66 +1018,73 @@ jobs:
 
       - name: Calculate failures
         id: summary
+        if: always()
         run: |
-          echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-          echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-          echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-          echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-          echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-          echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+          if [ -f detox/artifacts/summary.json ]; then
+            echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
+            echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
+            echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
+            echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
+            echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
+            echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
+          else
+            echo "⚠️ No summary.json found — all test machines likely failed before producing results"
+            echo "FAILURES=-1" >> ${GITHUB_OUTPUT}
+            echo "PASSES=0" >> ${GITHUB_OUTPUT}
+            echo "SKIPPED=0" >> ${GITHUB_OUTPUT}
+            echo "TOTAL=0" >> ${GITHUB_OUTPUT}
+            echo "ERRORS=0" >> ${GITHUB_OUTPUT}
+            echo "PERCENTAGE=0" >> ${GITHUB_OUTPUT}
+          fi
 
       - name: Set Target URL
         id: set-url
+        if: always()
+        env:
+          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
+          REPORT_PATH: ${{ steps.s3.outputs.path }}
         run: |
-            echo "TARGET_URL=https://${{ env.DETOX_AWS_S3_BUCKET }}.s3.amazonaws.com/${{ steps.s3.outputs.path }}/jest-stare/ios-report.html" >> ${GITHUB_OUTPUT}
+          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/ios-report.html" >> "$GITHUB_OUTPUT"
 
       - name: Determine Status
         id: determine-status
+        if: always()
+        env:
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
         run: |
-          if [[ ${{ steps.summary.outputs.failures }} -gt 0 && "${{ inputs.testcase_failure_fatal }}" == "true" ]]; then
+          # Fail on missing/empty reports (infra died before tests) and on real failures.
+          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
             echo "STATUS=failure" >> ${GITHUB_OUTPUT}
           else
             echo "STATUS=success" >> ${GITHUB_OUTPUT}
           fi
 
       - name: Generate Summary
+        if: always()
+        env:
+          TOTAL: ${{ steps.summary.outputs.TOTAL }}
+          PASSES: ${{ steps.summary.outputs.PASSES }}
+          FAILURES: ${{ steps.summary.outputs.FAILURES }}
+          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
+          ERRORS: ${{ steps.summary.outputs.ERRORS }}
+          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
+          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
         run: |
           echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
           echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${{ steps.summary.outputs.TOTAL }} | ${{ steps.summary.outputs.PASSES }} | ${{ steps.summary.outputs.FAILURES }} | ${{ steps.summary.outputs.SKIPPED }} | ${{ steps.summary.outputs.ERRORS }} |" >> ${GITHUB_STEP_SUMMARY}
+          echo "| ${TOTAL} | ${PASSES} | ${FAILURES} | ${SKIPPED} | ${ERRORS} |" >> ${GITHUB_STEP_SUMMARY}
           echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${{ steps.set-url.outputs.TARGET_URL }})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${{ steps.summary.outputs.PERCENTAGE }}%** success rate." >> ${GITHUB_STEP_SUMMARY}
+          echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
+          echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
 
-      - name: Comment report on the PR
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-
-            const commentBody = `**iOS E2E Test Report**: ${process.env.MOBILE_SHA} | ${process.env.PERCENTAGE}% (${process.env.PASSES}/${process.env.TOTAL}) | [full report](${process.env.TARGET_URL})
-              | Tests | Passed ✅ | Failed ❌ | Skipped ⏭️ | Errors ⚠️ |
-              |:---:|:---:|:---:|:---:|:---:|
-              | ${process.env.TOTAL} | ${process.env.PASSES} | ${process.env.FAILURES} | ${process.env.SKIPPED} | ${process.env.ERRORS} |
-              `;
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              body: commentBody,
-            });
+      - name: Fail job on test failures
+        if: always() && steps.determine-status.outputs.STATUS == 'failure'
         env:
-          STATUS: ${{ steps.determine-status.outputs.STATUS }}
           FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
           TOTAL: ${{ steps.summary.outputs.TOTAL }}
           ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          RUN_TYPE: ${{ inputs.run-type }}
-          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
-          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
+        run: |
+          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
+          exit 1

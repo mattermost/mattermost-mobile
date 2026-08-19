@@ -140,6 +140,53 @@ jest.mock('@mattermost/react-native-turbo-log', () => ({
     getLogPaths: jest.fn(),
 }));
 
+jest.mock('@mattermost/calls-native', () => ({
+    __esModule: true,
+    default: {
+        reportOutgoingCall: jest.fn(() => Promise.resolve({uuid: 'native-uuid'})),
+        reportConnected: jest.fn(() => Promise.resolve()),
+        reportEnded: jest.fn(() => Promise.resolve()),
+        setMuted: jest.fn(() => Promise.resolve()),
+        foregroundServiceStart: jest.fn(),
+        foregroundServiceStop: jest.fn(),
+        startAudioSession: jest.fn(() => Promise.resolve()),
+        stopAudioSession: jest.fn(() => Promise.resolve()),
+        setAudioRoute: jest.fn(() => Promise.resolve()),
+        getAudioRoute: jest.fn(() => Promise.resolve({selectedAudioDevice: 'SPEAKER_PHONE', availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE']})),
+        startRingtone: jest.fn(() => Promise.resolve()),
+        stopRingtone: jest.fn(() => Promise.resolve()),
+        onVoIPTokenUpdated: jest.fn(() => ({remove: jest.fn()})),
+        onIncomingCall: jest.fn(() => ({remove: jest.fn()})),
+        onCallAnswered: jest.fn(() => ({remove: jest.fn()})),
+        onCallDeclined: jest.fn(() => ({remove: jest.fn()})),
+        onCallEnded: jest.fn(() => ({remove: jest.fn()})),
+        onMuteChanged: jest.fn(() => ({remove: jest.fn()})),
+        onAudioRouteChanged: jest.fn(() => ({remove: jest.fn()})),
+    },
+    AudioDevice: {
+        Speakerphone: 'SPEAKER_PHONE',
+        Earpiece: 'EARPIECE',
+        Bluetooth: 'BLUETOOTH',
+        WiredHeadset: 'WIRED_HEADSET',
+        None: 'NONE',
+    },
+}));
+
+jest.mock('react-native-webrtc', () => {
+    const getTracks = jest.fn(() => []);
+    const getUserMedia = jest.fn(() => Promise.resolve({getTracks}));
+    return {
+        mediaDevices: {
+            enumerateDevices: jest.fn(() => Promise.resolve([])),
+            getUserMedia,
+        },
+        MediaStream: jest.fn(),
+        MediaStreamTrack: jest.fn(),
+        RTCSessionDescription: jest.fn(),
+        registerGlobals: jest.fn(),
+    };
+});
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {

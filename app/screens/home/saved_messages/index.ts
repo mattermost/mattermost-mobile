@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostsById} from '@queries/servers/post';
+import {observeSavedPostsByIds, queryPostsById} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -25,12 +25,17 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
             switchMap((rows) => {
-                if (!rows.length) {
+                const ids = getPostIDs(rows);
+                if (!ids.length) {
+                    return of$(new Set<string>());
+                }
+                return observeSavedPostsByIds(database, ids);
+            }),
+            switchMap((savedPostIds) => {
+                const ids = [...savedPostIds];
+                if (!ids.length) {
                     return of$([]);
                 }
-                return of$(getPostIDs(rows));
-            }),
-            switchMap((ids) => {
                 return queryPostsById(database, ids, Q.asc).observe();
             }),
         ),

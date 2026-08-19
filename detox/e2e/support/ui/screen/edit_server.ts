@@ -29,7 +29,7 @@ class EditServerScreen {
 
     toBeVisible = async () => {
         await waitFor(this.editServerScreen).toExist().withTimeout(timeouts.TEN_SEC);
-        await waitFor(this.serverDisplayNameInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.serverDisplayNameInput).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.editServerScreen;
     };

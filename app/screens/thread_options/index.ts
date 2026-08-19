@@ -3,6 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
+import {withServerUrl} from '@context/server';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeThreadById} from '@queries/servers/thread';
@@ -15,15 +16,15 @@ export type ThreadOptionsProps = {
     threadId: string;
 };
 
-type Props = ThreadOptionsProps & WithDatabaseArgs;
+type Props = ThreadOptionsProps & WithDatabaseArgs & {serverUrl: string};
 
-const enhanced = withObservables(['threadId'], ({database, threadId}: Props) => {
+const enhanced = withObservables(['threadId', 'serverUrl'], ({database, serverUrl, threadId}: Props) => {
     return {
-        isSaved: observePostSaved(database, threadId),
+        isSaved: observePostSaved(database, threadId, serverUrl),
         post: observePost(database, threadId),
         team: observeCurrentTeam(database),
         thread: observeThreadById(database, threadId),
     };
 });
 
-export default withDatabase(enhanced(ThreadOptions));
+export default withDatabase(withServerUrl(enhanced(ThreadOptions)));

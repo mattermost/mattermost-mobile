@@ -182,6 +182,7 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
         }
 
         await client.updateChannelCategories('me', teamId, [targetWithChannels, favoriteWithChannels]);
+        fetchCategories(serverUrl, teamId, true);
 
         if (showSnackBar) {
             const onUndo = () => toggleFavoriteChannel(serverUrl, channelId, false);

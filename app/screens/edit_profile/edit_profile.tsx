@@ -20,6 +20,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -41,6 +42,12 @@ const styles = StyleSheet.create({
         marginVertical: 32,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    saveText: {
+        ...typography('Body', 200),
+    },
+    pressed: {
+        opacity: 0.7,
     },
 });
 
@@ -244,17 +251,27 @@ const EditProfile = ({
         if (!isTablet) {
             navigation.setOptions({
                 headerRight: () => (
-                    <Pressable
-                        onPress={submitUser}
-                        disabled={!canSave}
-                        testID={'edit_profile.save.button'}
-                    >
-                        <FormattedText
-                            id='mobile.account.settings.save'
-                            defaultMessage='Save'
-                            style={{color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32), fontSize: 16}}
-                        />
-                    </Pressable>
+
+                    // Wrapper View with the testID constrains the hit area so
+                    // Detox doesn't report the full header width as the
+                    // Pressable's bounds (MM-T4989_2 / MM-T3250). On iOS,
+                    // React Navigation's native bar button item stretches
+                    // the child to fill the right slot, causing .tap() at
+                    // the center (193, 24) to land on the "Your Profile"
+                    // title instead of the "Save" text.
+                    <View testID='edit_profile.save.button'>
+                        <Pressable
+                            onPress={submitUser}
+                            disabled={!canSave}
+                            style={({pressed}) => pressed && styles.pressed}
+                        >
+                            <FormattedText
+                                id='mobile.account.settings.save'
+                                defaultMessage='Save'
+                                style={[styles.saveText, {color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32)}]}
+                            />
+                        </Pressable>
+                    </View>
                 ),
             });
         }

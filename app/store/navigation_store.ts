@@ -98,7 +98,29 @@ class NavigationStoreSingleton {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve();
-            }, 30000);
+            }, 1000);
+        });
+    }
+
+    waitUntilScreenIsTop(screenId: AvailableScreens): Promise<void> {
+        return new Promise<void>((resolve) => {
+            if (this.getVisibleScreen() === screenId) {
+                resolve();
+                return;
+            }
+
+            const subscription = this.state$.subscribe((state) => {
+                const topScreen = state.screenStack[state.screenStack.length - 1];
+                if (topScreen === screenId) {
+                    subscription.unsubscribe();
+                    resolve();
+                }
+            });
+
+            setTimeout(() => {
+                subscription.unsubscribe();
+                resolve();
+            }, 1000);
         });
     }
 
@@ -119,7 +141,7 @@ class NavigationStoreSingleton {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve();
-            }, 30000);
+            }, 1000);
         });
     }
 

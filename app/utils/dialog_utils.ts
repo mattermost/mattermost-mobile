@@ -28,6 +28,8 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    DATE: 'date' as const,
+    DATETIME: 'datetime' as const,
 } as const;
 
 /**
@@ -65,6 +67,10 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.DATE:
+            return 'date';
+        case DialogElementTypes.DATETIME:
+            return 'datetime';
         default:
             return 'text';
     }
@@ -86,6 +92,10 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'date':
+            return DialogElementTypes.DATE;
+        case 'datetime':
+            return DialogElementTypes.DATETIME;
         default:
             return DialogElementTypes.TEXT;
     }

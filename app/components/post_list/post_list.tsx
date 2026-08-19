@@ -10,7 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 import {removePost} from '@actions/local/post';
-import {fetchPosts, fetchPostThread} from '@actions/remote/post';
+import {fetchPostThread, refreshPostsForChannel} from '@actions/remote/post';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -41,6 +41,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
+    mmBlocksEnabled: boolean;
     channelId: string;
     contentContainerStyle?: StyleProp<AnimatedStyle<ViewStyle>>;
     currentUser: UserModel;
@@ -90,6 +91,7 @@ const styles = StyleSheet.create({
 
 const PostList = ({
     appsEnabled,
+    mmBlocksEnabled,
     channelId,
     currentUser,
     customEmojiNames,
@@ -271,7 +273,7 @@ const PostList = ({
         }
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
-            await fetchPosts(serverUrl, channelId);
+            await refreshPostsForChannel(serverUrl, channelId, orderedPosts.length === 0);
         } else if (location === Screens.THREAD && rootId) {
             const options: FetchPaginatedThreadOptions = {};
             const lastPost = posts[0];
@@ -287,7 +289,7 @@ const PostList = ({
             map((post) => removePost(serverUrl, post));
         await Promise.all(removalPromises);
         setRefreshing(false);
-    }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl]);
+    }, [disablePullToRefresh, location, channelId, rootId, posts, serverUrl, orderedPosts.length]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         if (index < 0 || !listRef?.current) {
@@ -455,6 +457,7 @@ const PostList = ({
                 const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
+                    mmBlocksEnabled,
                     currentUser,
                     customEmojiNames,
                     isCRTEnabled,
@@ -481,7 +484,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {
