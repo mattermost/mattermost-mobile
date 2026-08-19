@@ -3,7 +3,7 @@
 
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
@@ -144,11 +144,18 @@ class ServerListScreen {
     // resolved at runtime — so the same row sits on screen for one server set and below
     // the fold for another. Never assume a row is already visible: scroll the inner
     // server_list FlatList until it is. No-op when the row is already on screen.
+    //
+    // scrollElementIntoView, not a bare whileElement().scroll(): whileElement takes a
+    // single direction, and 'down' cannot recover a row that is clipped at the *top* —
+    // which is exactly where the first server sits after revealServerListItems() scrolls
+    // the sheet's list down, and what MM-T4691_4's own comment records ("the row sat
+    // clipped at the top of the sheet (y=0, height=252)"). Scrolling further down walks
+    // it further away, so the visibility check just thrashes: ios shard 18 of run
+    // 32184155037 logged nine DETOX_VISIBILITY_RCTViewComponentView__*__SCREEN.png debug
+    // captures for MM-T4691_4 before the row interaction failed. scrollElementIntoView
+    // already alternates both directions and applies the per-platform threshold.
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
-        await waitFor(item).
-            toBeVisible(40).
-            whileElement(by.id(this.testID.serverList)).
-            scroll(120, 'down');
+        await scrollElementIntoView(item, by.id(this.testID.serverList));
     };
 
     swipeRevealOption = async (
@@ -184,6 +191,19 @@ class ServerListScreen {
         }
         await this.scrollServerItemIntoView(target);
         await target.tap({x: 1, y: 1});
+
+        // The channel-list header sits *behind* this sheet, and on iOS the sheet is its
+        // own window (see open() above), so asserting the header while it is still up
+        // spends the whole budget on an element Detox cannot match. onServerPressed
+        // switches first and dismisses after, so wait for the dismissal to land before
+        // reading the header — and fail on the sheet rather than on the header when it
+        // does not. MM-T4691_2 on ios shard 18 of run 32184155037 burned its 30s on
+        // TOHAVETEXT(“Server 1”) right after Detox reported "The app is busy with the
+        // following tasks: ... 2 work items pending on the dispatch queue", and the next
+        // test opened with "[ChannelListScreen.toBeVisible] Channel list not found —
+        // attempting recovery relaunch".
+        await waitFor(this.serverListScreen).not.toBeVisible().withTimeout(timeouts.HALF_MIN);
+
         await waitFor(ChannelListScreen.headerServerDisplayName).
             toHaveText(serverDisplayName).
             withTimeout(timeouts.HALF_MIN);
