@@ -242,6 +242,35 @@ describe('ClientTracking', () => {
         await expect(client.doFetchWithTracking('https://example.com/api', options)).rejects.toThrow('Received invalid response from the server.');
     });
 
+    it('should log sanitized request failure details without the raw error text or query string', async () => {
+        const logDebugSpy = jest.spyOn(require('@utils/log'), 'logDebug');
+        apiClientMock.get.mockRejectedValue(new Error('Request failed: https://example.com/api?token=secret123'));
+
+        const options = {
+            method: 'GET',
+            groupLabel: 'Cold Start' as RequestGroupLabel,
+        };
+
+        await expect(client.doFetchWithTracking('https://example.com/api?token=secret123', options)).rejects.toThrow('Received invalid response from the server.');
+
+        expect(logDebugSpy).toHaveBeenCalledWith(
+            'doFetchWithTracking: request failed',
+            'method',
+            'get',
+            'status_code',
+            undefined,
+            'url',
+            '/api?<filtered>',
+        );
+
+        for (const call of logDebugSpy.mock.calls) {
+            for (const arg of call) {
+                expect(String(arg)).not.toContain('token=secret123');
+                expect(String(arg)).not.toContain('Request failed');
+            }
+        }
+    });
+
     it('should handle non-ok response with error details', async () => {
         apiClientMock.get.mockResolvedValue({
             ok: false,
