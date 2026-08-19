@@ -141,6 +141,45 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
+// Espresso picks its root view by asking which window currently has focus. When
+// the display sleeps, the keyguard returns, or a system dialog (ANR, "app keeps
+// stopping") sits on top, every window reports has-window-focus=false and the
+// launch check dies on "Waited for the root of the view hierarchy to have window
+// focus ... for 10 seconds" without the app ever getting a chance to render.
+// Relaunching the app does not fix any of those, so the retry loop below has to
+// put the device back into an interactive state before it tries again.
+function recoverAndroidDevice(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+
+    const commands = [
+        'adb shell input keyevent KEYCODE_WAKEUP',
+        'adb shell wm dismiss-keyguard',
+        'adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS',
+        'adb shell svc power stayon true',
+    ];
+    for (const command of commands) {
+        try {
+            execSync(command, {stdio: 'pipe'});
+        } catch {
+            // Best effort — an unavailable command must not mask the launch error.
+        }
+    }
+
+    // Record what actually holds focus, so a repeat failure is diagnosable from the
+    // job log instead of only from the Espresso view dump.
+    try {
+        const focus = execSync(
+            "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
+        );
+        console.warn('[recoverAndroidDevice] window focus:', focus.replace(/\s+/g, ' ').trim().slice(0, 300));
+    } catch {
+        console.warn('[recoverAndroidDevice] could not read window focus from dumpsys');
+    }
+}
+
 // Android 13+ (API 33+): the `permissions` key in device.launchApp() only works
 // on iOS simulators. On Android, notification permission must be granted via adb.
 async function grantAndroidNotificationPermission(): Promise<void> {
@@ -303,6 +342,7 @@ beforeAll(async () => {
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
+                recoverAndroidDevice();
                 await forceAndroidDataClear();
                 await ensureAndroidMetroReverse();
             }

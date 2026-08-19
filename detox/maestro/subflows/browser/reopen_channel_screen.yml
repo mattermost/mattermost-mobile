@@ -27,10 +27,13 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 
 # # Re-anchor on the Home tab, then walk back into the test channel
+# 60s, not 30s: this runs right after `launchApp stopApp: true`, so the app is
+# cold-starting (database open, session rehydrate, first render) on a CI simulator
+# that is also still tearing down Safari — not finishing an in-app transition.
 - extendedWaitUntil:
     visible:
       id: "tab_bar.home.tab"
-    timeout: 30000
+    timeout: 60000
 - tapOn:
     id: "tab_bar.home.tab"
 - runFlow: ../navigation/navigate_to_channel.yml
