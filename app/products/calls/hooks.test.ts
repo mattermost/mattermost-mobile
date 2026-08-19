@@ -13,7 +13,6 @@ import {
     getCurrentCall,
     getCallsConfig,
     setMicPermissionsGranted,
-    setPendingCallScreenChannelId,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
@@ -71,7 +70,6 @@ jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
     getCallsConfig: jest.fn(),
     setMicPermissionsGranted: jest.fn(),
-    setPendingCallScreenChannelId: jest.fn(),
     useCallsState: jest.fn(),
     useChannelsWithCalls: jest.fn(),
     useCurrentCall: jest.fn(),
@@ -191,25 +189,9 @@ describe('Calls Hooks', () => {
         });
 
         it('includes current call bar height', () => {
-            (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1', connected: true});
+            (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1'});
             const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
             expect(result.current).toBe(CURRENT_CALL_BAR_HEIGHT + 8);
-        });
-
-        it('does not reserve space for the current call bar until the call connects', () => {
-            (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1', connected: false});
-            const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(0);
-        });
-
-        it('does not reserve space for the current call bar while its call screen is pending', () => {
-            (useCurrentCall as jest.Mock).mockReturnValue({id: 'call1', channelId: 'channel1', connected: true});
-            (useGlobalCallsState as jest.Mock).mockReturnValue({
-                micPermissionsGranted: true,
-                pendingCallScreenChannelId: 'channel1',
-            });
-            const {result} = renderHook(() => useCallsAdjustment('server1', 'channel1'));
-            expect(result.current).toBe(0);
         });
 
         it('includes join call banner height', () => {
@@ -391,42 +373,6 @@ describe('Calls Hooks', () => {
 
             expect(leaveAndJoinWithAlert).toHaveBeenCalled();
             expect(navigateToScreen).not.toHaveBeenCalled();
-        });
-
-        it('should hold back the floating call bar until the call screen takes over', async () => {
-            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
-
-            await act(async () => {
-                result.current?.onPress();
-            });
-
-            // Left set on success: the call screen clears it as it mounts, so nothing paints in between.
-            expect(setPendingCallScreenChannelId).toHaveBeenCalledTimes(1);
-            expect(setPendingCallScreenChannelId).toHaveBeenCalledWith(channelId);
-        });
-
-        it('should release the floating call bar when the user does not join the call', async () => {
-            jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(false);
-
-            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
-
-            await act(async () => {
-                result.current?.onPress();
-            });
-
-            expect(setPendingCallScreenChannelId).toHaveBeenLastCalledWith(null);
-        });
-
-        it('should release the floating call bar when joining the call rejects', async () => {
-            jest.mocked(leaveAndJoinWithAlert).mockRejectedValue(new Error('failed to join'));
-
-            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
-
-            await act(async () => {
-                result.current?.onPress();
-            });
-
-            expect(setPendingCallScreenChannelId).toHaveBeenLastCalledWith(null);
         });
 
         it('should navigate to the call screen instead of joining when already in this channel call', async () => {
