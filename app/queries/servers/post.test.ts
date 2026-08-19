@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-import {firstValueFrom} from 'rxjs';
-import {filter, take} from 'rxjs/operators';
+import {Q, Database} from '@nozbe/watermelondb';
+import {firstValueFrom, of as of$} from 'rxjs';
+import {filter, switchMap, take} from 'rxjs/operators';
 
 import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -31,6 +31,7 @@ import {
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
 } from './post';
+import {observeRecentMentions} from './system';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -575,6 +576,64 @@ describe('post query helpers', () => {
             const results = await editedPromise;
             expect(results).toHaveLength(1);
             expect(results.find((p) => p.id === post.id)?.message).toBe('edited mention');
+        });
+
+        // The Recent Mentions screen refreshes through fetchRecentMentions -> searchPosts,
+        // which persists with a different shape than the channel path above: actionType '',
+        // an empty order, prepareRecordsOnly and then a separate batchRecords. Nothing
+        // covered that shape, so MM-70005 (observing the post body columns so an edit
+        // re-renders in Mentions/Saved/Pinned) had no test behind the path the Mentions
+        // screen actually uses.
+        it('should emit the edited body when the post is persisted the way searchPosts does', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
+            const post = TestHelper.fakePost({channel_id: channelId, message: 'Own mention abc @user1'});
+
+            const persistLikeSearchPosts = async (raws: Post[]) => {
+                const models = await operator.handlePosts({
+                    actionType: '',
+                    order: [],
+                    posts: raws,
+                    previousPostId: '',
+                    prepareRecordsOnly: true,
+                });
+                await operator.batchRecords(models, 'searchPosts');
+            };
+
+            await persistLikeSearchPosts([post]);
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS, value: JSON.stringify([post.id])}],
+                prepareRecordsOnly: false,
+            });
+
+            // The pipeline the recent_mentions enhancer builds.
+            const mentions$ = observeRecentMentions(database).pipe(
+                switchMap((ids) => (ids.length ? observePostsById(database, ids, Q.asc) : of$([]))),
+            );
+
+            const initial = await firstValueFrom(mentions$.pipe(take(1)));
+            expect(initial).toHaveLength(1);
+            expect(initial[0].message).toBe('Own mention abc @user1');
+            expect(initial[0].editAt).toBe(0);
+
+            const editedPromise = firstValueFrom(mentions$.pipe(
+                filter((rows) => rows.some((p) => p.message === 'Own mention abc @user1 edit')),
+                take(1),
+            ));
+
+            await persistLikeSearchPosts([{
+                ...post,
+                message: 'Own mention abc @user1 edit',
+                edit_at: post.update_at + 1000,
+                update_at: post.update_at + 1000,
+            }]);
+
+            const edited = await editedPromise;
+            expect(edited).toHaveLength(1);
+            expect(edited[0].message).toBe('Own mention abc @user1 edit');
+            expect(edited[0].editAt).toBeGreaterThan(0);
         });
     });
 
