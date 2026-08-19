@@ -31,7 +31,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -70,11 +70,7 @@ describe('Search - Result Interactions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS: CI run 32062376817 (482b641) — the results FlatList sits under the absolutely
-    // positioned large search header plus the tabs header, so it never reaches the 75% visibility
-    // threshold that toBeVisible() asserts on the list container itself.
-    // Root-caused and fixed in #10023 / #10050; remove this guard when either lands.
-    (isIos() ? it.skip : it)('MM-T3239_1 - long list of search results is scrollable', async () => {
+    it('MM-T3239_1 - long list of search results is scrollable', async () => {
         // # Create many posts containing a common word
         const commonWord = `common${getRandomId()}`;
         const postCount = 20;

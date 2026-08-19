@@ -72,11 +72,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 32062376817 (482b641) — the full-view table screen wraps its content in a
-    // vertical-only ScrollView on iOS, so a 3-column wrapped table is clipped instead of
-    // horizontally scrollable and the right header never reaches the 50% visibility threshold.
-    // Root-caused and fixed in #10023 / #10050; remove this guard when either lands.
-    (isIos() ? it.skip : it)('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
+    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
             '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
