@@ -15,7 +15,7 @@ import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
-import {getActiveServer} from '@queries/app/servers';
+import {getActiveServer, getActiveServerUrl} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {canViewArchivedChannels, getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -767,17 +767,38 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
  * done by markChannelAsViewed is then repaired by the next membership sync, which recomputes
  * is_unread from the server counters, and the read is retried once the posts do arrive.
  *
- * Once the posts are in we send the read even if the user has already left the channel. This call
- * does not touch local state, and a stale active channel on the server is corrected by the next
- * channel view or by unsetActiveChannelOnServer; skipping the read instead would leave the channel
- * unread on the server after the local state was already cleared, so it would come back as unread
- * on the next sync.
+ * The read is also dropped when the user is no longer on this channel and server by the time the
+ * posts arrive. Fetches are not cancelled on switch, so a slow channel can resolve after a channel
+ * the user moved on to and become the last read sent, marking messages that arrived in the meantime
+ * as read. That is not confined to the server either: the server broadcasts multiple_channels_viewed
+ * back, and since the channel is no longer the current one handleMultipleChannelsViewedEvent clears
+ * its local unread flag and mention badge as well.
  */
 export async function markChannelAsReadOnceFetched(serverUrl: string, channelId: string, postsRequest: Promise<PostsForChannel>, groupLabel?: RequestGroupLabel) {
     const {error: fetchError} = await postsRequest;
     if (fetchError) {
         logDebug('skipping markChannelAsRead, the posts fetch failed for channel', channelId);
         return {error: fetchError};
+    }
+
+    try {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {};
+        }
+
+        const [activeServerUrl, currentChannelId] = await Promise.all([
+            getActiveServerUrl(),
+            getCurrentChannelId(database),
+        ]);
+
+        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
+            logDebug('skipping markChannelAsRead, the user left channel', channelId);
+            return {};
+        }
+    } catch (error) {
+        logDebug('error on markChannelAsReadOnceFetched', getFullErrorMessage(error));
+        return {error};
     }
 
     return markChannelAsRead(serverUrl, channelId, false, groupLabel);

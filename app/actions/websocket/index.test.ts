@@ -187,6 +187,23 @@ describe('WebSocket Index Actions', () => {
             expect(EphemeralStore.setNotificationTapped).toHaveBeenCalledWith(false);
         });
 
+        it('should not mark the channel as read when the user switched servers during the fetch', async () => {
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+
+            // The user moves to another server while the posts are still being fetched. The current
+            // channel of this server does not change, so only the active server reveals the switch.
+            jest.mocked(fetchPostsForChannel).mockImplementation(async () => {
+                jest.mocked(getActiveServerUrl).mockResolvedValue('https://another.server.com');
+                return {};
+            });
+
+            await handleReconnect(serverUrl);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
+            expect(markChannelAsRead).not.toHaveBeenCalled();
+            expect(markChannelAsViewed).not.toHaveBeenCalled();
+        });
+
         it('should not mark the channel as read when the user switched channels during the fetch', async () => {
             jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
 

@@ -88,12 +88,15 @@ jest.mock('@utils/helpers', () => {
 });
 
 let mockGetActiveServer: jest.Mock;
+let mockGetActiveServerUrl: jest.Mock;
 jest.mock('@queries/app/servers', () => {
     const original = jest.requireActual('@queries/app/servers');
     mockGetActiveServer = jest.fn(() => false);
+    mockGetActiveServerUrl = jest.fn(() => '');
     return {
         ...original,
         getActiveServer: mockGetActiveServer,
+        getActiveServerUrl: mockGetActiveServerUrl,
     };
 });
 
@@ -449,7 +452,14 @@ describe('app/actions/remote/channel', () => {
         });
 
         describe('markChannelAsReadOnceFetched', () => {
+            const setViewing = async (viewedChannelId: string, activeServerUrl = serverUrl) => {
+                mockGetActiveServerUrl.mockImplementation(() => activeServerUrl);
+                await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: viewedChannelId}], prepareRecordsOnly: false});
+            };
+
             it('should mark the channel as read when the posts were fetched', async () => {
+                await setViewing(channelId);
+
                 const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
 
                 expect(mockClient.viewMyChannel).toHaveBeenCalledWith(channelId, undefined, undefined);
@@ -457,12 +467,29 @@ describe('app/actions/remote/channel', () => {
             });
 
             it('should not mark the channel as read when the posts fetch failed', async () => {
+                await setViewing(channelId);
                 const fetchError = new Error('Too many requests');
 
                 const result = await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({error: fetchError}));
 
                 expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
                 expect(result).toEqual({error: fetchError});
+            });
+
+            it('should not mark the channel as read when the user left the channel while fetching', async () => {
+                await setViewing('another-channel-id');
+
+                await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
+
+                expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
+            });
+
+            it('should not mark the channel as read when the user left the server while fetching', async () => {
+                await setViewing(channelId, 'https://another.server.com');
+
+                await markChannelAsReadOnceFetched(serverUrl, channelId, Promise.resolve({posts: [], order: []}));
+
+                expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
             });
         });
 
