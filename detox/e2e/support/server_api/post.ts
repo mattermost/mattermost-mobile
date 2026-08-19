@@ -288,10 +288,17 @@ export const apiUploadFileToChannel = async (
  * @return {Object} returns {post, fileId} on success or {error, status} on error
  */
 export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
+    // Throw, do not return {error}: all eleven call sites across file_preview_gallery,
+    // file_upload, file_type_preview and image_attachment_post_options destructure
+    // `{post, fileId}` and none of them checks `error`. Returning an error-only object
+    // left `post` undefined and the real reason was lost — MM-T1750 in run 32214085246
+    // surfaced as `TypeError: Cannot read properties of undefined (reading 'id')` seven
+    // lines later, at `ChannelScreen.getPostListPostItem(post.id, '')`, with nothing
+    // about the upload or the attach anywhere in the report.
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
     if (uploadError) {
-        return {error: uploadError};
+        throw new Error(`apiCreatePostWithImageAttachment: file upload failed: ${JSON.stringify(uploadError)}`);
     }
     const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
@@ -300,10 +307,13 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
         fileIds: [fileId],
     });
     if (postError) {
-        return {error: postError};
+        throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${JSON.stringify(postError)}`);
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
-        return {error: {message: `Server did not attach file to post. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`}};
+        throw new Error(
+            'apiCreatePostWithImageAttachment: server did not attach the file to the post. ' +
+            `post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`,
+        );
     }
     return {post, fileId};
 };
