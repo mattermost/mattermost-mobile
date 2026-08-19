@@ -188,6 +188,22 @@ appId: ${MAESTRO_APP_ID}
       # # Return to the app from Safari via the breadcrumb pill.
       - tapOn:
           id: "breadcrumb"
+      # # Let the hand-off back finish before the recovery guard below judges it.
+      # Tapping the breadcrumb resumes a *suspended* app, which is slower than an
+      # in-app transition, and the `when: notVisible` guard that follows has no
+      # grace of its own — it samples the hierarchy the instant the tap returns.
+      # So a hand-off that was going to succeed still read as "channel gone" and
+      # dropped into reopen_channel_screen.yml, whose `launchApp stopApp: true`
+      # cold-starts the app; that sub-flow's 30s wait for tab_bar.home.tab is what
+      # actually failed in run 32184155037 ("Assertion is false: id:
+      # tab_bar.home.tab is visible"), with bookmark-browser-opened.png showing
+      # Safari still holding the foreground behind its first-run popover.
+      # Optional so a genuinely lost hand-off still falls through to recovery.
+      - extendedWaitUntil:
+          visible:
+            id: "channel_header.bookmarks.list"
+          timeout: 30000
+          optional: true
 - runFlow:
     when:
       platform: Android

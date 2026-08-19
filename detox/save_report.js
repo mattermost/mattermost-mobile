@@ -134,11 +134,35 @@ const saveReport = async () => {
     await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {
-        // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
+        // Prune the per-shard {platform}-results-* folders before the S3 upload, but
+        // keep what is actually needed to debug a failure.
+        //
+        // Removing these folders wholesale also removed every per-test artifact Detox
+        // wrote into them — the `device.log` from `--record-logs failing` and the
+        // `testFnFailure.png` from `--take-screenshots failing` — so the S3 report only
+        // ever carried the HTML summary and the merged JSON. That is why
+        // path_builder.js goes to the trouble of naming each folder after the Jest
+        // fullName "so TSIO can reverse it": the linking is set up, the files just
+        // never arrive. The only surviving copy is the GitHub Actions artifact zip,
+        // which expires and is awkward to reach from CI tooling.
+        //
+        // Uploading them is cheap: video is disabled in .detoxrc.json and the
+        // screenshot plugin runs with keepOnlyFailedTestsArtifacts, so a shard only
+        // carries artifacts for the tests that failed (1-5 MB for the worst shards of
+        // run 32184155037). What is safe to drop is only what has already been merged
+        // into the top-level report: the per-shard jest-stare data, the junit XML, and
+        // the per-shard jest-results.json.
+        const MERGED_INTO_TOP_LEVEL = /^(jest-stare|jest-results\.json|.*-junit.*\.xml)$/;
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {
-                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
+            if (!entry.isDirectory() || !entry.name.startsWith(`${platform}-results-`)) {
+                continue;
+            }
+            const shardDir = path.join(ARTIFACTS_DIR, entry.name);
+            for (const shardEntry of fs.readdirSync(shardDir)) {
+                if (MERGED_INTO_TOP_LEVEL.test(shardEntry)) {
+                    fs.rmSync(path.join(shardDir, shardEntry), {recursive: true, force: true});
+                }
             }
         }
     }
