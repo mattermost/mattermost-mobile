@@ -242,14 +242,14 @@ describe('ClientPosts', () => {
 
         expect(client.doFetch).toHaveBeenCalledWith(
             `${client.getTeamRoute(teamId)}/posts/search`,
-            {method: 'post', body: params},
+            {method: 'post', body: params, retryOnTransient: true},
         );
 
         // Test without teamId
         await client.searchPostsWithParams('', params);
         expect(client.doFetch).toHaveBeenCalledWith(
             `${client.getPostsRoute()}/search`,
-            {method: 'post', body: params},
+            {method: 'post', body: params, retryOnTransient: true},
         );
     });
 

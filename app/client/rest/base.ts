@@ -257,7 +257,14 @@ export default class ClientBase extends ClientTracking {
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
         const method = options.method?.toLowerCase();
-        if (options.noRetry || method == null || !RETRYABLE_METHODS.has(method)) {
+        if (options.noRetry || method == null) {
+            return this.doFetchWithTracking(url, options, returnDataOnly);
+        }
+
+        // Retry idempotent methods, plus read-only POSTs that opt in via retryOnTransient
+        // (e.g. posts/search): a dead pooled socket fails with NSURLError -1005 before the
+        // request reaches the server, and one retry on a fresh connection recovers it.
+        if (!RETRYABLE_METHODS.has(method) && options.retryOnTransient !== true) {
             return this.doFetchWithTracking(url, options, returnDataOnly);
         }
         let lastError: unknown;

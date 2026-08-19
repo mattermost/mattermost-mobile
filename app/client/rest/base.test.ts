@@ -86,6 +86,13 @@ describe('doFetch transient transport retry', () => {
         expect(doFetchWithTracking).toHaveBeenCalledTimes(1);
     });
 
+    it('should retry a read-only post that opts in with retryOnTransient', async () => {
+        doFetchWithTracking.mockRejectedValueOnce(lostConnection()).mockResolvedValueOnce('ok');
+
+        await expect(client.doFetch('/url', {method: 'post', retryOnTransient: true})).resolves.toBe('ok');
+        expect(doFetchWithTracking).toHaveBeenCalledTimes(2);
+    });
+
     // Our own test hosts are named mobile-pr-10050 / mobile-pr-10010, which contain "-1005"
     // and "-1001". Matching on raw error codes would retry permanent failures.
     it('should not retry a permanent error whose message contains the server hostname', async () => {
