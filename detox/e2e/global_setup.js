@@ -120,7 +120,17 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
             const status = err.response?.status;
             const retriable = !status || status >= 500;
             if (attempt === retries || !retriable) {
-                throw err;
+                // Annotate before rethrowing. Jest reports a globalSetup failure as
+                // `reason: [AxiosError: Request failed with status code 403]` and nothing
+                // else, so every shard of run 32224180548 died with a bare 403 that named
+                // neither the call nor the URL — three different requests reach here
+                // (health check, client config, admin login) and the report could not tell
+                // them apart. 4xx is still not retried; only the message changes.
+                const detail = err.response?.data ? ` body=${JSON.stringify(err.response.data).slice(0, 300)}` : '';
+                throw new Error(
+                    `[globalSetup] ${label} failed against ${SITE_URL}` +
+                    `${status ? ` with status ${status}` : ''}: ${err.message}${detail}`,
+                );
             }
             const wait = delayMs * attempt;
             process.stderr.write(
