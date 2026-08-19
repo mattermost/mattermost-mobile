@@ -147,6 +147,30 @@ describe('refetchConversation', () => {
         expect(mockClient.getConversation).toHaveBeenCalledTimes(2);
         expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Updated');
     });
+
+    it('should discard a superseded refetch result so only the newest fetch writes to the store', async () => {
+        let resolveFirst: (value: ConversationResponse) => void;
+        const firstResponse = new Promise<ConversationResponse>((resolve) => {
+            resolveFirst = resolve;
+        });
+        mockClient.getConversation.
+            mockImplementationOnce(() => firstResponse).
+            mockImplementationOnce(() => Promise.resolve({...makeConversation(conversationId), title: 'Second'}));
+
+        const firstRefetch = refetchConversation(serverUrl, conversationId);
+        const secondRefetch = refetchConversation(serverUrl, conversationId);
+
+        await secondRefetch;
+        expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Second');
+
+        // The stale first fetch resolves AFTER the second one already landed.
+        resolveFirst!({...makeConversation(conversationId), title: 'First'});
+        await firstRefetch;
+
+        const state = conversationStore.getState(serverUrl, conversationId);
+        expect(state.conversation?.title).toBe('Second');
+        expect(state.loading).toBe(false);
+    });
 });
 
 describe('invalidateConversation', () => {

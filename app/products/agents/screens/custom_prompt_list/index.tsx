@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, type ListRenderItemInfo, View} from 'react-native';
+import {Alert, type ListRenderItemInfo, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchCustomPrompts, renderCustomPrompt} from '@agents/actions/remote/custom_prompts';
@@ -74,6 +74,7 @@ const CustomPromptList = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
+    const {height: windowHeight} = useWindowDimensions();
 
     const {prompts} = useCustomPromptsState(serverUrl);
     const [renderingId, setRenderingId] = useState<string | null>(null);
@@ -145,17 +146,15 @@ const CustomPromptList = ({
 
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(Math.max(prompts.length, 1), ITEM_HEIGHT);
         const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
-        const componentHeight = optionsHeight + paddingBottom + bottom;
 
-        const points: Array<string | number> = [1, componentHeight];
+        // Clamp to 80% of the window so long lists scroll within the sheet
+        // and the snap points always stay strictly ascending, even on small
+        // screens where the content height could exceed the window.
+        const maxHeight = windowHeight * 0.8;
+        const componentHeight = Math.min(optionsHeight + paddingBottom + bottom, maxHeight);
 
-        // Add scrollable snap point if there are many prompts
-        if (prompts.length > 5) {
-            points.push('80%');
-        }
-
-        return points;
-    }, [prompts.length, insets.bottom]);
+        return [1, componentHeight];
+    }, [prompts.length, insets.bottom, windowHeight]);
 
     const renderContent = () => (
         <View style={styles.container}>

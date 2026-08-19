@@ -20,6 +20,7 @@ describe('CustomPromptsStore', () => {
     let getCustomPromptsState: typeof import('./custom_prompts_store').getCustomPromptsState;
     let setCustomPromptsState: typeof import('./custom_prompts_store').setCustomPromptsState;
     let resetCustomPromptsState: typeof import('./custom_prompts_store').resetCustomPromptsState;
+    let removeCustomPromptsServer: typeof import('./custom_prompts_store').removeCustomPromptsServer;
     let observeCustomPromptsState: typeof import('./custom_prompts_store').observeCustomPromptsState;
 
     beforeEach(() => {
@@ -28,6 +29,7 @@ describe('CustomPromptsStore', () => {
         getCustomPromptsState = store.getCustomPromptsState;
         setCustomPromptsState = store.setCustomPromptsState;
         resetCustomPromptsState = store.resetCustomPromptsState;
+        removeCustomPromptsServer = store.removeCustomPromptsServer;
         observeCustomPromptsState = store.observeCustomPromptsState;
     });
 
@@ -52,6 +54,16 @@ describe('CustomPromptsStore', () => {
         resetCustomPromptsState('server1');
 
         expect(getCustomPromptsState('server1')).toEqual({prompts: [], pinnedPromptIds: []});
+    });
+
+    it('should drop only the targeted server on removeServer and leave others intact', () => {
+        setCustomPromptsState('server1', {prompts: [prompt], pinnedPromptIds: ['prompt-1']});
+        setCustomPromptsState('server2', {pinnedPromptIds: ['prompt-2']});
+
+        removeCustomPromptsServer('server1');
+
+        expect(getCustomPromptsState('server1')).toEqual({prompts: [], pinnedPromptIds: []});
+        expect(getCustomPromptsState('server2')).toEqual({prompts: [], pinnedPromptIds: ['prompt-2']});
     });
 
     it('should emit current state on subscribe and updates after set', () => {

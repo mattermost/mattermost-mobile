@@ -11,6 +11,7 @@ import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {requestThreadAnalysis} from '@agents/actions/remote/thread_analysis';
 import AgentSelectorPanel from '@agents/components/channel_summary_sheet/agent_selector_panel';
 import {THREAD_ANALYSIS_TYPES, type ThreadAnalysisType} from '@agents/constants';
+import {useAgentSelection} from '@agents/hooks';
 import {filterAgentsForChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -127,17 +128,15 @@ const ThreadAnalysisSheet = ({postId, channelId, bots, selectedAgentId}: Props) 
         () => resolveAgentSelection(channelBots, selectedAgentId),
         [channelBots, selectedAgentId],
     );
-    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
+
+    // Follows auto-resolution (saved pref -> default -> first) until the user
+    // picks an agent; re-resolves if the pick leaves the eligible list.
+    const {selectedAgent, selectAgent} = useAgentSelection(channelBots, autoResolvedAgent);
 
     // Refresh the DB-backed bot list on open.
     useEffect(() => {
         fetchAIBots(serverUrl);
     }, [serverUrl]);
-
-    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
-    useEffect(() => {
-        setSelectedAgent((current) => current ?? autoResolvedAgent);
-    }, [autoResolvedAgent]);
 
     const handleOptionPress = useCallback(async (optionType: string | boolean) => {
         if (submitting || !selectedAgent) {
@@ -175,13 +174,13 @@ const ThreadAnalysisSheet = ({postId, channelId, bots, selectedAgentId}: Props) 
     }, []);
 
     const handleAgentSelect = useCallback(async (agent: SelectableAgent) => {
-        setSelectedAgent(agent);
+        selectAgent(agent);
         setShowAgentSelector(false);
         const {error} = await saveSelectedAgent(serverUrl, agent.id);
         if (error) {
             logError('Failed to persist agent selection', getFullErrorMessage(error));
         }
-    }, [serverUrl]);
+    }, [serverUrl, selectAgent]);
 
     if (channelBots.length === 0) {
         return (

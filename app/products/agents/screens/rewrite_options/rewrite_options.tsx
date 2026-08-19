@@ -7,8 +7,8 @@ import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {useRewrite} from '@agents/hooks';
-import {resolveAgentSelection} from '@agents/utils';
+import {useAgentSelection, useRewrite} from '@agents/hooks';
+import {isAgentDMChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -171,14 +171,10 @@ const RewriteOptions = ({
         [bots, selectedAgentId],
     );
 
-    // Warm-init from the DB-backed list; effect below covers late arrivals.
-    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
+    // Follows auto-resolution (saved pref -> default -> first) until the user
+    // picks an agent; re-resolves if the pick leaves the bot list.
+    const {selectedAgent, selectAgent} = useAgentSelection(bots, autoResolvedAgent);
     const textInputRef = useRef<TextInput>(null);
-
-    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
-    useEffect(() => {
-        setSelectedAgent((current) => current ?? autoResolvedAgent);
-    }, [autoResolvedAgent]);
 
     useDidMount(() => {
         return () => {
@@ -271,7 +267,7 @@ const RewriteOptions = ({
 
     const handleOpenAgentSelector = useCallback(() => {
         const onSelectAgent = async (agent: SelectableAgent) => {
-            setSelectedAgent(agent);
+            selectAgent(agent);
             const {error} = await saveSelectedAgent(serverUrl, agent.id);
             if (error) {
                 logError('Failed to persist agent selection', getFullErrorMessage(error));
@@ -282,7 +278,7 @@ const RewriteOptions = ({
         // Map DB records to plain objects: navigation params are serialised.
         const agents: SelectableAgent[] = bots.map((bot) => ({id: bot.id, displayName: bot.displayName, username: bot.username}));
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
-    }, [bots, selectedAgent, serverUrl]);
+    }, [bots, selectedAgent, selectAgent, serverUrl]);
 
     const handleOpenCustomPrompts = useCallback(() => {
         // The prompt list renders the selection server-side and pushes the
@@ -291,7 +287,10 @@ const RewriteOptions = ({
         navigateToScreen(Screens.AGENTS_CUSTOM_PROMPTS, {
             channelId,
             botUsername: selectedAgent?.username ?? '',
-            isBotDMChannel: bots.some((bot) => bot.dmChannelId === channelId),
+
+            // Only the SELECTED agent's DM counts: in another bot's DM the
+            // mention must still be prepended or the prompt goes to that bot.
+            isBotDMChannel: isAgentDMChannel(bots, selectedAgent?.id, channelId),
         });
     }, [bots, channelId, selectedAgent, updateValue]);
 

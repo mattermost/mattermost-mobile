@@ -47,7 +47,8 @@ export async function requestThreadAnalysis(
 
         return {data: result};
     } catch (error) {
-        logError('[requestThreadAnalysis]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[requestThreadAnalysis] Failed to request thread analysis', errorMessage);
+        return {error: errorMessage};
     }
 }

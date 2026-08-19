@@ -26,14 +26,14 @@ describe('requestChannelInterval', () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
     });
 
-    it('requests the interval with end time 0 and switches to the returned bot DM on success', async () => {
+    it('requests the interval and switches to the returned bot DM on success', async () => {
         const doChannelInterval = jest.fn().mockResolvedValue({postid: 'dm-post-id', channelid: 'dm-id'});
         jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelInterval} as any);
         jest.mocked(getMyChannel).mockResolvedValue({id: 'dm-id'} as any);
 
         const result = await requestChannelInterval(serverUrl, channelId, lastViewedAt, 'summarize_unreads', botUsername);
 
-        expect(doChannelInterval).toHaveBeenCalledWith(channelId, lastViewedAt, 0, 'summarize_unreads', botUsername);
+        expect(doChannelInterval).toHaveBeenCalledWith(channelId, lastViewedAt, 'summarize_unreads', botUsername);
         expect(fetchMyChannel).not.toHaveBeenCalled();
         expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'dm-id');
         expect(result.error).toBeUndefined();

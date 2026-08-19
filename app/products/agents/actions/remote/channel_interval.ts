@@ -18,8 +18,8 @@ import type {ChannelIntervalResponse} from '@agents/types/api';
  *
  * end_time is always 0 ("until present"): the server's 14-day-cap validation
  * is buggy (it compares millisecond timestamps against a seconds constant),
- * so any nonzero end_time range over ~20 minutes gets a 400. The webapp
- * always sends 0 and mobile must too.
+ * so any nonzero end_time range over ~20 minutes gets a 400. The client
+ * hard-codes it; there is no end time parameter.
  */
 export async function requestChannelInterval(
     serverUrl: string,
@@ -30,7 +30,7 @@ export async function requestChannelInterval(
 ): Promise<{data?: ChannelIntervalResponse; error?: string}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const result = await client.doChannelInterval(channelId, startTime, 0, presetPrompt, botUsername);
+        const result = await client.doChannelInterval(channelId, startTime, presetPrompt, botUsername);
 
         if (!result?.postid || !result?.channelid) {
             logDebug('[requestChannelInterval] Invalid response - missing postid or channelid');

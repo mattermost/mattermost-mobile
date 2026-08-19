@@ -51,6 +51,12 @@ export async function fetchConversation(
 function runFetch(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
     const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
+        // Identity-check the inflight promise so a fetch superseded mid-flight
+        // by refetchConversation/invalidateConversation can't overwrite the
+        // newer fetch's result with stale pre-stream-end data.
+        if (inflight.get(key) !== promise) {
+            return;
+        }
         inflight.delete(key);
         const prev = conversationStore.getState(serverUrl, conversationId);
         if (error) {
@@ -93,7 +99,9 @@ export function ensureConversation(serverUrl: string, conversationId: string): P
 /**
  * Force a fresh fetch. Drops any inflight request and any cached error, but
  * keeps the cached conversation visible while the new fetch is in flight so
- * the UI doesn't blank out during streaming-end re-syncs.
+ * the UI doesn't blank out during streaming-end re-syncs. runFetch replaces
+ * the inflight map entry, so a superseded fetch that resolves later fails the
+ * identity check and its result is discarded.
  */
 export function refetchConversation(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);

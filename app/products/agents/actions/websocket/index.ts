@@ -56,7 +56,10 @@ async function refetchConversationForPost(serverUrl: string, postId: string): Pr
         if (!cached.conversation && !cached.loading && !cached.error) {
             return;
         }
-        refetchConversation(serverUrl, conversationId);
+
+        // Await so normalization/store rejections hit this catch instead of
+        // surfacing as unhandled promise rejections.
+        await refetchConversation(serverUrl, conversationId);
     } catch (error) {
         logDebug('error on refetchConversationForPost', getFullErrorMessage(error));
     }

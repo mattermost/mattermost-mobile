@@ -137,8 +137,8 @@ describe('ClientAgents', () => {
     });
 
     describe('doChannelInterval', () => {
-        it('should post millisecond start time, end time 0, and the preset with the bot username in the query', async () => {
-            await client.doChannelInterval('channel-1', 1723000000000, 0, 'summarize_unreads', 'ai-bot');
+        it('should post millisecond start time, a hard-coded end time of 0, and the preset with the bot username in the query', async () => {
+            await client.doChannelInterval('channel-1', 1723000000000, 'summarize_unreads', 'ai-bot');
             expect(mockDoFetch).toHaveBeenCalledWith(
                 '/plugins/mattermost-ai/channel/channel-1/interval?botUsername=ai-bot',
                 {
@@ -154,7 +154,7 @@ describe('ClientAgents', () => {
         });
 
         it('should percent-encode a bot username that needs encoding', async () => {
-            await client.doChannelInterval('channel-1', 1723000000000, 0, 'action_items', 'my bot');
+            await client.doChannelInterval('channel-1', 1723000000000, 'action_items', 'my bot');
             expect(mockDoFetch.mock.calls[0][0]).toBe(
                 '/plugins/mattermost-ai/channel/channel-1/interval?botUsername=my%20bot',
             );

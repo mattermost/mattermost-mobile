@@ -5,6 +5,7 @@ import {refetchConversation} from '@agents/actions/remote/conversation';
 import conversationStore from '@agents/store/conversation_store';
 import streamingStore from '@agents/store/streaming_store';
 import {getPostById} from '@queries/servers/post';
+import {logDebug} from '@utils/log';
 
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from './index';
 
@@ -177,6 +178,16 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         await flushAsync();
 
         expect(refetchConversation).not.toHaveBeenCalled();
+    });
+
+    it('should catch refetch rejections instead of leaving them unhandled', async () => {
+        jest.mocked(refetchConversation).mockRejectedValueOnce(new Error('normalization failed'));
+
+        handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
+        await flushAsync();
+
+        expect(refetchConversation).toHaveBeenCalledTimes(1);
+        expect(logDebug).toHaveBeenCalledWith('error on refetchConversationForPost', expect.anything());
     });
 });
 

@@ -10,6 +10,7 @@ import {fetchAIBots} from '@agents/actions/remote/bots';
 import {requestChannelSummary, type ChannelSummaryRequestOptions} from '@agents/actions/remote/channel_summary';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
+import {useAgentSelection} from '@agents/hooks';
 import {filterAgentsForChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
@@ -58,6 +59,11 @@ type Props = {
     channelId: string;
     bots: AiBotModel[];
     selectedAgentId: string;
+
+    // The channel member's viewedAt — the pre-entry timestamp that drives the
+    // New Messages line. lastViewedAt is useless here: opening the channel
+    // already advanced it to "now", which would make the unread window empty.
+    viewedAt: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -129,7 +135,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
+const ChannelSummarySheet = ({channelId, bots, selectedAgentId, viewedAt}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -151,17 +157,15 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
         () => resolveAgentSelection(channelBots, selectedAgentId),
         [channelBots, selectedAgentId],
     );
-    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
+
+    // Follows auto-resolution (saved pref -> default -> first) until the user
+    // picks an agent; re-resolves if the pick leaves the eligible list.
+    const {selectedAgent, selectAgent} = useAgentSelection(channelBots, autoResolvedAgent);
 
     // Refresh the DB-backed bot list on open.
     useEffect(() => {
         fetchAIBots(serverUrl);
     }, [serverUrl]);
-
-    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
-    useEffect(() => {
-        setSelectedAgent((current) => current ?? autoResolvedAgent);
-    }, [autoResolvedAgent]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -192,6 +196,7 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
 
         if (option.id === 'unreads') {
             options.sinceLastViewed = true;
+            options.viewedAt = viewedAt;
         }
 
         if (customPrompt.trim()) {
@@ -216,7 +221,7 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
         }
 
         dismissBottomSheet();
-    }, [serverUrl, channelId, selectedAgent, customPrompt, intl, submitting]);
+    }, [serverUrl, channelId, selectedAgent, customPrompt, intl, submitting, viewedAt]);
 
     const handleAgentSelectorOpen = useCallback(() => {
         setShowAgentSelector(true);
@@ -227,13 +232,13 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId}: Props) => {
     }, []);
 
     const handleAgentSelect = useCallback(async (agent: SelectableAgent) => {
-        setSelectedAgent(agent);
+        selectAgent(agent);
         setShowAgentSelector(false);
         const {error} = await saveSelectedAgent(serverUrl, agent.id);
         if (error) {
             logError('Failed to persist agent selection', getFullErrorMessage(error));
         }
-    }, [serverUrl]);
+    }, [serverUrl, selectAgent]);
 
     const handleCustomPromptSubmit = useCallback(async () => {
         if (!customPrompt.trim() || !selectedAgent) {

@@ -78,7 +78,7 @@ describe('ChannelQuickAction', () => {
         expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
 
-    it('shows Ask Agents option in all channel types when analysis is licensed', async () => {
+    it('should show Ask Agents option in all channel types when analysis is licensed', async () => {
         await setAnalysisLicense();
         const props = getBaseProps();
         const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
@@ -88,7 +88,7 @@ describe('ChannelQuickAction', () => {
         });
     });
 
-    it('shows Ask Agents option in DM/GM channels when analysis is licensed', async () => {
+    it('should show Ask Agents option in DM/GM channels when analysis is licensed', async () => {
         await setAnalysisLicense();
         const props = getBaseProps();
         props.isDMorGM = true;
@@ -99,7 +99,7 @@ describe('ChannelQuickAction', () => {
         });
     });
 
-    it('does not show Ask Agents option when the server is not licensed for analysis', async () => {
+    it('should not show Ask Agents option when the server is not licensed for analysis', async () => {
         const props = getBaseProps();
         const {queryByTestId, getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
 

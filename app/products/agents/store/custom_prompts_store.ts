@@ -41,14 +41,27 @@ export const resetCustomPromptsState = (serverUrl: string) => {
     getCustomPromptsSubject(serverUrl).next(DefaultCustomPromptsState);
 };
 
+/** Drop a server's cached prompts and pins (per-server logout). */
+export const removeCustomPromptsServer = (serverUrl: string) => {
+    const subject = customPromptsSubjects[serverUrl];
+    if (!subject) {
+        return;
+    }
+    subject.next(DefaultCustomPromptsState);
+    subject.complete();
+    delete customPromptsSubjects[serverUrl];
+};
+
 export const observeCustomPromptsState = (serverUrl: string) => {
     return getCustomPromptsSubject(serverUrl).asObservable();
 };
 
 export const useCustomPromptsState = (serverUrl: string) => {
-    const [state, setState] = useState(DefaultCustomPromptsState);
-
     const customPromptsSubject = getCustomPromptsSubject(serverUrl);
+
+    // Seed from the subject's current value so late-mounting consumers don't
+    // flash the default (empty) state before the subscription's first emit.
+    const [state, setState] = useState(() => customPromptsSubject.value);
 
     useEffect(() => {
         const subscription = customPromptsSubject.subscribe((customPromptsState) => {

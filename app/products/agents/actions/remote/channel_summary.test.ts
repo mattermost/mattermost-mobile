@@ -44,7 +44,25 @@ describe('requestChannelSummary', () => {
         expect(result.data).toEqual({postid: 'post-id', channelid: 'dm-id'});
     });
 
-    it('resolves sinceLastViewed into an ISO since bound from the channel member lastViewedAt', async () => {
+    it('should resolve sinceLastViewed into an ISO since bound from the pre-entry viewedAt when present', async () => {
+        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
+        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
+        const viewedAt = 1754560000000;
+        const lastViewedAt = 1754570000000;
+        jest.mocked(getMyChannel).mockResolvedValue({id: channelId, lastViewedAt} as any);
+
+        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {sinceLastViewed: true, viewedAt});
+
+        expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {
+            since: new Date(viewedAt).toISOString(),
+        });
+        expect('sinceLastViewed' in doChannelAnalysis.mock.calls[0][3]).toBe(false);
+        expect('viewedAt' in doChannelAnalysis.mock.calls[0][3]).toBe(false);
+        expect(result.error).toBeUndefined();
+    });
+
+    it('should fall back to the channel member lastViewedAt when viewedAt is absent', async () => {
         const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
         jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
@@ -56,8 +74,23 @@ describe('requestChannelSummary', () => {
         expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {
             since: new Date(lastViewedAt).toISOString(),
         });
-        expect('sinceLastViewed' in doChannelAnalysis.mock.calls[0][3]).toBe(false);
         expect(result.error).toBeUndefined();
+    });
+
+    it('should return an error instead of sending the Unix epoch when no last viewed bound is available', async () => {
+        const doChannelAnalysis = jest.fn();
+        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
+
+        // Membership fetch succeeds but still yields no membership record.
+        jest.mocked(getMyChannel).mockResolvedValue(undefined);
+        jest.mocked(fetchMyChannel).mockResolvedValue({channels: [], memberships: []});
+
+        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {sinceLastViewed: true});
+
+        expect(doChannelAnalysis).not.toHaveBeenCalled();
+        expect(switchToChannelById).not.toHaveBeenCalled();
+        expect(result.error).toBe('Unable to determine channel last viewed time');
     });
 
     it('includes the current team id so the server can set the LLM context team for DM/GM channels', async () => {

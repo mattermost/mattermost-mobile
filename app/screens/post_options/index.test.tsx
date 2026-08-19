@@ -328,6 +328,12 @@ describe('PostOptions', () => {
         });
 
         it('should not show Ask Agents for a system post even when agents exist and analysis is licensed', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {SkuShortName: 'enterprise'}}],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'})], prepareRecordsOnly: false});
+
             const post = TestHelper.fakePost({
                 type: PostTypes.JOIN_CHANNEL,
                 channel_id: TestHelper.basicChannel!.id,

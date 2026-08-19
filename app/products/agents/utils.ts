@@ -67,6 +67,15 @@ export function buildCustomPromptDraft(rendered: string, botUsername: string | u
 }
 
 /**
+ * Whether a channel is a specific agent's DM. Matching against ANY bot's DM
+ * would wrongly skip the @mention in buildCustomPromptDraft when the selected
+ * agent differs from the DM's bot, sending the prompt to the wrong agent.
+ */
+export function isAgentDMChannel<T extends {id: string; dmChannelId: string}>(bots: T[], agentId: string | undefined, channelId: string | undefined): boolean {
+    return Boolean(channelId && agentId && bots.some((bot) => bot.id === agentId && bot.dmChannelId === channelId));
+}
+
+/**
  * Check if a post is an agent post
  */
 export function isAgentPost(post: PostModel | Post): boolean {

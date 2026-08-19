@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, stripWirePrefix} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -463,5 +463,25 @@ describe('buildCustomPromptDraft', () => {
 
     it('should not prepend when no agent username is available', () => {
         expect(buildCustomPromptDraft('Summarize this channel', undefined, false)).toBe('Summarize this channel');
+    });
+});
+
+describe('isAgentDMChannel', () => {
+    const bots = [
+        {id: 'bot-a', dmChannelId: 'dm-a'},
+        {id: 'bot-b', dmChannelId: 'dm-b'},
+    ];
+
+    it('should return true when the channel is the selected agent\'s DM', () => {
+        expect(isAgentDMChannel(bots, 'bot-a', 'dm-a')).toBe(true);
+    });
+
+    it('should return false when the channel is another bot\'s DM', () => {
+        expect(isAgentDMChannel(bots, 'bot-b', 'dm-a')).toBe(false);
+    });
+
+    it('should return false when no agent is selected or no channel is given', () => {
+        expect(isAgentDMChannel(bots, undefined, 'dm-a')).toBe(false);
+        expect(isAgentDMChannel(bots, 'bot-a', undefined)).toBe(false);
     });
 });

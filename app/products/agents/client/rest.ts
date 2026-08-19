@@ -20,7 +20,6 @@ export interface ClientAgentsMix {
     doChannelInterval: (
         channelId: string,
         startTime: number,
-        endTime: number,
         presetPrompt: string,
         botUsername: string,
     ) => Promise<ChannelIntervalResponse>;
@@ -116,15 +115,14 @@ const ClientAgents = (superclass: any) => class extends superclass {
     };
 
     // Summarize a time window of channel messages (api/api_channel.go
-    // handleInterval). Times are Mattermost unix milliseconds. CAUTION: always
-    // send endTime 0 ("until present") — the server's 14-day-cap validation
-    // compares millisecond timestamps against a seconds constant, so any
-    // nonzero end_time range longer than ~20 minutes gets a 400. The webapp
-    // always sends 0 and mobile must too.
+    // handleInterval). Times are Mattermost unix milliseconds. CAUTION:
+    // end_time is hard-coded to 0 ("until present") — the server's
+    // 14-day-cap validation compares millisecond timestamps against a seconds
+    // constant, so any nonzero end_time range longer than ~20 minutes gets a
+    // 400. The webapp always sends 0 and mobile must too.
     doChannelInterval = async (
         channelId: string,
         startTime: number,
-        endTime: number,
         presetPrompt: string,
         botUsername: string,
     ): Promise<ChannelIntervalResponse> => {
@@ -134,7 +132,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
                 method: 'post',
                 body: {
                     start_time: startTime,
-                    end_time: endTime,
+                    end_time: 0,
                     preset_prompt: presetPrompt,
                     prompt: '',
                 },

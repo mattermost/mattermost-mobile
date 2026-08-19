@@ -13,10 +13,16 @@ import type {ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/type
 
 export type ChannelSummaryRequestOptions = ChannelAnalysisOptions & {
 
-    // "Summarize unreads": resolved into a `since` bound from the channel
-    // member's lastViewedAt before the request is sent. The plugin has no
-    // unreads flag of its own; this mirrors what the webapp sends.
+    // "Summarize unreads": resolved into a `since` bound before the request
+    // is sent. The plugin has no unreads flag of its own; this mirrors what
+    // the webapp sends.
     sinceLastViewed?: boolean;
+
+    // The channel member's viewedAt observed by the caller BEFORE entering
+    // the channel (entering runs markChannelAsViewed, advancing lastViewedAt
+    // to "now" and emptying the unread window). Preferred `since` bound when
+    // sinceLastViewed is set; lastViewedAt is only a fallback when absent.
+    viewedAt?: number;
 };
 
 export async function requestChannelSummary(
@@ -43,9 +49,16 @@ export async function requestChannelSummary(
             myChannel = await getMyChannel(database, channelId);
         }
 
-        const {sinceLastViewed, ...analysisOptions} = options ?? {};
+        const {sinceLastViewed, viewedAt, ...analysisOptions} = options ?? {};
         if (sinceLastViewed) {
-            analysisOptions.since = new Date(myChannel?.lastViewedAt ?? 0).toISOString();
+            const since = viewedAt || myChannel?.lastViewedAt;
+            if (!since) {
+                // Never fall back to the Unix epoch — that would summarize the
+                // entire available channel history instead of the unreads.
+                logDebug('[requestChannelSummary] No viewedAt or membership lastViewedAt available for unreads bound');
+                return {error: 'Unable to determine channel last viewed time'};
+            }
+            analysisOptions.since = new Date(since).toISOString();
         }
 
         // The server uses team_id to set the LLM context team for DM/GM
