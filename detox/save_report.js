@@ -34,6 +34,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 
 const fse = require('fs-extra');
 const {mergeFiles} = require('junit-report-merger');
@@ -58,6 +59,28 @@ const {
 const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
+
+// Detox's `--record-logs failing` writes the raw simulator/emulator system log, which
+// on iOS runs to 50-70 MB for a single failing shard (run 32184155037's ios-results-*
+// artifacts). Uploading those verbatim would put ~500 MB per run in S3. They are plain
+// text and compress by more than an order of magnitude, so store them gzipped; the
+// debugging flow in detox/CLAUDE.md just needs a `gunzip -c device.log.gz` in front of
+// the usual awk. Screenshots are left alone — PNG is already compressed.
+function gzipDeviceLogs(dir) {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+        const target = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            gzipDeviceLogs(target);
+        } else if (entry.isFile() && entry.name.endsWith('.log')) {
+            try {
+                fs.writeFileSync(`${target}.gz`, zlib.gzipSync(fs.readFileSync(target)));
+                fs.rmSync(target);
+            } catch (error) {
+                console.log(`Failed to gzip ${target}:`, error.message);
+            }
+        }
+    }
+}
 
 const saveReport = async () => {
     const {
@@ -164,6 +187,7 @@ const saveReport = async () => {
                     fs.rmSync(path.join(shardDir, shardEntry), {recursive: true, force: true});
                 }
             }
+            gzipDeviceLogs(shardDir);
         }
     }
     const result = await saveArtifacts(platform);
