@@ -60,18 +60,28 @@ const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
 
-// Detox's `--record-logs failing` writes the raw simulator/emulator system log, which
-// on iOS runs to 50-70 MB for a single failing shard (run 32184155037's ios-results-*
-// artifacts). Uploading those verbatim would put ~500 MB per run in S3. They are plain
-// text and compress by more than an order of magnitude, so store them gzipped; the
-// debugging flow in detox/CLAUDE.md just needs a `gunzip -c device.log.gz` in front of
-// the usual awk. Screenshots are left alone — PNG is already compressed.
+// Two kinds of text artifact dominate the upload:
+//
+//   *.log            Detox's `--record-logs failing` raw simulator/emulator system log,
+//                    50-70 MB for a single failing iOS shard in run 32184155037.
+//   detox.trace.json Detox's own file stream. BunyanLogger.installFileStream pins it to
+//                    level 'trace' regardless of --loglevel, so this is where the
+//                    `testFailed` payloads (and the view hierarchy the console output
+//                    only teases with "HINT: To print view hierarchy on failed
+//                    actions/matches, use log-level verbose or higher") actually live.
+//
+// Uploading either verbatim would put hundreds of MB per run in S3. Both are plain text
+// and compress by more than an order of magnitude, so store them gzipped; the debugging
+// flow in detox/CLAUDE.md just needs a `gunzip -c` in front of the usual awk/jq.
+// Screenshots are left alone — PNG is already compressed.
+const COMPRESSIBLE_ARTIFACT = /(\.log|\.trace\.json)$/;
+
 function gzipDeviceLogs(dir) {
     for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
         const target = path.join(dir, entry.name);
         if (entry.isDirectory()) {
             gzipDeviceLogs(target);
-        } else if (entry.isFile() && entry.name.endsWith('.log')) {
+        } else if (entry.isFile() && COMPRESSIBLE_ARTIFACT.test(entry.name)) {
             try {
                 fs.writeFileSync(`${target}.gz`, zlib.gzipSync(fs.readFileSync(target)));
                 fs.rmSync(target);
