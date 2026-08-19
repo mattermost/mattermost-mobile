@@ -47,10 +47,12 @@ private struct CallInfo {
         self.bridge = bridge
 
         let configuration = CXProviderConfiguration()
-        // Calls today is audio + screen share — no front-camera video. Screen
-        // share doesn't surface through CallKit (it's handled in-app), so
-        // CallKit's video affordance stays off.
-        configuration.supportsVideo = false
+        // supportsVideo must be true even though Mattermost Calls is audio-only.
+        // When the user has not yet granted microphone permission we report
+        // incoming calls with hasVideo = true so that iOS requires the device
+        // to be unlocked before answering (see reportIncomingCall). That flag
+        // is only respected by CallKit when the provider declares video support.
+        configuration.supportsVideo = true
         configuration.maximumCallGroups = 2
         configuration.maximumCallsPerCallGroup = 1
         configuration.supportedHandleTypes = [.generic]
@@ -100,7 +102,14 @@ private struct CallInfo {
         // configs the ack-receipt round-trip refreshes it via
         // updateCallerName(uuid:name:).
         update.localizedCallerName = Self.bestInitialDisplayName(request)
-        update.hasVideo = false
+        // AVAudioSession cannot present system permission dialogs from a locked
+        // or backgrounded context (TCC.framework restriction). If mic permission
+        // is not yet granted, mark this call as video so iOS requires the device
+        // to be unlocked before answering — that foregrounds the app and lets the
+        // JS permission request show its system dialog normally. Once permission
+        // has been granted once, all subsequent calls are reported as audio-only.
+        let micPermission = AVAudioSession.sharedInstance().recordPermission
+        update.hasVideo = micPermission != .granted
         update.supportsHolding = false
         update.supportsGrouping = false
         update.supportsUngrouping = false
