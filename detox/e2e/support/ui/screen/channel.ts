@@ -635,35 +635,26 @@ class ChannelScreen {
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
 
-        // Assert the edit structurally, via the edited_indicator testID, rather than by
-        // pattern-matching the message and the marker as one text node.
-        //
-        // The previous `by.text(new RegExp(`${message}.*Edited`))` needed the whole
-        // "<message>  <pencil glyph>Edited" run to live in a single matchable node.
-        // Rendering Markdown with isEdited (see markdown/edited_indicator.test.tsx)
-        // shows that is not what the tree looks like: the marker is its own <Text>
-        // subtree — testID edited_indicator holding the two-space spacer, then the
-        // CompassIcon glyph, then the "Edited" FormattedText — sibling to the message,
-        // and an @mention splits the message itself into separate <Text> children
-        // ("Own mention abc " / "@user1" / " edit"). Recent Mentions rows always carry
-        // an @mention, which is why MM-T4909_3 failed here on both platforms while the
-        // same helper kept passing for channel and pinned rows.
-        //
-        // The earlier split that broke MM-T4783_1 / MM-T4783_3 / MM-T4786_1 asserted
-        // by.text('edit') and by.text('Edited') as standalone text nodes; this asserts
-        // the indicator by testID under the post item, which does not depend on how the
-        // text flattens.
-        // Body: a trailing [\s\S]* because a Detox text regex is a *full* match against a
-        // node, and post-edit that node reads "<message>" followed by the marker run.
-        // Pre-edit, getPostItemMatcher's exact by.text(message) already matches this same
-        // node, so the message does concatenate there; only the appended marker made the
-        // old anchored pattern impossible.
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const bodyMatcher = by.text(new RegExp(`${escapedMessage}[\\s\\S]*`)).withAncestor(postItemMatcher);
-        await waitFor(element(bodyMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
 
-        const editedIndicatorMatcher = by.id('edited_indicator').withAncestor(postItemMatcher);
-        await waitFor(element(editedIndicatorMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        // Message and "Edited" must be matched as ONE pattern against ONE node.
+        //
+        // A regex passed to by.text() is matched against the whole of a node's text,
+        // not searched within it. The message and the "Edited" marker render into the
+        // same text node, so `/message/i` on its own matches nothing — the node reads
+        // "message…Edited" and the anchored pattern fails. Only `message.*Edited`
+        // spans it.
+        //
+        // Splitting this into two assertions is what broke MM-T4783_1, MM-T4783_3 and
+        // MM-T4786_1, which pass on main (report 01a00ea6-c2f1-73fd-974f-6d966c8ff716)
+        // and failed here on both platforms at this line — the split's premise, that
+        // "Edited" is a separate node, is contradicted by main passing with the
+        // combined pattern.
+        //
+        // `s` on Android so `.` also crosses newlines in the flattened text.
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 

@@ -17,9 +17,17 @@ jest.mock('@screens/navigation', () => ({
     navigateToRoot: jest.fn(),
 }));
 
-// The E2E helper ChannelScreen.assertPostMessageEdited used to require the message and
-// the "Edited" marker to land in one matchable text node. These lock in the shape the
-// renderer actually produces, so that assumption cannot silently come back.
+// Locks in the element tree the renderer produces for an edited post: the marker is a
+// sibling subtree of the message, and an @mention splits the message itself.
+//
+// This is the REACT element tree only. On device React Native collapses nested <Text>
+// into a single native view whose text is the concatenation, which is why the Detox
+// helper ChannelScreen.assertPostMessageEdited can and does match
+// `${message}.*Edited` against one node. Asserting the marker separately by its
+// edited_indicator testID was tried on run 32214085246 and regressed MM-T851,
+// MM-T4783_1, MM-T4783_3, MM-T4786_1, MM-T4910_3, MM-T5294_10 and MM-T4918_3 on
+// Android — nested <Text> testIDs are not separately matchable there. Do not use this
+// file to reason about what Detox can match; it only describes the JS side.
 describe('Markdown edited indicator layout', () => {
     const serverUrl = 'markdown.edited.test.com';
     let database: Database;
