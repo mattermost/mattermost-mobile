@@ -134,30 +134,6 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     }, [database, isFocused]);
 
     useEffect(() => {
-        if (!isFocused) {
-            return undefined;
-        }
-
-        const subscription = observeSavedPosts(database).subscribe({
-            next: setPosts,
-            error: (error) => logError('error on SavedMessages posts subscription', getFullErrorMessage(error)),
-        });
-        return () => subscription.unsubscribe();
-    }, [database, isFocused]);
-
-    useEffect(() => {
-        if (!isFocused) {
-            return undefined;
-        }
-
-        const subscription = observeSavedPosts(database).subscribe({
-            next: setPosts,
-            error: (error) => logError('error on SavedMessages posts subscription', getFullErrorMessage(error)),
-        });
-        return () => subscription.unsubscribe();
-    }, [database, isFocused]);
-
-    useEffect(() => {
         if (isFocused) {
             setLoading(true);
             fetchSavedPosts(serverUrl).finally(() => {
