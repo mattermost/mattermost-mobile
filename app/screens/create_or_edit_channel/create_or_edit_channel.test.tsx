@@ -43,8 +43,8 @@ jest.mock('@components/autocomplete', () => ({
 
 function lastHeaderButton() {
     const calls = mockSetOptions.mock.calls as Array<[{headerRight: () => React.ReactElement<{disabled: boolean; onPress: () => void; testID: string}>}]>;
-    const headerRight = calls.at(-1)?.[0].headerRight;
-    return headerRight!();
+    const headerRight = calls[calls.length - 1][0].headerRight;
+    return headerRight();
 }
 
 describe('CreateOrEditChannel', () => {
