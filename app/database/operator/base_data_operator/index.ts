@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
 
+import {Events} from '@constants';
 import {OperationType} from '@constants/database';
 import {
     getRangeOfValues,
     getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
+import {isDatabaseCorruptionError} from '@utils/database_errors';
 import {logWarning} from '@utils/log';
 
 import type {
@@ -194,6 +197,13 @@ export default class BaseDataOperator {
             }
         } catch (e) {
             logWarning('batchRecords error ', description, e as Error);
+            if (isDatabaseCorruptionError(e)) {
+                DeviceEventEmitter.emit(Events.DATABASE_CORRUPTION_DETECTED, {
+                    database: this.database,
+                    error: e,
+                    source: description,
+                });
+            }
         }
     }
 

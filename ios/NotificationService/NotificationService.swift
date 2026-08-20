@@ -3,6 +3,7 @@ import UserNotifications
 import Intents
 import os.log
 import TurboLogIOSNative
+import react_native_network_client
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -51,6 +52,7 @@ class NotificationService: UNNotificationServiceExtension {
 
   override init() {
     super.init()
+    SessionAttributesOutboundHeader.setHandler { SessionAttributes.getOutboundHeader($0) }
     initSentryAppExt()
 
     // Safely configure TurboLogger without force unwrapping

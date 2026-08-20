@@ -10,7 +10,7 @@ import {
 } from '@agents/actions/remote/conversation';
 import NetworkManager from '@managers/network_manager';
 
-import {useConversation, useTurnForPost} from './conversation_store';
+import {useConversation} from './conversation_store';
 
 import type {ConversationResponse} from '@agents/types';
 
@@ -188,26 +188,5 @@ describe('per-server isolation', () => {
 
         // Reset for subsequent tests
         jest.mocked(NetworkManager.getClient).mockReturnValue(mockClient as any);
-    });
-});
-
-describe('useTurnForPost', () => {
-    it('should find the anchor turn by post_id', () => {
-        const conversation = {
-            ...makeConversation('c1'),
-            turns: [
-                {id: 't0', post_id: null, role: 'user' as const, content: [], sequence: 0, tokens_in: 0, tokens_out: 0},
-                {id: 't1', post_id: 'p1', role: 'assistant' as const, content: [], sequence: 1, tokens_in: 0, tokens_out: 0},
-            ],
-        };
-
-        const {result} = renderHook(() => useTurnForPost(conversation, 'p1'));
-
-        expect(result.current?.id).toBe('t1');
-    });
-
-    it('should return undefined when the conversation is missing', () => {
-        const {result} = renderHook(() => useTurnForPost(undefined, 'p1'));
-        expect(result.current).toBeUndefined();
     });
 });

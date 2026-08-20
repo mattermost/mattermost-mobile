@@ -21,8 +21,10 @@ tags:
   - MM-T3260
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
+# # Open the Account tab
 - tapOn:
     id: "tab_bar.account.tab"
 - extendedWaitUntil:
@@ -30,18 +32,21 @@ appId: ${MAESTRO_APP_ID}
       id: "account.screen"
     timeout: 10000
 
+# # Open Settings and wait for Help.
+# Help can take up to 30s to appear while server config syncs on first login.
 - tapOn:
     id: "account.settings.option"
-# Help can take up to 30s to appear while server config syncs on first login.
 - extendedWaitUntil:
     visible:
       id: "settings.help.option"
     timeout: 30000
 
+# # Tap Help
 - tapOn:
     id: "settings.help.option"
 
-# iOS: dismiss SFSafariViewController (same branches as attach_logs.yml).
+# * Verify a browser opened on iOS, then dismiss it.
+# Dismisses SFSafariViewController (same branches as attach_logs.yml).
 - runFlow:
     when:
       platform: iOS
@@ -63,7 +68,8 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 text: "Done"
 
-# Android: Chrome Custom Tab — dismiss ads/FRE overlays before Back.
+# * Verify Settings was left for the browser on Android, then dismiss back.
+# Chrome Custom Tab — dismiss ads/FRE overlays before Back.
 - runFlow:
     when:
       platform: Android
@@ -74,7 +80,14 @@ appId: ${MAESTRO_APP_ID}
           timeout: 8000
       - runFlow:
           file: ../../subflows/browser/dismiss_chrome_interstitial.yml
-      - takeScreenshot: help-browser-opened
+      # # Dismiss the Chrome Custom Tab with Back.
+      # No screenshot here on Android: the help URL opens in a Chrome Custom Tab
+      # (a separate app task), and `screencap` of that surface returns empty on the
+      # API 35 emulator — the takeScreenshot command produces a 0-byte PNG and aborts
+      # the flow with "Unknown error". Leaving Settings (asserted above) already proves
+      # the browser opened; help-browser-dismissed (on the app's own Settings screen)
+      # captures the recovery. iOS keeps its screenshot — SFSafariViewController is
+      # in-app and captures fine.
       - pressKey: Back
       - runFlow:
           file: ../../subflows/browser/dismiss_chrome_interstitial.yml
@@ -82,13 +95,14 @@ appId: ${MAESTRO_APP_ID}
       - runFlow:
           file: ../../subflows/browser/dismiss_chrome_interstitial.yml
 
-# Browser hand-off recovery when Settings is not visible after dismiss.
+# # Browser hand-off recovery when Settings is not visible after dismiss.
 - runFlow:
     when:
       notVisible:
         id: "settings.help.option"
     file: ../../subflows/browser/reopen_settings_screen.yml
 
+# * Verify Settings is visible again with Help listed
 - extendedWaitUntil:
     visible:
       id: "settings.help.option"

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
+import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View} from 'react-native';
@@ -13,12 +14,13 @@ import Button from '@components/button';
 import Markdown from '@components/markdown';
 import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
-import {AppCallResponseTypes} from '@constants/apps';
+import {AppCallResponseTypes, AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
+import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
@@ -110,16 +112,50 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
     return {...state, [action.name]: action.value};
 }
 
-function initValues(fields?: AppField[]) {
+export function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
     fields?.forEach((field) => {
         if (!field.name) {
             return;
         }
 
-        if (field.type === 'bool') {
+        if (field.type === AppFieldTypes.BOOL) {
             // For boolean fields, use explicit value or default to false
             values[field.name] = field.value === true || String(field.value).toLowerCase() === 'true';
+        } else if (field.type === AppFieldTypes.DATETIME && field.is_required && !field.value) {
+            // Auto-populate required datetime fields with current time (matching webapp)
+            // Use field's location_timezone if set, so the default aligns with the displayed timezone
+            const fieldTimezone = field.datetime_config?.location_timezone;
+            const currentTime = fieldTimezone ? moment.tz(fieldTimezone) : moment();
+            const timeInterval = field.datetime_config?.time_interval || field.time_interval || DEFAULT_TIME_INTERVAL_MINUTES;
+
+            // Round up to next time interval
+            const minutesMod = currentTime.minutes() % timeInterval;
+            const defaultMoment = minutesMod === 0
+                ? currentTime.clone().seconds(0).milliseconds(0)
+                : currentTime.clone().add(timeInterval - minutesMod, 'minutes').seconds(0).milliseconds(0);
+
+            // Clamp to min/max bounds
+            if (field.min_date) {
+                const resolved = resolveRelativeDate(field.min_date, fieldTimezone);
+                const minMoment = parseDateInTimezone(resolved, fieldTimezone);
+                if (!minMoment) {
+                    logWarning('[initValues] Could not parse min_date for field', field.name, resolved);
+                } else if (defaultMoment.isBefore(minMoment)) {
+                    defaultMoment.set({year: minMoment.year(), month: minMoment.month(), date: minMoment.date(), hour: minMoment.hour(), minute: minMoment.minute(), second: 0});
+                }
+            }
+            if (field.max_date) {
+                const resolved = resolveRelativeDate(field.max_date, fieldTimezone);
+                const maxMoment = parseDateInTimezone(resolved, fieldTimezone);
+                if (!maxMoment) {
+                    logWarning('[initValues] Could not parse max_date for field', field.name, resolved);
+                } else if (defaultMoment.isAfter(maxMoment)) {
+                    defaultMoment.set({year: maxMoment.year(), month: maxMoment.month(), date: maxMoment.date(), hour: maxMoment.hour(), minute: maxMoment.minute(), second: 0});
+                }
+            }
+
+            values[field.name] = defaultMoment.toISOString();
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;

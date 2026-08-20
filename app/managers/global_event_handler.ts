@@ -11,13 +11,17 @@ import {batchTeamThreadSync} from '@actions/remote/thread';
 import {Device, Events} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
+import {attemptServerDatabaseRecovery} from '@database/recovery';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import {logDebug} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logError} from '@utils/log';
+
+import type {Database} from '@nozbe/watermelondb';
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
@@ -45,6 +49,7 @@ class GlobalEventHandlerSingleton {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, this.onPostDeletedForChannel);
+        DeviceEventEmitter.addListener(Events.DATABASE_CORRUPTION_DETECTED, this.onDatabaseCorruptionDetected);
     }
 
     init = () => {
@@ -60,6 +65,18 @@ class GlobalEventHandlerSingleton {
 
     onPostDeletedForChannel = async ({serverUrl, teamId}: {serverUrl: string; teamId: string}) => {
         batchTeamThreadSync(serverUrl, teamId);
+    };
+
+    onDatabaseCorruptionDetected = ({database, error, source}: {database: Database; error: unknown; source: string}) => {
+        const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
+        if (!serverUrl) {
+            logDebug('onDatabaseCorruptionDetected: skipping recovery, server URL not found', source);
+            return;
+        }
+
+        attemptServerDatabaseRecovery(serverUrl, error, source).catch((recoveryError) => {
+            logError('onDatabaseCorruptionDetected: unhandled recovery error', getFullErrorMessage(recoveryError));
+        });
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

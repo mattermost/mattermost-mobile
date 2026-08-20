@@ -20,9 +20,9 @@ export type ExternalImageProps = {
 const ExternalImage = ({children, enableSVGs, hasImageProxy, imageMetadata, src}: ExternalImageProps) => {
     const serverUrl = useServerUrl();
 
-    const baseRoute = useMemo(() => {
+    const apiRoute = useMemo(() => {
         try {
-            return NetworkManager.getClient(serverUrl).getBaseRoute();
+            return NetworkManager.getClient(serverUrl).getAPIRoute();
         } catch {
             return '';
         }
@@ -31,7 +31,7 @@ const ExternalImage = ({children, enableSVGs, hasImageProxy, imageMetadata, src}
     const shouldRenderImage = enableSVGs || !isSVGImage(imageMetadata, src);
     let safeSrc = '';
     if (shouldRenderImage) {
-        safeSrc = getImageSrc(src, baseRoute, hasImageProxy && Boolean(baseRoute));
+        safeSrc = getImageSrc(src, apiRoute, hasImageProxy && Boolean(apiRoute));
     }
     return <>{children(safeSrc)}</>;
 };
