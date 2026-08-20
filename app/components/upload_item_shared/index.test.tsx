@@ -398,10 +398,13 @@ describe('UploadItemShared', () => {
     });
 
     describe('Data Resilience', () => {
-        it('should handle files with missing name gracefully', () => {
-            isImage.mockReturnValue(false);
+        // A draft persisted without file metadata reaches this component with no name
+        // and no extension, so the real isImage has to tolerate that rather than throw.
+        it('should handle files with missing name and extension gracefully', () => {
+            isImage.mockImplementation(jest.requireActual('@utils/file').isImage);
             const fileWithoutName = createMockFile({
                 name: undefined,
+                extension: undefined,
             });
 
             const {getByText} = renderWithEverything(
