@@ -136,10 +136,6 @@ static void sendReplyUsingMattermost(UNNotificationResponse *response,
   if ([preauthSecret isKindOfClass:NSString.class] && preauthSecret.length > 0) {
     [req setValue:preauthSecret forHTTPHeaderField:@"X-Mattermost-Preauth-Secret"];
   }
-  NSString *sessionAttributesHeader = [SessionAttributesOutboundHeader getOutboundHeader:urlString];
-  if (sessionAttributesHeader.length > 0) {
-    [req setValue:sessionAttributesHeader forHTTPHeaderField:SessionAttributesOutboundHeader.headerName];
-  }
   req.HTTPBody = postData;
 
   NSURLSession *session = [NSURLSession sessionWithConfiguration:NSURLSessionConfiguration.ephemeralSessionConfiguration];

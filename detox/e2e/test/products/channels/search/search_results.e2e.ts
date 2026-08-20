@@ -31,7 +31,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Result Interactions', () => {
@@ -39,6 +39,20 @@ describe('Search - Result Interactions', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
+
+    const submitSearch = async (term: string) => {
+        await SearchMessagesScreen.searchInput.tap();
+        await SearchMessagesScreen.searchInput.replaceText(term);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        const flatList = SearchMessagesScreen.getFlatPostList();
+        try {
+            await flatList.scroll(100, 'down');
+        } catch {
+            // Keyboard already dismissed or results not yet rendered
+        }
+        await waitForElementToExist(flatList, timeouts.TWENTY_SEC);
+        return flatList;
+    };
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -56,7 +70,12 @@ describe('Search - Result Interactions', () => {
     });
 
     afterEach(async () => {
-        // # Safety net: tap the channel list tab to return to channel list after each test.
+        try {
+            await waitForElementToExist(SearchMessagesScreen.searchCancelButton, timeouts.TWO_SEC);
+            await SearchMessagesScreen.searchCancelButton.tap();
+        } catch {
+            // Not on search
+        }
         try {
             await HomeScreen.channelListTab.tap();
         } catch {
@@ -93,19 +112,7 @@ describe('Search - Result Interactions', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Search for the common word
-        await SearchMessagesScreen.searchInput.typeText(commonWord);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify at least one result is visible.
-        const flatList = SearchMessagesScreen.getFlatPostList();
-        try {
-            await flatList.scroll(50, 'down');
-        } catch {
-            // Results not yet rendered or keyboard already dismissed — non-fatal
-        }
-        await wait(timeouts.ONE_SEC);
-        await expect(flatList).toBeVisible();
+        const flatList = await submitSearch(commonWord);
 
         // # Scroll the results list down to verify it is scrollable
         try {
@@ -115,8 +122,9 @@ describe('Search - Result Interactions', () => {
         }
         await wait(timeouts.ONE_SEC);
 
-        // * Verify the list is still present after scrolling
-        await expect(flatList).toBeVisible();
+        // * List still present after scrolling. Existence, not 75% visible —
+        // the iOS keyboard can cover the list (MM-T3239_1).
+        await waitForElementToExist(flatList, timeouts.TEN_SEC);
 
         // # Clear search, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -144,9 +152,7 @@ describe('Search - Result Interactions', () => {
 
         // # Open search messages screen and search for the message
         await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchInput.typeText(searchTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
+        await submitSearch(searchTerm);
 
         // # Get post and open post options for the search result
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -176,21 +182,11 @@ describe('Search - Result Interactions', () => {
 
         // # Open search messages screen and search for the posted message
         await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchInput.typeText(searchTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-
-        // Dismiss keyboard so the post is not obscured by it when checking visibility.
-        try {
-            await SearchMessagesScreen.getFlatPostList().scroll(50, 'down');
-        } catch {
-            // Keyboard already gone or results not yet rendered — non-fatal
-        }
-        await wait(timeouts.ONE_SEC);
+        await submitSearch(searchTerm);
 
         // * Verify post result is visible
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(postedMessage.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
 
         // # Tap the post to navigate to it via permalink
         await postListPostItem.tap();
@@ -250,8 +246,7 @@ describe('Search - Result Interactions', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // * Verify the message appears in Saved Messages (without search highlighting context)
-        const {postListPostItem: savedPostItem} = SavedMessagesScreen.getPostListPostItem(searchedPostId, message);
-        await waitForElementToBeVisible(savedPostItem, timeouts.HALF_MIN);
+        await SavedMessagesScreen.waitForPostInList(searchedPostId, message);
 
         // # Unsave the post to clean up, then go back to channel list
         await SavedMessagesScreen.openPostOptionsFor(searchedPostId, message);

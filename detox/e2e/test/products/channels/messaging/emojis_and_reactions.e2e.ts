@@ -30,7 +30,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, safeEnableSynchronization, timeouts} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emojis and Reactions', () => {
@@ -151,8 +151,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — emoji picker search input is visible but not hittable.
-    (isIos() ? it.skip : it)('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
+    it('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'brown fox :fox_face: lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -192,8 +191,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — emoji picker search input is visible but not hittable.
-    (isIos() ? it.skip : it)('MM-T4862_4 - should display empty search state for emoji picker', async () => {
+    it('MM-T4862_4 - should display empty search state for emoji picker', async () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and search for a non-existent emoji
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

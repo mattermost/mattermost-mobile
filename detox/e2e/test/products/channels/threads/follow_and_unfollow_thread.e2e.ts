@@ -28,7 +28,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Threads - Follow and Unfollow Thread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -235,7 +235,6 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify thread is not displayed anymore in all your threads section
-        // After unfollow, the thread should disappear from "All your threads"
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 });

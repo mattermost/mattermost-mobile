@@ -33,10 +33,12 @@ describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testUser = user;
 
         // Enable CRT for global threads UI.
         await System.apiUpdateConfig(siteOneUrl, {
@@ -84,6 +86,9 @@ describe('Threads - Save and Unsave Thread', () => {
         // # Open thread options for thread, tap on save option, and tap on thread
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.tapSaveThread();
+
+        // SaveOption dismisses the sheet before savePostPreference; wait for the flag.
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, parentPost.id);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is saved via ThreadOverview unsave button (.atIndex(0) for stale off-screen mounts).
@@ -93,6 +98,7 @@ describe('Threads - Save and Unsave Thread', () => {
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
         await ThreadOptionsScreen.tapUnsaveThread();
+        await Post.waitForPostUnflagged(siteOneUrl, testUser.id, parentPost.id);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify the thread is unsaved.

@@ -4,18 +4,15 @@
 import Preference, {type UserPreference} from '@support/server_api/preference';
 import User from '@support/server_api/user';
 import {getRandomId, timeouts, wait} from '@support/utils';
+import {withTransportRetry, type ApiResult} from '@support/utils/transport_retry';
 
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
 const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
-
-// Must outlast the longest hold a caller can legitimately take, or the lock expires
-// mid-suite and a waiting shard steals it while the owner is still mutating shared
-// server config. Every caller sets jest.setTimeout(30m), so the TTL covers that plus
-// margin. Recovering a lock leaked by a cancelled run is the acquire budget's job,
-// not the TTL's.
 const DEFAULT_TTL_MS = timeouts.ONE_MIN * 35;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
+const NETWORK_RETRY_DELAY_MS = timeouts.TWO_SEC;
+const CONFIRM_SETTLE_MS = timeouts.ONE_SEC;
 
 type ClassificationLock = {
     owner: string;
@@ -37,7 +34,10 @@ const formatError = (value: unknown) => {
 };
 
 const loginAsAdmin = async (baseUrl: string) => {
-    const result = await User.apiAdminLogin(baseUrl) as {user?: {id?: string}; error?: unknown};
+    const result = await withTransportRetry(
+        () => User.apiAdminLogin(baseUrl) as Promise<ApiResult & {user?: {id?: string}}>,
+        {delayMs: NETWORK_RETRY_DELAY_MS},
+    );
     const userId = result.user?.id;
     if (!userId) {
         throw new Error(`classification lock: admin login failed: ${formatError(result.error ?? result)}`);
@@ -67,10 +67,10 @@ const parseLock = (value: string): ClassificationLock | undefined => {
 };
 
 const getClassificationLock = async (baseUrl: string, userId: string): Promise<ClassificationLock | undefined> => {
-    const result = await Preference.apiGetUserPreferences(baseUrl, userId) as {
-        preferences?: UserPreference[];
-        error?: unknown;
-    };
+    const result = await withTransportRetry(
+        () => Preference.apiGetUserPreferences(baseUrl, userId) as Promise<ApiResult & {preferences?: UserPreference[]}>,
+        {delayMs: NETWORK_RETRY_DELAY_MS},
+    );
     if (!result.preferences) {
         throw new Error(`classification lock: failed to read admin preferences: ${formatError(result.error ?? result)}`);
     }
@@ -86,12 +86,15 @@ const saveClassificationLock = async (
     userId: string,
     value: string,
 ): Promise<void> => {
-    const result = await Preference.apiSaveUserPreferences(baseUrl, userId, [{
-        user_id: userId,
-        category: LOCK_CATEGORY,
-        name: LOCK_NAME,
-        value,
-    }]) as {error?: unknown};
+    const result = await withTransportRetry(
+        () => Preference.apiSaveUserPreferences(baseUrl, userId, [{
+            user_id: userId,
+            category: LOCK_CATEGORY,
+            name: LOCK_NAME,
+            value,
+        }]) as Promise<ApiResult>,
+        {delayMs: NETWORK_RETRY_DELAY_MS},
+    );
 
     if (result.error) {
         throw new Error(`classification lock: failed to save admin preference: ${formatError(result.error)}`);
@@ -138,6 +141,13 @@ export const acquireClassificationLock = async (
                 owner,
                 expiresAt: now + ttlMs,
             }));
+
+            // Settle before confirming. A confirm issued immediately can read back our own
+            // write while a competing shard's write is still in flight, so both shards would
+            // see themselves as owner and both proceed. Waiting lets any concurrent write
+            // land first, so the confirm observes the real last-writer-wins outcome.
+            // eslint-disable-next-line no-await-in-loop
+            await wait(CONFIRM_SETTLE_MS);
 
             // eslint-disable-next-line no-await-in-loop -- confirm ownership after the non-atomic write
             const confirmedLock = await getClassificationLock(baseUrl, userId);

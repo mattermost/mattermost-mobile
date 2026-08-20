@@ -28,8 +28,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, isIos, timeouts, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -70,7 +69,7 @@ describe('Smoke Test - Search', () => {
         await RecentMentionsScreen.recentMentionPostListToBeVisible();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = RecentMentionsScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
@@ -89,8 +88,7 @@ describe('Smoke Test - Search', () => {
 
         // * Verify on saved messages screen and saved message is displayed
         await SavedMessagesScreen.toBeVisible();
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(post.id, message);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();
@@ -100,22 +98,27 @@ describe('Smoke Test - Search', () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        await withSynchronizationDisabled(async () => {
+            await ChannelScreen.openPostOptionsFor(post.id, message);
+            await PostOptionsScreen.tapPinPost();
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, post.id);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
 
-        // * Verify on pinned messages screen and pinned message is displayed
-        await PinnedMessagesScreen.toBeVisible();
-        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+            // * Verify on pinned messages screen and pinned message is displayed
+            await PinnedMessagesScreen.toBeVisible();
+            const {postListPostItem: pinnedPostItem} = PinnedMessagesScreen.getPostListPostItem(post.id, message);
+            await waitForElementToExist(pinnedPostItem, timeouts.TEN_SEC);
 
-        // # Go back to channel list screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
+            // # Go back to channel list screen
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+        }, {reenable: !isIos()});
     });
 
     it('MM-T4911_4 - should be able to search for a message and display on search results screen', async () => {
@@ -123,20 +126,24 @@ describe('Smoke Test - Search', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        await Post.waitForPostMessageInSearch(siteOneUrl, searchTerm, post.id, message);
         await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.searchInput.typeText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain searched message
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        const removeButton = SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm);
+        await waitForElementToExist(removeButton, timeouts.TEN_SEC);
+        await removeButton.tap();
         await ChannelListScreen.open();
     });
 });

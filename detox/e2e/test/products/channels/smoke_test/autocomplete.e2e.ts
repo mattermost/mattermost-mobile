@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import {
+    Command,
     Post,
     Setup,
 } from '@support/server_api';
@@ -23,18 +24,20 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts} from '@support/utils';
+import {isIos, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         // # Log in to server
@@ -130,26 +133,31 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    // Skip Android: CI run 30424009936 (f86f99e1) failed both attempts — the slash autocomplete
-    // never becomes visible after typing "/" (Autocomplete.toBeVisible, 10s).
-    (isAndroid() ? it.skip : it)('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
-        // # Type in "/" to activate slash suggestion autocomplete
+    it('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
+        const slashCommand = 'away';
+        await Command.waitForSlashCommandTrigger(siteOneUrl, testTeam.id, slashCommand, {
+            timeoutMs: timeouts.HALF_MIN,
+        });
+
+        // SlashSuggestion fetches commands on the first "/" and renders nothing until
+        // that list lands, so wait for the slash list rather than the generic
+        // autocomplete container (Android CI: Autocomplete.toBeVisible timed out at 10s).
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.typeText('/');
-        await Autocomplete.toBeVisible();
+        await waitFor(Autocomplete.flatSlashSuggestionList).toExist().withTimeout(timeouts.HALF_MIN);
 
         // # Type in slash command name
-        const slashCommand = 'away';
         await ChannelScreen.postInput.typeText(slashCommand);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
         const {slashSuggestionItem} = Autocomplete.getSlashSuggestionItem(slashCommand);
-        await expect(slashSuggestionItem).toExist();
+        await waitFor(slashSuggestionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select and post slash suggestion
         await slashSuggestionItem.tap();
-        await ChannelScreen.sendButton.tap();
+        await ChannelScreen.tapSendButton();
 
         // * Verify slash suggestion is posted
-        await expect(element(by.text('You are now away'))).toBeVisible();
+        await waitFor(element(by.text('You are now away'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 });

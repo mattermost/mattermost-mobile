@@ -169,6 +169,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      shard_count: ${{ steps.generate-specs.outputs.shard_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -904,6 +905,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
+            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed — skipping TSIO upload."

@@ -26,7 +26,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
@@ -150,7 +150,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / pin on thread
+    // Skip: BACK_INDEX / pin on thread
     it.skip('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
@@ -185,13 +185,13 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — the pin-ordering flow exceeds its five-minute test timeout.
-    (isIos() ? it.skip : it)('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
+    // SEC-11013: iOS previously overran the 5m timeout on the 75% visibility scroll after pin.
+    // Re-enable with a 40% visibility wait; hang-step profiling still needed if CI overruns again.
+    it('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const olderMessage = `Older message ${getRandomId()}`;
-        await ChannelScreen.postMessage(olderMessage);
-        const {post: olderPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: olderPost} = await ChannelScreen.postMessageAndVerify(olderMessage, testChannel.id, siteOneUrl);
 
         // # Post more messages so the older message scrolls up
         const newerMessage1 = `Newer message A ${getRandomId()}`;
@@ -203,14 +203,17 @@ describe('Messaging - Pin and Unpin Message', () => {
         const {post: newerPost2} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: newerPost2Item} = ChannelScreen.getPostListPostItem(newerPost2.id, newerMessage2);
 
+        // Re-open so the keyboard is down and the inverted list is anchored at the newest posts.
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
         // # Long press the older (not the most recent) post and pin it to channel
         await openChannelPostOptionsForPin(olderPost.id, olderMessage);
         await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify the older message shows a Pinned pre-header (it is pinned)
-        // Use polling to wait for the pre-header to appear after pin operation.
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(olderPost.id, olderMessage);
-        await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
+        await waitForElementToHaveText(postListPostItemPreHeaderText, pinnedText);
 
         // * Verify the newer messages are still below the older pinned message. Re-open the
         //   channel to reset scroll to the newest messages so newerPost2 is visible.
@@ -218,15 +221,28 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
-        // Scroll it back into the >=75% visible area, retrying until it appears.
+        // Do not use waitFor(toBeVisible/toExist) here — iOS Detox can ignore withTimeout and
+        // hang until Jest's 300s cap. Bounded scroll, then a single expect so exhaustion fails.
+        await device.disableSynchronization();
         try {
-            await waitFor(newerPost2Item).
-                toBeVisible(75).
-                whileElement(by.id('channel.post_list.flat_list')).
-                scroll(100, 'up', 0.5, 0.5);
-        } catch {
-            // List may be too short to scroll — assert directly.
-            await expect(newerPost2Item).toBeVisible();
+            /* eslint-disable no-await-in-loop -- bounded scroll with immediate expect */
+            for (let i = 0; i < 8; i++) {
+                try {
+                    await expect(newerPost2Item).toBeVisible(40);
+                    break;
+                } catch {
+                    try {
+                        await element(by.id('channel.post_list.flat_list')).scroll(100, 'up', 0.5, 0.5);
+                    } catch {
+                        break;
+                    }
+                    await wait(timeouts.HALF_SEC);
+                }
+            }
+            await expect(newerPost2Item).toBeVisible(40);
+            /* eslint-enable no-await-in-loop */
+        } finally {
+            await safeEnableSynchronization();
         }
 
         // # Open channel info and navigate to pinned messages screen
