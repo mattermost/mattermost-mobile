@@ -391,16 +391,21 @@ const PostList = ({
         // The new messages separator being on screen is what tells us the user has reached the
         // unread boundary. Callers use it to decide the channel has actually been read, so it must
         // not be inferred from the posts merely having been fetched.
-        if (onNewMessageLineViewed && initialIndex >= 0 && newMessageLineViewedFor.current !== channelId &&
+        // Keyed on lastViewedAt as well as the channel because the separator moves every time the
+        // boundary does. Posts arriving while the user sits in the channel push it down, and each of
+        // those is a new boundary that has to be reported once seen; keying on the channel alone
+        // would report the first one and then stay silent for the rest of the visit.
+        const newMessageLineKey = `${channelId}-${lastViewedAt}`;
+        if (onNewMessageLineViewed && initialIndex >= 0 && newMessageLineViewedFor.current !== newMessageLineKey &&
             viewableItems.some(({index, isViewable}) => isViewable && index === initialIndex)) {
-            newMessageLineViewedFor.current = channelId;
+            newMessageLineViewedFor.current = newMessageLineKey;
             onNewMessageLineViewed();
         }
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [location, trackInitialRenderMetrics, onNewMessageLineViewed, initialIndex, channelId]);
+    }, [location, trackInitialRenderMetrics, onNewMessageLineViewed, initialIndex, channelId, lastViewedAt]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;

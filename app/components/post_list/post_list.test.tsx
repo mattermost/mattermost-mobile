@@ -154,6 +154,41 @@ describe('components/post_list/PostList', () => {
             expect(onNewMessageLineViewed).toHaveBeenCalledTimes(1);
         });
 
+        it('should notify again when a later message moves the unread boundary', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId, rerender} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const fireOnSeparator = () => {
+                const flatList = getByTestId('post_list.flat_list');
+                const index = findSeparatorIndex(flatList.props.data);
+                expect(index).toBeGreaterThanOrEqual(0);
+                act(() => {
+                    flatList.props.onViewableItemsChanged(viewable(index, flatList.props.data[index]));
+                });
+            };
+
+            fireOnSeparator();
+            expect(onNewMessageLineViewed).toHaveBeenCalledTimes(1);
+
+            // A message arrives while the user stays in the channel, so the boundary moves.
+            rerender(
+                <PostList
+                    {...unreadProps}
+                    lastViewedAt={1234567900}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                    posts={[mockPostModel({id: 'newer-post', createAt: 1234568000}), ...unreadProps.posts]}
+                />,
+            );
+
+            fireOnSeparator();
+            expect(onNewMessageLineViewed).toHaveBeenCalledTimes(2);
+        });
+
         it('should not notify while the new messages line is out of view', () => {
             const onNewMessageLineViewed = jest.fn();
             const {getByTestId} = renderWithEverything(
