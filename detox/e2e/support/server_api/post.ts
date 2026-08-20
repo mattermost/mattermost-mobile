@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
@@ -266,10 +267,10 @@ export const apiUploadFileToChannel = async (
         // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
-    const result = await apiUploadFile('files', absFilePath, {
+    const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    });
+    }));
     if (result.error) {
         return result;
     }
@@ -285,25 +286,25 @@ export const apiUploadFileToChannel = async (
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to post in
  * @param {string} rootId - (optional) root post ID for thread replies
- * @return {Object} returns {post, fileId} on success or {error, status} on error
+ * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
  */
 export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
-    if (uploadError) {
-        return {error: uploadError};
+    if (uploadError || !fileId) {
+        throw new Error(`apiCreatePostWithImageAttachment: upload failed: ${JSON.stringify(uploadError)}`);
     }
-    const {post, error: postError} = await apiCreatePost(baseUrl, {
+    const {post, error: postError} = await withTransportRetry(() => apiCreatePost(baseUrl, {
         channelId,
         message: '',
         rootId: rootId || undefined,
         fileIds: [fileId],
-    });
-    if (postError) {
-        return {error: postError};
+    }));
+    if (postError || !post?.id) {
+        throw new Error(`apiCreatePostWithImageAttachment: create post failed: ${JSON.stringify(postError)}`);
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
-        return {error: {message: `Server did not attach file to post. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`}};
+        throw new Error(`apiCreatePostWithImageAttachment: server did not attach file. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`);
     }
     return {post, fileId};
 };

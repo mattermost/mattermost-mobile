@@ -21,6 +21,24 @@ class NavigationHeader {
     searchInput = element(by.id(this.testID.searchInput));
     searchClearButton = element(by.id(this.testID.searchClearButton));
     searchCancelButton = element(by.id(this.testID.searchCancelButton));
+
+    tapBackButton = async (index = 0) => {
+        await element(by.id(this.testID.backButton)).atIndex(index).tap();
+    };
+
+    tapTopmostBackButton = async (maxIndex = 2) => {
+        /* eslint-disable no-await-in-loop */
+        for (let index = maxIndex; index >= 0; index -= 1) {
+            try {
+                await element(by.id(this.testID.backButton)).atIndex(index).tap();
+                return;
+            } catch {
+                // Index may be out of bounds when fewer headers are mounted.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        throw new Error(`No hittable ${this.testID.backButton} found (tried indices ${maxIndex}..0)`);
+    };
 }
 
 const navigationHeader = new NavigationHeader();

@@ -74,7 +74,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
         await ChannelScreen.dismissScheduledPostTooltip();
 
         // * Verify on newly created public channel.
@@ -127,7 +127,7 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
 
         // * Verify on newly created private channel (same intro mount race as above)
         await ChannelScreen.toBeVisible();

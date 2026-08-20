@@ -26,12 +26,11 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testTeam: any;
     let testUser: any;
     let channelT5600: any;
@@ -81,7 +80,10 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    // Scroll channel list to top after FlashList mounts — off-screen channels need scroll-down from top.
+    const channelsCategory = 'channels';
+
+    // Last sidebar rows sit under the tab bar with no extra scroll unless the list
+    // has bottom padding. Scroll the target into view and fail if it never is.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
         const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
@@ -89,37 +91,21 @@ describe('Channels - Channel Bookmarks', () => {
             toExist().
             withTimeout(timeouts.TWENTY_SEC);
 
-        if (isIos()) {
-            await device.disableSynchronization();
-        }
-
         try {
             await element(by.id('channel_list.flat_list')).scrollTo('top');
-
-            try {
-                if (isIos()) {
-                    await waitFor(displayNameEl).
-                        toBeVisible().
-                        whileElement(by.id('channel_list.flat_list')).
-                        scroll(100, 'down', 0.5, 0.3);
-                } else {
-                    await waitFor(displayNameEl).
-                        toExist().
-                        whileElement(by.id('channel_list.flat_list')).
-                        scroll(100, 'down');
-                }
-            } catch {
-                // Fall through to tap(): the row can sit at the bottom edge below the
-                // visibility threshold while still having a hittable centre point.
-            }
-
-            await displayNameEl.tap();
-        } finally {
-            if (isIos()) {
-                await safeEnableSynchronization();
-            }
+        } catch {
+            // List too short to scroll
         }
 
+        // Default scroll start is the bottom of the list, which sits under the
+        // tab bar (5865fcd T5612: "View is not scrollable at the given start
+        // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
+        await waitFor(displayNameEl).
+            toBeVisible().
+            whileElement(by.id('channel_list.flat_list')).
+            scroll(100, 'down', 0.5, 0.5);
+
+        await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
         if (isIos()) {
@@ -253,7 +239,7 @@ describe('Channels - Channel Bookmarks', () => {
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
         // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (CI 29362218938: bare expect raced Config changed).
+        // after beforeAll reload (bare expect raced Config changed).
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
@@ -280,8 +266,9 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: depends on app-side bookmark whitelist fix (not in this PR).
-    it.skip('MM-T5602_1 - should be able to add a bookmark link via channel info', async () => {
+    // Unskipped: create omits invalid auto-detected image_url so sites like
+    // example.com (favicon data:,) still save as link bookmarks.
+    it('MM-T5602_1 - should be able to add a bookmark link via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelT5602);
 
@@ -296,21 +283,24 @@ describe('Channels - Channel Bookmarks', () => {
 
         await ChannelInfoScreen.tapAddBookmark();
 
-        // * Verify bottom sheet / add bookmark options appears
-        await waitForElementToExist(ChannelBookmarkScreen.addALinkOption, timeouts.TEN_SEC);
-
         // # Tap "Add a link"
         await ChannelBookmarkScreen.tapAddALinkOption();
 
         // * Verify the Add a bookmark modal opens
         await ChannelBookmarkScreen.toBeVisible();
 
-        // # Enter a stable URL and manual title — avoid OG autofill flakiness on Android CI
+        // # Enter a URL whose OG favicon is invalid (data:,) and a manual title —
+        // create must still succeed after omitting bad image_url.
         const linkInput = ChannelBookmarkScreen.getLinkInput();
         const bookmarkTitle = 'E2E Bookmark Link';
         await ChannelBookmarkScreen.runUnsynchronized(async () => {
             await linkInput.tap();
             await linkInput.typeText('https://example.com');
+
+            // Let the OG debounce start, then wait it out so save uses a settled bookmark
+            // (link_url set, image_url already normalized) instead of a mid-fetch payload.
+            await wait(timeouts.ONE_SEC);
+            await ChannelBookmarkScreen.waitForLinkLoadingToFinish(timeouts.TWENTY_SEC);
             const titleInput = ChannelBookmarkScreen.getTitleInput();
             await waitForElementToExist(titleInput, timeouts.TEN_SEC);
             await titleInput.tap();
@@ -353,10 +343,10 @@ describe('Channels - Channel Bookmarks', () => {
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
+        await waitFor(element(by.id('channel_info.add_bookmark.button'))).
+            toBeVisible().
+            withTimeout(timeouts.TWENTY_SEC);
         await ChannelInfoScreen.tapAddBookmark();
-
-        // * Verify bottom sheet options appear
-        await waitForElementToExist(ChannelBookmarkScreen.addALinkOption, timeouts.TEN_SEC);
 
         // # Tap "Add a link"
         await ChannelBookmarkScreen.tapAddALinkOption();
@@ -386,14 +376,15 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30424009936 (f86f99e1) — openChannel's channel row is clipped at the list
-    // edge, so tap() fails the 100% visibility threshold despite the scroll fallback.
-    (isIos() ? it.skip : it)('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
+    it('MM-T5604_1 - should auto-populate title from page when adding a bookmark link', async () => {
         // # Navigate to the channel
         await openChannel(channelT5604);
 
         // # Open channel info and tap "Add a bookmark"
         await ChannelInfoScreen.open();
+        await waitFor(element(by.id('channel_info.add_bookmark.button'))).
+            toBeVisible().
+            withTimeout(timeouts.TWENTY_SEC);
         await ChannelInfoScreen.tapAddBookmark();
 
         // # Tap "Add a link"
@@ -834,7 +825,7 @@ describe('Channels - Channel Bookmarks', () => {
         const channelHeaderBookmarksList = by.id('channel_header.bookmarks.list');
 
         // Authoritative sync: both bookmarks must exist in channel info before
-        // trusting the virtualized header FlatList (CI 30250131265: only file chip).
+        // trusting the virtualized header FlatList (file chip can appear first).
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
@@ -896,7 +887,7 @@ describe('Channels - Channel Bookmarks', () => {
         // * Verify long press opens the bookmark options bottom sheet
         await expect(ChannelBookmarkScreen.editOption).toBeVisible();
 
-        // Sheet has Edit/Copy/Share/Delete — no Cancel (CI 59ec6ae screenshot).
+        // Sheet has Edit/Copy/Share/Delete — no Cancel.
         await ChannelBookmarkScreen.dismissOptionsSheet();
         await ChannelScreen.toBeVisible();
 

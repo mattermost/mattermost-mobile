@@ -5,7 +5,6 @@ import {Redirect, type Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 
 import {determineInitialExpoRoute, type ExpoRouterLaunchResult} from '@init/launch';
-import {propsToParams} from '@screens/navigation';
 
 export default function RootIndex() {
     const [launchResult, setLaunchResult] = useState<ExpoRouterLaunchResult | null>(null);
@@ -24,6 +23,6 @@ export default function RootIndex() {
     }
 
     // Redirect to the determined route with params
-    const href: Href = {pathname: launchResult.route, params: propsToParams(launchResult.params)};
+    const href: Href = {pathname: launchResult.route, params: launchResult.params};
     return <Redirect href={href}/>;
 }

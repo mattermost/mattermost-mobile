@@ -41,10 +41,6 @@ extension ShareExtension {
                         uploadRequest.httpMethod = "POST"
                         uploadRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-                        if let sessionAttributesHeader = SessionAttributesOutboundHeader.getOutboundHeader(serverUrl) {
-                            uploadRequest.addValue(sessionAttributesHeader, forHTTPHeaderField: SessionAttributesOutboundHeader.headerName)
-                        }
-
                         if let preauthSecret = credentials.preauthSecret {
                             uploadRequest.addValue(preauthSecret, forHTTPHeaderField: GekidouConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET)
                         }

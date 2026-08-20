@@ -57,14 +57,8 @@ class EmojiPickerScreen {
 
     close = async () => {
         if (isIos()) {
-            // Swipe down on the search input — it's at the top of the sheet
-            // content, and dragging it down dismisses the bottom-sheet
-            // identically to dragging the sheet container.
-            await this.searchInput.swipe('down');
+            await this.searchInput.swipe('down', 'fast', 0.5, 0.5, 0.5);
         } else {
-            // First pressBack may dismiss the soft keyboard if it is still open
-            // (e.g. after search interactions). A second pressBack is then needed
-            // to actually close the emoji picker modal.
             await device.pressBack();
             try {
                 await waitFor(this.searchInput).not.toExist().withTimeout(timeouts.ONE_SEC);

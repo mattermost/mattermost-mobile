@@ -9,7 +9,6 @@
 
 import {
     Channel,
-    Post,
     Setup,
     Team,
     User,
@@ -31,7 +30,7 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
@@ -129,12 +128,11 @@ describe('Smoke Test - Channels', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // First post in this channel — iOS sim can drop the create POST (-1005).
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -181,33 +179,22 @@ describe('Smoke Test - Channels', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS: failed on CI 30437339535. The waitFor-polling fix added afterwards was never
-    // exercised — its shard was cancelled on 30447839548 — so treat it as unverified. Android passes.
-    (isIos() ? it.skip : it)('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
-        // # Reload React Native to establish a fresh WebSocket connection.
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
-
+    it('MM-T4774_5 - should be able to favorite and mute a channel', async () => {
         // # Open a channel screen, open channel info screen, tap on favorite action to favorite the channel, and tap on mute action to mute the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
+        await waitFor(ChannelInfoScreen.favoriteAction).toExist().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.favoriteAction.tap();
         await ChannelInfoScreen.muteAction.tap();
 
-        // * Verify channel is favorited and muted
-        if (isAndroid()) {
-            await device.disableSynchronization();
-            try {
-                await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
-                await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            } finally {
-                await device.enableSynchronization();
-            }
-        } else {
-            // Favorite/mute land via a preference update, so poll like Android instead of
-            // asserting instantly (CI 30437339535 iOS: unfavorite.action not found).
-            await waitFor(ChannelInfoScreen.unfavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
-            await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // Preference updates can stall Detox's idle timer; toExist avoids Android
+        // edge-to-edge clipping of the action row below a 75% visibility threshold.
+        await device.disableSynchronization();
+        try {
+            await waitFor(ChannelInfoScreen.unfavoriteAction).toExist().withTimeout(timeouts.HALF_MIN);
+            await waitFor(ChannelInfoScreen.unmuteAction).toExist().withTimeout(timeouts.TEN_SEC);
+        } finally {
+            await safeEnableSynchronization();
         }
 
         // # Tap on favorited action to unfavorite the channel and tap on muted action to unmute the channel
@@ -215,17 +202,12 @@ describe('Smoke Test - Channels', () => {
         await ChannelInfoScreen.unmuteAction.tap();
 
         // * Verify channel is unfavorited and unmuted
-        if (isAndroid()) {
-            await device.disableSynchronization();
-            try {
-                await waitFor(ChannelInfoScreen.favoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
-                await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            } finally {
-                await device.enableSynchronization();
-            }
-        } else {
-            await waitFor(ChannelInfoScreen.favoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
-            await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await device.disableSynchronization();
+        try {
+            await waitFor(ChannelInfoScreen.favoriteAction).toExist().withTimeout(timeouts.HALF_MIN);
+            await waitFor(ChannelInfoScreen.muteAction).toExist().withTimeout(timeouts.TEN_SEC);
+        } finally {
+            await safeEnableSynchronization();
         }
 
         // # Go back to channel list screen

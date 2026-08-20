@@ -36,7 +36,6 @@ use_frameworks! :linkage => :static
 
 setup_permissions([
   "Camera",
-  "LocationWhenInUse",
   "Microphone",
   "Notifications",
   "PhotoLibrary",
@@ -95,7 +94,6 @@ target 'NotificationService' do
   pod 'TurboLogIOSNative', :git => 'https://github.com/larkox/react-native-turbo-log-ios-native.git', :modular_headers => true
   pod 'Sentry', '9.12.1'
   pod 'Gekidou', :path => './Gekidou'
-  pod 'react-native-network-client/SessionAttributes', :path => '../node_modules/@mattermost/react-native-network-client'
 end
 
 target 'MattermostShare' do
@@ -103,7 +101,6 @@ target 'MattermostShare' do
   pod 'Sentry', '9.12.1'
   pod 'Gekidou', :path => './Gekidou'
   pod 'OpenGraph', '1.4.1'
-  pod 'react-native-network-client/SessionAttributes', :path => '../node_modules/@mattermost/react-native-network-client'
 end
 
 post_install do |installer|
