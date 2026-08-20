@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
@@ -266,10 +267,17 @@ export const apiUploadFileToChannel = async (
         // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
-    const result = await apiUploadFile('files', absFilePath, {
+
+    // Multipart upload is the slowest call in the fixture path and regularly exceeds the
+    // client's 30s ceiling when several shards hit the server at once — {error, status: 0},
+    // not a rejection. Five Android specs died on it in run 32232550302
+    // (MM-T3458_1/T3459_2/T3463_1/T307_1/T1750). apiUploadFile builds a fresh FormData and
+    // read stream per call, so re-invoking it is safe; a timed-out attempt may leave an
+    // orphan file on the test server, which is harmless.
+    const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    });
+    }));
     if (result.error) {
         return result;
     }

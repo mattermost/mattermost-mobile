@@ -32,6 +32,23 @@ const isTransientServerError = (error: any): boolean => {
     );
 };
 
+// A fixture name collided with one already on the server. apiCreateTeam / apiCreateChannel /
+// apiCreateUser each build a *fresh* random name on every call, so re-invoking them resolves
+// this — unlike a payload replay, retrying here cannot repeat the collision.
+// getRandomId() is only 6 hex chars (16^6 names), so against a long-lived shared test server
+// this is a birthday collision, not a test bug: run 32232550302 lost the whole
+// file_upload.e2e.ts beforeAll on iOS — and with it MM-T307_1/T325_1/T328_1/T330_1/T339_1 —
+// to "A team with this URL already exists".
+const isNameCollisionError = (error: any): boolean => {
+    const id = String(error?.id || '');
+    return (
+        id === 'store.sql_team.save_team.existing.app_error' ||
+        id === 'store.sql_channel.save_channel.exists.app_error' ||
+        id === 'store.sql_user.save.username_exists.app_error' ||
+        id === 'store.sql_user.save.email_exists.app_error'
+    );
+};
+
 const retryTransient = async <T extends {error?: any; status?: number}>(
     fn: () => Promise<T>,
     label: string,
@@ -42,6 +59,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     const err = result.error;
     const transient = Boolean(err) && (
         isTransientServerError(err) ||
+        isNameCollisionError(err) ||
         isTransientHttpStatus(result.status) ||
         isTransportFailure({error: err, status: result.status})
     );
