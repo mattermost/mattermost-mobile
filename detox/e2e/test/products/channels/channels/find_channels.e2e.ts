@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -155,10 +155,16 @@ describe('Channels - Find Channels', () => {
         } catch {
             await FindChannelsScreen.tapFilteredUserItem(testOtherUser2.id);
         }
-        await wait(timeouts.FOUR_SEC);
 
         // * Verify on target GM screen
-        const attributes = await element(by.id('channel_post_list.intro.display_name')).getAttributes();
+        // getAttributes() does not wait, so a fixed sleep raced the channel load: on ios
+        // shard 3 of run 32232550302 the failure screenshot shows the GM screen already
+        // open and correct ("a07200f, admin, b9dfcc4 / 4 members") with the post list
+        // still blank behind a spinner, and the read failed with "No elements found".
+        // Wait for the intro instead of guessing how long the load takes.
+        const channelIntroDisplayName = element(by.id('channel_post_list.intro.display_name'));
+        await waitForElementToExist(channelIntroDisplayName, timeouts.HALF_MIN);
+        const attributes = await channelIntroDisplayName.getAttributes();
 
         if ('label' in attributes && typeof attributes.label === 'string') {
             const displayName = attributes.label;
