@@ -150,12 +150,12 @@ const mockClient = {
     convertChannelToPrivate: jest.fn(),
     getGroupMessageMembersCommonTeams: jest.fn(() => ({id: teamId, name: 'teamname'})),
     convertGroupMessageToPrivateChannel: jest.fn((channelId: string) => ({id: channelId, name: 'channel1', creatorId: user.id, type: 'P'})),
-    getPosts: jest.fn(() => ({
+    getPosts: jest.fn(async () => ({
         order: [],
         posts: [],
         previousPostId: '',
     })),
-    getPostsSince: jest.fn(() => ({
+    getPostsSince: jest.fn(async () => ({
         order: [],
         posts: [],
         previousPostId: '',
@@ -483,19 +483,33 @@ describe('app/actions/remote/channel', () => {
                 expect(result).toHaveProperty('error');
             });
 
+            // The context has to change while the posts request is in flight, not before it starts,
+            // so that these cover the revalidation done after the fetch resolves. Leaving from inside
+            // the client mock is what makes the ordering deterministic.
+            const leaveDuringFetch = (viewedChannelId: string, activeServerUrl = serverUrl) => {
+                mockClient.getPosts.mockImplementationOnce(async () => {
+                    await setViewing(viewedChannelId, activeServerUrl);
+                    return {order: [], posts: [], previousPostId: ''};
+                });
+            };
+
             it('should not mark the channel as read when the user left the channel while fetching', async () => {
-                await setViewing('another-channel-id');
+                await setViewing(channelId);
+                leaveDuringFetch('another-channel-id');
 
                 await fetchPostsAndMarkChannelAsRead(serverUrl, channelId);
 
+                expect(mockClient.getPosts).toHaveBeenCalled();
                 expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
             });
 
             it('should not mark the channel as read when the user left the server while fetching', async () => {
-                await setViewing(channelId, 'https://another.server.com');
+                await setViewing(channelId);
+                leaveDuringFetch(channelId, 'https://another.server.com');
 
                 await fetchPostsAndMarkChannelAsRead(serverUrl, channelId);
 
+                expect(mockClient.getPosts).toHaveBeenCalled();
                 expect(mockClient.viewMyChannel).not.toHaveBeenCalled();
             });
         });
