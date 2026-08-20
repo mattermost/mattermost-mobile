@@ -21,7 +21,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Settings - Email Notification Settings', () => {
@@ -62,8 +62,7 @@ describe('Account - Settings - Email Notification Settings', () => {
         await expect(EmailNotificationSettingsScreen.emailThreadsOptionToggledOn).toBeVisible();
     });
 
-    // CI 1ed059f failed because the simulator went offline while saving the preference.
-    (isIos() ? it.skip : it)('MM-T5109_2 - should be able to change email notification settings and save by tapping navigation back button', async () => {
+    it('MM-T5109_2 - should be able to change email notification settings and save by tapping navigation back button', async () => {
         // # Tap on never option
         await EmailNotificationSettingsScreen.neverOption.tap();
 

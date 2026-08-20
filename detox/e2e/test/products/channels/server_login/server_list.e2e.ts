@@ -241,9 +241,7 @@ describe('Server Login - Server List', () => {
         await tapServerItem(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
     });
 
-    // Skip iOS: revealed Remove is not reliably hittable — Logout overlaps
-    // Remove during the swipe-reveal animation.
-    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
+    itWithThreeServers('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -251,17 +249,15 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
         await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
-        if (isIos()) {
-            // iOS: the Logout button overlaps Remove during the reveal animation, so wait for 100%
-            // visibility. TEN_SEC matches MM-T4691_6/7 — the reveal can take over 5s on CI.
-            await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
-                toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
-        } else {
-            await wait(timeouts.ONE_SEC);
-        }
-        await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).atIndex(0).tap();
+
+        // swipeRevealAndTapOption, not a raw swipe + toBeVisible(100) + centre tap: it
+        // waits for the reveal to settle before tapping, which is what the "Logout
+        // overlaps Remove" skip was about, and corner-taps so the touch lands inside
+        // Remove's own rect rather than the shared edge.
+        await ServerListScreen.swipeRevealAndTapOption(
+            ServerListScreen.getServerItemActive(serverOneDisplayName),
+            ServerListScreen.getServerItemRemoveOption(serverOneDisplayName),
+        );
 
         // * Verify remove server alert is displayed
         await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);
@@ -284,8 +280,7 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    // Skip iOS: revealed Logout is not reliably hittable after the swipe-reveal.
-    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_6 - should be able to log out a server from the list', async () => {
+    itWithThreeServers('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -296,18 +291,14 @@ describe('Server Login - Server List', () => {
         // reveal panel buttons then fail the 100% hittability threshold.
         await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverThreeDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
 
-        // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        // On iOS, also wait for the logout option to be fully visible before tapping.
-        if (isIos()) {
-            await waitFor(ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName)).
-                toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
-        } else {
-            await wait(timeouts.TWO_SEC);
-        }
-        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).atIndex(0).tap();
+        // swipeRevealAndTapOption waits for the reveal to settle before tapping — see the
+        // fan-out note in ServerListScreen.swipeRevealOption. That is the "revealed Logout
+        // is not reliably hittable" this case was skipped for.
+        await ServerListScreen.swipeRevealAndTapOption(
+            ServerListScreen.getServerItemInactive(serverThreeDisplayName),
+            ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName),
+        );
 
         // * Verify logout server alert is displayed
         await waitForElementToBeVisible(Alert.logoutTitle(serverThreeDisplayName), timeouts.TEN_SEC);
@@ -317,16 +308,18 @@ describe('Server Login - Server List', () => {
         await Alert.logoutButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify third server is logged out
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
-        await expect(ServerListScreen.getServerItemLoginOption(serverThreeDisplayName)).toBeVisible();
+        // * Verify third server is logged out. Reveal through the same helper so the
+        // assertion runs against a settled panel rather than mid fan-out.
+        await ServerListScreen.swipeRevealOption(
+            ServerListScreen.getServerItemInactive(serverThreeDisplayName),
+            ServerListScreen.getServerItemLoginOption(serverThreeDisplayName),
+        );
 
         // # Go back to first server
         await tapServerItem(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
     });
 
-    // Skip iOS: Add Server is not reliably hittable after scrolling the list.
-    (isIos() ? it.skip : itWithThreeServers)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
+    itWithThreeServers('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
@@ -335,6 +328,11 @@ describe('Server Login - Server List', () => {
 
         // Use a partial swipe on iOS to scroll the list without over-shooting.
         await revealServerListItems();
+
+        // Wait for Add Server to settle after the scroll before tapping it — tapping into
+        // the tail of the scroll is the "not reliably hittable after scrolling" this case
+        // was skipped for. The button sits below the list, so it never needs scrolling in.
+        await waitForElementToBeVisible(ServerListScreen.addServerButton, timeouts.TEN_SEC);
         await ServerListScreen.addServerButton.tap();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
         await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
