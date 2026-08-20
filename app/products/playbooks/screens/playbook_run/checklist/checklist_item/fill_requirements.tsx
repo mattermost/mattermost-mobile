@@ -4,7 +4,7 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView, Text, View} from 'react-native';
+import {Keyboard, ScrollView, Text, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import Button from '@components/button';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
@@ -53,6 +53,44 @@ export type FillRequirementsProps = {
     requirements: TaskRequirement[];
     currentState: ChecklistItemState;
     editMode?: boolean;
+};
+
+type RequirementFieldProps = {
+    requirement: TaskRequirement;
+    value: string;
+    error?: string;
+    editable: boolean;
+    theme: Theme;
+    style: StyleProp<ViewStyle>;
+    onChange: (id: string, next: string) => void;
+};
+
+const RequirementField = ({
+    requirement,
+    value,
+    error,
+    editable,
+    theme,
+    style,
+    onChange,
+}: RequirementFieldProps) => {
+    const onChangeText = useCallback((next: string) => {
+        onChange(requirement.id, next);
+    }, [onChange, requirement.id]);
+
+    return (
+        <View style={style}>
+            <FloatingTextInput
+                label={requirement.label}
+                onChangeText={onChangeText}
+                testID={`requirement-value-${requirement.id}`}
+                value={value}
+                theme={theme}
+                error={error}
+                editable={editable}
+            />
+        </View>
+    );
 };
 
 const close = () => {
@@ -120,6 +158,18 @@ const FillRequirements = ({
         return Object.keys(nextErrors).length === 0;
     }, [formatMessage, requirements]);
 
+    const handleRequirementChange = useCallback((id: string, next: string) => {
+        setValues((prev) => ({...prev, [id]: next}));
+        setErrors((prev) => {
+            if (!prev[id] || !next.trim()) {
+                return prev;
+            }
+            const rest = {...prev};
+            delete rest[id];
+            return rest;
+        });
+    }, []);
+
     const save = useCallback(async (state: ChecklistItemState, requirementValues: Record<string, string>) => {
         if (savingRef.current) {
             return;
@@ -184,34 +234,18 @@ const FillRequirements = ({
                 keyboardShouldPersistTaps='handled'
             >
                 <Text style={styles.description}>{description}</Text>
-                {requirements.map((req) => {
-                    const hasError = Boolean(errors[req.id]);
-                    return (
-                        <View
-                            key={req.id}
-                            style={styles.field}
-                        >
-                            <FloatingTextInput
-                                label={req.label}
-                                onChangeText={(next) => {
-                                    setValues((prev) => ({...prev, [req.id]: next}));
-                                    if (errors[req.id] && next.trim()) {
-                                        setErrors((prev) => {
-                                            const rest = {...prev};
-                                            delete rest[req.id];
-                                            return rest;
-                                        });
-                                    }
-                                }}
-                                testID={`requirement-value-${req.id}`}
-                                value={values[req.id] || ''}
-                                theme={theme}
-                                error={hasError ? errors[req.id] : undefined}
-                                editable={!saving}
-                            />
-                        </View>
-                    );
-                })}
+                {requirements.map((req) => (
+                    <RequirementField
+                        key={req.id}
+                        requirement={req}
+                        value={values[req.id] || ''}
+                        error={errors[req.id]}
+                        editable={!saving}
+                        theme={theme}
+                        style={styles.field}
+                        onChange={handleRequirementChange}
+                    />
+                ))}
             </ScrollView>
             <View style={styles.footer}>
                 <Button

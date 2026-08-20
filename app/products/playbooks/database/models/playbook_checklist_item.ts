@@ -14,18 +14,23 @@ function safeParseTaskRequirements(raw: unknown): TaskRequirement[] {
         return [];
     }
 
-    return parsed.filter((item): item is TaskRequirement => {
-        return Boolean(
-            item &&
-            typeof item === 'object' &&
-            typeof (item as TaskRequirement).id === 'string' &&
-            typeof (item as TaskRequirement).label === 'string',
-        );
-    }).map((item) => ({
-        id: item.id,
-        label: item.label,
-        value: typeof item.value === 'string' ? item.value : '',
-    }));
+    return parsed.reduce<TaskRequirement[]>((acc, item) => {
+        if (
+            !item ||
+            typeof item !== 'object' ||
+            typeof (item as TaskRequirement).id !== 'string' ||
+            typeof (item as TaskRequirement).label !== 'string'
+        ) {
+            return acc;
+        }
+
+        acc.push({
+            id: (item as TaskRequirement).id,
+            label: (item as TaskRequirement).label,
+            value: typeof (item as TaskRequirement).value === 'string' ? (item as TaskRequirement).value : '',
+        });
+        return acc;
+    }, []);
 }
 
 import type {Relation} from '@nozbe/watermelondb';

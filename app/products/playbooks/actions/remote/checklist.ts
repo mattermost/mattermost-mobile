@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {
@@ -14,6 +15,7 @@ import {
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -31,18 +33,18 @@ export const updateChecklistItem = async (
 
         await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state, requirementValues);
 
-        // Prefer a full run sync when requirement values change so labels/values stay in sync
-        // with server state after partial saves (state may be unchanged).
+        let requirements: TaskRequirement[] | undefined;
         if (requirementValues) {
-            const run = await client.fetchPlaybookRun(playbookRunId);
-            const result = await handlePlaybookRuns(serverUrl, [run], false, true);
-            if (result.error) {
-                return {error: result.error};
-            }
-            return {data: true};
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const item = await getPlaybookChecklistItemById(database, itemId);
+            requirements = item?.requirements.map((req) => ({
+                id: req.id,
+                label: req.label,
+                value: requirementValues[req.id] ?? req.value,
+            }));
         }
 
-        await localUpdateChecklistItem(serverUrl, itemId, state);
+        await localUpdateChecklistItem(serverUrl, itemId, state, requirements);
         return {data: true};
     } catch (error) {
         logDebug('error on updateChecklistItem', getFullErrorMessage(error));

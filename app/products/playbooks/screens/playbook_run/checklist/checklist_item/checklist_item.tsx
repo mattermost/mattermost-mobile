@@ -151,6 +151,14 @@ const ChecklistItem = ({
         });
     }, [checklistNumber, item.id, item.state, item.title, itemNumber, playbookRunId, requirements]);
 
+    const onCompleteRequirements = useCallback(() => {
+        openFillRequirements(false);
+    }, [openFillRequirements]);
+
+    const onEditRequirementValues = useCallback(() => {
+        openFillRequirements(true);
+    }, [openFillRequirements]);
+
     const onUserChipPress = useCallback((userId: string) => {
         openUserProfile({
             userId,
@@ -318,8 +326,8 @@ const ChecklistItem = ({
                         requirements={requirements}
                         isTaskComplete={checked}
                         readOnly={isDisabled || skipped}
-                        onComplete={() => openFillRequirements(false)}
-                        onEditValues={() => openFillRequirements(true)}
+                        onComplete={onCompleteRequirements}
+                        onEditValues={onEditRequirementValues}
                     />
                 )}
 

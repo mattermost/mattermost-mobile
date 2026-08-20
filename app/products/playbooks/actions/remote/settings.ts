@@ -2,13 +2,27 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setPlaybooksTaskRequirementsEnabled} from '@playbooks/actions/local/settings';
+import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 export const updatePlaybooksSettings = async (serverUrl: string) => {
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const isPlaybooksEnabled = await fetchIsPlaybooksEnabled(database);
+        if (!isPlaybooksEnabled) {
+            logDebug('updatePlaybooksSettings: skipping settings fetch, playbooks below minimum version');
+            return {
+                data: {
+                    enable_experimental_features: false,
+                    enable_task_requirements: false,
+                },
+            };
+        }
+
         const client = NetworkManager.getClient(serverUrl);
         const settings = await client.fetchPlaybooksSettings();
         const {error} = await setPlaybooksTaskRequirementsEnabled(serverUrl, Boolean(settings.enable_task_requirements));

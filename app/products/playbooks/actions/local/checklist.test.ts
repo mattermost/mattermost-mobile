@@ -68,6 +68,23 @@ describe('updateChecklistItem', () => {
 
         await Promise.all(testPromises);
     });
+
+    it('should update requirements when provided', async () => {
+        const checklistId = 'checklistid';
+        const item = TestHelper.createPlaybookItem(checklistId, 0);
+        item.requirements = [{id: 'req1', label: 'Ticket URL', value: ''}];
+        await operator.handlePlaybookChecklistItem({items: [{...item, checklist_id: checklistId}], prepareRecordsOnly: false});
+
+        const nextRequirements = [{id: 'req1', label: 'Ticket URL', value: 'https://example.com'}];
+        const {data, error} = await updateChecklistItem(serverUrl, item.id, 'closed', nextRequirements);
+        expect(error).toBeUndefined();
+        expect(data).toBe(true);
+
+        const updated = await getPlaybookChecklistItemById(operator.database, item.id);
+        expect(updated).toBeDefined();
+        expect(updated!.state).toBe('closed');
+        expect(updated!.requirements).toEqual(nextRequirements);
+    });
 });
 
 describe('setChecklistItemCommand', () => {

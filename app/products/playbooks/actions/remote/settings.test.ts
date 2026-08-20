@@ -4,11 +4,17 @@
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {
+    MINIMUM_MAJOR_VERSION,
+    MINIMUM_MINOR_VERSION,
+    MINIMUM_PATCH_VERSION,
+} from '@playbooks/constants/version';
 import {querySystemValue} from '@queries/servers/system';
 
 import {updatePlaybooksSettings} from './settings';
 
 const serverUrl = 'baseHandler.test.com';
+const minimumVersion = `${MINIMUM_MAJOR_VERSION}.${MINIMUM_MINOR_VERSION}.${MINIMUM_PATCH_VERSION}`;
 
 const mockClient = {
     fetchPlaybooksSettings: jest.fn(),
@@ -28,7 +34,25 @@ afterEach(async () => {
 });
 
 describe('updatePlaybooksSettings', () => {
+    it('should skip the settings fetch when playbooks is below the minimum version', async () => {
+        const result = await updatePlaybooksSettings(serverUrl);
+
+        expect(result).toEqual({
+            data: {
+                enable_experimental_features: false,
+                enable_task_requirements: false,
+            },
+        });
+        expect(mockClient.fetchPlaybooksSettings).not.toHaveBeenCalled();
+    });
+
     it('should fetch settings and persist task requirements flag', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_VERSION, value: minimumVersion}],
+            prepareRecordsOnly: false,
+        });
+
         mockClient.fetchPlaybooksSettings.mockResolvedValueOnce({
             enable_experimental_features: false,
             enable_task_requirements: true,
