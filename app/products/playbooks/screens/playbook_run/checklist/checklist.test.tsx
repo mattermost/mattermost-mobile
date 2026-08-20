@@ -98,7 +98,6 @@ describe('Checklist', () => {
             filters: DEFAULT_TASK_FILTERS,
             currentUserId: 'current-user-id',
             collapseAll: false,
-            collapseAllEpoch: 0,
             checklistProgress: {
                 skipped: false,
                 completed: 0,
@@ -506,7 +505,7 @@ describe('Checklist', () => {
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).not.toContain('checked');
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'skipped', 'mine', 'theirs']);
         });
 
         it('should hide skipped items when showSkipped is off', () => {
@@ -515,7 +514,7 @@ describe('Checklist', () => {
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).not.toContain('skipped');
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'mine', 'theirs']);
         });
 
         it('should hide items assigned to the current user when Me is off', () => {
@@ -524,7 +523,7 @@ describe('Checklist', () => {
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).not.toContain('mine');
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'theirs']);
         });
 
         it('should hide items assigned to other users when Others is off', () => {
@@ -533,7 +532,7 @@ describe('Checklist', () => {
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).not.toContain('theirs');
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'mine']);
         });
 
         it('should hide unassigned items when Unassigned is off', () => {
@@ -571,7 +570,6 @@ describe('Checklist', () => {
                 <Checklist
                     {...props}
                     collapseAll={true}
-                    collapseAllEpoch={1}
                 />,
             );
 
@@ -580,40 +578,35 @@ describe('Checklist', () => {
             });
         });
 
-        it('should re-collapse after being expanded individually', async () => {
+        it('should start collapsed when mounted while collapseAll is true', async () => {
             const props = getBaseProps();
-            const {getByText, getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+            props.collapseAll = true;
 
-            rerender(
-                <Checklist
-                    {...props}
-                    collapseAll={true}
-                    collapseAllEpoch={1}
-                />,
-            );
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+        });
+
+        it('should expand when the run expands all checklists', async () => {
+            const props = getBaseProps();
+            props.collapseAll = true;
+            const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+
             await waitFor(() => {
                 expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
             });
 
-            // Expand this one checklist on its own.
-            act(() => {
-                fireEvent.press(getByText('Test Checklist'));
-            });
+            rerender(
+                <Checklist
+                    {...props}
+                    collapseAll={false}
+                />,
+            );
+
             await waitFor(() => {
                 expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
-            });
-
-            // Collapsing all again must still collapse it, even though only the epoch changed.
-            rerender(
-                <Checklist
-                    {...props}
-                    collapseAll={true}
-                    collapseAllEpoch={2}
-                />,
-            );
-
-            await waitFor(() => {
-                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
             });
         });
     });

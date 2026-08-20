@@ -676,7 +676,6 @@ describe('PlaybookRun', () => {
             const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
             const button = getByTestId('playbook-run.collapse-all-button');
-            const initialEpoch = getByTestId('checklist-list').props.collapseAllEpoch;
 
             act(() => {
                 fireEvent.press(button);
@@ -685,16 +684,12 @@ describe('PlaybookRun', () => {
             let checklistList = getByTestId('checklist-list');
             expect(checklistList.props.collapseAll).toBe(true);
 
-            // The epoch must advance so checklists re-sync even if they were toggled individually.
-            expect(checklistList.props.collapseAllEpoch).toBe(initialEpoch + 1);
-
             act(() => {
                 fireEvent.press(button);
             });
 
             checklistList = getByTestId('checklist-list');
             expect(checklistList.props.collapseAll).toBe(false);
-            expect(checklistList.props.collapseAllEpoch).toBe(initialEpoch + 2);
         });
 
         it('should open the task filter bottom sheet', () => {

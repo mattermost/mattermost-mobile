@@ -237,16 +237,10 @@ export default function PlaybookRun({
     const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS);
     const [collapseAll, setCollapseAll] = useState(false);
 
-    // Each checklist keeps its own expanded state so it can still be toggled individually. The epoch
-    // makes every press of the collapse control a distinct change, so the checklists re-sync with it
-    // even after they have been toggled individually since the last press.
-    const [collapseAllEpoch, setCollapseAllEpoch] = useState(0);
-
     const filtersActive = !areDefaultTaskFilters(filters);
 
     const toggleCollapseAll = useCallback(() => {
         setCollapseAll((prev) => !prev);
-        setCollapseAllEpoch((prev) => prev + 1);
     }, []);
 
     const openTaskFilter = usePreventDoubleTap(useCallback(() => {
@@ -530,7 +524,6 @@ export default function PlaybookRun({
                             filters={filters}
                             currentUserId={currentUserId}
                             collapseAll={collapseAll}
-                            collapseAllEpoch={collapseAllEpoch}
                         />
                     </View>
                     {!readOnly && (

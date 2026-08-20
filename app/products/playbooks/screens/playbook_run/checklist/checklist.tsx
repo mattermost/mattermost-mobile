@@ -119,7 +119,6 @@ type Props = {
     filters: TaskFilters;
     currentUserId: string;
     collapseAll: boolean;
-    collapseAllEpoch: number;
 }
 
 const Checklist = ({
@@ -140,9 +139,8 @@ const Checklist = ({
     filters,
     currentUserId,
     collapseAll,
-    collapseAllEpoch,
 }: Props) => {
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(() => !collapseAll);
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -153,7 +151,7 @@ const Checklist = ({
     // Follow the run-level collapse/expand control whenever the user triggers it.
     useDidUpdate(() => {
         setExpanded(!collapseAll);
-    }, [collapseAll, collapseAllEpoch]);
+    }, [collapseAll]);
 
     const toggleExpanded = useCallback(() => {
         setExpanded((prev) => !prev);

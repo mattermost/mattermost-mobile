@@ -19,7 +19,6 @@ type Props = {
     filters: TaskFilters;
     currentUserId: string;
     collapseAll: boolean;
-    collapseAllEpoch: number;
 }
 
 const styles = StyleSheet.create({
@@ -38,7 +37,6 @@ const ChecklistList = ({
     filters,
     currentUserId,
     collapseAll,
-    collapseAllEpoch,
 }: Props) => {
     return (
         <View style={(isFinished || !isParticipant) ? styles.container : undefined}>
@@ -55,7 +53,6 @@ const ChecklistList = ({
                     filters={filters}
                     currentUserId={currentUserId}
                     collapseAll={collapseAll}
-                    collapseAllEpoch={collapseAllEpoch}
                 />
             ))}
         </View>

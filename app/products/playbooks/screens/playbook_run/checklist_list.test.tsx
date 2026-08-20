@@ -38,7 +38,6 @@ describe('ChecklistList', () => {
             filters: DEFAULT_TASK_FILTERS,
             currentUserId: 'current-user-id',
             collapseAll: false,
-            collapseAllEpoch: 0,
         };
     }
 

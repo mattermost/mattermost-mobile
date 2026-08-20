@@ -86,12 +86,10 @@ const TaskFilter = ({filters, onFiltersChanged}: Props) => {
     const [selected, setSelected] = useState(filters);
 
     const update = useCallback((changes: Partial<TaskFilters>) => {
-        setSelected((prev) => {
-            const next = {...prev, ...changes};
-            onFiltersChanged(next);
-            return next;
-        });
-    }, [onFiltersChanged]);
+        const next = {...selected, ...changes};
+        setSelected(next);
+        onFiltersChanged(next);
+    }, [onFiltersChanged, selected]);
 
     // Acts as a select-all checkbox: it turns every filter on, or clears them all when they are already on.
     const toggleAll = useCallback(() => {
