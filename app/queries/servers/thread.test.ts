@@ -6,17 +6,19 @@ import {getThreadById, prepareThreadsFromReceivedPosts} from '@queries/servers/t
 import TestHelper from '@test/test_helper';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Database} from '@nozbe/watermelondb';
 
 const serverUrl = 'baseHandler.test.com';
 const teamId = 'team-id-1';
 const channelId = 'channel-id-1';
 
 describe('prepareThreadsFromReceivedPosts', () => {
+    let database: Database;
     let operator: ServerDataOperator;
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
-        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
     });
 
     afterEach(async () => {
@@ -61,10 +63,10 @@ describe('prepareThreadsFromReceivedPosts', () => {
             await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
         }
 
-        const thread = await getThreadById(DatabaseManager.serverDatabases[serverUrl]!.database, rootPost.id);
+        const thread = await getThreadById(database, rootPost.id);
         expect(thread).toBeDefined();
-        expect(thread!.isFollowing).toBe(true);
-        expect(thread!.replyCount).toBe(2);
+        expect(thread?.isFollowing).toBe(true);
+        expect(thread?.replyCount).toBe(2);
     });
 
     it('should apply an explicit is_following false from the post payload', async () => {
@@ -103,8 +105,8 @@ describe('prepareThreadsFromReceivedPosts', () => {
             await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
         }
 
-        const thread = await getThreadById(DatabaseManager.serverDatabases[serverUrl]!.database, rootPost.id);
+        const thread = await getThreadById(database, rootPost.id);
         expect(thread).toBeDefined();
-        expect(thread!.isFollowing).toBe(false);
+        expect(thread?.isFollowing).toBe(false);
     });
 });
