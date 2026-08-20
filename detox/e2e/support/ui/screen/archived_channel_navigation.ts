@@ -83,8 +83,18 @@ async function openArchivedChannelViaBrowseChannels(channelName: string) {
     await openArchivedChannelsFilter();
 
     const channelItem = await waitForArchivedChannelItem(channelName);
-    await channelItem.tap();
+    const channelItemDisplayName = BrowseChannelsScreen.getChannelItemDisplayName(channelName);
 
+    // Prefer the display-name text (hittable) over the row container; fall back to the row.
+    try {
+        await waitFor(channelItemDisplayName).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await channelItemDisplayName.tap();
+    } catch {
+        await waitFor(channelItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await channelItem.tap();
+    }
+
+    // Explicit destination asserts — callers must not treat a tap alone as success.
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
     if (isAndroid()) {
         await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
@@ -158,8 +168,13 @@ export async function openArchivedChannel(
     if (isAndroid()) {
         try {
             await openArchivedChannelViaBrowseChannels(channelName);
-        } catch {
-            // Archived filter list can lag behind WebSocket events — fall back to search/permalink.
+        } catch (error) {
+            // Only fall back after the browse destination assert failed — do not mask it silently.
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[openArchivedChannel] Browse path failed for "${channelName}"; falling back to search/permalink. ` +
+                `${error instanceof Error ? error.message : String(error)}`,
+            );
             await openArchivedChannelViaSearchPermalink(searchableMessage, postId);
         }
     } else {

@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -30,7 +31,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
-import {by, expect} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 describe('Search - Saved Messages', () => {
     const serverOneDisplayName = 'Server 1';
@@ -45,6 +46,14 @@ describe('Search - Saved Messages', () => {
         testChannel = channel;
         testTeam = team;
         testUser = user;
+
+        // Reply should leave the thread Following (same CRT setup as reply_to_thread.e2e.ts).
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'always_on',
+                ThreadAutoFollow: true,
+            },
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -61,22 +70,7 @@ describe('Search - Saved Messages', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4910_1 - should match elements on saved messages screen', async () => {
-        // # Open saved messages screen
-        await SavedMessagesScreen.open();
-
-        // * Verify basic elements on saved messages screen
-        await expect(SavedMessagesScreen.largeHeaderTitle).toHaveText('Saved Messages');
-        await expect(SavedMessagesScreen.largeHeaderSubtitle).toHaveText('All messages you\'ve saved for follow up');
-        await expect(SavedMessagesScreen.emptyTitle).toHaveText('No saved messages yet');
-        await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
-
-        // # Go back to channel list screen
-        await SavedMessagesScreen.close();
-    });
-
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
+    it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -114,13 +108,16 @@ describe('Search - Saved Messages', () => {
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(channelPostListPostItem).toBeVisible();
 
-        // # Go back to channel list screen
+        // # Unsave so later tests (empty state) are not polluted by this leftover
         await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await SavedMessagesScreen.verifyPostUnsaved(post.id);
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
+    it('MM-T4910_3 - should be able to edit, reply to, and delete a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -154,7 +151,9 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, updatedMessage);
+        // Post text now renders as "<message> edit (edited)", so the exact-text matcher
+        // would not match; use the post-id-only matcher (same pattern as message_edit.e2e.ts).
+        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id);
         await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
 
@@ -176,9 +175,11 @@ describe('Search - Saved Messages', () => {
         // * Verify reply count and thread follow control on the saved message
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
 
-        // This suite does not enable ThreadAutoFollow, so replying does not auto-follow the
-        // thread and the footer shows "Follow" rather than "Following".
-        await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
+        // Reply auto-follows (ThreadAutoFollow). Assert the Following control, not
+        // by.text('Follow'), which misses the Following label during the local flash.
+        await waitForElementToBeVisible(
+            element(by.id('post_footer.following_thread.button')),
+        );
 
         // # Open post options for updated saved message and delete post
         await postListPostItem.longPress(timeouts.TWO_SEC);
@@ -191,8 +192,7 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
+    it('MM-T4910_4 - should be able to unsave a message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -225,8 +225,7 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
+    it('MM-T4910_5 - should be able to pin/unpin a saved message from saved messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -247,6 +246,8 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
 
         await PostOptionsScreen.tapPinPost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, savedPost.id);
         await SavedMessagesScreen.close();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
@@ -254,7 +255,7 @@ describe('Search - Saved Messages', () => {
 
         // * Verify saved message is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to saved messages screen, open post options for saved message, tap on unpin from channel option, go back to channel list screen, open the channel screen where saved message is posted, open channel info screen, and open pinned messages screen
         await PinnedMessagesScreen.back();
@@ -263,17 +264,55 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.open();
         await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.tapUnpinPost();
+        await waitFor(PostOptionsScreen.postOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, savedPost.id);
         await SavedMessagesScreen.close();
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
         // * Verify saved message is not displayed anymore on pinned messages screen
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to channel list screen
+        // # Unsave so later tests (empty state) are not polluted by this leftover
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await SavedMessagesScreen.verifyPostUnsaved(savedPost.id);
+        await SavedMessagesScreen.close();
+    });
+
+    // Run last so the first Saved tab mount happens after a save (production order).
+    // Prior tests unsave or delete their posts, so this opens an empty list.
+    it('MM-T4910_1 - should match elements on saved messages screen', async () => {
+        // # Open saved messages screen
+        await SavedMessagesScreen.open();
+
+        // T4910_3 on 5865fcd SIGSEGV'd during reloadReactNative before delete.
+        // Screenshot showed leftover "Message 1c9777" instead of empty state.
+        const flagged = await Post.apiGetFlaggedPosts(siteOneUrl, testUser.id);
+        if (flagged.error) {
+            throw new Error(`MM-T4910_1: flagged posts lookup failed: ${JSON.stringify(flagged.error)}`);
+        }
+        const leftoverIds = flagged.order;
+        /* eslint-disable no-await-in-loop -- unsaves must finish before the empty-state assert */
+        for (const postId of leftoverIds) {
+            await SavedMessagesScreen.openPostOptionsFor(postId, '');
+            await PostOptionsScreen.unsavePostOption.tap();
+            await SavedMessagesScreen.verifyPostUnsaved(postId);
+        }
+        /* eslint-enable no-await-in-loop */
+
+        // * Verify basic elements on saved messages screen
+        await expect(SavedMessagesScreen.largeHeaderTitle).toHaveText('Saved Messages');
+        await expect(SavedMessagesScreen.largeHeaderSubtitle).toHaveText('All messages you\'ve saved for follow up');
+        await expect(SavedMessagesScreen.emptyTitle).toHaveText('No saved messages yet');
+        await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
+
+        // # Go back to channel list screen
+        await SavedMessagesScreen.close();
     });
 });

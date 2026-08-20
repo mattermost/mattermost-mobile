@@ -8,7 +8,7 @@ import {
     ChannelSettingsScreen,
 } from '@support/ui/screen';
 import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
     testID = {
@@ -154,6 +154,29 @@ class CreateOrEditChannelScreen {
             // eslint-disable-next-line no-console
             console.log('Element not visible, skipping click');
         }
+    };
+
+    // iOS simulators drop idle keep-alive connections (-1005). Create then stays on
+    // this form with edit_channel_info.error.text. Retry once after the banner appears.
+    tapCreateAndWaitForChannel = async () => {
+        const errorText = element(by.id('edit_channel_info.error.text'));
+        await this.createButton.tap();
+
+        try {
+            await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+            return;
+        } catch {
+            // Create may still be in flight, or the request failed.
+        }
+
+        try {
+            await waitFor(errorText).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            return;
+        }
+
+        await wait(timeouts.TWO_SEC);
+        await this.createButton.tap();
     };
 }
 

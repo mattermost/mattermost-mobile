@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {capitalize, getRandomId} from '@support/utils';
+import {capitalize, getRandomId, timeouts, wait} from '@support/utils';
+import {isTransportFailure} from '@support/utils/transport_retry';
 
-import client from './client';
+import client, {isTransientHttpStatus} from './client';
 import {getResponseFromError} from './common';
 
 // ****************************************************************
@@ -50,16 +51,32 @@ export const apiAddUserToChannel = async (baseUrl: string, userId: string, chann
  * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null}: any = {}): Promise<any> => {
-    try {
-        const response = await client.post(
-            `${baseUrl}/api/v4/channels`,
-            channel || generateRandomChannel(teamId, type, prefix),
-        );
-
-        return {channel: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
+    let lastError: any;
+    /* eslint-disable no-await-in-loop */
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const response = await client.post(
+                `${baseUrl}/api/v4/channels`,
+                channel || generateRandomChannel(teamId, type, prefix),
+            );
+            if (response.data?.id) {
+                return {channel: response.data};
+            }
+            lastError = {error: {message: 'empty channel in create response'}, status: response.status ?? 0};
+        } catch (err) {
+            lastError = getResponseFromError(err);
+        }
+        const retryable = lastError.status === 0 ||
+            lastError.status === 500 ||
+            isTransientHttpStatus(lastError.status) ||
+            isTransportFailure(lastError);
+        if (!retryable || attempt === 3) {
+            return lastError;
+        }
+        await wait(timeouts.ONE_SEC * attempt);
     }
+    /* eslint-enable no-await-in-loop */
+    return lastError;
 };
 
 /**

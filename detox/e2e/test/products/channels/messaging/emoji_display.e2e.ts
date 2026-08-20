@@ -27,13 +27,14 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Emoji Display', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let emojiThreadChannel: any;
     let testTeam: any;
     let testUser: any;
 
@@ -42,6 +43,11 @@ describe('Messaging - Emoji Display', () => {
         testChannel = channel;
         testTeam = team;
         testUser = user;
+
+        // Dedicated channel for MM-T162_1 so MM-T160_1 jumbo posts cannot virtualize the root off-screen.
+        const {channel: threadChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: team.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, user.id, threadChannel.id);
+        emojiThreadChannel = threadChannel;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -87,25 +93,29 @@ describe('Messaging - Emoji Display', () => {
     });
 
     it('MM-T162_1 - should display emoji-only replies as jumbo in thread view', async () => {
-        // # Post a root message in the channel via API
+        // # Post a root message and emoji-only reply via API in an empty dedicated channel.
+        // Sharing testChannel with MM-T160_1 leaves the root virtualized off-screen.
         const rootMessage = 'Root message for emoji reply test';
         await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
+            channelId: emojiThreadChannel.id,
             message: rootMessage,
         });
-        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, emojiThreadChannel.id);
 
         // # Post an emoji-only reply to the root post via API
         const emojiReply = '🎉';
-        await Post.apiCreatePost(siteOneUrl, {
-            channelId: testChannel.id,
+        const {post: replyPost} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: emojiThreadChannel.id,
             message: emojiReply,
             rootId: rootPost.id,
         });
-        const {post: replyPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // # Open the channel and navigate to the thread
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        // # Open the dedicated channel and navigate to the thread
+        await ChannelScreen.open(channelsCategory, emojiThreadChannel.name);
+        await waitForElementToExist(
+            element(by.id(`channel.post_list.post.${rootPost.id}`)),
+            timeouts.TEN_SEC,
+        );
         await ChannelScreen.openReplyThreadFor(rootPost.id, rootMessage);
         await ThreadScreen.toBeVisible();
 
@@ -113,7 +123,7 @@ describe('Messaging - Emoji Display', () => {
         // TODO: JumboEmoji exposes no container testID, so jumbo vs normal rendering cannot be asserted.
         const replyPostMatcher = by.id(`thread.post_list.post.${replyPost.id}`);
         const emojiInThread = element(by.id('markdown_emoji').withAncestor(replyPostMatcher));
-        await waitFor(emojiInThread).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(emojiInThread, timeouts.TEN_SEC);
 
         // * Verify the emoji element exists in the thread (rendered via JumboEmoji path)
         await expect(emojiInThread).toExist();

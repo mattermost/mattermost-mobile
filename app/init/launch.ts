@@ -208,7 +208,7 @@ export async function determineRouteFromLaunchProps(props: LaunchProps): Promise
             route: '/(unauthenticated)/onboarding',
             params: {
                 ...props,
-                theme,
+                theme: JSON.stringify(theme),
             },
         };
     }
@@ -218,7 +218,7 @@ export async function determineRouteFromLaunchProps(props: LaunchProps): Promise
         route: '/(unauthenticated)/server',
         params: {
             ...props,
-            theme,
+            theme: JSON.stringify(theme),
         },
     };
 }

@@ -318,12 +318,13 @@ jobs:
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
       # Gate the suite on connectivity so an infra failure is reported as infra rather
-      # than as a test failure in whichever flow happens to run first. CI 30466684108:
-      # the simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
+      # than as a test failure in whichever flow happens to run first.
+      # The simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
       # against a valid chain, the app issued zero /api/v4 requests, and the failure
       # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
       # trust evaluation before the reported flows run.
       - name: Pre-flight — simulator can reach test server
+        id: maestro-ios-preflight
         env:
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
@@ -385,7 +386,10 @@ jobs:
         # run the single flow, then restore. Always restore even on failure.
         # Failure here does not fail the job — the main report is the source
         # of truth; this is additive coverage.
-        if: always()
+        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
+        # Skip when pre-flight failed: otherwise TSIO reports this one flow as
+        # 0/1 and hides that the main Maestro suite never ran (CMT 32335934401).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
@@ -651,7 +655,7 @@ jobs:
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
-    # Match iOS (90). CI 30447839548: apt-get update ~38m then suite cancelled mid leave_call
+    # Match iOS (90). apt-get update can take ~38m then the suite cancelled mid leave_call
     # at 60m with 7 passed / 0 failures (SHARD_CANCELLED → STATUS=error).
     timeout-minutes: 90
     outputs:
@@ -669,12 +673,27 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Moved before node/Maestro/seed: zero deps on checkout beyond the action,
-      # and apt-get update can be slow (~38m on run 30447839548).
+      # Moved before node/Maestro/seed: zero deps on checkout beyond the action.
+      #
+      # Only libpulse0 is a real dependency (emulator audio); xvfb already ships in the
+      # runner image. ffmpeg and scrot were dropped — Maestro records no video here and
+      # captures screenshots itself, and neither tool is referenced anywhere else in the
+      # repo. ffmpeg alone pulled ~110 packages / 114 MB, and that download is what made
+      # this step take tens of minutes on some runners and seconds on others.
+      #
+      # `apt-get update` has also blocked outright on these runners, which is what forced
+      # this job's 90m timeout. The image ships a populated apt cache, so try the install
+      # first and only run `apt-get update` when a package cannot be resolved from it; the
+      # step cap turns a wedged apt into a fast failure instead of a stalled suite.
       - name: Install system dependencies
+        timeout-minutes: 6
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}"
+          }
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -880,7 +899,8 @@ jobs:
         # Isolated step: patch server config to AllowDownloadLogs=false, run
         # the single flow, restore on exit. continue-on-error so the main
         # report stays authoritative.
-        if: always()
+        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a

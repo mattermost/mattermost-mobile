@@ -224,8 +224,7 @@ describe('Search - Hashtag Search', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // * Verify the saved post with the hashtag is displayed
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // Inline hashtag links render as text spans inside a single paragraph Text node on both
         // platforms, so verify hashtag search through the search screen instead.

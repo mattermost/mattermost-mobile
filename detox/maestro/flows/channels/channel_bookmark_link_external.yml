@@ -191,6 +191,12 @@ appId: ${MAESTRO_APP_ID}
       # # Return to the app from Safari via the breadcrumb pill.
       - tapOn:
           id: "breadcrumb"
+      # # Foreground Mattermost if the breadcrumb only dismisses Safari on CI.
+      - launchApp:
+          clearState: false
+          stopApp: false
+      - waitForAnimationToEnd:
+          timeout: 3000
 - runFlow:
     when:
       platform: Android

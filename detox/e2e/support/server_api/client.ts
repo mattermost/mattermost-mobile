@@ -14,9 +14,15 @@ import {CookieJar} from 'tough-cookie';
 (https.globalAgent as any).options.family = 4;
 
 const jar = new CookieJar();
+
+// Bound hung TCP / silent Cloudflare stalls. Without a client timeout, apiCreatePost
+// can sit in test_fn until Jest's 300s cap with zero Detox UI actions.
+const REQUEST_TIMEOUT_MS = 30_000;
+
 const baseClient = wrapper(axios.create({
     headers: {'X-Requested-With': 'XMLHttpRequest'},
     jar,
+    timeout: REQUEST_TIMEOUT_MS,
 }));
 
 // Add request interceptor to handle CSRF tokens

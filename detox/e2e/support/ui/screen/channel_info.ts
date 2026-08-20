@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -92,25 +92,44 @@ class ChannelInfoScreen {
     };
 
     toBeVisible = async () => {
-        // Use HALF_MIN for iOS (up from TEN_SEC): after unarchiving/converting a channel,
-        // the navigation stack settles slowly on iOS 26.x, and the channel info screen
-        // can take >10 s to appear. Use polling waitForElementToExist to avoid bridge-idle
-        // sync stalls on both platforms.
+        // HALF_MIN on iOS: after unarchiving/converting a channel the stack settles
+        // slowly on iOS 26.x. Poll so a busy idle timer cannot swallow withTimeout.
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
-        await waitFor(this.channelInfoScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.channelInfoScreen, timeout);
 
         return this.channelInfoScreen;
     };
 
     open = async () => {
         // # Open channel info screen
-        await waitFor(ChannelScreen.headerTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            // Keyboard + leftover sheet animations keep Detox idle busy, so
+            // waitFor(headerTitle).toBeVisible() can sit until Jest's 300s cap.
+            await withSynchronizationDisabled(async () => {
+                await ChannelScreen.dismissKeyboard();
+                await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
+                await ChannelScreen.headerTitle.tap();
+                await waitForElementToExist(this.channelInfoScreen, timeouts.HALF_MIN);
+            });
+            return this.channelInfoScreen;
+        }
+
+        await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
         await ChannelScreen.headerTitle.tap();
 
         return this.toBeVisible();
     };
 
     close = async () => {
+        if (isIos()) {
+            await withSynchronizationDisabled(async () => {
+                await waitForElementToExist(this.closeButton, timeouts.TEN_SEC);
+                await this.closeButton.tap();
+                await waitForElementToNotExist(this.channelInfoScreen, timeouts.TEN_SEC);
+            });
+            return;
+        }
+
         await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
         await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -311,6 +330,18 @@ class ChannelInfoScreen {
             } catch { /* at scroll edge — tap may still work */ }
         }
         await addBookmark.tap({x: 1, y: 1});
+
+        // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
+        // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
+        const addLinkOption = element(by.id('channel_bookmark.type.link'));
+        await withSynchronizationDisabled(async () => {
+            try {
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            } catch {
+                await addBookmark.tap({x: 1, y: 1});
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            }
+        });
     };
 
     // Close/reopen channel info to re-trigger bookmark fetch when API-created
@@ -334,6 +365,16 @@ class ChannelInfoScreen {
                 await waitFor(element(bookmarkMatcher)).toExist().withTimeout(perAttemptTimeout);
                 return;
             } catch (error) {
+                for (let swipe = 0; swipe < 3; swipe++) {
+                    try {
+                        await element(by.id(this.testID.bookmarksList)).swipe('left', 'fast', 0.8, 0.5, 0.5);
+                        await waitFor(element(bookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
+                        return;
+                    } catch {
+                        // Continue through the virtualized horizontal list.
+                    }
+                }
+
                 if (attempt === MAX_RETRIES) {
                     if (textFallback) {
                         const headerMatcher = by.text(textFallback).
