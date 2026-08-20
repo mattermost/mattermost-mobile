@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
@@ -49,7 +49,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await HomeScreen.logout();
     });
 
-    (isIos() ? it.skip : it)('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
+    it('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
         // # Open channel and post a code block via the app UI.
         // Post.apiCreatePost can hang for the full Jest budget with no
         // response / no [client] log (silent TCP stall). UI send uses the app network stack

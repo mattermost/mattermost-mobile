@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {waitFor} from 'detox';
 
 describe('Smoke Test - Autocomplete', () => {
@@ -88,7 +88,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    (isIos() ? it.skip : it)('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
+    it('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
