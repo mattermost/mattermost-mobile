@@ -148,8 +148,6 @@ describe('Account - Account Menu', () => {
         await AccountScreen.waitForCustomStatus({emoji: statusEmoji, duration: statusDuration, text: statusText});
 
         // # Clear custom status
-        // CI 32389577745: tap failed Android 75% visibility while the account
-        // slide-in still had the right-edge clear control off-screen.
         await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await AccountScreen.customStatusClearButton.tap();
         await wait(timeouts.ONE_SEC);
