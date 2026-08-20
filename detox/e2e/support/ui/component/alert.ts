@@ -40,6 +40,9 @@ class Alert {
     unarchivePrivateChannelTitle = isAndroid() ? element(by.text('Unarchive Private Channel')) : element(by.label('Unarchive Private Channel')).atIndex(0);
     unarchivePublicChannelTitle = isAndroid() ? element(by.text('Unarchive Public Channel')) : element(by.label('Unarchive Public Channel')).atIndex(0);
 
+    // Alert.alert('', msg) from alertErrorWithFallback — empty title, message only.
+    invalidServerResponse = element(by.text('Received invalid response from the server.'));
+
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);
     confirmButton = isAndroid() ? element(by.text('CONFIRM')) : element(by.label('Confirm')).atIndex(1);

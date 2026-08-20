@@ -89,6 +89,11 @@ class RecentMentionsScreen {
         }
 
         await HomeScreen.mentionsTab.tap();
+        try {
+            await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            await HomeScreen.mentionsTab.tap({x: 1, y: 1});
+        }
 
         return this.toBeVisible();
     };

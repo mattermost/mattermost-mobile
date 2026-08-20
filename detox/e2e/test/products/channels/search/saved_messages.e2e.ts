@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -45,6 +46,14 @@ describe('Search - Saved Messages', () => {
         testChannel = channel;
         testTeam = team;
         testUser = user;
+
+        // Reply should leave the thread Following (same CRT setup as reply_to_thread.e2e.ts).
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'always_on',
+                ThreadAutoFollow: true,
+            },
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -113,8 +122,12 @@ describe('Search - Saved Messages', () => {
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(channelPostListPostItem).toBeVisible();
 
-        // # Go back to channel list screen
+        // # Unsave so later tests (empty state) are not polluted by this leftover
         await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(post.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await SavedMessagesScreen.verifyPostUnsaved(post.id);
         await SavedMessagesScreen.close();
     });
 
@@ -176,9 +189,11 @@ describe('Search - Saved Messages', () => {
         // * Verify reply count and thread follow control on the saved message
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TWO_SEC);
 
-        // This suite does not enable ThreadAutoFollow, so replying does not auto-follow the
-        // thread and the footer shows "Follow" rather than "Following".
-        await waitForElementToBeVisible(element(by.text('Follow')), timeouts.TWO_SEC);
+        // Reply auto-follows (ThreadAutoFollow). Assert the Following control, not
+        // by.text('Follow'), which misses the Following label during the local flash.
+        await waitForElementToBeVisible(
+            element(by.id('post_footer.following_thread.button')),
+        );
 
         // # Open post options for updated saved message and delete post
         await postListPostItem.longPress(timeouts.TWO_SEC);
@@ -277,9 +292,45 @@ describe('Search - Saved Messages', () => {
         // * Verify saved message is not displayed anymore on pinned messages screen
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to channel list screen
+        // # Unsave so later tests (empty state) are not polluted by this leftover
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+        await SavedMessagesScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.unsavePostOption.tap();
+        await SavedMessagesScreen.verifyPostUnsaved(savedPost.id);
+        await SavedMessagesScreen.close();
+    });
+
+    // Run last so the first Saved tab mount happens after a save (production order).
+    // Prior tests unsave or delete their posts, so this opens an empty list.
+    it('MM-T4910_1 - should match elements on saved messages screen', async () => {
+        // # Open saved messages screen
+        await SavedMessagesScreen.open();
+
+        // T4910_3 on 5865fcd SIGSEGV'd during reloadReactNative before delete.
+        // Screenshot showed leftover "Message 1c9777" instead of empty state.
+        const flagged = await Post.apiGetFlaggedPosts(siteOneUrl, testUser.id);
+        if (flagged.error) {
+            throw new Error(`MM-T4910_1: flagged posts lookup failed: ${JSON.stringify(flagged.error)}`);
+        }
+        const leftoverIds = flagged.order;
+        /* eslint-disable no-await-in-loop -- unsaves must finish before the empty-state assert */
+        for (const postId of leftoverIds) {
+            await SavedMessagesScreen.openPostOptionsFor(postId, '');
+            await PostOptionsScreen.unsavePostOption.tap();
+            await SavedMessagesScreen.verifyPostUnsaved(postId);
+        }
+        /* eslint-enable no-await-in-loop */
+
+        // * Verify basic elements on saved messages screen
+        await expect(SavedMessagesScreen.largeHeaderTitle).toHaveText('Saved Messages');
+        await expect(SavedMessagesScreen.largeHeaderSubtitle).toHaveText('All messages you\'ve saved for follow up');
+        await expect(SavedMessagesScreen.emptyTitle).toHaveText('No saved messages yet');
+        await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
+
+        // # Go back to channel list screen
+        await SavedMessagesScreen.close();
     });
 });

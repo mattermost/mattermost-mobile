@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelBookmarkScreen {
@@ -23,6 +23,8 @@ class ChannelBookmarkScreen {
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
         optionsSheet: 'channel_bookmark.options',
         editOption: 'channel_bookmark.options.edit',
+        addLinkOption: 'channel_bookmark.type.link',
+        addFileOption: 'channel_bookmark.type.file',
     };
 
     channelBookmarkScreen = element(by.id(this.testID.channelBookmarkScreen));
@@ -41,13 +43,16 @@ class ChannelBookmarkScreen {
     linkInputDescription = element(by.id(this.testID.linkInputDescription));
     titleInput = element(by.id(this.testID.titleInput));
 
-    // Add bookmark bottom sheet options (by text)
-    addALinkOption = element(by.text('Add a link'));
-    attachAFileOption = element(by.text('Attach a file'));
+    addALinkOption = element(by.id(this.testID.addLinkOption));
+    attachAFileOption = element(by.id(this.testID.addFileOption));
 
+    // Gorhom sheet: Detox idle never settles, so toExist reports "'not null' doesn't match
+    // the selected view" (CI MM-T5608_1 / MM-T5604_1). Corner tap avoids the row-center miss.
     tapAddALinkOption = async () => {
-        await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
-        await this.addALinkOption.tap();
+        await withSynchronizationDisabled(async () => {
+            await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);
+            await this.addALinkOption.tap({x: 1, y: 1});
+        });
     };
 
     // Edit options (long press on bookmark)

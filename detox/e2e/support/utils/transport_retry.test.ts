@@ -63,13 +63,16 @@ describe('classification lock transport retry', () => {
 
     it('returns immediately without retrying or delaying on immediate success', async () => {
         const counter: CallCounter = {calls: 0};
+        const start = Date.now();
         const result = await withTransportRetry(
             replay([SUCCESS], counter),
             {delayMs: 0},
         );
+        const elapsed = Date.now() - start;
 
         assert.equal(counter.calls, 1, 'no retry on immediate success');
         assert.deepEqual(result, SUCCESS);
+        assert.ok(elapsed < 200, `no delay should be incurred on immediate success, took ${elapsed}ms`);
     });
 
     it('pins current behaviour: a missing status field is treated as NOT a transport failure (no retry)', async () => {

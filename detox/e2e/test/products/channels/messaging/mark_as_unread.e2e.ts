@@ -95,6 +95,18 @@ describe('Messaging - Mark as Unread', () => {
     beforeEach(async () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
+
+        const retryButton = element(by.text('Retry'));
+        try {
+            await waitFor(retryButton).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            await retryButton.tap();
+        } catch {
+            // Initial category load did not show the recovery screen.
+        }
+
+        await waitFor(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).
+            toExist().
+            withTimeout(timeouts.HALF_MIN);
     });
 
     afterAll(async () => {

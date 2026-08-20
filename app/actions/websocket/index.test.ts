@@ -14,7 +14,6 @@ import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -53,12 +52,6 @@ jest.mock('@utils/helpers', () => ({
 }));
 
 jest.mock('@playbooks/actions/websocket/reconnect');
-jest.mock('@managers/session_attributes_manager', () => ({
-    __esModule: true,
-    default: {
-        refreshManifest: jest.fn().mockResolvedValue(undefined),
-    },
-}));
 
 describe('WebSocket Index Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -114,7 +107,6 @@ describe('WebSocket Index Actions', () => {
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
-            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle error when server database not found', async () => {
@@ -171,7 +163,6 @@ describe('WebSocket Index Actions', () => {
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
-            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should fetch posts for channel screen', async () => {

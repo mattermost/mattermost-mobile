@@ -64,7 +64,6 @@ public class Network {
 
         WritableMap requestAdapterConfiguration = Arguments.createMap();
         requestAdapterConfiguration.putString("bearerAuthTokenResponseHeader", "token");
-        requestAdapterConfiguration.putBoolean("enableSessionAttributes", true);
         clientOptions.putMap("requestAdapterConfiguration", requestAdapterConfiguration);
 
         WritableMap sessionConfiguration = Arguments.createMap();

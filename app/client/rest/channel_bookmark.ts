@@ -17,7 +17,7 @@ export interface ClientChannelBookmarksMix {
 
 const ClientChannelBookmarks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createChannelBookmark = async (channelId: string, bookmark: ChannelBookmark, connectionId = '') => {
-        const parsedImageUrl = urlParse(bookmark.image_url || '');
+        const parsedImageUrl = urlParse(bookmark.image_url ?? '');
         const hasValidImageUrl = (parsedImageUrl.protocol === 'http:' || parsedImageUrl.protocol === 'https:') && Boolean(parsedImageUrl.host);
         const body = {
             channel_id: channelId,

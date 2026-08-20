@@ -156,7 +156,7 @@ async function loginAndGetToken(): Promise<{user: any; token: string}> {
                 throw lastErr;
             }
             console.warn(
-                `[seed] Login attempt ${attempt}/${LOGIN_RETRY_ATTEMPTS} failed (retriable); ` +
+                `[seed] Login attempt ${attempt}/${LOGIN_RETRY_ATTEMPTS} failed (${lastErr.message}); ` +
                 `retrying in ${LOGIN_RETRY_DELAY_MS}ms…`,
             );
 

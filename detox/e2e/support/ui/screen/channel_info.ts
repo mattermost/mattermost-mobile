@@ -336,6 +336,18 @@ class ChannelInfoScreen {
             } catch { /* at scroll edge — tap may still work */ }
         }
         await addBookmark.tap({x: 1, y: 1});
+
+        // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
+        // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
+        const addLinkOption = element(by.id('channel_bookmark.type.link'));
+        await withSynchronizationDisabled(async () => {
+            try {
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            } catch {
+                await addBookmark.tap({x: 1, y: 1});
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            }
+        });
     };
 
     // Close/reopen channel info to re-trigger bookmark fetch when API-created
@@ -359,6 +371,16 @@ class ChannelInfoScreen {
                 await waitFor(element(bookmarkMatcher)).toExist().withTimeout(perAttemptTimeout);
                 return;
             } catch (error) {
+                for (let swipe = 0; swipe < 3; swipe++) {
+                    try {
+                        await element(by.id(this.testID.bookmarksList)).swipe('left', 'fast', 0.8, 0.5, 0.5);
+                        await waitFor(element(bookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
+                        return;
+                    } catch {
+                        // Continue through the virtualized horizontal list.
+                    }
+                }
+
                 if (attempt === MAX_RETRIES) {
                     if (textFallback) {
                         const headerMatcher = by.text(textFallback).

@@ -169,7 +169,7 @@ describe('SearchScreen', () => {
         expect(searchInput.props.value).toBe('');
     });
 
-    it('does not show results until search history has been persisted', async () => {
+    it('should not show results until search history has been persisted', async () => {
         jest.mocked(addSearchToTeamSearchHistory).mockReturnValue(new Promise(() => {
             // Persist hangs so we can assert results stay hidden
         }));

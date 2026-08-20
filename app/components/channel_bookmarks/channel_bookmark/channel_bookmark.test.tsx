@@ -16,6 +16,7 @@ jest.mock('@components/option_item', () => ({
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    addListener: jest.fn(),
     useManagedConfig: () => ({}),
 }));
 

@@ -324,6 +324,7 @@ jobs:
       # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
       # trust evaluation before the reported flows run.
       - name: Pre-flight — simulator can reach test server
+        id: maestro-ios-preflight
         env:
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
@@ -386,7 +387,9 @@ jobs:
         # Failure here does not fail the job — the main report is the source
         # of truth; this is additive coverage.
         # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        # Skip when pre-flight failed: otherwise TSIO reports this one flow as
+        # 0/1 and hides that the main Maestro suite never ran (CMT 32335934401).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a

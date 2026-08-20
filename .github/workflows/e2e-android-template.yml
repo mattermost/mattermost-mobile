@@ -170,6 +170,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      shard_count: ${{ steps.generate-specs.outputs.shard_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -488,69 +489,10 @@ jobs:
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "60"
         shell: bash
+        # Attempt 2 retries failed/unrun files only. Cold-boots only if the emulator is dead.
         run: |
-          set +e
-          RESULTS_JSON="detox/artifacts/jest-results.json"
-          # Jest writes one testResults entry per spec file, so the shard has only
-          # answered for its whole assignment once every assigned spec is present.
-          read -r -a ASSIGNED_SPECS <<< "${MATRIX_SPECS}"
-          EXPECTED_SUITES=${#ASSIGNED_SPECS[@]}
-
-          # A shard that reported on every assigned spec *and* passed at least one
-          # test had a working emulator; its failures are test failures, and that is
-          # the shard's answer. Re-running it throws the report away (the cleanup
-          # below wipes detox/artifacts) and re-rolls the emulator, which is a
-          # strictly worse bet: in run 32184155037 shard 13 finished attempt 1 with
-          # "Tests: 2 failed, 20 passed, 22 total", the exit-1 triggered a retry, and
-          # every app launch on the re-booted emulator died on Espresso's "Waited for
-          # the root of the view hierarchy to have window focus ... has-window-focus
-          # =false", so the shard's final report read "22 failed, 22 total". That one
-          # retry is 20 of the 23 failures on that run's e2e-test/detox-android.
-          #
-          # Retry only when the attempt never produced a usable verdict: killed by the
-          # timeout above (no report at all), bootstrap failure, or an emulator that
-          # was already broken when the run started (report present, nothing passed).
-          report_is_usable() {
-            [[ -s "${RESULTS_JSON}" ]] || return 1
-            local suites passed
-            suites=$(jq -r '(.testResults // []) | length' "${RESULTS_JSON}" 2>/dev/null) || return 1
-            passed=$(jq -r '.numPassedTests // 0' "${RESULTS_JSON}" 2>/dev/null) || return 1
-            [[ "${suites}" =~ ^[0-9]+$ && "${passed}" =~ ^[0-9]+$ ]] || return 1
-            (( suites >= EXPECTED_SUITES && passed > 0 ))
-          }
-
-          attempt=1
-          while (( attempt <= MAX_ATTEMPTS )); do
-            echo "==> Attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
-            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
-              cd detox
-              chmod +x ./create_android_emulator.sh
-              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
-            '
-            rc=$?
-            if (( rc == 0 )); then
-              echo "==> Attempt ${attempt} succeeded"
-              exit 0
-            fi
-            echo "==> Attempt ${attempt} failed with exit ${rc}"
-            if report_is_usable; then
-              echo "==> Attempt ${attempt} reported on all ${EXPECTED_SUITES} assigned spec(s) with passing tests."
-              echo "==> These are test failures, not an infra failure — keeping this report instead of retrying."
-              exit "${rc}"
-            fi
-            echo "==> Attempt ${attempt} produced no usable report (expected ${EXPECTED_SUITES} suite(s) with at least one pass) — treating it as an infra failure."
-            if (( attempt < MAX_ATTEMPTS )); then
-              echo "==> Cleaning up before retry"
-              adb -s emulator-5554 emu kill 2>/dev/null || true
-              pkill -9 -f qemu-system 2>/dev/null || true
-              pkill -9 -f emulator 2>/dev/null || true
-              rm -rf detox/artifacts/* 2>/dev/null || true
-              sleep 5
-            fi
-            attempt=$(( attempt + 1 ))
-          done
-          echo "==> All ${MAX_ATTEMPTS} attempts failed"
-          exit 1
+          chmod +x detox/scripts/run_android_ci_shard.sh detox/create_android_emulator.sh
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
@@ -682,6 +624,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
+            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed — skipping TSIO upload."

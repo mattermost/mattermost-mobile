@@ -293,7 +293,7 @@ export const apiUploadFileToChannel = async (
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to post in
  * @param {string} rootId - (optional) root post ID for thread replies
- * @return {Object} returns {post, fileId} on success or {error, status} on error
+ * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
  */
 export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
     // Throw, do not return {error}: all eleven call sites across file_preview_gallery,
@@ -305,16 +305,16 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     // about the upload or the attach anywhere in the report.
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
-    if (uploadError) {
+    if (uploadError || !fileId) {
         throw new Error(`apiCreatePostWithImageAttachment: file upload failed: ${JSON.stringify(uploadError)}`);
     }
-    const {post, error: postError} = await apiCreatePost(baseUrl, {
+    const {post, error: postError} = await withTransportRetry(() => apiCreatePost(baseUrl, {
         channelId,
         message: '',
         rootId: rootId || undefined,
         fileIds: [fileId],
-    });
-    if (postError) {
+    }));
+    if (postError || !post?.id) {
         throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${JSON.stringify(postError)}`);
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {

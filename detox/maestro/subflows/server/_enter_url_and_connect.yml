@@ -17,15 +17,12 @@ appId: ${MAESTRO_APP_ID}
     optional: true
 
 # # Re-enter URL and display name.
-# iOS FloatingTextInput exposes label text to accessibility, not testID.
+# iOS FloatingTextInput exposes label text, not testID — do not copyTextFrom
+# server_form.server_url.input (that id is not in the iOS accessibility tree).
 - tapOn:
     text: "Enter Server URL"
 - eraseText: 120
 - inputText: ${SITE_1_URL}
-- copyTextFrom:
-    id: "server_form.server_url.input"
-- evalScript: ${output.urlOk = (maestro.copiedText == SITE_1_URL)}
-- assertTrue: ${output.urlOk}
 - tapOn:
     text: "Display Name"
 - eraseText: 120

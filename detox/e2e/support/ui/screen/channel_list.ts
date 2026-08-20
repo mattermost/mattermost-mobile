@@ -25,6 +25,7 @@ class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
         categoryPrefix: 'channel_list.category.',
+        channelList: 'channel_list.flat_list',
         draftChannelInfo: 'draft_post.channel_info',
         draftbuttonListScreen: 'channel_list.drafts.button',
         draftCountListScreen: 'channel_list.drafts.count',
@@ -41,6 +42,7 @@ class ChannelListScreen {
     };
 
     channelListScreen = element(by.id(this.testID.channelListScreen));
+    channelList = element(by.id(this.testID.channelList));
     serverIcon = element(by.id(this.testID.serverIcon));
     headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
@@ -116,6 +118,11 @@ class ChannelListScreen {
                 } catch {
                     // Not in this category yet — try the next
                 }
+            }
+            try {
+                await this.channelList.scroll(280, 'down', 0.5, 0.45);
+            } catch {
+                // List not scrollable or already at the end.
             }
         }
         /* eslint-enable no-await-in-loop */
