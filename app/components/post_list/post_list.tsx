@@ -169,7 +169,7 @@ const PostList = ({
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent | undefined>(undefined);
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent | undefined>(undefined);
-    const newMessageLineViewedFor = useRef<string | undefined>(undefined);
+    const newMessageLine = useRef({channelId, initialIndex: -1, onNewMessageLineViewed});
     const scrolledToHighlighted = useRef(false);
     const initialRenderTracked = useRef(false);
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -219,6 +219,8 @@ const PostList = ({
             initialIndex: unreadIndex,
         };
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds, showAllPosts]);
+
+    newMessageLine.current = {channelId, initialIndex, onNewMessageLineViewed};
 
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
@@ -388,24 +390,23 @@ const PostList = ({
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
         });
 
-        // The new messages separator being on screen is what tells us the user has reached the
-        // unread boundary. Callers use it to decide the channel has actually been read, so it must
-        // not be inferred from the posts merely having been fetched.
-        // Keyed on lastViewedAt as well as the channel because the separator moves every time the
-        // boundary does. Posts arriving while the user sits in the channel push it down, and each of
-        // those is a new boundary that has to be reported once seen; keying on the channel alone
-        // would report the first one and then stay silent for the rest of the visit.
-        const newMessageLineKey = `${channelId}-${lastViewedAt}`;
-        if (onNewMessageLineViewed && initialIndex >= 0 && newMessageLineViewedFor.current !== newMessageLineKey &&
-            viewableItems.some(({index, isViewable}) => isViewable && index === initialIndex)) {
-            newMessageLineViewedFor.current = newMessageLineKey;
-            onNewMessageLineViewed();
+        // The separator being on screen is what tells us the user reached the unread boundary; it must
+        // not be inferred from the posts merely having been fetched. Report the fact and let the
+        // caller decide what it means. Values come
+        // from a ref rather than this closure: VirtualizedList captures onViewableItemsChanged in its
+        // constructor, so the callback it calls is the one from the first render no matter how many
+        // times this is recreated. Reading props directly here would pin us to the first render's
+        // channel and unread boundary forever.
+        const current = newMessageLine.current;
+        if (current.onNewMessageLineViewed && current.initialIndex >= 0 &&
+            viewableItems.some(({index, isViewable}) => isViewable && index === current.initialIndex)) {
+            current.onNewMessageLineViewed();
         }
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [location, trackInitialRenderMetrics, onNewMessageLineViewed, initialIndex, channelId, lastViewedAt]);
+    }, [location, trackInitialRenderMetrics]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;

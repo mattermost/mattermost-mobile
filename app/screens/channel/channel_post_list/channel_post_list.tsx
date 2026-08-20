@@ -16,6 +16,7 @@ import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
 import {useDebounce} from '@hooks/utils';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStore} from '@store/navigation_store';
 
 import Intro from './intro';
 
@@ -29,7 +30,7 @@ type Props = {
     lastViewedAt: number;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
-    unreadCount: number;
+    isUnread: boolean;
 }
 
 const edges: Edge[] = [];
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
-    lastViewedAt, posts, shouldShowJoinLeaveMessages, unreadCount,
+    isUnread, lastViewedAt, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -92,28 +93,67 @@ const ChannelPostList = ({
     // Marking the channel read is driven by what the user has actually seen, not by the posts having
     // been fetched. Telling the server resets the membership counters irreversibly, so a fetch that
     // silently failed must not be able to clear unreads for messages that never made it to the
-    // client. The new messages separator coming into view is that signal.
-    const onNewMessageLineViewed = useCallback(() => {
-        if (appState === 'active') {
-            markChannelAsRead(serverUrl, channelId, true);
+    // client. The new messages separator coming into view is that signal, and the boundary it refers
+    // to is identified by lastViewedAt so that later ones are reported too.
+    const boundaryKey = `${channelId}-${lastViewedAt}`;
+    const markedBoundary = useRef<string | undefined>(undefined);
+    const markingBoundary = useRef<string | undefined>(undefined);
+
+    // Viewability is layout based and the channel stays mounted underneath threads and modals, so a
+    // separator can be reported while the user is looking at something else. On a tablet the channel
+    // lives inside the home screen rather than being the visible one.
+    const isChannelVisible = useCallback(() => {
+        const visibleScreen = NavigationStore.getVisibleScreen();
+        return visibleScreen === Screens.CHANNEL || (isTablet && visibleScreen === Screens.HOME);
+    }, [isTablet]);
+
+    const markAsRead = useCallback(async (key: string) => {
+        if (markedBoundary.current === key || markingBoundary.current === key) {
+            return;
         }
-    }, [appState, channelId, serverUrl]);
+
+        // Only remember the boundary once the server accepted it, otherwise a failed request would
+        // never be retried for a separator that is still on screen.
+        markingBoundary.current = key;
+        const {error} = await markChannelAsRead(serverUrl, channelId, true);
+        markingBoundary.current = undefined;
+        if (!error) {
+            markedBoundary.current = key;
+        }
+    }, [channelId, serverUrl]);
+
+    const onNewMessageLineViewed = useCallback(() => {
+        if (appState !== 'active' || !isChannelVisible()) {
+            return;
+        }
+
+        markAsRead(boundaryKey);
+    }, [appState, boundaryKey, isChannelVisible, markAsRead]);
 
     // With nothing unread there is no separator to wait for and nothing to lose, so view the channel
     // right away. That keeps it registered as the active channel on the server, which is what
-    // suppresses its push notifications while the user is looking at it.
+    // suppresses its push notifications while the user is looking at it. This reads isUnread rather
+    // than the message count because resetMessageCount zeroes that count locally when the more
+    // messages button is dismissed, which says nothing about the channel having been read.
     useEffect(() => {
-        if (!unreadCount && appState === 'active') {
+        if (!isUnread && appState === 'active') {
             markChannelAsRead(serverUrl, channelId, true);
         }
-    }, [unreadCount, appState, channelId, serverUrl]);
+    }, [isUnread, appState, channelId, serverUrl]);
 
     useDidUpdate(() => {
-        if (appState === 'active') {
-            markChannelAsRead(serverUrl, channelId, true);
-        }
         if (appState !== 'active') {
             unsetActiveChannelOnServer(serverUrl);
+            return;
+        }
+
+        // Coming back from background is not evidence the channel was read. If the user had already
+        // reached this boundary, view it again so the channel is registered as active on the server;
+        // otherwise re-arm and wait for the separator to be reported once more.
+        if (markedBoundary.current === boundaryKey) {
+            markChannelAsRead(serverUrl, channelId, true);
+        } else {
+            markedBoundary.current = undefined;
         }
     }, [appState === 'active']);
 

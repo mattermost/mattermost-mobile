@@ -38,8 +38,8 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: {channel
                 return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
-        unreadCount: observeMyChannel(database, channelId).pipe(
-            switchMap((myChannel) => of$(myChannel?.messageCount ?? 0)),
+        isUnread: observeMyChannel(database, channelId).pipe(
+            switchMap((myChannel) => of$(Boolean(myChannel?.isUnread))),
             distinctUntilChanged(),
         ),
         shouldShowJoinLeaveMessages: queryAdvanceSettingsPreferences(database, Preferences.ADVANCED_FILTER_JOIN_LEAVE).
