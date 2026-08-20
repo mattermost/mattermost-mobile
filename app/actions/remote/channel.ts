@@ -15,7 +15,7 @@ import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
-import {getActiveServer, getActiveServerUrl} from '@queries/app/servers';
+import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {canViewArchivedChannels, getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
@@ -756,59 +756,6 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
     }
 }
 
-/**
- * Fetches the posts for a channel and, only if that request succeeded, tells the server the channel
- * was read.
- *
- * The read itself is server only. markChannelAsRead is called with updateLocal false, so nothing
- * here touches the local unread state or viewedAt, and the new messages line is unaffected.
- *
- * Why the read is worth withholding: viewMyChannel resets the membership msg_count and
- * mention_count, and that is not recoverable. The unread state and the mention badge are cleared on
- * every device even though the user never got to see the messages. So when the fetch fails (a 429
- * from a rate limited server, a dropped connection, ...) we leave the server state alone. The
- * channel still looks read locally, because switchToChannel cleared it optimistically before we got
- * here, but the next membership sync recomputes is_unread from the server counters and restores it.
- *
- * The read is dropped as well when the user is no longer on this channel and server by the time the
- * posts arrive. The fetch is not cancelled on switch, so a slow channel can resolve after a channel
- * the user moved on to and become the last read sent. What that costs is not the posts we fetched
- * but the ones we did not: viewMyChannel marks everything read as of when it lands, so any message
- * that reached the channel after the user left it would be marked read unseen. And while this call
- * itself stays server side, the effect does not: the server broadcasts multiple_channels_viewed
- * back, and since the channel is no longer the current one,
- * handleMultipleChannelsViewedEvent is the one that clears its local unread flag and mention badge.
- */
-export async function fetchPostsAndMarkChannelAsRead(serverUrl: string, channelId: string, groupLabel?: RequestGroupLabel) {
-    const {error: fetchError} = await fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
-    if (fetchError) {
-        logDebug('skipping markChannelAsRead, the posts fetch failed for channel', channelId);
-        return {error: fetchError};
-    }
-
-    try {
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database) {
-            return {};
-        }
-
-        const [activeServerUrl, currentChannelId] = await Promise.all([
-            getActiveServerUrl(),
-            getCurrentChannelId(database),
-        ]);
-
-        if (activeServerUrl !== serverUrl || currentChannelId !== channelId) {
-            logDebug('skipping markChannelAsRead, the user left channel', channelId);
-            return {};
-        }
-    } catch (error) {
-        logDebug('error on fetchPostsAndMarkChannelAsRead', getFullErrorMessage(error));
-        return {error};
-    }
-
-    return markChannelAsRead(serverUrl, channelId, false, groupLabel);
-}
-
 export async function unsetActiveChannelOnServer(serverUrl: string) {
     try {
         const client = NetworkManager.getClient(serverUrl);
@@ -1240,7 +1187,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, true);
 
-    fetchPostsAndMarkChannelAsRead(serverUrl, channelId, groupLabel);
+    fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
     fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId, groupLabel);

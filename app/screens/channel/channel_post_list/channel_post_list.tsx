@@ -29,6 +29,7 @@ type Props = {
     lastViewedAt: number;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
+    unreadCount: number;
 }
 
 const edges: Edge[] = [];
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
-    lastViewedAt, posts, shouldShowJoinLeaveMessages,
+    lastViewedAt, posts, shouldShowJoinLeaveMessages, unreadCount,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -47,7 +48,6 @@ const ChannelPostList = ({
     const canLoadPostsBefore = useRef(true);
     const canLoadPost = useRef(true);
     const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
-    const oldPostsCount = useRef<number>(posts.length);
 
     const handleEndReached = useCallback(async () => {
         if (!fetchingPosts && canLoadPostsBefore.current && posts.length) {
@@ -89,12 +89,24 @@ const ChannelPostList = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [fetchingPosts, posts]);
 
-    useDidUpdate(() => {
-        if (oldPostsCount.current < posts.length && appState === 'active') {
-            oldPostsCount.current = posts.length;
+    // Marking the channel read is driven by what the user has actually seen, not by the posts having
+    // been fetched. Telling the server resets the membership counters irreversibly, so a fetch that
+    // silently failed must not be able to clear unreads for messages that never made it to the
+    // client. The new messages separator coming into view is that signal.
+    const onNewMessageLineViewed = useCallback(() => {
+        if (appState === 'active') {
             markChannelAsRead(serverUrl, channelId, true);
         }
-    }, [posts.length]);
+    }, [appState, channelId, serverUrl]);
+
+    // With nothing unread there is no separator to wait for and nothing to lose, so view the channel
+    // right away. That keeps it registered as the active channel on the server, which is what
+    // suppresses its push notifications while the user is looking at it.
+    useEffect(() => {
+        if (!unreadCount && appState === 'active') {
+            markChannelAsRead(serverUrl, channelId, true);
+        }
+    }, [unreadCount, appState, channelId, serverUrl]);
 
     useDidUpdate(() => {
         if (appState === 'active') {
@@ -122,6 +134,7 @@ const ChannelPostList = ({
             lastViewedAt={lastViewedAt}
             location={Screens.CHANNEL}
             onEndReached={onEndReached}
+            onNewMessageLineViewed={onNewMessageLineViewed}
             posts={posts}
             shouldShowJoinLeaveMessages={shouldShowJoinLeaveMessages}
             showMoreMessages={true}

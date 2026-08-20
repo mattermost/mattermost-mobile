@@ -54,6 +54,7 @@ type Props = {
     lastViewedAt: number;
     location: AvailableScreens;
     onEndReached?: () => void;
+    onNewMessageLineViewed?: () => void;
     posts: PostModel[];
     rootId?: string;
     shouldRenderReplyButton?: boolean;
@@ -105,6 +106,7 @@ const PostList = ({
     lastViewedAt,
     location,
     onEndReached,
+    onNewMessageLineViewed,
     posts,
     rootId,
     shouldRenderReplyButton = true,
@@ -167,6 +169,7 @@ const PostList = ({
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent | undefined>(undefined);
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent | undefined>(undefined);
+    const newMessageLineViewedFor = useRef<string | undefined>(undefined);
     const scrolledToHighlighted = useRef(false);
     const initialRenderTracked = useRef(false);
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -385,10 +388,19 @@ const PostList = ({
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
         });
 
+        // The new messages separator being on screen is what tells us the user has reached the
+        // unread boundary. Callers use it to decide the channel has actually been read, so it must
+        // not be inferred from the posts merely having been fetched.
+        if (onNewMessageLineViewed && initialIndex >= 0 && newMessageLineViewedFor.current !== channelId &&
+            viewableItems.some(({index, isViewable}) => isViewable && index === initialIndex)) {
+            newMessageLineViewedFor.current = channelId;
+            onNewMessageLineViewed();
+        }
+
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [location, trackInitialRenderMetrics]);
+    }, [location, trackInitialRenderMetrics, onNewMessageLineViewed, initialIndex, channelId]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;

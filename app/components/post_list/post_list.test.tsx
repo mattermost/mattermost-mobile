@@ -121,6 +121,80 @@ describe('components/post_list/PostList', () => {
         expect(getByTestId('post_list.new_messages_line')).toBeTruthy();
     });
 
+    describe('onNewMessageLineViewed', () => {
+        const unreadProps = {
+            ...baseProps,
+            showNewMessageLine: true,
+            lastViewedAt: 1234567000, // Before mockPost's create_at
+            posts: [mockPostModel({createAt: 1234567890})],
+        };
+
+        const viewable = (index: number, item: unknown) => ({viewableItems: [{index, item, isViewable: true}]});
+
+        const findSeparatorIndex = (data: Array<{type: string}>) => data.findIndex((i) => i.type === 'start-of-new-messages');
+
+        it('should notify once when the new messages line becomes viewable', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            const index = findSeparatorIndex(flatList.props.data);
+            expect(index).toBeGreaterThanOrEqual(0);
+
+            act(() => {
+                flatList.props.onViewableItemsChanged(viewable(index, flatList.props.data[index]));
+                flatList.props.onViewableItemsChanged(viewable(index, flatList.props.data[index]));
+            });
+
+            expect(onNewMessageLineViewed).toHaveBeenCalledTimes(1);
+        });
+
+        it('should not notify while the new messages line is out of view', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            const separatorIndex = findSeparatorIndex(flatList.props.data);
+            const otherIndex = flatList.props.data.findIndex((i: {type: string}) => i.type === 'post');
+            expect(otherIndex).not.toBe(separatorIndex);
+
+            act(() => {
+                flatList.props.onViewableItemsChanged(viewable(otherIndex, flatList.props.data[otherIndex]));
+            });
+
+            expect(onNewMessageLineViewed).not.toHaveBeenCalled();
+        });
+
+        it('should not notify when there is no new messages line', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...baseProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            expect(findSeparatorIndex(flatList.props.data)).toBe(-1);
+
+            act(() => {
+                flatList.props.onViewableItemsChanged(viewable(0, flatList.props.data[0]));
+            });
+
+            expect(onNewMessageLineViewed).not.toHaveBeenCalled();
+        });
+    });
+
     it('handles refresh in channel', async () => {
         const {getByTestId} = renderWithEverything(<PostList {...baseProps}/>, {database, serverUrl});
         const flatList = getByTestId('post_list.flat_list');
