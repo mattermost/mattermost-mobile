@@ -15,12 +15,6 @@ import type {Database} from '@nozbe/watermelondb';
 jest.mock('@components/files/file_icon', () => 'FileIcon');
 jest.mock('@components/files/image_file', () => 'ImageFile');
 jest.mock('@components/progress_bar', () => 'ProgressBar');
-jest.mock('@utils/file', () => ({
-    isImage: jest.fn(),
-    getFormattedFileSize: jest.fn(),
-}));
-
-const {isImage, getFormattedFileSize} = require('@utils/file');
 
 describe('UploadItemShared', () => {
     const serverUrl = 'serverUrl';
@@ -29,7 +23,6 @@ describe('UploadItemShared', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
         database = (await TestHelper.setupServerDatabase(serverUrl)).database;
-        getFormattedFileSize.mockReturnValue('1024 KB');
     });
 
     afterAll(async () => {
@@ -41,7 +34,7 @@ describe('UploadItemShared', () => {
         clientId: 'test-client-id',
         name: 'test-file.jpg',
         extension: 'jpg',
-        size: 1024,
+        size: 1024 * 1024,
         uri: 'file://test-uri',
         failed: false,
         width: 800,
@@ -50,9 +43,15 @@ describe('UploadItemShared', () => {
         ...overrides,
     });
 
+    const createMockDocumentFile = (overrides: Partial<UploadItemFile> = {}): UploadItemFile => createMockFile({
+        name: 'report.pdf',
+        extension: 'pdf',
+        mime_type: 'application/pdf',
+        ...overrides,
+    });
+
     describe('File Type Display Behavior', () => {
         it('should display image thumbnail for image files', () => {
-            isImage.mockReturnValue(true);
             const imageFile = createMockFile({
                 name: 'vacation.jpg',
                 mime_type: 'image/jpeg',
@@ -75,12 +74,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should display file info for document files', () => {
-            isImage.mockReturnValue(false);
-            const docFile = createMockFile({
-                name: 'report.pdf',
-                extension: 'pdf',
-                mime_type: 'application/pdf',
-            });
+            const docFile = createMockDocumentFile();
 
             const {getByText} = renderWithEverything(
                 <UploadItemShared
@@ -96,7 +90,6 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle files without extension gracefully', () => {
-            isImage.mockReturnValue(false);
             const fileWithoutExt = createMockFile({
                 name: 'document_no_extension',
                 extension: undefined,
@@ -116,7 +109,6 @@ describe('UploadItemShared', () => {
         });
 
         it('should extract extension from filename when extension field is missing', () => {
-            isImage.mockReturnValue(false);
             const fileWithNameExt = createMockFile({
                 name: 'document.docx',
                 extension: '',
@@ -138,12 +130,11 @@ describe('UploadItemShared', () => {
 
     describe('User Interactions', () => {
         it('should call onPress when user taps the file', () => {
-            isImage.mockReturnValue(false);
             const onPress = jest.fn();
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     onPress={onPress}
                     testID='test-upload'
                 />,
@@ -155,9 +146,8 @@ describe('UploadItemShared', () => {
         });
 
         it('should call onRetry when user taps retry button on failed upload', () => {
-            isImage.mockReturnValue(false);
             const onRetry = jest.fn();
-            const failedFile = createMockFile({
+            const failedFile = createMockDocumentFile({
                 failed: true,
             });
 
@@ -182,11 +172,10 @@ describe('UploadItemShared', () => {
         });
 
         it('should not crash when tapped without onPress handler', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     testID='test-upload'
                 />,
                 {database},
@@ -201,11 +190,10 @@ describe('UploadItemShared', () => {
 
     describe('Upload Progress and States', () => {
         it('should show progress bar during active upload', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     loading={true}
                     progress={0.5}
                     testID='test-upload'
@@ -218,11 +206,10 @@ describe('UploadItemShared', () => {
         });
 
         it('should not show progress bar for completed uploads', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     loading={false}
                     testID='test-upload'
                 />,
@@ -234,8 +221,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should not show progress bar for failed uploads', () => {
-            isImage.mockReturnValue(false);
-            const failedFile = createMockFile({
+            const failedFile = createMockDocumentFile({
                 failed: true,
             });
 
@@ -253,8 +239,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should show retry button only when file is failed and showRetryButton is true', () => {
-            isImage.mockReturnValue(false);
-            const failedFile = createMockFile({
+            const failedFile = createMockDocumentFile({
                 failed: true,
             });
 
@@ -272,11 +257,10 @@ describe('UploadItemShared', () => {
         });
 
         it('should not show retry button for successful uploads', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     showRetryButton={true}
                     testID='test-upload'
                 />,
@@ -289,7 +273,6 @@ describe('UploadItemShared', () => {
 
     describe('Share Extension vs Main App Context', () => {
         it('should handle share extension context for images', () => {
-            isImage.mockReturnValue(true);
             const imageFile = createMockFile({
                 name: 'shared-photo.jpg',
                 uri: 'file://local-path/photo.jpg',
@@ -309,7 +292,6 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle main app context for images', () => {
-            isImage.mockReturnValue(true);
             const imageFile = createMockFile({
                 name: 'main-app-photo.jpg',
             });
@@ -332,11 +314,10 @@ describe('UploadItemShared', () => {
 
     describe('Layout Modes', () => {
         it('should use full width layout for non-image files when specified', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     fullWidth={true}
                     testID='test-upload'
                 />,
@@ -347,7 +328,6 @@ describe('UploadItemShared', () => {
         });
 
         it('should not apply full width to image files even when specified', () => {
-            isImage.mockReturnValue(true);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
@@ -365,11 +345,10 @@ describe('UploadItemShared', () => {
 
     describe('Error States and Visual Feedback', () => {
         it('should apply error styling when hasError is true', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     hasError={true}
                     testID='test-upload'
                 />,
@@ -381,11 +360,10 @@ describe('UploadItemShared', () => {
         });
 
         it('should not apply error styling when hasError is false', () => {
-            isImage.mockReturnValue(false);
 
             const {getByTestId} = renderWithEverything(
                 <UploadItemShared
-                    file={createMockFile()}
+                    file={createMockDocumentFile()}
                     hasError={false}
                     testID='test-upload'
                 />,
@@ -398,10 +376,7 @@ describe('UploadItemShared', () => {
     });
 
     describe('Data Resilience', () => {
-        // A draft persisted without file metadata reaches this component with no name
-        // and no extension, so the real isImage has to tolerate that rather than throw.
         it('should handle files with missing name and extension gracefully', () => {
-            isImage.mockImplementation(jest.requireActual('@utils/file').isImage);
             const fileWithoutName = createMockFile({
                 name: undefined,
                 extension: undefined,
@@ -420,9 +395,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle files with zero size', () => {
-            isImage.mockReturnValue(false);
-            getFormattedFileSize.mockReturnValue('0 KB');
-            const emptyFile = createMockFile({
+            const emptyFile = createMockDocumentFile({
                 size: 0,
             });
 
@@ -434,12 +407,11 @@ describe('UploadItemShared', () => {
                 {database},
             );
 
-            expect(getByText('JPG 0 KB')).toBeTruthy(); // Extension + size format
+            expect(getByText('PDF 0 B')).toBeTruthy(); // Extension + size format
         });
 
         it('should handle files with no URI', () => {
-            isImage.mockReturnValue(false);
-            const fileWithoutUri = createMockFile({
+            const fileWithoutUri = createMockDocumentFile({
                 uri: undefined,
             });
 
@@ -456,8 +428,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle files with no mime type', () => {
-            isImage.mockReturnValue(false);
-            const fileWithoutMimeType = createMockFile({
+            const fileWithoutMimeType = createMockDocumentFile({
                 mime_type: undefined,
             });
 
@@ -475,12 +446,10 @@ describe('UploadItemShared', () => {
 
     describe('Complex Interaction Scenarios', () => {
         it('should handle retry flow for failed uploads', () => {
-            isImage.mockReturnValue(false);
             const onRetry = jest.fn();
-            const failedFile = createMockFile({
+            const failedFile = createMockDocumentFile({
                 failed: true,
                 name: 'failed-upload.pdf',
-                extension: 'pdf',
             });
 
             const {getByText} = renderWithEverything(
@@ -499,7 +468,6 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle image files in error state', () => {
-            isImage.mockReturnValue(true);
             const errorImageFile = createMockFile({
                 name: 'corrupted.jpg',
                 failed: true,
@@ -524,8 +492,7 @@ describe('UploadItemShared', () => {
         });
 
         it('should handle simultaneous loading and error states correctly', () => {
-            isImage.mockReturnValue(false);
-            const conflictedFile = createMockFile({
+            const conflictedFile = createMockDocumentFile({
                 failed: true,
             });
 
