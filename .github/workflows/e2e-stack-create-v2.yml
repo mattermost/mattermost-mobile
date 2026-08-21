@@ -111,7 +111,7 @@ jobs:
 
       - name: Create test stack
         id: stack
-        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-create@e955c1ec2a75c14662f0b1c3a5a14b8227b8082f # e2e-test-stack-actions
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-create@b016374e8dca6b8b7ca14d2787f8fc21e72ca0e2 # e2e-test-stack-actions
         with:
           instance_key: ${{ inputs.instance_key }}
           server_image: ${{ inputs.server_image }}
