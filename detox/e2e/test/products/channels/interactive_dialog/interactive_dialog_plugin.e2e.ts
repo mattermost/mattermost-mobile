@@ -14,7 +14,6 @@ import {
     DemoPlugin,
     Plugin,
     Setup,
-    System,
     User,
     Post,
 } from '@support/server_api';
@@ -250,7 +249,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         let statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
-            // CMT used to skip detox provision; install from GitHub when the plugin is missing.
+            // Never install_from_url — that 524s the origin. Enable or upload the runner fixture.
             const upload = await Plugin.apiUploadAndEnablePlugin({baseUrl: siteOneUrl});
             if (upload.error) {
                 // eslint-disable-next-line no-console
@@ -264,21 +263,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             return;
         }
 
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
+        // Provision already set DialogOnlyMode. Do not PUT PluginSettings here —
+        // that reload races Cloudflare 524 and is what used to fail this entire file.
 
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
