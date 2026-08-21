@@ -290,6 +290,7 @@ class ChannelListScreen {
             } catch {
                 // Loading indicator already gone or never shown.
             }
+
             // FlashList unmounts while categories are loading — waiting only for
             // channel_list.screen lets callers race an empty sidebar (MM-T5600+).
             await waitForElementToExist(this.channelList, timeout);
@@ -352,13 +353,23 @@ class ChannelListScreen {
         if (isIos()) {
             return withSynchronizationDisabled(async () => {
                 await this.dismissPostOptionsIfOpen();
-                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                try {
+                    await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                } catch {
+                    await this.popBackUntilChannelList();
+                    await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                }
                 await HomeScreen.channelListTab.tap();
                 return this.toBeVisible();
             });
         }
 
-        await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        try {
+            await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        } catch {
+            await this.popBackUntilChannelList();
+            await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        }
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();

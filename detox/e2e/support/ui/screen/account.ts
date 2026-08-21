@@ -7,7 +7,7 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 class AccountScreen {
@@ -50,7 +50,25 @@ class AccountScreen {
     // behaviour under test and belongs in the test, not in this helper.
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await this.customStatusClearButton.tap();
+        await device.disableSynchronization();
+        try {
+            await this.customStatusClearButton.tap({x: 1, y: 1});
+            await wait(timeouts.ONE_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
+        try {
+            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await device.disableSynchronization();
+            try {
+                await this.customStatusClearButton.tap({x: 1, y: 1});
+                await wait(timeouts.ONE_SEC);
+            } finally {
+                await safeEnableSynchronization();
+            }
+            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+        }
     };
 
     getUserInfo = (userId: string) => {

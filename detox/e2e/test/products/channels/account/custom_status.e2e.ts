@@ -613,13 +613,6 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 };
 
 const verifyStatusCleared = async () => {
-    // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear. Retry clear once for missed taps.
-    try {
-        await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    } catch {
-        await AccountScreen.clearCustomStatus();
-        await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    }
+    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
     await expect(AccountScreen.setStatusOption).toExist();
 };

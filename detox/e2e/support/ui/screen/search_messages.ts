@@ -11,8 +11,8 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor, device} from 'detox';
 
 class SearchMessagesScreen {
     testID = {
@@ -114,6 +114,16 @@ class SearchMessagesScreen {
         }
 
         return this.toBeVisible();
+    };
+
+    submitSearch = async () => {
+        await device.disableSynchronization();
+        try {
+            await this.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
     };
 
     close = async () => {

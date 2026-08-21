@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -80,65 +80,8 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    const channelsCategory = 'channels';
-
-    // Last sidebar rows sit under the tab bar with no extra scroll unless the list
-    // has bottom padding. Scroll the target into view and fail if it never is.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
-        const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
-        await waitFor(element(by.id('channel_list.flat_list'))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
-
-        try {
-            await element(by.id('channel_list.flat_list')).scrollTo('top');
-
-            try {
-                if (isIos()) {
-                    await waitFor(displayNameEl).
-                        toBeVisible(40).
-                        whileElement(by.id('channel_list.flat_list')).
-                        scroll(100, 'down', 0.5, 0.3);
-                } else {
-                    await waitFor(displayNameEl).
-                        toExist().
-                        whileElement(by.id('channel_list.flat_list')).
-                        scroll(100, 'down');
-                }
-            } catch {
-                // Fall through to tap(): the row can sit at the bottom edge below the
-                // visibility threshold while still having a hittable centre point.
-            }
-
-            // Ensure a partial-visibility pass before tap — Detox tap() still enforces visibility.
-            try {
-                await waitFor(displayNameEl).toBeVisible(40).withTimeout(timeouts.FOUR_SEC);
-            } catch {
-                await waitFor(displayNameEl).toExist().withTimeout(timeouts.FOUR_SEC);
-            }
-
-            // List-edge rows can be ~40% visible (visible height ~10 of 24).
-            // Default center tap aims below the clip and fails "not hittable at its visible point".
-            if (isIos()) {
-                await displayNameEl.tap({x: 20, y: 2});
-            } else {
-                await displayNameEl.tap();
-            }
-        } finally {
-            if (isIos()) {
-                await safeEnableSynchronization();
-            }
-        }
-
-        // Default scroll start is the bottom of the list, which sits under the
-        // tab bar (5865fcd T5612: "View is not scrollable at the given start
-        // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
-        await waitFor(displayNameEl).
-            toBeVisible().
-            whileElement(by.id('channel_list.flat_list')).
-            scroll(100, 'down', 0.5, 0.5);
-
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();

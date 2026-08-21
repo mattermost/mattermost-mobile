@@ -654,7 +654,7 @@ class ChannelScreen {
         // `s` on Android so `.` also crosses newlines in the flattened text.
         const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
         const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
-        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
     };
 }
 

@@ -164,9 +164,9 @@ describe('Search - Modifiers', () => {
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
 
-        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.submitSearch();
         await SearchMessagesScreen.searchInput.replaceText(plainTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.submitSearch();
 
         // * Verify that plain text search returns the expected result
         // (not affected by previous from: filter)

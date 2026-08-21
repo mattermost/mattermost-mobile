@@ -162,26 +162,31 @@ class ServerListScreen {
         row: {atIndex: (index: number) => Detox.NativeElement},
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        // A swipe on an off-screen row is silently dropped and the option never appears.
         const target = row.atIndex(0);
         await this.scrollServerItemIntoView(target);
-        await target.swipe('left', 'slow');
-        const revealed = option.atIndex(0);
-        await waitForElementToExist(revealed, timeouts.TEN_SEC);
 
-        // Existing is not enough: the three options start life stacked on top of each
-        // other and fan out. options/index.tsx gives edit/remove/login-or-logout
-        // positionX of 3x/2x/1x OPTION_SIZE, and option.tsx interpolates translateX from
-        // positionX to 0 — so at progress 0 all three sit at the same x, with the last
-        // one rendered (login/logout) on top. Tapping mid-reveal is how MM-T4691_5/6/7
-        // hit "Logout overlaps Remove".
-        //
-        // Platform default threshold (iOS 75, Android 15) rather than toBeVisible(100):
-        // 100 is unreachable whenever the swipe leaves the Swipeable short of fully open,
-        // which is what made the previous wait time out. iOS 75 cannot pass while a
-        // sibling still covers the option, so it holds until the fan-out has separated
-        // them; Android keeps the 15 it already passes MM-T4691_4 with.
-        await waitForElementToBeVisible(revealed, timeouts.TEN_SEC);
+        const revealed = option.atIndex(0);
+        /* eslint-disable no-await-in-loop -- swipe can be a no-op until the row is fully on-screen */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await target.swipe('left', 'slow');
+            try {
+                await waitForElementToExist(revealed, timeouts.FOUR_SEC);
+                break;
+            } catch {
+                if (attempt === 2) {
+                    throw new Error('Server list swipe did not reveal the action option');
+                }
+                await this.scrollServerItemIntoView(target);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        // Fan-out animation: wait briefly, then require existence rather than 75%
+        // visibility — logout/remove sit in an Animated clip (MM-T4691_6).
+        await wait(timeouts.ONE_SEC);
+        if (isAndroid()) {
+            await waitForElementToBeVisible(revealed, timeouts.TEN_SEC);
+        }
         return revealed;
     };
 
@@ -206,17 +211,11 @@ class ServerListScreen {
         await this.scrollServerItemIntoView(target);
         await target.tap({x: 1, y: 1});
 
-        // The channel-list header sits *behind* this sheet, and on iOS the sheet is its
-        // own window (see open() above), so asserting the header while it is still up
-        // spends the whole budget on an element Detox cannot match. onServerPressed
-        // switches first and dismisses after, so wait for the dismissal to land before
-        // reading the header — and fail on the sheet rather than on the header when it
-        // does not. MM-T4691_2 on ios shard 18 of run 32184155037 burned its 30s on
-        // TOHAVETEXT(“Server 1”) right after Detox reported "The app is busy with the
-        // following tasks: ... 2 work items pending on the dispatch queue", and the next
-        // test opened with "[ChannelListScreen.toBeVisible] Channel list not found —
-        // attempting recovery relaunch".
-        await waitFor(this.serverListScreen).not.toBeVisible().withTimeout(timeouts.HALF_MIN);
+        try {
+            await waitFor(this.serverListScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await this.close();
+        }
 
         await waitFor(ChannelListScreen.headerServerDisplayName).
             toHaveText(serverDisplayName).

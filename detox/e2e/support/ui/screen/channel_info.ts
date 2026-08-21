@@ -27,6 +27,7 @@ class ChannelInfoScreen {
         copyChannelLinkAction: 'channel_info.channel_actions.copy_channel_link.action',
         joinStartCallAction: 'channel_info.channel_actions.join_start_call.action',
         extraHeader: 'channel_info.extra.header',
+        extraHeaderContent: 'channel_info.extra.header.content',
         extraCreatedBy: 'channel_info.extra.created_by',
         extraCreatedOn: 'channel_info.extra.created_on',
         ignoreMentionsOptionToggledOff: 'channel_info.options.ignore_mentions.option.toggled.false',
@@ -61,6 +62,7 @@ class ChannelInfoScreen {
     copyChannelLinkAction = element(by.id(this.testID.copyChannelLinkAction));
     joinStartCallAction = element(by.id(this.testID.joinStartCallAction));
     extraHeader = element(by.id(this.testID.extraHeader));
+    extraHeaderContent = element(by.id(this.testID.extraHeaderContent));
     extraCreatedBy = element(by.id(this.testID.extraCreatedBy));
     extraCreatedOn = element(by.id(this.testID.extraCreatedOn));
     ignoreMentionsOptionToggledOff = element(by.id(this.testID.ignoreMentionsOptionToggledOff));
@@ -184,10 +186,13 @@ class ChannelInfoScreen {
     };
 
     copyChannelHeader = async () => {
-        // Long press the header container by testID. Markdown splits the URL into
-        // its own text node, so by.text() is not a stable target.
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
-        await longPressWithRetry(this.extraHeader, copyAction);
+        await longPressWithRetry(
+            this.extraHeaderContent,
+            copyAction,
+            5,
+            by.id(this.testID.scrollView),
+        );
 
         // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
         if (isAndroid()) {
@@ -205,8 +210,10 @@ class ChannelInfoScreen {
 
     cancelCopyChannelHeader = async () => {
         await longPressWithRetry(
-            this.extraHeader,
+            this.extraHeaderContent,
             element(by.id(this.testID.copyHeaderTextAction)),
+            5,
+            by.id(this.testID.scrollView),
         );
         if (isAndroid()) {
             await device.disableSynchronization();

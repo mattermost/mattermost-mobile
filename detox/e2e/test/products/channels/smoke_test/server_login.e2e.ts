@@ -108,14 +108,10 @@ describe('Smoke Test - Server Login', () => {
         await wait(timeouts.ONE_SEC);
         await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
-        await wait(timeouts.ONE_SEC);
-
-        // Logout sits in an Animated clip. toBeVisible(100) times out while the
-        // control is present (21ea481 / 54308be MM-T4675_2).
-        const logoutOption = ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0);
-        await waitForElementToExist(logoutOption, timeouts.TEN_SEC);
-        await logoutOption.tap({x: 1, y: 1});
+        await ServerListScreen.swipeRevealAndTapOption(
+            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
+            ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
+        );
 
         // * Verify logout server alert is displayed
         await waitForElementToBeVisible(Alert.logoutTitle(serverTwoDisplayName), timeouts.TEN_SEC);
@@ -126,9 +122,10 @@ describe('Smoke Test - Server Login', () => {
         await wait(timeouts.FOUR_SEC);
 
         // * Verify second server is logged out
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
-        await wait(timeouts.ONE_SEC);
-        await waitForElementToExist(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0), timeouts.TEN_SEC);
+        await ServerListScreen.swipeRevealOption(
+            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
+            ServerListScreen.getServerItemLoginOption(serverTwoDisplayName),
+        );
 
         // # Go back to first server
         await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();

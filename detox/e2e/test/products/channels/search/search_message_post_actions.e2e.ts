@@ -74,7 +74,7 @@ describe('Search - Search Message Post Actions', () => {
 
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, and tap on edit option
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.submitSearch();
         await wait(timeouts.TWO_SEC);
 
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
@@ -148,7 +148,7 @@ describe('Search - Search Message Post Actions', () => {
 
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on save option, and open saved messages screen
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.submitSearch();
         await wait(timeouts.TWO_SEC);
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
@@ -201,7 +201,7 @@ describe('Search - Search Message Post Actions', () => {
 
         // # Type in a search term that will yield results, tap on search key, open post options for searched message, tap on pin to channel option, go back to channel list screen, open the channel screen where searched message is posted, open channel info screen, and open pinned messages screen
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await SearchMessagesScreen.submitSearch();
         await wait(timeouts.TWO_SEC);
 
         const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);

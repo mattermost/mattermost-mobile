@@ -75,8 +75,10 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
         } catch { /* already at top — non-fatal */ }
 
-        // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
-        await postListPostItemCodeBlock.tap();
+        // # Tap the code block — navigates to Code preview screen and dismisses the keyboard.
+        // The block is only ~35pt tall; a center tap fails iOS 100% visibility (MM-T1433_1).
+        await waitFor(postListPostItemCodeBlock).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await postListPostItemCodeBlock.tap({x: 10, y: 8});
 
         // * Verify Code preview opened
         await CodeScreen.toBeVisible();
