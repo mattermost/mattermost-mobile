@@ -1,0 +1,482 @@
+# Dedicated E2E artifact build (iOS simulator, Android Detox APK, Android Maestro APK).
+# Called from e2e-pr-v2.yml. Reusable for main / release / CMT later.
+#
+# Fingerprint + S3 restore run on ubuntu-24.04. macos-26 / ubuntu-latest-8-cores
+# only start when that check misses.
+#
+# Commit statuses:
+#   e2e-test/ios-build          — fresh iOS simulator build
+#   e2e-test/ios-build-cache    — iOS binary restored from S3
+#   e2e-test/android-build      — fresh Android Detox APK
+#   e2e-test/android-build-cache — Android Detox APK restored from S3
+#   e2e-test/android-maestro-build      — fresh Android Maestro APK
+#   e2e-test/android-maestro-build-cache — Android Maestro APK restored from S3
+name: E2E build v2
+
+on:
+  workflow_call:
+    inputs:
+      commit_sha:
+        description: "Commit to check out and to post statuses on"
+        required: true
+        type: string
+      cache_scope:
+        description: "S3 cache trust scope (main, pr-123, branch-…)"
+        required: true
+        type: string
+      platform:
+        description: "ios, android, android-maestro, or both (ios + android Detox)"
+        required: false
+        type: string
+        default: "both"
+    secrets:
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      MM_MOBILE_INTUNE_DEPLOY_KEY:
+        required: false
+      MM_MOBILE_GITHUB_TOKEN:
+        required: false
+      MM_MOBILE_STORE_FILE:
+        required: false
+      MM_MOBILE_STORE_ALIAS:
+        required: false
+      MM_MOBILE_STORE_PASSWORD:
+        required: false
+      MATTERMOST_BUILD_GH_TOKEN:
+        required: false
+    outputs:
+      ios-cache-hit:
+        description: "true when the iOS artifact was restored from S3"
+        value: ${{ jobs.check-cache.outputs.ios-cache-hit }}
+      android-cache-hit:
+        description: "true when the Android Detox artifact was restored from S3"
+        value: ${{ jobs.check-cache.outputs.android-cache-hit }}
+      android-maestro-cache-hit:
+        description: "true when the Android Maestro artifact was restored from S3"
+        value: ${{ jobs.check-cache.outputs.android-maestro-cache-hit }}
+
+permissions:
+  contents: read
+  actions: write
+  statuses: write
+
+env:
+  INTUNE_ENABLED: 'false'
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+
+jobs:
+  check-cache:
+    name: Check build cache
+    runs-on: ubuntu-24.04
+    outputs:
+      ios: ${{ steps.ios.outputs.fingerprint }}
+      android-detox: ${{ steps.android-detox.outputs.fingerprint }}
+      ios-cache-hit: ${{ steps.ios-hit.outputs.hit || 'false' }}
+      android-cache-hit: ${{ steps.android-hit.outputs.hit || 'false' }}
+      android-maestro: ${{ steps.android-maestro.outputs.fingerprint }}
+      android-maestro-cache-hit: ${{ steps.android-maestro-hit.outputs.hit || 'false' }}
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Compute iOS fingerprint
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
+        id: ios
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: ios
+
+      - name: Compute Android Detox fingerprint
+        if: inputs.platform == 'android' || inputs.platform == 'both'
+        id: android-detox
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-detox
+
+      - name: Restore iOS build from S3
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
+        id: ios-cache
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.ios.outputs.fingerprint }}
+          scope: ${{ inputs.cache_scope }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: restore
+
+      - name: Record iOS cache result
+        if: inputs.platform == 'ios' || inputs.platform == 'both'
+        id: ios-hit
+        run: |
+          if [ "${{ steps.ios-cache.outputs.cache-hit }}" = "true" ] && ls Mattermost-simulator-*.app.zip >/dev/null 2>&1; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload cached iOS simulator build
+        if: steps.ios-hit.outputs.hit == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+      - name: Publish iOS cache status
+        if: always() && (inputs.platform == 'ios' || inputs.platform == 'both') && steps.ios-hit.outputs.hit == 'true'
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/ios-build-cache
+          description: iOS simulator artifact restored from S3 cache
+          status: success
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Restore Android Detox build from S3
+        if: inputs.platform == 'android' || inputs.platform == 'both'
+        id: android-cache
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.android-detox.outputs.fingerprint }}
+          scope: ${{ inputs.cache_scope }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: restore
+
+      - name: Record Android cache result
+        if: inputs.platform == 'android' || inputs.platform == 'both'
+        id: android-hit
+        run: |
+          if [ "${{ steps.android-cache.outputs.cache-hit }}" = "true" ] && [ -d android/app/build ]; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload cached Android build
+        if: steps.android-hit.outputs.hit == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+      - name: Publish Android cache status
+        if: always() && (inputs.platform == 'android' || inputs.platform == 'both') && steps.android-hit.outputs.hit == 'true'
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-build-cache
+          description: Android Detox APK restored from S3 cache
+          status: success
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Compute Android Maestro fingerprint
+        if: inputs.platform == 'android-maestro'
+        id: android-maestro
+        uses: ./.github/actions/compute-e2e-build-fingerprint
+        with:
+          platform: android-maestro
+
+      - name: Restore Android Maestro build from S3
+        if: inputs.platform == 'android-maestro'
+        id: android-maestro-cache
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ steps.android-maestro.outputs.fingerprint }}
+          scope: ${{ inputs.cache_scope }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: restore
+
+      - name: Record Android Maestro cache result
+        if: inputs.platform == 'android-maestro'
+        id: android-maestro-hit
+        run: |
+          if [ "${{ steps.android-maestro-cache.outputs.cache-hit }}" = "true" ] && ls android/app/build/outputs/apk/release/*.apk >/dev/null 2>&1; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hit=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload cached Android Maestro build
+        if: steps.android-maestro-hit.outputs.hit == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
+
+      - name: Publish Android Maestro cache status
+        if: always() && inputs.platform == 'android-maestro' && steps.android-maestro-hit.outputs.hit == 'true'
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-maestro-build-cache
+          description: Android Maestro APK restored from S3 cache
+          status: success
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  build-ios:
+    name: iOS simulator
+    if: >-
+      !cancelled()
+      && (inputs.platform == 'ios' || inputs.platform == 'both')
+      && needs.check-cache.outputs.ios-cache-hit != 'true'
+    runs-on: macos-26
+    needs: check-cache
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Pending iOS build status
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/ios-build
+          description: Building iOS simulator artifact
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Prepare iOS Build
+        uses: ./.github/actions/prepare-ios-build
+        with:
+          intune-enabled: ${{ env.INTUNE_ENABLED }}
+          intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
+
+      - name: Set .env with RUNNING_E2E=true
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Build iOS Simulator
+        env:
+          TAG: ${{ inputs.commit_sha }}
+          GITHUB_TOKEN: ${{ secrets.MM_MOBILE_GITHUB_TOKEN }}
+        run: bundle exec fastlane ios simulator --env ios.simulator
+        working-directory: ./fastlane
+
+      - name: Upload iOS Simulator Build
+        if: always() && hashFiles('Mattermost-simulator-*.app.zip') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-*.app.zip
+
+      - name: Save iOS build to S3
+        if: hashFiles('Mattermost-simulator-*.app.zip') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.check-cache.outputs.ios }}
+          scope: ${{ inputs.cache_scope }}
+          platform: ios
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'Mattermost-simulator-*.app.zip'
+          mode: save
+
+      - name: Publish iOS build status
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/ios-build
+          description: ${{ job.status == 'success' && 'iOS simulator artifact built' || 'iOS simulator build failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  build-android:
+    name: Android Detox APK
+    if: >-
+      !cancelled()
+      && (inputs.platform == 'android' || inputs.platform == 'both')
+      && needs.check-cache.outputs.android-cache-hit != 'true'
+    runs-on: ubuntu-latest-8-cores
+    needs: check-cache
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Pending Android build status
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-build
+          description: Building Android Detox APK
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: /home/runner/.gradle/caches/modules-2/
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Detox build
+        run: |
+          cd detox
+          npm ci
+          npm run e2e:android-build
+
+      - name: Upload Android Build
+        if: always() && hashFiles('android/app/build/**/*') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: android-build-files-${{ github.run_id }}
+          path: "android/app/build/**/*"
+
+      - name: Save Android Detox build to S3
+        if: hashFiles('android/app/build/**/*') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.check-cache.outputs.android-detox }}
+          scope: ${{ inputs.cache_scope }}
+          platform: android-detox
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build'
+          mode: save
+
+      - name: Publish Android build status
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-build
+          description: ${{ job.status == 'success' && 'Android Detox APK built' || 'Android Detox build failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+  build-android-maestro:
+    name: Android Maestro APK
+    if: >-
+      !cancelled()
+      && inputs.platform == 'android-maestro'
+      && needs.check-cache.outputs.android-maestro-cache-hit != 'true'
+    runs-on: ubuntu-latest-8-cores
+    needs: check-cache
+    permissions:
+      contents: read
+      actions: write
+      statuses: write
+    env:
+      ORG_GRADLE_PROJECT_jvmargs: -Xmx8g
+    steps:
+      - name: Prune Docker to free up space
+        run: docker system prune -af
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.commit_sha }}
+
+      - name: Pending Android Maestro build status
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-maestro-build
+          description: Building Android Maestro APK
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Prepare Android Build
+        uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
+          STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
+          MATTERMOST_BUILD_GH_TOKEN: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+
+      - name: Build Maestro Android APK
+        uses: ./.github/actions/build-android-maestro-apk
+
+      - name: Upload Maestro Android Build
+        if: always() && hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: android-maestro-build-files-${{ github.run_id }}
+          path: android/app/build/outputs/apk/release/
+
+      - name: Save Android Maestro build to S3
+        if: hashFiles('android/app/build/outputs/apk/release/*.apk') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-build-cache
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          fingerprint: ${{ needs.check-cache.outputs.android-maestro }}
+          scope: ${{ inputs.cache_scope }}
+          platform: android-maestro
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          cache-path: 'android/app/build/outputs/apk/release/'
+          mode: save
+
+      - name: Publish Android Maestro build status
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/android-maestro-build
+          description: ${{ job.status == 'success' && 'Android Maestro APK built' || 'Android Maestro build failed' }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

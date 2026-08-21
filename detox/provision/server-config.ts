@@ -30,6 +30,9 @@ const TEST_SERVER_CONFIG_PATCH = {
             },
         },
     },
+    EmailSettings: {
+        SendEmailNotifications: true,
+    },
     FileSettings: {
         MaxFileSize: DEFAULT_MAX_FILE_SIZE_BYTES,
 

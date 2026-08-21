@@ -1,0 +1,254 @@
+# Lease Mattermost test servers via e2e-test-stack-actions.
+# instances[0..worker_count-1] = per-worker SITE_1
+# When extra_count > 0: instances[-2], instances[-1] = shared SITE_2 and SITE_3
+# iPad passes extra_count=0 (SITE_1 only).
+# Each platform (ios / android / ipad) calls this workflow for its own batch.
+# Base stack only: server + postgres + inbucket (empty `services`).
+name: E2E stack create v2
+
+on:
+  workflow_call:
+    inputs:
+      instance_key:
+        description: "Hostname prefix: mobile-pr-<n>-ios|and|ipad (or main/release/release-cut). Toolkit max 24 chars."
+        required: true
+        type: string
+      worker_count:
+        description: "Dedicated SITE_1 servers (one per worker)"
+        required: true
+        type: string
+      extra_count:
+        description: "Shared extra servers (SITE_2, SITE_3). 0 = SITE_1 only (iPad)."
+        required: false
+        type: string
+        default: "2"
+      platform:
+        description: "ios, android, or ipad — suffixes commit-status contexts"
+        required: true
+        type: string
+      server_image:
+        description: "Mattermost server image (Docker Hub tag, no digest)"
+        required: false
+        type: string
+        default: "mattermostdevelopment/mattermost-enterprise-edition:master"
+      ttl:
+        description: "Lease lifetime before the reaper (ceiling 4h)"
+        required: false
+        type: string
+        default: "4h"
+      license:
+        description: "Licence SKU (empty = unlicensed)"
+        required: false
+        type: string
+        default: "enterprise-advanced"
+      lambda_alias:
+        required: false
+        type: string
+        default: "v1"
+      commit_sha:
+        description: "Commit to check out for provision fixtures"
+        required: true
+        type: string
+    outputs:
+      batch_id:
+        description: "Handle for destroy"
+        value: ${{ jobs.create.outputs.batch_id }}
+      response_artifact:
+        description: "Create response artifact name (e2e-create-<batch_id>). Workers download this instead of passing admin JSON through workflow outputs."
+        value: ${{ jobs.create.outputs.response_artifact }}
+
+permissions:
+  contents: read
+  id-token: write
+  actions: write
+  statuses: write
+
+jobs:
+  create:
+    name: Lease test stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      batch_id: ${{ steps.stack.outputs.batch_id }}
+      response_artifact: ${{ steps.stack.outputs.response_artifact }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Pending test-servers-created
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-created/${{ inputs.platform }}
+          description: Leasing and provisioning ${{ inputs.platform }} test servers
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - id: count
+        env:
+          WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+        run: echo "total=$((WORKERS + EXTRAS))" >> "$GITHUB_OUTPUT"
+
+      - name: Require stack AWS role
+        env:
+          ROLE_ARN: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN is empty — E2E v2 cannot lease test servers"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3 (2026-07-22)
+        with:
+          role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+
+      - name: Create test stack
+        id: stack
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-create@b016374e8dca6b8b7ca14d2787f8fc21e72ca0e2 # e2e-test-stack-actions
+        with:
+          instance_key: ${{ inputs.instance_key }}
+          server_image: ${{ inputs.server_image }}
+          count: ${{ steps.count.outputs.total }}
+          lambda_alias: ${{ inputs.lambda_alias }}
+          services: ""
+          ttl: ${{ inputs.ttl }}
+          os: ubuntu-24.04
+          license: ${{ inputs.license }}
+          shared_admin_password: "true"
+          server_env: |
+            {
+              "MM_SERVICEENVIRONMENT": "test",
+              "MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS": "true",
+              "MM_EXPERIMENTALSETTINGS_ENABLEWATERMARK": "false",
+              "MM_EXPERIMENTALSETTINGS_RESTRICTSYSTEMADMIN": "false",
+              "MM_FEATUREFLAGS_CHANNELBOOKMARKS": "true",
+              "MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES": "true",
+              "MM_FEATUREFLAGS_INTERACTIVEDIALOGAPPSFORM": "true",
+              "MM_FEATUREFLAGS_MMBLOCKSENABLED": "true",
+              "MM_FILESETTINGS_ENABLEPUBLICLINK": "true",
+              "MM_PASSWORDSETTINGS_MINIMUMLENGTH": "8",
+              "MM_PLUGINSETTINGS_ENABLEMARKETPLACE": "true",
+              "MM_PLUGINSETTINGS_ENABLEREMOTEMARKETPLACE": "true",
+              "MM_PLUGINSETTINGS_ENABLEUPLOADS": "true",
+              "MM_RATELIMITSETTINGS_ENABLE": "true",
+              "MM_RATELIMITSETTINGS_MAXBURST": "50000",
+              "MM_RATELIMITSETTINGS_MEMORYSTORESIZE": "10000",
+              "MM_RATELIMITSETTINGS_PERSEC": "10000",
+              "MM_RATELIMITSETTINGS_VARYBYREMOTEADDR": "false",
+              "MM_RATELIMITSETTINGS_VARYBYUSER": "false",
+              "MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION": "true",
+              "MM_SERVICESETTINGS_ENABLECHANNELBOOKMARKS": "true",
+              "MM_SERVICESETTINGS_ENABLEONBOARDINGFLOW": "false",
+              "MM_SERVICESETTINGS_ENABLETUTORIAL": "false",
+              "MM_SERVICESETTINGS_ENABLEUSERTYPINGMESSAGES": "false",
+              "MM_SERVICESETTINGS_MAXIMUMACTIVEUSERS": "999999",
+              "MM_SERVICESETTINGS_MAXIMUMLOGINATTEMPTS": "999999",
+              "MM_SERVICESETTINGS_SESSIONCACHEINMINUTES": "180",
+              "MM_SERVICESETTINGS_SESSIONLENGTHMOBILEINHOURS": "5000",
+              "MM_SERVICESETTINGS_SESSIONLENGTHWEBINHOURS": "4320",
+              "MM_SUPPORTSETTINGS_HELPLINK": "https://docs.mattermost.com/",
+              "MM_SUPPORTSETTINGS_REPORTAPROBLEMTYPE": "default",
+              "MM_TEAMSETTINGS_EXPERIMENTALENABLEAUTOMATICREPLIES": "true",
+              "MM_TEAMSETTINGS_MAXUSERSPERTEAM": "999999"
+            }
+
+      - name: Download create response
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ${{ steps.stack.outputs.response_artifact }}
+          path: ${{ runner.temp }}/e2e-create
+
+      - name: Export instances
+        id: instances
+        env:
+          RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
+          WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+        run: |
+          set -euo pipefail
+          INSTANCES=$(node .github/actions/e2e-v2-instances/instances.js extract \
+            --response "$RESPONSE" --workers "$WORKERS" --extras "$EXTRAS")
+          printf '%s\n' "$INSTANCES" > "${RUNNER_TEMP}/e2e-instances.json"
+          while read -r pw; do
+            [ -n "$pw" ] && echo "::add-mask::${pw}"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          echo "Exported $(jq 'length' <<< "$INSTANCES") instances (${WORKERS} SITE_1 + ${EXTRAS} extras)"
+
+      - name: Cache demo plugin fixture
+        id: demo-plugin-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+          key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+      - name: Download demo plugin fixture
+        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p detox/e2e/support/fixtures
+          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Provision servers (license + plugins)
+        env:
+          INSTANCES_FILE: ${{ runner.temp }}/e2e-instances.json
+        run: |
+          set -euo pipefail
+          INSTANCES=$(cat "$INSTANCES_FILE")
+          ADMIN_USERNAME=$(jq -r '.[0].admin.username' <<< "$INSTANCES")
+          ADMIN_PASSWORD=$(jq -r '.[0].admin.password' <<< "$INSTANCES")
+          ADMIN_EMAIL=$(jq -r '.[0].admin.email' <<< "$INSTANCES")
+          export ADMIN_USERNAME ADMIN_PASSWORD ADMIN_EMAIL
+          cd detox
+          npm ci
+          declare -A provisioned=()
+          while read -r url; do
+            [ -z "$url" ] && continue
+            if [ -z "${provisioned[$url]+x}" ]; then
+              echo "--- Provisioning ---"
+              npm run provision -- "$url"
+              provisioned["$url"]=1
+            fi
+          done < <(jq -r '.[].site_url' <<< "$INSTANCES")
+
+      - name: Stack summary
+        env:
+          BATCH_ID: ${{ steps.stack.outputs.batch_id }}
+          INSTANCES_FILE: ${{ runner.temp }}/e2e-instances.json
+          WORKERS: ${{ inputs.worker_count }}
+          EXTRAS: ${{ inputs.extra_count }}
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          INSTANCES=$(cat "$INSTANCES_FILE")
+          {
+            echo "## E2E v2 test stack (${PLATFORM})"
+            echo ""
+            echo "- batch_id: \`${BATCH_ID}\`"
+            echo "- SITE_1 workers: ${WORKERS}"
+            if [ "${EXTRAS}" -gt 0 ]; then
+              echo "- SITE_2: $(jq -r '.[length-2].site_url' <<< "$INSTANCES")"
+              echo "- SITE_3: $(jq -r '.[length-1].site_url' <<< "$INSTANCES")"
+            else
+              echo "- extras: none (SITE_1 only)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish test-servers-created
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-created/${{ inputs.platform }}
+          description: ${{ job.status == 'success' && format('{0} test servers provisioned', inputs.platform) || format('{0} test server create or provision failed', inputs.platform) }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

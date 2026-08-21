@@ -1,0 +1,107 @@
+# Release a batch leased by e2e-stack-create-v2.yml.
+# Collects container logs for instance 0 before destroy (stack must still be up).
+# Safe to repeat: a batch that is already gone is not an error.
+name: E2E stack destroy v2
+
+on:
+  workflow_call:
+    inputs:
+      batch_id:
+        description: "Batch returned by e2e-stack-create-v2"
+        required: true
+        type: string
+      lambda_alias:
+        required: false
+        type: string
+        default: "v1"
+      commit_sha:
+        description: "Commit to post e2e-test/test-servers-destroyed/<platform> on"
+        required: true
+        type: string
+      platform:
+        description: "ios, android, or ipad — suffixes commit-status contexts"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  statuses: write
+
+jobs:
+  destroy:
+    name: Release test stack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/update-commit-status
+
+      - name: Pending test-servers-destroyed
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-destroyed/${{ inputs.platform }}
+          description: Releasing ${{ inputs.platform }} test servers
+          status: pending
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Require stack AWS role
+        env:
+          ROLE_ARN: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+        run: |
+          if [ -z "$ROLE_ARN" ]; then
+            echo "::error::vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN is empty — cannot destroy the test stack"
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3 (2026-07-22)
+        with:
+          role-to-assume: ${{ vars.MM_E2E_TEST_STACK_AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+
+      # Before destroy: the stack has to be up to read from. One instance (index 0);
+      # a full batch rarely needs every log, and index 0 is enough for teardown debug.
+      # continue-on-error: release still runs if collection fails.
+      - name: Collect test stack logs
+        id: logs
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-logs@b016374e8dca6b8b7ca14d2787f8fc21e72ca0e2 # e2e-test-stack-actions
+        with:
+          batch_id: ${{ inputs.batch_id }}
+          lambda_alias: ${{ inputs.lambda_alias }}
+
+      - name: Upload test stack logs
+        if: always() && steps.logs.outputs.path != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: e2e-logs-${{ inputs.batch_id }}
+          path: |
+            ${{ steps.logs.outputs.path }}
+            ${{ steps.logs.outputs.full_path }}
+          if-no-files-found: warn
+
+      - name: Destroy test stack
+        if: always()
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-destroy@b016374e8dca6b8b7ca14d2787f8fc21e72ca0e2 # e2e-test-stack-actions
+        with:
+          batch_id: ${{ inputs.batch_id }}
+          lambda_alias: ${{ inputs.lambda_alias }}
+
+      - name: Publish test-servers-destroyed
+        if: always()
+        uses: ./.github/actions/update-commit-status
+        with:
+          repository_full_name: ${{ github.repository }}
+          commit_sha: ${{ inputs.commit_sha }}
+          context: e2e-test/test-servers-destroyed/${{ inputs.platform }}
+          description: ${{ job.status == 'success' && format('{0} test servers released', inputs.platform) || format('{0} test server destroy failed', inputs.platform) }}
+          status: ${{ job.status == 'success' && 'success' || 'failure' }}
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

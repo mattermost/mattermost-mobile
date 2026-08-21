@@ -1,0 +1,637 @@
+# Detox Android E2E v2 — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
+# Each worker downloads this platform's create response artifact and binds
+# instances[shard-1] as SITE_1. The last two entries are SITE_2 / SITE_3.
+# Called from e2e-detox-v2.yml. Independent of the Matterwick v1 template.
+name: Detox Android E2E Tests Template v2
+
+on:
+  workflow_call:
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
+        required: false
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
+        required: false
+    inputs:
+      response_artifact:
+        description: "Create response artifact from e2e-stack-create-v2 (e2e-create-<batch_id>)"
+        required: true
+        type: string
+      MOBILE_VERSION:
+        description: "The mobile version to test"
+        required: false
+        default: ""
+        type: string
+      run-type:
+        type: string
+        required: false
+        default: "PR"
+      record_tests_in_zephyr:
+        description: "Record test results in Zephyr"
+        required: false
+        type: boolean
+        default: false
+      low_bandwidth_mode:
+        description: "Enable low bandwidth mode"
+        required: false
+        type: boolean
+        default: false
+      search_path:
+        description: "Path to search for test specs (repo- or detox-relative)"
+        required: false
+        type: string
+        default: "detox/e2e/test"
+      detox-include-tags:
+        description: >
+          Comma-separated // Tags: include filter for Test System IO discovery
+          (e.g. @smoke). Empty = no include filter; callers set explicitly.
+        required: false
+        type: string
+        default: ""
+      detox-exclude-tags:
+        description: >
+          Comma-separated // Tags: exclude filter for Test System IO discovery
+          (e.g. @ipad_only,@ios_only). Empty = no exclude filter; callers set explicitly.
+        required: false
+        type: string
+        default: ""
+      parallelism:
+        description: "Number of parallel orchestration workers"
+        required: false
+        type: string
+        default: "20"
+      android_avd_name:
+        description: "Android Emulator name"
+        required: false
+        type: string
+        default: "detox_pixel_8"
+      android_api_level:
+        description: "Android API level"
+        required: false
+        type: string
+        default: "35"
+      artifact_run_id:
+        description: "Run ID of the workflow that uploaded android-build-files-*"
+        required: false
+        type: string
+        default: ""
+      context_name:
+        description: >
+          GitHub commit-status context (e.g. e2e-test/detox-android, e2e-test/detox-android/main,
+          e2e-test/detox-android/cmt-server-11.9.0).
+        required: true
+        type: string
+      branch:
+        description: "Branch segment for Test System IO composite identity (e.g. pr-123, main, release-2.40)"
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "PR number for composite identity (digits only used); empty for non-PR runs"
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        description: "Commit SHA for composite identity and commit statuses (defaults to MOBILE_VERSION)"
+        required: false
+        type: string
+        default: ""
+      stack_extra_count:
+        description: "Extra servers after SITE_1s (2 = SITE_2/SITE_3)"
+        required: false
+        type: string
+        default: "2"
+
+env:
+  AWS_REGION: "us-east-1"
+  DEVICE_NAME: ${{ inputs.android_avd_name }}
+  DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
+  AVD_NAME: ${{ inputs.android_avd_name }}
+  SDK_VERSION: ${{ inputs.android_api_level }}
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  IOS: "false"
+  CI: "true"
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  statuses: write
+  issues: read
+
+jobs:
+  begin:
+    name: orch-begin
+    runs-on: ubuntu-24.04
+    outputs:
+      identity-json: ${{ steps.cfg.outputs.identity-json }}
+      status-context: ${{ steps.cfg.outputs.status-context }}
+      identity-branch: ${{ steps.cfg.outputs.identity-branch }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+      detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+      detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
+      detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
+      pr-number: ${{ steps.cfg.outputs.pr-number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Build Test System IO composite identity
+        id: cfg
+        env:
+          CONTEXT_NAME: ${{ inputs.context_name }}
+          BRANCH: ${{ inputs.branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ inputs.commit_sha || inputs.MOBILE_VERSION }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Report name: strip e2e-test/ prefix, replace / with -.
+          NAME="${CONTEXT_NAME#e2e-test/}"
+          NAME="${NAME//\//-}"
+          if [ -z "$COMMIT_SHA" ]; then
+            echo "::error::commit_sha is empty"
+            exit 1
+          fi
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          if [ -n "$PR_DIGITS" ]; then
+            IDENTITY_BRANCH="pr-${PR_DIGITS}"
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              --arg pr "${PR_DIGITS}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch, gh_pr_number:$pr}')
+          else
+            IDENTITY_BRANCH="${BRANCH}"
+            if [ -z "$IDENTITY_BRANCH" ]; then
+              echo "::error::branch is empty when pr_number is unset"
+              exit 1
+            fi
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch}')
+            PR_DIGITS=""
+          fi
+          {
+            echo "identity-json=${IDENTITY}"
+            echo "status-context=${CONTEXT_NAME}"
+            echo "identity-branch=${IDENTITY_BRANCH}"
+            echo "pr-number=${PR_DIGITS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve detox-search-path
+        id: paths
+        env:
+          SEARCH_PATH: ${{ inputs.search_path }}
+          INCLUDE_TAGS: ${{ inputs.detox-include-tags }}
+          EXCLUDE_TAGS: ${{ inputs.detox-exclude-tags }}
+        run: |
+          set -euo pipefail
+          SP="${SEARCH_PATH#./}"
+          case "$SP" in
+            detox/*) SP="${SP#detox/}" ;;
+          esac
+          {
+            echo "detox-search-path=${SP}"
+            echo "detox-include-tags=${INCLUDE_TAGS}"
+            echo "detox-exclude-tags=${EXCLUDE_TAGS}"
+          } >> "$GITHUB_OUTPUT"
+          echo "detox-search-path=${SP} include='${INCLUDE_TAGS}' exclude='${EXCLUDE_TAGS}'"
+
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.parallelism }}
+        run: |
+          SHARDS=$(jq -nc --argjson n "${N}" '[range(1; $n+1)]')
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ steps.cfg.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.parallelism }}
+          detox-dir: detox
+          detox-search-path: ${{ steps.paths.outputs.detox-search-path }}
+          detox-include-tags: ${{ steps.paths.outputs.detox-include-tags }}
+          detox-exclude-tags: ${{ steps.paths.outputs.detox-exclude-tags }}
+          post-pending-commit-status: "true"
+          commit-status-context: ${{ inputs.context_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retest-on-fail: "false"
+          retest-budget: "0"
+          lease-timeout-ms: "2700000" # 45m
+          idle-timeout-ms: "3300000" # 55m
+
+      - name: Begin summary
+        env:
+          REPORT_URL: ${{ steps.begin.outputs.report-url }}
+          TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
+          WORKERS: ${{ inputs.parallelism }}
+          SEARCH_PATH: ${{ steps.paths.outputs.detox-search-path }}
+          INCLUDE_TAGS: ${{ steps.paths.outputs.detox-include-tags }}
+          EXCLUDE_TAGS: ${{ steps.paths.outputs.detox-exclude-tags }}
+        run: |
+          {
+            echo "## Detox Android orchestration begin"
+            echo ""
+            echo "- report: ${REPORT_URL}"
+            echo "- total units: ${TOTAL_UNITS}"
+            echo "- workers: ${WORKERS}"
+            echo "- search path: \`${SEARCH_PATH}\`"
+            echo "- include tags: \`${INCLUDE_TAGS:-*}\`"
+            echo "- exclude tags: \`${EXCLUDE_TAGS:-none}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers:
+    name: detox-android-worker-${{ matrix.shard }}
+    needs: [begin]
+    if: needs.begin.result == 'success'
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    env:
+      CI_NODE_INDEX: ${{ matrix.shard }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Download create response
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ${{ inputs.response_artifact }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/e2e-create
+
+      - name: Apply server instances
+        env:
+          RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
+          SHARD_ID: ${{ matrix.shard }}
+          EXTRAS: ${{ inputs.stack_extra_count }}
+        run: |
+          set -euo pipefail
+          while read -r pw; do
+            [ -n "$pw" ] && echo "::add-mask::${pw}"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          node .github/actions/e2e-v2-instances/instances.js bind \
+            --response "$RESPONSE" --shard "$SHARD_ID" --extras "$EXTRAS" >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: server_1_instance index $((10#$SHARD_ID - 1)); extras=${EXTRAS}"
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpulse0 scrot ffmpeg xvfb
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache detox node_modules
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Install Detox dependencies
+        run: cd detox && npm ci
+
+      - name: Set RUNNING_E2E
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Verify artifact_run_id was passed by the parent workflow
+        run: |
+          if [ -z "${ARTIFACT_RUN_ID}" ]; then
+            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-android-apk"
+            exit 1
+          fi
+
+      - name: Download Detox Android build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: android/app/build
+
+      - name: Verify Detox Android APKs
+        run: |
+          APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          if [ ! -f "$APP_APK" ]; then
+            echo "❌ Missing ${APP_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          if [ ! -f "$TEST_APK" ]; then
+            echo "❌ Missing ${TEST_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          ls -lh "$APP_APK" "$TEST_APK"
+
+      - name: Set up Android SDK PATH
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH" >> "$GITHUB_ENV"
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          if ! grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "::error::Android SDK licenses not fully accepted"
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+        run: |
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
+
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
+            echo "Invalid android_api_level: $API_LEVEL"
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            echo "SDK install attempt $attempt..."
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              echo "SDK install succeeded on attempt $attempt"
+              break
+            fi
+            echo "Attempt $attempt failed, retrying..."
+            if [ "$attempt" = "3" ]; then
+              echo "SDK install failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
+
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Point Detox at CI AVD home
+        run: |
+          AVD_HOME="${GITHUB_WORKSPACE}/detox/.android/avd"
+          mkdir -p "$AVD_HOME"
+          {
+            echo "ANDROID_AVD_HOME=${AVD_HOME}"
+            echo "AVD_NAME=${AVD_NAME}_api_${SDK_VERSION}"
+          } >> "$GITHUB_ENV"
+          echo "ANDROID_AVD_HOME=${AVD_HOME}"
+
+      # Any worker may lease mm_blocks_* specs under orchestration.
+      - name: Start mm_blocks webhook sidecar
+        continue-on-error: true
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
+      - name: Bootstrap Android emulator (no Detox yet)
+        env:
+          BOOTSTRAP_ONLY: "true"
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "25"
+          AVD_BASE: ${{ inputs.android_avd_name }}
+        shell: bash
+        run: |
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS}"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_BASE"
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Bootstrap succeeded"
+              adb devices -l || true
+              exit 0
+            fi
+            echo "==> Attempt ${attempt} failed (exit ${rc})"
+            if (( attempt < MAX_ATTEMPTS )); then
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "::error::Android emulator bootstrap failed"
+          exit 1
+
+      - name: Generate Detox CI config
+        env:
+          DETOX_MAX_WORKERS: "1"
+        run: cd detox && npm run detox:config-gen
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: detox-android-worker-${{ matrix.shard }}
+          detox-dir: detox
+          detox-config: android.emu.debug
+
+      - name: Upload Detox debug artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: detox-android-worker-${{ matrix.shard }}-debug
+          path: |
+            ${{ runner.temp }}/test-system-io/
+            detox/artifacts/
+          retention-days: 5
+          if-no-files-found: ignore
+
+      - name: Cleanup emulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          adb -s emulator-5554 emu kill 2>/dev/null || true
+          pkill -9 -f qemu-system 2>/dev/null || true
+          pkill -9 -f emulator 2>/dev/null || true
+          pkill -9 -f "react-native.*start" 2>/dev/null || true
+          pkill -9 -f metro 2>/dev/null || true
+
+  summary:
+    name: orch-summary
+    needs: [begin, workers]
+    if: always() && needs.begin.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
+      issues: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-override-label
+
+      - name: Resolve E2E/Override
+        id: e2e-override
+        uses: ./.github/actions/e2e-override-label
+        with:
+          pr_number: ${{ needs.begin.outputs.pr-number }}
+
+      - name: test-system-io summary
+        id: summary
+        continue-on-error: true
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: detox
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ inputs.context_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          fail-on-test-failures: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          report-type: ${{ inputs.run-type }}
+          pr-number: ${{ needs.begin.outputs.pr-number }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch }}
+
+      # POST webhook_payload from summary.
+      - name: Publish Mattermost webhook
+        if: steps.e2e-override.outputs.override != 'true'
+        env:
+          RUN_TYPE: ${{ inputs.run-type }}
+          PAYLOAD: ${{ steps.summary.outputs.webhook_payload }}
+          MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          case "${RUN_TYPE}" in
+            MAIN|MASTER) WEBHOOK_URL="${MM_E2E_MASTER_HEALTH_WEBHOOK_URL}" ;;
+            RELEASE|RELEASE_CUT) WEBHOOK_URL="${MM_E2E_RELEASE_WEBHOOK_URL}" ;;
+            *) WEBHOOK_URL="${MM_MOBILE_E2E_WEBHOOK_URL}" ;;
+          esac
+          if [ -z "${WEBHOOK_URL}" ] || [ -z "${PAYLOAD}" ]; then
+            echo "Skipping webhook (url or payload empty)"
+            exit 0
+          fi
+          curl -fsS -X POST -H "Content-Type: application/json" -d "${PAYLOAD}" "${WEBHOOK_URL}"
+
+      - name: Assert summary
+        if: steps.e2e-override.outputs.override != 'true'
+        env:
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+        run: |
+          [ "$SUMMARY_OUTCOME" = "success" ]

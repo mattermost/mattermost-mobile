@@ -15,6 +15,7 @@ import {
     System,
 } from '@support/server_api';
 import {
+    adminUsername,
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
@@ -184,7 +185,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify the thread replied to by the current user is displayed
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
-        await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('admin');
+        await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(adminUsername);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
 
         // # Tap on the thread

@@ -205,8 +205,12 @@ appId: ${MAESTRO_APP_ID}
       - retry:
           maxRetries: 4
           commands:
+            # # FloatingTextInput testID is not in the iOS accessibility tree.
+            # Placeholder is "Email or Username" when LDAP is off, and
+            # "Email, Username or AD/LDAP Username" when LDAP is on.
+            # Maestro text match is a full-string regex.
             - tapOn:
-                text: "Email, Username or AD/LDAP Username"
+                text: "Email.*Username.*"
             - eraseText: 80
             - inputText: ${TEST_USER_EMAIL}
             - tapOn:

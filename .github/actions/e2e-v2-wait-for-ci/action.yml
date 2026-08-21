@@ -1,0 +1,96 @@
+name: Wait for mobile CI
+description: >
+  Block until the `ci` workflow (lint, format, tsc, unit tests) has succeeded
+  for the given commit. Used by E2E v2 so tests start only after CI is green
+  without modifying ci.yml.
+
+inputs:
+  commit_sha:
+    description: Commit SHA whose `ci` run must succeed
+    required: true
+  timeout-minutes:
+    description: How long to poll before failing
+    required: false
+    default: '40'
+  poll-seconds:
+    description: Sleep between polls
+    required: false
+    default: '20'
+
+outputs:
+  ci-run-url:
+    description: HTML URL of the CI run that was waited on
+    value: ${{ steps.wait.outputs.ci-run-url }}
+  ci-run-id:
+    description: Database ID of the CI run
+    value: ${{ steps.wait.outputs.ci-run-id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for ci workflow
+      id: wait
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        TIMEOUT_MIN: ${{ inputs.timeout-minutes }}
+        POLL_SECONDS: ${{ inputs.poll-seconds }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        if [ -z "$COMMIT_SHA" ]; then
+          echo "::error::commit_sha is required"
+          exit 1
+        fi
+        if ! [[ "$TIMEOUT_MIN" =~ ^[0-9]+$ ]] || ! [[ "$POLL_SECONDS" =~ ^[0-9]+$ ]]; then
+          echo "::error::timeout-minutes and poll-seconds must be whole numbers"
+          exit 1
+        fi
+
+        deadline=$((SECONDS + TIMEOUT_MIN * 60))
+        echo "Waiting for workflow 'ci' on ${COMMIT_SHA} (timeout ${TIMEOUT_MIN}m)"
+
+        while (( SECONDS < deadline )); do
+          json=$(gh run list --workflow=ci.yml --commit="$COMMIT_SHA" --limit 5 \
+            --json databaseId,status,conclusion,url,event,createdAt)
+
+          # Prefer a pull_request run when several exist for the same SHA.
+          selected=$(jq -c '
+            (map(select(.event == "pull_request")) + .)
+            | unique_by(.databaseId)
+            | sort_by(.createdAt)
+            | reverse
+            | .[0] // empty
+          ' <<< "$json")
+
+          if [ -z "$selected" ]; then
+            echo "No ci run yet for ${COMMIT_SHA}; retrying in ${POLL_SECONDS}s"
+            sleep "$POLL_SECONDS"
+            continue
+          fi
+
+          status=$(jq -r '.status' <<< "$selected")
+          conclusion=$(jq -r '.conclusion // ""' <<< "$selected")
+          run_id=$(jq -r '.databaseId' <<< "$selected")
+          run_url=$(jq -r '.url' <<< "$selected")
+          echo "ci run ${run_id}: status=${status} conclusion=${conclusion} ${run_url}"
+
+          if [ "$status" = "completed" ]; then
+            {
+              echo "ci-run-url=${run_url}"
+              echo "ci-run-id=${run_id}"
+            } >> "$GITHUB_OUTPUT"
+            if [ "$conclusion" = "success" ]; then
+              echo "CI succeeded: ${run_url}"
+              exit 0
+            fi
+            echo "::error::CI concluded '${conclusion}' — E2E v2 will not start. ${run_url}"
+            exit 1
+          fi
+
+          sleep "$POLL_SECONDS"
+        done
+
+        echo "::error::Timed out after ${TIMEOUT_MIN}m waiting for ci on ${COMMIT_SHA}"
+        exit 1

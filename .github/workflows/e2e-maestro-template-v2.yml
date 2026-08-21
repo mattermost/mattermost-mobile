@@ -1,0 +1,869 @@
+# Maestro E2E v2 — test-system-io orchestration (dispatch-begin / dispatch-run / summary).
+# Each worker downloads this platform's create response artifact and binds
+# instances[shard-1] as SITE_1 only (no SITE_2 / SITE_3).
+# Called from e2e-maestro-v2.yml. Independent of the Matterwick v1 template.
+name: Maestro E2E Tests Template v2
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        description: "Platform to test on: ios or android"
+        required: false
+        type: string
+        default: "ios"
+      flow-path:
+        description: "Path under detox/maestro for flows (default: flows)"
+        required: false
+        type: string
+        default: ""
+      response_artifact:
+        description: "Create response artifact from e2e-stack-create-v2 (e2e-create-<batch_id>)"
+        required: true
+        type: string
+      stack_extra_count:
+        description: "Extra servers after SITE_1s (Maestro is SITE_1 only)"
+        required: false
+        type: string
+        default: "0"
+      MOBILE_VERSION:
+        description: "The mobile version to test"
+        required: false
+        default: ""
+        type: string
+      run-type:
+        description: "Type of run (PR, MAIN, etc.)"
+        required: false
+        type: string
+        default: "PR"
+      artifact_run_id:
+        description: "GitHub run ID that uploaded build artifacts"
+        required: false
+        type: string
+        default: ""
+      record_tests_in_zephyr:
+        description: "Record test results in Zephyr"
+        required: false
+        type: boolean
+        default: false
+      parallelism:
+        description: "Number of parallel orchestration workers"
+        required: false
+        type: string
+        default: "1"
+      context_name:
+        description: >
+          GitHub commit-status context (e.g. e2e-test/maestro-ios, e2e-test/maestro-ios/main,
+          e2e-test/maestro-ios/cmt-server-11.9.0).
+        required: true
+        type: string
+      branch:
+        description: "Branch segment for Test System IO composite identity (e.g. pr-123, main, release-2.40)"
+        required: false
+        type: string
+        default: ""
+      pr_number:
+        description: "PR number for composite identity (digits only used); empty for non-PR runs"
+        required: false
+        type: string
+        default: ""
+      commit_sha:
+        description: "Commit SHA for composite identity and commit statuses (defaults to MOBILE_VERSION)"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
+        required: false
+      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
+        required: false
+      MM_E2E_RELEASE_WEBHOOK_URL:
+        required: false
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+  statuses: write
+  issues: read
+
+env:
+  TYPE: ${{ inputs.run-type }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+  E2E_IOS_DEVICE_NAME: iPhone 17 Pro
+  E2E_IOS_DEVICE_OS_VERSION: iOS 26.2
+  E2E_ANDROID_AVD_NAME: detox_pixel_8
+  E2E_ANDROID_API_LEVEL: "35"
+  RUNNING_E2E: "true"
+  CI: "true"
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+jobs:
+  begin:
+    name: orch-begin
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
+    outputs:
+      identity-json: ${{ steps.cfg.outputs.identity-json }}
+      status-context: ${{ steps.cfg.outputs.status-context }}
+      identity-branch: ${{ steps.cfg.outputs.identity-branch }}
+      report-url: ${{ steps.begin.outputs.report-url }}
+      total-units: ${{ steps.begin.outputs.total-units }}
+      worker-shards: ${{ steps.matrix.outputs.shards }}
+      maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
+      maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+      pr-number: ${{ steps.cfg.outputs.pr-number }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Build Test System IO composite identity
+        id: cfg
+        env:
+          CONTEXT_NAME: ${{ inputs.context_name }}
+          BRANCH: ${{ inputs.branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          COMMIT_SHA: ${{ inputs.commit_sha || inputs.MOBILE_VERSION }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Report name: strip e2e-test/ prefix, replace / with -.
+          NAME="${CONTEXT_NAME#e2e-test/}"
+          NAME="${NAME//\//-}"
+          if [ -z "$COMMIT_SHA" ]; then
+            echo "::error::commit_sha is empty"
+            exit 1
+          fi
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          if [ -n "$PR_DIGITS" ]; then
+            IDENTITY_BRANCH="pr-${PR_DIGITS}"
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              --arg pr "${PR_DIGITS}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch, gh_pr_number:$pr}')
+          else
+            IDENTITY_BRANCH="${BRANCH}"
+            if [ -z "$IDENTITY_BRANCH" ]; then
+              echo "::error::branch is empty when pr_number is unset"
+              exit 1
+            fi
+            IDENTITY=$(jq -nc \
+              --arg repo "${GITHUB_REPOSITORY}" \
+              --arg sha "${COMMIT_SHA}" \
+              --arg run_id "${GITHUB_RUN_ID}" \
+              --arg name "${NAME}" \
+              --arg attempt "${GITHUB_RUN_ATTEMPT}" \
+              --arg branch "${IDENTITY_BRANCH}" \
+              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, name:$name, gh_run_attempt:$attempt, branch:$branch}')
+            PR_DIGITS=""
+          fi
+          {
+            echo "identity-json=${IDENTITY}"
+            echo "status-context=${CONTEXT_NAME}"
+            echo "identity-branch=${IDENTITY_BRANCH}"
+            echo "pr-number=${PR_DIGITS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve maestro-flow-path
+        id: paths
+        env:
+          FLOW_PATH: ${{ inputs.flow-path }}
+        run: |
+          set -euo pipefail
+          FP="${FLOW_PATH:-flows}"
+          FP="${FP#./}"
+          case "$FP" in
+            detox/maestro/*) FP="${FP#detox/maestro/}" ;;
+            maestro/*) FP="${FP#maestro/}" ;;
+          esac
+          echo "maestro-flow-path=${FP}" >> "$GITHUB_OUTPUT"
+          echo "maestro-flow-path=${FP}"
+
+      - name: Compute maestro-exclude-tags
+        id: exclude-tags
+        env:
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          TAGS=$(jq -r --arg p "$PLATFORM" '(.default + .[$p]) | unique | join(",")' detox/maestro/config/exclude_tags.json)
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "maestro-exclude-tags: ${TAGS}"
+
+      - name: Worker matrix JSON
+        id: matrix
+        env:
+          N: ${{ inputs.parallelism }}
+        run: |
+          SHARDS=$(jq -nc --argjson n "${N}" '[range(1; $n+1)]')
+          echo "shards=${SHARDS}" >> "$GITHUB_OUTPUT"
+          echo "Workers: ${SHARDS}"
+
+      - name: test-system-io dispatch begin
+        id: begin
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-begin@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: maestro
+          composite-identity: ${{ steps.cfg.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          total-reports-expected: ${{ inputs.parallelism }}
+          maestro-dir: detox/maestro
+          maestro-flow-path: ${{ steps.paths.outputs.maestro-flow-path }}
+          maestro-exclude-tags: ${{ steps.exclude-tags.outputs.tags }}
+          post-pending-commit-status: "true"
+          commit-status-context: ${{ inputs.context_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          retest-on-fail: "false"
+          retest-budget: "0"
+          lease-timeout-ms: "2700000" # 45m
+          idle-timeout-ms: "3300000" # 55m
+
+      - name: Begin summary
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          REPORT_URL: ${{ steps.begin.outputs.report-url }}
+          TOTAL_UNITS: ${{ steps.begin.outputs.total-units }}
+          WORKERS: ${{ inputs.parallelism }}
+          FLOW_PATH: ${{ steps.paths.outputs.maestro-flow-path }}
+          EXCLUDE_TAGS: ${{ steps.exclude-tags.outputs.tags }}
+        run: |
+          {
+            echo "## Maestro ${PLATFORM} orchestration begin"
+            echo ""
+            echo "- report: ${REPORT_URL}"
+            echo "- total units: ${TOTAL_UNITS}"
+            echo "- workers: ${WORKERS}"
+            echo "- flow path: \`${FLOW_PATH}\`"
+            echo "- exclude tags: \`${EXCLUDE_TAGS}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  workers-ios:
+    name: maestro-ios-worker-${{ matrix.shard }}
+    needs: [begin]
+    if: needs.begin.result == 'success' && (inputs.platform == 'ios' || inputs.platform == '')
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Download create response
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ${{ inputs.response_artifact }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/e2e-create
+
+      - name: Apply server instances
+        env:
+          RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
+          SHARD_ID: ${{ matrix.shard }}
+          EXTRAS: ${{ inputs.stack_extra_count }}
+        run: |
+          set -euo pipefail
+          while read -r pw; do
+            [ -n "$pw" ] && echo "::add-mask::${pw}"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          node .github/actions/e2e-v2-instances/instances.js bind \
+            --response "$RESPONSE" --shard "$SHARD_ID" --extras "$EXTRAS" >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: SITE_1 only (extras=${EXTRAS})"
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Install Detox dependencies
+        run: cd detox && npm ci
+
+      - name: Cache Maestro
+        id: maestro-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: ~/.maestro
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-macos
+
+      - name: Install Maestro CLI
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: |
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          MAESTRO_COMMIT=$(jq -r .commit detox/maestro/maestro-version.json)
+          echo "Installing Maestro ${MAESTRO_VERSION} (pinned to commit ${MAESTRO_COMMIT})"
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          MAESTRO_BIN="$HOME/.maestro/bin/maestro"
+          if [ ! -f "$MAESTRO_BIN" ]; then
+            echo "Error: Maestro binary not found at $MAESTRO_BIN"
+            exit 1
+          fi
+          "$MAESTRO_BIN" --version
+
+      - name: Add Maestro to PATH
+        run: |
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Download iOS simulator build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ios-build-simulator-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: mobile-artifacts
+
+      - name: Unzip iOS simulator build
+        run: |
+          unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
+          rm -f mobile-artifacts/*.zip
+          ls -la mobile-artifacts/
+
+      - name: Patch iOS app Info.plist for file-sharing flows
+        run: |
+          APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: Could not find .app bundle in mobile-artifacts/"
+            ls -la mobile-artifacts/
+            exit 1
+          fi
+          plutil -replace UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
+            plutil -insert UIFileSharingEnabled -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+          plutil -replace LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || \
+            plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
+
+      - name: Pre-boot iOS simulator
+        env:
+          DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
+          DEVICE_OS_VERSION: ${{ env.E2E_IOS_DEVICE_OS_VERSION }}
+          PREBOOT_SKIP_PREWARM: "1"
+        run: bash detox/scripts/preboot_ios_simulator.sh
+
+      - name: Wait for Simulator UI readiness
+        run: |
+          for i in $(seq 1 30); do
+            xcrun simctl listapps "$SIMULATOR_ID" &>/dev/null && exit 0
+            sleep 2
+          done
+          echo "Warning: listapps did not succeed within 60s"
+
+      - name: Set simulator timezone for timezone flow
+        run: |
+          xcrun simctl spawn "$SIMULATOR_ID" launchctl setenv TZ "America/New_York"
+          echo "Simulator timezone set to America/New_York"
+
+      - name: Set RUNNING_E2E
+        run: echo "RUNNING_E2E=true" > .env
+
+      - name: Seed test data
+        run: |
+          cd detox/maestro
+          npm ci
+          npx tsx fixtures/seed.ts
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+
+      - name: Push test fixture into iOS simulator FileProvider
+        continue-on-error: true
+        run: |
+          set +e
+          UDID="${SIMULATOR_ID:-}"
+          if [ -z "$UDID" ]; then
+            UDID=$(xcrun simctl list devices booted 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          fi
+          if [ -z "$UDID" ]; then
+            echo "Warning: no booted iOS simulator found; skipping fixture push"
+            exit 0
+          fi
+          LOCAL_STORAGE=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$UDID/data/Containers/Shared/AppGroup" \
+            -name ".com.apple.mobile_container_manager.metadata.plist" \
+            -exec grep -l "FileProvider.LocalStorage" {} \; 2>/dev/null | xargs -I{} dirname {} | head -1)
+          if [ -n "$LOCAL_STORAGE" ]; then
+            mkdir -p "$LOCAL_STORAGE/File Provider Storage"
+            cp detox/e2e/support/fixtures/image.png "$LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+            echo "Pushed test fixture to $LOCAL_STORAGE/File Provider Storage/test_bookmark.png"
+          else
+            echo "Warning: FileProvider.LocalStorage container not found"
+          fi
+
+      - name: Build maestro-env for dispatch-run
+        id: maestro-env
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for secret_var in TEST_USER_PASSWORD ADMIN_TOKEN ADMIN_PASSWORD ADMIN_EMAIL; do
+            value="${!secret_var:-}"
+            [ -n "$value" ] && echo "::add-mask::${value}"
+          done
+          {
+            echo "env<<EOF"
+            echo "SITE_1_URL=${SITE_1_URL}"
+            [ -n "${TEST_USER_EMAIL:-}" ] && echo "TEST_USER_EMAIL=${TEST_USER_EMAIL}"
+            [ -n "${TEST_USER_PASSWORD:-}" ] && echo "TEST_USER_PASSWORD=${TEST_USER_PASSWORD}"
+            [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
+            [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
+            [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            [ -n "${ADMIN_EMAIL:-}" ] && echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+            [ -n "${ADMIN_PASSWORD:-}" ] && echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
+            echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Pre-flight — simulator can reach test server
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for attempt in 1 2 3; do
+            if maestro --device "$SIMULATOR_ID" test \
+                --env "SITE_1_URL=$SITE_1_URL" \
+                --env "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}" \
+                detox/maestro/preflight/_connect_check.yml; then
+              echo "==> Pre-flight connect OK (attempt $attempt)"
+              exit 0
+            fi
+            echo "==> Pre-flight connect failed (attempt $attempt/3)"
+          done
+          echo "::error::Simulator could not connect to $SITE_1_URL after 3 attempts."
+          exit 1
+
+      - name: test-system-io dispatch run
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: maestro-ios-worker-${{ matrix.shard }}
+          maestro-dir: detox/maestro
+          maestro-platform: ios
+          maestro-device: ${{ env.SIMULATOR_ID }}
+          maestro-env: ${{ steps.maestro-env.outputs.env }}
+          maestro-timeout-ms: "540000" # 9m
+
+      - name: Cleanup simulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          if [ -n "${SIMULATOR_ID:-}" ]; then
+            timeout 10 xcrun simctl terminate "$SIMULATOR_ID" com.mattermost.rnbeta 2>/dev/null || true
+          fi
+
+  workers-android:
+    name: maestro-android-worker-${{ matrix.shard }}
+    needs: [begin]
+    if: needs.begin.result == 'success' && inputs.platform == 'android'
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.begin.outputs.worker-shards) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Download create response
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: ${{ inputs.response_artifact }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/e2e-create
+
+      - name: Apply server instances
+        env:
+          RESPONSE: ${{ runner.temp }}/e2e-create/e2e-create-response.json
+          SHARD_ID: ${{ matrix.shard }}
+          EXTRAS: ${{ inputs.stack_extra_count }}
+        run: |
+          set -euo pipefail
+          while read -r pw; do
+            [ -n "$pw" ] && echo "::add-mask::${pw}"
+          done < <(node .github/actions/e2e-v2-instances/instances.js passwords --response "$RESPONSE")
+          node .github/actions/e2e-v2-instances/instances.js bind \
+            --response "$RESPONSE" --shard "$SHARD_ID" --extras "$EXTRAS" >> "$GITHUB_ENV"
+          echo "Worker ${SHARD_ID}: SITE_1 only (extras=${EXTRAS})"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache Maestro
+        id: maestro-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: ~/.maestro
+          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-linux
+
+      - name: Install Maestro CLI
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: |
+          MAESTRO_VERSION=$(jq -r .version detox/maestro/maestro-version.json)
+          export MAESTRO_VERSION
+          curl -fsSL "https://get.maestro.mobile.dev" | bash
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Add Maestro to PATH
+        run: |
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          "$HOME/.maestro/bin/maestro" --version
+
+      - name: Download Maestro Android Build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1 (2026-03-11)
+        with:
+          name: android-maestro-build-files-${{ env.ARTIFACT_RUN_ID }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: android/app/build/outputs/apk/release
+
+      - name: Seed test data
+        run: |
+          cd detox/maestro
+          npm ci
+          npx tsx fixtures/seed.ts
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          ADMIN_EMAIL: ${{ env.ADMIN_EMAIL }}
+          ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up Android SDK PATH
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$PATH" >> "$GITHUB_ENV"
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+          if ! grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "::error::Android SDK licenses not fully accepted"
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ env.E2E_ANDROID_API_LEVEL }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        run: |
+          API_LEVEL='${{ env.E2E_ANDROID_API_LEVEL }}'
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
+
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          API_LEVEL='${{ env.E2E_ANDROID_API_LEVEL }}'
+          for attempt in 1 2 3; do
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              break
+            fi
+            if [ "$attempt" = "3" ]; then
+              echo "SDK install failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
+
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0 (2026-06-26)
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.E2E_ANDROID_AVD_NAME }}_api_${{ env.E2E_ANDROID_API_LEVEL }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.E2E_ANDROID_AVD_NAME }}-api-${{ env.E2E_ANDROID_API_LEVEL }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Bootstrap Android emulator
+        env:
+          BOOTSTRAP_ONLY: "true"
+          MAESTRO_ANDROID: "true"
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          API_LEVEL: ${{ env.E2E_ANDROID_API_LEVEL }}
+          AVD_NAME: ${{ env.E2E_ANDROID_AVD_NAME }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "15"
+        shell: bash
+        run: |
+          set +e
+          attempt=1
+          while (( attempt <= MAX_ATTEMPTS )); do
+            echo "==> Boot attempt ${attempt}/${MAX_ATTEMPTS}"
+            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
+              cd detox
+              chmod +x ./create_android_emulator.sh
+              CI=true ./create_android_emulator.sh "$API_LEVEL" "$AVD_NAME"
+            '
+            rc=$?
+            if (( rc == 0 )); then
+              echo "==> Boot succeeded"
+              exit 0
+            fi
+            if (( attempt < MAX_ATTEMPTS )); then
+              adb -s emulator-5554 emu kill 2>/dev/null || true
+              pkill -9 -f qemu-system 2>/dev/null || true
+              pkill -9 -f emulator 2>/dev/null || true
+              sleep 5
+            fi
+            attempt=$(( attempt + 1 ))
+          done
+          echo "::error::Android emulator bootstrap failed"
+          exit 1
+
+      - name: Build maestro-env for dispatch-run
+        id: maestro-env
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+          for secret_var in TEST_USER_PASSWORD ADMIN_TOKEN ADMIN_PASSWORD ADMIN_EMAIL; do
+            value="${!secret_var:-}"
+            [ -n "$value" ] && echo "::add-mask::${value}"
+          done
+          {
+            echo "env<<EOF"
+            echo "SITE_1_URL=${SITE_1_URL}"
+            [ -n "${TEST_USER_EMAIL:-}" ] && echo "TEST_USER_EMAIL=${TEST_USER_EMAIL}"
+            [ -n "${TEST_USER_PASSWORD:-}" ] && echo "TEST_USER_PASSWORD=${TEST_USER_PASSWORD}"
+            [ -n "${TEST_CHANNEL_NAME:-}" ] && echo "TEST_CHANNEL_NAME=${TEST_CHANNEL_NAME}"
+            [ -n "${TEST_TEAM_NAME:-}" ] && echo "TEST_TEAM_NAME=${TEST_TEAM_NAME}"
+            [ -n "${ADMIN_TOKEN:-}" ] && echo "ADMIN_TOKEN=${ADMIN_TOKEN}"
+            [ -n "${ADMIN_EMAIL:-}" ] && echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+            [ -n "${ADMIN_PASSWORD:-}" ] && echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
+            echo "MAESTRO_APP_ID=${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # A device lost between bootstrap and the run surfaces inside Maestro as an
+      # opaque `StatusRuntimeException: UNAVAILABLE` at flow init (dadb cannot reach
+      # the adb server), failing every remaining flow in the shard at 0ms. Fail here
+      # instead, with the device state named.
+      - name: Verify emulator is still responsive
+        env:
+          DEVICE: emulator-5554
+        run: |
+          set -uo pipefail
+
+          # A dead adb server reports no devices at all; restart once before judging.
+          if ! adb devices | grep -q "^${DEVICE}[[:space:]]"; then
+            echo "==> ${DEVICE} absent from adb; restarting adb server"
+            adb kill-server 2>/dev/null || true
+            adb start-server 2>/dev/null || true
+          fi
+
+          # Poll rather than `adb wait-for-device`, which blocks forever when the
+          # device never returns and would hang the job until its timeout-minutes.
+          STATE=""
+          for _ in $(seq 1 30); do
+            STATE=$(adb devices | awk -v d="${DEVICE}" '$1 == d {print $2}')
+            [ "${STATE}" = "device" ] && break
+            sleep 2
+          done
+
+          if [ "${STATE}" != "device" ]; then
+            echo "::error::${DEVICE} is in state '${STATE:-missing}', not 'device'"
+            adb devices -l || true
+            exit 1
+          fi
+
+          # adbd answering can precede a usable framework, so probe through a shell:
+          # this is what actually proves Maestro's driver can be installed and reached.
+          BOOTED=""
+          for _ in $(seq 1 15); do
+            BOOTED=$(adb -s "${DEVICE}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r\n')
+            [ "${BOOTED}" = "1" ] && break
+            sleep 2
+          done
+
+          if [ "${BOOTED}" != "1" ]; then
+            echo "::error::${DEVICE} reachable but sys.boot_completed='${BOOTED:-empty}'"
+            adb devices -l || true
+            exit 1
+          fi
+
+          echo "==> ${DEVICE} is responsive (boot_completed=1)"
+
+      - name: test-system-io dispatch run
+        # Process env, not a flow variable: the Maestro CLI reads this itself. The
+        # emulator is slower than the simulator to accept the on-device driver, so
+        # it needs the same allowance the iOS pre-flight uses.
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-dispatch-run@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          repo-dir: ${{ github.workspace }}
+          artifacts-root: ${{ runner.temp }}/test-system-io
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-job-name: maestro-android-worker-${{ matrix.shard }}
+          maestro-dir: detox/maestro
+          maestro-platform: android
+          maestro-device: emulator-5554
+          maestro-env: ${{ steps.maestro-env.outputs.env }}
+          maestro-timeout-ms: "540000" # 9m
+
+      - name: Cleanup emulator
+        if: always()
+        timeout-minutes: 2
+        run: |
+          adb -s emulator-5554 emu kill 2>/dev/null || true
+          pkill -9 -f qemu-system 2>/dev/null || true
+          pkill -9 -f emulator 2>/dev/null || true
+
+  summary:
+    name: orch-summary
+    needs: [begin, workers-ios, workers-android]
+    if: always() && needs.begin.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      statuses: write
+      issues: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (2026-07-20)
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions/e2e-override-label
+
+      - name: Resolve E2E/Override
+        id: e2e-override
+        uses: ./.github/actions/e2e-override-label
+        with:
+          pr_number: ${{ needs.begin.outputs.pr-number }}
+
+      - name: test-system-io summary
+        id: summary
+        continue-on-error: true
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-summary@aa0d692f255d98be1621b500e59387ca0debfb3d
+        with:
+          use-staging: ${{ vars.E2E_USE_STAGING_TEST_IO_URL == 'true' }}
+          framework: maestro
+          composite-identity: ${{ needs.begin.outputs.identity-json }}
+          commit-status-context: ${{ inputs.context_name }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-commit-status: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          fail-on-test-failures: ${{ steps.e2e-override.outputs.override != 'true' && 'true' || 'false' }}
+          report-type: ${{ inputs.run-type }}
+          pr-number: ${{ needs.begin.outputs.pr-number }}
+          ref-branch: ${{ needs.begin.outputs.identity-branch }}
+
+      # POST webhook_payload from summary.
+      - name: Publish Mattermost webhook
+        if: steps.e2e-override.outputs.override != 'true'
+        env:
+          RUN_TYPE: ${{ inputs.run-type }}
+          PAYLOAD: ${{ steps.summary.outputs.webhook_payload }}
+          MM_MOBILE_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+          MM_E2E_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
+          MM_E2E_RELEASE_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          case "${RUN_TYPE}" in
+            MAIN|MASTER) WEBHOOK_URL="${MM_E2E_MASTER_HEALTH_WEBHOOK_URL}" ;;
+            RELEASE|RELEASE_CUT) WEBHOOK_URL="${MM_E2E_RELEASE_WEBHOOK_URL}" ;;
+            *) WEBHOOK_URL="${MM_MOBILE_E2E_WEBHOOK_URL}" ;;
+          esac
+          if [ -z "${WEBHOOK_URL}" ] || [ -z "${PAYLOAD}" ]; then
+            echo "Skipping webhook (url or payload empty)"
+            exit 0
+          fi
+          curl -fsS -X POST -H "Content-Type: application/json" -d "${PAYLOAD}" "${WEBHOOK_URL}"
+
+      - name: Assert summary
+        if: steps.e2e-override.outputs.override != 'true'
+        env:
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+        run: |
+          [ "$SUMMARY_OUTCOME" = "success" ]
