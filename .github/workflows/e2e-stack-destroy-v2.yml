@@ -1,4 +1,5 @@
 # Release a batch leased by e2e-stack-create-v2.yml.
+# Collects container logs for instance 0 before destroy (stack must still be up).
 # Safe to repeat: a batch that is already gone is not an error.
 name: E2E stack destroy v2
 
@@ -66,7 +67,29 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 1200
 
+      # Before destroy: the stack has to be up to read from. One instance (index 0);
+      # a full batch rarely needs every log, and index 0 is enough for teardown debug.
+      # continue-on-error: release still runs if collection fails.
+      - name: Collect test stack logs
+        id: logs
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-logs@e955c1ec2a75c14662f0b1c3a5a14b8227b8082f # e2e-test-stack-actions
+        with:
+          batch_id: ${{ inputs.batch_id }}
+          lambda_alias: ${{ inputs.lambda_alias }}
+
+      - name: Upload test stack logs
+        if: always() && steps.logs.outputs.path != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (2026-04-10)
+        with:
+          name: e2e-logs-${{ inputs.batch_id }}
+          path: |
+            ${{ steps.logs.outputs.path }}
+            ${{ steps.logs.outputs.full_path }}
+          if-no-files-found: warn
+
       - name: Destroy test stack
+        if: always()
         uses: mattermost/mattermost-test-automation-toolkit/.github/actions/e2e-test-stack-destroy@e955c1ec2a75c14662f0b1c3a5a14b8227b8082f # e2e-test-stack-actions
         with:
           batch_id: ${{ inputs.batch_id }}
