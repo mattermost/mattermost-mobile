@@ -174,16 +174,22 @@ appId: ${MAESTRO_APP_ID}
       # # iOS header items do not expose channel_bookmark.*.title in the tree.
       - longPressOn:
           text: ".*[Mm]attermost.*"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.options.edit"
+          timeout: 15000
 - runFlow:
     when:
       platform: Android
     commands:
       - longPressOn:
           id: "channel_bookmark\\..+\\.title"
-- extendedWaitUntil:
-    visible:
-      id: "channel_bookmark.options.edit"
-    timeout: 15000
+      # # Android Maestro sees the sheet label, not channel_bookmark.options.edit
+      # (CI 32423060171). Same path that was green before the shared testID wait.
+      - extendedWaitUntil:
+          visible:
+            text: "Edit"
+          timeout: 15000
 - takeScreenshot: bookmark-options-visible
 - runFlow:
     when:
