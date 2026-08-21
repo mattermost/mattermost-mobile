@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -184,14 +184,8 @@ class ChannelInfoScreen {
     };
 
     copyChannelHeader = async (headerText: string) => {
-        // Long press on header text
-        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
+        await longPressWithRetry(element(by.text(headerText)), copyAction);
 
         // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
         if (isAndroid()) {
@@ -208,27 +202,16 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelHeader = async (headerText: string) => {
-        // Long press on header text
-        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
-        await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
-
-        // Cancel
+        await longPressWithRetry(
+            element(by.text(headerText)),
+            element(by.id(this.testID.copyHeaderTextAction)),
+        );
         await element(by.id(this.testID.copyHeaderCancelAction)).tap();
     };
 
     copyChannelPurpose = async (purposeText: string) => {
-        // Long press on purpose text
-        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyPurposeAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
+        await longPressWithRetry(element(by.text(purposeText)), copyAction);
 
         if (isAndroid()) {
             await device.disableSynchronization();
@@ -244,15 +227,10 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelPurpose = async (purposeText: string) => {
-        // Long press on purpose text
-        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
-        await waitFor(element(by.id(this.testID.copyPurposeAction))).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
-
-        // Cancel
+        await longPressWithRetry(
+            element(by.text(purposeText)),
+            element(by.id(this.testID.copyPurposeAction)),
+        );
         await element(by.id(this.testID.copyPurposeCancelAction)).tap();
     };
 

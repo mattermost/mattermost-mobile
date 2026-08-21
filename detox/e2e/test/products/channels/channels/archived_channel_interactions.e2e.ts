@@ -41,7 +41,7 @@ async function waitForArchivedChannelScreen() {
     }
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
         if (isIos()) {
             await device.enableSynchronization();

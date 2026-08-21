@@ -287,9 +287,11 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right last'))).not.toBeVisible();
         const expectedElement = element(by.text('Right last'));
         if (isIos()) {
-            await waitFor(expectedElement).toExist().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
-            await expect(element(by.text('Header last'))).not.toBeVisible();
-            await expect(expectedElement).toExist();
+            // Full-view tables render every row, so waitFor(toExist) returns before any
+            // scroll. Drive the scroller until the header leaves the viewport, then until
+            // the last cell is actually visible.
+            await waitFor(element(by.text('Header last'))).not.toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
+            await waitFor(expectedElement).toBeVisible(25).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
         } else {
             await expect(expectedElement).toExist();
         }
