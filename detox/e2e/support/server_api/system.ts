@@ -113,7 +113,7 @@ export const waitForClientConfigFlag = async (
         const {config, error} = await apiGetClientConfigOld(baseUrl);
         if (!error && config) {
             const value = config[flagKey];
-            if (value === expectedValue) {
+            if (String(value) === expectedValue) {
                 return true;
             }
 
@@ -122,10 +122,6 @@ export const waitForClientConfigFlag = async (
             // not "absent" — keep polling until a successful payload arrives.
             if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
                 return true;
-            }
-
-            if (value === 'false' && acceptAbsentAsEnabled) {
-                // Still explicitly off — keep polling for the patch to land.
             }
         }
 

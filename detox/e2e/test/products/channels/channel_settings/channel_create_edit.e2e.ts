@@ -307,7 +307,7 @@ describe('Channels', () => {
         await expect(ChannelInfoScreen.publicPrivateTitlePurpose).toBeVisible();
 
         // # Test long-press and cancel flow
-        await ChannelInfoScreen.cancelCopyChannelPurpose(channelWithMetadata.purpose);
+        await ChannelInfoScreen.cancelCopyChannelPurpose();
 
         // * Verify we're still on channel info screen
         await expect(ChannelInfoScreen.channelInfoScreen).toBeVisible();

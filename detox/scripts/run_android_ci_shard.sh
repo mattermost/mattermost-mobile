@@ -23,6 +23,19 @@ RESULTS="${DETOX_DIR}/artifacts/jest-results.json"
 ATTEMPT1_RESULTS="${DETOX_DIR}/artifacts/jest-results-attempt1.json"
 FAILED_SPECS_JS="${DETOX_DIR}/utils/failed-jest-specs.js"
 
+write_missing_results_stub() {
+    if [ -f "$RESULTS" ]; then
+        return
+    fi
+    echo "==> Detox left no jest-results.json — writing shard stub"
+    node "${DETOX_DIR}/utils/write-tsio-failure-stub.mjs" \
+        --format jest \
+        --output "$RESULTS" \
+        --job-name "${AVD_NAME:-android-shard}" \
+        --reason "Detox exited before writing jest-results.json (specs: ${SHARD_SPECS[*]})"
+}
+trap write_missing_results_stub EXIT
+
 emulator_healthy() {
     adb devices 2>/dev/null | grep -qE '^emulator-[0-9]+\s+device' || return 1
     [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]] || return 1

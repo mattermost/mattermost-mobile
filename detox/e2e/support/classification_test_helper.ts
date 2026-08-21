@@ -5,34 +5,57 @@ import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 import {withTransportRetry} from '@support/utils/transport_retry';
 
+const FLAG_PATCH_ATTEMPTS = 3;
+
+const observedFlagValues = async (baseUrl: string) => {
+    const {config: serverConfig} = await System.apiGetConfig(baseUrl);
+    const {config: clientConfig} = await System.apiGetClientConfigOld(baseUrl);
+    return {
+        server: serverConfig?.FeatureFlags?.ClassificationMarkings,
+        client: clientConfig?.FeatureFlagClassificationMarkings,
+    };
+};
+
 export const enableClassificationMarkings = async (baseUrl: string): Promise<void> => {
-    // PATCH /config is a heavy write and the E2E servers regularly blow the client's
-    // 30s ceiling under shard load. That surfaces as {error, status: 0} — a transport
-    // failure, not a config rejection — and took out all 11 classification specs on
-    // Android plus MM-T6204_1 on iOS in run 32232550302. Retrying is safe: setting the
-    // same feature flag twice is idempotent.
-    const patchResult = await withTransportRetry(() => System.apiPatchConfig(baseUrl, {
-        FeatureFlags: {
-            ClassificationMarkings: true,
-        },
-    }));
-    if (patchResult.error) {
-        throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
-    }
+    // Idempotent flag patch. CI cloud often drops the TCP response (axios 30s → status 0).
+    // Re-patch if client config lags after a sibling suite turned the flag off (MM-T6204_1).
+    let lastObserved: {server?: unknown; client?: unknown} = {};
 
-    const enabled = await System.waitForClientConfigFlag(
-        baseUrl,
-        'FeatureFlagClassificationMarkings',
-        'true',
-        {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
-    );
+    /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
+    for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
+        const patchResult = await withTransportRetry(() => System.apiPatchConfig(baseUrl, {
+            FeatureFlags: {
+                ClassificationMarkings: true,
+            },
+        }));
+        if (patchResult.error) {
+            throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
+        }
 
-    if (!enabled) {
-        throw new Error(
-            'enableClassificationMarkings: FeatureFlagClassificationMarkings did not become true. ' +
-            'Either the server license or configuration blocks this feature flag, or another ' +
-            'suite turned it off concurrently — classification suites must never unset it ' +
-            '(see the invariant in global_classification_banner.e2e.ts).',
+        const enabled = await System.waitForClientConfigFlag(
+            baseUrl,
+            'FeatureFlagClassificationMarkings',
+            'true',
+            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
+        );
+        if (enabled) {
+            return;
+        }
+
+        lastObserved = await observedFlagValues(baseUrl);
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[enableClassificationMarkings] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
+            `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
     }
+    /* eslint-enable no-await-in-loop */
+
+    throw new Error(
+        'enableClassificationMarkings: FeatureFlagClassificationMarkings did not become true. ' +
+        `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)}. ` +
+        'Either the server license or configuration blocks this feature flag, or another ' +
+        'suite turned it off concurrently — classification suites must never unset it ' +
+        '(see the invariant in global_classification_banner.e2e.ts).',
+    );
 };

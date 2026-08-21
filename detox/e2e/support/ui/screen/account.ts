@@ -74,6 +74,21 @@ class AccountScreen {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
     };
 
+    // Status sheet dismiss and the account-row indicator mount are async; a
+    // one-shot expect() races both (MM-T3251 "No elements found ... AT INDEX(0)").
+    selectUserStatus = async (option: Detox.NativeElement) => {
+        await this.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
+        await option.tap();
+        await waitForElementToNotExist(option, timeouts.TEN_SEC);
+        await this.toBeVisible();
+    };
+
+    waitForUserPresence = async (status: string, label: string) => {
+        await waitFor(this.getUserPresenceIndicator(status)).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.getUserPresenceLabel(status)).toHaveText(label).withTimeout(timeouts.TEN_SEC);
+    };
+
     getCustomStatus = (emojiName: string, duration: string) => {
         const accountCustomStatusEmojiMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_emoji.${emojiName}`);
         const accountCustomStatusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`);

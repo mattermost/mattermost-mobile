@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -184,15 +184,10 @@ class ChannelInfoScreen {
     };
 
     copyChannelHeader = async () => {
-        // Long press the header container by its testID. The header renders through
-        // Markdown, so the URL is its own text node inside the wrapper and by.text() can
-        // match either that node or none of them.
-        await this.extraHeader.longPress(timeouts.TWO_SEC);
-
+        // Long press the header container by testID. Markdown splits the URL into
+        // its own text node, so by.text() is not a stable target.
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        await longPressWithRetry(this.extraHeader, copyAction);
 
         // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
         if (isAndroid()) {
@@ -209,12 +204,10 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelHeader = async () => {
-        await this.extraHeader.longPress(timeouts.TWO_SEC);
-
-        await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
-
+        await longPressWithRetry(
+            this.extraHeader,
+            element(by.id(this.testID.copyHeaderTextAction)),
+        );
         if (isAndroid()) {
             await device.disableSynchronization();
         }
@@ -229,18 +222,8 @@ class ChannelInfoScreen {
     };
 
     copyChannelPurpose = async () => {
-        // Long press the purpose by its testID, not by.text(). The same node is already
-        // asserted through publicPrivateTitlePurpose two lines earlier in MM-T868_1, and
-        // Espresso's withText is a full-string match against a body that the caller
-        // generates — matching the id is both stabler and the convention in this file.
-        await this.publicPrivateTitlePurpose.longPress(timeouts.TWO_SEC);
-
-        // TEN_SEC, not TWO_SEC: this waits out a bottom-sheet entry animation, and every
-        // other sheet wait in this file already uses the longer budget.
         const copyAction = element(by.id(this.testID.copyPurposeAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TEN_SEC);
+        await longPressWithRetry(this.publicPrivateTitlePurpose, copyAction);
 
         if (isAndroid()) {
             await device.disableSynchronization();
@@ -255,16 +238,11 @@ class ChannelInfoScreen {
         }
     };
 
-    cancelCopyChannelPurpose = async (purposeText: string) => {
-        // Long press on purpose text
-        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
-        await waitFor(element(by.id(this.testID.copyPurposeAction))).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
-
-        // Cancel
+    cancelCopyChannelPurpose = async () => {
+        await longPressWithRetry(
+            this.publicPrivateTitlePurpose,
+            element(by.id(this.testID.copyPurposeAction)),
+        );
         await element(by.id(this.testID.copyPurposeCancelAction)).tap();
     };
 

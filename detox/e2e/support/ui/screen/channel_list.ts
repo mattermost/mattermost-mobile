@@ -285,6 +285,14 @@ class ChannelListScreen {
                 // Recovery is best-effort.
             }
             await waitForElementToExist(this.channelListScreen, timeout);
+            try {
+                await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
+            } catch {
+                // Loading indicator already gone or never shown.
+            }
+            // FlashList unmounts while categories are loading — waiting only for
+            // channel_list.screen lets callers race an empty sidebar (MM-T5600+).
+            await waitForElementToExist(this.channelList, timeout);
         };
 
         try {
@@ -323,6 +331,12 @@ class ChannelListScreen {
                 /* eslint-enable no-await-in-loop */
 
                 await waitForElementToExist(this.channelListScreen, timeouts.TWO_MIN);
+                try {
+                    await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
+                } catch {
+                    // Loading indicator already gone or never shown.
+                }
+                await waitForElementToExist(this.channelList, timeouts.TWO_MIN);
             } catch (recoveryError) {
                 // eslint-disable-next-line no-console
                 console.warn('[ChannelListScreen.toBeVisible] Recovery relaunch also failed:', recoveryError);

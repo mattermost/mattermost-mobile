@@ -714,6 +714,14 @@ jobs:
             npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
           fi
           DETOX_EXIT_CODE=$?
+          if [ ! -f artifacts/jest-results.json ]; then
+            echo "⚠️ Detox left no artifacts/jest-results.json (exit ${DETOX_EXIT_CODE}) — writing shard stub"
+            node utils/write-tsio-failure-stub.mjs \
+              --format jest \
+              --output artifacts/jest-results.json \
+              --job-name "machine-${{ matrix.runId }}" \
+              --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
+          fi
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
