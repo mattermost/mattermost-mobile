@@ -78,6 +78,7 @@ async function waitForArchivedChannelItem(channelName: string) {
 
 async function waitForArchivedChannelDestination() {
     await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
+
     // Existence, not 75% visibility: the archived footer sits in the home-indicator
     // inset and local deleteAt can land after the channel screen itself.
     await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
