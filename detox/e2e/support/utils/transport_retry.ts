@@ -25,13 +25,13 @@ export const isTransportFailure = (result: ApiResult): boolean => {
 
 export type TransportRetryOptions = {delayMs?: number};
 
-export const withTransportRetry = async <T extends ApiResult>(
+export const withTransportRetry = async <T>(
     operation: () => Promise<T>,
     {delayMs = NETWORK_RETRY_DELAY_MS}: TransportRetryOptions = {},
 ): Promise<T> => {
     let result = await operation();
 
-    for (let attempt = 1; attempt < NETWORK_RETRY_ATTEMPTS && isTransportFailure(result); attempt++) {
+    for (let attempt = 1; attempt < NETWORK_RETRY_ATTEMPTS && isTransportFailure(result as ApiResult); attempt++) {
         // eslint-disable-next-line no-await-in-loop -- retries are sequential by definition
         await wait(delayMs);
 
