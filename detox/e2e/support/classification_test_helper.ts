@@ -21,6 +21,7 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
     // Re-patch if client config lags after a sibling suite turned the flag off (MM-T6204_1).
     let lastObserved: {server?: unknown; client?: unknown} = {};
 
+    /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
         const patchResult = await withTransportRetry(() => System.apiPatchConfig(baseUrl, {
             FeatureFlags: {
@@ -48,6 +49,7 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
             `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
     }
+    /* eslint-enable no-await-in-loop */
 
     throw new Error(
         'enableClassificationMarkings: FeatureFlagClassificationMarkings did not become true. ' +
