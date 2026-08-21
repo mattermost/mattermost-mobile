@@ -167,7 +167,10 @@ const PermalinkPreview = ({
     }, [userId, author, serverUrl]);
 
     const linkedPostId = embedData?.post_id;
-    const embedFilesCount = embedData?.post?.metadata?.files?.length ?? 0;
+    const filesInfo = useMemo(() => {
+        return embedData?.post?.metadata?.files || [];
+    }, [embedData?.post?.metadata?.files]);
+    const embedFilesCount = filesInfo.length;
     useEffect(() => {
         if (!linkedPostId) {
             return;
