@@ -110,7 +110,7 @@ export const waitForClientConfigFlag = async (
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
         const {config} = await apiGetClientConfigOld(baseUrl);
-        if (config?.[flagKey] === expectedValue) {
+        if (String(config?.[flagKey]) === expectedValue) {
             return true;
         }
 

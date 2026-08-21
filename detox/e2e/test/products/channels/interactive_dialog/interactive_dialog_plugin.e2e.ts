@@ -940,14 +940,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.id('AppFormElement.local_manual.time.button')).tap();
         await wait(500);
 
-        // # Replace any prefilled text with the manual time entry (parseTimeString accepts 24-hour without am/pm)
+        // Detox iOS replaceText often does not fire onChangeText, so type the value.
         const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
         await waitFor(manualInput).toBeVisible().withTimeout(2000);
-        await manualInput.replaceText('14:30');
-
-        // # Commit by pressing Done — fires onSubmitEditing → handleManualTimeSubmit → handleChange
-        await manualInput.tapReturnKey();
+        await manualInput.tap();
+        await manualInput.clearText();
+        await manualInput.typeText('14:30');
         await wait(500);
+
+        // Blur commits even if return-key is swallowed on iOS 26.
+        try {
+            await manualInput.tapReturnKey();
+        } catch { /* keyboard may already be dismissed */ }
+        await wait(300);
 
         // # Submit dialog
         await InteractiveDialogScreen.submit();
