@@ -223,7 +223,7 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 id: "login_options.description.enter_credentials"
                 optional: true
-            # Empty password keeps testID login_form.signin.button.disabled.
+            # * Empty password keeps testID login_form.signin.button.disabled.
             - runFlow:
                 when:
                   visible:

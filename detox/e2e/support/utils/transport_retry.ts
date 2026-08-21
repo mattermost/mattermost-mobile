@@ -20,7 +20,11 @@ export const isTransportFailure = (result: ApiResult): boolean => {
     const message = typeof result.error === 'string'
         ? result.error
         : String((result.error as {message?: unknown}).message ?? result.error);
-    return message.includes('timeout') || message.includes('524');
+    const normalizedMessage = message.toLowerCase();
+    return normalizedMessage.includes('timeout') ||
+        normalizedMessage.includes('524') ||
+        normalizedMessage.includes('aggregateerror') ||
+        normalizedMessage.includes('no response from server');
 };
 
 export type TransportRetryOptions = {delayMs?: number};

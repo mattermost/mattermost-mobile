@@ -99,6 +99,7 @@ describe('isTransportFailure', () => {
         {name: 'error with status 500', result: {error: {message: 'boom'}, status: 500}, expected: false},
         {name: 'Cloudflare 524 with error payload', result: {error: {message: 'Error 524'}, status: 524}, expected: true},
         {name: 'timeout message even without status 0', result: {error: {message: 'timeout of 30000ms exceeded'}, status: 504}, expected: true},
+        {name: 'AggregateError with no status', result: {error: {message: 'No response from server: AggregateError'}}, expected: true},
         {name: 'empty object', result: {}, expected: false},
     ];
 
