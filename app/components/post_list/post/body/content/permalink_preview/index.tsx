@@ -26,7 +26,7 @@ const observeHasLinkedPostFiles = (database: Database, p: PostModel | undefined,
     if (!p) {
         return of$((embedData?.post?.metadata?.files?.length ?? 0) > 0);
     }
-    return queryFilesForPost(database, p.id).observeCount().pipe(map((c) => c > 0));
+    return queryFilesForPost(database, p.id).observe().pipe(map((files) => files.length > 0));
 };
 
 const enhance = withObservables(['embedData'], ({database, embedData}: WithDatabaseArgs & {embedData: PermalinkEmbedData}) => {

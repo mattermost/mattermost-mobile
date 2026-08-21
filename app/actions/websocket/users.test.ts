@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
 import {setCurrentUserStatus} from '@actions/local/user';
-import {fetchPostsForChannel} from '@actions/remote/post';
+import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -14,8 +14,9 @@ import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getLicense} from '@queries/servers/system';
+import {getConfig, getConfigValue, getCurrentChannelId, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import * as logUtils from '@utils/log';
 
@@ -52,6 +53,7 @@ jest.mock('@queries/servers/custom_profile');
 jest.mock('@queries/servers/preference');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
+jest.mock('@store/ephemeral_store');
 
 describe('WebSocket Users Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -386,9 +388,32 @@ describe('WebSocket Users Actions', () => {
             expect(logUtils.logError).toHaveBeenCalled();
         });
 
-        it('should re-fetch posts when the current user attributes change', async () => {
+        it('should re-fetch channel posts and thread when the current user attributes change', async () => {
             operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(getConfigValue).mockResolvedValue('true');
+            jest.mocked(getCurrentChannelId).mockResolvedValue('channel-123');
+            jest.mocked(fetchPostsForChannel).mockResolvedValue({});
+            jest.mocked(fetchPostThread).mockResolvedValue({posts: []});
+            jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('thread-456');
+
+            const msg = {
+                data: {
+                    user_id: currentUserId,
+                    values: {field1: 'newValue'},
+                },
+            } as WebSocketMessage;
+
+            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
+
+            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-123');
+            expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, 'thread-456');
+        });
+
+        it('should not re-fetch when the PermissionPolicies feature flag is disabled', async () => {
+            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(getConfigValue).mockResolvedValue('false');
             jest.mocked(getCurrentChannelId).mockResolvedValue('channel-123');
             jest.mocked(fetchPostsForChannel).mockResolvedValue({});
 
@@ -401,12 +426,13 @@ describe('WebSocket Users Actions', () => {
 
             await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
 
-            expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, 'channel-123');
+            expect(fetchPostsForChannel).not.toHaveBeenCalled();
         });
 
         it('should not re-fetch posts when a different user attributes change', async () => {
             operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(getConfigValue).mockResolvedValue('true');
             jest.mocked(fetchPostsForChannel).mockResolvedValue({});
 
             const msg = {
@@ -421,11 +447,13 @@ describe('WebSocket Users Actions', () => {
             expect(fetchPostsForChannel).not.toHaveBeenCalled();
         });
 
-        it('should not re-fetch posts when no active channel', async () => {
+        it('should not re-fetch channel posts when no active channel', async () => {
             operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
+            jest.mocked(getConfigValue).mockResolvedValue('true');
             jest.mocked(getCurrentChannelId).mockResolvedValue('');
             jest.mocked(fetchPostsForChannel).mockResolvedValue({});
+            jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('');
 
             const msg = {
                 data: {

@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} from '@actions/local/channel';
 import {setCurrentUserStatus} from '@actions/local/user';
-import {fetchPostsForChannel} from '@actions/remote/post';
+import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
@@ -15,8 +15,9 @@ import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getLicense} from '@queries/servers/system';
+import {getConfig, getConfigValue, getCurrentChannelId, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
@@ -153,17 +154,27 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
             logError('Error handling custom profile attributes values updated event', error);
         }
 
-        // ABAC policies evaluate against user attributes; refresh the active channel so
-        // redacted_file_count updates if the current user's own attributes changed.
+        // ABAC policies evaluate against user attributes; when the current user's own
+        // attributes change, refresh visible posts so redacted_file_count is up to date.
+        // Only needed when the PermissionPolicies feature flag is enabled server-side.
         const currentUser = await getCurrentUser(database);
         if (currentUser?.id === user_id) {
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             if (activeServerUrl === serverUrl) {
-                const channelId = await getCurrentChannelId(database);
-                if (channelId) {
-                    fetchPostsForChannel(serverUrl, channelId).catch((e) =>
-                        logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch posts', e),
-                    );
+                const permissionPoliciesEnabled = (await getConfigValue(database, 'FeatureFlagPermissionPolicies')) === 'true';
+                if (permissionPoliciesEnabled) {
+                    const channelId = await getCurrentChannelId(database);
+                    if (channelId) {
+                        fetchPostsForChannel(serverUrl, channelId).catch((e) =>
+                            logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch channel posts', e),
+                        );
+                    }
+                    const threadId = EphemeralStore.getCurrentThreadId();
+                    if (threadId) {
+                        fetchPostThread(serverUrl, threadId).catch((e) =>
+                            logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch thread posts', e),
+                        );
+                    }
                 }
             }
         }
