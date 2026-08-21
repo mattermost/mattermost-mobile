@@ -223,10 +223,21 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 id: "login_options.description.enter_credentials"
                 optional: true
+            # Empty password keeps testID login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      text: "Password"
+                      optional: true
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
             - extendedWaitUntil:
                 visible:
                   id: "login_form.signin.button"
-                timeout: 20000
+                timeout: 45000
 - runFlow:
     when:
       platform: Android

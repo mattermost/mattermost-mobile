@@ -17,7 +17,7 @@ const jar = new CookieJar();
 
 // Bound hung TCP / silent Cloudflare stalls. Without a client timeout, apiCreatePost
 // can sit in test_fn until Jest's 300s cap with zero Detox UI actions.
-const REQUEST_TIMEOUT_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 45_000;
 
 const baseClient = wrapper(axios.create({
     headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -72,6 +72,27 @@ baseClient.interceptors.response.use(
             }
         }
 
+        return Promise.reject(error);
+    },
+);
+
+// Retry client-side timeouts (no HTTP response). A 30–45s hang is a dropped
+// TCP/Cloudflare stall, not a committed write we can observe.
+baseClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config as typeof error.config & {_timeoutRetries?: number};
+        const timedOut = !error.response && (
+            error.code === 'ECONNABORTED' ||
+            String(error.message || '').includes('timeout')
+        );
+        if (timedOut && config && (config._timeoutRetries ?? 0) < 3) {
+            config._timeoutRetries = (config._timeoutRetries ?? 0) + 1;
+            const delay = config._timeoutRetries * 1000;
+            console.warn(`[client] request timeout — retry ${config._timeoutRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
+            await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+            return baseClient(config);
+        }
         return Promise.reject(error);
     },
 );

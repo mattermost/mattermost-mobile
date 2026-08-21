@@ -8,7 +8,20 @@ export const NETWORK_RETRY_DELAY_MS = 2000; // timeouts.TWO_SEC (non-LOW_BANDWID
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const isTransportFailure = (result: ApiResult): boolean => Boolean(result.error) && result.status === 0;
+const TIMEOUT_STATUS = new Set([0, 520, 522, 524]);
+
+export const isTransportFailure = (result: ApiResult): boolean => {
+    if (!result.error) {
+        return false;
+    }
+    if (result.status !== undefined && TIMEOUT_STATUS.has(result.status)) {
+        return true;
+    }
+    const message = typeof result.error === 'string'
+        ? result.error
+        : String((result.error as {message?: unknown}).message ?? result.error);
+    return message.includes('timeout') || message.includes('524');
+};
 
 export type TransportRetryOptions = {delayMs?: number};
 

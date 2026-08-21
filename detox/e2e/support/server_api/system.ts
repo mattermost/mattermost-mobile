@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
 
 import client from './client';
@@ -158,13 +159,14 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
-    try {
-        // Use config/patch endpoint for partial updates — no need to GET+merge+PUT the full config
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    });
 };
 
 /**
@@ -190,12 +192,14 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
-    try {
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    });
 };
 
 /**
