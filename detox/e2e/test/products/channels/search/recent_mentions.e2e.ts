@@ -262,10 +262,7 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.toBeVisible();
 
         // * Verify the edited state in the recent-mentions UI.
-        // Use the regex-based assertPostMessageEdited (same as MM-T4910_3 / MM-T4918_3):
-        // the post body renders as one text node "<message> edit ...Edited", so exact-text
-        // matchers (verifyPostEdited's by.text('edit')/'Edited') miss the combined node.
-        await ChannelScreen.assertPostMessageEdited(ownMentionPost.id, updatedMessage, 'recent_mentions_page');
+        await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
 
         // # Open post options. openPostOptionsFor, not a bare longPress on post_header.date_time:
         // the bare version has no scroll, no wait for the sheet and no retry, and it left

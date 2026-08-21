@@ -43,32 +43,46 @@ class AccountScreen {
     customStatusFailureMessage = element(by.id(this.testID.customStatusFailureMessage));
     customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
-    // A single tap is enough: CI device.log for MM-T4990_4 (ios-results-gl6zupuras-7)
-    // shows `Sending UIEvent` + `send gesture actions` followed by a 200 from the unset
-    // request, so the press reaches the handler. Do NOT re-tap or assert the button's
-    // disappearance here — whether the account row actually drops the control is the
-    // behaviour under test and belongs in the test, not in this helper.
     clearCustomStatus = async () => {
-        await waitFor(this.customStatusClearButton).toExist().withTimeout(timeouts.TEN_SEC);
-        await device.disableSynchronization();
-        try {
-            await this.customStatusClearButton.tap({x: 1, y: 1});
-            await wait(timeouts.ONE_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
-        try {
-            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-        } catch {
-            await device.disableSynchronization();
+        let lastError: unknown;
+        /* eslint-disable no-await-in-loop -- retry the complete clear interaction */
+        for (let attempt = 0; attempt < 2; attempt++) {
             try {
-                await this.customStatusClearButton.tap({x: 1, y: 1});
-                await wait(timeouts.ONE_SEC);
-            } finally {
-                await safeEnableSynchronization();
+                await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } catch (error) {
+                try {
+                    await expect(this.customStatusClearButton).not.toExist();
+                    return;
+                } catch {
+                    // The button still exists but is not yet hittable.
+                }
+                lastError = error;
+                continue;
             }
-            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+            try {
+                await device.disableSynchronization();
+                try {
+                    await this.customStatusClearButton.tap();
+                    await wait(timeouts.ONE_SEC);
+                } finally {
+                    await safeEnableSynchronization();
+                }
+            } catch (error) {
+                lastError = error;
+                continue;
+            }
+
+            try {
+                await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
+                return;
+            } catch (error) {
+                lastError = error;
+            }
         }
+        /* eslint-enable no-await-in-loop */
+
+        throw lastError;
     };
 
     getUserInfo = (userId: string) => {

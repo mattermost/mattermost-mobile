@@ -608,14 +608,9 @@ jobs:
           manifest-path: detox/artifacts/spec-durations.next.json
           mode: save
 
-      # ── TSIO report upload (before e2e:save-report) ────────────────────────
-      # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
-      # while those artifact trees are still on disk.
-      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
-      # extractDetox expects testFilePath + nested testResults — convert while
-      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
-      - name: Merge per-shard Jest JSON for TSIO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
+      # Merge before report generation so TSIO and summary.json use the same results.
+      - name: Merge per-shard Jest JSON
+        if: always()
         id: tsio-merge
         run: |
           set +e
@@ -627,7 +622,7 @@ jobs:
             --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found or merge failed — skipping TSIO upload."
+            echo "No jest-results.json found or merge failed."
             exit 0
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"

@@ -3,7 +3,7 @@
 
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
@@ -138,24 +138,39 @@ class ServerListScreen {
         }
     };
 
-    // Server rows are variable height. server_item renders a push-proxy alert line
-    // ("Notifications cannot be received from this server because of its configuration…")
-    // only for servers whose push proxy is unverified, and that status is per-server and
-    // resolved at runtime — so the same row sits on screen for one server set and below
-    // the fold for another. Never assume a row is already visible: scroll the inner
-    // server_list FlatList until it is. No-op when the row is already on screen.
-    //
-    // scrollElementIntoView, not a bare whileElement().scroll(): whileElement takes a
-    // single direction, and 'down' cannot recover a row that is clipped at the *top* —
-    // which is exactly where the first server sits after revealServerListItems() scrolls
-    // the sheet's list down, and what MM-T4691_4's own comment records ("the row sat
-    // clipped at the top of the sheet (y=0, height=252)"). Scrolling further down walks
-    // it further away, so the visibility check just thrashes: ios shard 18 of run
-    // 32184155037 logged nine DETOX_VISIBILITY_RCTViewComponentView__*__SCREEN.png debug
-    // captures for MM-T4691_4 before the row interaction failed. scrollElementIntoView
-    // already alternates both directions and applies the per-platform threshold.
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
-        await scrollElementIntoView(item, by.id(this.testID.serverList));
+        const visibilityThreshold = isIos() ? 40 : 75;
+        try {
+            await expect(item).toBeVisible(visibilityThreshold);
+            return;
+        } catch {
+            // Reset before scanning rows below the fold.
+        }
+
+        try {
+            await this.serverList.scrollTo('top');
+        } catch {
+            // The list may already be at its boundary.
+        }
+
+        /* eslint-disable no-await-in-loop -- bounded scan of the server FlatList */
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                await expect(item).toBeVisible(visibilityThreshold);
+                return;
+            } catch (error) {
+                if (attempt === 4) {
+                    throw error;
+                }
+                try {
+                    await this.serverList.scroll(120, 'down', 0.5, 0.5);
+                } catch {
+                    // The target may become visible when the boundary animation settles.
+                }
+                await wait(timeouts.HALF_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 
     swipeRevealOption = async (
@@ -168,8 +183,8 @@ class ServerListScreen {
         const revealed = option.atIndex(0);
         /* eslint-disable no-await-in-loop -- swipe can be a no-op until the row is fully on-screen */
         for (let attempt = 0; attempt < 3; attempt++) {
-            await target.swipe('left', 'slow');
             try {
+                await target.swipe('left', 'slow', isIos() ? 0.65 : 0.75);
                 await waitForElementToExist(revealed, timeouts.FOUR_SEC);
                 break;
             } catch {
@@ -195,12 +210,15 @@ class ServerListScreen {
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
         const revealed = await this.swipeRevealOption(row, option);
-        await revealed.tap({x: 1, y: 1});
+        try {
+            await revealed.tap({x: 36, y: 36});
+        } catch {
+            await wait(timeouts.ONE_SEC);
+            await revealed.tap({x: 36, y: 36});
+        }
     };
 
     switchToServer = async (serverDisplayName: string) => {
-        // Pick the matcher with toExist(), which is scroll-independent, so the choice is
-        // made before any scrolling; then scroll that row into view and corner-tap it.
         let target = this.getServerItemInactive(serverDisplayName).atIndex(0);
         try {
             await waitForElementToExist(target, timeouts.FOUR_SEC);
@@ -209,7 +227,7 @@ class ServerListScreen {
             await waitForElementToExist(target, timeouts.FOUR_SEC);
         }
         await this.scrollServerItemIntoView(target);
-        await target.tap({x: 1, y: 1});
+        await target.tap({x: 36, y: 36});
 
         try {
             await waitFor(this.serverListScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

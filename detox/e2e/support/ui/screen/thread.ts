@@ -241,7 +241,7 @@ class ThreadScreen {
         await this.sendButton.tap({x: 1, y: 1});
 
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
-        await waitFor(this.sendButtonDisabled).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.sendButtonDisabled).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

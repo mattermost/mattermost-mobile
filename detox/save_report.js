@@ -51,6 +51,7 @@ const {
     generateShortSummary,
     generateTestReport,
     getAllTests,
+    getAllTestsFromJestResults,
     removeOldGeneratedReports,
     sendReport,
     readJsonFromFile,
@@ -148,7 +149,11 @@ const saveReport = async () => {
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
-    const summary = generateShortSummary(allTests);
+    const mergedJestResultsPath = path.join(__dirname, ARTIFACTS_DIR, 'jest-results-merged.json');
+    const summaryTests = fs.existsSync(mergedJestResultsPath) ?
+        getAllTestsFromJestResults(readJsonFromFile(mergedJestResultsPath)) :
+        allTests;
+    const summary = generateShortSummary(summaryTests);
     console.log(summary);
     writeJsonToFile(summary, 'summary.json', ARTIFACTS_DIR);
 

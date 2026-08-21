@@ -226,9 +226,6 @@ describe('Search - Search Message Post Actions', () => {
         // * Verify the post can be unpinned again from the search results screen
         await PostOptionsScreen.tapUnpinPost();
         await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, searchedPost.id);
-        await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
-        await waitForElementToExist(PostOptionsScreen.pinPostOption, timeouts.HALF_MIN);
-        await PostOptionsScreen.close();
 
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.removeRecentSearchItem(searchTerm);

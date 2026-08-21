@@ -102,7 +102,7 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    const HEALTH_MAX_ATTEMPTS = 5;
+    const HEALTH_MAX_ATTEMPTS = 8;
     for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
         try {
             await System.apiCheckSystemHealth(siteOneUrl);

@@ -55,11 +55,10 @@ const revealServerListItems = async () => {
     await wait(timeouts.ONE_SEC);
 };
 
-// toExist() is not enough before a tap: an off-screen FlatList row may not be rendered at
-// all. Scroll the inner list until the row is on screen, then corner-tap it.
+// toExist() is not enough before a tap: an off-screen FlatList row may not be rendered.
 const tapServerItem = async (item: Detox.NativeElement) => {
     await ServerListScreen.scrollServerItemIntoView(item);
-    await item.tap({x: 1, y: 1});
+    await item.tap({x: 36, y: 36});
 };
 
 describe('Server Login - Server List', () => {
@@ -222,12 +221,6 @@ describe('Server Login - Server List', () => {
         await EditServerScreen.saveButton.tap();
 
         // * Verify the new first server display name.
-        // Scroll it into view rather than asserting a bare toBeVisible(): the rename itself
-        // succeeds — run 32089683192 on Android matched
-        // tag=server_list.server_item.server_1_new.active with visibility=VISIBLE — but the
-        // row sat clipped at the top of the sheet (y=0, height=252) and so missed the
-        // default visibility threshold. scrollServerItemIntoView waits for toBeVisible(40)
-        // while scrolling the inner list, which asserts the rename and tolerates the clip.
         const renamedServerRow = ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0);
         await ServerListScreen.scrollServerItemIntoView(renamedServerRow);
 

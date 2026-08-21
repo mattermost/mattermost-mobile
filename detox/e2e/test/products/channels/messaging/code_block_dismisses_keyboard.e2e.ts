@@ -57,7 +57,11 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         const codeBlockMessage = '```\nconst x = 1;\n```';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(codeBlockMessage);
-        const {post: codePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: codePost} = await Post.apiFindPostInChannelByMessage(
+            siteOneUrl,
+            testChannel.id,
+            codeBlockMessage,
+        );
         if (!codePost?.id) {
             throw new Error('MM-T1433_1: could not resolve code-block post after UI send');
         }

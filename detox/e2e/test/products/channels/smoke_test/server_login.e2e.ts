@@ -26,17 +26,16 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 
 const revealServerListItems = async () => {
-    if (isIos()) {
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-    } else if (isAndroid()) {
-        await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+    try {
+        await ServerListScreen.serverList.scroll(120, 'down');
+    } catch {
+        // Few enough servers that the list is already at its boundary.
     }
     await wait(timeouts.ONE_SEC);
 };
@@ -102,8 +101,7 @@ describe('Smoke Test - Server Login', () => {
         await wait(timeouts.ONE_SEC);
         await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
-        await wait(timeouts.TWO_SEC);
+        await ServerListScreen.switchToServer(serverOneDisplayName);
         await ServerListScreen.open();
         await wait(timeouts.ONE_SEC);
         await revealServerListItems();
@@ -128,6 +126,6 @@ describe('Smoke Test - Server Login', () => {
         );
 
         // # Go back to first server
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
+        await ServerListScreen.switchToServer(serverOneDisplayName);
     });
 });
