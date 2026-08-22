@@ -27,6 +27,7 @@
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
+#   - channel_bookmark.options.sheet
 #   - channel_bookmark.options.edit
 tags:
   - MM-T5611
@@ -184,11 +185,9 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - longPressOn:
           id: "channel_bookmark\\..+\\.title"
-      # # Android Maestro sees the sheet label, not channel_bookmark.options.edit
-      # (CI 32423060171). Same path that was green before the shared testID wait.
       - extendedWaitUntil:
           visible:
-            text: "Edit"
+            id: "channel_bookmark.options.edit"
           timeout: 15000
 - takeScreenshot: bookmark-options-visible
 - runFlow:
@@ -204,6 +203,12 @@ appId: ${MAESTRO_APP_ID}
       platform: Android
     commands:
       - pressKey: Back
+
+# * Verify the bookmark options sheet is dismissed.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.options.sheet"
+    timeout: 15000
 
 # * Verify the channel header bookmark bar is still there after the sheet closes.
 - extendedWaitUntil:
