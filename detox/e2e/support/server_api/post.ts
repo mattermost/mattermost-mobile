@@ -31,7 +31,7 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {Object} option.props - A general object property bag to attach to the post
  * @param {string[]} option.fileIds - Array of file IDs to attach to the post (top-level API field)
  * @param {Date} option.createAt - The date the post is created at
- * @return {Object} returns {post} on success or {error, status} on error
+ * @return {Object} returns {post} on success. Throws on error (never returns {error}).
  */
 export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0}: any): Promise<any> => {
     try {
@@ -49,7 +49,8 @@ export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId
 
         return {post: response.data};
     } catch (err) {
-        return getResponseFromError(err);
+        const error = getResponseFromError(err);
+        throw new Error(`apiCreatePost failed: ${JSON.stringify(error.error)}`);
     }
 };
 
@@ -312,14 +313,20 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     // Creating a post is not idempotent and a duplicate IS observable — it shows up in
     // the channel and breaks post-count assertions. A timed-out create may already have
     // committed, so fail and let the caller surface it rather than posting twice.
-    const {post, error: postError} = await apiCreatePost(baseUrl, {
-        channelId,
-        message: '',
-        rootId: rootId || undefined,
-        fileIds: [fileId],
-    });
-    if (postError || !post?.id) {
-        throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${JSON.stringify(postError)}`);
+    let post;
+    try {
+        const result = await apiCreatePost(baseUrl, {
+            channelId,
+            message: '',
+            rootId: rootId || undefined,
+            fileIds: [fileId],
+        });
+        post = result.post;
+    } catch (err) {
+        throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${String(err)}`);
+    }
+    if (!post?.id) {
+        throw new Error('apiCreatePostWithImageAttachment: post create returned no post ID');
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
         throw new Error(
