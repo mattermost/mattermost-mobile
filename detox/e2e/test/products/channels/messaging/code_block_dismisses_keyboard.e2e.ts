@@ -25,7 +25,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
     const serverOneDisplayName = 'Server 1';
@@ -97,7 +97,6 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         // * Verify the keyboard is dismissed — send button is disabled (no text in draft)
         //   and the composer lost focus after returning from the code preview.
         await waitFor(ChannelScreen.sendButtonDisabled).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
         await waitFor(ChannelScreen.postInput).not.toBeFocused().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen

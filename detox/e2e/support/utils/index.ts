@@ -84,7 +84,7 @@ export async function safeEnableSynchronization(): Promise<void> {
             if (i === delays.length) {
                 throw error;
             }
-            await wait(delays[i]!);
+            await wait(delays[i] ?? delays[delays.length - 1] ?? timeouts.ONE_SEC);
         }
     }
     /* eslint-enable no-await-in-loop */

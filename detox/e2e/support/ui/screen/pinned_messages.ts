@@ -37,13 +37,19 @@ class PinnedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+
+        // Same reason as ChannelInfoScreen.toBeVisible: the screen exists while the push
+        // animation is still in flight, so callers that assert on a child straight after
+        // this would race the transition. Wait for real visibility, not just presence.
         if (isIos()) {
             await withSynchronizationDisabled(async () => {
                 await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+                await waitForElementToBeVisible(this.pinnedMessagesScreen, timeout);
             });
             return this.pinnedMessagesScreen;
         }
         await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+        await waitForElementToBeVisible(this.pinnedMessagesScreen, timeout);
 
         return this.pinnedMessagesScreen;
     };

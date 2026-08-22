@@ -1,6 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/**
+ * Detox reports a missing atIndex(n) as an index/out-of-bounds error naming how many
+ * elements matched. A non-hittable or obscured element reports a visibility or
+ * hittability failure instead, which must not be treated as "try a lower index".
+ */
+const isIndexOutOfBounds = (error: unknown): boolean => {
+    const message = String((error as {message?: unknown})?.message ?? error).toLowerCase();
+    return message.includes('out of bounds') ||
+        message.includes('index') ||
+        message.includes('but only') ||
+        message.includes('no elements found');
+};
+
 class NavigationHeader {
     testID = {
         backButton: 'navigation.header.back',
@@ -32,8 +45,15 @@ class NavigationHeader {
             try {
                 await element(by.id(this.testID.backButton)).atIndex(index).tap();
                 return;
-            } catch {
-                // Index may be out of bounds when fewer headers are mounted.
+            } catch (error) {
+                // Only an out-of-bounds index means "fewer headers are mounted, try a
+                // lower one". Anything else — a back button that exists but is covered,
+                // or a tap that landed somewhere unexpected — is a real failure, and
+                // swallowing it here would tap a DIFFERENT header's back button and
+                // leave the app on an unexpected screen for the rest of the spec.
+                if (!isIndexOutOfBounds(error)) {
+                    throw error;
+                }
             }
         }
         /* eslint-enable no-await-in-loop */

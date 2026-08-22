@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -95,7 +95,13 @@ class ChannelInfoScreen {
         // HALF_MIN on iOS: after unarchiving/converting a channel the stack settles
         // slowly on iOS 26.x. Poll so a busy idle timer cannot swallow withTimeout.
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
+
+        // Existence is not enough for callers: the screen is in the hierarchy while the
+        // push animation is still running, so a caller that immediately asserts a child
+        // toBeVisible() fails the visibility threshold on a view that is mid-transition.
+        // Wait for the container itself to pass that threshold first.
         await waitForElementToExist(this.channelInfoScreen, timeout);
+        await waitForElementToBeVisible(this.channelInfoScreen, timeout);
 
         return this.channelInfoScreen;
     };

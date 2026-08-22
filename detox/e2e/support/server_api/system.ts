@@ -148,6 +148,8 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
+    // A config patch is idempotent: replaying the same partial config converges on
+    // the same server state.
     return withTransportRetry(async () => {
         try {
             const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
@@ -155,7 +157,7 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
         } catch (err) {
             return getResponseFromError(err);
         }
-    });
+    }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
 /**
@@ -181,6 +183,7 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
+    // Idempotent for the same reason as apiUpdateConfig above.
     return withTransportRetry(async () => {
         try {
             const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
@@ -188,7 +191,7 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
         } catch (err) {
             return getResponseFromError(err);
         }
-    });
+    }, {idempotent: true, label: 'apiPatchConfig'});
 };
 
 /**

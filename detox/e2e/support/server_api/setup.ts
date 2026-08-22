@@ -32,11 +32,24 @@ const isTransientServerError = (error: any): boolean => {
     );
 };
 
+/**
+ * Wall-clock ceiling for apiInit's retries.
+ *
+ * retryTransient is the sole retry owner for apiInit, but an attempt cap is not a
+ * bound when a single attempt can spend the client's whole 90s retry budget:
+ * 3 attempts is up to 270s, which on its own exceeds a 300s beforeAll once the
+ * app launch and login are added. Bounding by elapsed time makes apiInit fail with
+ * the underlying network error while there is still budget left for the hook to
+ * report it.
+ */
+const TRANSIENT_RETRY_BUDGET_MS = 120_000;
+
 const retryTransient = async <T extends {error?: any; status?: number}>(
     fn: () => Promise<T>,
     label: string,
     maxAttempts = 3,
     attempt = 1,
+    deadlineAt = Date.now() + TRANSIENT_RETRY_BUDGET_MS,
 ): Promise<T> => {
     const result = await fn();
     const err = result.error;
@@ -48,6 +61,11 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     if (!err || !transient || attempt >= maxAttempts) {
         return result;
     }
+    if (Date.now() >= deadlineAt) {
+        // eslint-disable-next-line no-console
+        console.warn(`[apiInit] ${label} retry budget spent after attempt ${attempt}; returning the transient error`);
+        return result;
+    }
 
     const retryAfterSec = Number(err.retry_after);
     const delayMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
@@ -57,7 +75,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     // eslint-disable-next-line no-console
     console.warn(`[apiInit] ${label} transient error attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${JSON.stringify(err).slice(0, 200)}`);
     await new Promise((resolve) => setTimeout(resolve, delayMs));
-    return retryTransient(fn, label, maxAttempts, attempt + 1);
+    return retryTransient(fn, label, maxAttempts, attempt + 1, deadlineAt);
 };
 
 /**

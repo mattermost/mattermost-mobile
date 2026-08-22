@@ -267,10 +267,14 @@ export const apiUploadFileToChannel = async (
         // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
+
+    // A replayed upload can leave an extra FileInfo behind, but an unreferenced file is
+    // invisible to every assertion in the suite, and losing the upload fails the test
+    // outright — so a duplicate is the cheaper outcome here.
     const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    }));
+    }), {idempotent: false, allowDuplicateWrites: true, label: 'apiUploadFileToChannel'});
     if (result.error) {
         return result;
     }
@@ -294,12 +298,16 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     if (uploadError || !fileId) {
         throw new Error(`apiCreatePostWithImageAttachment: upload failed: ${JSON.stringify(uploadError)}`);
     }
-    const {post, error: postError} = await withTransportRetry(() => apiCreatePost(baseUrl, {
+
+    // Creating a post is not idempotent and a duplicate IS observable — it shows up in
+    // the channel and breaks post-count assertions. A timed-out create may already have
+    // committed, so fail and let the caller surface it rather than posting twice.
+    const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
         message: '',
         rootId: rootId || undefined,
         fileIds: [fileId],
-    }));
+    });
     if (postError || !post?.id) {
         throw new Error(`apiCreatePostWithImageAttachment: create post failed: ${JSON.stringify(postError)}`);
     }
