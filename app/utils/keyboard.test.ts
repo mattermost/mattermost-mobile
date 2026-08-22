@@ -5,6 +5,7 @@ import {Keyboard} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
 import * as Device from '@constants/device';
+import {advanceTimers} from '@test/timer_helpers';
 
 import {dismissKeyboard, isKeyboardVisible} from './keyboard';
 
@@ -17,6 +18,7 @@ const setEdgeToEdge = (value: boolean) => {
 
 describe('dismissKeyboard', () => {
     beforeEach(() => {
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         jest.clearAllMocks();
         jest.spyOn(Keyboard, 'dismiss').mockImplementation(() => undefined);
         setEdgeToEdge(false);
@@ -24,11 +26,14 @@ describe('dismissKeyboard', () => {
 
     afterEach(() => {
         jest.restoreAllMocks();
+        jest.useRealTimers();
     });
 
     it('should call Keyboard.dismiss on non-edge-to-edge', async () => {
         setEdgeToEdge(false);
-        await dismissKeyboard();
+        const dismissPromise = dismissKeyboard();
+        await advanceTimers(250);
+        await dismissPromise;
 
         expect(Keyboard.dismiss).toHaveBeenCalledTimes(1);
         expect(KeyboardController.dismiss).not.toHaveBeenCalled();

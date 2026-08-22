@@ -58,21 +58,22 @@ describe('CreateOrEditChannel', () => {
         };
     }
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
-    });
-
-    afterAll(async () => {
-        await TestHelper.tearDown(serverUrl);
-    });
-
-    beforeEach(() => {
         jest.clearAllMocks();
     });
 
+    afterEach(async () => {
+        await TestHelper.tearDown(serverUrl);
+    });
+
     it('should keep the Create button enabled after a failed submit', async () => {
-        jest.mocked(createChannel).mockResolvedValue({error: 'channel creation failed'});
+        let resolveCreateChannel: (value: Awaited<ReturnType<typeof createChannel>>) => void;
+        const createChannelRequest = new Promise<Awaited<ReturnType<typeof createChannel>>>((resolve) => {
+            resolveCreateChannel = resolve;
+        });
+        jest.mocked(createChannel).mockReturnValue(createChannelRequest);
 
         const {getByTestId} = renderWithEverything(
             <CreateOrEditChannel {...getBaseProps()}/>,
@@ -93,6 +94,15 @@ describe('CreateOrEditChannel', () => {
 
         await waitFor(() => {
             expect(createChannel).toHaveBeenCalled();
+            expect(lastHeaderButton().props.disabled).toBe(true);
+        });
+
+        await act(async () => {
+            resolveCreateChannel({error: 'channel creation failed'});
+            await createChannelRequest;
+        });
+
+        await waitFor(() => {
             expect(lastHeaderButton().props.disabled).toBe(false);
             expect(lastHeaderButton().props.testID).toBe('create_or_edit_channel.create.button');
         });

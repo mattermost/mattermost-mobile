@@ -59,9 +59,8 @@ describe('prepareThreadsFromReceivedPosts', () => {
         delete (postWithoutFollowFlag as {is_following?: boolean}).is_following;
 
         const models = await prepareThreadsFromReceivedPosts(operator, [postWithoutFollowFlag], true);
-        if (models.length) {
-            await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
-        }
+        expect(models).toHaveLength(1);
+        await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
 
         const thread = await getThreadById(database, rootPost.id);
         expect(thread).toBeDefined();
@@ -101,9 +100,8 @@ describe('prepareThreadsFromReceivedPosts', () => {
             reply_count: 2,
             is_following: false,
         }], true);
-        if (models.length) {
-            await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
-        }
+        expect(models).toHaveLength(1);
+        await operator.batchRecords(models, 'prepareThreadsFromReceivedPosts');
 
         const thread = await getThreadById(database, rootPost.id);
         expect(thread).toBeDefined();

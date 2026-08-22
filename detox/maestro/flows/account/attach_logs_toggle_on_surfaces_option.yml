@@ -88,6 +88,9 @@ appId: ${MAESTRO_APP_ID}
 # On iOS 26.3, Maestro's `back` doesn't dismiss modal-presented screens.
 # Re-launching the app (stopApp + clearState:false) kills and restarts the
 # app without wiping data — user stays logged in, app lands on Home tab.
+# The relaunch and its readiness checks retry together: a cold start that begins
+# but never reaches the Home tab has to trigger another relaunch, which it cannot
+# do if the waits sit outside the retry.
 - retry:
     maxRetries: 3
     commands:
@@ -95,15 +98,15 @@ appId: ${MAESTRO_APP_ID}
           stopApp: true
           clearState: false
 
-# # Wait for the app to relaunch and JS bundle to load.
-- waitForAnimationToEnd:
-    timeout: 30000
+      # # Wait for the app to relaunch and JS bundle to load.
+      - waitForAnimationToEnd:
+          timeout: 30000
 
-# * Verify we're on the Home tab with tab bar visible.
-- extendedWaitUntil:
-    visible:
-      id: "tab_bar.home.tab"
-    timeout: 30000
+      # * Verify we're on the Home tab with tab bar visible.
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 30000
 
 # # Wait for the channel list to render before navigating into the test channel.
 - extendedWaitUntil:

@@ -64,11 +64,12 @@ class AccountScreen {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
     };
 
-    // Status sheet dismiss and the account-row indicator mount are async; a
-    // one-shot expect() races both (MM-T3251 "No elements found ... AT INDEX(0)").
+    // The status sheet slides up and the account-row indicator mounts asynchronously,
+    // so a one-shot expect() races both and reports "No elements found ... AT INDEX(0)".
+    // Wait for the target row to become visible rather than sleeping a fixed duration.
     selectUserStatus = async (option: Detox.NativeElement) => {
         await this.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitFor(option).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await option.tap();
         await waitForElementToNotExist(option, timeouts.TEN_SEC);
         await this.toBeVisible();
@@ -97,9 +98,8 @@ class AccountScreen {
 
         // Detox's `toExist()` only confirms the account drawer view is in the
         // hierarchy — on iOS 26 the slide-up animation can still be in progress
-        // at that moment, so the immediately-following
-        // `expect(child).toBeVisible()` assertions (e.g. the user-info profile
-        // picture in MM-T4988_1) fail the 75% visibility threshold because the
+        // at that moment, so immediately-following child visibility assertions
+        // can fail the 75% threshold because the
         // child's bounds are still being transformed. Wait for a known
         // always-rendered row (the Log out option) to pass the visibility
         // threshold instead of sleeping a fixed duration: this is the actual
@@ -148,13 +148,9 @@ class AccountScreen {
 
         // Dismiss the "Removed from team" alert if a stale WebSocket team-
         // membership-change event from a previous test file's teardown reaches
-        // this session — observed in ios-results-rz4222ls8c-2's MM-T4990_2
-        // testFnFailure.png where a "Removed from team / You have been removed
-        // from team ." dialog overlay sat on top of the channel list and
-        // blocked every hit-test on `tab_bar.account.tab`. The dialog is a
-        // native Alert (see `app/utils/navigation/index.tsx#alertTeamRemove`),
-        // so we first confirm the title is present (avoids tapping an
-        // unrelated OK button) and then dismiss via `Alert.okButton`, whose
+        // this session. The dialog can sit on top of the channel list and
+        // block every hit-test on the account tab. Confirm its title before
+        // dismissing through `Alert.okButton`, whose
         // platform-aware locator handles iOS (`by.label('OK').atIndex(1)`) and
         // Android (`by.text('OK')`) correctly.
         try {
