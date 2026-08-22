@@ -82,6 +82,7 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
+      # # Relaunch until the app is actually back on the Home tab.
       # The readiness checks belong inside the retry: a relaunch that starts but
       # never reaches the Home tab has to trigger another relaunch, and it cannot
       # if the wait sits after the retry block has already succeeded.
