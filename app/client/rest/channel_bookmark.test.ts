@@ -15,7 +15,7 @@ describe('ClientChannelBookmarks', () => {
         client.doFetch = jest.fn();
     });
 
-    test('createChannelBookmark', async () => {
+    it('should create a channel bookmark with only the writable fields', async () => {
         const channelId = 'channel_id';
         const bookmark = {
             id: '',
@@ -48,7 +48,7 @@ describe('ClientChannelBookmarks', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
-    test('createChannelBookmark omits an invalid image URL', async () => {
+    it('should omit an invalid image URL when creating a channel bookmark', async () => {
         const bookmark = {
             channel_id: 'channel_id',
             display_name: 'bookmark_name',

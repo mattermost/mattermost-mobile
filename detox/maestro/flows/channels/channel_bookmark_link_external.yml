@@ -172,9 +172,13 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      # # iOS header items do not expose channel_bookmark.*.title in the tree.
+      # # iOS merges the bookmark's title Text into its parent Pressable, so
+      # channel_bookmark.<id>.title is absent from the tree while the Pressable's
+      # own testID is present. Match that instead of the display-name text: the
+      # 26-char suffix is the server-generated bookmark id, which is unknown at
+      # authoring time but cannot collide with channel_bookmark.options.*.
       - longPressOn:
-          text: ".*[Mm]attermost.*"
+          id: "channel_bookmark\\.[a-z0-9]{26}"
       - extendedWaitUntil:
           visible:
             id: "channel_bookmark.options.edit"

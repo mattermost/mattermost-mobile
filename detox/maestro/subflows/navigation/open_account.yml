@@ -4,6 +4,12 @@
 # so a swallowed first tap does not fail the account screen wait.
 appId: ${MAESTRO_APP_ID}
 ---
+#
+# The three overlay buttons below are matched by text on purpose. They are native
+# dialogs, not app views: "Not Now" is the iOS Save Password sheet, "Allow" is the
+# OS notification-permission prompt, and "Okay" comes from React Native's
+# Alert.alert (a UIAlertController), whose button API takes no testID. None of them
+# appear in the app's accessibility tree, so an id: selector cannot match them.
 - runFlow: dismiss_scheduled_post_tooltip.yml
 - tapOn:
     text: "Not Now"
