@@ -64,7 +64,14 @@ class ServerListScreen {
 
     toBeVisible = async () => {
         if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+            // Existence is not presentation. The sheet's view stays in the hierarchy while
+            // it is dismissed, so an existence-only wait let open() report success with the
+            // app still on the channel list — and swipeRevealOption then swiped a row that
+            // was nowhere on screen. Proven by testFnFailure.png for MM-T4691_4 in CI run
+            // 32543957273: the screenshot at the moment of failure is the channel list, and
+            // the edit option's frame was RNGH's closed translate (x = -10000 + row x).
+            await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
+            await waitForElementToBeVisible(this.serverListScreen, timeouts.TEN_SEC);
         }
 
         return this.serverListScreen;
@@ -216,6 +223,11 @@ class ServerListScreen {
 
         /* eslint-disable no-await-in-loop -- a row press can win the iOS swipe gesture */
         for (let attempt = 0; attempt < 3; attempt++) {
+            // Swiping a row inside a sheet that is not presented cannot reveal anything, and
+            // the resulting "swipe did not reveal the action option" sends the reader after a
+            // gesture problem that is not there. Confirm presentation first and say so.
+            await this.toBeVisible();
+
             const target = await this.getServerItem(serverDisplayName);
             await this.scrollServerItemIntoView(target);
             try {
@@ -223,20 +235,20 @@ class ServerListScreen {
                     return revealed;
                 }
                 await target.swipe('left', 'fast', 0.5, 0.9, 0.5);
-                await expect(this.serverListScreen).toExist();
+                await expect(this.serverListScreen).toBeVisible();
                 if (await this.isOptionHittable(revealed)) {
                     return revealed;
                 }
                 throw new Error('Server option remained unhittable after swipe');
-            } catch {
+            } catch (error) {
                 if (attempt === 2) {
-                    throw new Error('Server list swipe did not reveal the action option');
+                    throw new Error(`Server list swipe did not reveal the action option for "${serverDisplayName}": ${(error as Error)?.message ?? error}`);
                 }
                 await this.open();
             }
         }
         /* eslint-enable no-await-in-loop */
-        throw new Error('Server list swipe did not reveal the action option');
+        throw new Error(`Server list swipe did not reveal the action option for "${serverDisplayName}"`);
     };
 
     swipeRevealAndTapOption = async (

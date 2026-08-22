@@ -28,7 +28,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 
 describe('Smoke Test - Search', () => {
     const serverOneDisplayName = 'Server 1';
@@ -118,7 +118,7 @@ describe('Smoke Test - Search', () => {
             await PinnedMessagesScreen.back();
             await ChannelInfoScreen.close();
             await ChannelScreen.back();
-        }, {reenable: !isIos()});
+        });
     });
 
     it('MM-T4911_4 - should be able to search for a message and display on search results screen', async () => {

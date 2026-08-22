@@ -192,7 +192,7 @@ const ChannelBookmarkOptions = ({
             </View>
             <View
                 style={styles.flex}
-                testID='channel_bookmark.options'
+                testID='channel_bookmark.options.sheet'
             >
                 {canEditBookmarks &&
                     <OptionItem

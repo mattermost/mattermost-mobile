@@ -36,7 +36,10 @@ const formatError = (value: unknown) => {
 const loginAsAdmin = async (baseUrl: string) => {
     const result = await withTransportRetry(
         () => User.apiAdminLogin(baseUrl) as Promise<ApiResult & {user?: {id?: string}}>,
-        {delayMs: NETWORK_RETRY_DELAY_MS},
+
+        // Logging in again only replaces the session cookie, so a replayed login has
+        // no duplicate-record risk.
+        {delayMs: NETWORK_RETRY_DELAY_MS, idempotent: true, label: 'classification lock admin login'},
     );
     const userId = result.user?.id;
     if (!userId) {
@@ -69,7 +72,7 @@ const parseLock = (value: string): ClassificationLock | undefined => {
 const getClassificationLock = async (baseUrl: string, userId: string): Promise<ClassificationLock | undefined> => {
     const result = await withTransportRetry(
         () => Preference.apiGetUserPreferences(baseUrl, userId) as Promise<ApiResult & {preferences?: UserPreference[]}>,
-        {delayMs: NETWORK_RETRY_DELAY_MS},
+        {delayMs: NETWORK_RETRY_DELAY_MS, idempotent: true, label: 'classification lock read'},
     );
     if (!result.preferences) {
         throw new Error(`classification lock: failed to read admin preferences: ${formatError(result.error ?? result)}`);
@@ -93,7 +96,10 @@ const saveClassificationLock = async (
             name: LOCK_NAME,
             value,
         }]) as Promise<ApiResult>,
-        {delayMs: NETWORK_RETRY_DELAY_MS},
+
+        // Upsert of one fixed category/name pair, so a replay overwrites the same row
+        // with the same value rather than creating a second one.
+        {delayMs: NETWORK_RETRY_DELAY_MS, idempotent: true, label: 'classification lock write'},
     );
 
     if (result.error) {

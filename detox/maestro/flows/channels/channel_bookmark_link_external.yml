@@ -27,6 +27,7 @@
 #   - channel_bookmark.edit.save_button
 #   - close.channel_info.button
 #   - channel_header.bookmarks.list
+#   - channel_bookmark.options.sheet
 #   - channel_bookmark.options.edit
 tags:
   - MM-T5611
@@ -171,9 +172,13 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      # # iOS header items do not expose channel_bookmark.*.title in the tree.
+      # # iOS merges the bookmark's title Text into its parent Pressable, so
+      # channel_bookmark.<id>.title is absent from the tree while the Pressable's
+      # own testID is present. Match that instead of the display-name text: the
+      # 26-char suffix is the server-generated bookmark id, which is unknown at
+      # authoring time but cannot collide with channel_bookmark.options.*.
       - longPressOn:
-          text: ".*[Mm]attermost.*"
+          id: "channel_bookmark\\.[a-z0-9]{26}"
       - extendedWaitUntil:
           visible:
             id: "channel_bookmark.options.edit"
@@ -184,11 +189,9 @@ appId: ${MAESTRO_APP_ID}
     commands:
       - longPressOn:
           id: "channel_bookmark\\..+\\.title"
-      # # Android Maestro sees the sheet label, not channel_bookmark.options.edit
-      # (CI 32423060171). Same path that was green before the shared testID wait.
       - extendedWaitUntil:
           visible:
-            text: "Edit"
+            id: "channel_bookmark.options.edit"
           timeout: 15000
 - takeScreenshot: bookmark-options-visible
 - runFlow:
@@ -204,6 +207,12 @@ appId: ${MAESTRO_APP_ID}
       platform: Android
     commands:
       - pressKey: Back
+
+# * Verify the bookmark options sheet is dismissed.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.options.sheet"
+    timeout: 15000
 
 # * Verify the channel header bookmark bar is still there after the sheet closes.
 - extendedWaitUntil:

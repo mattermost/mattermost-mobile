@@ -60,12 +60,13 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
-// Nest-safe sync-off for the iOS post-options pin path. reenable:false leaves
-// sync off so the wrapper exit cannot hang on setSyncSettings({enabled:true})
-// over a lingering Gorhom/Reanimated animation. Later wrappers in this Jest
-// file skip enable until setup.ts launchApp + safeEnableSynchronization().
+// Nest-safe sync-off. Synchronization is ALWAYS restored when the outermost
+// wrapper exits: setup.ts only calls safeEnableSynchronization() in its global
+// beforeAll, so a wrapper that left sync off used to leave every remaining test in
+// the same Jest file running unsynchronized. That is how MM-T4909_5 broke
+// MM-T4909_3 in CI run 32543957273 — the next test's list refresh raced the UI and
+// failed the 100% visibility threshold on a view that was still settling.
 let syncDisableDepth = 0;
-let syncLeftOff = false;
 
 // Retry enableSynchronization after Android Fabric ReactContext null races.
 export async function safeEnableSynchronization(): Promise<void> {
@@ -74,7 +75,6 @@ export async function safeEnableSynchronization(): Promise<void> {
     for (let i = 0; i <= delays.length; i++) {
         try {
             await device.enableSynchronization();
-            syncLeftOff = false;
             return;
         } catch (error) {
             const message = (error as Error)?.message ?? String(error);
@@ -84,18 +84,14 @@ export async function safeEnableSynchronization(): Promise<void> {
             if (i === delays.length) {
                 throw error;
             }
-            await wait(delays[i]!);
+            await wait(delays[i] ?? delays[delays.length - 1] ?? timeouts.ONE_SEC);
         }
     }
     /* eslint-enable no-await-in-loop */
 }
 
-export async function withSynchronizationDisabled<T>(
-    fn: () => Promise<T>,
-    options: {reenable?: boolean} = {},
-): Promise<T> {
-    const reenable = options.reenable !== false;
-    if (syncDisableDepth === 0 && !syncLeftOff) {
+export async function withSynchronizationDisabled<T>(fn: () => Promise<T>): Promise<T> {
+    if (syncDisableDepth === 0) {
         await device.disableSynchronization();
     }
     syncDisableDepth += 1;
@@ -104,11 +100,7 @@ export async function withSynchronizationDisabled<T>(
     } finally {
         syncDisableDepth -= 1;
         if (syncDisableDepth === 0) {
-            if (!reenable) {
-                syncLeftOff = true;
-            } else if (!syncLeftOff) {
-                await safeEnableSynchronization();
-            }
+            await safeEnableSynchronization();
         }
     }
 }

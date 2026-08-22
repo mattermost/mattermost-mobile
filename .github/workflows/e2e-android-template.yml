@@ -492,7 +492,12 @@ jobs:
         # Attempt 2 retries failed/unrun files only. Cold-boots only if the emulator is dead.
         run: |
           chmod +x detox/scripts/run_android_ci_shard.sh detox/create_android_emulator.sh
-          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
+          # Split on whitespace into an array, then expand quoted: an unquoted
+          # $MATRIX_SPECS is also subject to pathname expansion, so a spec path
+          # containing a glob character would silently become a different argument
+          # list (or vanish). Matches the iOS template's read -ra handling.
+          read -ra specs <<< "$MATRIX_SPECS"
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report

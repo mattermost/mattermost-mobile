@@ -29,14 +29,14 @@ function xmlEscape(input) {
 }
 
 describe('run_ci_batches.sh xml_escape', () => {
-    it('escapes < > & " in order that keeps amp first', () => {
+    it('should escape < > & " in an order that keeps amp first', () => {
         assert.equal(xmlEscape('<flow>&"'), '&lt;flow&gt;&amp;&quot;');
         assert.equal(xmlEscape('a&b'), 'a&amp;b');
         assert.equal(xmlEscape('x<y>z'), 'x&lt;y&gt;z');
         assert.equal(xmlEscape('say "hi"'), 'say &quot;hi&quot;');
     });
 
-    it('produces attribute-safe values for synthetic JUnit XML', () => {
+    it('should produce attribute-safe values for synthetic JUnit XML', () => {
         const label = 'flows/channels/<bookmark>&"link".yml';
         const escaped = xmlEscape(label);
         const xml = `<?xml version='1.0' encoding='UTF-8'?>

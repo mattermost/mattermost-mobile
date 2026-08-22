@@ -3,7 +3,6 @@
 
 import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
-import {withTransportRetry} from '@support/utils/transport_retry';
 
 const FLAG_PATCH_ATTEMPTS = 3;
 
@@ -23,11 +22,14 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        const patchResult = await withTransportRetry(() => System.apiPatchConfig(baseUrl, {
+        // No transport-retry wrapper here: apiPatchConfig already retries the patch
+        // internally, and this loop re-patches on top of that. Stacking a third layer
+        // is what let a single stalled request consume a whole 300s hook budget.
+        const patchResult = await System.apiPatchConfig(baseUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
             },
-        }));
+        });
         if (patchResult.error) {
             throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
         }

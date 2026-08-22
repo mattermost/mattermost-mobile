@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {capitalize, getRandomId, timeouts, wait} from '@support/utils';
-import {isTransportFailure} from '@support/utils/transport_retry';
+import {capitalize, getRandomId} from '@support/utils';
 
-import client, {isTransientHttpStatus} from './client';
+import client from './client';
 import {getResponseFromError} from './common';
 
 // ****************************************************************
@@ -51,32 +50,22 @@ export const apiAddUserToChannel = async (baseUrl: string, userId: string, chann
  * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null}: any = {}): Promise<any> => {
-    let lastError: any;
-    /* eslint-disable no-await-in-loop */
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            const response = await client.post(
-                `${baseUrl}/api/v4/channels`,
-                channel || generateRandomChannel(teamId, type, prefix),
-            );
-            if (response.data?.id) {
-                return {channel: response.data};
-            }
-            lastError = {error: {message: 'empty channel in create response'}, status: response.status ?? 0};
-        } catch (err) {
-            lastError = getResponseFromError(err);
+    // No retry loop here. Creating a channel is not idempotent, and apiInit's
+    // retryTransient is the single retry owner for this call — a local loop on top of
+    // it multiplied one stalled request into more than a whole beforeAll budget. The
+    // empty-body check stays: a 200 with no id is a real failure, not a transport one.
+    try {
+        const response = await client.post(
+            `${baseUrl}/api/v4/channels`,
+            channel || generateRandomChannel(teamId, type, prefix),
+        );
+        if (response.data?.id) {
+            return {channel: response.data};
         }
-        const retryable = lastError.status === 0 ||
-            lastError.status === 500 ||
-            isTransientHttpStatus(lastError.status) ||
-            isTransportFailure(lastError);
-        if (!retryable || attempt === 3) {
-            return lastError;
-        }
-        await wait(timeouts.ONE_SEC * attempt);
+        return {error: {message: 'empty channel in create response'}, status: response.status ?? 0};
+    } catch (err) {
+        return getResponseFromError(err);
     }
-    /* eslint-enable no-await-in-loop */
-    return lastError;
 };
 
 /**

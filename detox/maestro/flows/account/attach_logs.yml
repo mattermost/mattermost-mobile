@@ -82,18 +82,21 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
+      # The readiness checks belong inside the retry: a relaunch that starts but
+      # never reaches the Home tab has to trigger another relaunch, and it cannot
+      # if the wait sits after the retry block has already succeeded.
       - retry:
           maxRetries: 3
           commands:
             - launchApp:
                 stopApp: true
                 clearState: false
-      - waitForAnimationToEnd:
-          timeout: 30000
-      - extendedWaitUntil:
-          visible:
-            id: "tab_bar.home.tab"
-          timeout: 30000
+            - waitForAnimationToEnd:
+                timeout: 30000
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 30000
       - runFlow: ../../subflows/navigation/open_account.yml
       - extendedWaitUntil:
           visible:

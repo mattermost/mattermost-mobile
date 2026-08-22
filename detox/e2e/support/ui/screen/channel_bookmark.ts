@@ -21,7 +21,7 @@ class ChannelBookmarkScreen {
         emojiPickerScreen: 'emoji_picker.screen',
         emojiPickerSearchInput: 'emoji_picker.search_bar.search.input',
         emojiPickerToolTipCloseButton: 'skin_selector.tooltip.close.button',
-        optionsSheet: 'channel_bookmark.options',
+        optionsSheet: 'channel_bookmark.options.sheet',
         editOption: 'channel_bookmark.options.edit',
         addLinkOption: 'channel_bookmark.type.link',
         addFileOption: 'channel_bookmark.type.file',

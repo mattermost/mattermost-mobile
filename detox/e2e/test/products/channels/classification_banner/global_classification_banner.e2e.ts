@@ -264,12 +264,17 @@ describe('Classification Banner - Global Classification Banner', () => {
         await expect(element(by.text('TOP SECRET'))).toBeVisible();
 
         await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
+
         try {
+            // Inside the try: if this patch throws, the finally below still restores the
+            // flag. Outside it, a failed patch would leave ClassificationMarkings off for
+            // every later shard.
+            await System.apiPatchConfig(siteOneUrl, {
+                FeatureFlags: {
+                    ClassificationMarkings: false,
+                },
+            });
+
             await device.reloadReactNative();
 
             await ChannelListScreen.toBeVisible();

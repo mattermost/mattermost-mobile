@@ -269,15 +269,15 @@ export const apiUploadFileToChannel = async (
     }
 
     // Multipart upload is the slowest call in the fixture path and regularly exceeds the
-    // client's 30s ceiling when several shards hit the server at once — {error, status: 0},
-    // not a rejection. Five Android specs died on it in run 32232550302
-    // (MM-T3458_1/T3459_2/T3463_1/T307_1/T1750). apiUploadFile builds a fresh FormData and
-    // read stream per call, so re-invoking it is safe; a timed-out attempt may leave an
-    // orphan file on the test server, which is harmless.
+    // client's timeout when several shards hit the server at once, surfacing as
+    // {error, status: 0} rather than a rejection. apiUploadFile builds a fresh FormData
+    // and read stream per call, so re-invoking it is safe. A replayed upload can leave an
+    // extra FileInfo behind, but an unreferenced file is invisible to every assertion in
+    // the suite, whereas losing the upload fails the test outright.
     const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    }));
+    }), {idempotent: false, allowDuplicateWrites: true, label: 'apiUploadFileToChannel'});
     if (result.error) {
         return result;
     }
@@ -308,12 +308,16 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     if (uploadError || !fileId) {
         throw new Error(`apiCreatePostWithImageAttachment: file upload failed: ${JSON.stringify(uploadError)}`);
     }
-    const {post, error: postError} = await withTransportRetry(() => apiCreatePost(baseUrl, {
+
+    // Creating a post is not idempotent and a duplicate IS observable — it shows up in
+    // the channel and breaks post-count assertions. A timed-out create may already have
+    // committed, so fail and let the caller surface it rather than posting twice.
+    const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
         message: '',
         rootId: rootId || undefined,
         fileIds: [fileId],
-    }));
+    });
     if (postError || !post?.id) {
         throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${JSON.stringify(postError)}`);
     }

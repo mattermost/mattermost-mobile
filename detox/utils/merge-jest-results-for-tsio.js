@@ -233,15 +233,19 @@ function main() {
         inputPaths = findJestResultFiles(args.dir, output);
     }
 
-    if (inputPaths.length === 0) {
-        console.error('merge-jest-results-for-tsio: no jest-results.json found');
-        process.exit(1);
-    }
-
     const opts = {
         repoRoot: args['repo-root'] || process.env.GITHUB_WORKSPACE || process.cwd(),
     };
     const expectedCount = Number.parseInt(args['expected-count'] || '0', 10);
+
+    // Exiting here when a shard count is known would leave TSIO with no report at all,
+    // so the commit status stays pending forever instead of failing. Fall through and let
+    // appendMissingShardStub below produce the failure rows.
+    if (inputPaths.length === 0 && !(expectedCount > 0)) {
+        console.error('merge-jest-results-for-tsio: no jest-results.json found and no expected shard count');
+        process.exit(1);
+    }
+
     const merged = mergeJestResultsForTsio(inputPaths, opts);
     if (expectedCount > 0 && inputPaths.length < expectedCount) {
         console.error(`merge-jest-results-for-tsio: found ${inputPaths.length} jest-results.json, expected ${expectedCount}`);
