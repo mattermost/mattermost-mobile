@@ -269,6 +269,10 @@ describe('Search - Saved Messages', () => {
         const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
+
+        // Screen guard: ensure we're still on channel screen before attempting post options
+        // (protects against accidental thread navigation from tap-degradation)
+        await ChannelScreen.toBeVisible();
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
         await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);

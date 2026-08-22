@@ -173,6 +173,12 @@ describe('Search - Modifiers', () => {
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
         await SearchMessagesScreen.submitSearch();
 
+        // # Clear modifier state before plain search to ensure unfiltered results
+        // The from: modifier must be cleared by clearing the entire search input,
+        // which returns the search UI to initial state (input empty, modifiers visible).
+        // Merely replacing the text leaves the modifier flag active, causing the second
+        // search to be "from: plainTerm" instead of just "plainTerm".
+        await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.searchInput.replaceText(plainTerm);
         await SearchMessagesScreen.submitSearch();
 
@@ -219,7 +225,7 @@ describe('Search - Modifiers', () => {
         await SearchMessagesScreen.open();
         await device.disableSynchronization();
         try {
-            await SearchMessagesScreen.searchInput.typeText(specialUser.username);
+            await SearchMessagesScreen.searchInput.replaceText(specialUser.username);
             await SearchMessagesScreen.searchInput.tapReturnKey();
             await wait(timeouts.TWO_SEC);
 

@@ -278,14 +278,49 @@ class ChannelScreen {
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
         const longPressTarget = element(by.id(postTestID));
 
-        await longPressWithScrollRetry(
-            longPressTarget,
-            by.id(this.postList.testID.flatList),
-            PostOptionsScreen.postOptionsScreen,
-            8,
-            isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
-        );
-        await wait(timeouts.TWO_SEC);
+        // Helper to handle retry logic if long press degrades to tap
+        const attemptOpenPostOptions = async (attempt: number): Promise<void> => {
+            try {
+                await longPressWithScrollRetry(
+                    longPressTarget,
+                    by.id(this.postList.testID.flatList),
+                    PostOptionsScreen.postOptionsScreen,
+                    8,
+                    isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
+                );
+                await wait(timeouts.TWO_SEC);
+            } catch (error) {
+                if (attempt > 1) {
+                    throw error;
+                }
+
+                // A long press that degrades into a tap opens the post's thread. The
+                // channel post list item cannot exist there, so every remaining attempt
+                // is doomed and the helper burns its whole budget on a lost cause.
+                // Proven by testFnFailure.png for MM-T4910_5 in CI run 32554749293:
+                // the screenshot is the Thread screen for the post being long-pressed.
+                let navigatedToThread = false;
+                try {
+                    await ThreadScreen.toBeVisible();
+                    navigatedToThread = true;
+                } catch {
+                    // Still on the channel — the original failure is the real one.
+                }
+
+                if (!navigatedToThread) {
+                    throw error;
+                }
+
+                // Recover to the channel and retry once. Failures from here on are
+                // reported as themselves, not masked by the original error.
+                await ThreadScreen.back();
+                await this.toBeVisible();
+                await wait(timeouts.ONE_SEC);
+                await attemptOpenPostOptions(attempt + 1);
+            }
+        };
+
+        await attemptOpenPostOptions(1);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {

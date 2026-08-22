@@ -179,14 +179,16 @@ describe('Channels - Browse Channels', () => {
 
     // ExperimentalViewArchivedChannels lives under TeamSettings (not ServiceSettings).
     // Provision already enables it; absent client-config value also means "on" (app treats
-    // only explicit 'false' as off). Re-assert TeamSettings + reload so the logged-in client
-    // DB picks up the flag before Browse Channels renders the archived dropdown item.
+    // only explicit 'false' as off). device.reloadReactNative() on Android causes indefinite
+    // hang (LooperIdlingResource never becomes idle). Use device.launchApp({newInstance: true})
+    // for cold-start refresh (config is re-read via appEntry in Launch.Normal with coldStart === true),
+    // and session persists in the local DB so the user stays logged in (see message_draft.e2e.ts MM-T4781_2).
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
         try {
-            // # Enable archived channel visibility on the server, then reload so the app
-            // picks up the new config (the ChannelDropdown only renders when this is true)
+            // # Enable archived channel visibility on the server, then refresh the app
+            // so the logged-in client re-reads config before Browse Channels renders the archived dropdown item.
             await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
 
             // App semantics: missing flag === enabled. Accept 'true' OR absent (not 'false').
@@ -198,8 +200,9 @@ describe('Channels - Browse Channels', () => {
                 throw new Error('ExperimentalViewArchivedChannels did not propagate to the client config (still explicitly false)');
             }
 
-            // Server client-config poll is not enough — the in-app DB config needs a refresh.
-            await device.reloadReactNative();
+            // Cold-start relaunch (newInstance: true) so app re-reads config via appEntry→determineAuthenticatedRoute.
+            // User session persists in local DB, so we stay logged in without re-login.
+            await device.launchApp({newInstance: true});
             await ChannelListScreen.toBeVisible();
 
             // # Create a channel, add the test user, then archive it
@@ -211,6 +214,8 @@ describe('Channels - Browse Channels', () => {
             // # Open browse channels screen and switch to archived channels view
             await BrowseChannelsScreen.open();
 
+            // Bounded wait for observable outcome: the archived filter dropdown must appear, proving config propagated.
+            // If config change didn't land on the client, dropdown won't render; fail with a clear message.
             await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
 
             // Keep Detox sync enabled for archived filter tap — disableSynchronization
@@ -237,7 +242,7 @@ describe('Channels - Browse Channels', () => {
         // # Open browse channels screen and search for a joined public channel
         const {channel: joinedPublicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPublicChannel.id);
-        await device.reloadReactNative();
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(joinedPublicChannel.name);
@@ -254,7 +259,7 @@ describe('Channels - Browse Channels', () => {
         const {channel: joinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         const {channel: unjoinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPrivateChannel.id);
-        await device.reloadReactNative();
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(joinedPrivateChannel.name);

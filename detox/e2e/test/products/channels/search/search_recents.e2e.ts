@@ -200,6 +200,12 @@ describe('Search - Recents and Input', () => {
         await SearchMessagesScreen.searchInput.replaceText(termTwo);
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
+        // PR #10081 moved addSearchToTeamSearchHistory into Promise.all with search operations.
+        // Observable signal that the search (and its history persistence) completed: termTwo's results appear.
+        // Waiting for this state ensures both search completion AND history DB write before clearing.
+        const {postListPostItem: postItemTwo} = SearchMessagesScreen.getPostListPostItem(postTwo.id, msgTwo);
+        await waitForElementToBeVisible(postItemTwo, timeouts.HALF_MIN);
+
         // # Clear search to show recent search list
         await SearchMessagesScreen.searchClearButton.tap();
 

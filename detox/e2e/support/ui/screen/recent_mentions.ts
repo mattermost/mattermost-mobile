@@ -132,6 +132,11 @@ class RecentMentionsScreen {
         await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
         await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
+        // On Android, ensure the element is visible and not just existent
+        if (isAndroid()) {
+            await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        }
+
         const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
         await waitForElementToExist(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
@@ -152,39 +157,22 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    refresh = async () => {
-        const flatList = this.getFlatPostList();
-        try {
-            await flatList.scrollTo('top');
-        } catch {
-            // Already at the top.
-        }
-        await flatList.swipe('down', 'slow', 0.6);
-        await wait(timeouts.TWO_SEC);
-    };
-
-    // Mentions are search-backed. Pull-to-refresh invokes the screen's fetch directly;
-    // switching tabs alone can leave the mounted row subscribed to its pre-edit value.
+    // Mentions data is search-backed and updates automatically via WebSocket subscriptions
+    // and the search index. No manual refresh() needed: when a post is edited, the DB
+    // subscription and fetchRecentMentions call both propagate the change to the UI.
     verifyPostEdited = async (postId: string, updatedMessage: string) => {
-        const postItemMatcher = by.id(`${this.testID.recentMentionPostList}.${postId}`);
-        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
-        const editedPost = element(by.text(combinedPattern).withAncestor(postItemMatcher));
-        const MAX_REFETCHES = 3;
+        const {
+            postListPostItem,
+            postListPostItemEditedIndicator,
+            postListPostItemMessage,
+        } = this.getPostListPostItem(postId, updatedMessage);
 
-        /* eslint-disable no-await-in-loop -- each refresh must finish before polling */
-        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
-            await this.refresh();
-            try {
-                await waitForElementToExist(editedPost, timeouts.TEN_SEC);
-                return;
-            } catch (error) {
-                if (attempt === MAX_REFETCHES) {
-                    throw error;
-                }
-            }
-        }
-        /* eslint-enable no-await-in-loop */
+        // Poll for the edited post with the updated indicator. Since the mentions
+        // feed is subscription-backed, the UI re-renders automatically when the
+        // post update arrives over WebSocket. No pull-to-refresh swipe required.
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+        await waitForElementToExist(postListPostItemMessage, timeouts.TEN_SEC);
+        await waitForElementToExist(postListPostItemEditedIndicator, timeouts.TEN_SEC);
     };
 }
 

@@ -26,47 +26,15 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
-    if (!isAndroid()) {
-        await ChannelScreen.openPostOptionsFor(postId, message);
-        return;
-    }
-
-    const flatList = ChannelScreen.getFlatPostList();
-    const target = element(
-        by.text(message).withAncestor(by.id(`channel.post_list.post.${postId}`)),
-    );
-
-    await waitFor(target).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await flatList.scroll(100, 'down', 0.5, 0.5);
-        } catch {
-            // Ignore scroll failures at list boundaries.
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await wait(timeouts.THREE_SEC);
-        // eslint-disable-next-line no-await-in-loop
-        await target.longPress(timeouts.FIVE_SEC);
-
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.TWO_SEC);
-            return;
-        } catch {
-            if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
-            }
-        }
-    }
+    // Delegate to parent-owned ChannelScreen.openPostOptionsFor, which handles both platforms correctly:
+    // - Android: swipes UP (correct for older messages scrolled up) then uses longPressWithScrollRetry (8 attempts)
+    // - iOS: dismisses keyboard, then uses longPressWithScrollRetry with 1-minute deadline
+    // This replaces the bespoke Android logic that scrolled DOWN (wrong direction for older messages).
+    await ChannelScreen.openPostOptionsFor(postId, message);
 }
 
 async function expectPinnedPostAbove(upperPostId: string, upperMessage: string, lowerPostId: string, lowerMessage: string) {

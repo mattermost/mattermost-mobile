@@ -30,7 +30,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {expect} from 'detox';
 
 const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
@@ -395,10 +395,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
-        await ensureDialogOpen();
-        await InteractiveDialogScreen.toggleBooleanElement('required_boolean');
-        await InteractiveDialogScreen.toggleBooleanElement('boolean_default_false');
-        await InteractiveDialogScreen.submit();
+
+        // MM-T4402: Use withSynchronizationDisabled to prevent Detox from waiting for app idle
+        // after failed submission that leaves pending JS timers in the Main Queue. The pending
+        // timers block synchronization indefinitely, causing the test to hang for 300+ seconds.
+        // withSynchronizationDisabled ensures sync re-enabling is deferred until this scope exits.
+        await withSynchronizationDisabled(async () => {
+            await waitForElementToBeVisible(InteractiveDialogScreen.interactiveDialogScreen, timeouts.HALF_MIN);
+            await InteractiveDialogScreen.toggleBooleanElement('required_boolean');
+            await InteractiveDialogScreen.toggleBooleanElement('boolean_default_false');
+            await InteractiveDialogScreen.submit();
+        });
+
+        // Synchronization is re-enabled here when withSynchronizationDisabled scope exits.
         await ensureDialogClosed();
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');

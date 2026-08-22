@@ -158,9 +158,26 @@ class CreateOrEditChannelScreen {
 
     // iOS simulators drop idle keep-alive connections (-1005). Create then stays on
     // this form with edit_channel_info.error.text. Retry once after the banner appears.
+    // On Android, a scheduled-post tutorial modal (scheduled_post_tutorial_tooltip from
+    // app/components/post_draft/send_button/scheduled_post_tooltip.tsx:35) may appear over
+    // the channel screen after navigation, stealing Espresso's window focus and making
+    // ChannelScreen.channelScreen unselectable. The tooltip is triggered by the draft input
+    // mounting, so dismiss it right after the tap (before asserting the channel screen).
     tapCreateAndWaitForChannel = async () => {
         const errorText = element(by.id('edit_channel_info.error.text'));
+        const scheduledPostTooltipClose = element(by.id('scheduled_post_tutorial_tooltip.close'));
         await this.createButton.tap();
+
+        // Dismiss the scheduled-post tutorial tooltip if present (Android-specific modal that
+        // steals focus from Espresso). This catch is legitimate: "tooltip absent" is expected
+        // on iOS and on Android after the first test run (once-per-install tooltip).
+        try {
+            await waitFor(scheduledPostTooltipClose).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await scheduledPostTooltipClose.tap();
+            await waitFor(scheduledPostTooltipClose).not.toExist().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Tooltip not present — expected on iOS or after first run on Android. No-op.
+        }
 
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -183,6 +200,16 @@ class CreateOrEditChannelScreen {
 
         await wait(timeouts.TWO_SEC);
         await this.createButton.tap();
+
+        // On retry, the tooltip may appear again, so dismiss it.
+        try {
+            await waitFor(scheduledPostTooltipClose).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            await scheduledPostTooltipClose.tap();
+            await waitFor(scheduledPostTooltipClose).not.toExist().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Tooltip not present — no-op.
+        }
+
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
         } catch {
