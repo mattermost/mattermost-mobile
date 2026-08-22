@@ -44,45 +44,33 @@ class AccountScreen {
     customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
     clearCustomStatus = async () => {
-        let lastError: unknown;
-        /* eslint-disable no-await-in-loop -- retry the complete clear interaction */
-        for (let attempt = 0; attempt < 2; attempt++) {
-            try {
-                await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            } catch (error) {
-                try {
-                    await expect(this.customStatusClearButton).not.toExist();
-                    return;
-                } catch {
-                    // The button still exists but is not yet hittable.
-                }
-                lastError = error;
-                continue;
-            }
-
-            try {
-                await device.disableSynchronization();
-                try {
-                    await this.customStatusClearButton.tap();
-                    await wait(timeouts.ONE_SEC);
-                } finally {
-                    await safeEnableSynchronization();
-                }
-            } catch (error) {
-                lastError = error;
-                continue;
-            }
-
-            try {
-                await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
-                return;
-            } catch (error) {
-                lastError = error;
-            }
+        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await device.disableSynchronization();
+        try {
+            await this.customStatusClearButton.tap();
+            await wait(timeouts.ONE_SEC);
+        } finally {
+            await safeEnableSynchronization();
         }
-        /* eslint-enable no-await-in-loop */
 
-        throw lastError;
+        if (isAndroid()) {
+            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
+            return;
+        }
+
+        try {
+            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            return;
+        } catch {
+            // The iOS row can retain the pre-clear user after the DELETE succeeds.
+        }
+
+        // Reloading runs app entry, which persists the authoritative current user fetched
+        // from the server before the Account screen is reopened.
+        await device.reloadReactNative();
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        await this.open();
+        await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     getUserInfo = (userId: string) => {

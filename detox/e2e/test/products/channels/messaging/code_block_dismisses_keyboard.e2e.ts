@@ -26,6 +26,8 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+const MAX_CODE_BLOCK_VISIBILITY_SCROLLS = 6;
+
 describe('Messaging - Code Block Dismisses Keyboard', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -74,14 +76,27 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(codePost.id, '');
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // Scroll up fails when the post list is already at the top (Detox scroll boundary).
-        try {
-            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
-        } catch { /* already at top — non-fatal */ }
+        // The post list is inverted. Drive it only until the short block clears the composer;
+        // a fixed upward scroll moves the newest post farther below the visible viewport.
+        /* eslint-disable no-await-in-loop -- bounded visibility scan */
+        for (let attempt = 0; attempt < MAX_CODE_BLOCK_VISIBILITY_SCROLLS; attempt++) {
+            try {
+                await expect(postListPostItemCodeBlock).toBeVisible(40);
+                break;
+            } catch {
+                try {
+                    await ChannelScreen.getFlatPostList().scroll(50, 'down', 0.5, 0.5);
+                } catch {
+                    // The final assertion reports if the list edge still clips the block.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await expect(postListPostItemCodeBlock).toBeVisible(40);
+        await expect(ChannelScreen.postInput).toBeFocused();
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard.
         // The block is only ~35pt tall; a center tap fails iOS 100% visibility (MM-T1433_1).
-        await waitFor(postListPostItemCodeBlock).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await postListPostItemCodeBlock.tap({x: 10, y: 8});
 
         // * Verify Code preview opened

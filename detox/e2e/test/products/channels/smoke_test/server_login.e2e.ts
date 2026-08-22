@@ -31,15 +31,6 @@ import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 
-const revealServerListItems = async () => {
-    try {
-        await ServerListScreen.serverList.scroll(120, 'down');
-    } catch {
-        // Few enough servers that the list is already at its boundary.
-    }
-    await wait(timeouts.ONE_SEC);
-};
-
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
@@ -98,16 +89,12 @@ describe('Smoke Test - Server Login', () => {
 
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
-        await wait(timeouts.ONE_SEC);
-        await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.switchToServer(serverOneDisplayName);
         await ServerListScreen.open();
-        await wait(timeouts.ONE_SEC);
-        await revealServerListItems();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.swipeRevealAndTapOption(
-            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
+            serverTwoDisplayName,
             ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
         );
 
@@ -121,7 +108,7 @@ describe('Smoke Test - Server Login', () => {
 
         // * Verify second server is logged out
         await ServerListScreen.swipeRevealOption(
-            ServerListScreen.getServerItemInactive(serverTwoDisplayName),
+            serverTwoDisplayName,
             ServerListScreen.getServerItemLoginOption(serverTwoDisplayName),
         );
 

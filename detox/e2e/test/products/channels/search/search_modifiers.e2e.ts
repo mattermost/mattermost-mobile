@@ -29,7 +29,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Modifiers', () => {
@@ -142,7 +142,15 @@ describe('Search - Modifiers', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
         const {post: plainPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.back();
+        await Post.waitForPostMessageInSearch(siteOneUrl, plainTerm, plainPost.id, message);
+
+        // iOS can keep the JS run loop busy after posting, which blocks the back tap before
+        // Detox dispatches it. Re-enable only after the channel list is visible and settled.
+        await withSynchronizationDisabled(async () => {
+            await ChannelScreen.back();
+            await ChannelListScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+        });
 
         // # Open search messages screen
         await SearchMessagesScreen.open();
@@ -163,8 +171,8 @@ describe('Search - Modifiers', () => {
         await waitFor(SearchMessagesScreen.searchModifierFrom).toExist().withTimeout(timeouts.TEN_SEC);
         await SearchMessagesScreen.searchModifierFrom.tap();
         await SearchMessagesScreen.searchInput.typeText(testUser.username);
-
         await SearchMessagesScreen.submitSearch();
+
         await SearchMessagesScreen.searchInput.replaceText(plainTerm);
         await SearchMessagesScreen.submitSearch();
 
@@ -173,8 +181,6 @@ describe('Search - Modifiers', () => {
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
         await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
-        // Cleanup must run with sync on — under disableSynchronization the recent-item
-        // row can exist then vanish before tap (CI 59ec6ae iOS MM-T585_1).
         await SearchMessagesScreen.searchClearButton.tap();
         const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
         await waitFor(plainRemove).toExist().withTimeout(timeouts.TEN_SEC);

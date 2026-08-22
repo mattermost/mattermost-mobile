@@ -105,14 +105,22 @@ class ServerListScreen {
     };
 
     close = async () => {
-        if (isIos()) {
-            await this.serverListScreen.swipe('down');
-        } else {
-            await device.pressBack();
+        try {
+            await expect(this.serverListScreen).toExist();
+        } catch {
+            return;
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.serverListScreen).not.toBeVisible();
-        await wait(timeouts.ONE_SEC);
+
+        try {
+            if (isIos()) {
+                await this.serverListScreen.swipe('down');
+            } else {
+                await device.pressBack();
+            }
+        } catch {
+            // The sheet may have completed its own dismissal after the existence check.
+        }
+        await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     closeTutorial = async () => {
@@ -139,14 +147,9 @@ class ServerListScreen {
     };
 
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
-        const visibilityThreshold = isIos() ? 40 : 75;
-        try {
-            await expect(item).toBeVisible(visibilityThreshold);
-            return;
-        } catch {
-            // Reset before scanning rows below the fold.
-        }
-
+        const maxScrolls = isIos() ? 10 : 5;
+        const scrollAmount = isIos() ? 40 : 120;
+        const visibilityThreshold = isIos() ? 95 : 75;
         try {
             await this.serverList.scrollTo('top');
         } catch {
@@ -154,83 +157,110 @@ class ServerListScreen {
         }
 
         /* eslint-disable no-await-in-loop -- bounded scan of the server FlatList */
-        for (let attempt = 0; attempt < 5; attempt++) {
+        for (let attempt = 0; attempt < maxScrolls; attempt++) {
             try {
                 await expect(item).toBeVisible(visibilityThreshold);
                 return;
             } catch (error) {
-                if (attempt === 4) {
+                if (attempt === maxScrolls - 1) {
                     throw error;
                 }
                 try {
-                    await this.serverList.scroll(120, 'down', 0.5, 0.5);
+                    // iOS reports the list's full 464pt frame even when the collapsed
+                    // sheet exposes only its top ~114pt. A 40pt gesture beginning 10%
+                    // down stays inside that visible slice.
+                    await this.serverList.scroll(scrollAmount, 'down', 0.5, isIos() ? 0.1 : 0.5);
                 } catch {
-                    // The target may become visible when the boundary animation settles.
+                    // The list may already be at its boundary.
                 }
-                await wait(timeouts.HALF_SEC);
             }
         }
         /* eslint-enable no-await-in-loop */
     };
 
+    getServerItem = async (serverDisplayName: string) => {
+        const inactive = this.getServerItemInactive(serverDisplayName).atIndex(0);
+        try {
+            await expect(inactive).toExist();
+            return inactive;
+        } catch {
+            const active = this.getServerItemActive(serverDisplayName).atIndex(0);
+            await waitForElementToExist(active, timeouts.FOUR_SEC);
+            return active;
+        }
+    };
+
+    isOptionHittable = async (option: Detox.NativeElement) => {
+        try {
+            const attributes = await option.getAttributes();
+            if (!('visible' in attributes) || !attributes.visible) {
+                return false;
+            }
+            if (isIos()) {
+                return 'hittable' in attributes && attributes.hittable;
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     swipeRevealOption = async (
-        row: {atIndex: (index: number) => Detox.NativeElement},
+        serverDisplayName: string,
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        const target = row.atIndex(0);
-        await this.scrollServerItemIntoView(target);
-
         const revealed = option.atIndex(0);
-        /* eslint-disable no-await-in-loop -- swipe can be a no-op until the row is fully on-screen */
+        if (await this.isOptionHittable(revealed)) {
+            return revealed;
+        }
+
+        /* eslint-disable no-await-in-loop -- a row press can win the iOS swipe gesture */
         for (let attempt = 0; attempt < 3; attempt++) {
+            const target = await this.getServerItem(serverDisplayName);
+            await this.scrollServerItemIntoView(target);
             try {
-                await target.swipe('left', 'slow', isIos() ? 0.65 : 0.75);
-                await waitForElementToExist(revealed, timeouts.FOUR_SEC);
-                break;
+                if (await this.isOptionHittable(revealed)) {
+                    return revealed;
+                }
+                await target.swipe('left', 'fast', 0.5, 0.9, 0.5);
+                await expect(this.serverListScreen).toExist();
+                if (await this.isOptionHittable(revealed)) {
+                    return revealed;
+                }
+                throw new Error('Server option remained unhittable after swipe');
             } catch {
                 if (attempt === 2) {
                     throw new Error('Server list swipe did not reveal the action option');
                 }
-                await this.scrollServerItemIntoView(target);
+                await this.open();
             }
         }
         /* eslint-enable no-await-in-loop */
-
-        // Fan-out animation: wait briefly, then require existence rather than 75%
-        // visibility — logout/remove sit in an Animated clip (MM-T4691_6).
-        await wait(timeouts.ONE_SEC);
-        if (isAndroid()) {
-            await waitForElementToBeVisible(revealed, timeouts.TEN_SEC);
-        }
-        return revealed;
+        throw new Error('Server list swipe did not reveal the action option');
     };
 
     swipeRevealAndTapOption = async (
-        row: {atIndex: (index: number) => Detox.NativeElement},
+        serverDisplayName: string,
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        const revealed = await this.swipeRevealOption(row, option);
-        try {
-            await revealed.tap({x: 36, y: 36});
-        } catch {
-            await wait(timeouts.ONE_SEC);
-            await revealed.tap({x: 36, y: 36});
+        const revealed = await this.swipeRevealOption(serverDisplayName, option);
+        if (isIos()) {
+            if (!await this.isOptionHittable(revealed)) {
+                throw new Error('Server option became unhittable before tap');
+            }
+        } else {
+            await waitForElementToBeVisible(revealed, timeouts.TEN_SEC);
         }
+        await revealed.tap();
     };
 
     switchToServer = async (serverDisplayName: string) => {
-        let target = this.getServerItemInactive(serverDisplayName).atIndex(0);
-        try {
-            await waitForElementToExist(target, timeouts.FOUR_SEC);
-        } catch {
-            target = this.getServerItemActive(serverDisplayName).atIndex(0);
-            await waitForElementToExist(target, timeouts.FOUR_SEC);
-        }
+        const target = await this.getServerItem(serverDisplayName);
         await this.scrollServerItemIntoView(target);
         await target.tap({x: 36, y: 36});
 
         try {
-            await waitFor(this.serverListScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.FOUR_SEC);
         } catch {
             await this.close();
         }

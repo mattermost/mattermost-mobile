@@ -133,6 +133,10 @@ describe('Search - Recents and Input', () => {
         const {post: postB} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.back();
 
+        // Search can lag behind the channel timeline, so wait for both fixtures to be indexed.
+        await Post.waitForPostMessageInSearch(siteOneUrl, termA, postA.id, messageA);
+        await Post.waitForPostMessageInSearch(siteOneUrl, termB, postB.id, messageB);
+
         // # Open search messages screen
         await SearchMessagesScreen.open();
 
@@ -183,15 +187,17 @@ describe('Search - Recents and Input', () => {
         const {post: postTwo} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.back();
 
+        await Post.waitForPostMessageInSearch(siteOneUrl, termTwo, postTwo.id, msgTwo);
+
         // # Open search messages screen, search for term one to save it as recent
         await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchInput.typeText(termOne);
+        await SearchMessagesScreen.searchInput.replaceText(termOne);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
         // # Clear and search for term two to save it as recent
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.searchInput.typeText(termTwo);
+        await SearchMessagesScreen.searchInput.replaceText(termTwo);
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // # Clear search to show recent search list

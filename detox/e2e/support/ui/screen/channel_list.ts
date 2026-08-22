@@ -19,7 +19,9 @@ import {
     waitForElementToNotExist,
     withSynchronizationDisabled,
 } from '@support/utils';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
+
+const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
 class ChannelListScreen {
     testID = {
@@ -92,6 +94,11 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
+        try {
+            await this.channelList.scrollTo('top');
+        } catch {
+            // The list may already be at its boundary.
+        }
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -114,7 +121,7 @@ class ChannelListScreen {
                         this.getChannelItemDisplayName(cat, channelName),
                         Math.min(timeouts.THREE_SEC, remaining),
                     );
-                    return;
+                    return cat;
                 } catch {
                     // Not in this category yet — try the next
                 }
@@ -155,30 +162,47 @@ class ChannelListScreen {
     };
 
     tapSidebarPublicChannelDisplayName = async (channelName: string, timeout = timeouts.ONE_MIN) => {
-        await this.waitForSidebarPublicChannelDisplayNameVisible(channelName, timeout);
-        const categories = ['channels', 'unreads', 'favorites'] as const;
+        const category = await this.waitForSidebarPublicChannelDisplayNameVisible(channelName, timeout);
+        const container = this.getChannelItem(category, channelName);
+        const label = this.getChannelItemDisplayName(category, channelName);
 
-        /* eslint-disable no-await-in-loop -- sequential fallback: each probe must complete */
-        for (const cat of categories) {
-            const container = this.getChannelItem(cat, channelName);
-            const label = this.getChannelItemDisplayName(cat, channelName);
-            try {
-                await waitForElementToExist(container, timeouts.TWO_SEC);
-                await container.tap();
-                return;
-            } catch {
-                // Container not hittable — try the label as a fallback
+        if (isIos()) {
+            /* eslint-disable no-await-in-loop -- bounded visibility scan */
+            for (let attempt = 0; attempt < MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS; attempt++) {
+                try {
+                    await expect(label).toBeVisible(40);
+                    break;
+                } catch {
+                    try {
+                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    } catch {
+                        // The final assertion reports if the list edge still clips the row.
+                    }
+                }
             }
-            try {
-                await waitForElementToExist(label, timeouts.TWO_SEC);
-                await label.tap();
-                return;
-            } catch {
-                // Try next category
-            }
+            /* eslint-enable no-await-in-loop */
+            await expect(label).toBeVisible(40);
+
+            // The last row can remain clipped by the tab bar, so tap its exposed top edge.
+            await container.tap({x: 20, y: 2});
+            return;
         }
-        /* eslint-enable no-await-in-loop */
-        throw new Error(`Sidebar channel item not found for channel: ${channelName}; searched categories: [${categories.join(', ')}]`);
+
+        try {
+            await waitForElementToExist(container, timeouts.TWO_SEC);
+            await container.tap();
+            return;
+        } catch {
+            // Container not hittable — try the label as a fallback
+        }
+        try {
+            await waitForElementToExist(label, timeouts.TWO_SEC);
+            await label.tap();
+            return;
+        } catch {
+            // Report the resolved category below.
+        }
+        throw new Error(`Sidebar channel item not hittable for channel: ${channelName}; category: ${category}`);
     };
 
     getTeamItemSelected = (teamId: string) => {

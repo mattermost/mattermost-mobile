@@ -98,8 +98,8 @@ class RecentMentionsScreen {
         return this.toBeVisible();
     };
 
-    openPostOptionsFor = async (postId: string, text: string) => {
-        const {postListPostItem} = this.getPostListPostItem(postId, text);
+    openPostOptionsFor = async (postId: string) => {
+        const {postListPostItem} = this.getPostListPostItem(postId);
         const flatList = this.postList.getFlatList();
 
         try {
@@ -152,63 +152,36 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    // Wait for an edited post to appear in recent mentions. Mentions are search-backed, so
-    // callers should await Post.waitForPostMessageInSearch before calling this.
-    verifyPostEdited = async (postId: string, updatedMessage?: string) => {
-        const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
-        const MAX_REFETCHES = 6;
+    refresh = async () => {
+        const flatList = this.getFlatPostList();
+        try {
+            await flatList.scrollTo('top');
+        } catch {
+            // Already at the top.
+        }
+        await flatList.swipe('down', 'slow', 0.6);
+        await wait(timeouts.TWO_SEC);
+    };
 
-        const waitForEditedState = async () => {
-            const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));
-            try {
-                await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
-                return;
-            } catch {
-                // Fall through to message / "Edited" text.
-            }
+    // Mentions are search-backed. Pull-to-refresh invokes the screen's fetch directly;
+    // switching tabs alone can leave the mounted row subscribed to its pre-edit value.
+    verifyPostEdited = async (postId: string, updatedMessage: string) => {
+        const postItemMatcher = by.id(`${this.testID.recentMentionPostList}.${postId}`);
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const editedPost = element(by.text(combinedPattern).withAncestor(postItemMatcher));
+        const MAX_REFETCHES = 3;
 
-            try {
-                await waitFor(
-                    element(by.text('Edited').withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.THREE_SEC);
-                return;
-            } catch {
-                // Fall through to updated message text.
-            }
-
-            if (!updatedMessage) {
-                throw new Error(`Could not match edited indicator for post ${postId}`);
-            }
-
-            // The message is split across Text nodes by the @mention highlight, so match the trailing
-            // token — never by.text(RegExp), which iOS matches literally.
-            const editSuffix = updatedMessage.trim().split(/\s+/).pop();
-            if (editSuffix) {
-                await waitFor(
-                    element(by.text(editSuffix).withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.FIVE_SEC);
-                return;
-            }
-
-            throw new Error(
-                `Could not match edited message for post ${postId} (expected text "${updatedMessage}")`,
-            );
-        };
-
-        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
+        /* eslint-disable no-await-in-loop -- each refresh must finish before polling */
         for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
+            await this.refresh();
             try {
-                await waitForEditedState();
+                await waitForElementToExist(editedPost, timeouts.TEN_SEC);
                 return;
-            } catch (e) {
+            } catch (error) {
                 if (attempt === MAX_REFETCHES) {
-                    throw e;
+                    throw error;
                 }
-
-                await HomeScreen.channelListTab.tap();
-                await wait(timeouts.ONE_SEC);
-                await HomeScreen.mentionsTab.tap();
-                await this.toBeVisible();
             }
         }
         /* eslint-enable no-await-in-loop */
