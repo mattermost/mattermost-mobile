@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -221,7 +221,7 @@ describe('Search - Recent Mentions', () => {
             await ChannelInfoScreen.close();
             await ChannelScreen.back();
             await ChannelListScreen.open();
-        }, {reenable: !isIos()});
+        });
     });
 
     // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never

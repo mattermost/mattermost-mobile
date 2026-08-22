@@ -169,14 +169,21 @@ class CreateOrEditChannelScreen {
             // Create may still be in flight, or the request failed.
         }
 
+        // Every path from here on has to end on the channel screen or throw. Returning
+        // while the create is still pending hands the caller a screen it did not ask for,
+        // and the failure then surfaces somewhere unrelated later in the spec.
         try {
             await waitFor(errorText).toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
+            // No error banner and no channel screen: give the navigation a last chance
+            // rather than reporting success for a create we never observed.
+            await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
             return;
         }
 
         await wait(timeouts.TWO_SEC);
         await this.createButton.tap();
+        await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
     };
 }
 
