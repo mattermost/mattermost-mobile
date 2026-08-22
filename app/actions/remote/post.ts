@@ -287,7 +287,13 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     return {};
 };
 
-export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel): Promise<PostsForChannel> {
+/**
+ * Fetches posts for a channel, incrementally when the channel already has posts.
+ * @param ignoreSince forces a page fetch even when the channel has a since cursor. Needed
+ * when the reason for fetching is not new content but changed visibility of existing posts,
+ * which a since-fetch cannot deliver (see refetchPostsForRedaction).
+ */
+export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel, ignoreSince = false): Promise<PostsForChannel> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -297,7 +303,11 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         let actionType: string|undefined;
         const myChannel = await getMyChannel(database, channelId);
         const postsInChannel = await getRecentPostsInChannel(database, channelId);
-        const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
+
+        // A policy or attribute change while the user was elsewhere leaves this channel's cached
+        // posts with a stale redaction state that a since-fetch cannot correct, so force a page.
+        const isRedactionStale = EphemeralStore.getChannelRedactionStale(serverUrl, channelId);
+        const since = (ignoreSince || isRedactionStale) ? 0 : (myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0);
         if (since) {
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
@@ -324,6 +334,12 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
                     actionType, authors,
                 );
             }
+        }
+
+        // Cleared only once the fresh page is stored: a failed fetch must leave the channel
+        // flagged so the next attempt still pulls a page instead of a since-fetch.
+        if (!fetchOnly && isRedactionStale) {
+            EphemeralStore.unsetChannelRedactionStale(serverUrl, channelId);
         }
 
         // A since-fetch is the only path that receives deletions, and handlePosts destroys
@@ -354,6 +370,21 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
         }
     }
+}
+
+/**
+ * Re-fetches a channel's posts after an ABAC file-access decision may have changed.
+ *
+ * A since-fetch cannot be used here: GetPostsSince filters on `UpdateAt > since`, and a
+ * policy or user-attribute change modifies no post row, so the affected posts are never
+ * returned. Only a page fetch re-runs SanitizePostListMetadataForUser over posts we already
+ * hold, which is what refreshes `redacted_file_count`.
+ *
+ * Note this refreshes the newest POST_CHUNK_SIZE posts only: older cached posts keep the
+ * redaction state they were stored with until they are fetched again.
+ */
+export async function refetchPostsForRedaction(serverUrl: string, channelId: string, groupLabel?: RequestGroupLabel) {
+    return fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel, true);
 }
 
 /**
@@ -847,7 +878,7 @@ export async function fetchPostInfo(serverUrl: string, postId: string): Promise<
     }
 }
 
-export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
+export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false, groupLabel?: RequestGroupLabel, skipPostsInChannel = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -860,6 +891,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
                 order: [post.id],
                 posts: [post],
                 prepareRecordsOnly: true,
+                skipPostsInChannel,
             });
             models.push(...posts);
 
@@ -888,6 +920,17 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+}
+
+/**
+ * Fetches the post behind a permalink preview.
+ *
+ * Unlike a plain fetchPostById this does not touch PostsInChannel: the post is pulled on its own,
+ * so recording it as the newest post of its channel would either create a lone interval for a
+ * channel the user has never opened, or widen an existing interval over posts we do not hold.
+ */
+export async function fetchLinkedPost(serverUrl: string, postId: string, groupLabel?: RequestGroupLabel) {
+    return fetchPostById(serverUrl, postId, false, groupLabel, true);
 }
 
 export const togglePinPost = async (serverUrl: string, postId: string) => {

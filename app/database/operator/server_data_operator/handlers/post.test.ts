@@ -11,6 +11,7 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
+import TestHelper from '@test/test_helper';
 import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
@@ -1235,5 +1236,103 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
         expect(after.length).toBe(1);
         expect(after[0].earliest).toBe(1000);
         expect(after[0].latest).toBe(1000);
+    });
+    describe('=> HandlePosts: ABAC redaction drift', () => {
+        // ABAC access changes never bump update_at, so the default "is it newer?" comparator
+        // would skip the write and leave the placeholder showing the wrong state.
+        const postId = 'abac-post-id';
+        const basePost = (metadata: PostMetadata): Post => TestHelper.fakePost({
+            id: postId,
+            channel_id: 'channel-id',
+            create_at: 1000,
+            update_at: 1000,
+            message: 'message',
+            metadata,
+        });
+
+        const write = async (post: Post) => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [post],
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should persist a redaction change that did not move update_at', async () => {
+            await write(basePost({redacted_file_count: 0}));
+            await write(basePost({redacted_file_count: 2}));
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].metadata?.redacted_file_count).toBe(2);
+        });
+
+        it('should still ignore an older post when the redaction state is unchanged', async () => {
+            // Guards against the redaction checks short-circuiting to "always update", which
+            // would let a stale payload overwrite newer content.
+            await write({...basePost({redacted_file_count: 1}), update_at: 2000, message: 'newest'});
+            await write({...basePost({redacted_file_count: 1}), update_at: 1000, message: 'stale'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('newest');
+        });
+    });
+});
+
+describe('*** Operator: shouldUpdateForRedaction tests ***', () => {
+    const {shouldUpdateForRedaction} = exportedForTest;
+
+    const permalinkEmbed = (postId: string, redactedFileCount: number): PostEmbed => ({
+        type: 'permalink',
+        url: '',
+        data: {
+            post_id: postId,
+            post: {metadata: {redacted_file_count: redactedFileCount}},
+        },
+    });
+
+    const existing = (metadata: PostMetadata) => ({metadata} as PostModel);
+    const incoming = (metadata: PostMetadata) => ({metadata} as Post);
+
+    it('should return true when the post redacted file count changed', () => {
+        expect(shouldUpdateForRedaction(existing({redacted_file_count: 0} as PostMetadata), incoming({redacted_file_count: 2} as PostMetadata))).toBe(true);
+    });
+
+    it('should return false when nothing about the redaction state changed', () => {
+        const metadata = {redacted_file_count: 1, embeds: [permalinkEmbed('linked-post-id', 2)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(metadata), incoming(metadata))).toBe(false);
+    });
+
+    it('should return true when a permalink embed redaction changed', () => {
+        const before = {embeds: [permalinkEmbed('linked-post-id', 0)]} as PostMetadata;
+        const after = {embeds: [permalinkEmbed('linked-post-id', 3)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(true);
+    });
+
+    it('should compare permalink embeds by linked post id rather than by position', () => {
+        // The server does not guarantee embed order, so a reorder must not read as a change,
+        // and a change must still be caught when the embeds moved.
+        const before = {embeds: [permalinkEmbed('post-a', 1), permalinkEmbed('post-b', 0)]} as PostMetadata;
+        const reordered = {embeds: [permalinkEmbed('post-b', 0), permalinkEmbed('post-a', 1)]} as PostMetadata;
+        const reorderedAndChanged = {embeds: [permalinkEmbed('post-b', 0), permalinkEmbed('post-a', 4)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(reordered))).toBe(false);
+        expect(shouldUpdateForRedaction(existing(before), incoming(reorderedAndChanged))).toBe(true);
+    });
+
+    it('should ignore embeds that are not permalinks', () => {
+        const before = {embeds: [permalinkEmbed('post-a', 1)]} as PostMetadata;
+        const after = {embeds: [permalinkEmbed('post-a', 1), {type: 'opengraph', url: 'https://example.com', data: {}}]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(false);
+    });
+
+    it('should return true for a permalink embed the stored post did not have', () => {
+        const before = {embeds: []} as unknown as PostMetadata;
+        const after = {embeds: [permalinkEmbed('post-a', 0)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(true);
     });
 });

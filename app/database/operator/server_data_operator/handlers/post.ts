@@ -113,6 +113,7 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 export const exportedForTest = {
     mergePostInChannelChunks,
     shouldUpdateForBoRPost,
+    shouldUpdateForRedaction,
 };
 
 function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
@@ -127,6 +128,55 @@ function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
     // Since a user can't un-see a BoR post, we consider an update if the recipients list length has changed
     const borRecipientsUpdated = (e.metadata?.recipients || []).length !== (n.metadata?.recipients || []).length;
     return borPostGotRevealed || borRecipientsUpdated || borPostGotReadByAll;
+}
+
+/**
+ * ABAC file-access decisions are made at render time and bump no post row, so `update_at` is
+ * unchanged when a post's attachments become (in)accessible. Compare the redaction state
+ * explicitly, both for the post itself and for the permalink previews it embeds — the server
+ * recalculates embedded post metadata per user on every channel fetch.
+ */
+function shouldUpdateForRedaction(e: PostModel, n: Post): boolean {
+    if ((n.metadata?.redacted_file_count ?? 0) !== (e.metadata?.redacted_file_count ?? 0)) {
+        return true;
+    }
+
+    const newEmbeds = n.metadata?.embeds ?? [];
+    if (!newEmbeds.length) {
+        return false;
+    }
+
+    // Keyed by the linked post id: embed order is not contractual, and unrelated embeds
+    // (an opengraph preview resolving) must not be read as a redaction change.
+    const oldCounts = new Map<string, number>();
+    for (const embed of e.metadata?.embeds ?? []) {
+        if (embed.type === 'permalink') {
+            const data = embed.data as PermalinkEmbedData | undefined;
+            if (data?.post_id) {
+                oldCounts.set(data.post_id, data.post?.metadata?.redacted_file_count ?? 0);
+            }
+        }
+    }
+
+    for (const embed of newEmbeds) {
+        if (embed.type !== 'permalink') {
+            continue;
+        }
+
+        const data = embed.data as PermalinkEmbedData | undefined;
+        if (!data?.post_id) {
+            continue;
+        }
+
+        // A permalink the stored post did not have yet counts as a change: its files are
+        // rendered from this embed, so it must be persisted for the preview to be correct.
+        const oldCount = oldCounts.get(data.post_id);
+        if (oldCount === undefined || oldCount !== (data.post?.metadata?.redacted_file_count ?? 0)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
@@ -285,7 +335,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
      * @returns {Promise<Model[]>}
      */
-    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false}: HandlePostsArgs): Promise<Model[]> => {
+    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false, skipPostsInChannel = false}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
 
         // We rely on the posts array; if it is empty, we stop processing
@@ -386,26 +436,8 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     return true;
                 }
 
-                // ABAC permission changes don't bump update_at; detect redaction state drift explicitly.
-                if ((n.metadata?.redacted_file_count ?? 0) !== (e.metadata?.redacted_file_count ?? 0)) {
+                if (shouldUpdateForRedaction(e, n)) {
                     return true;
-                }
-
-                // Server recalculates embed data per-user on channel fetch without bumping
-                // update_at — force an update when the linked post's ABAC state drifts.
-                const newEmbeds = n.metadata?.embeds ?? [];
-                const oldEmbeds = e.metadata?.embeds ?? [];
-                if (newEmbeds.length !== oldEmbeds.length) {
-                    return true;
-                }
-                for (let i = 0; i < newEmbeds.length; i++) {
-                    if (newEmbeds[i]?.type === 'permalink') {
-                        const newCount = (newEmbeds[i].data as PermalinkEmbedData)?.post?.metadata?.redacted_file_count ?? 0;
-                        const oldCount = (oldEmbeds[i]?.data as PermalinkEmbedData)?.post?.metadata?.redacted_file_count ?? 0;
-                        if (newCount !== oldCount) {
-                            return true;
-                        }
-                    }
                 }
 
                 return n.update_at > e.updateAt;
@@ -447,7 +479,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             batch.push(...postEmojis);
         }
 
-        if (actionType !== ActionType.POSTS.RECEIVED_IN_THREAD) {
+        if (actionType !== ActionType.POSTS.RECEIVED_IN_THREAD && !skipPostsInChannel) {
             // link the newly received posts
             const linkedPosts = createPostsChain({order, posts, previousPostId});
             if (linkedPosts.length) {

@@ -378,4 +378,82 @@ describe('PermalinkPreview Enhanced Component', () => {
             expect(permalinkPreview.props.autotranslationsEnabled).toBe(true);
         });
     });
+    describe('hasLinkedPostFiles', () => {
+        const embedFor = (metadata: PostMetadata): PermalinkEmbedData => ({
+            post_id: 'linked-post',
+            post: TestHelper.fakePost({id: 'linked-post', user_id: 'user-123', message: 'msg', metadata}),
+            team_name: 'test-team',
+            channel_display_name: 'Test Channel',
+            channel_type: 'O',
+            channel_id: 'channel-123',
+        });
+
+        const storeLinkedPost = async (metadata: PostMetadata) => {
+            const models = await operator.handlePosts({
+                actionType: 'POSTS.RECEIVED_NEW' as 'POSTS.RECEIVED_NEW',
+                order: ['linked-post'],
+                posts: [TestHelper.fakePost({id: 'linked-post', user_id: 'user-123', message: 'msg', metadata})],
+                prepareRecordsOnly: true,
+            });
+            await operator.batchRecords(models, 'test');
+        };
+
+        const renderWith = (embedData: PermalinkEmbedData) => renderWithEverything(
+            <EnhancedPermalinkPreview
+                embedData={embedData}
+                location={Screens.CHANNEL}
+            />,
+            {database, serverUrl},
+        );
+
+        it('should be false when the embed reports redacted files, even with files stored for the linked post', async () => {
+            const files = [TestHelper.fakeFileInfo({id: 'file-1', post_id: 'linked-post'})];
+            await storeLinkedPost({files} as PostMetadata);
+
+            const {getByTestId} = renderWith(embedFor({redacted_file_count: 1} as PostMetadata));
+
+            await waitFor(() => {
+                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(false);
+            });
+        });
+
+        it('should fall back to the embed file list when the linked post is not stored yet', async () => {
+            const files = [TestHelper.fakeFileInfo({id: 'file-2', post_id: 'linked-post'})];
+
+            const {getByTestId} = renderWith(embedFor({files} as PostMetadata));
+
+            await waitFor(() => {
+                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(true);
+            });
+        });
+
+        it('should be false when the linked post is not stored and the embed lists no files', async () => {
+            const {getByTestId} = renderWith(embedFor({} as PostMetadata));
+
+            await waitFor(() => {
+                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(false);
+            });
+        });
+
+        it('should use the stored files of the linked post once it exists', async () => {
+            const files = [TestHelper.fakeFileInfo({id: 'file-3', post_id: 'linked-post'})];
+            await storeLinkedPost({files} as PostMetadata);
+
+            const {getByTestId} = renderWith(embedFor({files} as PostMetadata));
+
+            await waitFor(() => {
+                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(true);
+            });
+        });
+
+        it('should be false when the linked post exists with no stored files', async () => {
+            await storeLinkedPost({} as PostMetadata);
+
+            const {getByTestId} = renderWith(embedFor({} as PostMetadata));
+
+            await waitFor(() => {
+                expect(getByTestId('permalink-preview').props.hasLinkedPostFiles).toBe(false);
+            });
+        });
+    });
 });

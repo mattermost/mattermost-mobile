@@ -56,6 +56,12 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
+    // Channels whose cached posts may hold a stale ABAC redaction state, because the access
+    // decision changed while the user was looking at a different channel. Consumed on the next
+    // switch into the channel. In-memory only: a restart drops the flags, and the posts are
+    // re-sanitized by the page fetch that a cold start performs anyway.
+    private channelsWithStaleRedaction: {[serverUrl: string]: Set<string>} = {};
+
     private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
 
     // Track when the classification banner fields were last fetched per server, so
@@ -86,6 +92,12 @@ class EphemeralStoreSingleton {
     // Track files that have been rejected by plugins (transient state)
     // Maps file ID to rejection reason
     private rejectedFiles = new Map<string, string>();
+
+    // Last viewable-items map emitted by each post list, keyed by location. ITEM_IN_VIEWPORT is
+    // fire-and-forget, so a subtree that mounts after the emit has no other way to learn it is on
+    // screen. Kept per location because several lists can be mounted at once (a thread over a
+    // channel) and a single shared map would let one list erase another's entries.
+    private viewableItems: {[location: string]: Record<string, boolean>} = {};
 
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
@@ -436,6 +448,25 @@ class EphemeralStoreSingleton {
         delete this.channelPlaybooksSynced[serverUrl];
     };
 
+    getChannelRedactionStale = (serverUrl: string, channelId: string) => {
+        return this.channelsWithStaleRedaction[serverUrl]?.has(channelId) ?? false;
+    };
+
+    setChannelRedactionStale = (serverUrl: string, channelId: string) => {
+        if (!this.channelsWithStaleRedaction[serverUrl]) {
+            this.channelsWithStaleRedaction[serverUrl] = new Set();
+        }
+        this.channelsWithStaleRedaction[serverUrl]?.add(channelId);
+    };
+
+    unsetChannelRedactionStale = (serverUrl: string, channelId: string) => {
+        this.channelsWithStaleRedaction[serverUrl]?.delete(channelId);
+    };
+
+    clearChannelRedactionStale = (serverUrl: string) => {
+        delete this.channelsWithStaleRedaction[serverUrl];
+    };
+
     observeTheme = () => {
         return this.themeSubject.asObservable();
     };
@@ -507,6 +538,19 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    // Ephemeral control for the items currently in a post list viewport
+    setViewableItems = (location: string, items: Record<string, boolean>) => {
+        this.viewableItems[location] = items;
+    };
+
+    isItemInViewPort = (key: string) => {
+        return Object.values(this.viewableItems).some((items) => Boolean(items[key]));
+    };
+
+    clearViewableItems = () => {
+        this.viewableItems = {};
     };
 }
 

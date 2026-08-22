@@ -11,6 +11,7 @@ import {queryFilesForPost} from '@queries/servers/file';
 import {observePost} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
+import {isPermalinkEmbedRedacted} from '@utils/post';
 
 import PermalinkPreview from './permalink_preview';
 
@@ -20,7 +21,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const observeHasLinkedPostFiles = (database: Database, p: PostModel | undefined, embedData: PermalinkEmbedData) => {
     // Embed data is recalculated per-user on every channel fetch — trust it over the DB file count.
-    if ((embedData?.post?.metadata?.redacted_file_count ?? 0) > 0) {
+    if (isPermalinkEmbedRedacted(embedData)) {
         return of$(false);
     }
     if (!p) {

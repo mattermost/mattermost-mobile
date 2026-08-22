@@ -32,6 +32,8 @@ import {
     persistentNotificationsConfirmation,
     scheduledPostFromPost,
     hasInteractivePostContent,
+    isPermalinkEmbedRedacted,
+    getPermalinkRedactedFileCount,
 } from './index';
 
 jest.mock('@actions/local/post', () => ({
@@ -780,6 +782,37 @@ describe('post utils', () => {
             expect(result.create_at).toBe(post.create_at);
             expect(result.update_at).toBe(post.update_at);
             expect(result.user_id).toBe(post.user_id);
+        });
+    });
+
+    describe('permalink redaction', () => {
+        const embed = (metadata: object): PermalinkEmbedData => ({
+            post_id: 'linked-post-id',
+            post: {metadata},
+            team_name: 'team',
+            channel_display_name: 'channel',
+            channel_type: 'O',
+            channel_id: 'channel-id',
+        } as PermalinkEmbedData);
+
+        it('should treat a non-zero embed redacted count as denied', () => {
+            expect(isPermalinkEmbedRedacted(embed({redacted_file_count: 2}))).toBe(true);
+            expect(isPermalinkEmbedRedacted(embed({redacted_file_count: 0}))).toBe(false);
+            expect(isPermalinkEmbedRedacted(undefined)).toBe(false);
+        });
+
+        it('should report the embed count when the embed denies access', () => {
+            expect(getPermalinkRedactedFileCount(embed({redacted_file_count: 2}), 0)).toBe(2);
+        });
+
+        it('should report nothing redacted when the embed lists files', () => {
+            // The embed is authoritative, so a stale stored count must not resurrect the placeholder.
+            expect(getPermalinkRedactedFileCount(embed({files: [{id: 'file-1'}]}), 3)).toBe(0);
+        });
+
+        it('should fall back to the linked post when the embed says neither', () => {
+            expect(getPermalinkRedactedFileCount(embed({}), 3)).toBe(3);
+            expect(getPermalinkRedactedFileCount(undefined, 3)).toBe(3);
         });
     });
 });

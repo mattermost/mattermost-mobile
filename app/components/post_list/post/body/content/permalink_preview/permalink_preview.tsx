@@ -6,7 +6,7 @@ import React, {useMemo, useCallback, useEffect, useState} from 'react';
 import {Text, View, Pressable, type LayoutChangeEvent} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
-import {fetchPostById} from '@actions/remote/post';
+import {fetchLinkedPost} from '@actions/remote/post';
 import {fetchUsersByIds} from '@actions/remote/user';
 import EditedIndicator from '@components/edited_indicator';
 import FormattedText from '@components/formatted_text';
@@ -21,7 +21,7 @@ import {useTheme} from '@context/theme';
 import {useUserLocale} from '@context/user_locale';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {getPostTranslatedMessage, getPostTranslation} from '@utils/post';
+import {getPermalinkRedactedFileCount, getPostTranslatedMessage, getPostTranslation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
@@ -176,7 +176,7 @@ const PermalinkPreview = ({
             return;
         }
         if (!post) {
-            fetchPostById(serverUrl, linkedPostId);
+            fetchLinkedPost(serverUrl, linkedPostId);
             return;
         }
 
@@ -184,7 +184,7 @@ const PermalinkPreview = ({
         // access is granted and file records were deleted during the denial period), re-fetch
         // the linked post so handlePosts repopulates the file records.
         if (embedFilesCount > 0 && !hasLinkedPostFiles) {
-            fetchPostById(serverUrl, linkedPostId);
+            fetchLinkedPost(serverUrl, linkedPostId);
         }
     }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles]);
 
@@ -231,22 +231,9 @@ const PermalinkPreview = ({
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
-    // Embed data is recalculated per-user on each channel fetch (no update_at bump).
-    // Trust it when it's conclusive: explicitly denied (redacted_file_count > 0) or
-    // explicitly granted (files are listed). Fall back to the DB linked-post value
-    // only when the embed is ambiguous — no files and no redacted count (e.g. stale
-    // host post that hasn't been refetched since the ABAC policy was applied).
-    const embedRedactedCount = embedData?.post?.metadata?.redacted_file_count ?? 0;
-    const dbRedactedCount = post?.metadata?.redacted_file_count ?? 0;
-
     // The server only populates redacted_file_count when PermissionPolicies is enabled,
     // so no explicit client-side feature-flag gate is needed here.
-    let redactedFileCount = dbRedactedCount; // fall back to DB value when embed is ambiguous
-    if (embedRedactedCount > 0) {
-        redactedFileCount = embedRedactedCount; // embed explicitly denied
-    } else if (embedFilesCount > 0) {
-        redactedFileCount = 0; // embed explicitly granted (files listed)
-    }
+    const redactedFileCount = getPermalinkRedactedFileCount(embedData, post?.metadata?.redacted_file_count ?? 0);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -341,7 +328,10 @@ const PermalinkPreview = ({
                         isEmbedded={true}
                     />
 
-                    {hasLinkedPostFiles && post && (
+                    {/* Both sources must agree: the embed carries what is rendered, and it is
+                        recalculated per user on every fetch, while hasLinkedPostFiles tells us the
+                        file records the gallery needs are actually stored. */}
+                    {hasLinkedPostFiles && embedFilesCount > 0 && (
                         <PermalinkFiles
                             post={post}
                             location='permalink_preview'

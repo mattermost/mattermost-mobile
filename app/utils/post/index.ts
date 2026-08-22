@@ -342,3 +342,39 @@ export function hasInteractivePostContent(post: Post | PostModel, mmBlocksEnable
     );
     return hasMmBlocksContent;
 }
+
+/**
+ * Whether the server denied this user access to the files of the post behind a permalink embed.
+ *
+ * ABAC decisions are made at render time, so the embed the server just sent is authoritative:
+ * it is recalculated per user on every fetch, while the stored linked post may predate the
+ * policy change. A non-zero count means "denied", and the server redacts all of a post's
+ * files or none of them.
+ */
+export function isPermalinkEmbedRedacted(embedData?: PermalinkEmbedData): boolean {
+    return getPermalinkEmbedRedactedCount(embedData) > 0;
+}
+
+function getPermalinkEmbedRedactedCount(embedData?: PermalinkEmbedData): number {
+    return embedData?.post?.metadata?.redacted_file_count ?? 0;
+}
+
+/**
+ * How many files to report as redacted for a permalink preview.
+ *
+ * The embed wins whenever it is conclusive — explicitly denied, or explicitly granted by
+ * listing files. Only when it says neither (no files, no redacted count, e.g. a host post
+ * stored before the policy was applied) do we fall back to what the linked post holds.
+ */
+export function getPermalinkRedactedFileCount(embedData?: PermalinkEmbedData, linkedPostRedactedCount = 0): number {
+    const embedRedactedCount = getPermalinkEmbedRedactedCount(embedData);
+    if (embedRedactedCount > 0) {
+        return embedRedactedCount;
+    }
+
+    if ((embedData?.post?.metadata?.files?.length ?? 0) > 0) {
+        return 0;
+    }
+
+    return linkedPostRedactedCount;
+}

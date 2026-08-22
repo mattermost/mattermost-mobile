@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPinnedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
 import DateSeparator from '@components/post_list/date_separator';
 import Post from '@components/post_list/post';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -17,6 +17,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
 import {navigateBack} from '@screens/navigation';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {emitPostsInViewport} from '@utils/post_list/viewport';
 
 import EmptyState from './empty';
 
@@ -81,14 +82,7 @@ function SavedMessages({
             return;
         }
 
-        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable && item.type === 'post') {
-                acc[`${Screens.PINNED_MESSAGES}-${item.value.currentPost.id}`] = true;
-            }
-            return acc;
-        }, {});
-
-        DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+        emitPostsInViewport(Screens.PINNED_MESSAGES, viewableItems);
     }, []);
 
     const handleRefresh = useCallback(async () => {

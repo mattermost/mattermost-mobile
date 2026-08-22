@@ -81,6 +81,81 @@ describe('EphemeralStore', () => {
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(false);
     });
 
+    describe('channel redaction stale flags', () => {
+        const serverUrl = 'redaction-server';
+        const otherServerUrl = 'redaction-server-2';
+
+        afterEach(() => {
+            EphemeralStore.clearChannelRedactionStale(serverUrl);
+            EphemeralStore.clearChannelRedactionStale(otherServerUrl);
+        });
+
+        it('should return false for a channel that was never marked', () => {
+            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
+        });
+
+        it('should unset only the given channel', () => {
+            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
+            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id-2');
+
+            EphemeralStore.unsetChannelRedactionStale(serverUrl, 'channel-id');
+
+            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
+            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id-2')).toBe(true);
+        });
+
+        it('should scope the flags per server', () => {
+            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
+
+            expect(EphemeralStore.getChannelRedactionStale(otherServerUrl, 'channel-id')).toBe(false);
+        });
+
+        it('should drop only the given server flags when cleared', () => {
+            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
+            EphemeralStore.setChannelRedactionStale(otherServerUrl, 'channel-id');
+
+            EphemeralStore.clearChannelRedactionStale(serverUrl);
+
+            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
+            expect(EphemeralStore.getChannelRedactionStale(otherServerUrl, 'channel-id')).toBe(true);
+        });
+    });
+
+    describe('viewable items', () => {
+        afterEach(() => {
+            EphemeralStore.clearViewableItems();
+        });
+
+        it('should report items reported by any mounted list', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(true);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(true);
+        });
+
+        it('should replace only the entries of the list that reported them', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-3': true});
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(true);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(false);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-3')).toBe(true);
+        });
+
+        it('should drop every list when cleared', () => {
+            EphemeralStore.setViewableItems('Channel', {'Channel-post-1': true});
+            EphemeralStore.setViewableItems('Thread', {'Thread-post-2': true});
+
+            EphemeralStore.clearViewableItems();
+
+            expect(EphemeralStore.isItemInViewPort('Channel-post-1')).toBe(false);
+            expect(EphemeralStore.isItemInViewPort('Thread-post-2')).toBe(false);
+        });
+    });
+
     describe('classification banner cache', () => {
         const serverUrl = 'classification-server';
         const otherServerUrl = 'classification-server-2';

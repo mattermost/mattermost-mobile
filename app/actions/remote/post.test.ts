@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -25,6 +26,7 @@ import {
     unacknowledgePost,
     revealBoRPost,
     fetchPostsForChannel,
+    refetchPostsForRedaction,
     refreshPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
@@ -805,6 +807,107 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+
+    it('refetchPostsForRedaction - should fetch a page instead of a since-fetch when the channel already has posts', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+
+        const result = await refetchPostsForRedaction(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPosts).toHaveBeenCalled();
+        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+    });
+
+    it('fetchPostsForChannel - should fetch a page and clear the flag when the channel redaction is stale', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+        EphemeralStore.setChannelRedactionStale(serverUrl, channelId);
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPosts).toHaveBeenCalled();
+        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(EphemeralStore.getChannelRedactionStale(serverUrl, channelId)).toBe(false);
+    });
+
+    it('fetchPostsForChannel - should keep the channel flagged when the re-fetch fails', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+        (mockClient.getPosts as jest.Mock).mockRejectedValueOnce(new Error('network down'));
+        EphemeralStore.setChannelRedactionStale(serverUrl, channelId);
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+
+        expect(result.error).toBeDefined();
+        expect(EphemeralStore.getChannelRedactionStale(serverUrl, channelId)).toBe(true);
+
+        EphemeralStore.clearChannelRedactionStale(serverUrl);
     });
 
     it('fetchPostsForChannel - no posts with since', async () => {

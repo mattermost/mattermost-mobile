@@ -6,6 +6,7 @@ import React from 'react';
 import {View} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
+import {fetchLinkedPost} from '@actions/remote/post';
 import Markdown from '@components/markdown';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import {Screens} from '@constants';
@@ -18,6 +19,10 @@ import PermalinkPreview from './permalink_preview';
 import type {MarkdownProps} from '@components/markdown/markdown';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@actions/remote/post', () => ({
+    fetchLinkedPost: jest.fn(),
+}));
 
 jest.mock('@actions/remote/permalink', () => ({
     showPermalink: jest.fn(),
@@ -509,6 +514,97 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             expect(getByText('Post with empty files')).toBeTruthy();
 
             expect(queryByTestId('permalink-files-container')).toBeNull();
+        });
+    });
+
+    it('should not render PermalinkFiles when the embed carries no files even if the linked post has stored ones', () => {
+        // The embed is recalculated per user on every fetch; stored file records left over from
+        // an earlier fetch must not put an empty file container on screen.
+        const props = {
+            ...baseProps,
+            hasLinkedPostFiles: true,
+            embedData: {
+                ...baseProps.embedData,
+                post: TestHelper.fakePost({
+                    id: 'post-123',
+                    user_id: 'user-123',
+                    message: 'Post without files',
+                    metadata: {},
+                }),
+            },
+        };
+
+        const {queryByTestId} = renderPermalinkPreview(props);
+
+        expect(queryByTestId('permalink-files-container')).toBeNull();
+    });
+
+    describe('redacted files', () => {
+        const embedWith = (metadata: PostMetadata) => ({
+            ...baseProps.embedData,
+            post: TestHelper.fakePost({id: 'post-123', user_id: 'user-123', message: 'msg', metadata}),
+        });
+
+        it('should render the placeholder when the embed reports redacted files', () => {
+            const {getByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                embedData: embedWith({redacted_file_count: 2} as PostMetadata),
+            });
+
+            expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
+        });
+
+        it('should not render the placeholder when the embed lists accessible files, even if the linked post record still reports a redacted count', () => {
+            const {queryByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                hasLinkedPostFiles: true,
+                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
+                post: TestHelper.fakePostModel({
+                    id: 'post-123',
+                    metadata: {redacted_file_count: 2} as PostMetadata,
+                }),
+            });
+
+            expect(queryByTestId('redacted-files-placeholder')).toBeNull();
+        });
+
+        it('should fall back to the linked post record when the embed is inconclusive', () => {
+            const {getByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                embedData: embedWith({} as PostMetadata),
+                post: TestHelper.fakePostModel({
+                    id: 'post-123',
+                    metadata: {redacted_file_count: 1} as PostMetadata,
+                }),
+            });
+
+            expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
+        });
+
+        it('should re-fetch the linked post when it is not in the database yet', () => {
+            renderPermalinkPreview({...baseProps, post: undefined});
+
+            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'post-123');
+        });
+
+        it('should re-fetch the linked post when the embed lists files the database is missing', () => {
+            renderPermalinkPreview({
+                ...baseProps,
+                hasLinkedPostFiles: false,
+                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
+            });
+
+            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'post-123');
+        });
+
+        it('should not re-fetch the linked post when the database already has its files', () => {
+            renderPermalinkPreview({
+                ...baseProps,
+                hasLinkedPostFiles: true,
+                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
+            });
+
+            expect(fetchLinkedPost).not.toHaveBeenCalled();
         });
     });
 

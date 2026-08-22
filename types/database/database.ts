@@ -89,6 +89,11 @@ export type HandlePostsArgs = {
   previousPostId?: string;
   posts?: Post[];
   prepareRecordsOnly?: boolean;
+
+  // Set when the posts are fetched on their own (e.g. the post behind a permalink preview)
+  // rather than as part of a channel's timeline, so they must not extend or create a
+  // PostsInChannel interval that claims continuity the client does not have.
+  skipPostsInChannel?: boolean;
 };
 
 export type HandleThreadsArgs = {

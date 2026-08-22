@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} from '@actions/local/channel';
 import {setCurrentUserStatus} from '@actions/local/user';
-import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
+import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {General, Events, Preferences} from '@constants';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
@@ -14,6 +14,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
+import {queryAllPostsInChannel} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getConfigValue, getCurrentChannelId, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -24,7 +25,7 @@ import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
-import type {Model} from '@nozbe/watermelondb';
+import type {Database, Model} from '@nozbe/watermelondb';
 import type {CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -133,6 +134,19 @@ export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocket
     setCurrentUserStatus(serverUrl, newStatus);
 }
 
+async function markOtherChannelsRedactionStale(serverUrl: string, database: Database, currentChannelId?: string) {
+    try {
+        const postsInChannel = await queryAllPostsInChannel(database).fetch();
+        const channelIds = new Set(postsInChannel.map((p) => p.channelId));
+        if (currentChannelId) {
+            channelIds.delete(currentChannelId);
+        }
+        channelIds.forEach((id) => EphemeralStore.setChannelRedactionStale(serverUrl, id));
+    } catch (error) {
+        logError('markOtherChannelsRedactionStale: failed to mark channels', error);
+    }
+}
+
 export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -159,13 +173,18 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
         // Only needed when the PermissionPolicies feature flag is enabled server-side.
         const currentUser = await getCurrentUser(database);
         if (currentUser?.id === user_id) {
-            const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-            if (activeServerUrl === serverUrl) {
-                const permissionPoliciesEnabled = (await getConfigValue(database, 'FeatureFlagPermissionPolicies')) === 'true';
-                if (permissionPoliciesEnabled) {
-                    const channelId = await getCurrentChannelId(database);
+            const permissionPoliciesEnabled = (await getConfigValue(database, 'FeatureFlagPermissionPolicies')) === 'true';
+            if (permissionPoliciesEnabled) {
+                // Only the server the user is looking at can have posts on screen to refresh;
+                // every other server just needs its cached channels flagged.
+                const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+                const isActiveServer = activeServerUrl === serverUrl;
+                let channelId: string | undefined;
+
+                if (isActiveServer) {
+                    channelId = await getCurrentChannelId(database);
                     if (channelId) {
-                        fetchPostsForChannel(serverUrl, channelId).catch((e) =>
+                        refetchPostsForRedaction(serverUrl, channelId).catch((e) =>
                             logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch channel posts', e),
                         );
                     }
@@ -176,6 +195,14 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
                         );
                     }
                 }
+
+                // Channels the user is not looking at keep their cached posts, and a
+                // since-fetch on the next visit cannot deliver the new redaction state.
+                // Flag them so the next switch pulls a page instead. Not awaited: this scans
+                // every posts-in-channel row and must not hold up websocket event processing.
+                markOtherChannelsRedactionStale(serverUrl, database, channelId).catch((e) =>
+                    logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to mark stale channels', e),
+                );
             }
         }
     } catch (error) {

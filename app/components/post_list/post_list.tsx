@@ -28,6 +28,7 @@ import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gest
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@keyboard';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
+import {emitPostsInViewport} from '@utils/post_list/viewport';
 import {getTimezone} from '@utils/user';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
@@ -374,15 +375,8 @@ const PostList = ({
             return;
         }
 
-        const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable && item.type === 'post') {
-                acc[`${location}-${item.value.currentPost.id}`] = true;
-            }
-            return acc;
-        }, {});
-
         requestAnimationFrame(() => {
-            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
+            emitPostsInViewport(location, viewableItems);
         });
 
         if (onViewableItemsChangedListener.current) {
