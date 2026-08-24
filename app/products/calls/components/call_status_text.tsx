@@ -3,13 +3,26 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, type StyleProp, type TextStyle} from 'react-native';
+import {Text} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type {CallSession} from '@calls/types/calls';
 import type UserModel from '@typings/database/models/servers/user';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    speakingUser: {
+        color: theme.buttonColor,
+        ...typography('Body', 100, 'SemiBold'),
+    },
+    speakingPostfix: {
+        ...typography('Body', 100, 'Regular'),
+    },
+}));
 
 type Props = {
     speaker: string;
@@ -17,8 +30,6 @@ type Props = {
     teammateNameDisplay: string;
     isDMCalling: boolean;
     dmCallee?: UserModel;
-    speakingUserStyle: StyleProp<TextStyle>;
-    speakingPostfixStyle: StyleProp<TextStyle>;
 }
 
 export function CallStatusText({
@@ -27,15 +38,15 @@ export function CallStatusText({
     teammateNameDisplay,
     isDMCalling,
     dmCallee,
-    speakingUserStyle,
-    speakingPostfixStyle,
 }: Props) {
     const intl = useIntl();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
 
     if (isDMCalling) {
         return (
             <Text
-                style={speakingUserStyle}
+                style={styles.speakingUser}
                 numberOfLines={1}
                 ellipsizeMode='tail'
             >
@@ -47,7 +58,7 @@ export function CallStatusText({
     if (speaker) {
         return (
             <Text
-                style={speakingUserStyle}
+                style={styles.speakingUser}
                 numberOfLines={1}
                 ellipsizeMode='middle'
             >
@@ -56,7 +67,7 @@ export function CallStatusText({
                 <FormattedText
                     id='mobile.calls_name_is_talking_postfix'
                     defaultMessage='is talking...'
-                    style={speakingPostfixStyle}
+                    style={styles.speakingPostfix}
                 />
             </Text>
         );
@@ -66,7 +77,7 @@ export function CallStatusText({
         <FormattedText
             id='mobile.calls_noone_talking'
             defaultMessage='No one is talking'
-            style={speakingUserStyle}
+            style={styles.speakingUser}
         />
     );
 }

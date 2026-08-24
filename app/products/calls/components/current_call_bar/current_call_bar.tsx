@@ -85,13 +85,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
             paddingLeft: 6,
             gap: 2,
         },
-        speakingUser: {
-            color: theme.buttonColor,
-            ...typography('Body', 100, 'SemiBold'),
-        },
-        speakingPostfix: {
-            ...typography('Body', 100, 'Regular'),
-        },
         channelAndTime: {
             color: changeOpacity(theme.buttonColor, 0.56),
             ...typography('Body', 75, 'Regular'),
@@ -238,8 +231,6 @@ export const CurrentCallBar = ({
                             teammateNameDisplay={teammateNameDisplay}
                             isDMCalling={isDMCalling}
                             dmCallee={dmCallee}
-                            speakingUserStyle={style.speakingUser}
-                            speakingPostfixStyle={style.speakingPostfix}
                         />
                         <Text
                             style={style.channelAndTime}
