@@ -218,9 +218,12 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     switch (appState) {
         case 'inactive':
         case 'background':
-            // The incoming ring and the outbound ringback share the one native player, so stop
-            // whichever is playing through its own owner
-            stopRingback();
+            // On Android, inbound ring and ringback share the one native player, so stop both.
+            // On iOS, CallKit owns the inbound ring and never uses the native player, so ringback
+            // can continue in the background without conflict.
+            if (Platform.OS !== 'ios') {
+                stopRingback();
+            }
             stopIncomingCallsRinging();
             break;
     }
