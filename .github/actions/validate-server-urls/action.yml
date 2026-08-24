@@ -1,0 +1,74 @@
+# Copyright 2024 Mattermost, Inc.
+name: "validate-server-urls"
+description: >-
+  Validate the five-server E2E topology URLs before anything is sent to them.
+
+  This guard is load-bearing rather than cosmetic: the provisioning step that
+  follows it ships ADMIN_USERNAME and ADMIN_PASSWORD to whatever host these URLs
+  name. An unvalidated URL is therefore a credential-exfiltration primitive, not
+  just a wrong test target. Extracted into an action so the rule lives in exactly
+  one place — a second inline copy would drift, and a drifted allowlist is
+  indistinguishable from no allowlist.
+
+  Empty values pass: the topology legitimately leaves slots unset, and callers
+  that require a slot check for emptiness separately.
+
+inputs:
+  android_site_1_url:
+    required: false
+    default: ""
+  android_site_2_url:
+    required: false
+    default: ""
+  ios_site_1_url:
+    required: false
+    default: ""
+  ios_site_2_url:
+    required: false
+    default: ""
+  site_3_url:
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate server URLs
+      shell: bash
+      env:
+        ANDROID_SITE_1_URL: ${{ inputs.android_site_1_url }}
+        ANDROID_SITE_2_URL: ${{ inputs.android_site_2_url }}
+        IOS_SITE_1_URL: ${{ inputs.ios_site_1_url }}
+        IOS_SITE_2_URL: ${{ inputs.ios_site_2_url }}
+        SITE_3_URL: ${{ inputs.site_3_url }}
+      run: |
+        validate_url() {
+          local url="$1" label="$2"
+          if [ -z "$url" ]; then return 0; fi
+
+          # Reject any whitespace (space, tab, newline). Without this, an input
+          # like "https://valid.cloud  https://evil.example.com" would pass the
+          # rest of the validators (urlparse only inspects up to the first
+          # space) but then get word-split into two URLs by an unquoted shell
+          # iteration downstream — letting the second, unvalidated URL reach
+          # the provisioning sink. Whitespace is never legal in a URL anyway.
+          if [[ "$url" =~ [[:space:]] ]]; then
+            echo "::error::$label contains whitespace: $url"
+            exit 1
+          fi
+
+          # Must be HTTPS
+          if [[ ! "$url" =~ ^https:// ]]; then
+            echo "::error::$label must use HTTPS: $url"
+            exit 1
+          fi
+
+          # Validate resolved IPs, allowlist, and SSRF using Python's ipaddress module
+          python3 "${{ github.action_path }}/validate-url.py" "$url" "$label"
+        }
+
+        validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
+        validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
+        validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
+        validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
+        validate_url "$SITE_3_URL" "SITE_3_URL"

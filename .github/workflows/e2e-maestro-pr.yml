@@ -46,6 +46,13 @@ on:
         description: "JSON map of per-platform TSIO configs from parent calculate-tsio-identity"
         required: true
         type: string
+    outputs:
+      expected_ios_reports:
+        description: One report when iOS Maestro is selected
+        value: ${{ (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') && '1' || '0' }}
+      expected_android_reports:
+        description: One report when Android Maestro is selected
+        value: ${{ (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') && '1' || '0' }}
 
 # Least-privilege defaults; the TSIO upload (in the nested maestro template)
 # needs id-token: write to mint an OIDC token and actions: read to resolve

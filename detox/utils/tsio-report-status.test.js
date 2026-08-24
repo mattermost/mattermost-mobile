@@ -84,15 +84,25 @@ describe('tsio-report-status', () => {
             );
         });
 
-        it('uses timeout path for non-terminal status', () => {
+        it('is red on poll timeout even when the CI job succeeded', () => {
+            // upstream-succeeded reports whether an upstream job was cancelled, not
+            // whether tests passed — and the step that runs the tests is
+            // continue-on-error. Trusting it here turned "no evidence" into green.
             assert.deepEqual(
                 decideStatus({status: 'processing', test_stats: {passed: 1, failed: 0}}, true),
                 {
-                    state: 'success',
-                    description: 'TSIO poll timed out (status=processing) — using CI job status',
+                    state: 'failure',
+                    description: 'TSIO poll timed out (status=processing) — no test evidence',
                     both_terminal: false,
                     timed_out: true,
                 },
+            );
+        });
+
+        it('is red on poll timeout regardless of upstream', () => {
+            assert.equal(
+                decideStatus({status: 'processing', test_stats: {passed: 1, failed: 0}}, false).state,
+                'failure',
             );
         });
 

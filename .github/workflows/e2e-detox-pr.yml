@@ -282,6 +282,7 @@ jobs:
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      triage-matrix: ${{ steps.id.outputs.triage-matrix }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -358,6 +359,9 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          # One matrix row per report group for the TSIO ai-triage action.
+          TRIAGE_MATRIX=$(echo "$JOB_CONFIGS" | jq -c '[to_entries[] | {key: .key, status_context: .value.status_context, identity: (.value.composite_identity | tostring)}]')
+          echo "triage-matrix=$TRIAGE_MATRIX" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -394,6 +398,24 @@ jobs:
               -f description="Mobile E2E (${NAME}) — waiting for TSIO report" \
               -f target_url="$TARGET_URL"
           done
+
+      # Claim the triage context up front so agents and the PR babysitter see
+      # "still classifying" instead of an absent context (indistinguishable from
+      # "no opinion"). Without this, a red platform check can trigger an empty
+      # commit retrigger that cancels the in-flight triage run via concurrency.
+      - name: Post pending status for AI triage
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          REPO: ${{ github.repository }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state=pending \
+            -f context=e2e-test/ai-triage \
+            -f description="classifying E2E failures — do not retrigger until this resolves" \
+            -f target_url="$TARGET_URL"
 
   resolve-server-topology:
     name: Resolve test server topology
@@ -985,6 +1007,90 @@ jobs:
       tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
     secrets: inherit
 
+  # Failure triage: rewrite each platform's e2e-test/* commit status.
+  # Flaky → success on that context. Product/test bug → keep failure with
+  # an annotated description. No separate red ai-triage-* merge blockers.
+  #
+  # Under E2E/Override, calculate-tsio-identity is skipped and so is the
+  # matrix; the rollup still clears the pending e2e-test/ai-triage row.
+  e2e-ai-triage:
+    name: AI triage (${{ matrix.key }})
+    if: >-
+      always() && !cancelled()
+      && needs.calculate-tsio-identity.result == 'success'
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.calculate-tsio-identity.outputs.triage-matrix) }}
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+      id-token: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Classify failures via Test System IO
+        id: triage
+        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-ai-triage@9ed14830065f315a82fd598077d9ea9c2eaf4b6a
+        if: always()
+        with:
+          composite-identity: ${{ matrix.identity }}
+          original-commit-status-contexts: ${{ matrix.status_context }}
+          run-type: ${{ inputs.run_type == 'MASTER' && 'MAIN' || (inputs.run_type || 'PR') }}
+          mode: ${{ needs.resolve-e2e-policy.outputs.e2e_override == 'true' && 'shadow' || 'gate' }}
+          # PR #101 staging until triage APIs are on production.
+          use-staging: true
+          # Neutralize prior ai-triage-* rows; real signal is matrix.status_context.
+          commit-status-context: e2e-test/ai-triage-${{ matrix.key }}
+          github-token: ${{ secrets.GH_TOKEN || github.token }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  e2e-ai-triage-rollup:
+    name: AI failure triage
+    if: always() && !cancelled()
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - e2e-ai-triage
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Resolve e2e-test/ai-triage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
+          REPO: ${{ github.repository }}
+          TRIAGE_RESULT: ${{ needs.e2e-ai-triage.result }}
+          CALC_RESULT: ${{ needs.calculate-tsio-identity.result }}
+          OVERRIDE: ${{ needs.resolve-e2e-policy.outputs.e2e_override }}
+          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # Always success — merge blockers are the platform e2e-test/* rows only.
+          STATE=success
+          if [ "${OVERRIDE}" = "true" ] || [ "${CALC_RESULT}" = "skipped" ]; then
+            DESC="triage skipped under E2E/Override"
+          elif [ "${TRIAGE_RESULT}" = "skipped" ]; then
+            DESC="triage skipped (no platforms)"
+          else
+            DESC="triage finished — see e2e-test/detox-* and e2e-test/maestro-*"
+          fi
+          DESC=$(printf '%s' "$DESC" | cut -c1-140)
+          gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
+            -f state="$STATE" \
+            -f context=e2e-test/ai-triage \
+            -f description="$DESC" \
+            -f target_url="$TARGET_URL"
+
   e2e-remove-matterwick-label:
     name: Remove Matterwick E2E label from PR
     runs-on: ubuntu-24.04
@@ -1177,4 +1283,5 @@ jobs:
           node detox/utils/tsio-channel-notify-rollup.js \
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
+            --use-staging=true \
             --poll-attempts=6 || true

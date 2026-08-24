@@ -99,6 +99,36 @@ on:
         required: false
         type: string
         default: ""
+      spec_list:
+        description: >-
+          Explicit spec files to run instead of discovering them under search_path.
+          Empty means normal discovery.
+        required: false
+        type: string
+        default: ""
+      extra_detox_args:
+        description: >-
+          Extra flags appended to the Detox CLI invocation, forwarded to
+          create_android_emulator.sh as EXTRA_DETOX_ARGS.
+        required: false
+        type: string
+        default: ""
+      artifact_suffix:
+        description: >-
+          Appended to the results artifact name (e.g. CMT per-server legs share
+          one workflow run and need distinct artifact names).
+        required: false
+        type: string
+        default: ""
+      run_quarantined:
+        description: >-
+          Run the quarantined tests — the ones normally skipped because they are
+          known to fail. Off by default; use when re-checking whether a
+          quarantined test still fails. Surfaces as RUN_QUARANTINED_TESTS to the
+          test process.
+        required: false
+        type: boolean
+        default: false
       tsio-config:
         description: >
           TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
@@ -119,6 +149,9 @@ on:
         type: string
         default: ""
     outputs:
+      expected_report_count:
+        description: Number of generate-specs matrix shards expected to report
+        value: ${{ jobs.generate-specs.outputs.report_count }}
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
       TARGET_URL:
@@ -164,12 +197,18 @@ env:
   AVD_NAME: ${{ inputs.android_avd_name }}
   SDK_VERSION: ${{ inputs.android_api_level }}
   ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+  # Read by detox/e2e/support/test_config.ts. Set at workflow level rather than
+  # via detox/.env because the .env path is relative to the detox working
+  # directory and does not resolve during a CI run — the environment is what
+  # actually reaches the test process, same as RUNNING_E2E above.
+  RUN_QUARANTINED_TESTS: ${{ inputs.run_quarantined }}
 
 jobs:
   generate-specs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      report_count: ${{ steps.generate-specs.outputs.report_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -215,6 +254,7 @@ jobs:
         with:
           parallelism: ${{ inputs.parallelism }}
           search_path: ${{ inputs.search_path }}
+          spec_list: ${{ inputs.spec_list }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
@@ -459,6 +499,8 @@ jobs:
           SITE_3_URL: ${{ env.SITE_3_URL }}
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "60"
+          # Inherited by the inner `bash -c` and read by run_detox_tests().
+          EXTRA_DETOX_ARGS: ${{ inputs.extra_detox_args }}
         shell: bash
         run: |
           set +e
@@ -490,11 +532,25 @@ jobs:
           exit 1
         continue-on-error: true # We want to run all the tests
 
+      # Captured before the artifact upload so it travels with the results the
+      # triage engine reads. A server-side failure and a test-side failure look
+      # identical from the device — both are "the element never appeared" — so
+      # without this, FLAKY_SERVER could only ever be a guess.
+      - name: Capture server diagnostics
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/capture-server-diagnostics
+        with:
+          site_url: ${{ env.SITE_1_URL }}
+          admin_username: ${{ env.ADMIN_USERNAME }}
+          admin_password: ${{ env.ADMIN_PASSWORD }}
+          output_dir: detox/artifacts/server-diagnostics
+
       - name: Upload Android Test Report
         if: always() && hashFiles('detox/artifacts/**') != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}${{ inputs.artifact_suffix }}
           path: detox/artifacts/
 
   generate-report:
@@ -656,6 +712,8 @@ jobs:
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
         uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
         with:
+          # Staging dogfood with ai-triage (Option A); revert before merge to main.
+          use-staging: true
           composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
           total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
           framework: detox
@@ -672,6 +730,7 @@ jobs:
         uses: ./.github/actions/e2e-override-label
         with:
           pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+          commit_sha: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.commit_sha }}
 
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
@@ -679,6 +738,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          AI_WAIVER: ${{ steps.e2e-override.outputs.ai_waived }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-android.result }}
           JOB_STATUS: ${{ job.status }}
@@ -705,6 +765,9 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --ai-waiver="$AI_WAIVER" \
+            --ai-waiver-reason="automated triage waiver" \
+            --use-staging=true \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

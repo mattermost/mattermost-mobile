@@ -34,6 +34,84 @@ jobs:
           ./scripts/precommit/i18n.sh
           echo "::endgroup::"
 
+  # Pre-merge integration may pin an unmerged toolkit commit. Immutable SHAs are
+  # safe to test and safe if accidentally merged; mutable feature branches are not.
+  triage-tests:
+    name: E2E triage and CI-utility tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/setup-node
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: ci/triage-tests
+        shell: bash
+        # Named explicitly rather than run as a directory: node's directory test
+        # runner also executes non-test sources, which turns a plain `require`
+        # into a spurious failure. Same reasoning as the toolkit's own CI.
+        #
+        # These have no dependencies beyond the Node standard library, so they
+        # need no install step — which is why they can run as their own fast job
+        # rather than riding along with the main suite.
+        run: |
+          node --test \
+            detox/utils/tsio-report-status.test.js \
+            .github/actions/generate-specs/split-tests-node.test.cjs \
+            .github/actions/capture-server-diagnostics/sanitize-logs.test.cjs
+          # The reporter carries its own assertions for the URL and status rules.
+          node detox/utils/tsio-report-status.js --self-test
+
+  toolkit-ref-pinned-to-main:
+    name: Toolkit refs are immutable
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: ci/check-toolkit-refs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const workflowDir = '.github/workflows';
+          const allowed = (ref) => ref === 'main' || /^[0-9a-f]{40}$/.test(ref);
+          const failures = [];
+
+          for (const name of fs.readdirSync(workflowDir)) {
+            if (!name.endsWith('.yml') && !name.endsWith('.yaml')) {
+              continue;
+            }
+            const file = path.join(workflowDir, name);
+            const text = fs.readFileSync(file, 'utf8');
+            const uses = [...text.matchAll(
+              /^\s*uses:\s*mattermost\/mattermost-test-automation-toolkit\/[^\s@]+@([^\s#]+)\s*$/gm,
+            )];
+            if (uses.length === 0) {
+              continue;
+            }
+            const checkoutRefs = [...text.matchAll(/^\s*toolkit_ref:\s*([^\s#]+)\s*$/gm)].map((match) => match[1]);
+            for (const match of uses) {
+              const ref = match[1];
+              if (!allowed(ref)) {
+                failures.push(`${file}: mutable workflow ref @${ref}`);
+              } else if (checkoutRefs.length > 0 && !checkoutRefs.includes(ref)) {
+                failures.push(`${file}: workflow ref @${ref} does not match toolkit_ref`);
+              }
+            }
+          }
+
+          if (failures.length > 0) {
+            console.error('Toolkit refs must use @main or an immutable 40-character commit SHA:');
+            failures.forEach((failure) => console.error(`- ${failure}`));
+            process.exit(1);
+          }
+          console.log('Toolkit workflow and checkout refs are immutable and aligned.');
+          NODE
+
   detox-lint-typecheck:
     # The detox/ package has its own tsconfig and is not covered by the root
     # check above. A TypeScript error in a detox test file makes its whole suite

@@ -66,6 +66,10 @@ npm-debug.log
 yarn-error.log
 .yarninstall
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # Vim
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]

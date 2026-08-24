@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-action.json
-name: Publish E2E/Override commit statuses
+name: Publish required E2E commit statuses
 description: >-
   Unblock the required e2e-test/* commit statuses for a SHA so a PR carrying
   E2E/Override (or one that skipped E2E entirely) can merge under required
@@ -14,7 +14,8 @@ description: >-
   overridden" suffix, so the check reads "522 passed, 1 failed, 81 skipped -
   e2e overridden" rather than hiding what failed.
 
-  Covers all three override paths: E2E never dispatched, E2E already failed
+  Covers human E2E/Override and automated E2E/AI-Waived paths. E2E may never
+  have dispatched, may already have failed,
   (statuses are keyed by SHA, so this overwrites the failures), and E2E still
   running. In-flight runs are never cancelled — their finalize step re-checks
   the label (.github/actions/e2e-override-label) so a late result cannot re-red
@@ -26,9 +27,11 @@ inputs:
     required: true
   state:
     description: >-
-      Commit status state (success | pending). Use pending to re-block the PR
+      Commit status state (success | failure | pending). Use pending to re-block the PR
       when E2E/Override is removed, so the waiver does not linger on the SHA.
       pending only resets contexts this action previously overrode.
+      failure annotates the diagnosis onto contexts that are already failing and
+      never reds a context that passed, is pending, or never ran.
     required: false
     default: success
   description:
@@ -41,6 +44,14 @@ inputs:
     description: Link shown on the check
     required: false
     default: ''
+  platform:
+    description: Platform contexts to publish (ios, android, or both)
+    required: false
+    default: both
+  status_suffix:
+    description: Classification suffix appended while preserving test counts
+    required: false
+    default: ''
 
 runs:
   using: composite
@@ -51,6 +62,8 @@ runs:
         STATE: ${{ inputs.state }}
         DESCRIPTION: ${{ inputs.description }}
         TARGET_URL: ${{ inputs.target_url }}
+        PLATFORM: ${{ inputs.platform }}
+        STATUS_SUFFIX: ${{ inputs.status_suffix }}
       with:
         script: |
           const owner = context.repo.owner;
@@ -59,6 +72,7 @@ runs:
           const state = process.env.STATE || 'success';
           const description = (process.env.DESCRIPTION || '').substring(0, 140);
           const targetUrl = process.env.TARGET_URL?.trim();
+          const requestedSuffix = process.env.STATUS_SUFFIX?.trim();
 
           if (!sha) {
             throw new Error('e2e-override-status: commit_sha is required');
@@ -67,11 +81,46 @@ runs:
           // Relative requires resolve against the workspace, so the repo must be
           // checked out before this action runs.
           const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+          const platform = process.env.PLATFORM || 'both';
+          const contexts = E2E_STATUS_CONTEXTS.filter((statusContext) => {
+            if (platform === 'both') {
+              return true;
+            }
+            if (platform === 'ios') {
+              return statusContext.endsWith('/detox-ios') ||
+                statusContext.endsWith('/detox-ipad') ||
+                statusContext.endsWith('/maestro-ios');
+            }
+            if (platform === 'android') {
+              return statusContext.endsWith('/detox-android') ||
+                statusContext.endsWith('/maestro-android');
+            }
+            throw new Error(`e2e-override-status: unsupported platform ${platform}`);
+          });
 
           // Present in every success description this action writes, so the
           // pending path can reset exactly the contexts it overrode and never a
           // platform that passed on its own merits.
           const OVERRIDE_MARKER = 'e2e overridden';
+          const marker = requestedSuffix || OVERRIDE_MARKER;
+
+          // Appending is not idempotent on its own, and this action runs more
+          // than once per SHA — the label manager alone has four call sites, and
+          // a context can be re-posted red by a later job after an earlier
+          // override already suffixed it. That produced
+          // "512 passed, 2 failed, 92 skipped - e2e overridden - e2e overridden"
+          // on three contexts of mattermost-mobile#9996. Strip any markers
+          // already present before adding one, so N applications read as one.
+          const stripMarkers = (text) => {
+            let out = text;
+            for (;;) {
+              const next = out.replace(/ - (?:e2e overridden|verified to be [^-]*?)\s*$/, '');
+              if (next === out) {
+                return out;
+              }
+              out = next;
+            }
+          };
 
           // getCombinedStatusForRef caps statuses at 100 per page. This repo only
           // has 5 required contexts today, but other tooling can post legacy
@@ -96,7 +145,7 @@ runs:
 
           const failures = [];
           let touched = 0;
-          for (const statusContext of E2E_STATUS_CONTEXTS) {
+          for (const statusContext of contexts) {
             const latest = latestByContext.get(statusContext);
             const latestDescription = latest?.description || '';
             let statusDescription;
@@ -111,12 +160,28 @@ runs:
               }
               statusDescription = description;
               statusTargetUrl = targetUrl;
-            } else if (latest?.state === 'success') {
+            } else if (state === 'failure' &&
+                       latest?.state !== 'failure' && latest?.state !== 'error') {
+              // failure means "annotate the diagnosis onto a check that is
+              // already red", which is how triage labels a platform PRODUCT_BUG
+              // or TEST_BUG. It must never *create* a red: a platform that
+              // passed, is still pending, or never ran has nothing to diagnose,
+              // and reddening it here would fail a PR on the strength of another
+              // platform's verdict. Unlike pending, this path is not an undo, so
+              // it cannot key off the override marker.
+              continue;
+            } else if (latest?.state === 'success' && state === 'success') {
               // Nothing to unblock: either genuinely green — leave the real result
               // and its counts alone — or already overridden, in which case
               // re-posting would only replace a description carrying the real
               // counts with a bare one.
               continue;
+            } else if (latest?.state === 'success') {
+              const suffix = ` - ${marker}`;
+              const stripped = stripMarkers(latestDescription);
+              const base = stripped.substring(0, Math.max(0, 140 - suffix.length));
+              statusDescription = `${base}${suffix}`.substring(0, 140);
+              statusTargetUrl = latest.target_url || targetUrl;
             } else if (latest?.state === 'failure' || latest?.state === 'error') {
               // Keep the real counts so the check still says what failed.
               // Reserve room for the suffix before truncating the base: TSIO
@@ -124,8 +189,9 @@ runs:
               // tsio-report-status.js), and truncating after concatenation could
               // cut the marker off a long one, leaving the pending path unable to
               // recognise this context as overridden.
-              const suffix = ` - ${OVERRIDE_MARKER}`;
-              const base = latestDescription.substring(0, Math.max(0, 140 - suffix.length));
+              const suffix = ` - ${marker}`;
+              const stripped = stripMarkers(latestDescription);
+              const base = stripped.substring(0, Math.max(0, 140 - suffix.length));
               statusDescription = `${base}${suffix}`.substring(0, 140);
               // Keep the link to the real report — that is what a reviewer needs
               // to judge whether the bypass was reasonable, not this action's run.
@@ -163,5 +229,5 @@ runs:
           }
 
           if (failures.length > 0) {
-            throw new Error(`Failed to publish ${failures.length} E2E/Override ${state} status(es): ${failures.join('; ')}`);
+            throw new Error(`Failed to publish ${failures.length} required E2E ${state} status(es): ${failures.join('; ')}`);
           }

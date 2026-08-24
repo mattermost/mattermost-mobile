@@ -165,6 +165,65 @@ xcrun simctl list devices | grep Booted
 The Local Runs generate artifacts under `detox/artifacts/ios-debug-**` or `detox/artifacts/android-debug-**`.
 You can see the html report, failure screenshot under that folder.
 
+## Quarantined tests
+
+A test that is known to fail is *quarantined* rather than deleted: it stays in
+the suite but does not run. Use the hooks from `@support/quarantine` instead of a
+bare `it.skip`:
+
+```ts
+import {itQuarantined} from '@support/quarantine';
+
+// Quarantined: depends on app-side Saved Messages observe() fix.
+itQuarantined('MM-T4910_2 - should be able to display a saved message', async () => {
+```
+
+They behave exactly like `it.skip` / `describe.skip` by default. The difference
+is that a bare skip records only that someone once turned the test off — it is
+indistinguishable from a platform gate, and it cannot be turned back on without
+editing the file.
+
+Set `RUN_QUARANTINED_TESTS=true` to run them:
+
+```sh
+RUN_QUARANTINED_TESTS=true npm run e2e:ios-test
+```
+
+In CI, the `run_quarantined` input on the iOS and Android templates does the
+same — re-check the quarantine list so an entry does not silently become
+permanent after the underlying bug is fixed.
+
+Only use these hooks for "this test is broken". A test that does not apply to a
+platform or a server topology is not quarantined — keep an explicit condition
+such as `isIos() ? it.skip : it`, which stays skipped even when quarantined tests
+are enabled.
+
+## AI failure triage (no reruns)
+
+After each platform finishes uploading reports to Test System IO and posting its
+`e2e-test/*` commit status, CI runs the TSIO `test-system-io-ai-triage` action
+(`mode: gate`). Failures are clustered by normalized error signature on the
+server (identical messages share one investigation). Deterministic rules and,
+when needed, one model call per cluster decide **flaky** vs **bug**.
+
+- **Flake** (in-run recovery, or history + screenshots with policy thresholds and
+  amnesty) → the original platform check is flipped to success so the PR can
+  merge when every failure is a waived flake.
+- **Bug / inconclusive / RELEASE / amnesty denied** → the original check stays
+  red (fail closed). **MAIN** uses the same flake-waiver bar as PR so required
+  `e2e-test/*` checks on `main` can go green (Create Release Branches has no
+  PR labels).
+- Cost scales with distinct signatures, not with failure count or shard count.
+  There is no candidate/rerun path.
+
+**Staging dogfood (this PR):** report upload, status polling, channel rollup, and
+ai-triage all target `https://staging-test-io.test.mattermost.com`. Deploy
+mattermost-test-system-io#101 to staging before expecting triage APIs to work.
+Revert `use-staging` / staging URL pins before merging to main.
+
+Manual corrections use `/e2e-triage-override` (toolkit override workflow; still
+points at production ledger).
+
 ## Webhook sidecar (mm_blocks / interactive dialog specs)
 
 The `mm_blocks_*` and interactive-dialog specs register integrations that the

@@ -61,3 +61,15 @@ export const hasStableWebhookIngress = Boolean(
     !(isLoopbackWebhook && process.env.CI === 'true') &&
     process.env.WEBHOOK_CALLBACKS_REACHABLE !== 'false',
 );
+
+/**
+ * Run the quarantined tests — the ones excluded from normal runs because they
+ * are known to fail. Off everywhere except when explicitly requested.
+ *
+ * Two uses, both deliberate:
+ *   - Failure-triage validation needs a run that is guaranteed to contain real
+ *     failures. A run with nothing to triage proves nothing about triage.
+ *   - Periodically re-checking whether a quarantined test still fails, so the
+ *     quarantine list does not silently become permanent.
+ */
+export const runQuarantinedTests = process.env.RUN_QUARANTINED_TESTS === 'true';
