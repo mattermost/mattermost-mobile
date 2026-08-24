@@ -84,7 +84,7 @@ jobs:
       # Phone legs exclude @ipad_only (tag filter — not directory).
       search_path: detox/e2e/test
       # Avoid `cond && '' || tag` — empty string is falsy in GHA expressions.
-      detox-include-tags: ${{ (inputs.run_type != 'MAIN' && inputs.run_type != 'MASTER' && inputs.run_type != 'RELEASE' && inputs.run_type != 'RELEASE_CUT') && '@ios_pr,@ios_only' || '' }}
+      detox-include-tags: ''
       detox-exclude-tags: '@ipad_only'
       parallelism: ${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' || inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT') && '20' || '10' }}
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
