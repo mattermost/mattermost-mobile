@@ -96,7 +96,7 @@ describe('Account - Settings - About', () => {
         expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
 
         // Android nests the URL in the same TextView; Espresso regex uses full-string
-        // matches(), so allow trailing content (CI 30216081940 MM-T5104_1).
+        // matches(), so allow trailing content.
         learnMorePrefixMatcher = new RegExp(`^${expectedLearnMorePrefix.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*`, 'i');
         expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
@@ -190,8 +190,8 @@ describe('Account - Settings - About', () => {
             await safeEnableSynchronization();
         }
 
-        // Nested Text may flatten the URL into the parent node (CI 30250131265:
-        // exact by.text('https://…') was null while the link was on screen).
+        // Nested Text may flatten the URL into the parent node
+        // (exact by.text('https://…') was null while the link was on screen).
         await expect(element(by.text(learnMorePrefixMatcher))).toExist();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');

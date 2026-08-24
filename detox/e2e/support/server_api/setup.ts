@@ -12,7 +12,7 @@ const isTransientServerError = (error: any): boolean => {
         return false;
     }
 
-    // Cloudflare JSON body uses `status`; Mattermost API errors use `status_code`.
+    // Edge proxy JSON uses `status`; Mattermost API errors use `status_code`.
     const statusCode = error.status_code ?? error.statusCode ?? error.status;
     if (error.cloudflare_error === true || error.error_code === 524) {
         return true;

@@ -32,8 +32,7 @@ import {
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-// Scheduled-message timestamps render as "Invalid Date" on iOS, so these run on Android
-// only. Same root cause as MM-T5720 below (CI run 30000635898).
+// Scheduled-message timestamps render as "Invalid Date" on iOS; Android only (same as MM-T5720).
 const itAndroidOnly = isIos() ? it.skip : it;
 
 describe('Scheduled Draft,', () => {
@@ -197,7 +196,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    // Skip both: CI run 30000635898 — iOS renders "Invalid Date" and Android cascades during channel setup.
+    // Skip both: iOS renders "Invalid Date"; Android cascades during channel setup.
     it.skip('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);

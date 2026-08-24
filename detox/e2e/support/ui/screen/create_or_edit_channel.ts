@@ -7,7 +7,7 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
@@ -144,6 +144,72 @@ class CreateOrEditChannelScreen {
     toggleMakePrivateOff = async () => {
         await this.makePrivateToggledOn.tap();
         await expect(this.makePrivateToggledOff).toBeVisible();
+    };
+
+    // Full create flow with retry: on failure close the form and reopen/refill/create again.
+    createChannelAndOpen = async ({makePrivate = false, attempts = 3} = {}) => {
+        let lastError: unknown;
+
+        /* eslint-disable no-await-in-loop */
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+            const suffix = getRandomId();
+            const displayName = `Channel ${suffix}`;
+            const purpose = `Purpose ${suffix}`;
+            const header = `Header ${suffix}`;
+
+            try {
+                await this.openCreateChannel();
+                if (makePrivate) {
+                    await this.toggleMakePrivateOn();
+                } else {
+                    await expect(this.makePrivateToggledOff).toBeVisible();
+                }
+                await this.displayNameInput.replaceText(displayName);
+                await this.purposeInput.replaceText(purpose);
+                await this.headerInput.replaceText(header);
+                await this.createButton.tap();
+
+                // Coachmark ("Type a message and long press…") can mount over channel.screen
+                // and make toExist fail — dismiss before waiting, then confirm channel.
+                await ChannelScreen.dismissScheduledPostTooltip();
+                await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+                await ChannelScreen.dismissScheduledPostTooltip();
+                await ChannelScreen.toBeVisible(timeouts.TEN_SEC);
+                return {displayName, purpose, header};
+            } catch (error) {
+                lastError = error;
+
+                // Create may have succeeded while the coachmark blocked matchers — dismiss and re-check.
+                await ChannelScreen.dismissScheduledPostTooltip();
+                try {
+                    await expect(ChannelScreen.channelScreen).toExist();
+                    await ChannelScreen.toBeVisible(timeouts.TEN_SEC);
+                    return {displayName, purpose, header};
+                } catch {
+                    // Still not on channel.
+                }
+
+                // Only retry from a clean channel list: close create form if it is still up.
+                try {
+                    await expect(this.createOrEditChannelScreen).toExist();
+                    await this.close();
+                } catch {
+                    try {
+                        await ChannelListScreen.toBeVisible();
+                    } catch {
+                        // Continue to next attempt.
+                    }
+                }
+
+                if (attempt === attempts) {
+                    break;
+                }
+                await wait(timeouts.TWO_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw lastError ?? new Error(`createChannelAndOpen failed after ${attempts} attempts`);
     };
 
     clickonCreateButton = async () => {

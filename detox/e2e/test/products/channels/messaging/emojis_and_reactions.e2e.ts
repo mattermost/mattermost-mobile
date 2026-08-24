@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -151,7 +153,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — emoji picker search input is visible but not hittable.
+    // Skip iOS: emoji picker search input is visible but not hittable.
     (isIos() ? it.skip : it)('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'brown fox :fox_face: lazy dog :dog:';
@@ -192,7 +194,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — emoji picker search input is visible but not hittable.
+    // Skip iOS: emoji picker search input is visible but not hittable.
     (isIos() ? it.skip : it)('MM-T4862_4 - should display empty search state for emoji picker', async () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and search for a non-existent emoji
         const message = `Message ${getRandomId()}`;

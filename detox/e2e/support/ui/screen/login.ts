@@ -3,7 +3,7 @@
 
 import {serverOneUrl} from '@support/test_config';
 import {ChannelListScreen, ServerScreen} from '@support/ui/screen';
-import {isAndroid, isIos, retryWithReload, tapNativeBackButton, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, retryWithReload, tapNativeBackButton, timeouts, wait, waitForChannelListAfterLogin, waitForElementToExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class LoginScreen {
@@ -95,7 +95,7 @@ class LoginScreen {
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
 
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+        await waitForChannelListAfterLogin(ChannelListScreen.channelListScreen);
     };
 
     login = async (user: any = {}) => {
@@ -153,7 +153,7 @@ class LoginScreen {
                 await this.signinButton.tap();
 
                 // eslint-disable-next-line no-await-in-loop
-                await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+                await waitForChannelListAfterLogin(ChannelListScreen.channelListScreen);
 
                 // Admin users may see a "Server upgrade required" dialog when the
                 // server version is older than the minimum supported. There are two

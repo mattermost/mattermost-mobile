@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -20,7 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -64,18 +66,8 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
     });
 
     it('MM-T4731_2 - should be able to create a public channel and edit the channel header', async () => {
-        // # Open create channel screen, toggle make private off, fill out channel info, and tap create button
-        const suffix = getRandomId();
-        const displayName = `Channel ${suffix}`;
-        const purpose = `Purpose ${suffix}`;
-        const header = `Header ${suffix}`;
-        await CreateOrEditChannelScreen.openCreateChannel();
-        await expect(CreateOrEditChannelScreen.makePrivateToggledOff).toBeVisible();
-        await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
-        await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
-        await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
-        await ChannelScreen.dismissScheduledPostTooltip();
+        // # Create a public channel (retries full open/fill/create if server returns invalid response)
+        const {displayName, header} = await CreateOrEditChannelScreen.createChannelAndOpen();
 
         // * Verify on newly created public channel.
         // The intro is the post list's ListFooterComponent, so it only mounts once the
@@ -83,7 +75,6 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         // expectations do not poll, so asserting the intro text directly fails the
         // instant the header appears while the list is still loading. Wait for it to
         // exist first, matching channel_post_list.e2e.ts.
-        await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
         await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
@@ -117,20 +108,10 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
     });
 
     it('MM-T4731_3 - should be able to create a private channel and edit the channel header', async () => {
-        // # Open create channel screen, toggle make private on, fill out channel info, and tap create button
-        const suffix = getRandomId();
-        const displayName = `Channel ${suffix}`;
-        const purpose = `Purpose ${suffix}`;
-        const header = `Header ${suffix}`;
-        await CreateOrEditChannelScreen.openCreateChannel();
-        await CreateOrEditChannelScreen.toggleMakePrivateOn();
-        await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
-        await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
-        await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
+        // # Create a private channel (retries full open/fill/create if server returns invalid response)
+        const {displayName, header} = await CreateOrEditChannelScreen.createChannelAndOpen({makePrivate: true});
 
         // * Verify on newly created private channel (same intro mount race as above)
-        await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
         await waitFor(ChannelScreen.introDisplayName).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelScreen.introDisplayName).toHaveText(displayName);

@@ -14,14 +14,14 @@
 #   PREBOOT_PREWARM_SECS       — first pre-warm wait (default 15; iPad often needs 10–15s).
 #
 # Grants notifications only. Maestro's Calls flows need mic/camera and grant them
-# themselves per batch (detox/maestro/scripts/run_ci_batches.sh
+# themselves per Maestro worker / local run
 # grant_ios_calls_permissions), so this script does not — see grant_notifications
 # for why extra privacy grants are avoided here.
 
 set -euo pipefail
 
 readonly BUNDLE_ID="com.mattermost.rnbeta"
-readonly AUTOFILL_MARKER="mattermost-ci-autofill-v1"
+readonly AUTOFILL_MARKER="mattermost-ci-autofill"
 readonly PREWARM_SECS="${PREBOOT_PREWARM_SECS:-15}"
 readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -30,7 +30,17 @@ log() {
 }
 
 sim_state() {
-    xcrun simctl list devices 2>/dev/null | grep "$SIMULATOR_ID" | sed -E 's/.*\((Booted|Shutdown|Booting|Creating)\)$/\1/' || echo "Unknown"
+    # simctl lines look like: "    iPhone 17 Pro (UDID) (Booted) " — trailing
+    # whitespace breaks a $-anchored sed, which left the full line as "state"
+    # and made shutdown_if_booted / Shutdown checks always fail.
+    local line state
+    line=$(xcrun simctl list devices 2>/dev/null | grep -F "$SIMULATOR_ID" | head -1 || true)
+    if [ -z "$line" ]; then
+        echo "Unknown"
+        return 0
+    fi
+    state=$(printf '%s' "$line" | grep -oE '\((Booted|Shutdown|Booting|Creating)\)' | tail -1 | tr -d '()')
+    echo "${state:-Unknown}"
 }
 
 shutdown_if_booted() {
@@ -52,28 +62,66 @@ boot_and_wait() {
     xcrun simctl bootstatus "$SIMULATOR_ID"
 }
 
+library_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/EffectiveUserSettings.plist"
+}
+
+library_public_effective_plist() {
+    echo "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo/PublicEffectiveUserSettings.plist"
+}
+
+autofill_key_is_false() {
+    local plist="$1"
+    [ -f "$plist" ] || return 1
+    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$plist" 2>/dev/null | grep -qi 'false'
+}
+
 autofill_already_configured() {
-    [ -f "$AUTOFILL_STAMP" ] && return 0
-    [ -f "$SETTINGS_PLIST" ] || return 1
-    plutil -extract restrictedBool.allowPasswordAutoFill.value raw "$SETTINGS_PLIST" 2>/dev/null | grep -qi 'false'
+    [ -f "$AUTOFILL_STAMP" ] || return 1
+    autofill_key_is_false "$SETTINGS_PLIST" || return 1
+    autofill_key_is_false "$(library_effective_plist)" || return 1
+    autofill_key_is_false "$(library_public_effective_plist)" || return 1
 }
 
 configure_autofill_offline() {
-    log "Disabling password autofill (simulator shut down)..."
+    log "Disabling password AutoFill / Save Password (simulator shut down)..."
     mkdir -p "$SETTINGS_DIR"
+    mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/UserConfigurationProfiles/PublicInfo"
     if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID"); then
-        echo "Failed to disable password autofill"
+        echo "Failed to disable password autofill / Save Password restrictions"
         exit 1
     fi
     touch "$AUTOFILL_STAMP"
 }
 
 seed_password_defaults() {
-    log "Seeding Passwords.app defaults (best-effort)..."
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoFill -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
-    xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
+    log "Seeding Passwords.app / WebUI defaults on booted simulator..."
+    if ! (cd "$REPO_ROOT/detox" && node utils/disable_ios_autofill.js --simulator-id "$SIMULATOR_ID" --seed-defaults); then
+        log "Warning: defaults seed reported failure (continuing; plists are source of truth)"
+    fi
+}
+
+# iOS sometimes regenerates EffectiveUserSettings after first boot and flips
+# allowPasswordAutoFill back to YES. Re-apply while shut down, then boot again.
+enforce_autofill_after_boot() {
+    log "Verifying AutoFill restrictions survived boot..."
+    if autofill_already_configured; then
+        log "Restrictions still in place after boot"
+        seed_password_defaults
+        return 0
+    fi
+
+    log "Restrictions missing/reverted after boot — re-applying offline + reboot"
+    shutdown_if_booted
+    configure_autofill_offline
+    boot_and_wait
+    seed_password_defaults
+
+    if ! autofill_already_configured; then
+        echo "::error::Failed to keep allowPasswordAutoFill=NO after reboot — Save Password? will block Detox"
+        exit 1
+    fi
+    log "Restrictions verified after re-apply"
 }
 
 install_app() {
@@ -205,7 +253,7 @@ SETTINGS_PLIST="$SETTINGS_DIR/UserSettings.plist"
 AUTOFILL_STAMP="$SETTINGS_DIR/.$AUTOFILL_MARKER"
 
 if autofill_already_configured; then
-    log "Autofill restrictions already configured — skipping plist edit"
+    log "Autofill restrictions already configured — skipping offline plist edit"
     if [ "$(sim_state)" != "Booted" ]; then
         boot_and_wait
     else
@@ -226,7 +274,8 @@ else
     boot_and_wait
 fi
 
-seed_password_defaults
+# Always verify (and re-apply if iOS reverted EffectiveUserSettings on boot).
+enforce_autofill_after_boot
 install_app
 grant_notifications
 

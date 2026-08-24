@@ -27,9 +27,7 @@ import {expect, device, element, by, waitFor} from 'detox';
 jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
-    // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
-    // license + EnableSharedChannels + remote clusters (run 29935363789 both platforms).
-    // Re-enable when Matterwick PR cloud guarantees Shared Channels remotes.
+    // Skip: beforeAll 360s timeout without Shared Channels license/remotes.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -92,6 +90,12 @@ describe('Share with connected workspaces', () => {
             });
         }
 
+        // Without Shared Channels remotes every test early-returns — skip the
+        // expensive Detox login that otherwise burns the beforeAll budget on CI.
+        if (!sharedChannelsAvailable) {
+            return;
+        }
+
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
         // (required when shared channels is disabled, e.g. TC-MOB-02).
         await System.apiPatchConfig(siteOneUrl, {
@@ -121,7 +125,9 @@ describe('Share with connected workspaces', () => {
                 EnableRemoteClusterService: false,
             },
         });
-        await HomeScreen.logout();
+        if (sharedChannelsAvailable) {
+            await HomeScreen.logout();
+        }
     });
 
     const navigateToConfiguration = async (channelName: string = testChannel.name) => {

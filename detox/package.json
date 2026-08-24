@@ -4,8 +4,6 @@
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
   "devDependencies": {
-    "@aws-sdk/client-s3": "3.937.0",
-    "@aws-sdk/lib-storage": "3.937.0",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-transform-modules-commonjs": "7.26.3",
     "@babel/plugin-transform-runtime": "7.25.9",
@@ -16,7 +14,6 @@
     "@types/uuid": "10.0.0",
     "@wix-pilot/core": "3.4.2",
     "@wix-pilot/detox": "1.0.13",
-    "async": "3.2.6",
     "axios": "1.8.2",
     "axios-cookiejar-support": "5.0.4",
     "babel-jest": "29.7.0",
@@ -32,10 +29,8 @@
     "jest-cli": "29.7.0",
     "jest-junit": "16.0.0",
     "jest-stare": "2.5.3",
-    "junit-report-merger": "7.0.0",
     "moment-timezone": "0.5.46",
     "patch-package": "8.0.0",
-    "recursive-readdir": "2.2.3",
     "sanitize-filename": "1.6.3",
     "shelljs": "0.8.5",
     "tough-cookie": "5.0.0",
@@ -43,8 +38,7 @@
     "tslib": "2.8.1",
     "tsx": "^4.19.3",
     "typescript": "5.7.2",
-    "uuid": "11.0.3",
-    "xml2js": "0.6.2"
+    "uuid": "11.0.3"
   },
   "scripts": {
     "e2e:android-create-emulator": "./create_android_emulator.sh",
@@ -62,8 +56,6 @@
     "check": "npm run lint && npm run tsc",
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
-    "e2e:save-report": "node save_report.js",
-    "e2e:save-maestro-zephyr": "node save_maestro_zephyr.js",
     "start:webhook": "node webhook_server.js",
     "provision": "tsx provision/index.ts",
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",

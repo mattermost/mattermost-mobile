@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -110,7 +112,7 @@ describe('Messaging - Message Reply', () => {
         await ThreadScreen.back();
     });
 
-    // Skip Android: CI run 30000635898 — the thread parent post is below the visibility threshold.
+    // Skip Android: thread parent post below visibility threshold.
     (isAndroid() ? it.skip : it)('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;

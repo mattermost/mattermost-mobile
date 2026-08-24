@@ -81,9 +81,6 @@ cd detox && npm run e2e:ios-test
 # Run a single test file
 npx detox test -c ios.sim.debug e2e/test/products/channels/search/search_messages.e2e.ts
 npx detox test -c android.emu.debug e2e/test/products/channels/search/search_messages.e2e.ts
-
-# Generate report (CI use)
-cd detox && npm run e2e:save-report
 ```
 
 ---
@@ -92,30 +89,29 @@ cd detox && npm run e2e:save-report
 
 ### Trigger Tiers
 
-| Tier | Trigger | Platform | Shards | Search Path | Approx Time |
-|------|---------|----------|--------|-------------|-------------|
-| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | 20 Detox (iOS/Android), 1 iPad, 1 Maestro each | `detox/e2e/test` (full) | ~30–45+ min wall-clock |
-| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → TSIO `mobile-main`) | Same as PR | Same as PR | `detox/e2e/test` | Same as PR |
-| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server; smoke subset on older | latest: `detox/e2e/test`; older: `…/smoke_test` | Varies by matrix |
+| Tier | Trigger | Platform | Workers | Search Path | Approx Time |
+|------|---------|----------|---------|-------------|-------------|
+| **PR full** | Matterwick + `E2E/Run` label | Detox iOS/Android/iPad + Maestro | Detox Android 20 (full, excludes `@ipad_only`/`@ios_only`); Detox iOS phone 10 (`@ios_pr` or `@ios_only`); iPad 1; Maestro 1 each | `detox/e2e/test` | ~30–45+ min wall-clock |
+| **Main** | Matterwick main push (`run_type=MASTER` today; `MAIN` also accepted → Test System IO `mobile-main`) | Same as PR | Detox phone iOS/Android 20 (full); iPad 1; Maestro 1 each | `detox/e2e/test` | Same as PR |
+| **CMT / Release** | Matterwick on `build-release-*` → CMT | Detox + Maestro across server versions | Full suite on latest server (10 Detox workers); `@smoke` include on older (1) | `detox/e2e/test` (both; older filtered by tag) | Varies by matrix |
 
-Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. PR/Main: `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android`. CMT: per-shard `e2e-test/<tsio-shard-name>` plus umbrella `e2e-test/compatibility-matrix-testing`. TSIO groups: `mobile-pr-<job>` / `mobile-main-<job>` / `mobile-release-<shard>`.
+Status contexts live under the `e2e-test/` namespace, matching the mattermost monorepo. Callers pass `context_name`; templates derive the Test System IO report `name` by stripping `e2e-test/` and swapping `/` for `-`. PR: `e2e-test/detox-ios` (etc.). Merge to main: `…/main`. Merge to release: `…/release`. Release cut: `…/release-cut`. CMT: `e2e-test/detox-ios/cmt-server-${version}` (etc.) — each matrix leg reports its own status; no umbrella context. Commit status + channel notify come from `dispatch-begin` / `summary` (webhook_payload curl).
 
 Matterwick provisions five servers for every mobile server-version entry: two Android-only, two iOS-only, and one shared third site. CMT therefore uses `5 × server version count` installations (up to 25 at the five-version cap). The full latest-version suite needs this isolation for its parallel shards; older-version smoke jobs intentionally retain the same topology for consistent URL semantics, even though their single shard uses less of its capacity. iPad shares the iOS pair, and Maestro uses the first server for its platform.
 
-### Smoke Tests Location
+### Smoke Tests
 
-`detox/e2e/test/products/channels/smoke_test/` — quick regression suite used as the **CMT older-server subset**, not as an automatic every-PR-push tier.
-PR E2E runs the full `detox/e2e/test` tree when labeled.
+Specs tagged `// Tags: … @smoke` (today under `detox/e2e/test/products/channels/smoke_test/`). CMT older-server legs select them with `detox-include-tags: @smoke` over the full tree — not a directory filter. Not an automatic every-PR-push tier (PR iOS includes `@ios_pr` or `@ios_only`).
 
 ### Workflow Files
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/e2e-detox-pr.yml` | Matterwick entry: builds, Detox + Maestro dispatch, TSIO status |
+| `.github/workflows/e2e-detox-pr.yml` | Matterwick entry: builds, Detox + Maestro dispatch, Test System IO status |
 | `.github/workflows/e2e-detox.yml` / `e2e-maestro-pr.yml` | Platform orchestration (reusable) |
-| `.github/workflows/e2e-ios-template.yml` | Detox iOS shard runner |
-| `.github/workflows/e2e-android-template.yml` | Detox Android shard runner |
-| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android runner |
+| `.github/workflows/e2e-ios-template.yml` | Detox iOS Test System IO orchestration (begin/workers/summary) |
+| `.github/workflows/e2e-android-template.yml` | Detox Android Test System IO orchestration (begin/workers/summary) |
+| `.github/workflows/e2e-maestro-template.yml` | Maestro iOS/Android Test System IO orchestration (begin/workers/summary) |
 | `.github/workflows/compatibility-matrix-testing.yml` | CMT / release multi-server matrix |
 
 ### Checks for CI PRs
@@ -134,7 +130,7 @@ checking by hand:
 |--------------|--------------|
 | A `secrets.FOO` not declared in the callee's `on.workflow_call.secrets` | GitHub resolves it to an empty string, so the step passes and the notify/upload it feeds silently never happens. `actionlint` catches it. |
 | `node foo.js \` followed by `RC=$?` | The trailing backslash makes `RC=$?` an *argument*, so the exit code is never captured and the failure gate below always passes. |
-| A job running `tsio-report-status.js` / `tsio-channel-notify-rollup.js` without `permissions.id-token: write` | `mintOidcToken()` warns and exits 0, skipping the commit status or channel rollup. |
+| A template job calling `test-system-io-dispatch-*` / `summary` without `permissions.id-token: write` | OIDC auth fails and begin/run/summary cannot talk to Test System IO. |
 
 Reusable-workflow secrets must be **declared in the callee and forwarded by every
 caller** that uses an explicit `secrets:` block. Callers using `secrets: inherit`
@@ -216,7 +212,7 @@ detox/
 │           │   ├── channels/      # 16 files
 │           │   ├── account/       # 15 files
 │           │   ├── threads/       # 6 files
-│           │   └── smoke_test/    # quick suite (CMT older-server subset)
+│           │   └── smoke_test/    # @smoke (+ @ios_pr) quick suite
 │           ├── agents/            # AI agent product tests
 │           └── playbooks/         # Playbooks product tests
 ```
@@ -457,9 +453,9 @@ await waitForElementToBeVisible(element(by.id('...')), timeouts.TEN_SEC);
 
 ## TEST COVERAGE MAP
 
-### Smoke (`e2e/test/products/channels/smoke_test/`) — CMT older-server subset
+### Smoke (`// Tags: @smoke`) — CMT older-server subset
 
-Quick regression of core flows. Used when CMT runs against non-latest server versions; PR E2E uses the full suite.
+Quick regression of core flows (files currently under `e2e/test/products/channels/smoke_test/`). CMT older servers include `@smoke`; latest / PR use other filters or the full suite.
 
 ### Search (`e2e/test/products/channels/search/`)
 

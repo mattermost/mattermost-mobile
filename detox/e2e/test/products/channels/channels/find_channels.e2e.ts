@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -117,8 +119,7 @@ describe('Channels - Find Channels', () => {
         const {channel: groupMessageChannel} = await Channel.apiCreateGroupChannel(siteOneUrl, [testUser.id, testOtherUser1.id, testOtherUser2.id]);
 
         // Reload so API-created DM/GM land in the local DB before Find Channels search
-        // (CI 29935363789 iOS: GM visible by display name but channel_item name matcher
-        // raced a 2s wait, then bare user_item tap failed).
+        // (GM can be visible by display name while channel_item name matcher races).
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 

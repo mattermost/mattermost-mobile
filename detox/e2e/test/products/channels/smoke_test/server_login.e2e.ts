@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr @smoke
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -60,8 +62,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    // Skip iOS: CI run 30437339535 — the add-server/login/logout flow exceeds the 300s Jest
-    // test timeout, matching the MM-T142 iOS overrun already quarantined on this branch.
+    // Skip iOS: add-server/login/logout flow exceeds 300s Jest timeout.
     (isIos() ? it.skip : itWithSecondServer)('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
@@ -113,10 +114,7 @@ describe('Smoke Test - Server Login', () => {
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await wait(timeouts.ONE_SEC);
 
-        // .atIndex(0): the Swipeable's revealed Logout option can render twice
-        // briefly on iOS during the swipe-pan animation ("Multiple elements found"
-        // in CI run 26368981355). Matches the .atIndex(0) pattern used throughout
-        // the dedicated server_list spec.
+        // .atIndex(0): Logout option can render twice during iOS swipe-pan animation.
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
 
         // * Verify logout server alert is displayed

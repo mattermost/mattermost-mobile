@@ -68,7 +68,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
 
         // # Go back from Code preview screen to channel screen.
         // Code route uses custom NavigationHeader (headerBackTitle ''), so by.label('Back')
-        // never matches — CI 29935363789 MM-T1433 timed out on tapNativeBackButton.
+        // never matches — MM-T1433 previously timed out on tapNativeBackButton.
         if (isAndroid()) {
             await device.pressBack();
         } else {

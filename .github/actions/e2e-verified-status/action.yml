@@ -5,7 +5,7 @@ description: >-
   applies E2E/Verified to confirm a failure is known flake, not a regression.
 
   Unlike E2E/Override this only touches contexts that are actually failing —
-  a platform that is genuinely green is left untouched. The real TSIO
+  a platform that is genuinely green is left untouched. The real Test System IO
   pass/fail description is preserved and tagged with who verified it, so the
   check still tells you what ran; it just stops blocking the merge on a
   known-flaky result.
@@ -60,9 +60,16 @@ runs:
             throw new Error(`e2e-verified-status: mode must be 'apply' or 'reset', got '${mode}'`);
           }
 
-          // Relative requires resolve against the workspace, so the repo must be
-          // checked out before this action runs.
-          const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+          // Required PR commit-status contexts (branch protection). Keep in sync
+          // with e2e-override-status and e2e-label-manager's cancel list.
+          // Only unsuffixed PR contexts — not /main, /release, or /cmt-server-*.
+          const E2E_STATUS_CONTEXTS = [
+            'e2e-test/detox-ios',
+            'e2e-test/detox-android',
+            'e2e-test/detox-ipad',
+            'e2e-test/maestro-ios',
+            'e2e-test/maestro-android',
+          ];
 
           // Embedded in every description this action writes, so reset can find
           // (and only touch) the contexts apply actually changed — never a
@@ -107,14 +114,14 @@ runs:
               }
               state = 'success';
               // Reserve room for the suffix before truncating the base description.
-              // TSIO descriptions are already capped at 140 (see decideStatus in
-              // tsio-report-status.js) — truncating after concatenation could cut
+              // Test System IO descriptions are already capped at 140 (see decideStatus in
+              // test-system-io-summary) — truncating after concatenation could cut
               // the marker itself off a long one, and reset below would then never
               // recognize this context as verified, leaving it stuck on success.
               const suffix = `${VERIFIED_MARKER}${actor}`;
               const base = (latest.description || '').substring(0, Math.max(0, 140 - suffix.length));
               description = `${base}${suffix}`.substring(0, 140);
-              // Keep the link to the real TSIO report if there was one — that is
+              // Keep the link to the real Test System IO report if there was one — that is
               // what a maintainer needs to re-check when deciding whether this
               // "verified flaky" call still holds up, not this action's own run.
               statusTargetUrl = latest.target_url || targetUrl;

@@ -164,14 +164,14 @@ Located at `libraries/@mattermost/`:
 - **E2E tests** in separate `detox/` package (not in main package.json)
 - Add mocks to central `setup.ts` file, not individual test files
 
-### E2E Status Reporting (TSIO)
-E2E results are uploaded to Test System IO (TSIO) and surfaced as GitHub commit statuses. Each platform job owns its own report group (`total_reports_expected=1`) and commit-status context. Contexts are namespaced `e2e-test/*`, matching the mattermost monorepo:
+### E2E Status Reporting (Test System IO)
+E2E results are orchestrated via Test System IO (`dispatch-begin` / `dispatch-run` / `summary`) and surfaced as GitHub commit statuses. Each platform job owns its own report group (`total_reports_expected` = worker matrix size) and commit-status context. Contexts are namespaced `e2e-test/*`, matching the mattermost monorepo:
 
-| Flow | Context(s) | TSIO group name(s) |
+| Flow | Context(s) | Test System IO group name(s) |
 |------|------------|---------------------|
 | PR E2E | `e2e-test/detox-ios`, `e2e-test/detox-android`, `e2e-test/detox-ipad`, `e2e-test/maestro-ios`, `e2e-test/maestro-android` | `mobile-pr-<job>` (e.g. `mobile-pr-detox-ios`) |
 | Main E2E (`run_type=MAIN` or Matterwick `MASTER`) | same per-job contexts | `mobile-main-<job>` |
-| Compatibility matrix | per shard `e2e-test/<tsio-shard-name>` + umbrella `e2e-test/compatibility-matrix-testing` | `mobile-release-<tsio-shard-name>` |
+| Compatibility matrix | per leg `e2e-test/<platform>/cmt-server-${version}` | `<platform>-cmt-server-${version}` (derived from context) |
 
 ### Testing Patterns
 

@@ -26,7 +26,8 @@ import {
 import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
-describe('Messaging - Message Draft', () => {
+// Skip: draft.tooltip.close.button missing when tutorials disabled.
+describe.skip('Messaging - Message Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;

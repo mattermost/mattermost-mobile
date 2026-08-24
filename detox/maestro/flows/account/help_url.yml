@@ -19,6 +19,7 @@
 #   - breadcrumb
 tags:
   - MM-T3260
+  - "@ios_only"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as the test user

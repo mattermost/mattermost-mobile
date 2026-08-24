@@ -51,7 +51,7 @@ describe('Messaging - Message Character Limit', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS: CI run 30000635898 — the suite starts without the Home tab after its oversized draft.
+    // Skip iOS: suite starts without Home tab after oversized draft.
     (isIos() ? it.skip : it)('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
         // # Open a channel and type a message exceeding the 16383 character limit
         const overLimitMessage = '1234567890'.repeat(1638) + '1234';

@@ -44,20 +44,18 @@ export const webhookBaseUrl = (() => {
     return 'http://localhost:3000';
 })();
 
-// trycloudflare tunnels pass runner health checks but Cloud callbacks stall, and loopback
-// is unreachable from Cloud/Spinwick — exclude both in CI.
+// Ephemeral quick tunnels pass runner health checks but Cloud callbacks stall, and
+// loopback is unreachable from Cloud — exclude both in CI.
 const isLoopbackWebhook = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(webhookBaseUrl);
-const isTrycloudflareWebhook = webhookBaseUrl.includes('trycloudflare.com');
+const isEphemeralQuickTunnel = webhookBaseUrl.includes('trycloudflare.com');
 
 /** Sidecar URL present — enough for runner→sidecar posts (render-only mm_blocks). */
 export const hasWebhookSidecar = Boolean(webhookBaseUrl);
 
-/**
- * Mattermost Cloud can call back into the sidecar; trycloudflare and loopback CI cannot.
- */
+/** True when Mattermost Cloud can call back into the sidecar (not ephemeral/loopback CI). */
 export const hasStableWebhookIngress = Boolean(
     webhookBaseUrl &&
-    !isTrycloudflareWebhook &&
+    !isEphemeralQuickTunnel &&
     !(isLoopbackWebhook && process.env.CI === 'true') &&
     process.env.WEBHOOK_CALLBACKS_REACHABLE !== 'false',
 );

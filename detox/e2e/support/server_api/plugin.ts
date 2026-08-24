@@ -4,8 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 
+import prepackagedPluginsManifest from '../prepackaged_plugins.json';
+
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
+import {apiGetConfig, apiUpdateConfig} from './system';
 
 // ****************************************************************
 // Plugins
@@ -19,21 +22,10 @@ import {apiUploadFile, getResponseFromError} from './common';
 // - return value defined by `@return`
 // ****************************************************************
 
+// See ../prepackaged_plugins.json.
 const prepackagedPlugins = new Set([
-    'antivirus',
-    'mattermost-autolink',
-    'com.mattermost.aws-sns',
-    'com.mattermost.plugin-channel-export',
-    'com.mattermost.custom-attributes',
-    'github',
-    'com.github.manland.mattermost-plugin-gitlab',
-    'com.mattermost.plugin-incident-management',
-    'jenkins',
-    'jira',
-    'com.mattermost.calls',
-    'com.mattermost.nps',
-    'com.mattermost.welcomebot',
-    'zoom',
+    ...Object.keys(prepackagedPluginsManifest.makefile),
+    ...Object.keys(prepackagedPluginsManifest.esr),
 ]);
 
 /**
@@ -476,6 +468,48 @@ export const apiInstallPluginFromMarketplace = async (baseUrl: string, pluginId:
 };
 
 /**
+ * Ensure demo plugin is active with DialogOnlyMode.
+ * Skip the config PUT when that setting is already present.
+ */
+export const ensureDemoPluginForDialogTests = async (baseUrl: string): Promise<void> => {
+    const statusCheck = await apiGetPluginStatus(baseUrl, DemoPlugin.id);
+    if (!statusCheck.isActive) {
+        throw new Error(
+            `Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`,
+        );
+    }
+
+    const {config, error: getError} = await apiGetConfig(baseUrl);
+    if (!getError && config) {
+        const enabled = config.PluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable;
+        const dialogOnly = config.PluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode;
+        if (enabled && dialogOnly === true) {
+            return;
+        }
+    }
+
+    const configResult = await apiUpdateConfig(baseUrl, {
+        PluginSettings: {
+            PluginStates: {
+                [DemoPlugin.id]: {Enable: true},
+            },
+            Plugins: {
+                [DemoPlugin.id]: {
+                    DialogOnlyMode: true,
+                },
+            },
+        },
+    });
+    if (configResult.error) {
+        throw new Error(
+            `Failed to configure demo plugin for dialog tests: ${
+                configResult.error.message || JSON.stringify(configResult.error)
+            }`,
+        );
+    }
+};
+
+/**
  * Ensure a plugin is installed and active, installing from Marketplace if needed.
  * @param {string} baseUrl - the base server URL
  * @param {string} pluginId - the plugin ID
@@ -529,6 +563,7 @@ export const Plugin = {
     apiRemovePluginById,
     apiUploadPlugin,
     apiUploadAndEnablePlugin,
+    ensureDemoPluginForDialogTests,
 };
 
 export default Plugin;

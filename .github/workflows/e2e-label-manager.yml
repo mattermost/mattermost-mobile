@@ -30,10 +30,10 @@
 #      still shows what really happened.
 #      The run is cancelled because merging the PR triggers Matterwick's `closed`
 #      cleanup, which destroys the test servers mid-run — the surviving run would
-#      report infra teardown as a test failure into TSIO's per-spec history. A
+#      report infra teardown as a test failure into Test System IO's per-spec history. A
 #      late post from the cancelled run cannot re-red the check anyway: its
 #      finalize step re-checks the label (see .github/actions/e2e-override-label)
-#      and tsio-report-status converts failure → success while it is set.
+#      and test-system-io-summary skips updating the commit status while Override is set.
 #
 #   6. Honor E2E/Verified (labeled/unlabeled E2E/Verified):
 #      A maintainer applies this after reading a real E2E failure and judging it
@@ -268,7 +268,7 @@ jobs:
                 // The plain cancel above is what stops the expensive build jobs —
                 // they are `if: !cancelled()`, so cancelling the run ends them.
                 // What it does NOT stop is anything gated on `always()`, which
-                // keeps running through a cancellation (tsio-channel-notify, and
+                // keeps running through a cancellation (template summary jobs, and
                 // the artifact-upload steps inside the build jobs). Run-level
                 // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
@@ -376,10 +376,7 @@ jobs:
             });
 
   # Post success statuses when E2E is skipped so the PR is not blocked. Reuses
-  # e2e-override-status (a generic "post success with this description on all 5
-  # required contexts" tool) instead of hardcoding the context list a second time
-  # — the whole point of single-sourcing E2E_STATUS_CONTEXTS is that this list
-  # cannot drift from branch protection's required checks.
+  # e2e-override-status (posts success on the five required PR e2e-test/* contexts).
   post-skip-status:
     needs: detect-e2e-impact
     if: >-
@@ -396,8 +393,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -436,8 +432,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -522,8 +517,7 @@ jobs:
     steps:
       # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
-      # PR-authored action code in a job holding write scopes — and the status
-      # actions also require() detox/utils/build-tsio-job-config.js from it.
+      # PR-authored action code in a job holding write scopes.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -563,15 +557,14 @@ jobs:
       # fires Matterwick's `closed` cleanup (matterwick server/pull_request.go:98 →
       # e2e_tests.go:663 → destroyE2EInstances), which deletes the test servers out
       # from under a still-running job regardless of whether the run labels were
-      # removed. The run then reports a red to TSIO that is infra teardown, not a
-      # test result — and TSIO per-spec history is what engineers read to decide
+      # removed. The run then reports a red to Test System IO that is infra teardown, not a
+      # test result — and Test System IO per-spec history is what engineers read to decide
       # whether a spec also fails on main, so recording infra failures there
       # degrades flake detection for everyone. Cancel instead.
       #
       # Runs BEFORE the success post below so our status write lands last. A
-      # cancelled run's finalize step may still post after us; overrideCommitStatus
-      # in detox/utils/tsio-report-status.js converts failure → success while the
-      # label is set, so the check stays green and only the description differs.
+      # cancelled run's summary may still run after us; templates re-check E2E/Override
+      # and pass update-commit-status=false so the check stays green.
       - name: Cancel in-flight E2E runs
         if: >-
           github.event.pull_request.head.repo.full_name == github.repository
@@ -621,7 +614,7 @@ jobs:
                 // The plain cancel above is what stops the expensive build jobs —
                 // they are `if: !cancelled()`, so cancelling the run ends them.
                 // What it does NOT stop is anything gated on `always()`, which
-                // keeps running through a cancellation (tsio-channel-notify, and
+                // keeps running through a cancellation (template summary jobs, and
                 // the artifact-upload steps inside the build jobs). Run-level
                 // force-cancel stops those too.
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {

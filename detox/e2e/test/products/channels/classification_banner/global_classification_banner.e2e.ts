@@ -228,7 +228,8 @@ describe('Classification Banner - Global Classification Banner', () => {
         await GlobalClassificationBanner.toNotBeVisible();
     });
 
-    it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
+    // Toggling ClassificationMarkings off requires a server restart.
+    it.skip('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
         await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',
@@ -265,7 +266,7 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelListScreen.toBeVisible();
 
         // After MM-T6204 turns ClassificationMarkings off, the first reload after re-enable can
-        // miss the banner; one extra reload lets the client config catch up (CI bc6df62).
+        // miss the banner; one extra reload lets the client config catch up.
         try {
             await GlobalClassificationBanner.toBeVisible();
         } catch {

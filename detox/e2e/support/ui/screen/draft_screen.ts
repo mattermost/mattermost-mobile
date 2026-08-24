@@ -3,7 +3,7 @@
 
 import {Alert, NavigationHeader} from '@support/ui/component';
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class DraftScreen {
     testID = {
@@ -19,16 +19,17 @@ class DraftScreen {
         persistentNotificationIcon: 'drafts.persistent_notifications.icon',
     };
 
-    persistentNotificationIcon = element(by.id(this.testID.persistentNotificationIcon));
-    requestACKIcon = element(by.id(this.testID.requestACKIcon));
+    // Prefer atIndex(0): iOS can match both the draft row and nested content.
+    persistentNotificationIcon = element(by.id(this.testID.persistentNotificationIcon)).atIndex(0);
+    requestACKIcon = element(by.id(this.testID.requestACKIcon)).atIndex(0);
     editDraft = element(by.id(this.testID.editDraft));
     backButton = NavigationHeader.backButton;
     draftScreen = element(by.id(this.testID.draftScreen));
-    draftPost = element(by.id(this.testID.draftPost));
+    draftPost = element(by.id(this.testID.draftPost)).atIndex(0);
     draftSendButton = element(by.id(this.testID.draftSendButton));
     draftEmptyTitle = element(by.id(this.testID.draftEmptyTitle));
     deleteDraftSwipeAction = element(by.text('Delete draft'));
-    draftMessageContent = element(by.id(this.testID.draftMessageContent));
+    draftMessageContent = element(by.id(this.testID.draftMessageContent)).atIndex(0);
     deleteDraft = element(by.id(this.testID.deleteDraft));
 
     draftTooltipCloseButton = {
@@ -37,11 +38,26 @@ class DraftScreen {
         },
     };
 
+    dismissDraftTooltip = async () => {
+        try {
+            const close = element(by.id(this.testID.draftTooltipCloseButton));
+            await waitFor(close).toExist().withTimeout(timeouts.FOUR_SEC);
+            await close.tap();
+            await waitFor(close).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Tooltip already dismissed.
+        }
+    };
+
     openDraftPostActions = async () => {
+        await this.dismissDraftTooltip();
+        await waitFor(this.draftPost).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.draftPost.longPress(timeouts.TWO_SEC);
     };
 
     swipeDraftPostLeft = async () => {
+        await this.dismissDraftTooltip();
+        await waitFor(this.draftPost).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.draftPost.swipe('left');
     };
 

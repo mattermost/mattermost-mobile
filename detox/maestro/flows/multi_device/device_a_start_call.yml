@@ -1,7 +1,7 @@
 # MM-T4830: Device A starts a call so Device B can see the join banner (multi-device).
 #
-# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
-# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# NOT RUN IN CI: two-device flow. CI provisions one device per job;
+# @multi_device is in exclude_tags.json. Run manually via
 # scripts/run_calls_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
 #
 # PRE-CONDITIONS:
@@ -24,6 +24,7 @@
 #   - mute-unmute
 tags:
   - MM-T4830
+  - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 # # Log in as User A and open the test channel

@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -171,8 +173,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // Skip both: android flake (CI 29954156963) plus iOS CI 30437339535, where
-    // ExperimentalViewArchivedChannels never propagated to the client config.
+    // Skip both: Android flake; iOS ExperimentalViewArchivedChannels never reaches client config.
     it.skip('MM-T4729_5 - should be able to browse an archived channel', async () => {
         // # Enable archived channel visibility on the server, then reload so the app
         // picks up the new config (the ChannelDropdown only renders when this is true)
@@ -196,7 +197,7 @@ describe('Channels - Browse Channels', () => {
         await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
 
         // Keep Detox sync enabled for archived filter tap — disableSynchronization
-        // amplifies Fabric addViewAt races when the slide-up unmounts (CI 29362218938).
+        // amplifies Fabric addViewAt races when the slide-up unmounts.
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
         await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();

@@ -62,7 +62,7 @@ describe('Search - Search Message Post Actions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / edit-reply-delete from search
+    // Skip: BACK_INDEX / edit-reply-delete from search.
     it.skip('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
@@ -186,8 +186,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // CI 29cdff/ce729d/bc6df62 iOS: still exceeds 600s Jest timeout after waitForPostPinned
-    // harden (empty pinned list / hung navigation). Sibling edit/reply path already skipped.
+    // Skip: exceeds 600s Jest timeout (empty pinned list / hung navigation).
     jest.setTimeout(600000);
     it.skip('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
@@ -211,7 +210,7 @@ describe('Search - Search Message Post Actions', () => {
 
         await PostOptionsScreen.tapPinPost();
 
-        // Wait for pin to land on the server before navigating — iOS CI 30250131265 hung
+        // Wait for pin to land on the server before navigating — iOS previously hung
         // ~10m on an empty pinned list (channel info still showed Pinned Messages: 0).
         await Post.waitForPostPinned(siteOneUrl, testChannel.id, searchedPost.id);
 

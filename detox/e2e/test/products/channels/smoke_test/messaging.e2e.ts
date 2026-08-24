@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr @smoke
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -170,7 +172,7 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — iOS post-option actions are unhittable and Android cascades at channel setup.
+    // Skip both: iOS post-option actions unhittable; Android cascades at channel setup.
     it.skip('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;

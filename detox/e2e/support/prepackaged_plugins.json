@@ -1,0 +1,25 @@
+{
+  "_comment": [
+    "Plugin IDs mapped to their server/Makefile package name.",
+    "makefile: latest server. esr: extended support version."
+  ],
+  "makefile": {
+    "com.mattermost.calls": "mattermost-plugin-calls",
+    "github": "mattermost-plugin-github",
+    "com.github.manland.mattermost-plugin-gitlab": "mattermost-plugin-gitlab",
+    "jira": "mattermost-plugin-jira",
+    "playbooks": "mattermost-plugin-playbooks",
+    "mattermost-plugin-servicenow": "mattermost-plugin-servicenow",
+    "zoom": "mattermost-plugin-zoom",
+    "mattermost-ai": "mattermost-plugin-agents",
+    "focalboard": "mattermost-plugin-boards",
+    "com.mattermost.user-survey": "mattermost-plugin-user-survey",
+    "com.mattermost.mscalendar": "mattermost-plugin-mscalendar",
+    "com.mattermost.msteamsmeetings": "mattermost-plugin-msteams-meetings",
+    "com.mattermost.mattermost-plugin-metrics": "mattermost-plugin-metrics",
+    "com.mattermost.plugin-channel-export": "mattermost-plugin-channel-export"
+  },
+  "esr": {
+    "com.mattermost.msteams-sync": "mattermost-plugin-msteams"
+  }
+}

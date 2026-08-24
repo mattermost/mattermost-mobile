@@ -53,8 +53,7 @@ describe('Teams - Invite', () => {
     });
 
     beforeEach(async () => {
-        // Avoid device.reloadReactNative() — CI 59ec6ae iOS: T5360 passed then
-        // reload disconnected Detox and killed T5361–T5365.
+        // Avoid device.reloadReactNative() — reload can disconnect Detox mid-suite.
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
 

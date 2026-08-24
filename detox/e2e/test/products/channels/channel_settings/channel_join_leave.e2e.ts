@@ -122,7 +122,10 @@ describe('Channels', () => {
 
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(testChannel.name)).toHaveText(testChannel.display_name);
         await BrowseChannelsScreen.getChannelItem(testChannel.name).multiTap(2);
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TWO_SEC);
+
+        // Join navigates onto channel; coachmark can mask channel.screen.
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);

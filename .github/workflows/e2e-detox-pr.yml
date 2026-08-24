@@ -63,12 +63,17 @@ on:
         required: false
         type: string
       run_type:
-        description: "Run type for test reporting (PR/RELEASE/MAIN). MASTER is accepted as an alias for MAIN (Matterwick main-push)."
+        description: >-
+          Run type for test reporting and commit-status context suffixes
+          (PR, MAIN/MASTER→/main, RELEASE→/release, RELEASE_CUT→/release-cut).
+          MASTER is accepted as an alias for MAIN (Matterwick main-push).
         required: false
         default: "PR"
         type: string
       version_name:
-        description: "Branch or version ref under test (e.g. feature-branch, main, release-2.40). Used as TSIO branch — not pr-{number}."
+        description: >
+          Identity branch when pr_number is unset (e.g. main, release-2.40).
+          Ignored when pr_number is set; identity branch becomes pr-{number}.
         required: false
         type: string
 
@@ -76,10 +81,8 @@ on:
 # manage PR labels declare the extra scopes they need.
 permissions:
   contents: read
-  # test-system-io-report-upload (in the nested detox templates) authenticates
-  # via the workflow's OIDC token and resolves gh_job_id via the GitHub API.
-  # Reusable workflows cannot escalate beyond the caller, so the root caller
-  # must grant these.
+  # Nested detox/maestro templates call test-system-io-dispatch-* / summary via
+  # OIDC. Reusable workflows cannot escalate beyond the caller.
   id-token: write
   actions: read
 
@@ -271,129 +274,52 @@ jobs:
               || 'e2e tests overridden' }}
           target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-  calculate-tsio-identity:
-    name: Calculate TSIO per-job identities
+  # Branch + context_suffix for template identity / status contexts.
+  generate-e2e-variables:
+    name: Generate E2E identity variables
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      pull-requests: read
     needs: resolve-e2e-policy
     if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     outputs:
-      job-configs: ${{ steps.id.outputs.job-configs }}
-      job-keys: ${{ steps.id.outputs.job-keys }}
+      branch: ${{ steps.vars.outputs.branch }}
+      context_suffix: ${{ steps.vars.outputs.context_suffix }}
+      pr_number: ${{ steps.vars.outputs.pr_number }}
     steps:
-      - name: Sparse checkout TSIO job-config helper
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/build-tsio-job-config.js
-
-      - name: Resolve branch ref for TSIO display URL
-        id: branch
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      - name: Resolve branch and context suffix
+        id: vars
         env:
           VERSION_NAME: ${{ inputs.version_name }}
           PR_NUMBER: ${{ inputs.pr_number }}
           RUN_TYPE: ${{ inputs.run_type || 'PR' }}
-        with:
-          script: |
-            const versionName = (process.env.VERSION_NAME || '').trim();
-            if (versionName) {
-              core.setOutput('branch', versionName.replace(/^refs\/heads\//, '').replace(/^refs\/tags\//, ''));
-              return;
-            }
-            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
-            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
-            if (runType === 'MAIN' || runType === 'MASTER') {
-              core.setOutput('branch', 'main');
-              return;
-            }
-            const prInput = parseInt(process.env.PR_NUMBER, 10);
-            if (Number.isFinite(prInput)) {
-              const {data: pr} = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prInput,
-              });
-              core.setOutput('branch', pr.head.ref);
-              return;
-            }
-            core.setOutput('branch', context.ref_name || 'main');
-
-      - id: id
-        env:
-          PLATFORM: ${{ inputs.PLATFORM }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          MM_SHA: ${{ inputs.MOBILE_VERSION }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
-          BRANCH: ${{ steps.branch.outputs.branch }}
         run: |
-          # Matterwick main-push still sends MASTER; canonicalize to MAIN → mobile-main.
-          if [ "${RUN_TYPE}" = "MASTER" ]; then
-            RUN_TYPE=MAIN
-          fi
-          RUN_TYPE_LOWER=$(echo "${RUN_TYPE}" | tr '[:upper:]' '[:lower:]')
-          RUN_NAME="mobile-${RUN_TYPE_LOWER}"
-          if [ -n "${PR_NUMBER}" ]; then
-            BASE=$(jq -nc \
-              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg pr "$PR_NUMBER" --arg name "$RUN_NAME" \
-              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, gh_pr_number:$pr, framework:"detox"}')
+          set -euo pipefail
+          # PR identity branch: pr-{number}.
+          PR_DIGITS=$(echo "${PR_NUMBER}" | tr -cd '0-9')
+          RUN_TYPE_UPPER=$(echo "${RUN_TYPE}" | tr '[:lower:]' '[:upper:]')
+          VERSION_NAME="${VERSION_NAME#refs/heads/}"
+          VERSION_NAME="${VERSION_NAME#refs/tags/}"
+          if [ -n "${PR_DIGITS}" ]; then
+            echo "branch=pr-${PR_DIGITS}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=${PR_DIGITS}" >> "$GITHUB_OUTPUT"
+          elif [ "${RUN_TYPE_UPPER}" = "MAIN" ] || [ "${RUN_TYPE_UPPER}" = "MASTER" ]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+          elif [ -n "${VERSION_NAME}" ]; then
+            echo "branch=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           else
-            BASE=$(jq -nc \
-              --arg repo "$GITHUB_REPOSITORY" --arg sha "$MM_SHA" --arg run_id "$GITHUB_RUN_ID" \
-              --arg attempt "$GITHUB_RUN_ATTEMPT" --arg branch "$BRANCH" --arg name "$RUN_NAME" \
-              '{repository:$repo, commit_sha:$sha, gh_run_id:$run_id, gh_run_attempt:$attempt, branch:$branch, name:$name, run_group:$name, framework:"detox"}')
+            echo "branch=${GITHUB_REF_NAME:-main}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
           fi
-          export BASE PLATFORM
-          JOB_CONFIGS=$(node -e '
-            const {buildTsioJobConfigMap, jobKeysForPlatform} = require("./detox/utils/build-tsio-job-config.js");
-            const base = JSON.parse(process.env.BASE);
-            const keys = jobKeysForPlatform(process.env.PLATFORM);
-            process.stdout.write(JSON.stringify(buildTsioJobConfigMap(base, keys)));
-          ')
-          echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
-          echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
-
-  update-initial-tsio-status:
-    name: Set pending per-job TSIO commit statuses
-    runs-on: ubuntu-24.04
-    needs:
-      - resolve-e2e-policy
-      - calculate-tsio-identity
-    if: >-
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true'
-      && needs.calculate-tsio-identity.result == 'success'
-      && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
-    permissions:
-      contents: read
-      statuses: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-      - name: Post pending status for each platform job
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
-          COMMIT_SHA: ${{ inputs.MOBILE_VERSION }}
-          REPO: ${{ github.repository }}
-          TARGET_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          echo "$JOB_CONFIGS" | jq -c 'to_entries[]' | while read -r entry; do
-            CTX=$(echo "$entry" | jq -r '.value.status_context')
-            NAME=$(echo "$entry" | jq -r '.value.composite_identity.name')
-            gh api --method POST "repos/${REPO}/statuses/${COMMIT_SHA}" \
-              -f state=pending \
-              -f context="$CTX" \
-              -f description="Mobile E2E (${NAME}) — waiting for TSIO report" \
-              -f target_url="$TARGET_URL"
-          done
+          # Mobile uses /main (not /master) for merge-to-main commit-status contexts.
+          case "${RUN_TYPE_UPPER}" in
+            MAIN|MASTER) echo "context_suffix=/main" >> "$GITHUB_OUTPUT" ;;
+            RELEASE) echo "context_suffix=/release" >> "$GITHUB_OUTPUT" ;;
+            RELEASE_CUT) echo "context_suffix=/release-cut" >> "$GITHUB_OUTPUT" ;;
+            *) echo "context_suffix=" >> "$GITHUB_OUTPUT" ;;
+          esac
 
   resolve-server-topology:
     name: Resolve test server topology
@@ -585,7 +511,7 @@ jobs:
         if: env.SKIP_BUILD != 'true'
         run: |
           cd detox
-          npm ci --prefer-offline --no-audit --no-fund
+          npm ci
           npm run e2e:android-build
 
       # Always upload artifact (from cache or fresh build) so test jobs can download it.
@@ -725,13 +651,9 @@ jobs:
               exit 1
             fi
 
-            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo.
-            # CRITICAL: the URL is passed as argv[1], NOT interpolated into the Python source.
-            # The Python code is single-quoted so bash performs no expansion inside it; "$url"
-            # is a separate argv argument, treated as a literal string by Python. This prevents
-            # injection of Python syntax (e.g. https://a.com')+__import__('os').system(...)+(' )
-            # that would escape the urlparse() call if the URL were interpolated.
-            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+            # Extract hostname via Node URL (argv, not string interpolation) so userinfo cannot
+            # bypass the allowlist / private-IP checks.
+            hostname=$(node -e 'const {URL}=require("url"); const u=new URL(process.argv[1]); process.stdout.write((u.hostname||"").toLowerCase())' "$url")
 
             # Block private/internal IPs
             if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
@@ -788,7 +710,7 @@ jobs:
       - name: Provision servers (license + plugins)
         run: |
           cd detox
-          npm ci --prefer-offline --no-audit --no-fund
+          npm ci
           # Quote every variable in the iteration. Without quotes, bash word-splits
           # on whitespace and would treat e.g. "https://a https://b" as two URLs,
           # bypassing the per-variable validation in the previous step (which
@@ -817,7 +739,7 @@ jobs:
     name: Detox iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - generate-e2e-variables
       - build-ios-simulator
       - provision-servers
       - resolve-server-topology
@@ -846,14 +768,17 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-detox-android:
     name: Detox Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - generate-e2e-variables
       - build-android-apk
       - provision-servers
       - resolve-server-topology
@@ -882,7 +807,10 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   validate-maestro-flow-headers:
@@ -911,7 +839,7 @@ jobs:
     name: Maestro iOS E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - generate-e2e-variables
       - build-ios-simulator
       - provision-servers
       - validate-maestro-flow-headers
@@ -942,15 +870,18 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   run-maestro-android:
     name: Maestro Android E2E
     needs:
       - resolve-e2e-policy
-      - calculate-tsio-identity
+      - generate-e2e-variables
       - build-android-apk-maestro
       - provision-servers
       - validate-maestro-flow-headers
@@ -981,8 +912,11 @@ jobs:
       SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
       run_type: ${{ inputs.run_type || 'PR' }}
       artifact_run_id: ${{ github.run_id }}
-      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
-      tsio-job-configs: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
+      record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'RELEASE_CUT' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
+      context_suffix: ${{ needs.generate-e2e-variables.outputs.context_suffix }}
+      branch: ${{ needs.generate-e2e-variables.outputs.branch }}
+      pr_number: ${{ needs.generate-e2e-variables.outputs.pr_number }}
+      commit_sha: ${{ inputs.MOBILE_VERSION }}
     secrets: inherit
 
   e2e-remove-matterwick-label:
@@ -1125,56 +1059,4 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
-  # Per-platform TSIO commit statuses are finalized inside each Detox/Maestro
-  # generate-report / maestro job after that job's upload (total_reports_expected=1).
-  # No combined e2e/mobile finalizer — avoids cross-job clobber and pending races.
-
-  # One Mattermost channel rollup (best-effort). Per-job finalize leaves channel
-  # notify off so N legs do not spam; this job posts a single summary.
-  tsio-channel-notify:
-    name: Post Mattermost E2E channel rollup
-    runs-on: ubuntu-24.04
-    if: >-
-      always() &&
-      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      needs.calculate-tsio-identity.result == 'success' &&
-      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
-    needs:
-      - resolve-e2e-policy
-      - calculate-tsio-identity
-      - run-detox-ios
-      - run-detox-android
-      - run-maestro-ios
-      - run-maestro-android
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-          persist-credentials: false
-          sparse-checkout: |
-            detox/utils/tsio-channel-notify-rollup.js
-            detox/utils/tsio-report-status.js
-            detox/utils/cmt-channel-notify.js
-            detox/utils/build-tsio-job-config.js
-            detox/utils/cli-args.js
-      - name: Aggregate per-job TSIO groups and notify channel
-        env:
-          JOB_CONFIGS: ${{ needs.calculate-tsio-identity.outputs.job-configs }}
-          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-        run: |
-          UPSTREAM="true"
-          for r in "${{ needs.run-detox-ios.result }}" "${{ needs.run-detox-android.result }}" "${{ needs.run-maestro-ios.result }}" "${{ needs.run-maestro-android.result }}"; do
-            case "$r" in
-              success|skipped) ;;
-              *) UPSTREAM="false" ;;
-            esac
-          done
-          node detox/utils/tsio-channel-notify-rollup.js \
-            --job-configs="$JOB_CONFIGS" \
-            --upstream-succeeded="$UPSTREAM" \
-            --poll-attempts=6 || true
+  # Per-platform commit status + channel notify come from begin/summary in each template.

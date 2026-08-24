@@ -19,8 +19,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Account - Set User Status', () => {
     const serverOneDisplayName = 'Server 1';
@@ -48,34 +48,46 @@ describe('Account - Set User Status', () => {
     });
 
     it('MM-T3251 - should set user status to Away, DND, and Online', async () => {
-        // # Tap user presence and select Away
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.awayUserStatusOption.tap();
+        // Status sheet dismiss + presence remount can trip Fabric addViewAt under Detox sync.
+        await device.disableSynchronization();
+        try {
+            // # Tap user presence and select Away
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.awayUserStatusOption.tap();
 
-        // * Verify Away status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('away')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
+            // * Verify Away status is reflected in the account menu
+            await AccountScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('away')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
 
-        // # Tap user presence and select Do Not Disturb
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.dndUserStatusOption.tap();
+            // # Tap user presence and select Do Not Disturb
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.dndUserStatusOption.tap();
 
-        // * Verify DND status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('dnd')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
+            // * Verify DND status is reflected in the account menu
+            await AccountScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('dnd')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
 
-        // # Tap user presence and select Online
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.onlineUserStatusOption.tap();
+            // # Tap user presence and select Online
+            await AccountScreen.userPresenceOption.tap();
+            await wait(timeouts.ONE_SEC);
+            await AccountScreen.onlineUserStatusOption.tap();
 
-        // * Verify Online status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('online')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+            // * Verify Online status is reflected in the account menu
+            await AccountScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+            await waitFor(AccountScreen.getUserPresenceIndicator('online')).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+
+            // Let the last sheet dismiss + presence remount settle before re-enabling sync.
+            await wait(timeouts.TWO_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
     });
 });

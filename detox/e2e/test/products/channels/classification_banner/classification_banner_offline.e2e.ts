@@ -109,7 +109,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         });
 
         // Cold start picks up FeatureFlagClassificationMarkings and the property fields more
-        // reliably than reloadReactNative alone (CI 30250131265).
+        // reliably than reloadReactNative alone.
         await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await GlobalClassificationBanner.toBeVisible();
@@ -127,8 +127,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 
-    // Skip: setURLBlacklist does not reliably block WebSocket, so the new value can land in
-    // cache and the stale-value assert is untrustworthy (CI 59ec6ae).
+    // Skip: setURLBlacklist does not reliably block WebSocket; stale-value assert untrustworthy.
     it.skip('MM-T6207_1 - should show stale cached value when API is blocked after a server change', async () => {
         // # Set up classification at TOP SECRET
         const {linkedFieldId, optionIdsByName} = await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
@@ -145,7 +144,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         await waitFor(element(by.text('TOP SECRET'))).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Block API calls BEFORE changing the server value — patching while online lets
-        // WebSocket write the new value into the local DB (CI 30250131265).
+        // WebSocket write the new value into the local DB.
         await device.setURLBlacklist(getBlockedServerPatterns());
 
         // # Change classification value on the server to SECRET (test host → API;

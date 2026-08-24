@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr @smoke
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -130,8 +132,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    // Skip Android: CI run 30424009936 (f86f99e1) failed both attempts — the slash autocomplete
-    // never becomes visible after typing "/" (Autocomplete.toBeVisible, 10s).
+    // Skip Android: slash autocomplete never visible after typing "/".
     (isAndroid() ? it.skip : it)('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
         // # Type in "/" to activate slash suggestion autocomplete
         await ChannelScreen.postInput.typeText('/');

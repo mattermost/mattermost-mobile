@@ -41,6 +41,11 @@ Every file under `detox/maestro/flows/**/*.yml` **must** start with this block *
 #   - report_problem.screen
 tags:
   - MM-TXXXX
+  # Optional plan tags (@snake_case). Must be YAML-quoted — unquoted @ is invalid YAML.
+  # Omit when the flow applies to all platforms.
+  # - "@android_only"
+  # - "@ios_only"
+  # - "@multi_device"
 appId: ${MAESTRO_APP_ID}
 ---
 ```
@@ -54,8 +59,21 @@ appId: ${MAESTRO_APP_ID}
 | REQUIRED ENV VARS | Yes | Only variables referenced in the flow |
 | ASSERTIONS | Yes | Pass/fail outcomes in product language |
 | testIDs | Yes | Every `id:` selector used in the flow (grep `app/` for source of truth) |
-| `tags:` | Yes | At least the Zephyr ticket id |
+| `tags:` | Yes | Zephyr ticket id; optional quoted plan tags (`"@android_only"` / `"@ios_only"` / `"@multi_device"`) |
 | `appId` | Yes | `${MAESTRO_APP_ID}` |
+
+### Plan tags (PR discovery)
+
+Test System IO discovers Maestro flows by path + `tags:`. Plan tags are **`@snake_case` only**, always `@`-prefixed, and **YAML-quoted** (e.g. `- "@android_only"`). Unquoted `@…` is invalid YAML and Maestro reports `Parsing Failed`. **Untagged (aside from Zephyr id) = all platforms**.
+
+| Tag | Meaning | Dispatch |
+|---|---|---|
+| *(none)* | Applies to all platforms | Android + iOS |
+| `"@android_only"` | Android-specific (e.g. Calls / CallKit gaps on simulator) | Android only |
+| `"@ios_only"` | iOS-specific surface (e.g. Safari hand-off) | iOS only |
+| `"@multi_device"` | Needs two devices (manual / special runners) | Excluded from single-device CI |
+
+Configured in `detox/maestro/config/exclude_tags.json` (`ios` excludes `@android_only` + `@multi_device`; `android` excludes `@ios_only` + `@multi_device`).
 
 **Exempt from this contract** (enforced by `scripts/validate-flow-headers.sh`, which scans only `flows/**` and skips `_`-prefixed basenames):
 
@@ -316,9 +334,9 @@ Single source of truth: [`maestro-version.json`](./maestro-version.json)
 |---|---|
 | `e2e-detox-pr.yml` | Matterwick entry point: builds, provisioning, header validation, dispatches Maestro |
 | `e2e-maestro-pr.yml` | Maestro status contexts, orchestration (reusable) |
-| `e2e-maestro-template.yml` | Simulator/emulator, seed, batch test runner, report |
+| `e2e-maestro-template.yml` | Simulator/emulator, seed, Test System IO orchestration |
 
-Maestro runs via `detox/maestro/scripts/run_ci_batches.sh` (one flow per batch). JUnit reports are merged before HTML generation.
+Maestro CI runs via Test System IO (`dispatch-begin` / `dispatch-run` / `summary`). Each worker leases one flow at a time.
 
 Device targets (same as Detox):
 
@@ -371,9 +389,7 @@ source detox/maestro/.maestro-test-env.sh
 ~/.maestro/bin/maestro test detox/maestro/flows/<flow>.yml
 ```
 
-For CI parity, use `detox/maestro/scripts/run_ci_batches.sh` (batch mode) with the CI-built `.app`/APK — not isolated single-flow runs only.
-
-Use the Maestro CLI for final verification (matches CI). Use `maestro hierarchy` / MCP inspect tools during authoring iteration.
+For CI-like local runs, use the same seeded env and the CI-built `.app`/APK. Use `maestro hierarchy` / MCP inspect tools during authoring iteration.
 
 ---
 

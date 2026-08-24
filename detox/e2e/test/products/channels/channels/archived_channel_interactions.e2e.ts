@@ -119,7 +119,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip: failed CI run 29954156963 (both) — was android-only; android also failed
+    // Skip: archived channel interactions flake.
     it.skip('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
@@ -218,8 +218,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip Android: CI run 30000635898 — manage-members visibility <15% after archive
-    // (tutorial/overlay occlusion unclear from artifact; same suite already skips MM-T1671/1685).
+    // Skip Android: manage-members visibility <15% after archive.
     (isAndroid() ? it.skip : it)('MM-T1719_1 - should not be able to remove members from an archived channel', async () => {
         // iOS uses the search/permalink fallback path (MM-T1679_1 path) because
         // tapping an archived channel in Browse Channels does not reliably navigate

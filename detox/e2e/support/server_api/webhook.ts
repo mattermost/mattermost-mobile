@@ -19,16 +19,16 @@ import axios from 'axios';
 export const requireWebhookServer = async (baseUrl: string): Promise<void> => {
     if (!baseUrl?.trim()) {
         throw new Error(
-            'WEBHOOK_BASE_URL is empty — Cloudflare quick tunnel did not come up on this shard. ' +
-            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL (+ optional CLOUDFLARED_TUNNEL_TOKEN) ' +
-            'for stable ingress. Non-mm_blocks specs on other shards are unaffected.',
+            'WEBHOOK_BASE_URL is empty — webhook tunnel did not come up on this shard. ' +
+            'Configure MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL for stable ingress. ' +
+            'Non-mm_blocks specs on other shards are unaffected.',
         );
     }
     try {
         const response = await axios.get<{message?: string}>(baseUrl, {
             timeout: 10000,
 
-            // trycloudflare often fails TLS/DNS from the runner after a brief healthy window.
+            // Ephemeral tunnels often fail TLS/DNS from the runner after a brief healthy window.
             validateStatus: () => true,
         });
         if (response.status >= 500) {

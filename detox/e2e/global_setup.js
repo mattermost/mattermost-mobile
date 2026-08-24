@@ -87,22 +87,12 @@ const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
-// Prepackaged plugins to keep enabled.
+// Plugin IDs to keep enabled — see support/prepackaged_plugins.json.
+const prepackagedPluginsManifest = require('./support/prepackaged_plugins.json');
+
 const PREPACKAGED_PLUGINS = new Set([
-    'antivirus',
-    'mattermost-autolink',
-    'com.mattermost.aws-sns',
-    'com.mattermost.plugin-channel-export',
-    'com.mattermost.custom-attributes',
-    'github',
-    'com.github.manland.mattermost-plugin-gitlab',
-    'com.mattermost.plugin-incident-management',
-    'jenkins',
-    'jira',
-    'com.mattermost.calls',
-    'com.mattermost.nps',
-    'com.mattermost.welcomebot',
-    'zoom',
+    ...Object.keys(prepackagedPluginsManifest.makefile),
+    ...Object.keys(prepackagedPluginsManifest.esr),
 ]);
 
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {
@@ -127,6 +117,14 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
     throw lastErr;
 }
 
+function serverSetupMarkerPath() {
+    // Each leased Detox unit runs its own Jest process. Server mutations
+    // must not re-run every time — racing workers would disable plugins
+    // (e.g. mattermost-ai) that later specs still need.
+    const key = Buffer.from(SITE_URL).toString('base64url').slice(0, 48);
+    return path.join(os.tmpdir(), `detox-global-setup-${key}`);
+}
+
 async function serverSetup() {
     const nodeIndex = parseInt(process.env.CI_NODE_INDEX || '0', 10);
     if (nodeIndex > 0) {
@@ -145,6 +143,12 @@ async function serverSetup() {
         throw new Error(`Server health check failed: ${JSON.stringify(ping.data)}`);
     }
     process.stdout.write('[globalSetup] ✅ Server health check passed\n');
+
+    const marker = serverSetupMarkerPath();
+    if (fs.existsSync(marker)) {
+        process.stdout.write('[globalSetup] Skipping server mutations (already done for this SITE_URL on this runner)\n');
+        return;
+    }
 
     const clientConfig = await retryAxios(
         () => axios.get(`${SITE_URL}/api/v4/config/client?format=old`),
@@ -186,6 +190,10 @@ async function serverSetup() {
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
+            ServiceSettings: {
+                EnableCrossTeamSearch: true,
+                CollapsedThreads: 'always_on',
+            },
         }, {headers});
         process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
@@ -209,6 +217,12 @@ async function serverSetup() {
         process.stdout.write('[globalSetup] ✅ Plugin cleanup done\n');
     } catch (err) {
         process.stderr.write(`[globalSetup] ⚠️ Could not clean up plugins: ${err.message}\n`);
+    }
+
+    try {
+        fs.writeFileSync(marker, String(Date.now()));
+    } catch (err) {
+        process.stderr.write(`[globalSetup] ⚠️ Could not write setup marker: ${err.message}\n`);
     }
 }
 

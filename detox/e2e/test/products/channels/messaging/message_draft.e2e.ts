@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Tags: @ios_pr
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -128,7 +130,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — the native Message Length alert remains mounted after dismissal.
+    // Skip iOS: Message Length alert remains mounted after dismissal.
     (isIos() ? it.skip : it)('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
         // # Open a channel screen and create a message draft that exceeds character limit (> 16383)
         let message = '1234567890'.repeat(1638) + '1234';
@@ -157,7 +159,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — oversized draft leaves navigation/input state unusable.
+    // Skip both: oversized draft leaves navigation/input state unusable.
     it.skip('MM-T107 - should show alert when message exceeds character limit', async () => {
         // MaxPostSize comes from server config, so a hard-coded 4001 chars does not exceed the
         // common 16383 value and the send button stays enabled.
@@ -180,7 +182,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — thread draft input is missing or the channel-open cascade prevents setup.
+    // Skip both: thread draft input missing or channel-open cascade prevents setup.
     it.skip('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;

@@ -7,15 +7,18 @@ import {getRandomId, timeouts, wait} from '@support/utils';
 
 const LOCK_CATEGORY = 'e2e_locks';
 const LOCK_NAME = 'classification';
-const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
 
-// Must outlast the longest hold a caller can legitimately take, or the lock expires
-// mid-suite and a waiting shard steals it while the owner is still mutating shared
-// server config. Every caller sets jest.setTimeout(30m), so the TTL covers that plus
-// margin. Recovering a lock leaked by a cancelled run is the acquire budget's job,
-// not the TTL's.
-const DEFAULT_TTL_MS = timeouts.ONE_MIN * 35;
+// Serializes suite mutations of ClassificationMarkings / property setup on
+// shared Matterwick hosts. Suites set jest.setTimeout(30m) and comment
+// "Lock wait is up to 20m" so peer classification specs can serialize.
+const DEFAULT_TIMEOUT_MS = timeouts.ONE_MIN * 20;
+const DEFAULT_TTL_MS = timeouts.ONE_MIN * 30;
 const DEFAULT_POLL_MS = timeouts.TWO_SEC;
+
+// Parallel CI runs share the same cloud admin preference. Steal a lock held by
+// a different GITHUB_RUN_ID after a short grace so one stuck run cannot block
+// another for the full TTL.
+const FOREIGN_STEAL_AFTER_MS = timeouts.ONE_MIN * 2;
 
 type ClassificationLock = {
     owner: string;
@@ -66,19 +69,44 @@ const parseLock = (value: string): ClassificationLock | undefined => {
     return undefined;
 };
 
-const getClassificationLock = async (baseUrl: string, userId: string): Promise<ClassificationLock | undefined> => {
-    const result = await Preference.apiGetUserPreferences(baseUrl, userId) as {
-        preferences?: UserPreference[];
-        error?: unknown;
-    };
-    if (!result.preferences) {
-        throw new Error(`classification lock: failed to read admin preferences: ${formatError(result.error ?? result)}`);
-    }
-
-    const preference = result.preferences.find(
-        (item) => item.category === LOCK_CATEGORY && item.name === LOCK_NAME,
+const isTransientNetworkError = (error: unknown): boolean => {
+    const msg = formatError(error).toLowerCase();
+    return (
+        msg.includes('socket hang up') ||
+        msg.includes('enotfound') ||
+        msg.includes('econnreset') ||
+        msg.includes('etimedout') ||
+        msg.includes('network') ||
+        msg.includes('524') ||
+        msg.includes('502') ||
+        msg.includes('503')
     );
-    return parseLock(preference?.value ?? '');
+};
+
+const getClassificationLock = async (baseUrl: string, userId: string): Promise<ClassificationLock | undefined> => {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await wait(timeouts.TWO_SEC * attempt);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const result = await Preference.apiGetUserPreferences(baseUrl, userId) as {
+            preferences?: UserPreference[];
+            error?: unknown;
+        };
+        if (result.preferences) {
+            const preference = result.preferences.find(
+                (item) => item.category === LOCK_CATEGORY && item.name === LOCK_NAME,
+            );
+            return parseLock(preference?.value ?? '');
+        }
+        lastError = result.error ?? result;
+        if (!isTransientNetworkError(lastError)) {
+            break;
+        }
+    }
+    throw new Error(`classification lock: failed to read admin preferences: ${formatError(lastError)}`);
 };
 
 const saveClassificationLock = async (
@@ -86,16 +114,37 @@ const saveClassificationLock = async (
     userId: string,
     value: string,
 ): Promise<void> => {
-    const result = await Preference.apiSaveUserPreferences(baseUrl, userId, [{
-        user_id: userId,
-        category: LOCK_CATEGORY,
-        name: LOCK_NAME,
-        value,
-    }]) as {error?: unknown};
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await wait(timeouts.TWO_SEC * attempt);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const result = await Preference.apiSaveUserPreferences(baseUrl, userId, [{
+            user_id: userId,
+            category: LOCK_CATEGORY,
+            name: LOCK_NAME,
+            value,
+        }]) as {error?: unknown};
 
-    if (result.error) {
-        throw new Error(`classification lock: failed to save admin preference: ${formatError(result.error)}`);
+        if (!result.error) {
+            return;
+        }
+        lastError = result.error;
+        if (!isTransientNetworkError(lastError)) {
+            break;
+        }
     }
+    throw new Error(`classification lock: failed to save admin preference: ${formatError(lastError)}`);
+};
+
+const isForeignRunOwner = (owner: string): boolean => {
+    const runId = process.env.GITHUB_RUN_ID;
+    if (!runId) {
+        return false;
+    }
+    return !owner.startsWith(`${runId}-`);
 };
 
 export const createClassificationLockOwner = () => {
@@ -124,7 +173,8 @@ export const acquireClassificationLock = async (
     const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
     const pollMs = options.pollMs ?? DEFAULT_POLL_MS;
-    const deadline = Date.now() + timeoutMs;
+    const startedAt = Date.now();
+    const deadline = startedAt + timeoutMs;
     const userId = await loginAsAdmin(baseUrl);
     let lastLock: ClassificationLock | undefined;
 
@@ -132,7 +182,14 @@ export const acquireClassificationLock = async (
         // eslint-disable-next-line no-await-in-loop -- advisory lock acquisition must be sequential
         lastLock = await getClassificationLock(baseUrl, userId);
         const now = Date.now();
-        if (!lastLock || lastLock.expiresAt <= now || lastLock.owner === owner) {
+        const foreignStale = Boolean(
+            lastLock &&
+            lastLock.expiresAt > now &&
+            lastLock.owner !== owner &&
+            isForeignRunOwner(lastLock.owner) &&
+            (now - startedAt) >= FOREIGN_STEAL_AFTER_MS,
+        );
+        if (!lastLock || lastLock.expiresAt <= now || lastLock.owner === owner || foreignStale) {
             // eslint-disable-next-line no-await-in-loop
             await saveClassificationLock(baseUrl, userId, JSON.stringify({
                 owner,

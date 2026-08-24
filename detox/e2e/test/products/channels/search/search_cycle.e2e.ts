@@ -108,7 +108,7 @@ describe('Search - Search Cycle', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / comment from search
+    // Skip: BACK_INDEX / comment from search.
     it.skip('MM-T373 - should be able to post a comment from search results', async () => {
         // # Post message with unique term "asparagus" + random suffix for isolation
         const uniqueSuffix = getRandomId();

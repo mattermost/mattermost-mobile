@@ -70,38 +70,38 @@ baseClient.interceptors.response.use(
     },
 );
 
-/** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
-const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
+/** Edge HTTP failures — 520–524 stay retryable alongside the gateway 5xx below. */
+const EDGE_HTTP_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
 
-const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...CLOUDFLARE_EDGE_STATUSES]);
+const TRANSIENT_HTTP_STATUSES: ReadonlySet<number> = new Set([502, 503, 504, ...EDGE_HTTP_STATUSES]);
 
 /**
- * Cloudflare could not reach the origin, so the request provably had no side effect.
+ * Edge could not reach the origin, so the request provably had no side effect.
  * 522 is excluded: the connection can also time out after the origin accepted the request.
  */
 const PRE_ORIGIN_STATUSES: ReadonlySet<number> = new Set([521, 523]);
 
 const IDEMPOTENT_METHODS: ReadonlySet<string> = new Set(['get', 'head', 'options']);
 
-/** Gateway 5xx plus Cloudflare edge — shared with the apiInit retry layer in setup.ts. */
+/** Gateway 5xx plus edge HTTP statuses — shared with the apiInit retry layer in setup.ts. */
 export const isTransientHttpStatus = (status?: number): status is number =>
     status !== undefined && TRANSIENT_HTTP_STATUSES.has(status);
 
 /**
- * Upper bound for an honored Cloudflare `retry_after`; the advertised tens of seconds blow
+ * Upper bound for an honored `retry_after`; the advertised tens of seconds blow
  * Detox's 300s beforeAll budget. Shared with the apiInit retry layer in setup.ts.
  */
 export const MAX_RETRY_AFTER_SEC = 3;
 
-// Retry transient gateway / Cloudflare edge 5xx with short backoff.
+// Retry transient gateway / edge 5xx with short backoff.
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         const config = error.config as typeof error.config & {_5xxRetries?: number};
         const status = error.response?.status;
 
-        // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
-        // only idempotent methods are retried on those; CF 521/523 never reach the origin at all.
+        // A write may already have reached the origin behind 502/503/504 and 520/522/524, so
+        // only idempotent methods are retried on those; 521/523 never reach the origin at all.
         const isSafeToRetry = isTransientHttpStatus(status) &&
             (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
 
