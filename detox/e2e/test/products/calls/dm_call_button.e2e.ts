@@ -91,7 +91,7 @@ describe('Calls - DM Call Button', () => {
         await HomeScreen.logout();
     });
 
-    it('should display the call button in the header of a direct message channel', async () => {
+    it('MM-70370_1 - should display the call button in the header of a direct message channel', async () => {
         // # Open a direct message channel screen
         await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
         await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -104,7 +104,7 @@ describe('Calls - DM Call Button', () => {
         await ChannelScreen.back();
     });
 
-    it('should not display the call button in the header of a group message channel', async () => {
+    it('MM-70370_2 - should not display the call button in the header of a group message channel', async () => {
         // # Open a group message channel screen
         await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
         await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -117,7 +117,7 @@ describe('Calls - DM Call Button', () => {
         await ChannelScreen.back();
     });
 
-    it('should not display the call button in the header of a public channel', async () => {
+    it('MM-70370_3 - should not display the call button in the header of a public channel', async () => {
         // # Open a public channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -128,7 +128,7 @@ describe('Calls - DM Call Button', () => {
         await ChannelScreen.back();
     });
 
-    it('should not display the start call option on channel info for a direct message channel', async () => {
+    it('MM-70370_4 - should not display the start call option on channel info for a direct message channel', async () => {
         // # Open a direct message channel screen and open channel info screen
         await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
         await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
