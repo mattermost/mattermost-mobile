@@ -5,7 +5,6 @@ import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {type NavigationButtonProps} from '@components/navigation_button';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -16,6 +15,8 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {navigateBack} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
+
+import type {NavigationButtonProps} from '@components/navigation_button';
 
 type Props = {
     title: string;

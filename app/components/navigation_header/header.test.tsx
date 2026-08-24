@@ -4,10 +4,11 @@
 import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import {type NavigationButtonProps} from '@components/navigation_button';
 import {Preferences} from '@constants';
 
 import Header from './header';
+
+import type {NavigationButtonProps} from '@components/navigation_button';
 
 describe('Header', () => {
     const getBaseProps = (): ComponentProps<typeof Header> => ({
