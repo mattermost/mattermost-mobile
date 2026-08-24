@@ -60,6 +60,10 @@ export const storeScheduledPostsListTutorial = async () => {
     return storeGlobal(Tutorial.SCHEDULED_POSTS_LIST, 'true', false);
 };
 
+export const storeMicPermissionAsked = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.MIC_PERMISSION_ASKED, 'true', false);
+};
+
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW, 'true', prepareRecordsOnly);
 };

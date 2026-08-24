@@ -4,8 +4,11 @@
 /* eslint-disable max-lines */
 
 import CallsNative from '@mattermost/calls-native';
-import {Alert} from 'react-native';
+import {defineMessages, type IntlShape} from 'react-intl';
+import {Alert, Platform} from 'react-native';
+import Permissions from 'react-native-permissions';
 
+import {storeMicPermissionAsked} from '@actions/app/global';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -44,6 +47,7 @@ import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getMicPermissionAsked} from '@queries/app/global';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
@@ -51,13 +55,73 @@ import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
+import {getIntlShape} from '@utils/general';
 import {logDebug} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
+import {checkMicrophonePermissionStatus} from './permissions';
+
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
-import type {IntlShape} from 'react-intl';
+
+const micPermissionMessages = defineMessages({
+    title: {
+        id: 'mobile.calls_mic_permission.title',
+        defaultMessage: 'Microphone access',
+    },
+    message: {
+        id: 'mobile.calls_mic_permission.message',
+        defaultMessage: 'Mattermost needs microphone access to make or receive calls.',
+    },
+    notNow: {
+        id: 'mobile.calls_mic_permission.not_now',
+        defaultMessage: 'Not now',
+    },
+    continue: {
+        id: 'mobile.calls_mic_permission.continue',
+        defaultMessage: 'Continue',
+    },
+});
+
+// iOS-only: shows an in-app explainer and then the system mic prompt the first
+// time a calls-enabled server is connected. The flag is stored before the alert
+// fires so rapid reconnects cannot re-show the dialog.
+const maybeRequestMicrophonePermission = async () => {
+    if (Platform.OS !== 'ios') {
+        return;
+    }
+
+    const alreadyAsked = await getMicPermissionAsked();
+    if (alreadyAsked) {
+        return;
+    }
+
+    const status = await checkMicrophonePermissionStatus();
+    if (status !== Permissions.RESULTS.DENIED) {
+        return;
+    }
+
+    await storeMicPermissionAsked();
+
+    const {formatMessage} = getIntlShape();
+    Alert.alert(
+        formatMessage(micPermissionMessages.title),
+        formatMessage(micPermissionMessages.message),
+        [
+            {
+                text: formatMessage(micPermissionMessages.notNow),
+                style: 'cancel',
+            },
+            {
+                text: formatMessage(micPermissionMessages.continue),
+                onPress: () => {
+                    Permissions.request(Permissions.PERMISSIONS.IOS.MICROPHONE);
+                },
+            },
+        ],
+    );
+};
 
 let connection: CallsConnection | null = null;
 export const getConnectionForTesting = () => connection;
@@ -183,6 +247,7 @@ export const loadConfigAndCalls = async (serverUrl: string, userId: string, grou
     if (res.data) {
         loadConfig(serverUrl, true, groupLabel);
         loadCalls(serverUrl, userId, groupLabel);
+        await maybeRequestMicrophonePermission();
     }
 };
 

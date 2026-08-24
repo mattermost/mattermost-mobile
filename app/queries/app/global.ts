@@ -60,6 +60,11 @@ export const getLastAskedForReview = async () => {
     return records[0].value;
 };
 
+export const getMicPermissionAsked = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.MIC_PERMISSION_ASKED)?.fetch();
+    return Boolean(records?.[0]?.value);
+};
+
 export const getDontAskForReview = async () => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW)?.fetch();
     return Boolean(records?.[0]?.value);

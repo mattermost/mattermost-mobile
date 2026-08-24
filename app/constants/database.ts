@@ -92,6 +92,7 @@ export const GLOBAL_IDENTIFIERS = {
     DONT_ASK_FOR_REVIEW: 'dontAskForReview',
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
+    MIC_PERMISSION_ASKED: 'micPermissionAsked',
     ONBOARDING: 'onboarding',
     LAST_VIEWED_TEAM: 'lastViewedTeam',
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
