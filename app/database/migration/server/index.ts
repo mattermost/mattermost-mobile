@@ -32,6 +32,26 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 21,
+        steps: [
+
+            // Existing rows default to 0, below the epoch the redaction service reports when no
+            // System row exists, so posts cached before this migration start unverified.
+            addColumns({
+                table: POST,
+                columns: [
+                    {name: 'redaction_verified_epoch', type: 'number'},
+                ],
+            }),
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'redaction_required_epoch', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 20,
         steps: [
             createTable({

@@ -3,9 +3,11 @@
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import {License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -61,6 +63,15 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             if (currentTeamId) {
                 await fetchCategories(serverUrl, currentTeamId, true);
             }
+        }
+
+        // Turning ABAC on must not trust anything cached from before it was enforced. Turning it off
+        // needs nothing: the gate is bypassed while the predicate is false. Runs after storeConfig so
+        // the predicate reads the new values, and before the reconcile below, which can drop the DB.
+        const abacWasEnforced = prevConfig?.FeatureFlagPermissionPolicies === 'true' && prevConfig?.EnableAttributeBasedAccessControl === 'true';
+        const abacIsEnforced = config?.FeatureFlagPermissionPolicies === 'true' && config?.EnableAttributeBasedAccessControl === 'true';
+        if (abacIsEnforced && !abacWasEnforced) {
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.ConfigChanged);
         }
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating

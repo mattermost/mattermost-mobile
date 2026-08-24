@@ -4,8 +4,9 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
+import {isPostRedactionVerified, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {Permissions, Preferences, Screens} from '@constants';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost, observePostAuthor, queryPostsBetween, queryPostReplies} from '@queries/servers/post';
@@ -137,6 +138,20 @@ const withPost = withObservables(
             switchMap((fs) => of$(fileModelsToFileInfo(fs, post.userId))),
         );
 
+        // An ABAC decision bumps no post row, so a cached post can carry an attachment decision the
+        // server has since changed. While its confirmed epoch is behind what the channel requires,
+        // neither the files nor the denial placeholder may be shown. The epoch stream is shared
+        // across rendered rows rather than opened per post.
+        const redactionRequiredEpoch = observeRequiredRedactionEpoch(database, post.channelId);
+        const isRedactionVerified = combineLatest([
+            observeRedactionEnforced(database),
+            redactionRequiredEpoch,
+            post.observe(),
+        ]).pipe(
+            map(([enforced, requiredEpoch, p]) => !enforced || isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch)),
+            distinctUntilChanged(),
+        );
+
         const hasReactions = queryReactionsForPost(database, post.id).observe().pipe(
             switchMap((c) => of$(c.length > 0)),
             distinctUntilChanged(),
@@ -172,6 +187,8 @@ const withPost = withObservables(
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,
             isLastPost: of$(!nextPost),
+            isRedactionVerified,
+            redactionRequiredEpoch,
         };
     });
 

@@ -45,6 +45,9 @@ declare class MyChannelModel extends Model {
     /** autotranslation : Whether the channel has automatic translation enabled for this user */
     autotranslationDisabled: boolean;
 
+    /** redaction_required_epoch : Local-only. Raised when an ABAC change affects this channel alone. */
+    redactionRequiredEpoch: number;
+
     /** channel : The relation pointing to the CHANNEL table */
     channel: Relation<ChannelModel>;
 

@@ -136,6 +136,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         parentLocation: Screens.CHANNEL,
         parentPostId: 'parent-post-123',
         autotranslationsEnabled: false,
+        isHostRedactionVerified: true,
     };
 
     it('should render permalink preview correctly', () => {
@@ -608,11 +609,27 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         });
     });
 
+    describe('host redaction verification', () => {
+        it('should render neither the embedded files nor the restricted placeholder while the host is behind', async () => {
+            // The server sanitizes an embedded post as part of the host response, so a host whose own
+            // decision is stale carries an embed that is stale too.
+            const {queryByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                isHostRedactionVerified: false,
+                hasLinkedPostFiles: true,
+            });
+
+            expect(queryByTestId('permalink-files-container')).toBeNull();
+            expect(queryByTestId('redacted-files-placeholder')).toBeNull();
+        });
+    });
+
     describe('autotranslationsEnabled', () => {
         it('should not render TranslateIcon when autotranslationsEnabled is false', () => {
             const {queryByTestId} = renderPermalinkPreview({
                 ...baseProps,
                 autotranslationsEnabled: false,
+                isHostRedactionVerified: true,
             });
 
             expect(queryByTestId('translate-icon')).toBeNull();
@@ -707,6 +724,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: false,
+                isHostRedactionVerified: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({

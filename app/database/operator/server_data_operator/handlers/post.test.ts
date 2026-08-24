@@ -12,6 +12,7 @@ import {transformDraftRecord, transformPostsInChannelRecord} from '@database/ope
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
 import TestHelper from '@test/test_helper';
+import {deleteFilesByPath} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
@@ -27,6 +28,10 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
 
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteFilesByPath: jest.fn(),
+}));
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logWarning: jest.fn(),
@@ -1275,6 +1280,99 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
 
             const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
             expect(rows[0].message).toBe('newest');
+        });
+
+        it('should store the epoch a sanitized response was dispatched under', async () => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 0})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 7,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(7);
+        });
+
+        it('should leave the stored epoch untouched when a response carries none', async () => {
+            // Local mutations and unsanitized payloads must not promote a post to a newer decision.
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 0})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 7,
+            });
+            await write({...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited locally'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited locally');
+            expect(rows[0].redactionVerifiedEpoch).toBe(7);
+        });
+
+        it('should remove the downloaded bytes when a denial is confirmed', async () => {
+            // Destroying the FileModel rows only hides the attachments in the UI; the blobs would
+            // stay readable on disk, which is the one thing the mobile app can still control.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid1']};
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [withFiles],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleFiles({
+                files: [{id: 'fileid1', post_id: postId, name: 'secret.png', extension: 'png', localPath: '/tmp/secret.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
+                prepareRecordsOnly: false,
+            });
+
+            await write(basePost({redacted_file_count: 1} as PostMetadata));
+
+            expect(deleteFilesByPath).toHaveBeenCalledWith(expect.arrayContaining(['/tmp/secret.png']));
+        });
+
+        it('should not touch cached bytes when files simply were not part of a payload', async () => {
+            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [withFiles],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleFiles({
+                files: [{id: 'fileid2', post_id: postId, name: 'ok.png', extension: 'png', localPath: '/tmp/ok.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
+                prepareRecordsOnly: false,
+            });
+            jest.mocked(deleteFilesByPath).mockClear();
+
+            await write(basePost({} as PostMetadata));
+
+            expect(deleteFilesByPath).not.toHaveBeenCalled();
+        });
+
+        it('should discard a whole response from a superseded generation', async () => {
+            // The G1 response arrives after G2 was stored. Clamping only the epoch would leave a row
+            // labelled G2 while carrying G1's attachment metadata, so the payload is dropped entirely.
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 3}), message: 'denied at G2'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), update_at: 5000, message: 'allowed at G1'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('denied at G2');
+            expect(rows[0].metadata?.redacted_file_count).toBe(3);
+            expect(rows[0].redactionVerifiedEpoch).toBe(2);
         });
     });
 });

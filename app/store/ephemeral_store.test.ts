@@ -81,46 +81,6 @@ describe('EphemeralStore', () => {
         expect(EphemeralStore.getChannelPlaybooksSynced('server-url', 'channel-id-3')).toBe(false);
     });
 
-    describe('channel redaction stale flags', () => {
-        const serverUrl = 'redaction-server';
-        const otherServerUrl = 'redaction-server-2';
-
-        afterEach(() => {
-            EphemeralStore.clearChannelRedactionStale(serverUrl);
-            EphemeralStore.clearChannelRedactionStale(otherServerUrl);
-        });
-
-        it('should return false for a channel that was never marked', () => {
-            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
-        });
-
-        it('should unset only the given channel', () => {
-            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
-            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id-2');
-
-            EphemeralStore.unsetChannelRedactionStale(serverUrl, 'channel-id');
-
-            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
-            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id-2')).toBe(true);
-        });
-
-        it('should scope the flags per server', () => {
-            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
-
-            expect(EphemeralStore.getChannelRedactionStale(otherServerUrl, 'channel-id')).toBe(false);
-        });
-
-        it('should drop only the given server flags when cleared', () => {
-            EphemeralStore.setChannelRedactionStale(serverUrl, 'channel-id');
-            EphemeralStore.setChannelRedactionStale(otherServerUrl, 'channel-id');
-
-            EphemeralStore.clearChannelRedactionStale(serverUrl);
-
-            expect(EphemeralStore.getChannelRedactionStale(serverUrl, 'channel-id')).toBe(false);
-            expect(EphemeralStore.getChannelRedactionStale(otherServerUrl, 'channel-id')).toBe(true);
-        });
-    });
-
     describe('viewable items', () => {
         afterEach(() => {
             EphemeralStore.clearViewableItems();

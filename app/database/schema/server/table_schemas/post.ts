@@ -22,6 +22,7 @@ export default tableSchema({
         {name: 'pending_post_id', type: 'string', isIndexed: true},
         {name: 'previous_post_id', type: 'string'},
         {name: 'props', type: 'string'},
+        {name: 'redaction_verified_epoch', type: 'number'},
         {name: 'root_id', type: 'string'},
         {name: 'type', type: 'string', isIndexed: true},
         {name: 'update_at', type: 'number'},

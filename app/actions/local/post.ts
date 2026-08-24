@@ -226,6 +226,7 @@ export async function prepareModelsForChannelPosts(
     previousPostId: string,
     authors: UserProfile[],
     isCRTEnabled: boolean,
+    redactionVerifiedEpoch?: number,
 ): Promise<Model[]> {
     const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const models = [];
@@ -236,6 +237,7 @@ export async function prepareModelsForChannelPosts(
         posts,
         previousPostId,
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch,
     });
     models.push(...postModels);
 
@@ -284,7 +286,7 @@ export async function prepareModelsForChannelPosts(
 
 export async function storePostsForChannel(
     serverUrl: string, channelId: string, posts: Post[], order: string[], previousPostId: string,
-    actionType: string, authors: UserProfile[], prepareRecordsOnly = false,
+    actionType: string, authors: UserProfile[], prepareRecordsOnly = false, redactionVerifiedEpoch?: number,
 ) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -300,6 +302,7 @@ export async function storePostsForChannel(
             previousPostId,
             authors,
             isCRTEnabled,
+            redactionVerifiedEpoch,
         );
 
         if (models.length && !prepareRecordsOnly) {

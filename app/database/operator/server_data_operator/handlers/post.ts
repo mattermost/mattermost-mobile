@@ -21,6 +21,7 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {isUnrevealedBoRPost} from '@utils/bor';
+import {deleteFilesByPath} from '@utils/file';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 
@@ -29,7 +30,7 @@ import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
-import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, HandleScheduledPostErrorCodeArgs, HandleScheduledPostsArgs, RecordPair} from '@typings/database/database';
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, HandleScheduledPostErrorCodeArgs, HandleScheduledPostsArgs, PostWithRedactionEpoch, RecordPair} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -112,9 +113,23 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 
 export const exportedForTest = {
     mergePostInChannelChunks,
+    isStaleRedactionGeneration,
     shouldUpdateForBoRPost,
     shouldUpdateForRedaction,
 };
+
+/**
+ * A response dispatched under epoch G1 can arrive after one dispatched under G2 was stored. The whole
+ * payload is dropped rather than merged: clamping only the epoch would label a record verified at G2
+ * while it carries G1's metadata. The current state is re-delivered by the next fetch or POST_EDITED.
+ */
+function isStaleRedactionGeneration(e: PostModel, n: Post): boolean {
+    const incoming = (n as PostWithRedactionEpoch).redaction_verified_epoch;
+    if (incoming === undefined) {
+        return false;
+    }
+    return incoming < (e.redactionVerifiedEpoch ?? 0);
+}
 
 function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
     const bothBoRPost = e.type === PostTypes.BURN_ON_READ && n.type === PostTypes.BURN_ON_READ;
@@ -335,7 +350,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
      * @returns {Promise<Model[]>}
      */
-    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false, skipPostsInChannel = false}: HandlePostsArgs): Promise<Model[]> => {
+    handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false, skipPostsInChannel = false, redactionVerifiedEpoch}: HandlePostsArgs): Promise<Model[]> => {
         const tableName = POST;
 
         // We rely on the posts array; if it is empty, we stop processing
@@ -397,6 +412,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                 post.metadata = data;
             }
 
+            if (redactionVerifiedEpoch !== undefined) {
+                (post as PostWithRedactionEpoch).redaction_verified_epoch = redactionVerifiedEpoch;
+            }
+
             post.file_ids?.forEach((fileId) => receivedFilesSet.add(fileId));
         }
 
@@ -432,6 +451,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             tableName,
             fieldName: 'id',
             shouldUpdate: (e: PostModel, n: Post) => {
+                if (isStaleRedactionGeneration(e, n)) {
+                    return false;
+                }
+
                 if (shouldUpdateForBoRPost(e, n)) {
                     return true;
                 }
@@ -467,9 +490,17 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             batch.push(...postFiles);
         }
 
+        // Reported as redacted, not merely absent from this payload, so the downloaded bytes go too.
+        const redactedPostIds = new Set(uniquePosts.filter((p) => (p.metadata?.redacted_file_count ?? 0) > 0).map((p) => p.id));
+        const revokedFilePaths: Array<string | null | undefined> = [];
+
         const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
         allFiles.forEach((f) => {
             if (!receivedFilesSet.has(f.id)) {
+                if (redactedPostIds.has(f.postId)) {
+                    // The row is the only record of where the bytes live.
+                    revokedFilePaths.push(f.localPath, f.imageThumbnail);
+                }
                 batch.push(f.prepareDestroyPermanently());
             }
         });
@@ -499,6 +530,12 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch, 'handlePosts');
+
+            // Only once the denial is stored, and not awaited: losing a blob is recoverable, holding
+            // up post persistence is not.
+            if (revokedFilePaths.length) {
+                deleteFilesByPath(revokedFilePaths);
+            }
         }
 
         return batch;

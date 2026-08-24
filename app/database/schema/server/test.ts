@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -324,6 +324,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         last_playbook_runs_fetch_at: {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         autotranslation_disabled: {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        redaction_required_epoch: {name: 'redaction_required_epoch', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -337,6 +338,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        {name: 'redaction_required_epoch', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {
@@ -685,6 +687,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         pending_post_id: {name: 'pending_post_id', type: 'string', isIndexed: true},
                         previous_post_id: {name: 'previous_post_id', type: 'string'},
                         props: {name: 'props', type: 'string'},
+                        redaction_verified_epoch: {name: 'redaction_verified_epoch', type: 'number'},
                         root_id: {name: 'root_id', type: 'string'},
                         type: {name: 'type', type: 'string', isIndexed: true},
                         update_at: {name: 'update_at', type: 'number'},
@@ -703,6 +706,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'pending_post_id', type: 'string', isIndexed: true},
                         {name: 'previous_post_id', type: 'string'},
                         {name: 'props', type: 'string'},
+                        {name: 'redaction_verified_epoch', type: 'number'},
                         {name: 'root_id', type: 'string'},
                         {name: 'type', type: 'string', isIndexed: true},
                         {name: 'update_at', type: 'number'},

@@ -124,6 +124,10 @@ const WebsocketEvents = {
     // File access control
     FILE_DOWNLOAD_REJECTED: 'file_download_rejected',
     SHOW_TOAST: 'show_toast',
+
+    // Attribute-based access control policies
+    CHANNEL_ACCESS_CONTROL_UPDATED: 'channel_access_control_updated',
+    PERMISSION_POLICY_UPDATED: 'permission_policy_updated',
 };
 
 export default WebsocketEvents;

@@ -22,6 +22,7 @@ import Failed from './failed';
 import Message from './message';
 import Reactions from './reactions';
 import RedactedFilesPlaceholder from './redacted_files_placeholder';
+import UnverifiedFilesPlaceholder from './unverified_files_placeholder';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
@@ -32,6 +33,8 @@ type BodyProps = {
     mmBlocksEnabled: boolean;
     filesInfo: FileInfo[];
     hasReactions: boolean;
+    isRedactionVerified: boolean;
+    redactionRequiredEpoch: number;
     highlight: boolean;
     highlightReplyBar: boolean;
     isCRTEnabled?: boolean;
@@ -94,6 +97,8 @@ const Body = ({
     mmBlocksEnabled,
     filesInfo,
     hasReactions,
+    isRedactionVerified,
+    redactionRequiredEpoch,
     highlight,
     highlightReplyBar,
     isCRTEnabled,
@@ -212,6 +217,13 @@ const Body = ({
     const reactionsVisible = hasReactions && showAddReaction;
     const redactedFileCount = post.metadata?.redacted_file_count ?? 0;
 
+    // Nothing renders while the decision is stale. Pending and failed local posts are exempt: they
+    // have never been through the server, so there is no decision to be behind.
+    const hasAttachmentEvidence = Boolean(filesInfo.length) || redactedFileCount > 0;
+    const isUnverified = hasAttachmentEvidence && !isRedactionVerified && !isPendingOrFailed;
+    const showFiles = Boolean(filesInfo.length) && !isUnverified;
+    const showRedactedPlaceholder = redactedFileCount > 0 && !isUnverified;
+
     if (!hasBeenDeleted) {
         body = (
             <View style={style.messageBody}>
@@ -224,9 +236,10 @@ const Body = ({
                     mmBlocksEnabled={mmBlocksEnabled}
                     post={post}
                     theme={theme}
+                    isRedactionVerified={isRedactionVerified}
                 />
                 }
-                {Boolean(filesInfo.length) &&
+                {showFiles &&
                 <Files
                     failed={isFailed}
                     filesInfo={filesInfo}
@@ -237,8 +250,15 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
-                {redactedFileCount > 0 && (
+                {showRedactedPlaceholder && (
                     <RedactedFilesPlaceholder/>
+                )}
+                {isUnverified && (
+                    <UnverifiedFilesPlaceholder
+                        postId={post.id}
+                        location={location}
+                        requiredEpoch={redactionRequiredEpoch}
+                    />
                 )}
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>

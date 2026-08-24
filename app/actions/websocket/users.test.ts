@@ -4,20 +4,19 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {setCurrentUserStatus} from '@actions/local/user';
-import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
-import {queryAllPostsInChannel} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getConfigValue, getCurrentChannelId, getLicense} from '@queries/servers/system';
+import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import * as logUtils from '@utils/log';
 
@@ -36,7 +35,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/user');
-jest.mock('@actions/remote/post');
+jest.mock('@actions/websocket/access_control');
 jest.mock('@actions/remote/user');
 jest.mock('@database/manager');
 jest.mock('@helpers/api/preference');
@@ -51,15 +50,9 @@ jest.mock('@managers/session_attributes_manager', () => ({
 }));
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/custom_profile');
-jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/preference');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
-jest.mock('@store/ephemeral_store');
-
-// The stale-channel marking is deliberately not awaited by the handler so it cannot hold up
-// websocket event processing; let its microtasks run before asserting on it.
-const flushMarking = () => new Promise(process.nextTick);
 
 describe('WebSocket Users Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -394,14 +387,12 @@ describe('WebSocket Users Actions', () => {
             expect(logUtils.logError).toHaveBeenCalled();
         });
 
-        it('should re-fetch channel posts and thread when the current user attributes change', async () => {
+        it('should invalidate every cached redaction decision when the current user attributes change', async () => {
+            // ABAC subjects are per-user and global to the server, so one attribute write can change
+            // the decision for any channel. Scope, coalescing and the visible-surface refresh are
+            // covered in access_control.test.ts; this only asserts the handler delegates.
             operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('true');
-            jest.mocked(getCurrentChannelId).mockResolvedValue('channel-123');
-            jest.mocked(refetchPostsForRedaction).mockResolvedValue({});
-            jest.mocked(fetchPostThread).mockResolvedValue({posts: []});
-            jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('thread-456');
 
             const msg = {
                 data: {
@@ -412,112 +403,12 @@ describe('WebSocket Users Actions', () => {
 
             await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
 
-            expect(refetchPostsForRedaction).toHaveBeenCalledWith(serverUrl, 'channel-123');
-            expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, 'thread-456');
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserAttributes, true);
         });
 
-        it('should mark the other channels holding posts as stale, but not the current one', async () => {
+        it('should not invalidate when a different user attributes change', async () => {
             operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('true');
-            jest.mocked(getCurrentChannelId).mockResolvedValue('channel-123');
-            jest.mocked(refetchPostsForRedaction).mockResolvedValue({});
-            jest.mocked(queryAllPostsInChannel).mockReturnValue({
-                fetch: jest.fn().mockResolvedValue([
-                    {channelId: 'channel-123'},
-                    {channelId: 'channel-456'},
-                    {channelId: 'channel-456'},
-                    {channelId: 'channel-789'},
-                ]),
-            } as unknown as ReturnType<typeof queryAllPostsInChannel>);
-
-            const msg = {
-                data: {
-                    user_id: currentUserId,
-                    values: {field1: 'newValue'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
-            await flushMarking();
-
-            expect(EphemeralStore.setChannelRedactionStale).toHaveBeenCalledWith(serverUrl, 'channel-456');
-            expect(EphemeralStore.setChannelRedactionStale).toHaveBeenCalledWith(serverUrl, 'channel-789');
-            expect(EphemeralStore.setChannelRedactionStale).not.toHaveBeenCalledWith(serverUrl, 'channel-123');
-            expect(EphemeralStore.setChannelRedactionStale).toHaveBeenCalledTimes(2);
-        });
-
-        it('should mark every channel of a server the user is not currently looking at', async () => {
-            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('true');
-            DatabaseManager.getActiveServerUrl = jest.fn().mockResolvedValue('another-server');
-            jest.mocked(queryAllPostsInChannel).mockReturnValue({
-                fetch: jest.fn().mockResolvedValue([
-                    {channelId: 'channel-123'},
-                    {channelId: 'channel-456'},
-                ]),
-            } as unknown as ReturnType<typeof queryAllPostsInChannel>);
-
-            const msg = {
-                data: {
-                    user_id: currentUserId,
-                    values: {field1: 'newValue'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
-            await flushMarking();
-
-            // Nothing of this server is on screen, so there is nothing to re-fetch, but its
-            // cached channels must still be flagged for the next visit.
-            expect(refetchPostsForRedaction).not.toHaveBeenCalled();
-            expect(EphemeralStore.setChannelRedactionStale).toHaveBeenCalledWith(serverUrl, 'channel-123');
-            expect(EphemeralStore.setChannelRedactionStale).toHaveBeenCalledWith(serverUrl, 'channel-456');
-        });
-
-        it('should not mark channels as stale when the PermissionPolicies feature flag is disabled', async () => {
-            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('false');
-
-            const msg = {
-                data: {
-                    user_id: currentUserId,
-                    values: {field1: 'newValue'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
-            await flushMarking();
-
-            expect(EphemeralStore.setChannelRedactionStale).not.toHaveBeenCalled();
-        });
-
-        it('should not re-fetch when the PermissionPolicies feature flag is disabled', async () => {
-            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('false');
-            jest.mocked(getCurrentChannelId).mockResolvedValue('channel-123');
-            jest.mocked(refetchPostsForRedaction).mockResolvedValue({});
-
-            const msg = {
-                data: {
-                    user_id: currentUserId,
-                    values: {field1: 'newValue'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
-
-            expect(refetchPostsForRedaction).not.toHaveBeenCalled();
-        });
-
-        it('should not re-fetch posts when a different user attributes change', async () => {
-            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('true');
-            jest.mocked(refetchPostsForRedaction).mockResolvedValue({});
 
             const msg = {
                 data: {
@@ -528,27 +419,7 @@ describe('WebSocket Users Actions', () => {
 
             await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
 
-            expect(refetchPostsForRedaction).not.toHaveBeenCalled();
-        });
-
-        it('should not re-fetch channel posts when no active channel', async () => {
-            operator.handleCustomProfileAttributes = jest.fn().mockResolvedValue([]);
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId}));
-            jest.mocked(getConfigValue).mockResolvedValue('true');
-            jest.mocked(getCurrentChannelId).mockResolvedValue('');
-            jest.mocked(refetchPostsForRedaction).mockResolvedValue({});
-            jest.spyOn(EphemeralStore, 'getCurrentThreadId').mockReturnValue('');
-
-            const msg = {
-                data: {
-                    user_id: currentUserId,
-                    values: {field1: 'newValue'},
-                },
-            } as WebSocketMessage;
-
-            await handleCustomProfileAttributesValuesUpdatedEvent(serverUrl, msg);
-
-            expect(refetchPostsForRedaction).not.toHaveBeenCalled();
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
         });
     });
 

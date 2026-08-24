@@ -12,10 +12,10 @@ import {
 import {useNavigation} from 'expo-router';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {Alert, DeviceEventEmitter, View} from 'react-native';
 
 import {setFileAsBlocked} from '@actions/local/file';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -133,6 +133,13 @@ const PdfViewer = ({allowPdfLinkNavigation, fileId, filePath, siteURL}: Props) =
     useDidMount(() => {
         return dismiss;
     });
+
+    // An ABAC change can revoke access to this document while it is open, and the viewer was handed
+    // its file by value, so no database change can reach it. The gallery listens for the same event.
+    useEffect(() => {
+        const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, onClose);
+        return () => subscription.remove();
+    }, [onClose]);
 
     return (
         <View style={styles.flex}>

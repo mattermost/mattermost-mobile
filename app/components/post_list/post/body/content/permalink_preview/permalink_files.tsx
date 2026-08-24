@@ -8,6 +8,7 @@ import Files from '@components/files';
 import {Events} from '@constants';
 import useDidMount from '@hooks/did_mount';
 import EphemeralStore from '@store/ephemeral_store';
+import {emitPostInViewport} from '@utils/post_list/viewport';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -40,8 +41,9 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
 
         const parentKey = `${parentLocation}-${parentPostId}`;
         if (viewableItemsMap[parentKey]) {
-            const viewableItems = {[`${location}-${post.id}`]: true};
-            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItems);
+            // Via the helper so the embedded post also lands in the viewport cache; a bare emit
+            // leaves anything that mounts later unable to seed itself.
+            emitPostInViewport(location, post.id);
         }
     }, [parentLocation, parentPostId, location, post.id]);
 

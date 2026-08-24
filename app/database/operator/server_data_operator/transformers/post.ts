@@ -4,7 +4,7 @@
 import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 
-import type{TransformerArgs} from '@typings/database/database';
+import type{PostWithRedactionEpoch, TransformerArgs} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -50,6 +50,10 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs<P
         // So, it might not be present in the raw post, so we use the one from the record
         const metadata = raw.metadata ?? post.metadata;
         post.metadata = metadata && Object.keys(metadata).length ? metadata : null;
+
+        // Only a sanitized server response carries an epoch, so a local edit cannot promote a post to
+        // a newer decision.
+        post.redactionVerifiedEpoch = (raw as PostWithRedactionEpoch).redaction_verified_epoch ?? post.redactionVerifiedEpoch ?? 0;
 
         post.userId = raw.user_id;
         post.originalId = raw.original_id;

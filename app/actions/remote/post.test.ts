@@ -8,12 +8,12 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
-import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
-import EphemeralStore from '@store/ephemeral_store';
+import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
 import * as LocalChannelActions from '../local/channel';
+import {RedactionInvalidationReason, invalidateRedactionGlobally} from '../local/redaction';
 
 import {
     createPost,
@@ -841,8 +841,48 @@ describe('get posts', () => {
         expect(mockClient.getPostsSince).not.toHaveBeenCalled();
     });
 
-    it('fetchPostsForChannel - should fetch a page and clear the flag when the channel redaction is stale', async () => {
+    it('fetchPosts - should stamp the epoch it was dispatched under and drop a response a later invalidation superseded', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const stored = await fetchPosts(serverUrl, channelId);
+        expect(stored.error).toBeUndefined();
+        expect(stored.redactionVerifiedEpoch).toBe(1);
+        const rows = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(rows[0].redactionVerifiedEpoch).toBe(1);
+
+        // An invalidation that lands while the request is in flight must make the response
+        // unusable, so the channel's posts keep the epoch they were last verified at.
+        (mockClient.getPosts as jest.Mock).mockImplementationOnce(async () => {
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+            return {order: [post1.id], posts: {[post1.id]: post1}};
+        });
+
+        const superseded = await fetchPosts(serverUrl, channelId);
+        expect(superseded.staleRedaction).toBe(true);
+        expect(superseded.posts).toEqual([]);
+        const after = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(after[0].redactionVerifiedEpoch).toBe(1);
+    });
+
+    it('fetchPostsForChannel - should force a page when the cached posts are behind the required epoch', async () => {
+        // The persisted epoch replaces the in-memory stale flag precisely so this survives a restart:
+        // a since-fetch filters on UpdateAt, which an ABAC change never moves.
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
         await operator.handleMyChannel({channels: [{
             id: channelId,
             team_id: teamId,
@@ -861,22 +901,33 @@ describe('get posts', () => {
             order: [post1.id],
             posts: [post1],
             prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
         });
+
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
 
         mockClient.getPosts.mockClear();
         mockClient.getPostsSince.mockClear();
-        EphemeralStore.setChannelRedactionStale(serverUrl, channelId);
 
         const result = await fetchPostsForChannel(serverUrl, channelId);
 
         expect(result.error).toBeUndefined();
         expect(mockClient.getPosts).toHaveBeenCalled();
         expect(mockClient.getPostsSince).not.toHaveBeenCalled();
-        expect(EphemeralStore.getChannelRedactionStale(serverUrl, channelId)).toBe(false);
     });
 
-    it('fetchPostsForChannel - should keep the channel flagged when the re-fetch fails', async () => {
+    it('fetchPostsForChannel - should leave the posts unverified when the re-fetch fails', async () => {
+        // A failed fetch must not look like a successful verification, or the attachments would be
+        // rendered from the decision the fetch was trying to replace.
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
         await operator.handleMyChannel({channels: [{
             id: channelId,
             team_id: teamId,
@@ -895,19 +946,17 @@ describe('get posts', () => {
             order: [post1.id],
             posts: [post1],
             prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
         });
 
-        mockClient.getPosts.mockClear();
-        mockClient.getPostsSince.mockClear();
+        const requiredEpoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
         (mockClient.getPosts as jest.Mock).mockRejectedValueOnce(new Error('network down'));
-        EphemeralStore.setChannelRedactionStale(serverUrl, channelId);
 
         const result = await fetchPostsForChannel(serverUrl, channelId);
 
         expect(result.error).toBeDefined();
-        expect(EphemeralStore.getChannelRedactionStale(serverUrl, channelId)).toBe(true);
-
-        EphemeralStore.clearChannelRedactionStale(serverUrl);
+        const rows = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(rows[0].redactionVerifiedEpoch).toBeLessThan(requiredEpoch!);
     });
 
     it('fetchPostsForChannel - no posts with since', async () => {

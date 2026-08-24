@@ -4,9 +4,10 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {deletePostsForChannelsWithAutotranslation, updateChannelsDisplayName} from '@actions/local/channel';
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {setCurrentUserStatus} from '@actions/local/user';
-import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import {General, Events, Preferences} from '@constants';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
@@ -14,18 +15,16 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
-import {queryAllPostsInChannel} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getConfigValue, getCurrentChannelId, getLicense} from '@queries/servers/system';
+import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
 import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {displayUsername} from '@utils/user';
 
-import type {Database, Model} from '@nozbe/watermelondb';
+import type {Model} from '@nozbe/watermelondb';
 import type {CustomProfileField} from '@typings/api/custom_profile_attributes';
 
 export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -78,6 +77,20 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
             if (models?.length) {
                 modelsToBatch.push(...models);
             }
+        }
+    }
+
+    if (user.id === currentUser.id) {
+        // BuildAccessControlSubject reads these native fields, so a change to one can flip a
+        // decision; cosmetic edits must not, or every nickname change invalidates the cache.
+        // email_verified and create_at are in the subject too but are not persisted locally.
+        const abacFieldChanged =
+            userToSave.email !== currentUser.email ||
+            Boolean(userToSave.is_bot) !== Boolean(currentUser.isBot) ||
+            userToSave.roles !== currentUser.roles;
+
+        if (abacFieldChanged) {
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserFields);
         }
     }
 
@@ -134,19 +147,6 @@ export async function handleStatusChangedEvent(serverUrl: string, msg: WebSocket
     setCurrentUserStatus(serverUrl, newStatus);
 }
 
-async function markOtherChannelsRedactionStale(serverUrl: string, database: Database, currentChannelId?: string) {
-    try {
-        const postsInChannel = await queryAllPostsInChannel(database).fetch();
-        const channelIds = new Set(postsInChannel.map((p) => p.channelId));
-        if (currentChannelId) {
-            channelIds.delete(currentChannelId);
-        }
-        channelIds.forEach((id) => EphemeralStore.setChannelRedactionStale(serverUrl, id));
-    } catch (error) {
-        logError('markOtherChannelsRedactionStale: failed to mark channels', error);
-    }
-}
-
 export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl: string, msg: WebSocketMessage) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -168,42 +168,11 @@ export async function handleCustomProfileAttributesValuesUpdatedEvent(serverUrl:
             logError('Error handling custom profile attributes values updated event', error);
         }
 
-        // ABAC policies evaluate against user attributes; when the current user's own
-        // attributes change, refresh visible posts so redacted_file_count is up to date.
-        // Only needed when the PermissionPolicies feature flag is enabled server-side.
+        // The user's own attributes feed every policy on this server, so the epoch is raised for all
+        // channels; only visible ones refetch now, the rest converge when rendered.
         const currentUser = await getCurrentUser(database);
         if (currentUser?.id === user_id) {
-            const permissionPoliciesEnabled = (await getConfigValue(database, 'FeatureFlagPermissionPolicies')) === 'true';
-            if (permissionPoliciesEnabled) {
-                // Only the server the user is looking at can have posts on screen to refresh;
-                // every other server just needs its cached channels flagged.
-                const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-                const isActiveServer = activeServerUrl === serverUrl;
-                let channelId: string | undefined;
-
-                if (isActiveServer) {
-                    channelId = await getCurrentChannelId(database);
-                    if (channelId) {
-                        refetchPostsForRedaction(serverUrl, channelId).catch((e) =>
-                            logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch channel posts', e),
-                        );
-                    }
-                    const threadId = EphemeralStore.getCurrentThreadId();
-                    if (threadId) {
-                        fetchPostThread(serverUrl, threadId).catch((e) =>
-                            logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to re-fetch thread posts', e),
-                        );
-                    }
-                }
-
-                // Channels the user is not looking at keep their cached posts, and a
-                // since-fetch on the next visit cannot deliver the new redaction state.
-                // Flag them so the next switch pulls a page instead. Not awaited: this scans
-                // every posts-in-channel row and must not hold up websocket event processing.
-                markOtherChannelsRedactionStale(serverUrl, database, channelId).catch((e) =>
-                    logError('handleCustomProfileAttributesValuesUpdatedEvent: failed to mark stale channels', e),
-                );
-            }
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserAttributes, true);
         }
     } catch (error) {
         logError('Error getting the operator for the custom profile attributes values updated event', error);
@@ -258,6 +227,10 @@ export async function handleCustomProfileAttributesFieldDeletedEvent(serverUrl: 
         } catch (error) {
             logError('Error handling custom profile field deleted event', error);
         }
+
+        // Deleting a field drops its values for every user at once, so the subject can change with
+        // no per-user value event.
+        invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserAttributes, true);
     } catch (error) {
         logError('Error getting the operator for the custom profile field deleted event', error);
     }

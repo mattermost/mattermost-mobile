@@ -667,7 +667,7 @@ describe('Files', () => {
         const filesInfo = [
             TestHelper.fakeFileInfo({id: '1'}),
             TestHelper.fakeFileInfo({id: '2'}),
-        // eslint-disable-next-line max-lines
+
         ];
 
         jest.mocked(useImageAttachments).mockImplementation((fi) => {

@@ -52,6 +52,7 @@ export type PermalinkPreviewProps = {
     parentLocation?: string;
     parentPostId?: string;
     autotranslationsEnabled: boolean;
+    isHostRedactionVerified: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -136,6 +137,7 @@ const PermalinkPreview = ({
     parentLocation,
     parentPostId,
     autotranslationsEnabled,
+    isHostRedactionVerified,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -183,10 +185,10 @@ const PermalinkPreview = ({
         // When the embed shows accessible files but DB records are missing (e.g. after ABAC
         // access is granted and file records were deleted during the denial period), re-fetch
         // the linked post so handlePosts repopulates the file records.
-        if (embedFilesCount > 0 && !hasLinkedPostFiles) {
+        if (isHostRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
             fetchLinkedPost(serverUrl, linkedPostId);
         }
-    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles]);
+    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isHostRedactionVerified]);
 
     if (isOriginPostDeleted) {
         return null;
@@ -234,6 +236,11 @@ const PermalinkPreview = ({
     // The server only populates redacted_file_count when PermissionPolicies is enabled,
     // so no explicit client-side feature-flag gate is needed here.
     const redactedFileCount = getPermalinkRedactedFileCount(embedData, post?.metadata?.redacted_file_count ?? 0);
+
+    // The server sanitizes the embed as part of the host response, so the host's epoch covers it.
+    // While the host is behind, neither the attachments nor a denial claim about them is trustworthy.
+    const showEmbeddedFiles = isHostRedactionVerified && hasLinkedPostFiles && embedFilesCount > 0;
+    const showRedactedPlaceholder = isHostRedactionVerified && redactedFileCount > 0;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -331,7 +338,7 @@ const PermalinkPreview = ({
                     {/* Both sources must agree: the embed carries what is rendered, and it is
                         recalculated per user on every fetch, while hasLinkedPostFiles tells us the
                         file records the gallery needs are actually stored. */}
-                    {hasLinkedPostFiles && embedFilesCount > 0 && (
+                    {showEmbeddedFiles && (
                         <PermalinkFiles
                             post={post}
                             location='permalink_preview'
@@ -341,7 +348,7 @@ const PermalinkPreview = ({
                             filesInfo={filesInfo}
                         />
                     )}
-                    {redactedFileCount > 0 && (
+                    {showRedactedPlaceholder && (
                         <RedactedFilesPlaceholder/>
                     )}
                 </View>

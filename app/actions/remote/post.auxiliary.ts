@@ -44,8 +44,11 @@ export async function processChannelPostsByTeam(
 
         for (const [i, result] of chunkResults.entries()) {
             if (result.status === 'fulfilled') {
-                const {posts, order, previousPostId, authors, actionType} = result.value;
-                if (posts?.length) {
+                const {posts, order, previousPostId, authors, actionType, redactionVerifiedEpoch, staleRedaction} = result.value;
+
+                // Each channel carries its own epoch; the combined batch below cannot hold one for
+                // all. A channel superseded mid-flight is dropped, so its posts stay hidden.
+                if (posts?.length && !staleRedaction) {
                     const channelId = channelIdsChunk[i];
                     allPosts.push(...posts);
                     prepareModelsPromises.push(
@@ -64,6 +67,7 @@ export async function processChannelPostsByTeam(
                             previousPostId || '',
                             authors || [],
                             isCRTEnabled,
+                            redactionVerifiedEpoch,
                         ),
                     );
                 }

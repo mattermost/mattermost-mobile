@@ -9,9 +9,10 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import {getFullErrorMessage} from '@utils/errors';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
@@ -162,6 +163,27 @@ export function deleteFileCacheByDir(dir: string) {
     deleteFilesInDir(cacheDir);
 
     return true;
+}
+
+/**
+ * Per-file eviction, for when an ABAC change confirms a denial: the FileModel rows are destroyed but
+ * the downloaded blobs and thumbnails would stay readable on disk. Failures are swallowed — a file
+ * that cannot be removed must not stop the denial being recorded, and the next refetch retries.
+ */
+export function deleteFilesByPath(paths: Array<string | null | undefined>) {
+    for (const path of paths) {
+        if (!path) {
+            continue;
+        }
+        try {
+            const file = new File(path);
+            if (file.exists) {
+                file.delete();
+            }
+        } catch (error) {
+            logDebug('deleteFilesByPath: could not remove a cached file', getFullErrorMessage(error));
+        }
+    }
 }
 
 function deleteFilesInDir(directory: string) {

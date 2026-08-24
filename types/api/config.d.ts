@@ -46,6 +46,7 @@ interface ClientConfig {
     EmailLoginButtonColor: string;
     EmailLoginButtonTextColor: string;
     EmailNotificationContentsType: string;
+    EnableAttributeBasedAccessControl?: string;
     EnableBanner: string;
     EnableBotAccountCreation: string;
     EnableBurnOnRead: string;

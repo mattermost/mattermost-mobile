@@ -1,0 +1,259 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {Q, type Database} from '@nozbe/watermelondb';
+import {combineLatest, of as of$, type Observable} from 'rxjs';
+import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
+
+import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {observeMyChannel} from '@queries/servers/channel';
+import {getConfigValue, observeConfigBooleanValue, querySystemValue} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logError} from '@utils/log';
+
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type SystemModel from '@typings/database/models/servers/system';
+
+const {SERVER: {SYSTEM, MY_CHANNEL}} = MM_TABLES;
+
+/**
+ * An ABAC decision bumps no post row, so an incremental sync can never re-deliver a post whose file
+ * access changed. Instead each post stores the epoch its metadata was confirmed under, and any ABAC
+ * input change raises the epoch that post must reach before its attachments render again.
+ *
+ * Persisted, unlike the webapp equivalent (mattermost-redux render_permissions.ts): websocket
+ * events are not replayed across process death, but post rows survive it.
+ */
+export type RedactionEpochState = {
+    counter: number;
+    global: number;
+};
+
+/**
+ * Used when the System row is missing or unreadable. Must exceed the 0 the migration gives existing
+ * posts, so rows cached before this feature start unverified instead of passing a 0 >= 0 check.
+ */
+export const DEFAULT_REDACTION_EPOCH_STATE: RedactionEpochState = {counter: 1, global: 1};
+
+export const RedactionInvalidationReason = {
+    ChannelPolicy: 'channel_policy',
+    GlobalPolicy: 'global_policy',
+    UserAttributes: 'user_attributes',
+    UserRoles: 'user_roles',
+    ChannelRoles: 'channel_roles',
+    UserFields: 'user_fields',
+    ConfigChanged: 'config_changed',
+    LicenseChanged: 'license_changed',
+    FirstConnect: 'first_connect',
+    AttributeViewRetry: 'attribute_view_retry',
+} as const;
+export type RedactionReason = typeof RedactionInvalidationReason[keyof typeof RedactionInvalidationReason];
+
+const isSafeEpoch = (value: unknown): value is number => {
+    return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+};
+
+const parseEpochState = (value: unknown): RedactionEpochState => {
+    if (!value || typeof value !== 'object') {
+        return DEFAULT_REDACTION_EPOCH_STATE;
+    }
+    const {counter, global} = value as Partial<RedactionEpochState>;
+    if (!isSafeEpoch(counter) || !isSafeEpoch(global)) {
+        return DEFAULT_REDACTION_EPOCH_STATE;
+    }
+    return {counter, global};
+};
+
+// find() rejects when the row is absent, and a rejection inside a database.write callback aborts
+// the whole transaction even when caught.
+const getEpochRecord = async (database: Database): Promise<SystemModel | undefined> => {
+    const records = await querySystemValue(database, SYSTEM_IDENTIFIERS.REDACTION_EPOCH).fetch();
+    return records[0];
+};
+
+const getMyChannelRecord = async (database: Database, channelId: string): Promise<MyChannelModel | undefined> => {
+    const records = await database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', channelId), Q.take(1)).fetch();
+    return records[0];
+};
+
+export const getRedactionEpochState = async (database: Database): Promise<RedactionEpochState> => {
+    const record = await getEpochRecord(database);
+    return parseEpochState(record?.value);
+};
+
+/**
+ * Mirrors attributeBasedAccessControlEnabled (server app/access_control.go). No license term: the
+ * client gate must be neither narrower nor broader than the server predicate it mirrors.
+ */
+export const isRedactionEnforced = async (database: Database): Promise<boolean> => {
+    const [flag, setting] = await Promise.all([
+        getConfigValue(database, 'FeatureFlagPermissionPolicies'),
+        getConfigValue(database, 'EnableAttributeBasedAccessControl'),
+    ]);
+    return flag === 'true' && setting === 'true';
+};
+
+export const observeRedactionEnforced = (database: Database): Observable<boolean> => {
+    return combineLatest([
+        observeConfigBooleanValue(database, 'FeatureFlagPermissionPolicies'),
+        observeConfigBooleanValue(database, 'EnableAttributeBasedAccessControl'),
+    ]).pipe(
+        map(([flag, setting]) => flag && setting),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * WatermelonDB serialises writers, so two racing invalidations still produce distinct increasing
+ * epochs. handleSystem() opens its own database.write and cannot be nested here.
+ */
+const advanceEpoch = async (
+    serverUrl: string,
+    reason: RedactionReason,
+    channelId?: string,
+): Promise<number | undefined> => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        let next = 0;
+
+        await database.write(async (writer) => {
+            const record = await getEpochRecord(database);
+            const state = parseEpochState(record?.value);
+            next = state.counter + 1;
+            const value: RedactionEpochState = {
+                counter: next,
+                global: channelId ? state.global : next,
+            };
+
+            const batch = [];
+            if (record) {
+                batch.push(record.prepareUpdate((r) => {
+                    r.value = value;
+                }));
+            } else {
+                batch.push(database.get<SystemModel>(SYSTEM).prepareCreate((r) => {
+                    r._raw.id = SYSTEM_IDENTIFIERS.REDACTION_EPOCH;
+                    r.value = value;
+                }));
+            }
+
+            if (channelId) {
+                const myChannel = await getMyChannelRecord(database, channelId);
+                if (myChannel) {
+                    batch.push(myChannel.prepareUpdate((c) => {
+                        c.redactionRequiredEpoch = next;
+                    }));
+                } else {
+                    // Not a member, or removed mid-flight. The counter still moved, so nothing is
+                    // silently trusted.
+                    logDebug('advanceEpoch: no my_channel row to raise', channelId);
+                }
+            }
+
+            await writer.batch(...batch);
+        }, 'advanceRedactionEpoch');
+
+        return next;
+    } catch (error) {
+        logError('error on advanceEpoch', reason, channelId ?? 'global', getFullErrorMessage(error));
+        return undefined;
+    }
+};
+
+export const invalidateRedactionGlobally = (serverUrl: string, reason: RedactionReason) => {
+    return advanceEpoch(serverUrl, reason);
+};
+
+export const invalidateChannelRedaction = (serverUrl: string, channelId: string, reason: RedactionReason) => {
+    return advanceEpoch(serverUrl, reason, channelId);
+};
+
+export const getRequiredRedactionEpoch = async (database: Database, channelId?: string): Promise<number> => {
+    const state = await getRedactionEpochState(database);
+    if (!channelId) {
+        return state.global;
+    }
+    const myChannel = await getMyChannelRecord(database, channelId);
+    return Math.max(state.global, myChannel?.redactionRequiredEpoch ?? 0);
+};
+
+/**
+ * Epoch a request returning ABAC-sanitized metadata is dispatched under. Undefined when policies are
+ * not enforced, so nothing is stamped and the gate never applies.
+ */
+export const captureRedactionEpoch = async (serverUrl: string, channelId?: string): Promise<number | undefined> => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!(await isRedactionEnforced(database))) {
+            return undefined;
+        }
+        return await getRequiredRedactionEpoch(database, channelId);
+    } catch (error) {
+        logDebug('captureRedactionEpoch: could not read the required epoch', getFullErrorMessage(error));
+        return undefined;
+    }
+};
+
+/**
+ * An invalidation can still commit between this check and the Watermelon batch, so the persisted
+ * per-post epoch and the render gate — not this — are the security boundary. This only avoids
+ * storing work already known to be superseded.
+ */
+export const isRedactionEpochCurrent = async (serverUrl: string, epoch: number | undefined, channelId?: string): Promise<boolean> => {
+    if (epoch === undefined) {
+        return true;
+    }
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        return (await getRequiredRedactionEpoch(database, channelId)) <= epoch;
+    } catch (error) {
+        logDebug('isRedactionEpochCurrent: could not read the required epoch', getFullErrorMessage(error));
+        return false;
+    }
+};
+
+export const isPostRedactionVerified = (verifiedEpoch: number | undefined, requiredEpoch: number): boolean => {
+    return (verifiedEpoch ?? 0) >= requiredEpoch;
+};
+
+const observeGlobalRedactionEpoch = (database: Database): Observable<number> => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.REDACTION_EPOCH).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        map((record) => parseEpochState(record?.value).global),
+        distinctUntilChanged(),
+    );
+};
+
+// Deliberate exception to the unmemoized observeConfigValue pattern: every attachment-bearing post
+// on screen reads this, and a per-call factory would open two WatermelonDB subscriptions per row.
+// refCount tears the stream down with the last subscriber; the WeakMap lets a destroyed database go.
+const requiredEpochStreams = new WeakMap<Database, Map<string, Observable<number>>>();
+
+export const observeRequiredRedactionEpoch = (database: Database, channelId: string): Observable<number> => {
+    let byChannel = requiredEpochStreams.get(database);
+    if (!byChannel) {
+        byChannel = new Map();
+        requiredEpochStreams.set(database, byChannel);
+    }
+
+    const existing = byChannel.get(channelId);
+    if (existing) {
+        return existing;
+    }
+
+    const stream = combineLatest([
+        observeGlobalRedactionEpoch(database),
+        observeMyChannel(database, channelId).pipe(
+            map((myChannel) => myChannel?.redactionRequiredEpoch ?? 0),
+            distinctUntilChanged(),
+        ),
+    ]).pipe(
+        map(([globalEpoch, channelEpoch]) => Math.max(globalEpoch, channelEpoch)),
+        distinctUntilChanged(),
+        shareReplay({bufferSize: 1, refCount: true}),
+    );
+
+    byChannel.set(channelId, stream);
+    return stream;
+};

@@ -56,12 +56,6 @@ class EphemeralStoreSingleton {
     // It is cleared any time the connection with the server is lost.
     private channelPlaybooksSynced: {[serverUrl: string]: Set<string>} = {};
 
-    // Channels whose cached posts may hold a stale ABAC redaction state, because the access
-    // decision changed while the user was looking at a different channel. Consumed on the next
-    // switch into the channel. In-memory only: a restart drops the flags, and the posts are
-    // re-sanitized by the page fetch that a cold start performs anyway.
-    private channelsWithStaleRedaction: {[serverUrl: string]: Set<string>} = {};
-
     private managedCategoryPropertyIds: {[serverUrl: string]: {groupId: string; fieldId: string} | undefined} = {};
 
     // Track when the classification banner fields were last fetched per server, so
@@ -448,25 +442,6 @@ class EphemeralStoreSingleton {
         delete this.channelPlaybooksSynced[serverUrl];
     };
 
-    getChannelRedactionStale = (serverUrl: string, channelId: string) => {
-        return this.channelsWithStaleRedaction[serverUrl]?.has(channelId) ?? false;
-    };
-
-    setChannelRedactionStale = (serverUrl: string, channelId: string) => {
-        if (!this.channelsWithStaleRedaction[serverUrl]) {
-            this.channelsWithStaleRedaction[serverUrl] = new Set();
-        }
-        this.channelsWithStaleRedaction[serverUrl]?.add(channelId);
-    };
-
-    unsetChannelRedactionStale = (serverUrl: string, channelId: string) => {
-        this.channelsWithStaleRedaction[serverUrl]?.delete(channelId);
-    };
-
-    clearChannelRedactionStale = (serverUrl: string) => {
-        delete this.channelsWithStaleRedaction[serverUrl];
-    };
-
     observeTheme = () => {
         return this.themeSubject.asObservable();
     };
@@ -545,8 +520,18 @@ class EphemeralStoreSingleton {
         this.viewableItems[location] = items;
     };
 
+    // Merges rather than replaces: a permalink preview emits only for itself, and replacing the
+    // location's map would erase every sibling preview.
+    addViewableItem = (location: string, key: string) => {
+        this.viewableItems[location] = {...this.viewableItems[location], [key]: true};
+    };
+
     isItemInViewPort = (key: string) => {
         return Object.values(this.viewableItems).some((items) => Boolean(items[key]));
+    };
+
+    clearViewableItemsForLocation = (location: string) => {
+        delete this.viewableItems[location];
     };
 
     clearViewableItems = () => {

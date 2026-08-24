@@ -59,6 +59,10 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     /* autotranslation: Determines if the channel has automatic translation enabled for this user*/
     @field('autotranslation_disabled') autotranslationDisabled!: boolean;
 
+    /** redaction_required_epoch : Local-only. Raised when an ABAC change affects this channel alone,
+     * so one channel's policy edit does not invalidate every cached channel. */
+    @field('redaction_required_epoch') redactionRequiredEpoch!: number;
+
     /** channel : The relation pointing to the CHANNEL table */
     @immutableRelation(CHANNEL, 'id') channel!: Relation<ChannelModel>;
 

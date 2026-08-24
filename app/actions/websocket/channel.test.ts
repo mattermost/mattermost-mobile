@@ -472,7 +472,7 @@ describe('WebSocket Channel Actions', () => {
             expect(prepareMyChannelsForTeam).toHaveBeenCalled();
             expect(addChannelToDefaultCategory).toHaveBeenCalledWith(serverUrl, channel, true);
             expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, true);
-            expect(storePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, [{}], ['order'], 'prev_id', 'action', [{}], true);
+            expect(storePostsForChannel).toHaveBeenCalledWith(serverUrl, channelId, [{}], ['order'], 'prev_id', 'action', [{}], true, undefined);
         });
 
         it('should handle user added to channel event for current user - already joining', async () => {

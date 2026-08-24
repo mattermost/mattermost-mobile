@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement, updatePostTranslation} from '@actions/local/post';
+import {captureRedactionEpoch} from '@actions/local/redaction';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {getCurrentUserLocale} from '@actions/local/user';
 import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
@@ -35,6 +36,18 @@ function preparedMyChannelHack(myChannel: MyChannelModel) {
         myChannel._preparedState = null;
     }
 }
+
+/**
+ * `posted` and `post_edited` payloads are redacted per recipient by the server's `abac_files`
+ * broadcast hook, so they can be stamped as verified. Burn-on-read is outside that hook and at least
+ * one ephemeral emitter bypasses it; returning undefined leaves those at their stored epoch.
+ */
+const captureEpochForBroadcastPost = async (serverUrl: string, post: Post) => {
+    if (post.type === PostTypes.BURN_ON_READ || post.type === PostTypes.EPHEMERAL || post.type === PostTypes.EPHEMERAL_ADD_TO_CHANNEL) {
+        return undefined;
+    }
+    return captureRedactionEpoch(serverUrl, post.channel_id);
+};
 
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -196,6 +209,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch: await captureEpochForBroadcastPost(serverUrl, post),
     });
 
     models.push(...postModels);
@@ -273,6 +287,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch: await captureEpochForBroadcastPost(serverUrl, post),
     });
     models.push(...postModels);
 

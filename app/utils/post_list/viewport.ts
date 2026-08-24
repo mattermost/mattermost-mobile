@@ -27,3 +27,13 @@ export function emitPostsInViewport(location: string, viewableItems: ViewToken[]
 
     return viewableItemsMap;
 }
+
+/**
+ * Single-post emit, for subtrees whose visibility comes from a parent post — the post embedded in a
+ * permalink preview. Caches through EphemeralStore so a component mounting later can still seed.
+ */
+export function emitPostInViewport(location: string, postId: string) {
+    const key = `${location}-${postId}`;
+    EphemeralStore.addViewableItem(location, key);
+    DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, {[key]: true});
+}

@@ -15,6 +15,7 @@ import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
+import {handleChannelAccessControlUpdatedEvent, handlePermissionPolicyUpdatedEvent, handleRedactionForPropertyValuesUpdated} from './access_control';
 import * as category from './category';
 import * as channel from './channel';
 import * as files from './files';
@@ -335,6 +336,16 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
             handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
             handlePropertyValuesUpdated(serverUrl, msg);
+            handleRedactionForPropertyValuesUpdated(serverUrl, msg);
+            break;
+
+        // Attribute-based access control policies
+        case WebsocketEvents.PERMISSION_POLICY_UPDATED:
+            handlePermissionPolicyUpdatedEvent(serverUrl);
+            break;
+
+        case WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED:
+            handleChannelAccessControlUpdatedEvent(serverUrl, msg);
             break;
 
         // Agents

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {markChannelAsViewed} from '@actions/local/channel';
+import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchClassificationBanner} from '@actions/remote/classification';
@@ -14,6 +15,7 @@ import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
+import {invalidateRedactionOnFirstConnect} from '@actions/websocket/access_control';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -44,14 +46,14 @@ import {logDebug, logInfo} from '@utils/log';
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
-    return doReconnect(serverUrl, groupLabel);
+    return doReconnect(serverUrl, groupLabel, true);
 }
 
 export async function handleReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') {
     return doReconnect(serverUrl, groupLabel);
 }
 
-async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
+async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel, isFirstConnect = false) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return new Error('cannot find server database');
@@ -89,6 +91,13 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+        // Awaited so the epoch is raised before the fetch below captures it, and placed after
+        // entry() commits its config models so the predicate reads the server's current state.
+        if (isFirstConnect) {
+            await invalidateRedactionOnFirstConnect(serverUrl);
+        }
+
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
@@ -132,6 +141,10 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentChannelId = await getCurrentChannelId(database);
         const isCRTEnabled = await getIsCRTEnabled(database);
+
+        // Neither a since-fetch nor a fromCreateAt thread fetch can re-deliver a post whose only
+        // change was its redaction state, so with policies active the visible surfaces need a page.
+        const abacEnforced = await isRedactionEnforced(database);
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
@@ -143,20 +156,18 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
             const rootId = EphemeralStore.getCurrentThreadId();
             if (rootId) {
                 const lastPost = await getLastPostInThread(database, rootId);
-                if (lastPost) {
-                    if (lastPost) {
-                        const options: FetchPaginatedThreadOptions = {};
-                        options.fromCreateAt = lastPost.createAt;
-                        options.fromPost = lastPost.id;
-                        options.direction = 'down';
-                        await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
-                    }
+                const options: FetchPaginatedThreadOptions = {};
+                if (lastPost && !abacEnforced) {
+                    options.fromCreateAt = lastPost.createAt;
+                    options.fromPost = lastPost.id;
+                    options.direction = 'down';
                 }
+                await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
             }
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel, abacEnforced);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);
