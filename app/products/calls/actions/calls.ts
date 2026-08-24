@@ -5,7 +5,7 @@
 
 import CallsNative from '@mattermost/calls-native';
 import {defineMessages, type IntlShape} from 'react-intl';
-import {Alert, Platform} from 'react-native';
+import {Alert, AppState, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {storeMicPermissionAsked} from '@actions/app/global';
@@ -84,11 +84,21 @@ const micPermissionMessages = defineMessages({
     },
 });
 
+// In-session guard: prevents two concurrent invocations from both passing the
+// flag check before the DB write completes. Stays true once the alert is shown.
+let micPermissionRequestInFlight = false;
+
 // iOS-only: shows an in-app explainer and then the system mic prompt the first
-// time a calls-enabled server is connected. The flag is stored before the alert
-// fires so rapid reconnects cannot re-show the dialog.
+// time a calls-enabled server is connected.
 const maybeRequestMicrophonePermission = async () => {
-    if (Platform.OS !== 'ios') {
+    if (Platform.OS !== 'ios' || micPermissionRequestInFlight) {
+        return;
+    }
+
+    // doReconnect fires while backgrounded (e.g. a native call keeps the
+    // websocket alive). Alert.alert is a no-op when backgrounded, so skip to
+    // avoid storing the flag before the dialog has appeared.
+    if (AppState.currentState !== 'active') {
         return;
     }
 
@@ -102,7 +112,12 @@ const maybeRequestMicrophonePermission = async () => {
         return;
     }
 
-    await storeMicPermissionAsked();
+    micPermissionRequestInFlight = true;
+    const result = await storeMicPermissionAsked();
+    if (result && 'error' in result) {
+        micPermissionRequestInFlight = false;
+        return;
+    }
 
     const {formatMessage} = getIntlShape();
     Alert.alert(

@@ -125,7 +125,11 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
                 if (!granted && status === Permissions.RESULTS.DENIED) {
                     // Permission is undetermined — app is foregrounded, safe to request.
                     // Handles the case where a user answered an incoming call from the lock
-                    // screen before the system prompt could be shown.
+                    // screen before the system prompt could be shown (iOS and Android).
+                    // On iOS the in-app explainer normally runs before a call, but if the
+                    // user is already mid-call the direct system prompt is better UX.
+                    // On Android RESULTS.DENIED is always re-promptable, so requesting here
+                    // is correct and intentional.
                     granted = (await Permissions.request(micPermission)) === Permissions.RESULTS.GRANTED;
                 }
                 setHasPermission(granted);
