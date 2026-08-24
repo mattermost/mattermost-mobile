@@ -240,7 +240,7 @@ const getRingtoneOrNone = async (serverUrl: string) => {
 
         const user = await getCurrentUser(database);
 
-        // No user shouldn't happen, so don't bother localizing and displaying an alert.
+        // A missing user shouldn't happen; treat it as sounds-off rather than alerting.
         if (!user || !callSoundsEnabled(user)) {
             return 'none';
         }
@@ -366,7 +366,6 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const channel = await getChannelById(database, channelId);
         if (!getDMCalleeId(currentCall.myUserId, channel)) {
-            logDebug('startRingbackIfNeeded skipped: not a 1:1 DM with someone else');
             return;
         }
     } catch (error: unknown) {
@@ -490,9 +489,8 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             nextCurrentCall.mySessionId = sessionId;
         }
 
-        // TODO: Since this is a synchronous event path, we should only set dmCalleeAnsweredAt for DM calls.
-        // Make changes so that we only set dmCalleeAnsweredAt for DM calls by passing the channel type to this function
-        // in the function parent call chain.
+        // Set for every call type rather than plumbing the channel type down this synchronous event
+        // path: the field is only ever read behind isDMCall (see observeDMCallingState).
         if (
             !nextCurrentCall.dmCalleeAnsweredAt &&
             hasOtherUserJoined(nextCurrentCall.sessions, nextCurrentCall.myUserId)) {
