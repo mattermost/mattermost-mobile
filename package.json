@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "2.43.0",
+  "version": "2.44.0",
   "description": "Mattermost Mobile with React Native",
   "main": "index.tsx",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
@@ -27,7 +27,7 @@
     "@mattermost/compass-icons": "0.1.53",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
     "@mattermost/react-native-emm": "1.7.0",
-    "@mattermost/react-native-network-client": "1.10.3",
+    "@mattermost/react-native-network-client": "1.11.1",
     "@mattermost/react-native-paste-input": "2.0.1",
     "@mattermost/react-native-turbo-log": "0.6.0",
     "@mattermost/rnshare": "file:./libraries/@mattermost/rnshare",
