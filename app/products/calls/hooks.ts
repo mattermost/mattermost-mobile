@@ -120,11 +120,18 @@ export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
     useEffect(() => {
         const asyncFn = async () => {
             if (appState === 'active') {
-                const result = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
-                setHasPermission(result);
-                if (result) {
+                const status = await Permissions.check(micPermission);
+                let granted = status === Permissions.RESULTS.GRANTED;
+                if (!granted && status === Permissions.RESULTS.DENIED) {
+                    // Permission is undetermined — app is foregrounded, safe to request.
+                    // Handles the case where a user answered an incoming call from the lock
+                    // screen before the system prompt could be shown.
+                    granted = (await Permissions.request(micPermission)) === Permissions.RESULTS.GRANTED;
+                }
+                setHasPermission(granted);
+                if (granted) {
                     initializeVoiceTrack();
-                    setMicPermissionsGranted(result);
+                    setMicPermissionsGranted(granted);
                 }
             }
         };
