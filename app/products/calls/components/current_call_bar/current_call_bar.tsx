@@ -39,6 +39,7 @@ type Props = {
     isAdmin: boolean;
     isHost: boolean;
     isDMCall: boolean;
+    isDMConnecting: boolean;
     isDMCalling: boolean;
     dmCallee?: UserModel;
     dmCalleeAnsweredAt: number;
@@ -130,6 +131,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
         hangupIcon: {
             color: theme.buttonColor,
         },
+        disabled: {
+            opacity: 0.5,
+        },
     };
 });
 
@@ -143,6 +147,7 @@ export const CurrentCallBar = ({
     isAdmin,
     isHost,
     isDMCall,
+    isDMConnecting,
     isDMCalling,
     dmCallee,
     dmCalleeAnsweredAt,
@@ -164,7 +169,14 @@ export const CurrentCallBar = ({
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const mySession = currentCall?.sessions[currentCall.mySessionId];
-    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isDMCalling);
+
+    // Placing the call and waiting for it to be answered look the same here; only the status differs.
+    const showCallee = isDMConnecting || isDMCalling;
+    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(showCallee);
+
+    // Muting and hanging up both go through the connection, which doesn't exist while we're still
+    // placing the call. Same predicate as the full-screen view, so the two never disagree.
+    const controlsDisabled = !currentCall?.connected;
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
@@ -206,7 +218,7 @@ export const CurrentCallBar = ({
                     style={style.container}
                     onPress={goToCallScreen}
                 >
-                    {isDMCalling ? (
+                    {showCallee ? (
                         <Animated.View style={callingPulseAnimationStyle}>
                             <CallAvatar
                                 userModel={dmCallee}
@@ -229,7 +241,7 @@ export const CurrentCallBar = ({
                             speaker={speaker}
                             sessionsDict={sessionsDict}
                             teammateNameDisplay={teammateNameDisplay}
-                            isDMCalling={isDMCalling}
+                            showCallee={showCallee}
                             dmCallee={dmCallee}
                         />
                         <Text
@@ -238,6 +250,7 @@ export const CurrentCallBar = ({
                             ellipsizeMode='middle'
                         >
                             <CallStatusTimer
+                                isConnecting={isDMConnecting}
                                 isCalling={isDMCalling}
                                 value={dmCalleeAnsweredAt || currentCall?.startTime || Date.now()}
                                 style={style.channelAndTime}
@@ -254,8 +267,8 @@ export const CurrentCallBar = ({
                         <Pressable
                             testID='calls.current_call_bar.mute'
                             onPress={muteUnmute}
-                            style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted]}
-                            disabled={!micPermissionsGranted}
+                            style={[style.pressable, style.micIconContainer, mySession?.muted && style.muted, controlsDisabled && style.disabled]}
+                            disabled={!micPermissionsGranted || controlsDisabled}
                         >
                             <UnavailableIconWrapper
                                 name={mySession?.muted ? 'microphone-off' : 'microphone'}
@@ -268,7 +281,8 @@ export const CurrentCallBar = ({
                         <Pressable
                             testID='calls.current_call_bar.leave'
                             onPress={leaveCallHandler}
-                            style={[style.pressable, style.hangupIconContainer]}
+                            style={[style.pressable, style.hangupIconContainer, controlsDisabled && style.disabled]}
+                            disabled={controlsDisabled}
                         >
                             <CompassIcon
                                 name='phone-hangup'

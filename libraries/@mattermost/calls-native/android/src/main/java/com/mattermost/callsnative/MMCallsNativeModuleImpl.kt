@@ -217,7 +217,11 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
     // Ringtone
     // -------------------------------------------------------------------------
 
-    fun startRingtone(name: String, seconds: Int, promise: Promise?) {
+    // isRingback distinguishes the outbound ringback — progress feedback for a call this device
+    // placed, played into the ongoing call — from an incoming ring announcing someone else's call.
+    // The caller's own phone must not buzz, and the tone has to follow the call's audio route
+    // rather than sit on the ringer stream at ringer volume.
+    fun startRingtone(name: String, seconds: Int, isRingback: Boolean, promise: Promise?) {
         stopRingtoneInternal()
 
         val resId = getRingtoneResId(name)
@@ -227,8 +231,13 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         }
 
         try {
+            val usage = if (isRingback) {
+                AudioAttributes.USAGE_VOICE_COMMUNICATION
+            } else {
+                AudioAttributes.USAGE_NOTIFICATION_RINGTONE
+            }
             val attrs = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                .setUsage(usage)
                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                 .build()
             // Pass AudioAttributes to the create() overload so they are applied
@@ -245,11 +254,13 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             }
             player.start()
             ringtonePlayer = player
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(ringtoneVibratePattern, 0))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(ringtoneVibratePattern, 0)
+            if (!isRingback) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createWaveform(ringtoneVibratePattern, 0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(ringtoneVibratePattern, 0)
+                }
             }
             promise?.resolve(null)
         } catch (e: Exception) {

@@ -62,11 +62,12 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
 
-    const mySession = currentCall?.sessions[currentCall.mySessionId];
     const screenShareOn = Boolean(currentCall?.screenOn);
     const avatarSize = smallerAvatar ? avatarM : avatarL;
 
-    if (!currentCall || !mySession) {
+    // Deliberately not gated on our own session being in the call: the card for someone else has
+    // nothing to do with ours, and a call we're placing has no session for us yet.
+    if (!currentCall) {
         return null;
     }
 
@@ -85,7 +86,7 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
                             userModel={session.userModel}
                             speaking={currentCall.voiceOn[session.sessionId]}
                             muted={session.muted}
-                            sharingScreen={session.sessionId === currentCall.screenOn}
+                            sharingScreen={screenShareOn && session.sessionId === currentCall.screenOn}
                             raisedHand={Boolean(session.raisedHand)}
                             reaction={session.reaction?.emoji}
                             size={avatarSize}
@@ -97,7 +98,7 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
                         numberOfLines={1}
                     >
                         {displayUsername(session.userModel, intl.locale, teammateNameDisplay)}
-                        {session.sessionId === mySession.sessionId &&
+                        {session.sessionId === currentCall.mySessionId &&
                             ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                         }
                     </Text>

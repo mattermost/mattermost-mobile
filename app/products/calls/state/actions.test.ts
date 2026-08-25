@@ -41,6 +41,8 @@ import {
 import {
     callEnded,
     callStarted,
+    cancelOutgoingCall,
+    clearStartUnmuted,
     myselfLeftCall,
     setCalls,
     setCallScreenOff,
@@ -56,6 +58,7 @@ import {
     userLeftCall,
     callsOnAppStateChange,
     playIncomingCallsRinging,
+    startOutgoingCall,
     stopRingback,
 } from '@calls/state/actions';
 import {
@@ -63,6 +66,7 @@ import {
     type Call,
     type CallsState,
     type CurrentCall,
+    DefaultCall,
     DefaultCallsConfig,
     DefaultCallsState,
     DefaultCurrentCall,
@@ -1633,7 +1637,7 @@ describe('useCallsState', () => {
             await act(async () => {
                 await playIncomingCallsRinging('server1', 'call1', 'online');
             });
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('calls_calm', Calls.RING_LENGTH / 1000);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('calls_calm', Calls.RING_LENGTH / 1000, false);
             assert.deepEqual(result.current, {
                 ...initialIncomingCalls,
                 currentRingingCallId: 'call1',
@@ -1940,7 +1944,7 @@ describe('useCallsState', () => {
 
         it('starts ringback when the owner connects on a DM call, and never resumes once another participant joins', async () => {
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
             expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
 
             // another participant joins - ringback should stop immediately
@@ -1970,7 +1974,7 @@ describe('useCallsState', () => {
                 await callStarted('server1', callIOwn);
             });
             await settle();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
         });
 
         it('does not ring back for a call the current user does not own', async () => {
@@ -2009,7 +2013,7 @@ describe('useCallsState', () => {
             jest.mocked(getCurrentUser).mockResolvedValue({notifyProps: {calls_mobile_sound: 'false'}} as never);
 
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
         });
 
         it('stops automatically when the call reaches the ringback timeout', async () => {
@@ -2019,7 +2023,7 @@ describe('useCallsState', () => {
             jest.advanceTimersByTime(halfway);
 
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
 
             await act(async () => {
                 await advanceTimers(halfway - 1);
@@ -2040,7 +2044,7 @@ describe('useCallsState', () => {
             newCurrentCall('server1', 'channel-ringback', 'myUserId');
 
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
 
             await act(async () => {
                 await advanceTimers(Calls.RINGBACK_TONE_TIMEOUT - 1);
@@ -2055,7 +2059,7 @@ describe('useCallsState', () => {
 
         it('stops ringback when the caller leaves the call', async () => {
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0);
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
 
             await act(async () => {
                 await myselfLeftCall();
@@ -2081,19 +2085,28 @@ describe('useCallsState', () => {
             expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
         });
 
-        it('clears ringback state when the app is backgrounded, so a later call can still ring', async () => {
+        it('keeps ringing back while the app is backgrounded, and still expires on the ringback timeout', async () => {
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(1);
 
             await act(async () => {
                 await callsOnAppStateChange('background');
             });
-            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
 
-            // A fresh call in the same channel must not be blocked by stale ringback state.
-            act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
+            // The caller is still in the call, so the tone plays on rather than leaving them in
+            // silence with no cue that the callee picked up.
+            expect(CallsNative.stopRingtone).not.toHaveBeenCalled();
+
+            await act(async () => {
+                await advanceTimers(Calls.RINGBACK_TONE_TIMEOUT);
+            });
+            expect(CallsNative.stopRingtone).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not vibrate the caller, unlike the incoming ring', async () => {
             await connect();
-            expect(CallsNative.startRingtone).toHaveBeenCalledTimes(2);
+
+            expect(CallsNative.startRingtone).toHaveBeenCalledWith('ringback', 0, true);
         });
 
         it('does not restart ringback for a call already answered, but does for a later fresh call', async () => {
@@ -2107,6 +2120,171 @@ describe('useCallsState', () => {
             act(() => newCurrentCall('server1', 'channel-ringback', 'myUserId'));
             await connect();
             expect(CallsNative.startRingtone).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('outgoing call', () => {
+        beforeEach(() => {
+            setCurrentCall(null);
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId'});
+        });
+
+        it('should seed a current call marked as started by me, so the call view has something to show', () => {
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            assert.deepEqual(result.current, {
+                ...DefaultCurrentCall,
+                serverUrl: 'server1',
+                channelId: 'channel-1',
+                myUserId: 'myUserId',
+                startedByMe: true,
+
+                // A call we place is ours to host and is live from the start, both of which the
+                // server confirms moments later with the same answer.
+                hostId: 'myUserId',
+                startUnmuted: true,
+            });
+        });
+
+        it('should not claim to host a call the channel already has', () => {
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call1}});
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            assert.equal(result.current?.hostId, call1.hostId);
+        });
+
+        it('should show my own session unmuted from the start on a call I place live', () => {
+            setCallsState('server1', {
+                ...DefaultCallsState,
+                myUserId: 'myUserId',
+                calls: {'channel-1': {...DefaultCall, id: 'call1', channelId: 'channel-1'}},
+            });
+            const {result} = renderHook(() => [useCurrentCall(), useCallsState('server1')] as const);
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+
+            // Our unmute is already on its way, so we don't flash as muted for the round trip.
+            assert.equal(result.current[0]?.sessions.mySessionId.muted, false);
+
+            // The server's own view of the call is untouched: everyone joins it muted.
+            assert.equal(result.current[1].calls['channel-1'].sessions.mySessionId.muted, true);
+        });
+
+        it('should keep my own session unmuted through the snapshots that still have me muted', async () => {
+            const call = {...DefaultCall, id: 'call1', channelId: 'channel-1'};
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call}});
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+
+            // call_start carries no sessions at all, so it must not drop the one we just added.
+            await act(async () => callStarted('server1', {...call, ownerId: 'myUserId', hostId: 'myUserId'}));
+            assert.equal(result.current?.sessions.mySessionId?.muted, false);
+
+            // A full call-state snapshot does carry sessions, with us muted as everyone joins.
+            const mutedSnapshot = {
+                ...call,
+                sessions: {mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0}},
+            };
+            act(() => setCallForChannel('server1', 'channel-1', mutedSnapshot));
+            assert.equal(result.current?.sessions.mySessionId.muted, false);
+
+            await act(async () => setCalls('server1', 'myUserId', {'channel-1': mutedSnapshot}, {}));
+            assert.equal(result.current?.sessions.mySessionId.muted, false);
+        });
+
+        it('should not let a session-less call_start empty the call it reports on', async () => {
+            const call = {...DefaultCall, id: 'call1', channelId: 'channel-1'};
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call}});
+            const {result} = renderHook(() => [useCurrentCall(), useCallsState('server1')] as const);
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+
+            // The event carries no sessions, so it has nothing to say about who is in the call.
+            await act(async () => callStarted('server1', {...call, ownerId: 'myUserId', hostId: 'myUserId'}));
+
+            assert.deepEqual(Object.keys(result.current[0]?.sessions ?? {}), ['mySessionId']);
+            assert.deepEqual(Object.keys(result.current[1].calls['channel-1'].sessions), ['mySessionId']);
+        });
+
+        it('should stop showing myself live when the unmute never left the device', () => {
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId'});
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+            assert.equal(result.current?.startUnmuted, true);
+
+            act(() => clearStartUnmuted());
+
+            assert.equal(result.current?.startUnmuted, false);
+        });
+
+        it('should stop standing in for my mute state once the server reports it', async () => {
+            const call = {...DefaultCall, id: 'call1', channelId: 'channel-1'};
+            setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call}});
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+
+            // Our unmute came back, so from here on the server has the last word - including when
+            // it mutes us again, whether we asked for it or the host did.
+            act(() => setUserMuted('server1', 'channel-1', 'mySessionId', false));
+            assert.equal(result.current?.startUnmuted, false);
+
+            act(() => setUserMuted('server1', 'channel-1', 'mySessionId', true));
+            assert.equal(result.current?.sessions.mySessionId.muted, true);
+        });
+
+        it('should show my own session muted when joining a call I am not going live on', () => {
+            setCallsState('server1', {
+                ...DefaultCallsState,
+                myUserId: 'myUserId',
+                calls: {'channel-1': {...DefaultCall, id: 'call1', channelId: 'channel-1'}},
+            });
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+            act(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId'));
+
+            assert.equal(result.current?.sessions.mySessionId.muted, true);
+        });
+
+        it('should not seed a current call when my user is unknown, since the callee cannot be resolved', () => {
+            setCallsState('server1', DefaultCallsState);
+            const {result} = renderHook(() => useCurrentCall());
+
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            assert.deepEqual(result.current, null);
+        });
+
+        it('should cancel an outgoing call that never connected', async () => {
+            const {result} = renderHook(() => useCurrentCall());
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            await act(async () => cancelOutgoingCall('server1', 'channel-1'));
+
+            assert.deepEqual(result.current, null);
+        });
+
+        it('should leave a call in another channel, or one already connected, alone', async () => {
+            const {result} = renderHook(() => useCurrentCall());
+            act(() => startOutgoingCall('server1', 'channel-1'));
+
+            await act(async () => cancelOutgoingCall('server1', 'channel-2'));
+            assert.notEqual(result.current, null);
+
+            act(() => setCurrentCall({...result.current!, connected: true}));
+            await act(async () => cancelOutgoingCall('server1', 'channel-1'));
+            assert.notEqual(result.current, null);
         });
     });
 });

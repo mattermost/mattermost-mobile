@@ -1,8 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {muteMyself, unmuteMyself} from '@calls/actions';
+import {leaveCallConfirmation} from '@calls/actions/calls';
 import CallAvatar from '@calls/components/call_avatar';
 import {DefaultCurrentCall, type CallSession} from '@calls/types/calls';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -94,6 +97,7 @@ describe('CurrentCallBar', () => {
             isAdmin: false,
             isHost: true,
             isDMCall: false,
+            isDMConnecting: false,
             isDMCalling: false,
             dmCallee: undefined,
             dmCalleeAnsweredAt: 0,
@@ -109,6 +113,37 @@ describe('CurrentCallBar', () => {
             dmCalleeAnsweredAt: 0,
         };
     }
+
+    // Placing the call: the caller collapsed the call screen before the call connected.
+    function getConnectingProps(): ComponentProps<typeof CurrentCallBar> {
+        const baseProps = getBaseProps();
+        return {
+            ...baseProps,
+            currentCall: {...DefaultCurrentCall, ...baseProps.currentCall, connected: false, startedByMe: true, mySessionId: '', sessions: {}, startTime: 0},
+            isDMCall: true,
+            isDMConnecting: true,
+            dmCallee: callee,
+        };
+    }
+
+    it('should show the callee and Connecting while the call is being placed', () => {
+        const {getByTestId, queryByText} = renderWithIntlAndTheme(<CurrentCallBar {...getConnectingProps()}/>);
+
+        expect(getByTestId('calls.connecting_text')).toHaveTextContent('Connecting...');
+        expect(getByTestId('call-avatar').props.userId).toBe(callee.id);
+        expect(queryByText('No one is talking')).toBeNull();
+    });
+
+    it('should not act on the call controls while the call is being placed, since there is no connection yet', () => {
+        const {getByTestId} = renderWithIntlAndTheme(<CurrentCallBar {...getConnectingProps()}/>);
+
+        fireEvent.press(getByTestId('calls.current_call_bar.mute'));
+        fireEvent.press(getByTestId('calls.current_call_bar.leave'));
+
+        expect(muteMyself).not.toHaveBeenCalled();
+        expect(unmuteMyself).not.toHaveBeenCalled();
+        expect(leaveCallConfirmation).not.toHaveBeenCalled();
+    });
 
     it('should show the callee and Calling instead of a duration while ringing', () => {
         const {getByTestId, queryByText} = renderWithIntlAndTheme(<CurrentCallBar {...getCallingProps()}/>);

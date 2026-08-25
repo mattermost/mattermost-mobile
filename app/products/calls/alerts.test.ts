@@ -388,6 +388,27 @@ describe('alerts', () => {
             expect(result).toBe(true);
         });
 
+        it('does not ask to switch calls when the current call is the one being joined', async () => {
+            // The outgoing call is already the current call by the time we get here, since the call
+            // screen is opened as soon as the user taps.
+            const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
+            getCallsState.mockReturnValue({enabled: {'join-channel': true}});
+            getChannelsWithCalls.mockReturnValue({});
+            getCurrentCall.mockReturnValue({
+                serverUrl: 'server1',
+                channelId: 'join-channel',
+                connected: false,
+                startedByMe: true,
+            });
+            getCallsConfig.mockReturnValue({});
+            setMicPermissionsGranted.mockReturnValue(true);
+
+            const mockAlert = jest.spyOn(Alert, 'alert');
+
+            expect(await leaveAndJoinWithAlert(intl as any, 'server1', 'join-channel')).toBe(true);
+            expect(mockAlert).not.toHaveBeenCalled();
+        });
+
         it('shows leave and join confirmation when in a call', async () => {
             const {getCallsState, getChannelsWithCalls, getCurrentCall, getCallsConfig, setMicPermissionsGranted} = require('@calls/state');
             getCallsState.mockReturnValue({

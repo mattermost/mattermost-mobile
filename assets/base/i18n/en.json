@@ -684,6 +684,7 @@
   "mobile.calls_canceled_by": "Canceled by {user}",
   "mobile.calls_captions": "Captions",
   "mobile.calls_captions_turned_on": "Live captions turned on",
+  "mobile.calls_connecting": "Connecting...",
   "mobile.calls_declined_by": "Declined by {user}",
   "mobile.calls_disable": "Disable calls",
   "mobile.calls_dismiss": "Dismiss",

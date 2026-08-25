@@ -123,11 +123,6 @@ export const observeCurrentSessionsDict = () => {
     ) as Observable<Dictionary<CallSession>>;
 };
 
-// DM call phases for the caller: first 'calling' (waiting for pickup), then 'connected'.
-// All other calls (GMs, channels, callee-side DMs) are always 'connected'.
-// isDMCalling is true if I've started a DM call, am connected, and nobody else has joined yet.
-// The ring phase ends for good at the first answer: if the callee later hangs up while I stay in the
-// call, their session goes away but dmCalleeAnsweredAt doesn't, so we don't fall back to 'calling'.
 export const observeDMCallingState = () => {
     const currentCall = observeCurrentCall();
     const database = observeCallDatabase();
@@ -149,12 +144,31 @@ export const observeDMCallingState = () => {
         distinctUntilChanged(),
     );
 
-    const isDMCalling = combineLatest([currentCall, isDMCall]).pipe(
-        switchMap(([call, isDM]) => of$(Boolean(
+    // Being in the call means having a session in it. The connected flag goes up earlier, when the
+    // media connection comes up, and our session only arrives with the server's user_joined event.
+    const iAmInTheCall = currentCall.pipe(
+        switchMap((call) => of$(Boolean(call && call.sessions[call.mySessionId]))),
+        distinctUntilChanged(),
+    );
+
+    const isDMConnecting = combineLatest([currentCall, isDMCall, iAmInTheCall]).pipe(
+        switchMap(([call, isDM, inCall]) => of$(Boolean(
             call &&
             isDM &&
-            call.connected &&
-            call.ownerId === call.myUserId &&
+            call.startedByMe &&
+            !inCall,
+        ))),
+        distinctUntilChanged(),
+    );
+
+    // startedByMe covers the window before the server's call_start event arrives, which is what
+    // fills in ownerId; without it the caller drops out of the ring phase for a frame or two.
+    const isDMCalling = combineLatest([currentCall, isDMCall, iAmInTheCall]).pipe(
+        switchMap(([call, isDM, inCall]) => of$(Boolean(
+            call &&
+            isDM &&
+            inCall &&
+            (call.startedByMe || call.ownerId === call.myUserId) &&
             !call.dmCalleeAnsweredAt &&
             !hasOtherUserJoined(call.sessions, call.myUserId),
         ))),
@@ -171,6 +185,7 @@ export const observeDMCallingState = () => {
 
     return {
         isDMCall,
+        isDMConnecting,
         isDMCalling,
         dmCalleeId,
         dmCallee,
@@ -188,8 +203,12 @@ export const observeCallStateInChannel = (serverUrl: string, database: Database,
         switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
+
+    // A call being placed counts: useCallsAdjustment already reserves the call bar's height from
+    // the moment there is a current call, so gating the bar itself on being connected leaves a gap
+    // in the channel with no way back into the call and no way to hang it up.
     const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call?.connected))),
+        switchMap((call) => of$(Boolean(call))),
         distinctUntilChanged(),
     );
     const dismissed = combineLatest([channelId, observeCallsState(serverUrl)]).pipe(

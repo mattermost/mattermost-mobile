@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
-// msgPostfix to ' (Not Available)'.
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 import {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
-import {initializeVoiceTrack} from '@calls/actions/calls';
+import {initializeVoiceTrack, openOutgoingCallScreen} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {observeIsCallLimitRestricted, type LimitRestrictedInfo} from '@calls/observers';
 import {
+    cancelOutgoingCall,
     getCallsConfig,
     getCurrentCall,
     setMicPermissionsGranted,
@@ -54,7 +53,10 @@ const DEFAULT_LIMIT_RESTRICTED_INFO: LimitRestrictedInfo = {
     isCloudStarter: false,
 };
 
-export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, string, boolean] => {
+// Runs fn if calls is enabled on the server, otherwise alerts and sets msgPostfix to
+// ' (Not Available)'. tryFn resolves to whether fn was reached, so callers that acted before the
+// check (e.g. by opening the call screen) can undo that when it wasn't.
+export const useTryCallsFunction = (fn: () => void): [() => Promise<boolean>, string, boolean] => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [msgPostfix, setMsgPostfix] = useState('');
@@ -76,7 +78,7 @@ export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, strin
             enabled = await client?.getEnabled();
         } catch (error) {
             errorAlert(getFullErrorMessage(error), intl);
-            return;
+            return false;
         } finally {
             setIsLoading(false);
         }
@@ -84,12 +86,12 @@ export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, strin
         if (enabled) {
             setMsgPostfix('');
             fn();
-            return;
+            return true;
         }
 
         if (clientError) {
             errorAlert(clientError, intl);
-            return;
+            return false;
         }
 
         const title = intl.formatMessage({
@@ -120,6 +122,7 @@ export const useTryCallsFunction = (fn: () => void): [() => Promise<void>, strin
             ],
         );
         setMsgPostfix(` ${notAvailable}`);
+        return false;
     }, [client, fn, clientError, intl]);
 
     return [tryFn, msgPostfix, isLoading];
@@ -309,36 +312,56 @@ export const useNavigationHeaderCallButtonForDM = (channelId: Channel['id'], cha
 
     const [isJoiningOrStarting, setIsJoiningOrStarting] = useState(false);
 
+    const wasCallScreenOpenedBefore = useRef(false);
+
     const isCallInChannel = Boolean(channelsWithCalls[channelId]);
     const alreadyInCall = currentCall?.channelId === channelId;
 
     const joinOrStart = useCallback(async () => {
+        setIsJoiningOrStarting(true);
+        try {
+            const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            if (joined) {
+                if (!wasCallScreenOpenedBefore.current) {
+                    navigateToScreen(Screens.CALL);
+                }
+            } else {
+                await cancelOutgoingCall(serverUrl, channelId);
+            }
+        } catch (error) {
+            logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
+            await cancelOutgoingCall(serverUrl, channelId);
+        } finally {
+            setIsJoiningOrStarting(false);
+        }
+    }, [intl, serverUrl, channelId]);
+    const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
+
+    const handleOnPress = useCallback(async () => {
+        if (alreadyInCall) {
+            navigateToScreen(Screens.CALL);
+            return;
+        }
+
         if (limitRestrictedInfo.limitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
             return;
         }
 
-        setIsJoiningOrStarting(true);
-        try {
-            const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
-            if (joined) {
-                navigateToScreen(Screens.CALL);
-            }
-        } catch (error) {
-            logError('error on useNavigationHeaderCallButtonForDM.joinOrStart', getFullErrorMessage(error));
-        } finally {
-            setIsJoiningOrStarting(false);
+        // Starting a call opens the call view on this tap, before anything is connected.
+        const openNow = !isCallInChannel && !currentCall;
+        wasCallScreenOpenedBefore.current = openNow;
+        if (openNow) {
+            openOutgoingCallScreen(serverUrl, channelId);
         }
-    }, [limitRestrictedInfo, intl, serverUrl, channelId]);
-    const [tryJoinOrStart, , isLoadingTryCallsFunction] = useTryCallsFunction(joinOrStart);
 
-    const handleOnPress = useCallback(() => {
-        if (alreadyInCall) {
-            navigateToScreen(Screens.CALL);
-        } else {
-            tryJoinOrStart();
+        // A false here means we never got as far as joinOrStart, so nothing else will close the
+        // call view we just opened.
+        const startedJoining = await tryJoinOrStart();
+        if (openNow && !startedJoining) {
+            await cancelOutgoingCall(serverUrl, channelId);
         }
-    }, [alreadyInCall, tryJoinOrStart]);
+    }, [alreadyInCall, limitRestrictedInfo, intl, isCallInChannel, currentCall, serverUrl, channelId, tryJoinOrStart]);
 
     const onPress = usePreventDoubleTap(handleOnPress);
 

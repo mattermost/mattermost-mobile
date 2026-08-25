@@ -22,6 +22,7 @@ type Props = {
     iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
+    disabled?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -30,7 +31,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall}: Props) => {
+export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall, disabled = false}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -129,6 +130,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         <Pressable
             style={pressableStyle}
             onPress={deviceSelector}
+            disabled={disabled}
         >
             <CompassIcon
                 name={icon}

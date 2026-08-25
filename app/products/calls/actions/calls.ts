@@ -23,6 +23,8 @@ import {
     reportNativeCallConnected,
 } from '@calls/native_call';
 import {
+    cancelOutgoingCall,
+    clearStartUnmuted,
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
@@ -36,6 +38,7 @@ import {
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
+    startOutgoingCall,
 } from '@calls/state';
 import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
@@ -230,6 +233,7 @@ export const joinCall = async (
     intl: IntlShape,
     title?: string,
     rootId?: string,
+    opts?: {startedByMe?: boolean; startUnmuted?: boolean},
 ): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
@@ -242,7 +246,7 @@ export const joinCall = async (
         connection.disconnect();
         connection = null;
     }
-    newCurrentCall(serverUrl, channelId, userId);
+    newCurrentCall(serverUrl, channelId, userId, opts);
 
     // Register with the system call UI so the user gets lock-screen /
     // control-center controls if they background or lock mid-call. Skip
@@ -310,6 +314,12 @@ export const joinCall = async (
     }
 };
 
+// Opens call screen immediately; shows 'Connecting' until joined.
+export const openOutgoingCallScreen = (serverUrl: string, channelId: string) => {
+    startOutgoingCall(serverUrl, channelId);
+    navigateToScreen(Screens.CALL);
+};
+
 export const leaveCall = (err?: Error) => {
     if (connection) {
         connection.disconnect(err);
@@ -358,9 +368,17 @@ export const muteMyself = () => {
 };
 
 export const unmuteMyself = () => {
-    if (connection) {
-        connection.unmute();
-        mirrorMuteToNativeCall(false);
+    if (!connection) {
+        return;
+    }
+
+    const unmuted = connection.unmute();
+    mirrorMuteToNativeCall(false);
+
+    if (!unmuted) {
+        // Nothing left the device, so the server will never tell us we're live. Stop saying we are.
+        logDebug('calls: unmuteMyself had no voice track to unmute');
+        clearStartUnmuted();
     }
 };
 
@@ -538,7 +556,17 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 };
             }
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+
+            const openImmediatelyForDM = channelType === General.DM_CHANNEL && !getCurrentCall();
+            if (openImmediatelyForDM) {
+                openOutgoingCallScreen(serverUrl, channelId);
+            }
+
+            const started = await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+            if (openImmediatelyForDM && !started) {
+                await cancelOutgoingCall(serverUrl, channelId);
+            }
+
             return {handled: true};
         }
         case 'join': {

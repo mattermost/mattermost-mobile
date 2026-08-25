@@ -124,6 +124,11 @@ export const DefaultCall: Call = {
 
 export type CurrentCall = Call & {
     connected: boolean;
+    startedByMe: boolean;
+
+    // If true, join call unmuted immediately; typical for 1:1 DMs.
+    // Prevents client-side mute race with server join event.
+    startUnmuted: boolean;
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
@@ -141,6 +146,8 @@ export type CurrentCall = Call & {
 export const DefaultCurrentCall: CurrentCall = {
     ...DefaultCall,
     connected: false,
+    startedByMe: false,
+    startUnmuted: false,
     serverUrl: '',
     myUserId: '',
     mySessionId: '',
@@ -171,7 +178,9 @@ export type {AudioDeviceType, AudioRoute};
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
-    unmute: () => void;
+
+    // Returns false when there was no voice track to enable, so the unmute never left the device.
+    unmute: () => boolean;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;

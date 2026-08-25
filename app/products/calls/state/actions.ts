@@ -52,6 +52,20 @@ import {logDebug, logError} from '@utils/log';
 import type {CallJobState, LiveCaptionData, UserReactionData} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
+// Keep our session unmuted until the server confirms mute state (see setUserMuted).
+// Prevents showing self as muted briefly when joining or starting a call.
+const keepMyMuteState = (call: CurrentCall): CurrentCall => {
+    const mySession = call.sessions[call.mySessionId];
+    if (!call.startUnmuted || !mySession?.muted) {
+        return call;
+    }
+
+    return {
+        ...call,
+        sessions: {...call.sessions, [call.mySessionId]: {...mySession, muted: false}},
+    };
+};
+
 export const setCalls = async (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     // Reconcile native overlays: any previously-tracked call that's no longer
     // in the authoritative server snapshot has ended (typically because we
@@ -83,11 +97,11 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
 
     // Edge case: if the app went into the background and lost the main ws connection, we don't know who is currently
     // talking. Instead of guessing, erase voiceOn state (same state as when joining an ongoing call).
-    const nextCall = {
+    const nextCall = keepMyMuteState({
         ...currentCall,
         ...calls[currentCall.channelId],
         voiceOn: {},
-    };
+    });
     setCurrentCall(nextCall);
     stopRingbackIfAnswered(nextCall);
 };
@@ -218,9 +232,10 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     switch (appState) {
         case 'inactive':
         case 'background':
-            // The incoming ring and the outbound ringback share the one native player, so stop
-            // whichever is playing through its own owner
-            stopRingback();
+            // Only the incoming ring stops here. The outbound ringback belongs to a call the user
+            // placed and is still in, so it keeps playing on that call's audio session until the
+            // callee answers or RINGBACK_TONE_TIMEOUT expires it — backgrounding the app shouldn't
+            // leave the caller in silence with no cue that the call was picked up.
             stopIncomingCallsRinging();
             break;
     }
@@ -295,7 +310,7 @@ export const playIncomingCallsRinging = async (serverUrl: string, callId: string
         currentRingingCallId: callId,
         callIdHasRung: {...incomingCalls.callIdHasRung, [callId]: true},
     });
-    CallsNative.startRingtone(ringTone, Calls.RING_LENGTH / 1000);
+    CallsNative.startRingtone(ringTone, Calls.RING_LENGTH / 1000, false);
 
     setTimeout(() => {
         const incoming = getIncomingCalls();
@@ -395,8 +410,9 @@ export const startRingbackIfNeeded = async (currentCall: CurrentCall) => {
     ringbackChannelId = channelId;
 
     // seconds=0 loops the 'ringback' asset indefinitely on Android; iOS ignores the argument
-    // and always loops. Either way the timeout below is what stops it.
-    CallsNative.startRingtone('ringback', 0).catch((error: unknown) => {
+    // and always loops. Either way the timeout below is what stops it. isRingback keeps Android
+    // from vibrating the caller's own phone and puts the tone on the call's audio route.
+    CallsNative.startRingtone('ringback', 0, true).catch((error: unknown) => {
         logDebug('startRingbackIfNeeded failed to start the ringback tone', getFullErrorMessage(error));
         if (ringbackChannelId === channelId) {
             stopRingback();
@@ -426,10 +442,10 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
         // In case we got a complete update on the currentCall
         const currentCall = getCurrentCall();
         if (currentCall?.channelId === channelId) {
-            const nextCurrentCall = {
+            const nextCurrentCall = keepMyMuteState({
                 ...currentCall,
                 ...call,
-            };
+            });
             setCurrentCall(nextCurrentCall);
             stopRingbackIfAnswered(nextCurrentCall);
         }
@@ -477,7 +493,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         const voiceOn = {...currentCall.voiceOn};
         delete voiceOn[sessionId];
 
-        const nextCurrentCall = {
+        let nextCurrentCall = {
             ...currentCall,
             sessions: {...currentCall.sessions, [sessionId]: nextCall.sessions[sessionId]},
             voiceOn,
@@ -497,6 +513,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             nextCurrentCall.dmCalleeAnsweredAt = Date.now();
         }
 
+        nextCurrentCall = keepMyMuteState(nextCurrentCall);
         setCurrentCall(nextCurrentCall);
 
         if (userId === nextCurrentCall.myUserId) {
@@ -577,12 +594,22 @@ export const userLeftCall = (serverUrl: string, channelId: string, sessionId: st
     setCurrentCall(nextCurrentCall);
 };
 
-export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string) => {
+export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string, {startedByMe = false, startUnmuted = false} = {}) => {
     let existingCall: Call = DefaultCall;
     const callsState = getCallsState(serverUrl);
     if (callsState.calls[channelId]) {
         existingCall = callsState.calls[channelId];
     }
+
+    // A call we placed stays ours even if it turns out we were joining after all, because the other
+    // party got in first between the tap and here. Otherwise the call view, which is already open on
+    // the strength of that flag, would blank until our session arrives.
+    const previousCall = getCurrentCall();
+    const iPlacedThisCall = startedByMe || Boolean(
+        previousCall?.startedByMe &&
+        previousCall.serverUrl === serverUrl &&
+        previousCall.channelId === channelId,
+    );
 
     // Silence any tone left over from a previous call, and open this call's ringback window: the
     // callee starts ringing off the back of this attempt, so it's the anchor the tone expires on.
@@ -595,7 +622,51 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         serverUrl,
         channelId,
         myUserId,
+        startedByMe: iPlacedThisCall,
+        startUnmuted,
+
+        // Whoever starts a call hosts it, so say so now rather than letting the host badge drop in
+        // on the participant card when call_start arrives with the same answer.
+        hostId: startedByMe && !existingCall.hostId ? myUserId : existingCall.hostId,
     });
+};
+
+// Seeds the current call the instant the user taps the call button, before any of the connecting
+// work has run, so the full-screen call view can be opened right away and render its 'Connecting'
+// state. joinCall seeds it again with the same values once it has the user from the database.
+// Only used for 1:1 DM calls, which are placed live, hence startUnmuted.
+export const startOutgoingCall = (serverUrl: string, channelId: string) => {
+    const {myUserId} = getCallsState(serverUrl);
+    if (!myUserId) {
+        // Nothing to seed the callee lookup with; leave the current call for joinCall to create.
+        logDebug('calls: startOutgoingCall has no myUserId for serverUrl', serverUrl);
+        return;
+    }
+
+    newCurrentCall(serverUrl, channelId, myUserId, {startedByMe: true, startUnmuted: true});
+};
+
+// Stops standing in for our own mute state, leaving whatever the server last said. Used when the
+// unmute we were counting on never made it off the device, so that we don't keep showing ourselves
+// live indefinitely.
+export const clearStartUnmuted = () => {
+    const currentCall = getCurrentCall();
+    if (!currentCall?.startUnmuted) {
+        return;
+    }
+
+    setCurrentCall({...currentCall, startUnmuted: false});
+};
+
+// Tears down an outgoing call that never connected, e.g. calls turned out to be disabled or the
+// connection failed. Leaves a connected call alone: by then it's the connection's to end.
+export const cancelOutgoingCall = async (serverUrl: string, channelId: string) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.serverUrl !== serverUrl || currentCall.channelId !== channelId || currentCall.connected) {
+        return;
+    }
+
+    await myselfLeftCall();
 };
 
 export const setCurrentCallConnected = (channelId: string, sessionId: string) => {
@@ -626,7 +697,14 @@ export const myselfLeftCall = async () => {
 export const callStarted = async (serverUrl: string, call: Call) => {
     const callsState = getCallsState(serverUrl);
     const nextCalls = {...callsState.calls};
-    nextCalls[call.channelId] = call;
+
+    // Same as for the current call below: the event says nothing about who is in the call, so it
+    // must not take the sessions we already know about with it.
+    const knownSessions = callsState.calls[call.channelId]?.sessions;
+    nextCalls[call.channelId] = {
+        ...call,
+        sessions: Object.keys(call.sessions).length ? call.sessions : (knownSessions ?? call.sessions),
+    };
     setCallsState(serverUrl, {...callsState, calls: nextCalls});
 
     await processIncomingCalls(serverUrl, [call]);
@@ -641,10 +719,14 @@ export const callStarted = async (serverUrl: string, call: Call) => {
         return;
     }
 
-    const nextCurrentCall: CurrentCall = {
+    const nextCurrentCall: CurrentCall = keepMyMuteState({
         ...currentCall,
         ...call,
-    };
+
+        // The call_start event carries no session list, so it has nothing to say about who is in
+        // the call: spreading its empty dictionary would drop everyone we already know about.
+        sessions: Object.keys(call.sessions).length ? call.sessions : currentCall.sessions,
+    });
     setCurrentCall(nextCurrentCall);
 
     // This is the first point at which ownerId is correct for the person who started the call:
@@ -713,6 +795,9 @@ export const setUserMuted = (serverUrl: string, channelId: string, sessionId: st
             ...currentCall.sessions,
             [sessionId]: {...currentCall.sessions[sessionId], muted},
         },
+
+        // The server has now told us where our own mic stands, so stop standing in for it.
+        startUnmuted: sessionId === currentCall.mySessionId ? false : currentCall.startUnmuted,
     };
     setCurrentCall(nextCurrentCall);
 };

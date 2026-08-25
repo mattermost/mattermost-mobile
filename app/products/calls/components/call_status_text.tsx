@@ -28,7 +28,10 @@ type Props = {
     speaker: string;
     sessionsDict: Dictionary<CallSession>;
     teammateNameDisplay: string;
-    isDMCalling: boolean;
+
+    // While a DM call is being placed and is ringing there's no one to hear talking, so the callee's
+    // name takes the place of the speaker.
+    showCallee: boolean;
     dmCallee?: UserModel;
 }
 
@@ -36,14 +39,14 @@ export function CallStatusText({
     speaker,
     sessionsDict,
     teammateNameDisplay,
-    isDMCalling,
+    showCallee,
     dmCallee,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    if (isDMCalling) {
+    if (showCallee) {
         return (
             <Text
                 style={styles.speakingUser}

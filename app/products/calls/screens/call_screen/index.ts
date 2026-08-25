@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withObservables} from '@nozbe/watermelondb/react';
-import {of as of$, combineLatest, combineLatestWith} from 'rxjs';
+import {of as of$, combineLatest, combineLatestWith, startWith} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {
@@ -52,6 +52,12 @@ const enhanced = withObservables([], () => {
     );
     const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
 
+    // Needed for our own card while the call is still connecting
+    const currentUser = combineLatest([callDatabase, currentCall]).pipe(
+        switchMap(([db, cc]) => (db && cc?.myUserId ? observeUser(db, cc.myUserId) : of$(undefined))),
+        startWith(undefined),
+    );
+
     return {
         currentCall,
         sessionsDict: observeCurrentSessionsDict(),
@@ -60,6 +66,7 @@ const enhanced = withObservables([], () => {
         displayName,
         isOwnDirectMessage,
         isDM,
+        currentUser,
         ...observeEndCallDetails(),
         ...observeDMCallingState(),
     };

@@ -5,6 +5,7 @@ import assert from 'assert';
 
 import CallsNative from '@mattermost/calls-native';
 import {act, renderHook} from '@testing-library/react-native';
+import {router} from 'expo-router';
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
@@ -89,7 +90,7 @@ jest.mock('@calls/connection/connection', () => ({
     newConnection: jest.fn((serverURL, channelId, onClose) => Promise.resolve({
         disconnect: jest.fn((err?: Error) => onClose(err)),
         mute: jest.fn(),
-        unmute: jest.fn(),
+        unmute: jest.fn(() => true),
         waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),
@@ -839,6 +840,38 @@ describe('Actions.Calls', () => {
         it('should handle start command in DM', async () => {
             const result = await CallsActions.handleCallsSlashCommand('/call start Test Call', 'server1', 'channel1', 'D', 'root1', 'user1', intl);
             expect(result).toEqual({handled: true});
+        });
+
+        it('should open the call screen when starting a DM call, before it has connected', async () => {
+            const getCurrentUser = require('@queries/servers/user').getCurrentUser;
+            getCurrentUser.mockResolvedValue({id: 'myUserId', roles: 'system_user'});
+            jest.mocked(getChannelById).mockResolvedValue(TestHelper.fakeChannelModel({type: General.DM_CHANNEL}));
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId'});
+                setCallsConfig('server1', {...DefaultCallsConfig, DefaultEnabled: true});
+            });
+
+            const result = await CallsActions.handleCallsSlashCommand('/call start', 'server1', 'channel1', General.DM_CHANNEL, '', 'myUserId', intl);
+
+            expect(result).toEqual({handled: true});
+            expect(router.push).toHaveBeenCalledWith(expect.objectContaining({pathname: '/(authenticated)/call'}));
+            expect(getCurrentCall()?.startedByMe).toBe(true);
+        });
+
+        it('should tear the call down again when a DM call cannot be started', async () => {
+            // Calls isn't enabled for this user, so doJoinCall bails after the call screen is open.
+            const getCurrentUser = require('@queries/servers/user').getCurrentUser;
+            getCurrentUser.mockResolvedValue({id: 'myUserId', roles: 'system_user'});
+            jest.mocked(getChannelById).mockResolvedValue(TestHelper.fakeChannelModel({type: General.DM_CHANNEL}));
+            act(() => {
+                setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId'});
+                setCallsConfig('server1', {...DefaultCallsConfig, DefaultEnabled: false});
+            });
+
+            await CallsActions.handleCallsSlashCommand('/call start', 'server1', 'channel1', General.DM_CHANNEL, '', 'myUserId', intl);
+
+            expect(router.push).toHaveBeenCalledWith(expect.objectContaining({pathname: '/(authenticated)/call'}));
+            expect(getCurrentCall()).toBeNull();
         });
 
         it('should handle start command with group calls disabled', async () => {

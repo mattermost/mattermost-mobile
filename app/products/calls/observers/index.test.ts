@@ -9,7 +9,7 @@ import {
     observeCurrentCall,
     observeIncomingCalls,
 } from '@calls/state';
-import {DefaultCallsState} from '@calls/types/calls';
+import {DefaultCallsState, DefaultIncomingCalls} from '@calls/types/calls';
 import {General, License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
@@ -177,6 +177,18 @@ describe('Calls Observers', () => {
             expect(hasIncoming).toBe(false);
         });
 
+        it('should count a call being placed as being in a call, so the call bar has somewhere to be', async () => {
+            // useCallsAdjustment reserves the bar's height from the moment there is a current call.
+            (observeCurrentCall as jest.Mock).mockReturnValue(of$({channelId, connected: false}));
+            (observeChannelsWithCalls as jest.Mock).mockReturnValue(of$({}));
+            (observeCallsState as jest.Mock).mockReturnValue(of$(DefaultCallsState));
+            (observeIncomingCalls as jest.Mock).mockReturnValue(of$(DefaultIncomingCalls));
+
+            const {isInACall} = observeCallStateInChannel(serverUrl, database, of$(channelId));
+
+            expect(await firstValueFrom(isInACall)).toBe(true);
+        });
+
         it('should detect active call in channel', async () => {
             (observeChannelsWithCalls as jest.Mock).mockReturnValue(of$({
                 [channelId]: true,
@@ -336,10 +348,11 @@ describe('Calls Observers', () => {
             (observeChannel as jest.Mock).mockReturnValue(of$(channel));
             (observeUser as jest.Mock).mockReturnValue(of$(callee));
 
-            const {isDMCall, isDMCalling, dmCalleeId, dmCallee, dmCalleeAnsweredAt} = observeDMCallingState();
+            const {isDMCall, isDMConnecting, isDMCalling, dmCalleeId, dmCallee, dmCalleeAnsweredAt} = observeDMCallingState();
 
             return {
                 isDMCall: await firstValueFrom(isDMCall),
+                isDMConnecting: await firstValueFrom(isDMConnecting),
                 isDMCalling: await firstValueFrom(isDMCalling),
                 dmCalleeId: await firstValueFrom(dmCalleeId),
                 dmCallee: await firstValueFrom(dmCallee),
@@ -388,9 +401,41 @@ describe('Calls Observers', () => {
             expect(state.isDMCalling).toBe(false);
         });
 
-        it('should not be calling until connected to the call', async () => {
-            const state = await getState({...dmCall, connected: false});
+        it('should not be calling until my own session is in the call', async () => {
+            const state = await getState({...dmCall, mySessionId: '', sessions: {}});
 
+            expect(state.isDMCalling).toBe(false);
+        });
+
+        it('should be connecting while placing the call, and calling once my session is in it', async () => {
+            const placing = await getState({...dmCall, startedByMe: true, connected: false, mySessionId: '', sessions: {}});
+
+            expect(placing.isDMConnecting).toBe(true);
+            expect(placing.isDMCalling).toBe(false);
+            expect(placing.dmCalleeId).toBe('user2');
+            expect(placing.dmCallee).toBe(callee);
+
+            // ownerId only arrives with the server's call_start event, so startedByMe has to carry
+            // the caller through to the ringing phase on its own.
+            const inTheCall = await getState({...dmCall, startedByMe: true, ownerId: ''});
+
+            expect(inTheCall.isDMConnecting).toBe(false);
+            expect(inTheCall.isDMCalling).toBe(true);
+        });
+
+        it('should still be connecting when the media connection is up but my session has not arrived', async () => {
+            // connected goes true on the calls socket; the session only lands with user_joined on
+            // the main one, and in between there must be no gap in what we show.
+            const state = await getState({...dmCall, startedByMe: true, connected: true, mySessionId: 'session1', sessions: {}});
+
+            expect(state.isDMConnecting).toBe(true);
+            expect(state.isDMCalling).toBe(false);
+        });
+
+        it('should not be connecting when joining a call someone else started', async () => {
+            const state = await getState({...dmCall, connected: false, mySessionId: '', sessions: {}});
+
+            expect(state.isDMConnecting).toBe(false);
             expect(state.isDMCalling).toBe(false);
         });
 

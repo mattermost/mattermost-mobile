@@ -44,6 +44,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     },
 }));
 
+/**
+ * The card for the person we're calling, who has no session in the call until they answer. It
+ * pulses to show we're waiting on them; no mic state is shown, since they have none yet.
+ */
 export const ParticipantLoadingCard = ({callee, smallerAvatar, teammateNameDisplay, serverUrl}: Props) => {
     const intl = useIntl();
     const theme = useTheme();

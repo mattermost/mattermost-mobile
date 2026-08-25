@@ -6,10 +6,11 @@ import {Alert, AppState} from 'react-native';
 import Permissions from 'react-native-permissions';
 import {of as of$} from 'rxjs';
 
-import {initializeVoiceTrack} from '@calls/actions/calls';
+import {initializeVoiceTrack, openOutgoingCallScreen} from '@calls/actions/calls';
 import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {
+    cancelOutgoingCall,
     getCurrentCall,
     getCallsConfig,
     setMicPermissionsGranted,
@@ -55,6 +56,7 @@ jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.deni
 
 jest.mock('@calls/actions/calls', () => ({
     initializeVoiceTrack: jest.fn(),
+    openOutgoingCallScreen: jest.fn(),
 }));
 
 jest.mock('@calls/alerts', () => ({
@@ -67,6 +69,7 @@ jest.mock('@calls/observers', () => ({
 }));
 
 jest.mock('@calls/state', () => ({
+    cancelOutgoingCall: jest.fn(),
     getCurrentCall: jest.fn(),
     getCallsConfig: jest.fn(),
     setMicPermissionsGranted: jest.fn(),
@@ -351,18 +354,44 @@ describe('Calls Hooks', () => {
             expect(result.current).toBeUndefined();
         });
 
-        it('should join the call and open the full screen call view on press', async () => {
+        it('should start the call and open the full screen call view on press', async () => {
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
 
             await act(async () => {
                 result.current?.onPress();
             });
 
+            expect(openOutgoingCallScreen).toHaveBeenCalledWith('server1', channelId);
             expect(leaveAndJoinWithAlert).toHaveBeenCalledWith(expect.anything(), 'server1', channelId);
-            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
+
+            // Already opened up front, so it isn't opened a second time once connected.
+            expect(navigateToScreen).not.toHaveBeenCalled();
+            expect(cancelOutgoingCall).not.toHaveBeenCalled();
         });
 
-        it('should not open the full screen call view when the user does not join the call due to error', async () => {
+        it('should open the call view on the press itself, without waiting on the server', async () => {
+            let resolveEnabled: () => void = () => null;
+            (NetworkManager.getClient as jest.Mock).mockReturnValue({
+                getEnabled: jest.fn().mockReturnValue(new Promise<boolean>((resolve) => {
+                    resolveEnabled = () => resolve(true);
+                })),
+            });
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            act(() => {
+                result.current?.onPress();
+            });
+
+            expect(openOutgoingCallScreen).toHaveBeenCalledWith('server1', channelId);
+            expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveEnabled();
+            });
+        });
+
+        it('should close the call view again when the call cannot be started', async () => {
             jest.mocked(leaveAndJoinWithAlert).mockResolvedValue(false);
 
             const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
@@ -371,8 +400,50 @@ describe('Calls Hooks', () => {
                 result.current?.onPress();
             });
 
-            expect(leaveAndJoinWithAlert).toHaveBeenCalled();
-            expect(navigateToScreen).not.toHaveBeenCalled();
+            expect(openOutgoingCallScreen).toHaveBeenCalled();
+            expect(cancelOutgoingCall).toHaveBeenCalledWith('server1', channelId);
+        });
+
+        it('should close the call view again when calls is not enabled on the server', async () => {
+            (NetworkManager.getClient as jest.Mock).mockReturnValue({getEnabled: jest.fn().mockResolvedValue(false)});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(openOutgoingCallScreen).toHaveBeenCalled();
+            expect(leaveAndJoinWithAlert).not.toHaveBeenCalled();
+            expect(cancelOutgoingCall).toHaveBeenCalledWith('server1', channelId);
+        });
+
+        it('should wait until connected to open the call view when joining an existing call', async () => {
+            (useChannelsWithCalls as jest.Mock).mockReturnValue({[channelId]: true});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(openOutgoingCallScreen).not.toHaveBeenCalled();
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
+        });
+
+        it('should wait until connected to open the call view when leaving another call for this one', async () => {
+            // Switching calls prompts for confirmation first, and leaving the old call would pop
+            // the call view straight back off.
+            (useCurrentCall as jest.Mock).mockReturnValue({channelId: 'other-channel'});
+
+            const {result} = renderHook(() => useNavigationHeaderCallButtonForDM(channelId, General.DM_CHANNEL));
+
+            await act(async () => {
+                result.current?.onPress();
+            });
+
+            expect(openOutgoingCallScreen).not.toHaveBeenCalled();
+            expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL);
         });
 
         it('should navigate to the call screen instead of joining when already in this channel call', async () => {

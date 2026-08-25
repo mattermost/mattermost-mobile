@@ -10,6 +10,7 @@ import {ElapsedTimer} from '@calls/components/elapsed_timer';
 import {useCallingPulseAnimationStyle} from '@calls/hooks';
 
 type Props = {
+    isConnecting?: boolean;
     isCalling: boolean;
     value: number;
     style: StyleProp<TextStyle>;
@@ -17,12 +18,27 @@ type Props = {
 }
 
 /**
- * Shows elapsed call time after answer, or "Calling…" while ringing (DM only).
- * Timer starts at answer, excluding ring time.
+ * Shows elapsed call time after answer, or "Connecting..." until we're in the call and "Calling..."
+ * while it rings (DM only). Timer starts at answer, excluding connect and ring time.
  */
-export function CallStatusTimer({isCalling, value, style, truncateWhenLong}: Props) {
+export function CallStatusTimer({isConnecting = false, isCalling, value, style, truncateWhenLong}: Props) {
     const intl = useIntl();
-    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isCalling);
+    const callingPulseAnimationStyle = useCallingPulseAnimationStyle(isConnecting || isCalling);
+
+    if (isConnecting) {
+        return (
+            <Animated.Text
+                style={[style, callingPulseAnimationStyle]}
+                numberOfLines={1}
+                testID='calls.connecting_text'
+            >
+                {intl.formatMessage({
+                    id: 'mobile.calls_connecting',
+                    defaultMessage: 'Connecting...',
+                })}
+            </Animated.Text>
+        );
+    }
 
     if (isCalling) {
         return (
