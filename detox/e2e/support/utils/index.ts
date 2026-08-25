@@ -69,7 +69,25 @@ export const timeouts = {
 let syncDisableDepth = 0;
 
 // Retry enableSynchronization after Android Fabric ReactContext null races.
+//
+// No-op while an outer withSynchronizationDisabled() is still in scope. Eighteen helpers
+// in this support layer pair a raw device.disableSynchronization() with a direct call to
+// this function in their own `finally`, none of which touch syncDisableDepth. Called from
+// inside a wrapper, they used to switch synchronization back ON for the remainder of the
+// outer block, and on a screen whose JS run loop never idles every later action then
+// stalled to the 300s cap. Two measured examples from run 32821677136:
+//
+//   MM-T585_1  wrap -> ChannelListScreen.open() -> channel_list.ts:434 -> sync ON at
+//              msgId 311 -> tap tab_bar.home.tab (323) hangs
+//   MM-T5294_12 wrap -> search_messages.ts:125 -> sync ON at msgId 560 -> the actions
+//              after it hang
+//
+// The wrapper decrements to 0 before calling this, so its own restore still runs.
 export async function safeEnableSynchronization(): Promise<void> {
+    if (syncDisableDepth > 0) {
+        return;
+    }
+
     const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i <= delays.length; i++) {
