@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, Pressable, StatusBar, StyleSheet, View, useWindowDimensions} from 'react-native';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
@@ -60,6 +60,7 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
             <View
                 style={{flex: 1}}
                 onLayout={onRootLayout}
+                testID='tutorial_highlight.overlay'
             >
                 {itemBounds.endX > 0 &&
                 <HighlightItem
@@ -69,6 +70,33 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                     onDismiss={onDismiss}
                     width={width}
                     onLayout={handleShowTutorial}
+                />
+                }
+
+                {/*
+                  * Dismiss target. HighlightItem's only press handler is `onPress` on the
+                  * react-native-svg root, which routes through RNSVG's own responder on
+                  * RNSVGSvgView and does not fire for a synthetic tap: on iOS shard 19 of
+                  * run 32821677136 both `tap(tutorial_highlight.backdrop)` and
+                  * `tap(tutorial_highlight)` returned success and the overlay stayed up,
+                  * with testFnFailure.png still showing it. TutorialSwipeLeft cannot serve
+                  * either — its root sets pointerEvents='none', so neither it nor its
+                  * subviews can ever be the touch target.
+                  *
+                  * A plain transparent Pressable above the SVG is a real RN touch target,
+                  * so the overlay becomes dismissable by tap. Nothing is removed: the SVG
+                  * keeps its own onPress for real finger input, and Android still dismisses
+                  * through Modal.onRequestClose.
+                  *
+                  * No pressed-state style on purpose, unlike the usual Pressable convention:
+                  * this is an invisible full-screen scrim, so any feedback would flash the
+                  * whole screen. The visible affordance is the highlight and its tooltip.
+                  */}
+                {itemBounds.endX > 0 &&
+                <Pressable
+                    onPress={onDismiss}
+                    style={StyleSheet.absoluteFill}
+                    testID='tutorial_highlight.backdrop'
                 />
                 }
                 {itemBounds.endX > 0 && children}
