@@ -30,7 +30,7 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {Object} option.props - A general object property bag to attach to the post
  * @param {string[]} option.fileIds - Array of file IDs to attach to the post (top-level API field)
  * @param {Date} option.createAt - The date the post is created at
- * @return {Object} returns {post} on success or {error, status} on error
+ * @return {Object} returns {post} on success. Throws on error (never returns {error}).
  */
 export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0}: any): Promise<any> => {
     try {
@@ -48,7 +48,14 @@ export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId
 
         return {post: response.data};
     } catch (err) {
-        return getResponseFromError(err);
+        // Throw rather than return {error}. Almost every call site destructures
+        // {post} without checking `error`, so a transport failure here used to
+        // surface as `TypeError: Cannot read properties of undefined` on whichever
+        // later line first touched the missing post, with nothing about the network
+        // in the report. MM-T4805_4 in run 32560548619 died that way after a single
+        // `getaddrinfo ENOTFOUND` against the site-2 test server.
+        const error = getResponseFromError(err);
+        throw new Error(`apiCreatePost failed: ${JSON.stringify(error.error)}`);
     }
 };
 
