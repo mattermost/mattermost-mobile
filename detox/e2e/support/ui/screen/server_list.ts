@@ -15,7 +15,7 @@ class ServerListScreen {
         // to BottomSheetContent, which renders it as `${testID}.screen` (content.tsx:69) on
         // a plain, non-scrollable View. Same .screen trap as draft_options and post_list.
         serverList: 'server_list.flat_list',
-        addServerButton: 'servers.create_button', // Updated to match actual app testID (was stale)
+        addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
     };
@@ -24,10 +24,9 @@ class ServerListScreen {
     serverListTitle = element(by.id(this.testID.serverListTitle));
     serverList = element(by.id(this.testID.serverList));
 
-    // Match button by testID constant, not text(). by.text() matched the small text label
-    // (RCTParagraphComponentView at 147,12; 97,24), which is blocked by the tutorial overlay
-    // SVG. by.id() matches the Pressable/Button container which is tappable.
-    addServerButton = element(by.id(this.testID.addServerButton));
+    // Footer label is what CI actually finds. The footer testID is not
+    // visible on Android (MM-T4691_7 / MM-T4675_2 on 21ea481).
+    addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
 
@@ -109,14 +108,6 @@ class ServerListScreen {
         }
         /* eslint-enable no-await-in-loop */
 
-        // iOS only: dismiss the tutorial overlay if shown, before visibility checks or taps.
-        // The modal blocks both visibility checks (covers ~100% of screen) and hit tests on buttons.
-        // Android: leave the original sequence byte-for-byte (pressBack fires only at spec's
-        // closeTutorial() call, not during open()). Android tests currently pass.
-        if (isIos()) {
-            await this.closeTutorial();
-        }
-
         return this.toBeVisible();
     };
 
@@ -139,31 +130,11 @@ class ServerListScreen {
         await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
-    // Dismiss the tutorial overlay if shown. Tolerant on both platforms — returns quietly
-    // if the tutorial was not shown (e.g., already dismissed in a previous run). On iOS,
-    // the tutorial is a full-screen Modal overlay (frame 0,0 to 402,874) with an SVG
-    // child whose onPress={onDismiss} dismisses it. On Android, a back press was the
-    // original path, but it is NOT fired if the tutorial element doesn't exist (to avoid
-    // a stray pressBack navigating away). Pattern from manage_channel_members.ts:121.
     closeTutorial = async () => {
         if (isIos()) {
-            try {
-                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.THREE_SEC);
-            } catch {
-                // Tutorial not shown or already dismissed on this app install — no-op.
-                return;
-            }
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
             await this.tutorialSwipeLeft.tap();
             await expect(this.tutorialHighlight).not.toExist();
-            return;
-        }
-
-        // Android: only press back if tutorial modal is present. Do not fire a stray
-        // pressBack when there is no tutorial, as that can navigate away unexpectedly.
-        try {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.THREE_SEC);
-        } catch {
-            // Tutorial not shown — no-op (do NOT press back).
             return;
         }
         await wait(timeouts.ONE_SEC);
