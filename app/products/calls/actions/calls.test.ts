@@ -1412,6 +1412,7 @@ describe('maybeRequestMicrophonePermission', () => {
         Object.defineProperty(AppState, 'currentState', {value: 'background', configurable: true, writable: true});
         await maybeRequestMicrophonePermission();
         expect(getMicPermissionAsked).not.toHaveBeenCalled();
+
         // Flag reset: a later foreground call should proceed
         getMicPermissionAsked.mockResolvedValue(false);
         jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
@@ -1428,6 +1429,7 @@ describe('maybeRequestMicrophonePermission', () => {
         const mockAlert = jest.spyOn(Alert, 'alert');
         await maybeRequestMicrophonePermission();
         expect(mockAlert).not.toHaveBeenCalled();
+
         // Flag reset: a second call should check DB again
         await maybeRequestMicrophonePermission();
         expect(getMicPermissionAsked).toHaveBeenCalledTimes(2);
@@ -1440,6 +1442,7 @@ describe('maybeRequestMicrophonePermission', () => {
         const mockAlert = jest.spyOn(Alert, 'alert');
         await maybeRequestMicrophonePermission();
         expect(mockAlert).not.toHaveBeenCalled();
+
         // Flag reset: a second call should check permission again
         await maybeRequestMicrophonePermission();
         expect(mockCheck).toHaveBeenCalledTimes(2);
@@ -1488,6 +1491,7 @@ describe('maybeRequestMicrophonePermission', () => {
         jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
         storeMicPermissionAsked.mockResolvedValue({});
         const mockAlert = jest.spyOn(Alert, 'alert');
+
         // Two concurrent calls — only one alert should appear
         await Promise.all([maybeRequestMicrophonePermission(), maybeRequestMicrophonePermission()]);
         expect(mockAlert).toHaveBeenCalledTimes(1);
