@@ -1527,24 +1527,37 @@ describe('Actions.Calls', () => {
 
     describe('joinCallAndOpenCallScreen', () => {
         const intl = createIntl({locale: 'en', messages: {}});
+        const theirCall: Call = {
+            id: 'call-id',
+            sessions: {
+                theirSession: {sessionId: 'theirSession', userId: 'caller-id', muted: false, raisedHand: 0},
+            },
+            channelId: 'channel-id',
+            startTime: 100,
+            screenOn: '',
+            threadId: 'thread-id',
+            ownerId: 'caller-id',
+            hostId: 'caller-id',
+            dismissed: {},
+        };
 
         beforeEach(async () => {
             jest.mocked(getChannelById).mockResolvedValue(TestHelper.fakeChannelModel({type: General.DM_CHANNEL}));
             require('@queries/servers/user').getCurrentUser.mockResolvedValue({id: 'myUserId', roles: 'system_user'});
 
-            // callStarted only registers the channel as having a call after an await, and the join
-            // hinges on that: a call the store doesn't know about yet is treated as a new one.
-            await act(async () => {
-                addFakeCall('server1', 'channel-id');
+            // Let whatever the tests above left in flight settle first, then seed a channel with a
+            // call somebody else started: the join path treats a call the store doesn't know about
+            // as a new one, which is a different flow entirely.
+            await act(async () => {});
+            act(() => {
+                setCurrentCall(null);
+                setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-id': theirCall}});
+                setChannelsWithCalls('server1', {'channel-id': true});
             });
         });
 
         it('should open the call screen once we are in the call', async () => {
-            // eslint-disable-next-line no-console
-            console.log('DEBUG channelsWithCalls', JSON.stringify(State.getChannelsWithCalls('server1')), 'calls', Object.keys(State.getCallsState('server1').calls), 'currentCall', State.getCurrentCall()?.channelId, 'config', JSON.stringify(State.getCallsConfig('server1')));
             const joined = await joinCallAndOpenCallScreen(intl, 'server1', 'channel-id');
-            // eslint-disable-next-line no-console
-            console.log('DEBUG joined', joined, 'alertCalls', jest.mocked(Alert.alert).mock?.calls?.length);
 
             assert.equal(joined, true);
             expect(router.push).toHaveBeenCalledWith(expect.objectContaining({pathname: '/(authenticated)/call'}));
