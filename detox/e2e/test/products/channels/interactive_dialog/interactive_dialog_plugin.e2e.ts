@@ -926,15 +926,23 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.id('AppFormElement.local_manual.time.button')).tap();
         await wait(500);
 
-        // Detox iOS replaceText often does not fire onChangeText, so type the value.
+        // Set the whole value in one native write. typeText injects five separate
+        // keystrokes, and this TextInput is controlled (value={manualTimeText}), so on a
+        // loaded simulator a keystroke can land while React is still committing the
+        // previous value and get reverted. The field then holds something that
+        // parseTimeString rejects — nothing is committed to the form and the dialog
+        // submits local_manual empty, which is exactly what CI run 32554729409 recorded
+        // ("Dialog Submitted: local_manual:" with london_dropdown populated) even though
+        // every Detox action reported success. replaceText fires onChangeText once with
+        // the complete string, so there is no intermediate value to lose.
         const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
         await waitFor(manualInput).toBeVisible().withTimeout(2000);
         await manualInput.tap();
-        await manualInput.clearText();
-        await manualInput.typeText('14:30');
+        await manualInput.replaceText('14:30');
         await wait(500);
 
-        // Blur commits even if return-key is swallowed on iOS 26.
+        // Second commit path: onSubmitEditing/onBlur re-commit the same text, which
+        // covers a replaceText that did not deliver onChangeText.
         try {
             await manualInput.tapReturnKey();
         } catch { /* keyboard may already be dismissed */ }
@@ -952,11 +960,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // values would be :00). Sub-second digits are not stable across iOS simulators.
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const match = post.message.match(/local_manual:\s*(\S+)/);
-        if (!match || !match[1]) {
-            throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
+
+        // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
+        // list, so \s* crosses the newline and captures the next item's "-" bullet. That
+        // is why an EMPTY field used to report itself as "got: -".
+        const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
+        const submitted = match?.[1]?.trim() ?? '';
+        if (!submitted) {
+            throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        const submitted = match[1];
         if (!/T\d{2}:30:\d{2}(?:\.\d+)?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
