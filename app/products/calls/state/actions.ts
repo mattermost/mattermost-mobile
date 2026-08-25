@@ -232,10 +232,14 @@ export const callsOnAppStateChange = async (appState: AppStateStatus) => {
     switch (appState) {
         case 'inactive':
         case 'background':
-            // Only the incoming ring stops here. The outbound ringback belongs to a call the user
-            // placed and is still in, so it keeps playing on that call's audio session until the
-            // callee answers or RINGBACK_TONE_TIMEOUT expires it — backgrounding the app shouldn't
-            // leave the caller in silence with no cue that the call was picked up.
+            // The outbound ringback belongs to a call the user placed and is still in, so on iOS it
+            // keeps playing until the callee answers or RINGBACK_TONE_TIMEOUT expires it —
+            // backgrounding the app shouldn't leave the caller in silence with no cue that the call
+            // was picked up. On Android the inbound ring and the ringback share the one native
+            // player, so that one has to stop.
+            if (Platform.OS !== 'ios') {
+                stopRingback();
+            }
             stopIncomingCallsRinging();
             break;
     }
