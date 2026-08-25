@@ -220,7 +220,7 @@ beforeAll(async () => {
 
         await device.launchApp({
             newInstance: true,
-            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES', microphone: 'YES'}} : {}),
             launchArgs,
         });
 
@@ -261,7 +261,7 @@ beforeAll(async () => {
                     clearIOSAppData();
                     await device.launchApp({
                         newInstance: true,
-                        ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+                        ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES', microphone: 'YES'}} : {}),
                         launchArgs,
                     });
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
