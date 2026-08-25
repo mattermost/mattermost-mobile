@@ -107,9 +107,16 @@ describe('Search - Result Interactions', () => {
         await wait(timeouts.ONE_SEC);
         await expect(flatList).toBeVisible();
 
-        // # Scroll the results list down to verify it is scrollable
+        // # Scroll the results list down to verify it is scrollable.
+        // No explicit start point: the (0.5, 0.5) variant begins its drag in the middle of a
+        // post row and dwells there long enough for iOS's long-press recognizer to win, which
+        // opens the post-options sheet over the list. That sheet is what failed the assertion
+        // below at 75% visibility on ios13 (e27844130) — testFnFailure.png shows Reply / Mark
+        // as Unread / Copy Link / Save / Copy Text / Pin to Channel covering the results,
+        // while the identical assertion five lines above had just passed. The start-point-less
+        // scroll on line 107 is proven not to trigger it in this very test.
         try {
-            await flatList.scroll(300, 'down', 0.5, 0.5);
+            await flatList.scroll(300, 'down');
         } catch {
             // List may be too short to scroll — scrollability already satisfied
         }
