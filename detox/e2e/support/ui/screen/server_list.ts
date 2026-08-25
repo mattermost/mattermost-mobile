@@ -6,6 +6,11 @@ import {ChannelListScreen} from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+// Point inside the tutorial scrim, clear of both the tooltip card (vertically centred)
+// and the highlighted server row's cut-out (in the bottom sheet). Element-relative, and
+// the scrim spans the whole window.
+const TUTORIAL_DISMISS_POINT = {x: 40, y: 140};
+
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
@@ -173,14 +178,27 @@ class ServerListScreen {
             return false;
         }
 
+        // The backdrop spans the whole window, so its centre point sits under the
+        // "Swipe left on a server…" tooltip card. Detox hit-tests a tap at the view's
+        // centre and rejects it when the target is not the visible thing there —
+        // messageId 87 on iOS shard 19 of run 32881947481: "View is not hittable at its
+        // visible point ... view point: {201, 437}". TUTORIAL_DISMISS_POINT is above the
+        // card and above the highlighted row's cut-out, so the scrim itself is what gets
+        // hit. The centre tap and the Modal host are kept as fallbacks for builds whose
+        // overlay geometry differs (tablet, landscape).
         /* eslint-disable no-await-in-loop -- fall through to the next dismiss target */
-        for (const target of [this.tutorialBackdrop, this.tutorialHighlight]) {
+        const attempts: Array<() => Promise<void>> = [
+            () => this.tutorialBackdrop.tap(TUTORIAL_DISMISS_POINT),
+            () => this.tutorialBackdrop.tap(),
+            () => this.tutorialHighlight.tap(),
+        ];
+        for (const attempt of attempts) {
             try {
-                await target.tap();
+                await attempt();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.FIVE_SEC);
                 return true;
             } catch {
-                // Try the Modal host next; older builds have no backdrop testID.
+                // Try the next dismiss target.
             }
         }
         /* eslint-enable no-await-in-loop */

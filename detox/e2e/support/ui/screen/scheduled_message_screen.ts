@@ -69,17 +69,6 @@ class ScheduledMessageScreen {
         await this.deleteDraftPost(this.deleteDraft);
     };
 
-    // iOS exposes `enabled` on element attributes; treat "cannot read it" as not enabled so
-    // the caller keeps nudging rather than tapping a dead control.
-    private isSaveEnabled = async (saveButton: Detox.NativeElement): Promise<boolean> => {
-        try {
-            const attributes = await saveButton.getAttributes();
-            return 'enabled' in attributes ? Boolean(attributes.enabled) : false;
-        } catch {
-            return false;
-        }
-    };
-
     // The spinner is a UIDatePicker on most iOS versions and a UIPickerView on others.
     private nudgeIosPicker = async (): Promise<boolean> => {
         try {
@@ -104,37 +93,36 @@ class ScheduledMessageScreen {
             const saveButton = element(by.id('reschedule_draft.save.button'));
             await waitFor(saveButton).toExist().withTimeout(timeouts.FIVE_SEC);
 
-            // Nudge until Save actually reports enabled. A disabled NavigationButton is
-            // still present and still hittable, so `.tap()` on it succeeds and silently
-            // does nothing — MM-T5720 on ios12 (f181296) tapped once and then waited out
-            // the full 10s with the picker still on screen and no loading spinner, i.e.
-            // onSavePostMessage never ran. Check the state instead of assuming one swipe
-            // was enough.
-            /* eslint-disable no-await-in-loop -- nudge the spinner until canSave flips */
-            let enabled = await this.isSaveEnabled(saveButton);
-            for (let attempt = 0; attempt < 4 && !enabled; attempt++) {
+            // Nudge FIRST, every time, and never gate on the button's `enabled` attribute.
+            // reschedule_draft.save.button is a Pressable whose disabled state is only a
+            // 0.32-opacity text colour, and Detox read it back as enabled while it was
+            // visibly greyed out: iOS shard 12 of run 32881947481 shows one getAttributes
+            // call, zero picker swipes, and then a Save tap — so the guard skipped the very
+            // nudge it existed to drive, selectedTime still equalled draft.scheduledAt,
+            // canSave stayed false and both Save taps were no-ops against a disabled
+            // Pressable. testFnFailure.png is the picker still up with Save greyed.
+            //
+            // The app's real precondition is "the picked time differs from scheduledAt",
+            // and only a swipe produces that, so swipe then tap, and take the picker going
+            // away as the only proof the save committed.
+            /* eslint-disable no-await-in-loop -- swipe the spinner until the save commits */
+            for (let attempt = 0; attempt < 4; attempt++) {
                 if (!await this.nudgeIosPicker()) {
                     throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
                 }
                 await wait(timeouts.HALF_SEC);
-                enabled = await this.isSaveEnabled(saveButton);
+                await saveButton.tap();
+                try {
+                    await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                    return;
+                } catch {
+                    // Still on the picker: the swipe either landed back on the original
+                    // time or canSave was still being recomputed. Swipe again.
+                }
             }
             /* eslint-enable no-await-in-loop */
 
-            if (!enabled) {
-                throw new Error('ScheduleMessageScreen.selectDateTime: Save stayed disabled after nudging the picker, so the time never changed');
-            }
-
-            await saveButton.tap();
-            try {
-                await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
-            } catch {
-                // One retry: the first tap can land while canSave is being recomputed from
-                // the settling spinner. usePreventDoubleTap's window has long passed by now.
-                await saveButton.tap();
-                await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
-            }
-            return;
+            throw new Error('ScheduleMessageScreen.selectDateTime: the picker was still on screen after 4 swipe-and-save attempts, so the new time never committed');
         }
         await this.selectDateButton.tap();
         await this.selectTimeButton.tap();

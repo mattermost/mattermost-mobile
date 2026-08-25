@@ -221,11 +221,25 @@ class ChannelInfoScreen {
             5,
             by.id(this.testID.scrollView),
         );
+
+        // longPressWithRetry only waits for the sheet's rows to EXIST, and the tap below
+        // is injected with synchronization off, so it can land while the sheet is still
+        // committing its open animation. Asking that half-mounted tree to dismiss makes
+        // Fabric move a ReactTextView the sheet still owns, which is a host exception, so
+        // ReactHost destroys the instance and every later action fails with "ReactContext
+        // is null!" — MM-T869_1 on Android shard 4 of run 32881947481: tap at 14:25:53.201,
+        // "addViewAt: cannot insert view [3094] into parent [3106]" at 14:25:53.472,
+        // getOrCreateDestroyTask() at 14:25:53.495. Wait for the row to be drawn, not just
+        // present, so the tap lands on a settled tree.
+        const cancelAction = element(by.id(this.testID.copyHeaderCancelAction));
+        await waitForElementToBeVisible(cancelAction, timeouts.FIVE_SEC);
+        await wait(timeouts.HALF_SEC);
+
         if (isAndroid()) {
             await device.disableSynchronization();
         }
         try {
-            await element(by.id(this.testID.copyHeaderCancelAction)).tap();
+            await cancelAction.tap();
             await wait(timeouts.ONE_SEC);
         } finally {
             if (isAndroid()) {

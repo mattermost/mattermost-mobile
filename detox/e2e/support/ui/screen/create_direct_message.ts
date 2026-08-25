@@ -4,7 +4,7 @@
 import {ProfilePicture} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -149,12 +149,21 @@ class CreateDirectMessageScreen {
         await dismissKnownModals(2);
         await ChannelListScreen.openPlusMenu();
 
+        // Wait for the plus menu to be drawn, not merely present, BEFORE synchronization
+        // goes off. Tapping a row while the sheet is still committing its open animation
+        // makes Fabric move a ReactTextView the sheet still owns; that host exception
+        // destroys the React instance and every later action fails with "ReactContext is
+        // null!" — MM-T4730_4 on Android shard 15 of run 32881947481: tap
+        // plus_menu_item.open_direct_message at 14:37:02.489, "addViewAt: cannot insert
+        // view [19230] into parent [19242]" at 14:37:02.683.
+        await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+        await wait(timeouts.HALF_SEC);
+
         const disableSyncForOpen = isAndroid();
         if (disableSyncForOpen) {
             await device.disableSynchronization();
         }
         try {
-            await waitForElementToExist(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
 
             /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
             for (let i = 0; i < 3; i++) {

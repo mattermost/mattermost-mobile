@@ -4,6 +4,7 @@
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 import {View} from 'react-native';
+import Svg from 'react-native-svg';
 
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -44,5 +45,22 @@ describe('TutorialHighlight', () => {
         fireEvent.press(getByTestId('tutorial_highlight.backdrop'));
 
         expect(onDismiss).toHaveBeenCalledTimes(1);
+    });
+
+    // An empty transparent Pressable is a real touch target for a finger but has no pixels
+    // of its own, and Detox derives hittability from a pixel comparison — iOS shard 19 of
+    // run 32881947481 rejected tap(tutorial_highlight.backdrop) with "does not pass
+    // visibility percent threshold (100)". The backdrop has to OWN the scrim, not sit over
+    // it, so pin that the dimming Svg is inside the Pressable.
+    it('should render the dimming scrim inside the pressable backdrop', () => {
+        const {getByTestId} = renderOverlay(jest.fn());
+
+        act(() => {
+            fireEvent(getByTestId('tutorial_highlight.overlay'), 'layout');
+        });
+
+        const backdrop = getByTestId('tutorial_highlight.backdrop');
+
+        expect(backdrop.findAllByType(Svg)).toHaveLength(1);
     });
 });
