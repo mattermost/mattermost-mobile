@@ -160,6 +160,37 @@ baseClient.interceptors.response.use(
     },
 );
 
+/**
+ * Name resolution failures for a freshly provisioned test server. Unlike a timeout, these
+ * are provably side-effect-free — the request never left the machine — so a POST is as safe
+ * to replay as a GET, and the idempotency rule above does not apply.
+ *
+ * MM-T4877_2 on iOS shard 4 (f181296) died on
+ * "getaddrinfo ENOTFOUND mobile-pr-10050-ios-site-2-....test.mattermost.cloud" during
+ * apiCreatePost, while every other spec on that shard reached the same server: the runner
+ * had cached a negative lookup from before the record propagated.
+ */
+const DNS_ERROR_CODES: ReadonlySet<string> = new Set(['ENOTFOUND', 'EAI_AGAIN']);
+
+const DNS_RETRY_COST_MS = 5_000;
+
+baseClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config as typeof error.config & {_dnsRetries?: number; _retryDeadlineAt?: number};
+        const unresolved = !error.response && DNS_ERROR_CODES.has(String(error.code ?? ''));
+
+        if (unresolved && config && isReplayableBody(config.data) && hasRetryBudget(config, DNS_RETRY_COST_MS)) {
+            config._dnsRetries = (config._dnsRetries ?? 0) + 1;
+            const delay = config._dnsRetries * 2000;
+            console.warn(`[client] ${error.code} — retry ${config._dnsRetries} for ${config.method} ${config.url} in ${delay}ms`); // eslint-disable-line no-console
+            await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+            return baseClient(config);
+        }
+        return Promise.reject(error);
+    },
+);
+
 /** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
 const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
 

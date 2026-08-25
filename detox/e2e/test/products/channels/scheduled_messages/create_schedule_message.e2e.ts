@@ -61,6 +61,10 @@ describe('Scheduled Draft,', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // The schedule labels are rendered in the device's timezone, which is not the Node
+        // runner's in CI. Resolve it once from the timezone the app itself pushed on login.
+        await ScheduleMessageScreen.resolveDeviceTimeZone(siteOneUrl, testUser.id);
     });
 
     beforeEach(async () => {

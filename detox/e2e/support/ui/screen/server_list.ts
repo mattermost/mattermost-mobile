@@ -18,6 +18,12 @@ class ServerListScreen {
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
+
+        // The pressable backdrop inside the tutorial Modal. tutorial_swipe_left cannot be
+        // used as the dismiss target: its root View sets pointerEvents='none'
+        // (components/tutorial_highlight/swipe_left.tsx), so a tap on it hit-tests into
+        // this sibling SVG and Detox rejects it as "not hittable".
+        tutorialBackdrop: 'tutorial_highlight.backdrop',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
@@ -29,6 +35,7 @@ class ServerListScreen {
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
+    tutorialBackdrop = element(by.id(this.testID.tutorialBackdrop));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -71,7 +78,31 @@ class ServerListScreen {
             // 32543957273: the screenshot at the moment of failure is the channel list, and
             // the edit option's frame was RNGH's closed translate (x = -10000 + row x).
             await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
-            await waitForElementToBeVisible(this.serverListScreen, timeouts.TEN_SEC);
+
+            // The multi-server tutorial is a full-screen RN Modal whose backdrop SVG
+            // paints a 30%-opacity wash over every pixel of the window. Detox on iOS
+            // derives visibility from a pixel comparison, so while it is up
+            // server_list.screen measures 0% visible and can never reach the 75%
+            // threshold (MM-T4691_1..7 and MM-T4675_2 on f181296 — see the
+            // DETOX_VISIBILITY_*.png pair in those shards, where the whole sheet is
+            // washed grey). It is armed 500ms after the row lays out, which is after
+            // the existence wait above returns, so dismiss between attempts rather
+            // than once up front.
+            /* eslint-disable no-await-in-loop -- retry visibility around a tutorial dismissal */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    await waitForElementToBeVisible(this.serverListScreen, timeouts.FOUR_SEC);
+                    return this.serverListScreen;
+                } catch (error) {
+                    // Only retry when a tutorial was actually there and went away. Any
+                    // other reason the sheet is not visible is a real failure and is
+                    // rethrown with its original message.
+                    if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                        throw error;
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         }
 
         return this.serverListScreen;
@@ -130,11 +161,38 @@ class ServerListScreen {
         await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
+    // Dismiss the multi-server tutorial Modal if it is up. Returns whether it was
+    // present AND dismissed, so callers can tell "there was nothing to do" apart from
+    // "the blocker is still there" instead of swallowing the difference.
+    dismissTutorialIfPresent = async (): Promise<boolean> => {
+        try {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Not shown on this install, or already watched — storeMultiServerTutorial()
+            // persists the flag on first dismissal.
+            return false;
+        }
+
+        /* eslint-disable no-await-in-loop -- fall through to the next dismiss target */
+        for (const target of [this.tutorialBackdrop, this.tutorialHighlight]) {
+            try {
+                await target.tap();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                return true;
+            } catch {
+                // Try the Modal host next; older builds have no backdrop testID.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        return false;
+    };
+
     closeTutorial = async () => {
         if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
+            // open() dismisses the tutorial as part of its visibility wait, so by the time
+            // a spec calls this the Modal is usually already gone. Absence is not failure.
+            await this.dismissTutorialIfPresent();
             return;
         }
         await wait(timeouts.ONE_SEC);

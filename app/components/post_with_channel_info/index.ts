@@ -3,10 +3,11 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {withServerUrl} from '@context/server';
 import {observeIsChannelAutotranslated} from '@queries/servers/channel';
-import {observePostSaved} from '@queries/servers/post';
+import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
 import PostWithChannelInfo from './post_with_channel_info';
@@ -25,6 +26,15 @@ const enhance = withObservables(['post', 'skipSavedPostsHighlight'], ({database,
         isCRTEnabled: observeIsCRTEnabled(database),
         isSaved: skipSavedPostsHighlight ? of$(false) : observePostSaved(database, post.id, serverUrl),
         isChannelAutotranslated: observeIsChannelAutotranslated(database, post.channelId),
+
+        // A search-backed list hands this component the same PostModel instance for the
+        // life of the row; WatermelonDB updates records in place, so an edit changes no
+        // prop identity and the memoized row never repaints. Observe the body itself and
+        // emit a value that actually changes when it does.
+        postBodyKey: observePost(database, post.id).pipe(
+            switchMap((p) => of$(p ? `${p.editAt}:${p.deleteAt}:${p.message}` : post.id)),
+            distinctUntilChanged(),
+        ),
     };
 });
 

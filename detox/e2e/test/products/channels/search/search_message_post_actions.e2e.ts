@@ -232,9 +232,17 @@ describe('Search - Search Message Post Actions', () => {
             await SearchMessagesScreen.toBeVisible();
         });
 
-        await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
-        await SearchMessagesScreen.close();
-        await ChannelListScreen.toBeVisible();
+        // Same idle starvation the two blocks above are already wrapped for: the search
+        // screen holds a recurring "Perform Block" on the JS run loop, so a synchronized
+        // action never dispatches. The run this was written against stopped on exactly
+        // `tap navigation.header.back` from close() below and burned the full 300s
+        // (ios11 on f181296, busy_resources = JS Run Loop + Runloop Perform Block).
+        await withSynchronizationDisabled(async () => {
+            await SearchMessagesScreen.searchClearButton.tap();
+            await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
+            await SearchMessagesScreen.close();
+            await ChannelListScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+        });
     });
 });

@@ -29,6 +29,7 @@ const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 
 
     return (
         <Svg
+            testID='tutorial_highlight.backdrop'
             style={StyleSheet.absoluteFill}
             onPress={onDismiss}
             onLayout={onLayout}

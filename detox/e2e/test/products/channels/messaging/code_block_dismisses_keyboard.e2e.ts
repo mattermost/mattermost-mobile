@@ -97,7 +97,33 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard.
         // The block is only ~35pt tall; a center tap fails iOS 100% visibility (MM-T1433_1).
-        await postListPostItemCodeBlock.tap({x: 10, y: 8});
+        //
+        // toBeVisible(40) above only guarantees that *some* 40% of the block is on screen,
+        // and the composer plus the keyboard clip it from the top — so the {10, 8} point can
+        // still land under them and the tap goes nowhere. That is what happened on ios22
+        // (f181296): the tap was accepted, Code preview never opened, and testFnFailure.png
+        // shows the block still tucked behind the composer 10s later. Expose more of the
+        // block and re-tap instead of giving up on a target that was never reachable.
+        /* eslint-disable no-await-in-loop -- scroll further between tap attempts */
+        let codePreviewOpened = false;
+        for (let attempt = 0; attempt < 4 && !codePreviewOpened; attempt++) {
+            try {
+                await postListPostItemCodeBlock.tap({x: 10, y: 8});
+                await waitFor(CodeScreen.title).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                codePreviewOpened = true;
+            } catch {
+                try {
+                    await ChannelScreen.getFlatPostList().scroll(60, 'down', 0.5, 0.5);
+                } catch {
+                    // The list is already at its edge; the throw below reports it.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        if (!codePreviewOpened) {
+            throw new Error('MM-T1433_1: tapping the code block never opened the Code preview — it stayed clipped by the composer');
+        }
 
         // * Verify Code preview opened
         await CodeScreen.toBeVisible();

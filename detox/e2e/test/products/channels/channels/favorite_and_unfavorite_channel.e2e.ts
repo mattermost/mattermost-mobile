@@ -148,7 +148,14 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
-        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
+
+        // The DM row's display_name mounts before its text does: Espresso saw
+        // "ReactTextView{... width=0, height=75, text=}" and refused the tap because a
+        // zero-area view can never satisfy the 75%-visible constraint (MM-T4929_3, Android
+        // shard 14 on f181296). Wait for the username to actually land, not just the node.
+        const dmDisplayName = ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name);
+        await waitFor(dmDisplayName).toHaveText(newUser.username).withTimeout(timeouts.TWENTY_SEC);
+        await dmDisplayName.tap();
         await waitFor(ChannelScreen.introFavoriteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();

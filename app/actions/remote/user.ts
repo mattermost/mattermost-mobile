@@ -747,6 +747,15 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.unsetCustomStatus();
+
+        // DELETE /users/me/status/custom returns no user payload, so nothing here makes the
+        // local record converge on its own: callers write props.customStatus optimistically
+        // and the account row kept showing the cleared status indefinitely afterwards
+        // (MM-T4990_4 / MM-T3891 / MM-T3892 were skipped on both platforms for exactly this,
+        // and the iOS re-enable only passed by reloading the app so entry re-fetched /users/me).
+        // Re-read the authoritative user here instead so a reload is not the thing that fixes it.
+        await fetchMe(serverUrl);
+
         return {};
     } catch (error) {
         logDebug('error on unsetCustomStatus', getFullErrorMessage(error));

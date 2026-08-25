@@ -405,12 +405,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await InteractiveDialogScreen.toggleBooleanElement('required_boolean');
             await InteractiveDialogScreen.toggleBooleanElement('boolean_default_false');
             await InteractiveDialogScreen.submit();
-        });
 
-        // Synchronization is re-enabled here when withSynchronizationDisabled scope exits.
-        await ensureDialogClosed();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+            // Keep synchronization off through the assertions too. Re-enabling right after
+            // submit() put the very next synchronized call back onto the same never-idle JS
+            // run loop: the run this was written against stopped on
+            // `expect(channel.post_draft.post.input).toBeVisible()` and burned the full 300s
+            // with busy_resources reporting a recurring timer of repeat_interval 0
+            // (ios2 on f181296) — while its own testFnFailure.png shows the dialog closed,
+            // the channel open and "Dialog Submitted: required_boolean: true" already posted.
+            await ensureDialogClosed();
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
+        });
     });
 
     // TODO: previously failed when selectUser tapped search-field text (CI 30250131265).

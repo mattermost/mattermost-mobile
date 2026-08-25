@@ -42,18 +42,26 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    const handlePublicPress = useCallback(() => {
-        dismissBottomSheet();
+    // Await the dismissal before switching the list. Firing both in the same tick let the
+    // parent re-render its rows while this sheet's views were still mounted, and Fabric
+    // then tried to insert a ReactTextView that still had the dismissing sheet as its
+    // parent: "addViewAt: cannot insert view into parent: View already has a parent".
+    // That is a host exception, so ReactHost destroyed the instance and the app became a
+    // zombie — the whole archived-channel spec then died on 300s Detox idle timeouts
+    // (MM-T1671_1 and the three beforeEach hooks after it, Android shard 14 on f181296).
+    // Every other slide-up menu in the app already awaits first; this one was the outlier.
+    const handlePublicPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(PUBLIC);
     }, [onPress]);
 
-    const handleArchivedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleArchivedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(ARCHIVED);
     }, [onPress]);
 
-    const handleSharedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleSharedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(SHARED);
     }, [onPress]);
 

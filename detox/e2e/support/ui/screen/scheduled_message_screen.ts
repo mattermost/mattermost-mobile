@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {User} from '@support/server_api';
 import {Alert} from '@support/ui/component';
 import {isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -68,35 +69,71 @@ class ScheduledMessageScreen {
         await this.deleteDraftPost(this.deleteDraft);
     };
 
+    // iOS exposes `enabled` on element attributes; treat "cannot read it" as not enabled so
+    // the caller keeps nudging rather than tapping a dead control.
+    private isSaveEnabled = async (saveButton: Detox.NativeElement): Promise<boolean> => {
+        try {
+            const attributes = await saveButton.getAttributes();
+            return 'enabled' in attributes ? Boolean(attributes.enabled) : false;
+        } catch {
+            return false;
+        }
+    };
+
+    // The spinner is a UIDatePicker on most iOS versions and a UIPickerView on others.
+    private nudgeIosPicker = async (): Promise<boolean> => {
+        try {
+            await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
+            return true;
+        } catch {
+            try {
+                await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    };
+
     selectDateTime = async () => {
         // Save stays disabled until handleChange fires with a time ≠ scheduledAt.
         // Tapping Select Date/Time alone does not change the value — nudge the
         // iOS spinner so onChange runs (MM-T5720).
         await this.selectTimeButton.tap();
         if (isIos()) {
-            let swiped = false;
-            /* eslint-disable no-await-in-loop -- successive picker nudges until Save enables */
-            for (let attempt = 0; attempt < 3 && !swiped; attempt++) {
-                try {
-                    await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
-                    swiped = true;
-                } catch {
-                    try {
-                        await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
-                        swiped = true;
-                    } catch { /* picker type varies by iOS */ }
+            const saveButton = element(by.id('reschedule_draft.save.button'));
+            await waitFor(saveButton).toExist().withTimeout(timeouts.FIVE_SEC);
+
+            // Nudge until Save actually reports enabled. A disabled NavigationButton is
+            // still present and still hittable, so `.tap()` on it succeeds and silently
+            // does nothing — MM-T5720 on ios12 (f181296) tapped once and then waited out
+            // the full 10s with the picker still on screen and no loading spinner, i.e.
+            // onSavePostMessage never ran. Check the state instead of assuming one swipe
+            // was enough.
+            /* eslint-disable no-await-in-loop -- nudge the spinner until canSave flips */
+            let enabled = await this.isSaveEnabled(saveButton);
+            for (let attempt = 0; attempt < 4 && !enabled; attempt++) {
+                if (!await this.nudgeIosPicker()) {
+                    throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
                 }
                 await wait(timeouts.HALF_SEC);
+                enabled = await this.isSaveEnabled(saveButton);
             }
             /* eslint-enable no-await-in-loop */
-            if (!swiped) {
-                throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
+
+            if (!enabled) {
+                throw new Error('ScheduleMessageScreen.selectDateTime: Save stayed disabled after nudging the picker, so the time never changed');
             }
 
-            // Prefer testID; text matcher can hit the disabled gray "Save" label.
-            await waitFor(element(by.id('reschedule_draft.save.button'))).toExist().withTimeout(timeouts.FIVE_SEC);
-            await element(by.id('reschedule_draft.save.button')).tap();
-            await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            await saveButton.tap();
+            try {
+                await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            } catch {
+                // One retry: the first tap can land while canSave is being recomputed from
+                // the settling spinner. usePreventDoubleTap's window has long passed by now.
+                await saveButton.tap();
+                await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+            }
             return;
         }
         await this.selectDateButton.tap();
@@ -159,22 +196,11 @@ class ScheduledMessageScreen {
     };
 
     nextMonday = async () => {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
+        const {year, month, day} = this.deviceCalendarDate();
+        const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
         const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
 
-        const nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-        nextMonday.setHours(9, 0, 0, 0); // Hardcoded 9:00 AM
-
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
-
-        const datePart = nextMonday.toLocaleDateString(locale, dateOptions);
-        const timePart = nextMonday.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + daysUntilNextMonday)}, 9:00 AM`);
     };
 
     currentDay = async () => {
@@ -194,19 +220,55 @@ class ScheduledMessageScreen {
         return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
 
+    // The app renders these labels in the *device's* timezone; these helpers used to build
+    // them from `new Date()` in the Node runner's timezone. In CI the runner is UTC and the
+    // emulator is America/New_York, so between 00:00 and 04:00 UTC the two disagree on what
+    // day it is: MM-T5720 on Android shard 21 (f181296) expected "Send on Aug 26, 9:00 AM"
+    // at 02:53 UTC and the app correctly showed "Send on Aug 25, 9:00 AM" — the device was
+    // still on Aug 24. Anchor the calendar arithmetic to the device timezone instead.
+    deviceTimeZone: string | undefined = undefined;
+
+    // The app pushes the device timezone to the server on home mount (autoUpdateTimezone),
+    // so the stored user timezone is the same zone the labels are formatted in. Falls back
+    // to the runner's zone, which is correct for local runs where both share a host.
+    resolveDeviceTimeZone = async (baseUrl: string, userId: string) => {
+        try {
+            const {user} = await User.apiGetUserById(baseUrl, userId);
+            const zone = user?.timezone?.automaticTimezone || user?.timezone?.manualTimezone;
+            this.deviceTimeZone = zone || undefined;
+        } catch {
+            // Leave undefined and format in the runner's zone.
+            this.deviceTimeZone = undefined;
+        }
+        return this.deviceTimeZone;
+    };
+
+    // Calendar date on the device, as {year, month, day}. Uses en-CA because it formats as
+    // an unambiguous YYYY-MM-DD.
+    private deviceCalendarDate = (at: Date = new Date()) => {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: this.deviceTimeZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(at);
+        const [yearPart = '', monthPart = '', dayPart = ''] = parts.split('-');
+        return {year: Number(yearPart), month: Number(monthPart), day: Number(dayPart)};
+    };
+
+    // Formats a device-local calendar date as "Mon D". Built on a UTC instant so the
+    // formatter cannot shift the day back across a zone boundary.
+    private formatCalendarDate = (year: number, month: number, day: number) => {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'UTC',
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(Date.UTC(year, month - 1, day)));
+    };
+
     tomorrowAtNineAm = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(9, 0, 0, 0);
-
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
-
-        const datePart = tomorrow.toLocaleDateString(locale, dateOptions);
-        const timePart = tomorrow.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+        const {year, month, day} = this.deviceCalendarDate();
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + 1)}, 9:00 AM`);
     };
 
     expectedLabelForScheduleOption = async (option: 'tomorrow' | 'next_monday' | 'monday') => {

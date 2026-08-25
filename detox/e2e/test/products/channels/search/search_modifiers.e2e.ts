@@ -187,16 +187,26 @@ describe('Search - Modifiers', () => {
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(plainPost.id, message);
         await waitForElementToExist(postListPostItem, timeouts.HALF_MIN);
 
-        await SearchMessagesScreen.searchClearButton.tap();
-        const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
-        await waitFor(plainRemove).toExist().withTimeout(timeouts.TEN_SEC);
-        await plainRemove.tap();
-        try {
-            await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
-        } catch {
-            // from: recent may already be gone
-        }
-        await ChannelListScreen.open();
+        // The search screen keeps a recurring "Perform Block" on the JS run loop (recent-search
+        // debounce + WS poll), which Detox reads as "app busy" forever, so every synchronized
+        // action from here on never dispatches. The run this was written against died exactly
+        // here: the last invoke before the 300s cap was `tap tab_bar.home.tab` with
+        // busy_resources = JS Run Loop + Runloop Perform Block (ios4 on f181296). The
+        // interaction above is already wrapped for this reason — the trailing cleanup was not.
+        await withSynchronizationDisabled(async () => {
+            await SearchMessagesScreen.searchClearButton.tap();
+            const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
+            await waitForElementToExist(plainRemove, timeouts.TEN_SEC);
+            await plainRemove.tap();
+            try {
+                await SearchMessagesScreen.getRecentSearchItemRemoveButton(`from: ${testUser.username}`).tap();
+            } catch {
+                // from: recent may already be gone
+            }
+            await ChannelListScreen.open();
+            await ChannelListScreen.toBeVisible();
+            await wait(timeouts.TWO_SEC);
+        });
     });
 
     it('MM-T348_1 - full username with -, _, or . highlighted in search results', async () => {

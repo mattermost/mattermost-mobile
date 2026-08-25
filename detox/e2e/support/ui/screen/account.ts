@@ -45,24 +45,32 @@ class AccountScreen {
 
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await device.disableSynchronization();
-        try {
+
+        // Sync is disabled around the tap on iOS only, where the clear can otherwise block
+        // on an idle wait. Android taps everything else in this suite with sync on, and
+        // archived_channel_navigation.ts already records that turning it off there races
+        // Fabric view insertion — so do not carry that risk for a plain button press.
+        if (isAndroid()) {
             await this.customStatusClearButton.tap();
             await wait(timeouts.ONE_SEC);
-        } finally {
-            await safeEnableSynchronization();
-        }
-
-        if (isAndroid()) {
-            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
-            return;
+        } else {
+            await device.disableSynchronization();
+            try {
+                await this.customStatusClearButton.tap();
+                await wait(timeouts.ONE_SEC);
+            } finally {
+                await safeEnableSynchronization();
+            }
         }
 
         try {
-            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
             return;
         } catch {
-            // The iOS row can retain the pre-clear user after the DELETE succeeds.
+            // The row can retain the pre-clear user after the DELETE succeeds. Android had no
+            // recovery for this at all and simply burned the 30s (MM-T4990_4 / MM-T3891 /
+            // MM-T3892, Android shard 12 on f181296), so both platforms now share this one.
+            // unsetCustomStatus re-fetches /users/me, so reaching here should be rare.
         }
 
         // Reloading runs app entry, which persists the authoritative current user fetched
