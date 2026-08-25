@@ -2,16 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class AboutScreen {
     testID = {
         aboutScreen: 'about.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'about.scroll_view',
         logo: 'about.logo',
-        siteName: 'about.site_name',
         title: 'about.title',
         subtitle: 'about.subtitle',
         appVersionTitle: 'about.app_version.title',
@@ -42,10 +40,16 @@ class AboutScreen {
     };
 
     aboutScreen = element(by.id(this.testID.aboutScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     logo = element(by.id(this.testID.logo));
-    siteName = element(by.id(this.testID.siteName));
     title = element(by.id(this.testID.title));
     subtitle = element(by.id(this.testID.subtitle));
     appVersionTitle = element(by.id(this.testID.appVersionTitle));
@@ -88,8 +92,9 @@ class AboutScreen {
     };
 
     back = async () => {
-        await this.backButton.tap();
-        await expect(this.aboutScreen).not.toBeVisible();
+        // Native-stack back chevron.
+        await tapNativeBackButton();
+        await waitFor(this.aboutScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

@@ -120,6 +120,18 @@ export type IntuneWipeRequestedEvent = Readonly<{
     serverUrls: string[];
 }>;
 
+export type IntuneComplianceCompletedEvent = Readonly<{
+    oid: string;
+}>;
+
+export type IntuneComplianceFailedEvent = Readonly<{
+    oid: string;
+    serverUrls: string[];
+    reason: string;
+    errorTitle: string;
+    errorMessage: string;
+}>;
+
 export type PendingWipe = Readonly<{
     oid: string;
     serverUrls: string[];
@@ -129,15 +141,33 @@ export type PendingWipe = Readonly<{
 export type IntuneSpec = {
     addListener: (eventType: string) => void;
     removeListeners: (count: number) => void;
+
+    // ASYNC: Native OIDC Login (prompts user for account selection, requires user interaction)
     login(serverUrl: string, scopes: string[]): Promise<MSALTokens>;
-    enrollInMAM(serverUrl: string, identity: MSALIdentity): Promise<void>;
-    isManagedServer(serverUrl: string): Promise<boolean>;
-    deregisterAndUnenroll(serverUrl: string, doWipe: boolean): Promise<void>;
-    cleanupAfterWipe(oid: string): Promise<void>;
-    reportWipeComplete(oid: string, success: boolean): Promise<void>;
-    getPendingWipes(): Promise<PendingWipe[]>;
+
+    // ASYNC: Identity Switching (requires SDK callback to complete policy application)
     setCurrentIdentity(serverUrl: string | null): Promise<void>;
-    getPolicy(serverUrl: string): Promise<IntunePolicy | null>;
+
+    // SYNC: MAM Enrollment (fire-and-forget initiation, completion via delegate)
+    enrollInMAM(serverUrl: string, identity: MSALIdentity): void;
+
+    // SYNC: Status check (reads from in-memory cache + sync SDK call)
+    isManagedServer(serverUrl: string): boolean;
+
+    // SYNC: Unenrollment (fire-and-forget pattern, SDK call dispatched to background)
+    deregisterAndUnenroll(serverUrl: string, doWipe: boolean): void;
+
+    // SYNC: Cleanup after wipe (sync MSAL removal + fast keychain cleanup)
+    cleanupAfterWipe(oid: string): void;
+
+    // SYNC: Report wipe completion status (UserDefaults sync write)
+    reportWipeComplete(oid: string, success: boolean): void;
+
+    // SYNC: Get pending wipes (UserDefaults sync read)
+    getPendingWipes(): PendingWipe[];
+
+    // SYNC: Policy query (reads from SDK's cached policy data)
+    getPolicy(serverUrl: string): IntunePolicy | null;
 
     onIntuneEnrollmentChanged: (listener: (event: IntuneEnrollmentChangedEvent) => void) => EventSubscription;
     onIntunePolicyChanged: (listener: (event: IntunePolicyChangedEvent) => void) => EventSubscription;
@@ -145,4 +175,6 @@ export type IntuneSpec = {
     onIntuneAuthRequired: (listener: (event: IntuneAuthRequiredEvent) => void) => EventSubscription;
     onIntuneConditionalLaunchBlocked: (listener: (event: IntuneConditionalLaunchBlockedEvent) => void) => EventSubscription;
     onIntuneIdentitySwitchRequired: (listener: (event: IntuneIdentitySwitchRequiredEvent) => void) => EventSubscription;
+    onIntuneComplianceCompleted: (listener: (event: IntuneComplianceCompletedEvent) => void) => EventSubscription;
+    onIntuneComplianceFailed: (listener: (event: IntuneComplianceFailedEvent) => void) => EventSubscription;
 }

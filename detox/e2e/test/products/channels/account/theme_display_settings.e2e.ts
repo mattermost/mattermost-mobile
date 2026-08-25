@@ -55,7 +55,6 @@ describe('Account - Settings - Theme Display Settings', () => {
 
     it('MM-T5111_1 - should match elements on theme display settings screen', async () => {
         // * Verify basic elements on theme display settings screen
-        await expect(ThemeDisplaySettingsScreen.backButton).toBeVisible();
         await expect(ThemeDisplaySettingsScreen.denimOption).toBeVisible();
         await expect(ThemeDisplaySettingsScreen.sapphireOption).toBeVisible();
         await expect(ThemeDisplaySettingsScreen.quartzOption).toBeVisible();

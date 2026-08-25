@@ -72,10 +72,12 @@ class NetworkManagerSingleton {
         },
         requestAdapterConfiguration: {
             bearerAuthTokenResponseHeader: 'token',
+            enableSessionAttributes: true,
         },
     };
 
     public init = async (serverCredentials: ServerCredential[]) => {
+        logDebug('NetworkManager: Initializing');
         for await (const {serverUrl, token, preauthSecret} of serverCredentials) {
             try {
                 await this.createClient(serverUrl, token, preauthSecret);

@@ -3,10 +3,11 @@
 
 import NetInfo from '@react-native-community/netinfo';
 import {AppState} from 'react-native';
-import BackgroundTimer from 'react-native-background-timer';
+import {BackgroundTimer} from 'react-native-nitro-bg-timer-plus';
 
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleFirstConnect, handleReconnect} from '@actions/websocket';
+import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -20,11 +21,13 @@ import type {ServerDatabase} from '@typings/database/database';
 
 jest.mock('@react-native-community/netinfo');
 jest.mock('react-native/Libraries/AppState/AppState');
-jest.mock('react-native-background-timer');
 jest.mock('@actions/local/user');
 jest.mock('@actions/remote/user');
 jest.mock('@actions/websocket');
 jest.mock('@actions/websocket/event');
+jest.mock('@calls/native_call_mappings', () => ({
+    hasActiveNativeCall: jest.fn().mockReturnValue(false),
+}));
 jest.mock('@client/websocket');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/system');
@@ -68,6 +71,7 @@ describe('WebsocketManager', () => {
             isConnected: jest.fn().mockReturnValue(true),
             close: jest.fn(),
             invalidate: jest.fn(),
+            waitForClose: jest.fn().mockResolvedValue(undefined),
         };
         (WebSocketClient as jest.Mock).mockImplementation(() => mockWebSocketClient);
 
@@ -111,17 +115,57 @@ describe('WebsocketManager', () => {
             jest.clearAllMocks();
         });
 
-        it('should create and invalidate clients correctly', () => {
-            const client = manager.createClient(mockServerUrl, mockToken);
+        it('should create and invalidate clients correctly', async () => {
+            const client = await manager.createClient(mockServerUrl, mockToken);
             expect(client).toBeDefined();
 
-            manager.invalidateClient(mockServerUrl);
+            await manager.invalidateClient(mockServerUrl);
             expect(manager.getClient(mockServerUrl)).toBeUndefined();
         });
 
         it('should handle websocket state observations', () => {
             const observable = manager.observeWebsocketState(mockServerUrl);
             expect(observable).toBeDefined();
+        });
+    });
+
+    describe('closeAll', () => {
+        beforeEach(async () => {
+            await manager.init(mockCredentials);
+            jest.clearAllMocks();
+        });
+
+        it('should close clients without calling invalidate', () => {
+            manager.closeAll();
+
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
+            expect(mockWebSocketClient.invalidate).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('invalidateClient', () => {
+        beforeEach(async () => {
+            await manager.init(mockCredentials);
+            jest.clearAllMocks();
+        });
+
+        it('should call close, waitForClose, then invalidate in order', async () => {
+            const callOrder: string[] = [];
+            mockWebSocketClient.close.mockImplementation(() => callOrder.push('close'));
+            mockWebSocketClient.waitForClose.mockImplementation(() => {
+                callOrder.push('waitForClose');
+                return Promise.resolve();
+            });
+            mockWebSocketClient.invalidate.mockImplementation(() => callOrder.push('invalidate'));
+
+            await manager.invalidateClient(mockServerUrl);
+
+            expect(callOrder).toEqual(['close', 'waitForClose', 'invalidate']);
+        });
+
+        it('should handle missing client gracefully', async () => {
+            await manager.invalidateClient('https://nonexistent.com');
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
         });
     });
 
@@ -158,16 +202,136 @@ describe('WebsocketManager', () => {
         });
 
         it('should handle app state changes', () => {
-            const mockIntervalId = 123;
-            jest.spyOn(BackgroundTimer, 'setInterval').mockReturnValue(mockIntervalId);
+            const mockTimerId = 123;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockReturnValue(mockTimerId);
 
             // Get the app state callback and simulate background state
             const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
             mockAppStateChange('active');
             mockAppStateChange('background');
 
-            expect(BackgroundTimer.setInterval).toHaveBeenCalled();
-            expect(BackgroundTimer.setInterval).toHaveBeenCalledWith(expect.any(Function), 15000);
+            expect(BackgroundTimer.setTimeout).toHaveBeenCalled();
+            expect(BackgroundTimer.setTimeout).toHaveBeenCalledWith(expect.any(Function), 15000);
+        });
+
+        it('background-close timer skips closeAll while a native call is active', () => {
+            jest.mocked(hasActiveNativeCall).mockReturnValue(true);
+
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 1;
+            });
+
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(true);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
+        });
+
+        it('background-close timer closes connections when no native call is active', () => {
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 2;
+            });
+
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(false);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
+        });
+    });
+
+    describe('scheduleBackgroundCloseIfNeeded', () => {
+        beforeEach(async () => {
+            await manager.init(mockCredentials);
+        });
+
+        it('arms a close timer when backgrounded with no timer running', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            jest.clearAllMocks();
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockReturnValue(99);
+
+            (manager as any).isBackgroundTimerRunning = false;
+
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            expect(BackgroundTimer.setTimeout).toHaveBeenCalledWith(expect.any(Function), 15000);
+        });
+
+        it('is a no-op when the app is in the foreground', () => {
+            jest.spyOn(BackgroundTimer, 'setTimeout');
+
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            expect(BackgroundTimer.setTimeout).not.toHaveBeenCalled();
+        });
+
+        it('is a no-op when a close timer is already running', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            jest.clearAllMocks();
+            jest.spyOn(BackgroundTimer, 'setTimeout');
+
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            expect(BackgroundTimer.setTimeout).not.toHaveBeenCalled();
+        });
+
+        it('skips closeAll if a new native call started during the grace window', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 99;
+            });
+            (manager as any).isBackgroundTimerRunning = false;
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(true);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
+        });
+
+        it('closes connections when no native call is active at timer fire', () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            mockAppStateChange('active');
+            mockAppStateChange('background');
+
+            let capturedCallback: (() => void) | undefined;
+            jest.spyOn(BackgroundTimer, 'setTimeout').mockImplementation((cb) => {
+                capturedCallback = cb;
+                return 100;
+            });
+            (manager as any).isBackgroundTimerRunning = false;
+            manager.scheduleBackgroundCloseIfNeeded();
+
+            jest.clearAllMocks();
+            jest.mocked(hasActiveNativeCall).mockReturnValue(false);
+            capturedCallback!();
+
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
         });
 
         it('should handle network state changes', () => {

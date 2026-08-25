@@ -1,22 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
+import {act, renderHook, waitFor} from '@testing-library/react-native';
 
 import {getLocalFileInfo} from '@actions/local/file';
-import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
+import {buildFilePreviewUrl, buildFileUrl, downloadFile} from '@actions/remote/file';
 import {useServerUrl} from '@context/server';
 import TestHelper from '@test/test_helper';
-import {isGif, isImage, isVideo} from '@utils/file';
+import {fileExists, getLocalFilePathFromFile, isGif, isImage, isPdf, isVideo} from '@utils/file';
 import {getImageSize} from '@utils/gallery';
 
-import {useChannelBookmarkFiles, useImageAttachments} from './files';
+import {useChannelBookmarkFiles, useDownloadFileAndPreview, useImageAttachments} from './files';
 
 import type ChannelBookmarkModel from '@typings/database/models/servers/channel_bookmark';
 
 jest.mock('@actions/remote/file', () => ({
     buildFilePreviewUrl: jest.fn(),
     buildFileUrl: jest.fn(),
+    downloadFile: jest.fn(),
 }));
 
 jest.mock('@utils/file', () => ({
@@ -24,6 +25,10 @@ jest.mock('@utils/file', () => ({
     isImage: jest.fn(),
     isVideo: jest.fn(),
     isAudio: jest.fn(),
+    isPdf: jest.fn(),
+    fileExists: jest.fn(),
+    getLocalFilePathFromFile: jest.fn(),
+    deleteFile: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
@@ -32,6 +37,17 @@ jest.mock('@context/server', () => ({
 
 jest.mock('@utils/gallery');
 jest.mock('@actions/local/file');
+jest.mock('@utils/document', () => ({
+    alertDownloadFailed: jest.fn(),
+    alertFailedToOpenDocument: jest.fn(),
+    alertOnlyPDFSupported: jest.fn(),
+}));
+jest.mock('@utils/navigation', () => ({
+    previewPdf: jest.fn(),
+}));
+jest.mock('@react-native-documents/viewer', () => ({
+    viewDocument: jest.fn().mockResolvedValue(null),
+}));
 
 describe('useImageAttachments', () => {
     const serverUrl = 'https://example.com';
@@ -117,7 +133,7 @@ describe('useImageAttachments', () => {
 
         const firstResult = result.current;
 
-        rerender();
+        rerender(undefined);
 
         const secondResult = result.current;
 
@@ -181,12 +197,98 @@ describe('useChannelBookmarkFiles', () => {
         (buildFilePreviewUrl as jest.Mock).mockImplementation((url, id) => `${url}/files/${id}/preview`);
         (getImageSize as jest.Mock).mockImplementation(() => ({width: 100, height: 100}));
 
-        const {result, waitForNextUpdate} = renderHook(() => useChannelBookmarkFiles(bookmarks));
+        const {result} = renderHook(() => useChannelBookmarkFiles(bookmarks));
 
-        await waitForNextUpdate();
+        await waitFor(() => {
+            expect(result.current).toHaveLength(2);
+        });
 
         expect(result.current).toHaveLength(2);
         expect(result.current[0].id).toBe('1');
         expect(result.current[1].id).toBe('2');
+    });
+});
+
+describe('useDownloadFileAndPreview', () => {
+    const serverUrl = 'https://example.com';
+
+    beforeEach(() => {
+        jest.mocked(useServerUrl).mockReturnValue(serverUrl);
+        jest.spyOn(require('react-intl'), 'useIntl').mockReturnValue({formatMessage: jest.fn((d: any) => d.defaultMessage || d.id)});
+        jest.mocked(fileExists).mockReturnValue(false);
+        jest.mocked(getLocalFilePathFromFile).mockReturnValue('/local/path/file.pdf');
+        jest.mocked(isPdf).mockReturnValue(false);
+    });
+
+    it('should return initial state with downloading false and progress 0', () => {
+        const {result} = renderHook(() => useDownloadFileAndPreview(false));
+        expect(result.current.downloading).toBe(false);
+        expect(result.current.progress).toBe(0);
+        expect(typeof result.current.toggleDownloadAndPreview).toBe('function');
+    });
+
+    it('should set downloading to true when file does not exist locally', async () => {
+        const progressPromise: any = Object.assign(Promise.resolve(), {progress: jest.fn(), cancel: jest.fn()});
+        jest.mocked(downloadFile).mockReturnValue(progressPromise);
+        jest.mocked(fileExists).mockReturnValue(false);
+
+        const file = TestHelper.fakeFileInfo({id: 'file1', localPath: ''});
+        const {result} = renderHook(() => useDownloadFileAndPreview(false));
+
+        await act(async () => {
+            result.current.toggleDownloadAndPreview(file);
+        });
+
+        expect(downloadFile).toHaveBeenCalledWith(serverUrl, file.id, '/local/path/file.pdf');
+    });
+
+    it('should open document directly when file exists locally', async () => {
+        const {viewDocument} = require('@react-native-documents/viewer');
+        jest.mocked(fileExists).mockReturnValue(true);
+
+        const file = TestHelper.fakeFileInfo({id: 'file1', localPath: '/local/existing/file.pdf'});
+        const {result} = renderHook(() => useDownloadFileAndPreview(false));
+
+        await act(async () => {
+            result.current.toggleDownloadAndPreview(file);
+        });
+
+        expect(viewDocument).toHaveBeenCalled();
+    });
+
+    it('should open pdf with previewPdf when enableSecureFilePreview is true and file is pdf', async () => {
+        const {previewPdf: previewPdfMock} = require('@utils/navigation');
+        jest.mocked(fileExists).mockReturnValue(true);
+        jest.mocked(isPdf).mockReturnValue(true);
+
+        const file = TestHelper.fakeFileInfo({id: 'file1', localPath: '/local/file.pdf'});
+        const {result} = renderHook(() => useDownloadFileAndPreview(true));
+
+        await act(async () => {
+            result.current.toggleDownloadAndPreview(file);
+        });
+
+        expect(previewPdfMock).toHaveBeenCalled();
+    });
+
+    it('should alert on download failure', async () => {
+        const {alertDownloadFailed} = require('@utils/document');
+
+        jest.mocked(downloadFile).mockReturnValue(Object.assign(
+            Promise.reject(new Error('network error')),
+            {progress: jest.fn(), cancel: jest.fn()},
+        ) as unknown as ReturnType<typeof downloadFile>);
+        jest.mocked(fileExists).mockReturnValue(false);
+
+        const file = TestHelper.fakeFileInfo({id: 'file1', localPath: ''});
+        const {result} = renderHook(() => useDownloadFileAndPreview(false));
+
+        await act(async () => {
+            result.current.toggleDownloadAndPreview(file);
+        });
+
+        await waitFor(() => {
+            expect(alertDownloadFailed).toHaveBeenCalled();
+        });
     });
 });

@@ -8,7 +8,6 @@ import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDebounce} from '@hooks/utils';
-import SecurityManager from '@managers/security_manager';
 import {getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import EmojiFiltered from './filtered';
@@ -16,7 +15,6 @@ import PickerHeader from './header';
 import EmojiSections from './sections';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 export const SCROLLVIEW_NATIVE_ID = 'emojiSelector';
 
@@ -81,11 +79,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
     }
 
     return (
-        <View
-            style={styles.flex}
-            testID={`${testID}.screen`}
-            nativeID={SecurityManager.getShieldScreenId(testID as AvailableScreens)}
-        >
+        <>
             <View style={styles.searchBar}>
                 <PickerHeader
                     autoCapitalize='none'
@@ -97,7 +91,7 @@ const Picker = ({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress
                 />
             </View>
             {EmojiList}
-        </View>
+        </>
     );
 };
 

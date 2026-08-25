@@ -6,10 +6,31 @@ import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
 import {Preferences} from '@constants';
+import DatabaseManager from '@database/manager';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import Button from './index';
 
+import type Database from '@nozbe/watermelondb/Database';
+
 describe('components/button', () => {
+    const serverUrl = 'https://server.com';
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+        await server.operator.handleConfigs({
+            configs: [{id: 'MaxMarkdownNodes', value: '1000'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
     const getBaseProps = (): ComponentProps<typeof Button> => ({
         onPress: jest.fn(),
         text: 'Test Button',
@@ -37,9 +58,11 @@ describe('components/button', () => {
         props.iconName = 'close';
         const {getByTestId} = render(<Button {...props}/>);
 
+        // CompassIcon renders as a Text node with the unicode glyph as children;
+        // name is consumed internally and does not appear on the rendered props.
         const icon = getByTestId('test-button-icon');
         expect(icon).toBeTruthy();
-        expect(icon.props.name).toBe('close');
+        expect(icon.props.children).toContain(String.fromCodePoint(0xf0156));
     });
 
     it('should render disabled button', () => {
@@ -61,13 +84,30 @@ describe('components/button', () => {
         const container = getByTestId('test-button-text-container');
 
         // When icon is on the left, it should be the first child
-        expect(within(container.children[0]).getByTestId('test-button-icon')).toBeVisible();
+        expect(within(container.children[0] as any).getByTestId('test-button-icon')).toBeVisible();
 
         props.isIconOnTheRight = true;
         rerender(<Button {...props}/>);
 
         // When icon is on the right, it should be the last child
-        expect(within(container.children[1]).getByTestId('test-button-icon')).toBeVisible();
+        expect(within(container.children[1] as any).getByTestId('test-button-icon')).toBeVisible();
+    });
+
+    it('should render markdown syntax literally by default', () => {
+        const props = getBaseProps();
+        props.text = '**Test Button**';
+        const {getByText} = render(<Button {...props}/>);
+
+        expect(getByText('**Test Button**')).toBeTruthy();
+    });
+
+    it('should render bold markdown in button text when renderLabelAsMarkdown is true', () => {
+        const props = getBaseProps();
+        props.text = '**Test Button**';
+        props.renderLabelAsMarkdown = true;
+        const {getByText} = renderWithEverything(<Button {...props}/>, {database, serverUrl});
+
+        expect(getByText('Test Button')).toBeTruthy();
     });
 
     it('should render custom icon component', () => {

@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
-import {observeIsChannelFavorited} from '@queries/servers/categories';
+import {observeIsChannelFavorited, observeIsChannelInManagedCategory} from '@queries/servers/categories';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
@@ -24,8 +24,14 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         switchMap(([c, tId]) => observeIsChannelFavorited(database, c?.teamId || tId, channelId)),
     );
 
+    const isManaged = channel.pipe(
+        combineLatestWith(currentTeamId),
+        switchMap(([c, tId]) => observeIsChannelInManagedCategory(database, c?.teamId || tId, channelId)),
+    );
+
     return {
         isFavorited,
+        isManaged,
     };
 });
 

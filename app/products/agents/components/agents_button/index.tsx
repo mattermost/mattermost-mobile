@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {goToAgentChat} from '@agents/screens/navigation';
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Pressable, View} from 'react-native';
 
+import {goToAgentChat} from '@agents/screens/navigation';
 import {
     getStyleSheet as getChannelItemStyleSheet,
     ROW_HEIGHT,
@@ -13,8 +12,7 @@ import {
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {Events} from '@constants';
-import {AGENTS} from '@constants/screens';
+import {Events, Screens} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -40,10 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AgentsButton = ({
-    shouldHighlightActive = false,
-}: Props) => {
-    const intl = useIntl();
+const AgentsButton = ({shouldHighlightActive = false}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const commonChannelItemStyles = getChannelItemStyleSheet(theme);
@@ -52,9 +47,9 @@ const AgentsButton = ({
     const isActive = isTablet && shouldHighlightActive;
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
-        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, AGENTS);
-        goToAgentChat(intl);
-    }, [intl]));
+        DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.AGENT_CHAT);
+        goToAgentChat();
+    }, []));
 
     const [containerStyle, iconStyle, textStyle] = useMemo(() => {
         const container = [

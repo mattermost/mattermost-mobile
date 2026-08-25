@@ -11,6 +11,7 @@ import {typography} from '@utils/typography';
 type Props = {
     label: string;
     onPress: () => void;
+    testID?: string;
     theme: Theme;
     value: string;
 }
@@ -41,13 +42,14 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Option = ({label, onPress, theme, value}: Props) => {
+const Option = ({label, onPress, testID, theme, value}: Props) => {
     const styles = getStyles(theme);
 
     return (
         <TouchableOpacity
             onPress={onPress}
             style={styles.container}
+            testID={testID}
         >
             <Text style={styles.label}>{label}</Text>
             <View style={styles.row}>

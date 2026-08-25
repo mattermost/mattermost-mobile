@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type RefObject, useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Pressable, View} from 'react-native';
 import Animated, {FlipInEasyX, FlipOutXUp, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -10,11 +10,8 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import {useAvoidKeyboard} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 type Props = {
     autoFocus?: boolean;
@@ -27,7 +24,6 @@ type Props = {
     handleDisplayNameTextChanged: (text: string) => void;
     handlePreauthSecretTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
-    keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
     preauthSecret?: string;
     preauthSecretError?: string;
     setShowAdvancedOptions: React.Dispatch<React.SetStateAction<boolean>>;
@@ -127,7 +123,6 @@ const ServerForm = ({
     handleDisplayNameTextChanged,
     handlePreauthSecretTextChanged,
     handleUrlTextChanged,
-    keyboardAwareRef,
     preauthSecret = '',
     preauthSecretError,
     setShowAdvancedOptions,
@@ -142,8 +137,6 @@ const ServerForm = ({
     const urlRef = useRef<FloatingTextInputRef>(null);
     const styles = getStyleSheet(theme);
     const [isPreauthSecretVisible] = useState(false);
-
-    useAvoidKeyboard(keyboardAwareRef, 1.8);
 
     const onConnect = useCallback(() => {
         Keyboard.dismiss();

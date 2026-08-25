@@ -5,30 +5,16 @@ import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
 import {Screens} from '@constants';
-import {goToScreen} from '@screens/navigation';
+import {navigateToSettingsScreen} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
-import {emailLogs} from '@utils/share_logs';
 
 import ReportProblem from './report_problem';
 
-jest.mock('@screens/navigation', () => ({
-    goToScreen: jest.fn(),
-}));
-
-jest.mock('@utils/share_logs', () => ({
-    emailLogs: jest.fn(),
-}));
+jest.mock('@screens/navigation');
 
 describe('screens/settings/report_problem/report_problem', () => {
     const baseProps = {
         allowDownloadLogs: true,
-        metadata: {
-            currentUserId: 'user1',
-            currentTeamId: 'team1',
-            serverVersion: '7.8.0',
-            appVersion: '2.0.0',
-            appPlatform: 'ios',
-        },
     };
 
     beforeEach(() => {
@@ -43,9 +29,9 @@ describe('screens/settings/report_problem/report_problem', () => {
         expect(getByTestId('settings.report_problem.option')).toBeTruthy();
     });
 
-    it('should not render when type is hidden', () => {
+    it('should not render when type is hidden and logs are not allowed', () => {
         const props = {
-            ...baseProps,
+            allowDownloadLogs: false,
             reportAProblemType: 'hidden',
         };
 
@@ -54,13 +40,13 @@ describe('screens/settings/report_problem/report_problem', () => {
         );
 
         expect(queryByTestId('settings.report_problem.option')).toBeNull();
+        expect(queryByTestId('settings.download_logs.option')).toBeNull();
     });
 
-    it('should navigate to report problem screen when logs are allowed', async () => {
+    it('should render the download logs option when type is hidden and logs are allowed', async () => {
         const props = {
-            ...baseProps,
             allowDownloadLogs: true,
-            reportAProblemType: 'email',
+            reportAProblemType: 'hidden',
         };
 
         const {getByTestId} = renderWithIntl(
@@ -68,56 +54,37 @@ describe('screens/settings/report_problem/report_problem', () => {
         );
 
         await act(async () => {
-            fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
-                Screens.REPORT_PROBLEM,
-                'Report a problem',
-            );
+            fireEvent.press(getByTestId('settings.download_logs.option'));
         });
+
+        expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+            Screens.REPORT_PROBLEM,
+            {title: 'Download app logs'},
+        );
     });
 
-    it('should navigate to report problem screen when type is not email', async () => {
-        const props = {
-            ...baseProps,
-            allowDownloadLogs: false,
-            reportAProblemType: 'link',
-        };
-
+    // The screen is where the troubleshooting metadata, the app logs and the attach logs toggle
+    // live, so every configuration must be able to reach it. Which report action runs is decided
+    // by the screen, so the license tier no longer takes part in this decision (MM-70111).
+    it.each([
+        ['email type', {allowDownloadLogs: true, reportAProblemType: 'email'}],
+        ['email type without downloadable logs', {allowDownloadLogs: false, reportAProblemType: 'email'}],
+        ['link type', {allowDownloadLogs: true, reportAProblemType: 'link'}],
+        ['default type', {allowDownloadLogs: true, reportAProblemType: 'default'}],
+        ['default type without downloadable logs', {allowDownloadLogs: false, reportAProblemType: 'default'}],
+        ['old servers where the type is not defined', {allowDownloadLogs: true}],
+    ])('should navigate to the report problem screen for %s', async (_, props) => {
         const {getByTestId} = renderWithIntl(
             <ReportProblem {...props}/>,
         );
 
         await act(async () => {
             fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(goToScreen).toHaveBeenCalledWith(
-                Screens.REPORT_PROBLEM,
-                'Report a problem',
-            );
         });
-    });
 
-    it('should share logs directly when logs are not allowed and type is email', async () => {
-        const props = {
-            ...baseProps,
-            allowDownloadLogs: false,
-            reportAProblemType: 'email',
-            reportAProblemMail: 'test@example.com',
-            siteName: 'Test Site',
-        };
-
-        const {getByTestId} = renderWithIntl(
-            <ReportProblem {...props}/>,
+        expect(navigateToSettingsScreen).toHaveBeenCalledWith(
+            Screens.REPORT_PROBLEM,
+            {title: 'Report a problem'},
         );
-
-        await act(async () => {
-            fireEvent.press(getByTestId('settings.report_problem.option'));
-            expect(emailLogs).toHaveBeenCalledWith(
-                props.metadata,
-                props.siteName,
-                props.reportAProblemMail,
-                true,
-            );
-            expect(goToScreen).not.toHaveBeenCalled();
-        });
     });
 });

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 
 import useInitialValue from './initial_value';
 
@@ -26,14 +26,14 @@ describe('useInitialValue', () => {
         expect(result.current).toBe(1);
 
         act(() => {
-            rerender();
+            rerender(undefined);
         });
 
         expect(factory).toHaveBeenCalledTimes(1);
         expect(result.current).toBe(1);
 
         act(() => {
-            rerender();
+            rerender(undefined);
         });
 
         expect(factory).toHaveBeenCalledTimes(1);

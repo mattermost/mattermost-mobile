@@ -28,6 +28,7 @@ describe('SendButton', () => {
     const teamId = 'team1';
     let database: Database;
     let operator: ServerDataOperator;
+    let unmount: () => void;
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -39,6 +40,10 @@ describe('SendButton', () => {
     });
 
     afterEach(async () => {
+        // Unmount before DB destruction so withObservables subscriptions are
+        // torn down before the database emits a final completion, preventing
+        // unwrapped state updates after the test ends.
+        unmount?.();
         await DatabaseManager.destroyServerDatabase(serverUrl);
         await storeGlobal(Tutorial.SCHEDULED_POST, null, false);
     });
@@ -52,17 +57,15 @@ describe('SendButton', () => {
     };
 
     it('should return false if the scheduled post tutorial is not watched', async () => {
-        const {getByTestId} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
-        const sendButton = getByTestId('send-button');
-        expect(sendButton.props.scheduledPostFeatureTooltipWatched).toBe(false);
+        const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
+        unmount = u;
+        await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(false));
     });
 
     it('should return true if the scheduled post tutorial is watched', async () => {
         await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
-        await waitFor(() => {
-            const {getByTestId} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
-            const sendButton = getByTestId('send-button');
-            expect(sendButton.props.scheduledPostFeatureTooltipWatched).toBe(true);
-        });
+        const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
+        unmount = u;
+        await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(true));
     });
 });

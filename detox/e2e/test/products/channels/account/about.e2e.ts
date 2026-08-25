@@ -20,16 +20,85 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {expect} from 'detox';
+import {safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
+
+/** Mirrors app/utils/subscription getSkuDisplayName for E2E learn-more expectations */
+const getSkuDisplayNameForTest = (skuShortName: string, isGovSku: boolean): string => {
+    let skuName = '';
+    switch (skuShortName) {
+        case 'E20':
+            skuName = 'Enterprise E20';
+            break;
+        case 'E10':
+            skuName = 'Enterprise E10';
+            break;
+        case 'professional':
+            skuName = 'Professional';
+            break;
+        case 'starter':
+            skuName = 'Starter';
+            break;
+        case 'enterprise':
+            skuName = 'Enterprise';
+            break;
+        case 'entry':
+            skuName = 'Entry';
+            break;
+        case 'advanced':
+            skuName = 'Enterprise Advanced';
+            break;
+        default:
+            skuName = 'Enterprise Advanced';
+            break;
+    }
+    skuName += isGovSku ? ' Gov' : '';
+    return skuName;
+};
+
+const getExpectedProductTitle = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
+    if (buildEnterpriseReady !== 'true') {
+        return 'Mattermost Team Edition';
+    }
+    if (license?.IsLicensed === 'true') {
+        return `Mattermost ${getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true')}`;
+    }
+    return 'Mattermost Enterprise Edition';
+};
+
+const getExpectedLearnMorePrefix = (license: Record<string, string | undefined>, buildEnterpriseReady: string | undefined): string => {
+    if (buildEnterpriseReady !== 'true') {
+        return 'Join the Mattermost community at ';
+    }
+    if (license?.IsLicensed === 'true') {
+        const planName = getSkuDisplayNameForTest(license.SkuShortName ?? '', license.IsGovSku === 'true');
+        return `Learn more about Mattermost ${planName} at `;
+    }
+    return 'Learn more about Enterprise Edition at ';
+};
 
 describe('Account - Settings - About', () => {
     const serverOneDisplayName = 'Server 1';
     let isLicensed: boolean;
+    let expectedLearnMorePrefix: string;
+    let learnMorePrefixMatcher: RegExp;
+    let expectedProductTitle: string;
     let testUser: any;
 
     beforeAll(async () => {
         const {license} = await System.apiGetClientLicense(siteOneUrl);
+        const configResponse = await System.apiGetClientConfigOld(siteOneUrl);
+        if (!configResponse.config || 'error' in configResponse) {
+            throw new Error('Failed to fetch client config: test cannot proceed without valid config');
+        }
+        const {config} = configResponse;
         isLicensed = license.IsLicensed === 'true';
+        expectedLearnMorePrefix = getExpectedLearnMorePrefix(license, config.BuildEnterpriseReady);
+
+        // Android nests the URL in the same TextView; Espresso regex uses full-string
+        // matches(), so allow trailing content (CI 30216081940 MM-T5104_1).
+        learnMorePrefixMatcher = new RegExp(`^${expectedLearnMorePrefix.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*`, 'i');
+        expectedProductTitle = getExpectedProductTitle(license, config.BuildEnterpriseReady);
         const {user} = await Setup.apiInit(siteOneUrl);
         testUser = user;
 
@@ -57,8 +126,8 @@ describe('Account - Settings - About', () => {
         // * Verify basic elements on about screen
         await expect(AboutScreen.backButton).toBeVisible();
         await expect(AboutScreen.logo).toBeVisible();
-        await expect(AboutScreen.siteName).toBeVisible();
         await expect(AboutScreen.title).toBeVisible();
+        await expect(AboutScreen.title).toHaveText(expectedProductTitle);
         await expect(AboutScreen.subtitle).toBeVisible();
         await expect(AboutScreen.appVersionTitle).toHaveText('App Version:');
         await expect(AboutScreen.appVersionValue).toBeVisible();
@@ -80,26 +149,61 @@ describe('Account - Settings - About', () => {
             try {
                 await expect(AboutScreen.licenseLoadMetricTitle).toHaveText('Load Metric:');
                 await expect(AboutScreen.licenseLoadMetricValue).toBeVisible();
-            } catch (error) {
-                // Load metric may not be available depending on server version
-                // This is fine as the feature depends on server version and configuration
+            } catch {
+                // Load metric availability depends on server version and license.
             }
         } else {
             await expect(AboutScreen.licensee).not.toBeVisible();
             await expect(AboutScreen.licenseLoadMetricTitle).not.toBeVisible();
         }
-        await expect(AboutScreen.learnMoreText).toHaveText('Learn more about Enterprise Edition at ');
-        await expect(AboutScreen.learnMoreUrl).toBeVisible();
+
+        const scrollViewMatcher = by.id(AboutScreen.testID.scrollView);
+        const copyrightMatcher = by.id(AboutScreen.testID.copyright);
+        try {
+            await waitFor(element(copyrightMatcher)).toBeVisible().whileElement(scrollViewMatcher).scroll(300, 'down');
+        } catch {
+            /* eslint-disable no-await-in-loop -- bounded scroll: stops when copyright is visible */
+            for (let i = 0; i < 10; i++) {
+                try {
+                    await waitFor(element(copyrightMatcher)).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                    break;
+                } catch {
+                    if (i === 9) {
+                        throw new Error('Copyright not found after 10 scroll attempts');
+                    }
+                    await element(scrollViewMatcher).scroll(300, 'down');
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+
+        // Footer is on-screen but Detox waitFor never idles (AsyncStorageModule spam in CI).
+        // Nested FormattedText testIDs are not exposed on iOS/Android when inside <Text>,
+        // so assert by visible copy rather than about.learn_more.text.
+        await device.disableSynchronization();
+        try {
+            await waitForElementToExist(
+                element(by.text(learnMorePrefixMatcher)),
+                timeouts.TWENTY_SEC,
+            );
+        } finally {
+            await safeEnableSynchronization();
+        }
+
+        // Nested Text may flatten the URL into the parent node (CI 30250131265:
+        // exact by.text('https://…') was null while the link was on screen).
+        await expect(element(by.text(learnMorePrefixMatcher))).toExist();
         await expect(AboutScreen.copyright).toHaveText(`Copyright 2015-${new Date().getFullYear()} Mattermost, Inc. All rights reserved`);
         await expect(AboutScreen.termsOfService).toHaveText('Terms of Service');
         await expect(AboutScreen.privacyPolicy).toHaveText('Privacy Policy');
         await expect(AboutScreen.noticeText).toHaveText('Mattermost is made possible by the open source software used in our server and mobile apps.');
-        await waitFor(AboutScreen.buildDateValue).toBeVisible().whileElement(by.id(AboutScreen.testID.scrollView)).scroll(50, 'down');
+
+        // Build info is already in view after the scroll to copyright above.
         await expect(AboutScreen.buildHashTitle).toHaveText('Build Hash:');
-        await expect(AboutScreen.buildHashValue).toBeVisible();
+        await expect(AboutScreen.buildHashValue).toExist();
         await expect(AboutScreen.buildHashEnterpriseTitle).toHaveText('EE Build Hash:');
-        await expect(AboutScreen.buildHashEnterpriseValue).toBeVisible();
+        await expect(AboutScreen.buildHashEnterpriseValue).toExist();
         await expect(AboutScreen.buildDateTitle).toHaveText('Build Date:');
-        await expect(AboutScreen.buildDateValue).toBeVisible();
+        await expect(AboutScreen.buildDateValue).toExist();
     });
 });

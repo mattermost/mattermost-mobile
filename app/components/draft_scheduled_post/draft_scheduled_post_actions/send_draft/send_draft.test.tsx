@@ -8,7 +8,7 @@ import {removeDraft} from '@actions/local/draft';
 import {updateScheduledPostErrorCode} from '@actions/local/scheduled_post';
 import {createPost} from '@actions/remote/post';
 import {deleteScheduledPost} from '@actions/remote/scheduled_post';
-import {General, Screens} from '@constants';
+import {General} from '@constants';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {dismissBottomSheet} from '@screens/navigation';
 import {act, fireEvent, renderWithEverything, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -68,7 +68,6 @@ describe('Send Draft', () => {
         channelName: 'channel_name',
         rootId: '',
         channelType: General.OPEN_CHANNEL,
-        bottomSheetId: Screens.DRAFT_SCHEDULED_POST_OPTIONS,
         currentUserId: 'current_user_id',
         maxMessageLength: 4000,
         useChannelMentions: true,

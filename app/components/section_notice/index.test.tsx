@@ -7,7 +7,7 @@ import {Screens} from '@constants';
 import {fireEvent, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import SectionNotice from '.';
+import SectionNotice from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 
@@ -105,37 +105,44 @@ describe('Section notice', () => {
     });
 
     it('should show the correct icon on each section type', () => {
+        // CompassIcon renders as a Text node; `name` is consumed internally and does not appear on
+        // rendered props. Verify the correct glyph character is rendered as children instead.
+        const INFORMATION_OUTLINE = String.fromCodePoint(0xf02fd); // information-outline
+        const ALERT_OUTLINE = String.fromCodePoint(0xf002a); // alert-outline
+        const LIGHTBULB_OUTLINE = String.fromCodePoint(0xf0336); // lightbulb-outline
+        const CHECK = String.fromCodePoint(0xf012c); // check
+
         const props = getBaseProps();
 
         props.type = 'info';
         const wrapper = renderWithEverything(<SectionNotice {...props}/>, {database});
         let icon = wrapper.getByTestId('sectionNoticeHeaderIcon');
         expect(icon).toBeVisible();
-        expect(icon.props).toHaveProperty('name', 'information-outline');
+        expect(icon.props.children).toContain(INFORMATION_OUTLINE);
 
         props.type = 'danger';
         wrapper.rerender(<SectionNotice {...props}/>);
         icon = wrapper.getByTestId('sectionNoticeHeaderIcon');
         expect(icon).toBeVisible();
-        expect(icon.props).toHaveProperty('name', 'alert-outline');
+        expect(icon.props.children).toContain(ALERT_OUTLINE);
 
         props.type = 'hint';
         wrapper.rerender(<SectionNotice {...props}/>);
         icon = wrapper.getByTestId('sectionNoticeHeaderIcon');
         expect(icon).toBeVisible();
-        expect(icon.props).toHaveProperty('name', 'lightbulb-outline');
+        expect(icon.props.children).toContain(LIGHTBULB_OUTLINE);
 
         props.type = 'success';
         wrapper.rerender(<SectionNotice {...props}/>);
         icon = wrapper.getByTestId('sectionNoticeHeaderIcon');
         expect(icon).toBeVisible();
-        expect(icon.props).toHaveProperty('name', 'check');
+        expect(icon.props.children).toContain(CHECK);
 
         props.type = 'warning';
         wrapper.rerender(<SectionNotice {...props}/>);
         icon = wrapper.getByTestId('sectionNoticeHeaderIcon');
         expect(icon).toBeVisible();
-        expect(icon.props).toHaveProperty('name', 'alert-outline');
+        expect(icon.props.children).toContain(ALERT_OUTLINE);
 
         props.type = 'welcome';
         wrapper.rerender(<SectionNotice {...props}/>);

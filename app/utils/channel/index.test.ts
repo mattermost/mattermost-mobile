@@ -19,7 +19,7 @@ import {
     sortChannelsByDisplayName,
     sortChannelsModelByDisplayName,
     validateDisplayName,
-} from '.';
+} from './index';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 

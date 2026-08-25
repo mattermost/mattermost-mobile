@@ -173,7 +173,7 @@ export async function processEntryModels(serverUrl: string, {
 
     const flattenModels = (await Promise.all(modelPromises)).flat();
     if (flattenModels.length) {
-        operator.batchRecords(flattenModels, 'processEntryModels');
+        await operator.batchRecords(flattenModels, 'processEntryModels');
     }
 
     return flattenModels;
@@ -200,6 +200,6 @@ export async function processEntryModelsForDeletion({
 
     const modelsToDelete = (await Promise.all(modelsToDeletePromises)).flat();
     if (modelsToDelete.length) {
-        operator.batchRecords(modelsToDelete, 'processEntryModelsForDeletion');
+        await operator.batchRecords(modelsToDelete, 'processEntryModelsForDeletion');
     }
 }

@@ -4,7 +4,11 @@
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
+import * as DeepLinkUtils from '@utils/deep_link';
+
 import * as Links from './links';
+
+import * as UrlUtils from './index';
 
 describe('onOpenLinkError', () => {
     const intl = createIntl({
@@ -53,16 +57,16 @@ describe('openLink', () => {
     });
 
     it('should call normalizeProtocol and return early if the URL is invalid', async () => {
-        const normalizeProtocolMock = jest.spyOn(require('.'), 'normalizeProtocol').mockReturnValue(null);
+        const normalizeProtocolMock = jest.spyOn(UrlUtils, 'normalizeProtocol').mockReturnValue('');
 
         await Links.openLink('', 'https://server-url.com', 'https://site-url.com', intl);
 
-        expect(normalizeProtocolMock).toHaveBeenCalledWith('');
+        expect(UrlUtils.normalizeProtocol).toHaveBeenCalledWith('');
         normalizeProtocolMock.mockRestore();
     });
 
     it('should handle deep link if matchDeepLink returns a match', async () => {
-        const normalizeProtocolMock = jest.spyOn(require('.'), 'normalizeProtocol').mockReturnValue('https://example.com');
+        const normalizeProtocolMock = jest.spyOn(UrlUtils, 'normalizeProtocol').mockReturnValue('https://example.com');
         const matchDeepLinkMock = jest.spyOn(require('@utils/deep_link'), 'matchDeepLink').mockReturnValue({url: 'https://example.com'});
         const handleDeepLinkMock = jest.spyOn(require('@utils/deep_link'), 'handleDeepLink').mockResolvedValue({error: null});
 
@@ -78,10 +82,10 @@ describe('openLink', () => {
     });
 
     it('should call tryOpenURL with onOpenLinkError if handleDeepLink returns an error', async () => {
-        const normalizeProtocolMock = jest.spyOn(require('.'), 'normalizeProtocol').mockReturnValue('https://example.com');
-        const matchDeepLinkMock = jest.spyOn(require('@utils/deep_link'), 'matchDeepLink').mockReturnValue({url: 'https://example.com'});
-        const handleDeepLinkMock = jest.spyOn(require('@utils/deep_link'), 'handleDeepLink').mockResolvedValue({error: true});
-        const tryOpenURLMock = jest.spyOn(require('.'), 'tryOpenURL').mockImplementation(() => {});
+        const normalizeProtocolMock = jest.spyOn(UrlUtils, 'normalizeProtocol').mockReturnValue('https://example.com');
+        const matchDeepLinkMock = jest.spyOn(DeepLinkUtils, 'matchDeepLink').mockReturnValue({url: 'https://example.com', type: '_redirect'});
+        const handleDeepLinkMock = jest.spyOn(DeepLinkUtils, 'handleDeepLink').mockResolvedValue({error: true});
+        const tryOpenURLMock = jest.spyOn(UrlUtils, 'tryOpenURL').mockImplementation(() => {});
 
         await Links.openLink('https://example.com', 'https://server-url.com', 'https://site-url.com', intl);
 
@@ -94,9 +98,9 @@ describe('openLink', () => {
     });
 
     it('should call tryOpenURL with onOpenLinkError if matchDeepLink does not return a match', async () => {
-        const normalizeProtocolMock = jest.spyOn(require('.'), 'normalizeProtocol').mockReturnValue('https://example.com');
-        const matchDeepLinkMock = jest.spyOn(require('@utils/deep_link'), 'matchDeepLink').mockReturnValue(null);
-        const tryOpenURLMock = jest.spyOn(require('.'), 'tryOpenURL').mockImplementation(() => {});
+        const normalizeProtocolMock = jest.spyOn(UrlUtils, 'normalizeProtocol').mockReturnValue('https://example.com');
+        const matchDeepLinkMock = jest.spyOn(DeepLinkUtils, 'matchDeepLink').mockReturnValue(null);
+        const tryOpenURLMock = jest.spyOn(UrlUtils, 'tryOpenURL').mockImplementation(() => {});
 
         await Links.openLink('https://example.com', 'https://server-url.com', 'https://site-url.com', intl);
 

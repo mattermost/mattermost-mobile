@@ -6,7 +6,7 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import * as tsparser from "@typescript-eslint/parser";
 import importPlugin from "eslint-plugin-import";
 import reactHooks from "eslint-plugin-react-hooks";
-import stylisticTs from "@stylistic/eslint-plugin-ts";
+import stylistic from "@stylistic/eslint-plugin";
 
 // Load custom rulesets
 import eslintMattermost, {jestConfig} from "./eslint/eslint-mattermost.mjs";
@@ -42,7 +42,7 @@ export default defineConfig([
       sourceType: "module"
     },
     plugins: {
-      "@stylistic/ts": stylisticTs,
+      "@stylistic": stylistic,
       "@typescript-eslint": tseslint,
       "import": importPlugin,
       "react-hooks": reactHooks
@@ -55,6 +55,17 @@ export default defineConfig([
     },
     rules: {
       "eol-last": ["error", "always"],
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "CallExpression[callee.name=/^(logError|logWarning|logInfo|logDebug)$/] MemberExpression[property.name=/^(email|username|nickname|displayName|display_name|firstName|first_name|lastName|last_name|fullName|full_name|phoneNumber|phone_number)$/]",
+          "message": "Do not log PII (names/emails/usernames). Logs are user-exportable and sent to Sentry. Log stable identifiers (IDs, channel type) instead. See CLAUDE.md > Error Handling & Logging."
+        },
+        {
+          "selector": "CallExpression[callee.name=/^(logError|logWarning|logInfo|logDebug)$/] Identifier[name=/([Tt]oken|[Pp]assword|[Ss]ecret)$/]",
+          "message": "Do not log credentials (tokens/passwords/secrets). Logs are user-exportable and sent to Sentry. See CLAUDE.md > Error Handling & Logging."
+        }
+      ],
       "global-require": "off",
       "no-undefined": "off",
       "no-shadow": "off",
@@ -71,6 +82,7 @@ export default defineConfig([
             "Gesture.Exclusive",
             "Gesture.Simultaneous",
             "Gesture.Race",
+            "Gesture.Native",
           ]
         }
       ],
@@ -107,7 +119,7 @@ export default defineConfig([
           }
         }
       ],
-      "@stylistic/ts/member-delimiter-style": 2,
+      "@stylistic/member-delimiter-style": 2,
       "@typescript-eslint/no-unsafe-declaration-merging": "off",
       "import/order": [
         2,
@@ -116,7 +128,7 @@ export default defineConfig([
           "newlines-between": "always",
           "pathGroups": [
             {
-              "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@playbooks|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@store|@websocket)}",
+              "pattern": "{@(@actions|@agents|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@keyboard|@managers|@playbooks|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@agents|@constants|@i18n|@keyboard|@store|@websocket)}",
               "group": "external",
               "position": "after"
             },
@@ -153,7 +165,21 @@ export default defineConfig([
       "import/no-unresolved": "off",
       "max-nested-callbacks": "off",
       "no-process-env": "off",
-      "no-unused-expressions": "off"
+      "no-unused-expressions": "off",
+      // SEC-10992: Detox's bare element.longPress() (no duration) resolves to a single
+      // tap on Android (detoxsingletap), not a long press — it fires onPress instead of
+      // onLongPress (e.g. opening a link bookmark's URL in the browser instead of the
+      // options sheet, which hung MM-T5725_1). Always pass an explicit duration, e.g.
+      // .longPress(timeouts.TWO_SEC). The selector matches only zero-arg calls, so
+      // .longPress(timeouts.X) / .longPress(2000) are unaffected, and Gesture.LongPress
+      // (react-native-gesture-handler) is excluded by the lower-case property name.
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "CallExpression[callee.type=\"MemberExpression\"][callee.property.name=\"longPress\"][arguments.length=0]",
+          "message": "Pass an explicit duration to longPress() (e.g. .longPress(timeouts.TWO_SEC)). Bare .longPress() with no args resolves to a single tap on Android, firing onPress instead of onLongPress. See SEC-10992."
+        }
+      ]
     }
   }
 ]);

@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -38,14 +39,27 @@ describe('Threads - Global Threads', () => {
         testChannel = channel;
         testUser = user;
 
+        // # Enable Collapsed Reply Threads so the global threads UI surfaces
+        // are rendered (ThreadsButton in the channel-list sidebar, follow
+        // button in thread navigation, etc.). Without `always_on` the
+        // `channel_list.threads.button` testID is conditionally removed
+        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
+        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'always_on',
+                ThreadAutoFollow: true,
+            },
+        });
+
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        // # Reset to the channel list even if the previous thread back navigation returned to its channel.
+        await ChannelListScreen.open();
     });
 
     afterAll(async () => {
@@ -127,7 +141,7 @@ describe('Threads - Global Threads', () => {
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -136,7 +150,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread started by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();
@@ -197,7 +211,7 @@ describe('Threads - Global Threads', () => {
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -206,7 +220,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();

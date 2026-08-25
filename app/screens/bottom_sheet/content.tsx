@@ -10,8 +10,10 @@ import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 type Props = {
-    buttonIcon?: string;
+    buttonIcon?: CompassIconName;
     buttonText?: string;
     children: React.ReactNode;
     disableButton?: boolean;

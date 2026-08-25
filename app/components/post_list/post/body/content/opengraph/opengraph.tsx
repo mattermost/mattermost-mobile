@@ -29,24 +29,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 3,
             borderWidth: 1,
             flex: 1,
-            marginTop: 10,
+            gap: 10,
             padding: 10,
         },
         flex: {flex: 1},
         siteDescription: {
             color: changeOpacity(theme.centerChannelColor, 0.7),
             fontSize: 13,
-            marginBottom: 10,
         },
         siteName: {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             fontSize: 12,
-            marginBottom: 10,
         },
         siteTitle: {
             color: theme.linkColor,
             fontSize: 14,
-            marginBottom: 10,
         },
     };
 });

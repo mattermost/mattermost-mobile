@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Button as RNEButton} from '@rneui/base';
-import React, {useCallback, useEffect, useMemo, useRef, useState, type RefObject} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 
@@ -12,23 +12,21 @@ import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
-import {FORGOT_PASSWORD, MFA} from '@constants/screens';
+import {Screens} from '@constants';
 import {LOGIN_TYPE} from '@constants/sso';
-import {useAvoidKeyboard} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage, getServerError, isErrorWithMessage, isServerError} from '@utils/errors';
 import {logError} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type {LaunchProps} from '@typings/launch';
-import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
-    keyboardAwareRef: RefObject<KeyboardAwareScrollView>;
+    isModal?: boolean;
     serverDisplayName: string;
     theme: Theme;
     setMagicLinkSent: (linkSent: boolean) => void;
@@ -105,7 +103,7 @@ const isMFAError = (loginError: unknown): boolean => {
 const LoginForm = ({
     config,
     extra,
-    keyboardAwareRef,
+    isModal,
     serverDisplayName,
     launchError,
     launchType,
@@ -132,16 +130,14 @@ const LoginForm = ({
     const [userLoginType, setUserLoginType] = useState<LoginType | undefined>(undefined);
     const magicLinkEnabled = config.EnableGuestMagicLink === 'true';
 
-    useAvoidKeyboard(keyboardAwareRef);
-
     const goToHome = useCallback((loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl});
+        navigateToScreen(Screens.HOME, {extra, launchError: hasError, launchType, serverUrl}, true);
     }, [extra, launchError, launchType, serverUrl]);
 
     const goToMfa = useCallback(() => {
-        goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
-    }, [config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme]);
+        navigateToScreen(Screens.MFA, {loginId, extra, isModal, password, config, serverDisplayName, license, serverUrl, theme});
+    }, [config, extra, isModal, license, loginId, password, serverDisplayName, serverUrl, theme]);
 
     const checkUserLoginType = useCallback(async () => {
         if (!serverUrl) {
@@ -288,12 +284,13 @@ const LoginForm = ({
         }
 
         const passProps = {
+            isModal,
             theme,
             serverUrl,
         };
 
-        goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
-    }, [config.ForgotPasswordLink, serverUrl, theme]);
+        navigateToScreen(Screens.FORGOT_PASSWORD, passProps);
+    }, [config.ForgotPasswordLink, isModal, serverUrl, theme]);
 
     const togglePasswordVisiblity = useCallback(() => {
         setIsPasswordVisible((prevState) => !prevState);

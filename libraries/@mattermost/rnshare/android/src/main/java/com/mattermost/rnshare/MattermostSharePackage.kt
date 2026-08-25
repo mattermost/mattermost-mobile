@@ -14,21 +14,18 @@ class MattermostSharePackage : TurboReactPackage() {
       null
     }
   }
-
-  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-    return ReactModuleInfoProvider {
-      val moduleInfos: MutableMap<String, ReactModuleInfo> = HashMap()
-      val isTurboModule: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-      moduleInfos[MattermostShareImpl.NAME] = ReactModuleInfo(
-          name = MattermostShareImpl.NAME,
-          className = MattermostShareImpl.NAME,
-          canOverrideExistingModule = false,
-          needsEagerInit = false,
-          hasConstants = false,
-          isCxxModule = false,
-          isTurboModule = isTurboModule
+  
+  override fun getReactModuleInfoProvider() = ReactModuleInfoProvider {
+    mapOf(
+      MattermostShareImpl.NAME to ReactModuleInfo(
+        name = MattermostShareImpl.NAME,
+        className = MattermostShareImpl.NAME,
+        canOverrideExistingModule = false,
+        needsEagerInit = false,
+        hasConstants = false,
+        isCxxModule = false,
+        isTurboModule = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
       )
-      moduleInfos
-    }
+    )
   }
 }

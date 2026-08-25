@@ -3,12 +3,9 @@
 
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
-import {DeviceEventEmitter} from 'react-native';
 
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import DraftsButton from '@components/drafts_buttton/drafts_button';
-import {Events} from '@constants';
-import {DRAFT} from '@constants/screens';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -108,9 +105,7 @@ describe('components/drafts_button/DraftsButton', () => {
         expect(countElement).toHaveStyle({backgroundColor: expect.any(String)});
     });
 
-    test('should handle press and emit events', async () => {
-        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
-
+    test('should handle press', async () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <DraftsButton {...baseProps}/>,
         );
@@ -123,6 +118,5 @@ describe('components/drafts_button/DraftsButton', () => {
         });
 
         expect(switchToGlobalDrafts).toHaveBeenCalled();
-        expect(emitSpy).toHaveBeenCalledWith(Events.ACTIVE_SCREEN, DRAFT);
     });
 });

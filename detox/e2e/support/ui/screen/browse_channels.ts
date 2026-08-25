@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
     testID = {
@@ -44,18 +44,33 @@ class BrowseChannelsScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        // Use TWENTY_SEC on both platforms — CI simulators/emulators are slower than
+        // local devices, so TEN_SEC was timing out on iOS CI before the screen appeared.
+        await waitFor(this.browseChannelsScreen).toExist().withTimeout(timeouts.TWENTY_SEC);
 
         return this.browseChannelsScreen;
     };
 
     open = async () => {
-        // # Open browse channels screen
-        await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
-        await ChannelListScreen.browseChannelsItem.tap();
+        // If Browse Channels is already open (e.g. a previous test failed mid-navigation
+        // and left the modal on screen), close it first so we start from the channel list.
+        try {
+            await waitFor(this.browseChannelsScreen).toExist().withTimeout(2000);
+            await this.closeButton.tap();
+            await waitFor(this.browseChannelsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // Browse Channels is not open — proceed normally
+        }
 
-        return this.toBeVisible();
+        // # Open browse channels screen from the channel list header plus button.
+        await ChannelListScreen.openPlusMenu();
+        await ChannelListScreen.browseChannelsItem.tap();
+        await wait(timeouts.ONE_SEC);
+
+        // openPlusMenu disables sync on Android; wait for the screen before returning.
+        await waitForElementToExist(this.browseChannelsScreen, timeouts.TWENTY_SEC);
+
+        return this.browseChannelsScreen;
     };
 
     close = async () => {

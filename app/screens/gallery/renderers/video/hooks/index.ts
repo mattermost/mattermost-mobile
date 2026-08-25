@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {useEffect, useState} from 'react';
-import {runOnJS, runOnUI, useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
+import {useAnimatedReaction, type SharedValue} from 'react-native-reanimated';
+import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
 
 export function useStateFromSharedValue<T>(sharedValue: SharedValue<T> | undefined, defaultValue: T): T {
     const [state, setState] = useState(defaultValue);
@@ -10,18 +11,18 @@ export function useStateFromSharedValue<T>(sharedValue: SharedValue<T> | undefin
         () => sharedValue?.value,
         (currentValue, previousValue) => {
             if (currentValue !== previousValue) {
-                runOnJS(setState)(currentValue ?? defaultValue);
+                scheduleOnRN(setState, currentValue ?? defaultValue);
             }
         }, [defaultValue],
     );
 
     useEffect(() => {
         if (sharedValue) {
-            runOnUI(() => {
+            scheduleOnUI(() => {
                 'worklet';
                 const currentValue = sharedValue.value;
-                runOnJS(setState)(currentValue);
-            })();
+                scheduleOnRN(setState, currentValue);
+            });
         }
     }, [sharedValue]);
 

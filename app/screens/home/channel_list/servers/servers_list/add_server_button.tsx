@@ -7,6 +7,7 @@ import {useIntl} from 'react-intl';
 
 import {useTheme} from '@context/theme';
 import {BottomSheetButton} from '@screens/bottom_sheet';
+import {dismissBottomSheet} from '@screens/navigation';
 import {addNewServer} from '@utils/server';
 
 const AddServerButton = (props: BottomSheetFooterProps) => {
@@ -14,6 +15,7 @@ const AddServerButton = (props: BottomSheetFooterProps) => {
     const {formatMessage} = useIntl();
 
     const onAddServer = useCallback(async () => {
+        await dismissBottomSheet();
         addNewServer(theme);
     }, [theme]);
 

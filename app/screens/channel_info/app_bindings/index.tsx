@@ -12,6 +12,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import AppsManager from '@managers/apps_manager';
 import {observeCurrentTeamId} from '@queries/servers/system';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
@@ -66,7 +67,7 @@ const BindingOptionItem = ({binding, onPress}: {binding: AppBinding; onPress: (b
     return (
         <OptionItem
             label={binding.label || ''}
-            icon={binding.icon}
+            icon={binding.icon as CompassIconName}
             action={handlePress}
             type='default'
             testID={`channel_info.options.app_binding.option.${binding.location}`}

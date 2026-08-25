@@ -42,8 +42,17 @@ describe('Channels', () => {
         testChannel = channel;
 
         ({user: user1} = await User.apiCreateUser(siteOneUrl, {prefix: 'user1'}));
+        if (!user1?.id) {
+            throw new Error('[beforeAll] Failed to create user1');
+        }
         const {user: user2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
+        if (!user2?.id) {
+            throw new Error('[beforeAll] Failed to create user2');
+        }
         const {user: user3} = await User.apiCreateUser(siteOneUrl, {prefix: 'user3'});
+        if (!user3?.id) {
+            throw new Error('[beforeAll] Failed to create user3');
+        }
 
         await Team.apiAddUserToTeam(siteOneUrl, user1.id, testTeam.id);
         await Team.apiAddUserToTeam(siteOneUrl, user2.id, testTeam.id);
@@ -58,6 +67,9 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         const {user: user4} = await User.apiCreateUser(siteOneUrl, {prefix: 'user4'});
+        if (!user4?.id) {
+            throw new Error('[beforeAll] Failed to create user4');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, user4.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, user4.id, testChannel.id);
         await wait(timeouts.TWO_SEC);
@@ -69,6 +81,9 @@ describe('Channels', () => {
         await wait(timeouts.TWO_SEC);
 
         ({user: user5} = await User.apiCreateUser(siteOneUrl, {prefix: 'user5'}));
+        if (!user5?.id) {
+            throw new Error('[beforeAll] Failed to create user5');
+        }
         await Team.apiAddUserToTeam(siteOneUrl, user5.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, user5.id, testChannel.id);
         await wait(timeouts.TWO_SEC);

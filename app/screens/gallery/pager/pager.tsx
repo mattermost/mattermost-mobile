@@ -19,7 +19,7 @@ import type {GalleryItemType, GalleryPagerItem} from '@typings/screens/gallery';
 export type PagerContentProps = {
     totalCount: number;
     pages: GalleryItemType[];
-    renderPage: (props: GalleryPagerItem, index: number) => JSX.Element | null;
+    renderPage: (props: GalleryPagerItem, index: number) => React.ReactNode;
     shouldRenderGutter: boolean;
     width: number;
     height: number;

@@ -230,6 +230,65 @@ const unarchivedMessages = defineMessages({
     },
 });
 
+const sharedChannelStateMessages = defineMessages({
+    nowShared: {
+        id: 'shared_channel.system_message.now_shared',
+        defaultMessage: 'This channel is now shared with {workspaceName}.',
+    },
+    noLongerSharedUnknown: {
+        id: 'shared_channel.system_message.no_longer_shared_unknown',
+        defaultMessage: 'This channel is no longer shared with another workspace.',
+    },
+    noLongerShared: {
+        id: 'shared_channel.system_message.no_longer_shared',
+        defaultMessage: 'This channel is no longer shared with {workspaceName}.',
+    },
+});
+
+const renderSharedChannelStateMessage = ({post, location, styles, intl, theme}: RenderersProps) => {
+    const state = ensureString(post.props?.shared_channel_state);
+    const workspaceName = ensureString(post.props?.workspace_name);
+
+    if (state === 'shared') {
+        return renderMessage({
+            post,
+            styles,
+            intl,
+            location,
+            localeHolder: sharedChannelStateMessages.nowShared,
+            values: {workspaceName},
+            skipMarkdown: true,
+            theme,
+        });
+    }
+    if (state === 'unshared') {
+        if (workspaceName === '') {
+            return renderMessage({
+                post,
+                styles,
+                intl,
+                location,
+                localeHolder: sharedChannelStateMessages.noLongerSharedUnknown,
+                values: {},
+                skipMarkdown: true,
+                theme,
+            });
+        }
+        return renderMessage({
+            post,
+            styles,
+            intl,
+            location,
+            localeHolder: sharedChannelStateMessages.noLongerShared,
+            values: {workspaceName},
+            skipMarkdown: true,
+            theme,
+        });
+    }
+
+    return null;
+};
+
 const renderUnarchivedMessage = ({post, author, location, styles, intl, theme}: RenderersProps) => {
     if (!author?.username) {
         return null;
@@ -288,6 +347,7 @@ const systemMessageRenderers = {
     [Post.POST_TYPES.PURPOSE_CHANGE]: renderPurposeChangeMessage,
     [Post.POST_TYPES.CHANNEL_DELETED]: renderArchivedMessage,
     [Post.POST_TYPES.CHANNEL_UNARCHIVED]: renderUnarchivedMessage,
+    [Post.POST_TYPES.SHARED_CHANNEL_STATE]: renderSharedChannelStateMessage,
 };
 
 export const SystemMessage = ({post, location, author, hideGuestTags}: SystemMessageProps & { hideGuestTags: boolean}) => {

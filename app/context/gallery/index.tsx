@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {useLayoutEffect} from 'react';
-import {makeMutable, runOnUI, type AnimatedRef, type SharedValue} from 'react-native-reanimated';
+import {makeMutable, type AnimatedRef, type SharedValue} from 'react-native-reanimated';
+import {scheduleOnUI} from 'react-native-worklets';
 
 import useDidMount from '@hooks/did_mount';
 
@@ -18,7 +19,7 @@ export interface GalleryManagerItems {
 }
 
 interface GalleryInitProps {
-    children: JSX.Element;
+    children: React.ReactNode;
     galleryIdentifier: string;
 }
 
@@ -70,7 +71,7 @@ class Gallery {
             y,
         } = this.sharedValues;
 
-        runOnUI(() => {
+        scheduleOnUI(() => {
             'worklet';
 
             width.value = 0;
@@ -79,7 +80,7 @@ class Gallery {
             activeIndex.value = -1;
             x.value = 0;
             y.value = 0;
-        })();
+        });
     }
 
     public registerItem(index: number, ref: AnimatedRef<any>) {

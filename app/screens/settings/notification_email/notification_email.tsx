@@ -11,20 +11,18 @@ import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useInitialValue from '@hooks/initial_value';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
-import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getEmailInterval} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -56,7 +54,6 @@ const messages = defineMessages({
 });
 
 type NotificationEmailProps = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
     emailInterval: string;
     enableEmailBatching: boolean;
@@ -64,7 +61,7 @@ type NotificationEmailProps = {
     sendEmailNotifications: boolean;
 }
 
-const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmailBatching, isCRTEnabled, sendEmailNotifications}: NotificationEmailProps) => {
+const NotificationEmail = ({currentUser, emailInterval, enableEmailBatching, isCRTEnabled, sendEmailNotifications}: NotificationEmailProps) => {
     const notifyProps = useNotificationProps(currentUser);
     const initialInterval = useInitialValue(
         () => getEmailInterval(sendEmailNotifications && notifyProps?.email === 'true', enableEmailBatching, parseInt(emailInterval, 10)).toString(),
@@ -110,21 +107,9 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
             }
             Promise.all(promises);
         }
-        popTopScreen(componentId);
-    }, [
-        componentId,
-        currentUser?.id,
-        notifyInterval,
-        initialInterval,
-        emailThreads,
-        initialEmailThreads,
-        serverUrl,
-        notifyProps,
-        sendEmailNotifications,
-        isCRTEnabled,
-    ]);
+    }, [currentUser?.id, notifyInterval, initialInterval, emailThreads, initialEmailThreads, serverUrl, notifyProps, sendEmailNotifications, isCRTEnabled]);
 
-    useAndroidHardwareBackHandler(componentId, saveEmail);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_EMAIL, saveEmail);
 
     useBackNavigation(saveEmail);
 

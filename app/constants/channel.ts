@@ -9,6 +9,10 @@ export const IGNORE_CHANNEL_MENTIONS_DEFAULT = 'default';
 export const CHANNEL_AUTO_FOLLOW_THREADS_TRUE = 'on';
 export const CHANNEL_AUTO_FOLLOW_THREADS_FALSE = 'off';
 
+export const CHANNEL_PROPS = {
+    BOARD_LINKED_PROPERTIES: 'board:linked_properties',
+} as const;
+
 export default {
     IGNORE_CHANNEL_MENTIONS_ON,
     IGNORE_CHANNEL_MENTIONS_OFF,
@@ -17,4 +21,5 @@ export default {
     MIN_CHANNEL_NAME_LENGTH,
     CHANNEL_AUTO_FOLLOW_THREADS_TRUE,
     CHANNEL_AUTO_FOLLOW_THREADS_FALSE,
+    CHANNEL_PROPS,
 };

@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import React, {type ComponentProps} from 'react';
 
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ToolCard from './index';
@@ -15,6 +15,14 @@ jest.mock('@components/markdown', () => {
         <Text testID='mock-markdown'>{value}</Text>
     );
     return MockMarkdown;
+});
+
+// Mock Loading so the in-flight status spinner is queryable.
+jest.mock('@components/loading', () => {
+    const {View} = require('react-native');
+    const MockLoading = () => <View testID='tool-loading'/>;
+    MockLoading.displayName = 'MockLoading';
+    return MockLoading;
 });
 
 describe('ToolCard', () => {
@@ -34,7 +42,7 @@ describe('ToolCard', () => {
         onToggleCollapse: jest.fn(),
         onApprove: jest.fn(),
         onReject: jest.fn(),
-        approvalStage: null,
+        approvalStage: ToolApprovalStage.Done,
     });
 
     describe('tool name display', () => {
@@ -196,6 +204,34 @@ describe('ToolCard', () => {
         });
     });
 
+    describe('arguments rendering', () => {
+        it('should fall back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({arguments: undefined as unknown as ToolCall['arguments']});
+            props.isCollapsed = false;
+            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
+            const argumentsText = markdowns[0].props.children;
+            expect(argumentsText).toContain('{}');
+            expect(argumentsText).not.toContain('undefined');
+        });
+
+        it('should fall back to an empty object when arguments is null (server redacted for non-requester)', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({arguments: null as unknown as ToolCall['arguments']});
+            props.isCollapsed = false;
+            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            const markdowns = getAllByTestId('mock-markdown');
+            expect(markdowns).toHaveLength(1);
+            const argumentsText = markdowns[0].props.children;
+            expect(argumentsText).toContain('{}');
+            expect(argumentsText).not.toContain('null');
+        });
+    });
+
     describe('collapse state', () => {
         it('should show content when not collapsed', () => {
             const props = getBaseProps();
@@ -251,7 +287,7 @@ describe('ToolCard', () => {
 
         it('should not show result phase buttons when not in result phase', () => {
             const props = getResultPhaseProps();
-            props.approvalStage = null;
+            props.approvalStage = ToolApprovalStage.Done;
             const {queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByText('Share')).toBeNull();
@@ -293,10 +329,40 @@ describe('ToolCard', () => {
 
         it('should not show warning callout when not in result phase', () => {
             const props = getResultPhaseProps();
-            props.approvalStage = null;
+            props.approvalStage = ToolApprovalStage.Done;
             const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
+        });
+
+        it('should hide the warning callout when the viewer cannot approve (C1)', () => {
+            const props = {...getResultPhaseProps(), canApprove: false};
+            const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
+        });
+    });
+
+    describe('auto-approved badge (C4)', () => {
+        it('should show a persistent auto-approved badge even when collapsed', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.AutoApproved, result: 'done'});
+            props.isCollapsed = true;
+            const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.auto_approved_badge')).toBeTruthy();
+
+            // The badge lives in the always-visible header: the collapsed body
+            // (arguments/result markdown) must not be rendered.
+            expect(queryByTestId('mock-markdown')).toBeNull();
+        });
+
+        it('should show a processing spinner for an in-flight accepted tool', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Accepted});
+            const {getByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('tool-loading')).toBeTruthy();
         });
     });
 

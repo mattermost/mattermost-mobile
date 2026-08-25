@@ -51,21 +51,38 @@ exports[`components/channel_list_row should be selected 1`] = `
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="circle-multiple-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󰚕
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >
@@ -89,6 +106,7 @@ exports[`components/channel_list_row should be selected 1`] = `
           style={
             {
               "color": "rgba(63,67,80,0.64)",
+              "flexShrink": 1,
               "fontFamily": "OpenSans",
               "fontSize": 12,
               "fontWeight": "400",
@@ -100,11 +118,27 @@ exports[`components/channel_list_row should be selected 1`] = `
         </Text>
       </View>
       <View>
-        <Icon
-          color="#1c58d9"
-          name="check-circle"
-          size={28}
-        />
+        <Text
+          allowFontScaling={false}
+          selectable={false}
+          style={
+            [
+              {
+                "color": "#1c58d9",
+                "fontSize": 28,
+              },
+              undefined,
+              {
+                "fontFamily": "compass-icons",
+                "fontStyle": "normal",
+                "fontWeight": "normal",
+              },
+              undefined,
+            ]
+          }
+        >
+          󰗠
+        </Text>
       </View>
     </View>
   </View>
@@ -162,21 +196,38 @@ exports[`components/channel_list_row should match snapshot with delete_at filled
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="archive-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󱈎
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >
@@ -251,21 +302,38 @@ exports[`components/channel_list_row should match snapshot with open channel ico
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="circle-multiple-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󰚕
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >
@@ -340,21 +408,38 @@ exports[`components/channel_list_row should match snapshot with private channel 
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="circle-multiple-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󰚕
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >
@@ -429,21 +514,38 @@ exports[`components/channel_list_row should match snapshot with purpose filled i
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="circle-multiple-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󰚕
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >
@@ -467,6 +569,7 @@ exports[`components/channel_list_row should match snapshot with purpose filled i
           style={
             {
               "color": "rgba(63,67,80,0.64)",
+              "flexShrink": 1,
               "fontFamily": "OpenSans",
               "fontSize": 12,
               "fontWeight": "400",
@@ -533,21 +636,38 @@ exports[`components/channel_list_row should match snapshot with shared filled in
       }
       testID="ChannelListRow.channel"
     >
-      <Icon
-        name="circle-multiple-outline"
-        size={20}
+      <Text
+        allowFontScaling={false}
+        selectable={false}
         style={
-          {
-            "color": "rgba(63,67,80,0.56)",
-            "padding": 2,
-          }
+          [
+            {
+              "color": "black",
+              "fontSize": 20,
+            },
+            {
+              "color": "rgba(63,67,80,0.56)",
+              "padding": 2,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
         }
-      />
+      >
+        󰚕
+      </Text>
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "flexShrink": 1,
             "marginLeft": 16,
+            "minWidth": 0,
           }
         }
       >

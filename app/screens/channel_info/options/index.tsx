@@ -17,6 +17,7 @@ import Members from './members';
 import MyAutotranslation from './my_autotranslation';
 import NotificationPreference from './notification_preference';
 import PinnedMessages from './pinned_messages';
+import ResetChannelPosts from './reset_channel_posts';
 
 type Props = {
     channelId: string;
@@ -27,6 +28,7 @@ type Props = {
     isPlaybooksEnabled: boolean;
     hasChannelSettingsActions: boolean;
     isAutotranslationEnabledForThisChannel: boolean;
+    channelDisplayName: string;
 }
 
 const Options = ({
@@ -38,13 +40,17 @@ const Options = ({
     isPlaybooksEnabled,
     hasChannelSettingsActions,
     isAutotranslationEnabledForThisChannel,
+    channelDisplayName,
 }: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
         <>
             {hasChannelSettingsActions && (
-                <ChannelSettings channelId={channelId}/>
+                <ChannelSettings
+                    channelId={channelId}
+                    channelDisplayName={channelDisplayName}
+                />
             )}
             {type !== General.DM_CHANNEL && (
                 <>
@@ -78,6 +84,7 @@ const Options = ({
                     testID='channel_info.options.copy_channel_link.option'
                 />
             }
+            <ResetChannelPosts channelId={channelId}/>
         </>
     );
 };

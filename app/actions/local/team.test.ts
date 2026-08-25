@@ -1,15 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {removeLastViewedTeamIdAndServer} from '@actions/app/global';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {getMyTeamById, getTeamById, getTeamSearchHistoryById, prepareDeleteTeam, removeTeamFromTeamHistory} from '@queries/servers/team';
+import {getLastViewedTeamIdAndServer} from '@queries/app/global';
+import {
+    getMyTeamById,
+    getTeamById,
+    getTeamSearchHistoryById,
+    prepareDeleteTeam,
+    queryTeamSearchHistoryByTeamId,
+    removeTeamFromTeamHistory,
+} from '@queries/servers/team';
 import {logError} from '@utils/log';
-
-import {queryTeamSearchHistoryByTeamId} from '../../queries/servers/team';
 
 import {addSearchToTeamSearchHistory, removeSearchFromTeamSearchHistory, removeUserFromTeam, MAX_TEAM_SEARCHES} from './team';
 
+jest.mock('@actions/app/global');
 jest.mock('@database/manager');
+jest.mock('@queries/app/global');
 jest.mock('@queries/servers/team');
 jest.mock('@utils/log');
 
@@ -261,6 +270,17 @@ describe('removeUserFromTeam', () => {
         expect(prepareDeleteTeam).toHaveBeenCalledWith(serverUrl, team);
         expect(removeTeamFromTeamHistory).toHaveBeenCalledWith(operator, team.id, true);
         expect(operator.batchRecords).not.toHaveBeenCalled();
+        expect(result).toEqual({error: undefined});
+    });
+
+    it('should clear the last viewed team when it matches the removed server and team', async () => {
+        (getMyTeamById as jest.Mock).mockResolvedValue(null);
+        (getLastViewedTeamIdAndServer as jest.Mock).mockResolvedValue({server_url: serverUrl, team_id: teamId});
+
+        const result = await removeUserFromTeam(serverUrl, teamId);
+
+        expect(getLastViewedTeamIdAndServer).toHaveBeenCalled();
+        expect(removeLastViewedTeamIdAndServer).toHaveBeenCalled();
         expect(result).toEqual({error: undefined});
     });
 });

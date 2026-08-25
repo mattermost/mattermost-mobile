@@ -10,7 +10,7 @@ export type ViewPosition = {
     y: number;
     width: number;
     height: number;
-    ref: React.RefObject<View>;
+    ref: React.RefObject<View | null>;
 };
 
 type ViewPositionContextType = {

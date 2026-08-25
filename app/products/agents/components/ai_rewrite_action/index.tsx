@@ -1,17 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useRewrite} from '@agents/hooks';
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard} from 'react-native';
 
+import {useRewrite} from '@agents/hooks';
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
+import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {changeOpacity} from '@utils/theme';
 
 const ICON_SIZE = 24;
@@ -37,33 +36,19 @@ export default function AIRewriteAction({
     value,
     updateValue,
 }: Props) {
-    const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const {isProcessing} = useRewrite();
+    const {blurAndDismissKeyboard} = useKeyboardState();
 
-    const handlePress = useCallback(() => {
-        Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'ai_rewrite.title', defaultMessage: 'AI Rewrite'}) : '';
-
-        openAsBottomSheet({
-            closeButtonId: 'close-ai-rewrite',
-            screen: Screens.AGENTS_REWRITE_OPTIONS,
-            theme,
-            title,
-            props: {
-                closeButtonId: 'close-ai-rewrite',
-                originalMessage: value,
-                updateValue,
-            },
-        });
-    }, [intl, isTablet, theme, value, updateValue]);
+    const handlePress = useCallback(async () => {
+        await blurAndDismissKeyboard();
+        CallbackStore.setCallback(updateValue);
+        navigateToScreen(Screens.AGENTS_REWRITE_OPTIONS, {originalMessage: value});
+    }, [blurAndDismissKeyboard, updateValue, value]);
 
     const isDisabled = disabled || isProcessing;
     const actionTestID = isDisabled ? `${testID}.disabled` : testID;
-    const iconColor = isDisabled ?
-        changeOpacity(theme.centerChannelColor, 0.16) :
-        changeOpacity(theme.centerChannelColor, 0.64);
+    const iconColor = isDisabled ?changeOpacity(theme.centerChannelColor, 0.16) :changeOpacity(theme.centerChannelColor, 0.64);
 
     return (
         <TouchableWithFeedback

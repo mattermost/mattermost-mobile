@@ -9,7 +9,7 @@ import OptionItem from '@components/option_item';
 import {Events, Screens} from '@constants';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {showModal} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 
 type Props = {
     isTablet: boolean;
@@ -21,12 +21,9 @@ const YourProfile = ({isTablet}: Props) => {
         if (isTablet) {
             DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, Screens.EDIT_PROFILE);
         } else {
-            showModal(
-                Screens.EDIT_PROFILE,
-                intl.formatMessage({id: 'mobile.screen.your_profile', defaultMessage: 'Your Profile'}),
-            );
+            navigateToScreen(Screens.EDIT_PROFILE);
         }
-    }, [intl, isTablet]));
+    }, [isTablet]));
 
     return (
         <OptionItem

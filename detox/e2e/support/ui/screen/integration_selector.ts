@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class IntegrationSelectorScreen {
     testID = {
@@ -10,7 +10,10 @@ class IntegrationSelectorScreen {
         selectorItemPrefix: 'integration_selector.selector_item.',
         searchInput: 'selector.search_bar.search.input',
         doneButton: 'integration_selector.multiselect.submit.button',
-        cancelButton: 'integration_selector.cancel.button',
+
+        // The selector is a pushed screen (getHeaderOptions), so "cancel" is the
+        // navigation-header back button — there is no integration_selector.cancel.button.
+        cancelButton: 'navigation.header.back',
     };
 
     integrationSelectorScreen = element(by.id(this.testID.integrationSelectorScreen));
@@ -34,14 +37,16 @@ class IntegrationSelectorScreen {
 
     // Complete selection (for multiselect dialogs)
     done = async () => {
-        await expect(this.doneButton).toExist();
+        await waitFor(this.doneButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.doneButton.tap();
         await wait(timeouts.ONE_SEC);
     };
 
-    // Cancel selection
+    // Cancel selection by backing out of the pushed selector screen.
+    // Guarded: navigation.header.back exists on other pushed screens too, so only
+    // tap it when the selector itself is actually on screen.
     cancel = async () => {
-        await expect(this.cancelButton).toExist();
+        await waitFor(this.integrationSelectorScreen).toExist().withTimeout(timeouts.TWO_SEC);
         await this.cancelButton.tap();
         await wait(timeouts.ONE_SEC);
     };

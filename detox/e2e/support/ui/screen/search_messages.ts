@@ -5,12 +5,14 @@ import {
     NavigationHeader,
     PostList,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {
+    ChannelListScreen,
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class SearchMessagesScreen {
     testID = {
@@ -64,41 +66,86 @@ class SearchMessagesScreen {
     };
 
     getRecentSearchItem = (searchTerm: string) => {
-        return element(by.id(`search.recent_item.${searchTerm}`));
+        // Recent rows can render twice in the hierarchy on Android (wrapper + row).
+        return element(by.id(`search.recent_item.${searchTerm}`)).atIndex(0);
     };
 
     getRecentSearchItemRemoveButton = (searchTerm: string) => {
         return element(by.id(`search.recent_item.${searchTerm}.remove.button`)).atIndex(0);
     };
 
+    removeRecentSearchItem = async (searchTerm: string) => {
+        const removeButton = this.getRecentSearchItemRemoveButton(searchTerm);
+        await waitFor(this.getRecentSearchItem(searchTerm)).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            try {
+                await waitFor(removeButton).toBeVisible(50).whileElement(by.id('search.recents_list')).scroll(100, 'down');
+            } catch { /* item already in view */ }
+        }
+        await waitFor(removeButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await removeButton.tap();
+    };
+
     toBeVisible = async () => {
         await wait(timeouts.ONE_SEC);
-        await waitFor(this.searchMessagesScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+        await waitFor(this.searchMessagesScreen).toExist().withTimeout(timeout);
 
         return this.searchMessagesScreen;
     };
 
     open = async () => {
-        // # Open search messages screen
-        await HomeScreen.searchTab.tap();
+        await HomeScreen.toBeVisible();
+        await dismissKnownModals(2);
+
+        await waitFor(HomeScreen.searchTab).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Corner-tap is for Android overlays; iOS CI fails to open search with {x:1,y:1} (MM-T5294_6–9).
+        if (isIos()) {
+            await HomeScreen.searchTab.tap();
+        } else {
+            await HomeScreen.searchTab.tap({x: 1, y: 1});
+        }
 
         return this.toBeVisible();
+    };
+
+    close = async () => {
+        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
+        await HomeScreen.channelListTab.tap();
+        await ChannelListScreen.toBeVisible();
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
+        // Dismiss keyboard first so the 75%-visibility check in waitForElementToBeVisible
+        // doesn't fail on Android when the keyboard is still covering the bottom of the list.
         const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
+        try {
+            await flatList.scroll(100, 'down');
+        } catch {
+            // List too short to scroll — keyboard already dismissed or not open
+        }
         await wait(timeouts.ONE_SEC);
 
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        // Poll for the post to become visible without waiting for idle bridge
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+        try {
+            await waitForElementToBeVisible(postListPostItem, timeouts.FIVE_SEC);
+        } catch {
+            // Android: post row may exist before passing visibility threshold
+        }
+
+        const longPressTarget = isAndroid()
+            ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))
+            : postListPostItem;
+
+        await longPressWithScrollRetry(
+            longPressTarget,
+            by.id(this.postList.testID.flatList),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 

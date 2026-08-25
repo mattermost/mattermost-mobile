@@ -86,13 +86,17 @@ class FoldableObserver(activity: Activity) {
     fun handleWindowLayoutInfo() {
         val bounds = getWindowSize()
 
-        if (bounds?.width() != windowBounds?.width()) {
+        if (bounds?.width() != windowBounds?.width() || bounds?.height() != windowBounds?.height()) {
             // emit the dimensions changed event
             windowBounds = bounds
             SplitView.emitDimensionsChanged()
         }
     }
 
+
+    fun getCurrentWindowDimensions(): Rect? {
+        return getWindowSize()
+    }
 
     private fun getWindowSize(): Rect? {
         val activity = activityRef.get() ?: return null

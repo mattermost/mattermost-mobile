@@ -54,9 +54,24 @@ export const apiUpdateUserStatus = async (baseUrl: string, userId: string, statu
     }
 };
 
+/**
+ * Clear the user's custom status (emoji + text).
+ * See https://api.mattermost.com/#operation/UnsetUserCustomStatus
+ */
+export const apiUnsetCustomStatus = async (baseUrl: string, userId: string): Promise<any> => {
+    try {
+        const response = await client.delete(`${baseUrl}/api/v4/users/${userId}/status/custom`);
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Status = {
     apiGetUserStatus,
     apiUpdateUserStatus,
+    apiUnsetCustomStatus,
 };
 
 export default Status;

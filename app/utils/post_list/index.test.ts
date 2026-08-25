@@ -13,7 +13,7 @@ import {
     getPostIdsForCombinedUserActivityPost,
     preparePostList,
     shouldFilterJoinLeavePost,
-} from '.';
+} from './index';
 
 import type {PostListItem} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';

@@ -3,25 +3,25 @@
 
 import RNUtils, {type SplitViewResult} from '@mattermost/rnutils';
 import {defineMessages} from 'react-intl';
-import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter} from 'react-native';
+import {Alert, DeviceEventEmitter, NativeEventEmitter, type EventSubscription} from 'react-native';
 import semver from 'semver';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {batchTeamThreadSync} from '@actions/remote/thread';
-import {Device, Events, Sso} from '@constants';
+import {Device, Events} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
+import {attemptServerDatabaseRecovery} from '@database/recovery';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {queryTeamDefaultChannel} from '@queries/servers/channel';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import {setScreensOrientation} from '@screens/navigation';
-import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
-import {getIntlShape} from '@utils/general';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logError} from '@utils/log';
 
-type LinkingCallbackArg = {url: string};
+import type {Database} from '@nozbe/watermelondb';
 
 const splitViewEmitter = new NativeEventEmitter(RNUtils);
 
@@ -42,34 +42,41 @@ const messages = defineMessages({
 
 class GlobalEventHandlerSingleton {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
+    private serverVersionChangedListener: EventSubscription | undefined;
+    private splitViewChangedListener: EventSubscription | undefined;
 
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
-        Linking.addEventListener('url', this.onDeepLink);
         DeviceEventEmitter.addListener(Events.POST_DELETED_FOR_CHANNEL, this.onPostDeletedForChannel);
+        DeviceEventEmitter.addListener(Events.DATABASE_CORRUPTION_DETECTED, this.onDatabaseCorruptionDetected);
     }
 
     init = () => {
+        logDebug('GlobalEventHandler: Initializing');
         this.JavascriptAndNativeErrorHandler = require('@utils/error_handling').default;
         this.JavascriptAndNativeErrorHandler?.initializeErrorHandling();
+    };
+
+    cleanup = () => {
+        this.serverVersionChangedListener?.remove();
+        this.splitViewChangedListener?.remove();
     };
 
     onPostDeletedForChannel = async ({serverUrl, teamId}: {serverUrl: string; teamId: string}) => {
         batchTeamThreadSync(serverUrl, teamId);
     };
 
-    onDeepLink = async (event: LinkingCallbackArg) => {
-        if (event.url?.startsWith(Sso.REDIRECT_URL_SCHEME) || event.url?.startsWith(Sso.REDIRECT_URL_SCHEME_DEV)) {
+    onDatabaseCorruptionDetected = ({database, error, source}: {database: Database; error: unknown; source: string}) => {
+        const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
+        if (!serverUrl) {
+            logDebug('onDatabaseCorruptionDetected: skipping recovery, server URL not found', source);
             return;
         }
 
-        if (event.url) {
-            const {error} = await parseAndHandleDeepLink(event.url, undefined, undefined, true);
-            if (error) {
-                alertInvalidDeepLink(getIntlShape(DEFAULT_LOCALE));
-            }
-        }
+        attemptServerDatabaseRecovery(serverUrl, error, source).catch((recoveryError) => {
+            logError('onDatabaseCorruptionDetected: unhandled recovery error', getFullErrorMessage(recoveryError));
+        });
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {
@@ -121,7 +128,6 @@ class GlobalEventHandlerSingleton {
                     // do nothing, the UI will not show a channel but that is fixed when the user picks one.
                 }
             }
-            setScreensOrientation(result.isTablet);
         }
     };
 

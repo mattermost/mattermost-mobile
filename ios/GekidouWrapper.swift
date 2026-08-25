@@ -8,14 +8,16 @@
 
 import Foundation
 import Gekidou
-import react_native_emm
 import TurboLogIOSNative
+import react_native_network_client_session_attributes
 
 @objc class GekidouWrapper: NSObject {
   @objc public static let `default` = GekidouWrapper()
 
-  override init() {
-    ScreenCaptureManager.startTrackingScreens()
+  @objc func registerSessionAttributesOutboundHeader() {
+    SessionAttributesOutboundHeader.setHandler { serverUrl in
+      SessionAttributes.getOutboundHeader(serverUrl)
+    }
   }
 
   @objc func configureTurboLogForGekidou() {
@@ -30,6 +32,8 @@ import TurboLogIOSNative
         turboLevel = .warning
       case .error:
         turboLevel = .error
+      @unknown default:
+        turboLevel = .debug
       }
 
       TurboLogIOSNative.TurboLogger.write(level: turboLevel, message: message)

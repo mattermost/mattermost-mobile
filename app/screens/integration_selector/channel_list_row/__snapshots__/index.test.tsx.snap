@@ -7,7 +7,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
-      "paddingHorizontal": 15,
     }
   }
 >
@@ -32,7 +31,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -40,13 +41,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -76,18 +79,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="archive-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󱈎
+          </Text>
           <Text
             style={
               {
@@ -117,7 +135,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
-      "paddingHorizontal": 15,
     }
   }
 >
@@ -142,7 +159,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -150,13 +169,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -186,18 +207,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -227,7 +263,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
-      "paddingHorizontal": 15,
     }
   }
 >
@@ -252,7 +287,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -260,13 +297,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -296,18 +335,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -337,7 +391,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
-      "paddingHorizontal": 15,
     }
   }
 >
@@ -362,7 +415,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -370,13 +425,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -406,18 +463,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {
@@ -434,22 +506,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             channel
           </Text>
         </View>
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            {
-              "color": "rgba(63,67,80,0.5)",
-              "fontFamily": "OpenSans",
-              "fontSize": 14,
-              "fontWeight": "400",
-              "lineHeight": 20,
-              "marginTop": 7,
-            }
-          }
-        >
-          My purpose
-        </Text>
       </View>
     </View>
   </View>
@@ -463,7 +519,6 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
-      "paddingHorizontal": 15,
     }
   }
 >
@@ -488,7 +543,9 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -496,13 +553,15 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
     testID="ChannelListRow"
   >
@@ -532,18 +591,33 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             }
           }
         >
-          <Icon
-            name="circle-multiple-outline"
+          <Text
+            allowFontScaling={false}
+            selectable={false}
             style={
-              {
-                "color": "#3f4350",
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
+              [
+                {
+                  "color": "black",
+                  "fontSize": 12,
+                },
+                {
+                  "color": "#3f4350",
+                  "fontFamily": "OpenSans",
+                  "fontSize": 16,
+                  "fontWeight": "400",
+                  "lineHeight": 24,
+                },
+                {
+                  "fontFamily": "compass-icons",
+                  "fontStyle": "normal",
+                  "fontWeight": "normal",
+                },
+                undefined,
+              ]
             }
-          />
+          >
+            󰚕
+          </Text>
           <Text
             style={
               {

@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type Agent} from '@agents/client/rest';
 import React, {useCallback, useMemo} from 'react';
 import {Pressable, Text, View} from 'react-native';
 
+import {type Agent} from '@agents/client/rest';
 import CompassIcon from '@components/compass_icon';
 import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';

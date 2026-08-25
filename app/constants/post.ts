@@ -29,6 +29,7 @@ export const PostTypes = {
     REMOVE_FROM_TEAM: 'system_remove_from_team',
 
     COMBINED_USER_ACTIVITY: 'system_combined_user_activity',
+    SHARED_CHANNEL_STATE: 'system_shared_chan_state',
     ME: 'me',
     ADD_BOT_TEAMS_CHANNELS: 'add_bot_teams_channels',
 

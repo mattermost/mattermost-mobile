@@ -16,6 +16,7 @@ import {typography} from '@utils/typography';
 import SummaryReport, {SummaryReportType} from './summary_report';
 
 import type {SearchResult, Result} from './types';
+import type {CompassIconName} from '@components/compass_icon';
 
 const MAX_WIDTH_CONTENT = 480;
 
@@ -182,7 +183,7 @@ export default function Summary({
 
     const renderButton = useCallback((type: SummaryButtonType) => {
         let onPress;
-        let iconName = '';
+        let iconName: CompassIconName | undefined;
         let text;
         let emphasis: ButtonEmphasis = 'primary';
 
@@ -209,7 +210,7 @@ export default function Summary({
             <View style={styles.summaryButtonContainerStyle}>
                 <Button
                     onPress={onPress}
-                    testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
+                    testID={`invite.summary_button.${type}`}
                     text={formatMessage(text)}
                     iconName={iconName}
                     emphasis={emphasis}

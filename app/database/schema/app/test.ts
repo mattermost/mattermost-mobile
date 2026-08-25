@@ -10,7 +10,7 @@ const {INFO, GLOBAL, SERVERS} = MM_TABLES.APP;
 describe('*** Test schema for APP database ***', () => {
     it('=> The APP SCHEMA should strictly match', () => {
         expect(schema).toEqual({
-            version: 1,
+            version: 2,
             tables: {
                 [INFO]: {
                     name: INFO,
@@ -42,6 +42,7 @@ describe('*** Test schema for APP database ***', () => {
                         identifier: {name: 'identifier', type: 'string', isIndexed: true},
                         last_active_at: {name: 'last_active_at', type: 'number', isIndexed: true},
                         url: {name: 'url', type: 'string', isIndexed: true},
+                        persistence_flag: {name: 'persistence_flag', type: 'string'},
                     },
                     columnArray: [
                         {name: 'db_path', type: 'string'},
@@ -49,6 +50,7 @@ describe('*** Test schema for APP database ***', () => {
                         {name: 'identifier', type: 'string', isIndexed: true},
                         {name: 'last_active_at', type: 'number', isIndexed: true},
                         {name: 'url', type: 'string', isIndexed: true},
+                        {name: 'persistence_flag', type: 'string'},
                     ],
                 },
             },

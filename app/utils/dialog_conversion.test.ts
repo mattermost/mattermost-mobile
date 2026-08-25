@@ -667,6 +667,145 @@ describe('dialog_conversion', () => {
 
             expect(result.value).toBeUndefined();
         });
+
+        describe('datetime configuration preservation', () => {
+            const datetimeConfig = {
+                time_interval: 15,
+                location_timezone: 'America/New_York',
+                allow_manual_time_entry: true,
+            };
+
+            it('should preserve min_date, max_date, time_interval, and datetime_config for date elements', () => {
+                const element: DialogElement = {
+                    name: 'date_field',
+                    type: DialogElementTypes.DATE,
+                    display_name: 'Date Field',
+                    optional: false,
+                    default: '',
+                    placeholder: '',
+                    help_text: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    options: [],
+                    min_date: '2026-01-01',
+                    max_date: '2026-12-31',
+                    time_interval: 30,
+                    datetime_config: datetimeConfig,
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.min_date).toBe('2026-01-01');
+                expect(result.max_date).toBe('2026-12-31');
+                expect(result.time_interval).toBe(30);
+                expect(result.datetime_config).toEqual(datetimeConfig);
+            });
+
+            it('should preserve min_date, max_date, time_interval, and datetime_config for datetime elements', () => {
+                const element: DialogElement = {
+                    name: 'datetime_field',
+                    type: DialogElementTypes.DATETIME,
+                    display_name: 'Datetime Field',
+                    optional: true,
+                    default: '',
+                    placeholder: '',
+                    help_text: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    options: [],
+                    min_date: 'today',
+                    max_date: '+30d',
+                    time_interval: 60,
+                    datetime_config: datetimeConfig,
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.min_date).toBe('today');
+                expect(result.max_date).toBe('+30d');
+                expect(result.time_interval).toBe(60);
+                expect(result.datetime_config).toEqual(datetimeConfig);
+            });
+
+            it('should leave datetime-only fields undefined when not set on date element', () => {
+                const element: DialogElement = {
+                    name: 'date_field',
+                    type: DialogElementTypes.DATE,
+                    display_name: 'Date Field',
+                    optional: false,
+                    default: '',
+                    placeholder: '',
+                    help_text: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    options: [],
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.min_date).toBeUndefined();
+                expect(result.max_date).toBeUndefined();
+                expect(result.time_interval).toBeUndefined();
+                expect(result.datetime_config).toBeUndefined();
+            });
+
+            it('should NOT copy min_date, max_date, time_interval, or datetime_config for text elements even if present', () => {
+                const element: DialogElement = {
+                    name: 'text_field',
+                    type: DialogElementTypes.TEXT,
+                    display_name: 'Text Field',
+                    optional: false,
+                    default: '',
+                    placeholder: '',
+                    help_text: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    options: [],
+                    min_date: '2026-01-01',
+                    max_date: '2026-12-31',
+                    time_interval: 15,
+                    datetime_config: datetimeConfig,
+                } as DialogElement;
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.min_date).toBeUndefined();
+                expect(result.max_date).toBeUndefined();
+                expect(result.time_interval).toBeUndefined();
+                expect(result.datetime_config).toBeUndefined();
+            });
+
+            it('should NOT copy datetime props for select elements', () => {
+                const element: DialogElement = {
+                    name: 'select_field',
+                    type: DialogElementTypes.SELECT,
+                    display_name: 'Select Field',
+                    optional: true,
+                    default: '',
+                    placeholder: '',
+                    help_text: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    options: [{value: 'a', text: 'A'}],
+                    min_date: '2026-01-01',
+                    max_date: '2026-12-31',
+                    time_interval: 15,
+                    datetime_config: datetimeConfig,
+                } as DialogElement;
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.min_date).toBeUndefined();
+                expect(result.max_date).toBeUndefined();
+                expect(result.time_interval).toBeUndefined();
+                expect(result.datetime_config).toBeUndefined();
+            });
+        });
     });
 
     describe('convertDialogToAppForm', () => {

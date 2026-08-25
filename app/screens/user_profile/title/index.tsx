@@ -14,6 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {useGalleryItem} from '@hooks/gallery';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {urlSafeBase64Encode} from '@utils/security';
+import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
@@ -172,7 +173,7 @@ const UserProfileTitle = ({
                         style={styles.displayName}
                         testID='user_profile.display_name'
                     >
-                        {`${prefix}${displayName}`}
+                        {nonBreakingString(`${prefix}${displayName}`)}
                     </Text>
                     {!hideUsername &&
                     <Text

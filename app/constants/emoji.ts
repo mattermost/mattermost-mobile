@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {CompassIconName} from '@components/compass_icon';
+
 export const MAX_ALLOWED_REACTIONS = 40;
 export const SORT_BY_NAME = 'name';
 export const EMOJIS_PER_PAGE = 90;
@@ -20,7 +22,7 @@ export const EMOJI_ROW_MARGIN = 12;
 export const EMOJIS_PER_ROW = 7;
 export const EMOJIS_PER_ROW_TABLET = 9;
 
-export const EMOJI_CATEGORY_ICONS: Record<string, string> = {
+export const EMOJI_CATEGORY_ICONS: Record<string, CompassIconName> = {
     recent: 'clock-outline',
     'smileys-emotion': 'emoticon-happy-outline',
     'people-body': 'account-outline',

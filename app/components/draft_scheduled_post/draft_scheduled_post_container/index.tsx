@@ -52,6 +52,7 @@ const DraftAndScheduledPostContainer: React.FC<Props> = ({
         <View
             style={style.container}
             testID='draft_post_with_message_and_file'
+            pointerEvents='none'
         >
             <DraftAndScheduledPostMessage
                 layoutWidth={layoutWidth}

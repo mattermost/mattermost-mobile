@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook} from '@testing-library/react-hooks';
-import {act} from '@testing-library/react-native';
+import {act, renderHook} from '@testing-library/react-native';
 
 import ViewConstants from '@constants/view';
 

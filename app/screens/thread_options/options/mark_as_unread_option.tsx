@@ -10,10 +10,8 @@ import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: AvailableScreens;
     teamId: string;
     thread: ThreadModel;
 }
@@ -29,17 +27,17 @@ const messages = defineMessages({
     },
 });
 
-const MarkAsUnreadOption = ({bottomSheetId, teamId, thread}: Props) => {
+const MarkAsUnreadOption = ({teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(bottomSheetId);
+        await dismissBottomSheet();
         if (thread.unreadReplies) {
             markThreadAsRead(serverUrl, teamId, thread.id);
         } else {
             markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
         }
-    }, [bottomSheetId, serverUrl, teamId, thread]);
+    }, [serverUrl, teamId, thread]);
 
     const message = thread.unreadReplies ? messages.markAsRead : messages.markAsUnread;
     const markAsUnreadTestId = thread.unreadReplies ? 'thread_options.mark_as_read.option' : 'thread_options.mark_as_unread.option';

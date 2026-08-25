@@ -9,6 +9,7 @@ import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import useTabs from '@hooks/use_tabs';
 import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import GlobalThreads from './global_threads';
 import Header from './threads_list/header';
@@ -136,7 +137,7 @@ describe('GlobalThreads', () => {
         expect(header.props.teamId).toBe('team-id');
     });
 
-    it('saves tab selection on unmount', () => {
+    it('saves tab selection on unmount', async () => {
         const {unmount} = renderWithEverything(<GlobalThreads {...baseProps}/>, {
             database,
         });
@@ -144,5 +145,6 @@ describe('GlobalThreads', () => {
         unmount();
 
         expect(setGlobalThreadsTab).toHaveBeenCalledWith(expect.any(String), 'all');
+        await TestHelper.wait(250); // wait to give time to the promise to resolve and avoid an open handle
     });
 });

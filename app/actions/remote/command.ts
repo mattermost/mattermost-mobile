@@ -12,10 +12,10 @@ import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {showAppForm} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
+import {openAppsForm} from '@utils/navigation';
 import {tryOpenURL} from '@utils/url';
 
 import type {Client} from '@client/rest';
@@ -75,7 +75,7 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error};
     }
 
-    if (data?.trigger_id) { //eslint-disable-line camelcase
+    if (data?.trigger_id) {
         IntegrationsManager.getManager(serverUrl)?.setTriggerId(data.trigger_id);
     }
 
@@ -110,7 +110,7 @@ export const executeAppCommand = async (serverUrl: string, intl: IntlShape, pars
             return {data: {}};
         case AppCallResponseTypes.FORM:
             if (callResp.form) {
-                showAppForm(callResp.form, creq.context);
+                openAppsForm(callResp.form, creq.context);
             }
             return {data: {}};
         case AppCallResponseTypes.NAVIGATE:

@@ -52,11 +52,13 @@ describe('Channels - Leave Channel', () => {
         await HomeScreen.logout();
     });
 
+    // Re-enabled iOS: Android 2/2 pass on CI 30250131265; prior iOS skip had no failure reason.
     it('MM-T4931_1 - should be able to leave a channel from channel info screen and confirm', async () => {
         // # Open a channel screen, open channel info screen, and tap on leave channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: true});
@@ -71,6 +73,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.leaveChannel({confirm: false});
@@ -88,6 +91,7 @@ describe('Channels - Leave Channel', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
         await wait(timeouts.ONE_SEC);

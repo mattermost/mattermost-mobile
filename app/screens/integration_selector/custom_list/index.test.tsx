@@ -8,7 +8,7 @@ import {Preferences} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CustomList from '.';
+import CustomList from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 
@@ -55,7 +55,7 @@ describe('components/integration_selector/custom_list', () => {
                 onRowPress={() => {
                     // noop
                 }}
-                renderItem={(props: object): JSX.Element => {
+                renderItem={(props: object): React.ReactNode => {
                     return (<Text>{props.toString()}</Text>);
                 }}
                 loadingComponent={null}

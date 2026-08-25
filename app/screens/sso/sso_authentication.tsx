@@ -101,7 +101,7 @@ const SSOAuthentication = ({doSSOLogin, doSSOCodeExchange, loginError, loginUrl,
                 setLoginSuccess(true);
                 doSSOLogin(bearerToken, csrfToken);
             }
-        } else if (Platform.OS === 'ios' || result.type === 'dismiss') {
+        } else if (Platform.OS === 'ios') {
             setError(
                 intl.formatMessage({
                     id: 'mobile.oauth.failed_to_login',

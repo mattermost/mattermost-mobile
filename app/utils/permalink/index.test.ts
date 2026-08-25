@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard, Platform} from 'react-native';
-import {OptionsModalPresentationStyle} from 'react-native-navigation';
+import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {dismissAllModals, showModalOverCurrentContext} from '@screens/navigation';
+import {Events, Screens} from '@constants';
+import {dismissToStackRoot, navigateToScreen} from '@screens/navigation';
 
-import {displayPermalink, closePermalink} from '.';
+import {displayPermalink, closePermalink} from './index';
 
 jest.mock('@screens/navigation', () => ({
-    dismissAllModals: jest.fn(),
-    showModalOverCurrentContext: jest.fn(),
+    dismissToStackRoot: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 
 describe('permalinkUtils', () => {
@@ -37,19 +37,12 @@ describe('permalinkUtils', () => {
     });
 
     describe('displayPermalink', () => {
-        it('should dismiss keyboard and show permalink modal', async () => {
-            const dismiss = jest.spyOn(Keyboard, 'dismiss');
+        it('should emit blur event and show permalink modal', async () => {
             await displayPermalink('teamName', 'postId');
-            expect(dismiss).toHaveBeenCalled();
-            expect(showModalOverCurrentContext).toHaveBeenCalledWith(
-                'Permalink',
-                {isPermalink: true, teamName: 'teamName', postId: 'postId'},
-                {
-                    modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
-                    layout: {
-                        componentBackgroundColor: 'rgba(0,0,0,0.2)',
-                    },
-                },
+            expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.BLUR_AND_DISMISS_KEYBOARD);
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.PERMALINK,
+                {teamName: 'teamName', postId: 'postId'},
             );
         });
 
@@ -57,20 +50,14 @@ describe('permalinkUtils', () => {
             // Simulate showingPermalink being true
             await displayPermalink('teamName', 'postId');
             await displayPermalink('teamName', 'postId');
-            expect(dismissAllModals).toHaveBeenCalled();
+            expect(dismissToStackRoot).toHaveBeenCalled();
         });
 
         it('should handle platform specific options correctly', async () => {
             await displayPermalink('teamName', 'postId');
-            expect(showModalOverCurrentContext).toHaveBeenCalledWith(
-                'Permalink',
-                {isPermalink: true, teamName: 'teamName', postId: 'postId'},
-                {
-                    modalPresentationStyle: OptionsModalPresentationStyle.overFullScreen,
-                    layout: {
-                        componentBackgroundColor: 'rgba(0,0,0,0.2)',
-                    },
-                },
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.PERMALINK,
+                {teamName: 'teamName', postId: 'postId'},
             );
         });
     });

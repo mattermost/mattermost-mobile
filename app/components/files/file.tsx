@@ -110,7 +110,7 @@ const File = ({
         onOptionsPress?.(file);
     }, [file, onOptionsPress]);
 
-    const renderCardWithImage = (fileIcon: JSX.Element) => {
+    const renderCardWithImage = (fileIcon: React.ReactNode) => {
         const fileInfo = (
             <FileInfo
                 disabled={isPressDisabled}
@@ -169,6 +169,7 @@ const File = ({
                         wrapperWidth={wrapperWidth}
                         updateFileForGallery={updateFileForGallery}
                         index={index}
+                        testID={`${file.id}-file`}
                     />
                     {Boolean(nonVisibleImagesCount) &&
                     <ImageFileOverlay
@@ -194,6 +195,7 @@ const File = ({
                         isSingleImage={isSingleImage}
                         contentFit={'cover'}
                         wrapperWidth={wrapperWidth}
+                        testID={`${file.id}-file`}
                     />
                     {Boolean(nonVisibleImagesCount) &&
                     <ImageFileOverlay
@@ -258,4 +260,4 @@ const File = ({
     return fileComponent;
 };
 
-export default File;
+export default React.memo(File);

@@ -4,4 +4,5 @@
 export default {
     TERMS_OF_SERVICE: 'https://about.mattermost.com/default-terms/',
     PRIVACY_POLICY: 'https://about.mattermost.com/default-privacy-policy/',
+    FEEDBACK_FORUM: 'https://forum.mattermost.com',
 };

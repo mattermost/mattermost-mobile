@@ -77,4 +77,8 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)
     }
+
+    override fun setNavigationBarColor(color: String, lightIcons: Boolean) {
+        implementation.setNavigationBarColor(color, lightIcons)
+    }
 }

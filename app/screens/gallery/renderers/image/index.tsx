@@ -5,7 +5,8 @@ import React, {useMemo} from 'react';
 import {useWindowDimensions} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
-import {isGif} from '@utils/file';
+import {isGif as isGifImage} from '@utils/file';
+import {galleryItemToFileInfo} from '@utils/gallery';
 import * as vec from '@utils/gallery/vectors';
 import {calculateDimensions} from '@utils/images';
 
@@ -72,7 +73,7 @@ function ImageRenderer({
         targetHeight,
     ]);
 
-    const autoplay = isGif({mime_type: item.mime_type, name: item.name} as FileInfo);
+    const autoplay = useMemo(() => isGifImage(galleryItemToFileInfo(item)), [item]);
 
     return (
         <TransfrormerProvider sharedValues={sharedValues}>

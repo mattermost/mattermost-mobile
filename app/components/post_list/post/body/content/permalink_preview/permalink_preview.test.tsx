@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent} from '@testing-library/react-native';
+import {fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {View} from 'react-native';
 
@@ -15,6 +15,7 @@ import TestHelper from '@test/test_helper';
 
 import PermalinkPreview from './permalink_preview';
 
+import type {MarkdownProps} from '@components/markdown/markdown';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
@@ -26,7 +27,7 @@ jest.mock('@components/markdown', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(Markdown).mockImplementation((props) =>
+jest.mocked(Markdown).mockImplementation((props: MarkdownProps) =>
     React.createElement('Text', {testID: 'markdown'}, props.value),
 );
 
@@ -358,7 +359,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
     });
 
     describe('file attachments', () => {
-        it('should render PermalinkFiles component when post has file attachments', () => {
+        it('should render PermalinkFiles component when post has file attachments', async () => {
             const fileInfo = TestHelper.fakeFileInfo({
                 id: 'file-123',
                 name: 'document.pdf',
@@ -391,12 +392,14 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const {getByText, getByTestId} = renderPermalinkPreview(propsWithFiles);
 
-            expect(getByText('Post with file attachment')).toBeTruthy();
+            await waitFor(() => {
+                expect(getByText('Post with file attachment')).toBeTruthy();
+            });
 
             expect(getByTestId('permalink-files-container')).toBeTruthy();
         });
 
-        it('should render PermalinkFiles with multiple file attachments', () => {
+        it('should render PermalinkFiles with multiple file attachments', async () => {
             const fileInfos = [
                 TestHelper.fakeFileInfo({
                     id: 'file-1',
@@ -437,7 +440,9 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const {getByText, getByTestId} = renderPermalinkPreview(propsWithMultipleFiles);
 
-            expect(getByText('Post with multiple attachments')).toBeTruthy();
+            await waitFor(() => {
+                expect(getByText('Post with multiple attachments')).toBeTruthy();
+            });
 
             expect(getByTestId('permalink-files-container')).toBeTruthy();
         });

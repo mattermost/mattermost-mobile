@@ -9,6 +9,7 @@ import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observePost} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 
 import ShowTranslation from './show_translation';
@@ -25,8 +26,10 @@ const enhance = withObservables(['postId'], ({postId, database}: Props) => {
     const customEmojiNames = queryAllCustomEmojis(database).observe().pipe(
         switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
     );
+    const currentUser = observeCurrentUser(database);
     const isCRTEnabled = observeIsCRTEnabled(database);
     return {
+        currentUser,
         post,
         appsEnabled,
         customEmojiNames,

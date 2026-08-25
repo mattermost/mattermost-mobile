@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, screen} from '@testing-library/react-native';
+import {act, fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 
 import {switchToThread} from '@actions/local/thread';
 import {switchToChannelById} from '@actions/remote/channel';
 import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
-import {openAsBottomSheet} from '@screens/navigation';
+import {navigateToScreen} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -24,7 +24,7 @@ jest.mock('@actions/remote/channel', () => ({
 }));
 
 jest.mock('@screens/navigation', () => ({
-    openAsBottomSheet: jest.fn(),
+    navigateToScreen: jest.fn(),
 }));
 
 jest.mock('@context/server', () => ({
@@ -193,18 +193,20 @@ describe('DraftAndScheduledPost', () => {
         expect(switchToThread).not.toHaveBeenCalled();
     });
 
-    it('opens options on long press for draft', () => {
-        const mockOpenAsBottonSheet = jest.mocked(openAsBottomSheet);
+    it('opens options on long press for draft', async () => {
+        const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         renderWithIntlAndTheme(<DraftAndScheduledPost {...baseProps}/>);
 
-        fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        await act(async () => {
+            fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        });
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
-        expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_DRAFT);
+        expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_DRAFT);
     });
 
-    it('opens options on long press for scheduled post', () => {
-        const mockOpenAsBottonSheet = jest.mocked(openAsBottomSheet);
+    it('opens options on long press for scheduled post', async () => {
+        const mockOpenAsBottonSheet = jest.mocked(navigateToScreen);
         const props = {
             ...baseProps,
             draftType: DRAFT_TYPE_SCHEDULED,
@@ -218,10 +220,12 @@ describe('DraftAndScheduledPost', () => {
         };
         renderWithIntlAndTheme(<DraftAndScheduledPost {...props}/>);
 
-        fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        await act(async () => {
+            fireEvent(screen.getByTestId('draft_post'), 'longPress');
+        });
 
         expect(mockOpenAsBottonSheet).toHaveBeenCalled();
-        expect(mockOpenAsBottonSheet.mock.calls[0][0].props?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
+        expect(mockOpenAsBottonSheet.mock.calls[0][1]?.draftType).toBe(DRAFT_TYPE_SCHEDULED);
     });
 
     it('renders BoR indicator for BoR scheduled post', () => {

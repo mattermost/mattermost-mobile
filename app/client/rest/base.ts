@@ -30,6 +30,10 @@ export default class ClientBase extends ClientTracking {
         return this.apiClient.baseUrl || '';
     }
 
+    getAPIRoute() {
+        return `${this.getBaseRoute()}${this.urlVersion}`;
+    }
+
     getAbsoluteUrl(baseUrl?: string) {
         if (typeof baseUrl !== 'string' || !baseUrl.startsWith('/')) {
             return baseUrl;
@@ -105,6 +109,18 @@ export default class ClientBase extends ClientTracking {
 
     getSharedChannelsRoute() {
         return `${this.urlVersion}/sharedchannels`;
+    }
+
+    getRemoteClustersRoute() {
+        return `${this.urlVersion}/remotecluster`;
+    }
+
+    getChannelRemotesRoute(channelId: string) {
+        return `${this.getSharedChannelsRoute()}/${channelId}/remotes`;
+    }
+
+    getRemoteClusterChannelRoute(remoteId: string, channelId: string) {
+        return `${this.getRemoteClustersRoute()}/${remoteId}/channels/${channelId}`;
     }
 
     getChannelMembersRoute(channelId: string) {

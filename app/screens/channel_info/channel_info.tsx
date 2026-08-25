@@ -7,13 +7,11 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelActions from '@components/channel_actions';
 import ChannelBookmarks from '@components/channel_bookmarks';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SecurityManager from '@managers/security_manager';
-import {dismissModal} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelInfoAppBindings from './app_bindings';
@@ -22,13 +20,9 @@ import Extra from './extra';
 import Options from './options';
 import Title from './title';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type Props = {
     canAddBookmarks: boolean;
     channelId: string;
-    closeButtonId: string;
-    componentId: AvailableScreens;
     isBookmarksEnabled: boolean;
     isCallsEnabledInChannel: boolean;
     isPlaybooksEnabled: boolean;
@@ -38,6 +32,7 @@ type Props = {
     type?: ChannelType;
     hasChannelSettingsActions: boolean;
     isAutotranslationEnabledForThisChannel: boolean;
+    channelDisplayName: string;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -61,8 +56,6 @@ const ChannelInfo = ({
     canAddBookmarks,
     canManageMembers,
     channelId,
-    closeButtonId,
-    componentId,
     isBookmarksEnabled,
     isCallsEnabledInChannel,
     isPlaybooksEnabled,
@@ -71,6 +64,7 @@ const ChannelInfo = ({
     type,
     hasChannelSettingsActions,
     isAutotranslationEnabledForThisChannel,
+    channelDisplayName,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -84,17 +78,13 @@ const ChannelInfo = ({
     }
 
     const onPressed = useCallback(() => {
-        return dismissModal({componentId});
-    }, [componentId]);
+        return navigateBack();
+    }, []);
 
-    useNavButtonPressed(closeButtonId, componentId, onPressed, [onPressed]);
-    useAndroidHardwareBackHandler(componentId, onPressed);
+    useAndroidHardwareBackHandler(Screens.CHANNEL_INFO, onPressed);
 
     return (
-        <View
-            style={styles.flex}
-            nativeID={SecurityManager.getShieldScreenId(componentId)}
-        >
+        <View style={styles.flex}>
             <SafeAreaView
                 edges={edges}
                 style={styles.flex}
@@ -135,6 +125,7 @@ const ChannelInfo = ({
                         isPlaybooksEnabled={isPlaybooksEnabled}
                         hasChannelSettingsActions={hasChannelSettingsActions}
                         isAutotranslationEnabledForThisChannel={isAutotranslationEnabledForThisChannel}
+                        channelDisplayName={channelDisplayName}
                     />
                     <View style={styles.separator}/>
                     <ChannelInfoAppBindings

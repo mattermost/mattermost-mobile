@@ -103,6 +103,10 @@ const WebsocketEvents = {
     SCHEDULED_POST_UPDATED: 'scheduled_post_updated',
     SCHEDULED_POST_DELETED: 'scheduled_post_deleted',
     CUSTOM_PROFILE_ATTRIBUTES_VALUES_UPDATED: 'custom_profile_attributes_values_updated',
+    PROPERTY_FIELD_CREATED: 'property_field_created',
+    PROPERTY_FIELD_UPDATED: 'property_field_updated',
+    PROPERTY_FIELD_DELETED: 'property_field_deleted',
+    PROPERTY_VALUES_UPDATED: 'property_values_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED: 'custom_profile_attributes_field_updated',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED: 'custom_profile_attributes_field_created',
     CUSTOM_PROFILE_ATTRIBUTES_FIELD_DELETED: 'custom_profile_attributes_field_deleted',
@@ -110,6 +114,7 @@ const WebsocketEvents = {
     // Agents
     AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
     AGENTS_TOOL_CALL_STATUS: 'custom_mattermost-ai_tool_call_status_updated',
+    AGENTS_CONVERSATION_UPDATED: 'custom_mattermost-ai_conversation_updated',
 
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',

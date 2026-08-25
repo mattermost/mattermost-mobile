@@ -14,6 +14,7 @@ import {loadConfigAndCalls} from '@calls/actions/calls';
 import {isSupportedServerCalls} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -21,7 +22,7 @@ import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from 
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 
 import {handleFirstConnect, handleReconnect} from './index';
@@ -52,6 +53,12 @@ jest.mock('@utils/helpers', () => ({
 }));
 
 jest.mock('@playbooks/actions/websocket/reconnect');
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        refreshManifest: jest.fn().mockResolvedValue(undefined),
+    },
+}));
 
 describe('WebSocket Index Actions', () => {
     const serverUrl = 'baseHandler.test.com';
@@ -107,6 +114,7 @@ describe('WebSocket Index Actions', () => {
             expect(loadConfigAndCalls).toHaveBeenCalled();
             expect(deferredAppEntryActions).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
+            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should handle error when server database not found', async () => {
@@ -163,10 +171,11 @@ describe('WebSocket Index Actions', () => {
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
+            expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
         });
 
         it('should fetch posts for channel screen', async () => {
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
             await handleReconnect(serverUrl);
 
             expect(fetchPostsForChannel).toHaveBeenCalledWith(serverUrl, currentChannelId, false, false, 'WebSocket Reconnect');
@@ -178,7 +187,7 @@ describe('WebSocket Index Actions', () => {
             const threadId = 'thread-id';
             const lastPost = TestHelper.fakePostModel({id: 'post-id', createAt: 123});
 
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Thread']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['thread']);
 
             jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(threadId);
@@ -200,7 +209,7 @@ describe('WebSocket Index Actions', () => {
         });
 
         it('should handle notification tapped state', async () => {
-            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['Channel']);
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
 
             jest.mocked(EphemeralStore.wasNotificationTapped).mockReturnValue(true);
 

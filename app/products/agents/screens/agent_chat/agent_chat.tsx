@@ -1,141 +1,71 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchAIBots} from '@agents/actions/remote/bots';
-import {AgentsIntro} from '@agents/components/illustrations';
-import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
-import {goToAgentThreadsList} from '@agents/screens/navigation';
-import {PortalProvider} from '@gorhom/portal';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {PortalHost} from '@gorhom/portal';
+import {useIsFocused} from '@react-navigation/native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Pressable, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
-import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {buildProfileImageUrl} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
-import Loading from '@components/loading';
+import {fetchAIBots} from '@agents/actions/remote/bots';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
+import AgentChatPostList from '@agents/screens/agent_chat/agent_chat_post_list';
+import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
+import {goToAgentThreadsList} from '@agents/screens/navigation';
+import {resolveSelectedAgent} from '@agents/utils';
+import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {BOTTOM_TAB_HEIGHT} from '@constants/view';
+import {KeyboardStateProvider} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
-import {bottomSheet, dismissBottomSheet, popTopScreen} from '@screens/navigation';
+import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
+import {logError} from '@utils/log';
+
+import AgentChatContent from './agent_chat_content';
+import AgentChatHeader from './header';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     bots: AiBotModel[];
+    selectedAgentId: string;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {
+const styles = StyleSheet.create({
+    flex: {
         flex: 1,
-        backgroundColor: theme.sidebarBg,
     },
-    headerContainer: {
-        backgroundColor: theme.sidebarBg,
-    },
-    headerContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: 52,
-        paddingHorizontal: 8,
-    },
-    headerLeft: {
-        width: 100,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-    },
-    headerIconButton: {
-        padding: 10,
-    },
-    headerCenter: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    headerTitle: {
-        color: theme.sidebarText,
-        ...typography('Heading', 300),
-    },
-    headerSubtitle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 2,
-    },
-    headerSubtitleText: {
-        color: changeOpacity(theme.sidebarText, 0.72),
-        ...typography('Body', 75),
-    },
-    headerRight: {
-        width: 100,
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        gap: 4,
-    },
-    mainContent: {
-        flex: 1,
-        backgroundColor: theme.centerChannelBg,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        overflow: 'hidden',
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    introContent: {
-        gap: 8,
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 32,
-    },
-    welcomeText: {
-        color: theme.centerChannelColor,
-        ...typography('Heading', 600),
-    },
-    descriptionText: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 200),
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: theme.centerChannelBg,
-    },
-    errorText: {
-        color: theme.errorTextColor,
-        textAlign: 'center',
-        marginTop: 16,
-        ...typography('Body', 100),
-    },
-}));
+});
 
-const AgentChat = ({
-    componentId,
-    bots,
-}: Props) => {
+const AGENT_CHAT_TESTID = 'agent_chat.post_draft';
+
+// This follows the same pattern as draft_input.tsx: `${testID}.post.input`
+const AGENT_CHAT_INPUT_NATIVE_ID = `${AGENT_CHAT_TESTID}.post.input`;
+
+const PORTAL_NAME = 'agent_chat_autocomplete';
+
+const AgentChat = ({bots, selectedAgentId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
-    const styles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
+    const isFocused = useIsFocused();
+    const defaultHeight = useDefaultHeaderHeight();
 
     // Track if this is the first load
     const initialLoadDone = useRef(false);
@@ -145,12 +75,28 @@ const AgentChat = ({
     const [channelId, setChannelId] = useState<string | null>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
-    // Auto-select first bot when bots are loaded from database
+    // Root post id of the in-context conversation. Null until the user sends
+    // the first message, which becomes the conversation root; subsequent
+    // messages thread under it and render inline. Mirrors web's ephemeral
+    // selectedPostId on the RHS.
+    const [rootId, setRootId] = useState<string | null>(null);
+
+    const tabBarHeight = isTablet ? BOTTOM_TAB_HEIGHT : 0;
+    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+
+    const safeAreaViewEdges: Edge[] = useMemo(() => {
+        if (isTablet) {
+            return ['left', 'right'];
+        }
+        return ['left', 'right', 'bottom'];
+    }, [isTablet]);
+
+    // Auto-resolve the selected bot (saved pref -> default -> first) without persisting.
     useEffect(() => {
         if (bots.length > 0 && !selectedBot) {
-            setSelectedBot(bots[0]);
+            setSelectedBot(resolveSelectedAgent(bots, selectedAgentId));
         }
-    }, [bots, selectedBot]);
+    }, [bots, selectedBot, selectedAgentId]);
 
     // Refresh bots from network on mount
     useEffect(() => {
@@ -222,19 +168,29 @@ const AgentChat = ({
     }, [selectedBot, serverUrl, intl]);
 
     const exit = useCallback(() => {
-        popTopScreen(componentId);
-    }, [componentId]);
+        navigateBack();
+    }, []);
 
-    useAndroidHardwareBackHandler(componentId, exit);
+    useAndroidHardwareBackHandler(Screens.AGENT_CHAT, exit);
 
     const handleHistoryPress = useCallback(() => {
-        goToAgentThreadsList(intl);
-    }, [intl]);
-
-    const handleBotSelect = useCallback((bot: AiBotModel) => {
-        setSelectedBot(bot);
-        dismissBottomSheet();
+        goToAgentThreadsList();
     }, []);
+
+    const handleBotSelect = useCallback(async (bot: AiBotModel) => {
+        setSelectedBot(bot);
+
+        // Switching bots starts a fresh conversation against the new bot's DM.
+        // Clear the channel immediately too, so a fast send can't post into the
+        // previous bot's DM before the new channel resolves.
+        setRootId(null);
+        setChannelId(null);
+        dismissBottomSheet();
+        const {error: saveError} = await saveSelectedAgent(serverUrl, bot.id);
+        if (saveError) {
+            logError('Failed to persist agent selection', getFullErrorMessage(saveError));
+        }
+    }, [serverUrl]);
 
     const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {
         if (bots.length <= 1) {
@@ -266,148 +222,67 @@ const AgentChat = ({
         };
 
         const snapPoint = bottomSheetSnapPoint(bots.length, ITEM_HEIGHT);
-        bottomSheet({
-            closeButtonId: 'close-bot-selector',
-            renderContent,
-            snapPoints: [1, (snapPoint + TITLE_HEIGHT)],
-            title: intl.formatMessage({
-                id: 'agents.chat.select_agent',
-                defaultMessage: 'Select an agent',
-            }),
-            theme,
-        });
-    }, [bots, selectedBot, theme, intl, handleBotSelect, serverUrl]));
+        bottomSheet(renderContent, [1, (snapPoint + TITLE_HEIGHT)]);
+    }, [bots, serverUrl, selectedBot?.id, handleBotSelect, theme]));
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
     const handlePostCreated = useCallback((postId: string) => {
-        fetchAndSwitchToThread(serverUrl, postId);
-    }, [serverUrl]);
-
-    // Show loading only on first load with no cached data
-    if (loading && bots.length === 0) {
-        return (
-            <View style={[styles.container, {paddingTop: insets.top}]}>
-                <Loading
-                    containerStyle={styles.loadingContainer}
-                    size='large'
-                    color={theme.buttonBg}
-                />
-            </View>
-        );
-    }
+        // The first message becomes the conversation root and the inline list
+        // begins rendering it; later messages are already replies (PostDraft
+        // gets rootId), so keep the existing root rather than navigating away.
+        setRootId((current) => current ?? postId);
+    }, []);
 
     return (
-        <View
-            style={styles.container}
+        <SafeAreaView
+            edges={safeAreaViewEdges}
+            style={styles.flex}
+            testID='agents_chat.screen'
+            onLayout={onLayout}
         >
-            {/* Header */}
-            <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
-                <View style={styles.headerContent}>
-                    {/* Left - Back button */}
-                    <View style={styles.headerLeft}>
-                        <Pressable
-                            onPress={exit}
-                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
-                            testID='agent_chat.back_button'
-                        >
-                            <CompassIcon
-                                name='arrow-left'
-                                size={20}
-                                color={changeOpacity(theme.sidebarText, 0.56)}
-                            />
-                        </Pressable>
-                    </View>
+            <AgentChatHeader
+                title={intl.formatMessage({id: 'agents.chat.title', defaultMessage: 'Agents'})}
+                subtitle={selectedBot ? selectedBot.displayName : intl.formatMessage({id: 'agents.chat.select_agent', defaultMessage: 'Select an agent'})}
+                showSubtitleCompanion={bots.length > 1}
+                onPress={handleBotSelectorPress}
+                onHistoryPress={handleHistoryPress}
+            />
 
-                    {/* Center - Title and bot selector */}
-                    <Pressable
-                        onPress={handleBotSelectorPress}
-                        style={({pressed}) => [styles.headerCenter, pressed && bots.length > 1 && {opacity: 0.72}]}
-                        disabled={bots.length <= 1}
-                        testID='agent_chat.bot_selector'
-                    >
-                        <FormattedText
-                            id='agents.chat.title'
-                            defaultMessage='Agents'
-                            style={styles.headerTitle}
+            <KeyboardStateProvider
+                tabBarHeight={tabBarHeight}
+                enabled={isFocused}
+            >
+                <KeyboardAwarePostDraftContainer
+                    textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
+                    containerStyle={[styles.flex, {marginTop}]}
+                    renderList={() => (rootId ? (
+                        <AgentChatPostList rootId={rootId}/>
+                    ) : (
+                        <AgentChatContent
+                            loading={loading && bots.length === 0}
+                            error={error}
                         />
-                        <View style={styles.headerSubtitle}>
-                            {selectedBot ? (
-                                <Text style={styles.headerSubtitleText}>
-                                    {selectedBot.displayName}
-                                </Text>
-                            ) : (
-                                <FormattedText
-                                    id='agents.chat.select_agent'
-                                    defaultMessage='Select an agent'
-                                    style={styles.headerSubtitleText}
-                                />
-                            )}
-                            {bots.length > 1 && (
-                                <CompassIcon
-                                    name='chevron-down'
-                                    size={12}
-                                    color={changeOpacity(theme.sidebarText, 0.72)}
-                                />
-                            )}
-                        </View>
-                    </Pressable>
-
-                    {/* Right - History icon */}
-                    <View style={styles.headerRight}>
-                        <Pressable
-                            onPress={handleHistoryPress}
-                            style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
-                            testID='agent_chat.history_button'
-                        >
-                            <CompassIcon
-                                name='clock-outline'
-                                size={20}
-                                color={theme.sidebarText}
-                            />
-                        </Pressable>
-                    </View>
-                </View>
-            </View>
-
-            {/* Main content */}
-            <PortalProvider>
-                <View
-                    style={styles.mainContent}
-                    onLayout={onLayout}
+                    ))}
                 >
-                    <View style={styles.content}>
-                        <View style={styles.introContent}>
-                            <AgentsIntro theme={theme}/>
-                            <FormattedText
-                                id='agents.chat.intro_title'
-                                defaultMessage='Ask Agents anything'
-                                style={styles.welcomeText}
-                            />
-                            <FormattedText
-                                id='agents.chat.intro_description'
-                                defaultMessage='Agents are here to help.'
-                                style={styles.descriptionText}
-                            />
-                            {error && <Text style={styles.errorText}>{error}</Text>}
-                        </View>
-                    </View>
-
-                    {channelId && (
+                    {channelId ? (
                         <PostDraft
                             channelId={channelId}
-                            testID='agent_chat.post_draft'
+                            rootId={rootId ?? undefined}
+                            testID={AGENT_CHAT_TESTID}
                             containerHeight={containerHeight}
                             isChannelScreen={false}
                             location={Screens.AGENT_CHAT}
                             onPostCreated={handlePostCreated}
+                            portalName={PORTAL_NAME}
                         />
-                    )}
-                </View>
-            </PortalProvider>
-        </View>
+                    ) : null}
+                </KeyboardAwarePostDraftContainer>
+                <PortalHost name={PORTAL_NAME}/>
+            </KeyboardStateProvider>
+        </SafeAreaView>
     );
 };
 

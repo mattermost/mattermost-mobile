@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {renderHook, act} from '@testing-library/react-hooks';
+import {renderHook, act} from '@testing-library/react-native';
 
 import {usePreventDoubleTap} from './utils';
 
@@ -64,7 +64,7 @@ describe('usePreventDoubleTap', () => {
 
         const firstResult = result.current;
 
-        rerender();
+        rerender(undefined);
 
         const secondResult = result.current;
 

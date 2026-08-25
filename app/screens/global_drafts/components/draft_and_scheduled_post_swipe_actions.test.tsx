@@ -6,11 +6,10 @@ import React from 'react';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events, Screens} from '@constants';
+import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
 import {renderWithIntl} from '@test/intl-test-helper';
 import * as DraftUtils from '@utils/draft';
 import * as ScheduledPostUtils from '@utils/scheduled_post';
-
-import {DRAFT_TYPE_DRAFT, DRAFT_TYPE_SCHEDULED} from '../../../constants/draft';
 
 import DraftAndScheduledPostSwipeActions from './draft_and_scheduled_post_swipe_actions';
 
@@ -19,16 +18,26 @@ import type ScheduledPostModel from '@typings/database/models/servers/scheduled_
 
 // Mock the draft_scheduled_post component
 jest.mock('@components/draft_scheduled_post', () => {
-    // Use mockView instead of View to avoid reference error
-    return jest.fn().mockImplementation(({draftType, post}) => ({
-        type: 'mockView',
-        props: {
-            testID: `draft-scheduled-post-${draftType}-${post.id}`,
-        },
-        $$typeof: Symbol.for('react.element'),
-        ref: null,
-        key: null,
-    }));
+    const MockReact = require('react');
+    const {View} = require('react-native');
+    return jest.fn().mockImplementation(({draftType, post}) =>
+        MockReact.createElement(View, {testID: `draft-scheduled-post-${draftType}-${post.id}`}),
+    );
+});
+
+// Mock ReanimatedSwipeable to avoid worklet warnings
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+    const MockReact = require('react');
+    const {View} = require('react-native');
+
+    return MockReact.forwardRef((props: {children: React.ReactNode; renderRightActions?: (arg1: {value: number}, arg2: {value: number}) => React.ReactNode; testID?: string}, ref: React.Ref<unknown>) => {
+        return MockReact.createElement(
+            View,
+            {testID: props.testID, ref},
+            props.children,
+            props.renderRightActions && props.renderRightActions({value: 0}, {value: 0}),
+        );
+    });
 });
 
 jest.mock('@utils/draft', () => ({
@@ -60,7 +69,7 @@ describe('DraftAndScheduledPostSwipeActions', () => {
         jest.clearAllMocks();
     });
 
-    it('renders draft correctly', () => {
+    it('renders draft correctly', async () => {
         const {getByTestId} = renderWithIntl(
             <DraftAndScheduledPostSwipeActions
                 draftType={DRAFT_TYPE_DRAFT}
@@ -70,8 +79,10 @@ describe('DraftAndScheduledPostSwipeActions', () => {
             />,
         );
 
-        expect(getByTestId('draft-scheduled-post-draft-draft-id-1')).toBeTruthy();
-        expect(getByTestId('draft_scheduled_post_swipeable')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByTestId('draft-scheduled-post-draft-draft-id-1')).toBeTruthy();
+            expect(getByTestId('draft_scheduled_post_swipeable')).toBeTruthy();
+        });
     });
 
     it('renders scheduled post correctly', () => {

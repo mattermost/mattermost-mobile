@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {InteractionManager, View} from 'react-native';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {View} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostTutorial} from '@actions/app/global';
@@ -65,15 +65,19 @@ const SendButton: React.FC<Props> = ({
     const style = getStyleSheet(theme);
 
     const [scheduledPostTooltipVisible, setScheduledPostTooltipVisible] = useState(false);
+    const idleCallbackHandle = useRef<number | undefined>(undefined);
 
     useDidMount(() => {
-        if (scheduledPostFeatureTooltipWatched || !scheduledPostEnabled) {
-            return;
+        if (!scheduledPostFeatureTooltipWatched && scheduledPostEnabled) {
+            idleCallbackHandle.current = requestIdleCallback(() => {
+                setScheduledPostTooltipVisible(true);
+            });
         }
-
-        InteractionManager.runAfterInteractions(() => {
-            setScheduledPostTooltipVisible(true);
-        });
+        return () => {
+            if (idleCallbackHandle.current !== undefined) {
+                cancelIdleCallback(idleCallbackHandle.current);
+            }
+        };
     });
 
     const onCloseScheduledPostTooltip = useCallback(() => {
@@ -98,7 +102,6 @@ const SendButton: React.FC<Props> = ({
         >
             <Tooltip
                 isVisible={scheduledPostTooltipVisible}
-                useInteractionManager={true}
                 placement='top'
                 content={<ScheduledPostTooltip onClose={onCloseScheduledPostTooltip}/>}
                 onClose={onCloseScheduledPostTooltip}

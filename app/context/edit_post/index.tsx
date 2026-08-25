@@ -1,7 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {PortalProvider} from '@gorhom/portal';
 import React, {createContext, useContext, useMemo, type ReactNode} from 'react';
+
+import {KeyboardStateProvider} from '@context/keyboard_state';
 
 type EditPostContextType = {
     onFileRemove?: (fileId: string) => void;
@@ -31,7 +34,11 @@ export const EditPostProvider = ({children, onFileRemove, updateFileCallback, is
 
     return (
         <EditPostContext.Provider value={contextValue}>
-            {children}
+            <PortalProvider>
+                <KeyboardStateProvider tabBarHeight={0}>
+                    {children}
+                </KeyboardStateProvider>
+            </PortalProvider>
         </EditPostContext.Provider>
     );
 };

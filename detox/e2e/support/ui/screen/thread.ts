@@ -6,27 +6,35 @@ import {
     FileQuickAction,
     ImageQuickAction,
     InputQuickAction,
+    NavigationHeader,
     PostDraft,
     PostList,
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'screen.back.button',
+
+        // App uses shared NavigationHeader (`navigation.header.back`), not a thread-prefixed id.
+        backButton: NavigationHeader.testID.backButton,
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
+        scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
+        scheduledPostTooltipCloseButtonAdminAccount: 'scheduled_post_tutorial_tooltip.close',
+        scheduledPostOptionsBottomSheet: 'scheduled_post_options_bottom_sheet.screen',
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
-    backButton = element(by.id(this.testID.backButton));
+    backButton = NavigationHeader.backButton;
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
+    scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
+    scheduledPostTooltipCloseButtonAdminAccount = element(by.id(this.testID.scheduledPostTooltipCloseButtonAdminAccount));
 
     // convenience props
     atInputQuickAction = InputQuickAction.getAtInputQuickAction(this.testID.threadScreenPrefix);
@@ -84,14 +92,43 @@ class ThreadScreen {
         return this.postList.getPostMessageAtIndex(index);
     };
 
+    dismissScheduledPostTooltip = async () => {
+        // Try to close scheduled post tooltip if it exists (try both regular and admin account versions)
+        try {
+            await waitForElementToBeVisible(this.scheduledPostTooltipCloseButton, timeouts.FOUR_SEC);
+            await this.scheduledPostTooltipCloseButton.tap();
+            await waitFor(this.scheduledPostTooltipCloseButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Try admin account version
+            try {
+                await waitForElementToBeVisible(this.scheduledPostTooltipCloseButtonAdminAccount, timeouts.FOUR_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            } catch {
+                // Tooltip not visible, continue
+            }
+        }
+    };
+
     toBeVisible = async () => {
-        await waitFor(this.threadScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+        await waitForElementToExist(this.threadScreen, timeout);
+        await waitForElementToExist(this.postInput, timeouts.TEN_SEC);
 
         return this.threadScreen;
     };
 
     back = async () => {
-        await this.backButton.tap();
+        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
+
+        // Prefer the topmost back when thread is stacked over channel (two headers).
+        // Always create a fresh matcher per attempt — chaining atIndex() on a shared
+        // element mutates it (e.g. atIndex(0) after atIndex(1) becomes "index 0 of index 1").
+        try {
+            await element(by.id(this.testID.backButton)).atIndex(1).tap();
+        } catch {
+            await element(by.id(this.testID.backButton)).atIndex(0).tap();
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered
@@ -104,14 +141,27 @@ class ThreadScreen {
         // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
-        const flatList = this.postList.getFlatList();
-        await flatList.scroll(100, 'down');
-        await wait(timeouts.ONE_SEC);
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore — list may be too short */ }
+            await wait(timeouts.TWO_SEC);
+        }
 
-        // # Open post options
-        await postListPostItem.longPress(timeouts.TWO_SEC);
-        await PostOptionsScreen.toBeVisible();
+        try {
+            await this.postList.getFlatList().scrollTo('top');
+            await wait(timeouts.ONE_SEC);
+        } catch { /* ignore — list may be too short to scroll */ }
+
+        // On Android, long-press on the inner text element — more reliable than the
+        // compound-matched post container, which can silently swallow the gesture.
+        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`))): postListPostItem;
+
+        await longPressWithScrollRetry(
+            longPressTarget,
+            by.id(this.postList.testID.flatList),
+            PostOptionsScreen.postOptionsScreen,
+        );
         await wait(timeouts.TWO_SEC);
     };
 
@@ -132,8 +182,37 @@ class ThreadScreen {
     };
 
     longPressSendButton = async () => {
-        // # Long press send button
-        await this.sendButton.longPress();
+        await this.dismissScheduledPostTooltip();
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
+
+        if (isAndroid()) {
+            try {
+                await this.postList.getFlatList().swipe('up', 'fast', 0.3);
+            } catch { /* ignore — post list may be too short to scroll */ }
+            await wait(timeouts.ONE_SEC);
+        } else {
+            try {
+                await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                try {
+                    await element(by.id('navigation.header.title')).tap({x: 1, y: 1});
+                } catch { /* ignore */ }
+            }
+            await wait(timeouts.ONE_SEC);
+        }
+
+        await device.disableSynchronization();
+        try {
+            await this.sendButton.longPress(timeouts.TWO_SEC);
+
+            // Wait for the schedule picker bottom sheet using polling (no sync dependency).
+            await waitForElementToExist(
+                element(by.id(this.testID.scheduledPostOptionsBottomSheet)),
+                timeouts.HALF_MIN,
+            );
+        } finally {
+            await safeEnableSynchronization();
+        }
     };
 
     tapSendButton = async () => {

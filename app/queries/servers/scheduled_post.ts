@@ -47,6 +47,13 @@ export const observeScheduledPostCount = (database: Database, teamId: string, in
     return queryScheduledPostsForTeam(database, teamId, includeDirectChannelPosts).observeCount();
 };
 
+export const observeScheduledPostById = (database: Database, scheduledPostId: string) => {
+    return database.get<ScheduledPostModel>(SCHEDULED_POST).
+        query(Q.where('id', scheduledPostId)).observe().pipe(
+            switchMap((scheduledPosts) => observeFirstScheduledPost(scheduledPosts)),
+        );
+};
+
 export const observeScheduledPostCountForChannel = (
     database: Database,
     channelId: string,

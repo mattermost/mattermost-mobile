@@ -3,15 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Text, TouchableOpacity, View, type StyleProp, type TextStyle} from 'react-native';
+import {Text, TouchableOpacity, View, type StyleProp, type TextStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import UsersList from '@components/user_avatars_stack/users_list';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import {BOTTOM_SHEET_ANDROID_OFFSET} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -51,7 +49,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const Participants = ({baseTextStyle, participantIds, users, location}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const isTablet = useIsTablet();
     const style = getStyleSheet(theme);
 
     const participants = intl.formatMessage({
@@ -67,13 +64,11 @@ const Participants = ({baseTextStyle, participantIds, users, location}: Props) =
 
         const renderContent = () => (
             <>
-                {!isTablet && (
-                    <View style={style.listHeader}>
-                        <Text style={style.listHeaderText}>
-                            {bottomSheetTitle}
-                        </Text>
-                    </View>
-                )}
+                <View style={style.listHeader}>
+                    <Text style={style.listHeaderText}>
+                        {bottomSheetTitle}
+                    </Text>
+                </View>
                 <UsersList
                     location={location}
                     users={users}
@@ -81,25 +76,15 @@ const Participants = ({baseTextStyle, participantIds, users, location}: Props) =
             </>
         );
 
-        let height = bottomSheetSnapPoint(Math.min(users.length, MAX_USERS_DISPLAYED), USER_ROW_HEIGHT) + TITLE_HEIGHT;
-        if (Platform.OS === 'android') {
-            height += BOTTOM_SHEET_ANDROID_OFFSET;
-        }
+        const height = bottomSheetSnapPoint(Math.min(users.length, MAX_USERS_DISPLAYED), USER_ROW_HEIGHT) + TITLE_HEIGHT;
 
         const snapPoints: Array<string | number> = [1, height];
         if (users.length > MAX_USERS_DISPLAYED) {
             snapPoints.push(BOTTOM_SHEET_MAX_HEIGHT);
         }
 
-        bottomSheet({
-            closeButtonId: 'close-set-user-status',
-            renderContent,
-            initialSnapIndex: 1,
-            snapPoints,
-            title: bottomSheetTitle,
-            theme,
-        });
-    }, [users, intl, theme, isTablet, style.listHeader, style.listHeaderText, location]));
+        bottomSheet(renderContent, snapPoints);
+    }, [intl, users, style.listHeader, style.listHeaderText, location]));
 
     return (
         <TouchableOpacity

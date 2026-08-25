@@ -27,13 +27,15 @@ type PostType = PostTypesUserCreatable
     | 'system_leave_team'
     | 'system_remove_from_team'
     | 'system_combined_user_activity'
+    | 'system_shared_chan_state'
     | 'add_bot_teams_channels'
     | 'system_auto_responder'
     | 'custom_calls'
     | 'custom_calls_recording'
     | 'custom_run_update'
     | 'custom_llmbot'
-    | 'custom_llm_postback';
+    | 'custom_llm_postback'
+    | 'custom_agent_mention_reminder';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 
@@ -48,6 +50,20 @@ type PostPriority = {
     requested_ack?: boolean;
     persistent_notifications?: boolean;
 };
+
+// Matches the web client's PostInfo type (GET /api/v4/posts/{post_id}/info).
+// Returns channel/team metadata for a post without requiring channel membership,
+// unlike GET /api/v4/posts/{post_id} which requires ReadChannelContent permission.
+type PostInfo = {
+    channel_id: string;
+    channel_type: ChannelType;
+    channel_display_name: string;
+    has_joined_channel: boolean;
+    team_id: string;
+    team_type: string;
+    team_display_name: string;
+    has_joined_team: boolean;
+}
 
 type PermalinkEmbedData = {
     post_id: string;
@@ -125,6 +141,8 @@ type Post = {
 type PostProps = {
     disable_group_highlight?: boolean;
     mentionHighlightDisabled: boolean;
+    ai_generated_by?: string;
+    ai_generated_by_username?: string;
 };
 
 type PostResponse = {

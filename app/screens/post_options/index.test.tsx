@@ -3,13 +3,17 @@
 
 import {screen, waitFor} from '@testing-library/react-native';
 
+import {ActionType, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
+import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import PostOptions from './index';
 
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type PostModel from '@typings/database/models/servers/post';
 
 const serverUrl = 'https://www.community.mattermost.com';
 
@@ -21,27 +25,62 @@ jest.mock('react-native-reanimated', () => {
     };
 });
 
+jest.mock('@gorhom/bottom-sheet', () => {
+    const {ScrollView} = require('react-native');
+    return {
+        BottomSheetScrollView: ScrollView,
+        useBottomSheetInternal: jest.fn().mockReturnValue({
+            animatedIndex: {value: 1},
+            animatedPosition: {value: 0},
+            shouldHandleKeyboardEvents: {value: false},
+        }),
+    };
+});
+
+jest.mock('@screens/bottom_sheet', () => {
+    const MockReact = require('react');
+    const {View} = require('react-native');
+    return ({renderContent, children, testID}: {renderContent?: () => React.ReactNode; children?: React.ReactNode; testID?: string}) =>
+        MockReact.createElement(View, {testID: testID || 'bottom-sheet'}, renderContent ? renderContent() : children);
+});
+
 describe('PostOptions', () => {
     let database: Database;
+    let operator: ServerDataOperator;
+
     beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
+        const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
+        operator = server.operator;
+
+        jest.spyOn(console, 'warn').mockImplementation((msg: string) => {
+            if (!msg?.includes('scrollable node handle')) {
+                process.stdout.write(`${msg}\n`);
+            }
+        });
+    });
+
+    afterAll(() => {
+        DatabaseManager.destroyServerDatabase(serverUrl);
+        jest.restoreAllMocks();
     });
 
     it('should show limited options for own BoR post', async () => {
-        const unrevealedBoRPost = TestHelper.fakePostModel({
+        const post = TestHelper.fakePost({
             type: PostTypes.BURN_ON_READ,
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.basicUser!.id,
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
         });
+
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
             <PostOptions
-                post={unrevealedBoRPost}
+                postId={unrevealedBoRPost.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );
@@ -60,45 +99,46 @@ describe('PostOptions', () => {
     });
 
     it('should show limited options for received unrevealed BoR post', async () => {
-        const unrevealedBoRPost = TestHelper.fakePostModel({
+        const post = TestHelper.fakePost({
             type: PostTypes.BURN_ON_READ,
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.generateId(),
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
+            message: 'This is a regular post',
             metadata: {
 
                 // missing expire_at key indicates unrevealed BoR post
             },
         });
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
             <PostOptions
-                post={unrevealedBoRPost}
+                postId={unrevealedBoRPost.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );
 
         await waitFor(() => {
-            expect(screen.getByText('Mark as Unread')).toBeVisible();
-        });
+            expect(screen.queryByText('Copy Link')).toBeVisible();
+            expect(screen.queryByText('Save')).toBeVisible();
 
-        expect(screen.queryByText('Copy Link')).not.toBeVisible();
-        expect(screen.queryByText('Save')).not.toBeVisible();
-        expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
-        expect(screen.queryByText('Copy Text')).not.toBeVisible();
-        expect(screen.queryByText('Edit')).not.toBeVisible();
-        expect(screen.queryByText('Reply')).not.toBeVisible();
-        expect(screen.queryByText('Follow Message')).not.toBeVisible();
+            expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
+            expect(screen.queryByText('Copy Text')).not.toBeVisible();
+            expect(screen.queryByText('Edit')).not.toBeVisible();
+            expect(screen.queryByText('Reply')).not.toBeVisible();
+            expect(screen.queryByText('Follow Message')).not.toBeVisible();
+        });
     });
 
     it('should show limited options for someone else\'s revealed BoR post', async () => {
-        const unrevealedBoRPost = TestHelper.fakePostModel({
+        const post = TestHelper.fakePost({
             type: PostTypes.BURN_ON_READ,
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.generateId(),
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
             message: 'This is a revealed BoR post',
             metadata: {
                 expire_at: Date.now() + 1000000,
@@ -107,69 +147,102 @@ describe('PostOptions', () => {
                 expire_at: Date.now() + 1000000000,
             },
         });
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const unrevealedBoRPost = models[0] as PostModel;
 
         renderWithEverything(
             <PostOptions
-                post={unrevealedBoRPost}
+                postId={unrevealedBoRPost.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );
 
         await waitFor(() => {
-            expect(screen.getByText('Mark as Unread')).toBeVisible();
+            expect(screen.getByText('Copy Link')).toBeVisible();
             expect(screen.queryByText('Save')).toBeVisible();
-        });
 
-        expect(screen.queryByText('Copy Link')).not.toBeVisible();
-        expect(screen.queryByText('Copy Text')).not.toBeVisible();
-        expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
-        expect(screen.queryByText('Edit')).not.toBeVisible();
-        expect(screen.queryByText('Reply')).not.toBeVisible();
-        expect(screen.queryByText('Follow Message')).not.toBeVisible();
+            expect(screen.queryByText('Mark as Unread')).not.toBeVisible();
+            expect(screen.queryByText('Copy Text')).not.toBeVisible();
+            expect(screen.queryByText('Pin to Channel')).not.toBeVisible();
+            expect(screen.queryByText('Edit')).not.toBeVisible();
+            expect(screen.queryByText('Reply')).not.toBeVisible();
+            expect(screen.queryByText('Follow Message')).not.toBeVisible();
+        });
     });
 
     it('should show all options for regular post', async () => {
-        const unrevealedBoRPost = TestHelper.fakePostModel({
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.basicUser!.id,
+        const post = TestHelper.fakePost({
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
             message: 'This is a regular post',
         });
 
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const postModel = models[0] as PostModel;
+
         renderWithEverything(
             <PostOptions
-                post={unrevealedBoRPost}
+                postId={postModel.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );
 
         await waitFor(() => {
             expect(screen.queryByText('Copy Link')).toBeVisible();
+            expect(screen.queryByText('Save')).toBeVisible();
+
+            expect(screen.queryByText('Copy Text')).toBeVisible();
+            expect(screen.queryByText('Pin to Channel')).toBeVisible();
+            expect(screen.queryByText('Edit')).toBeVisible();
+            expect(screen.queryByText('Reply')).toBeVisible();
         });
+    });
 
-        expect(screen.queryByText('Save')).toBeVisible();
-        expect(screen.queryByText('Pin to Channel')).toBeVisible();
-        expect(screen.queryByText('Copy Text')).toBeVisible();
-        expect(screen.queryByText('Reply')).toBeVisible();
-        expect(screen.queryByText('Edit')).toBeVisible();
+    it('should show all options for regular post', async () => {
+        const post = TestHelper.fakePost({
+            id: 'post1',
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
+            message: 'This is a regular post',
+        });
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const notBoRPost = models[0] as PostModel;
 
-        // cannot mark own post as unread in the mobile app.
-        expect(screen.queryByText('Mark as Unread')).not.toBeVisible();
-        expect(screen.queryByText('Follow Message')).not.toBeVisible();
+        renderWithEverything(
+            <PostOptions
+                postId={notBoRPost.id}
+                serverUrl={serverUrl}
+                showAddReaction={true}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(screen.queryByText('Copy Link')).toBeVisible();
+            expect(screen.queryByText('Save')).toBeVisible();
+            expect(screen.queryByText('Pin to Channel')).toBeVisible();
+            expect(screen.queryByText('Copy Text')).toBeVisible();
+            expect(screen.queryByText('Reply')).toBeVisible();
+            expect(screen.queryByText('Edit')).toBeVisible();
+
+            // cannot mark own post as unread in the mobile app.
+            expect(screen.queryByText('Mark as Unread')).not.toBeVisible();
+            expect(screen.queryByText('Follow Message')).not.toBeVisible();
+        });
     });
 
     it('should show BOR read receipts for own BoR post', async () => {
-        const ownBoRPost = TestHelper.fakePostModel({
+        const post = TestHelper.fakePost({
             type: PostTypes.BURN_ON_READ,
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.basicUser!.id,
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.basicUser!.id,
             message: 'This is my BoR post',
             metadata: {
                 expire_at: Date.now() + 1000000,
@@ -177,13 +250,15 @@ describe('PostOptions', () => {
             },
         });
 
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const ownBoRPost = models[0] as PostModel;
+
         renderWithEverything(
             <PostOptions
-                post={ownBoRPost}
+                postId={ownBoRPost.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );
@@ -196,10 +271,10 @@ describe('PostOptions', () => {
     });
 
     it('should not show BOR read receipts for other users BoR post', async () => {
-        const otherUserBoRPost = TestHelper.fakePostModel({
+        const post = TestHelper.fakePost({
             type: PostTypes.BURN_ON_READ,
-            channelId: TestHelper.basicChannel!.id,
-            userId: TestHelper.generateId(), // Different user
+            channel_id: TestHelper.basicChannel!.id,
+            user_id: TestHelper.generateId(), // Different user
             message: 'This is someone else\'s BoR post',
             metadata: {
                 expire_at: Date.now() + 1000000,
@@ -207,13 +282,15 @@ describe('PostOptions', () => {
             },
         });
 
+        const models = await operator.handlePosts({posts: [post], order: [post.id], actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+        const otherUserBoRPost = models[0] as PostModel;
+
         renderWithEverything(
             <PostOptions
-                post={otherUserBoRPost}
+                postId={otherUserBoRPost.id}
                 serverUrl={serverUrl}
                 showAddReaction={true}
-                sourceScreen={'DraftScheduledPostOptions'}
-                componentId={'DraftScheduledPostOptions'}
+                sourceScreen={Screens.DRAFT_SCHEDULED_POST_OPTIONS}
             />,
             {database},
         );

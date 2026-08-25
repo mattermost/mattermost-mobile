@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {addChannelToDefaultCategory, handleConvertedGMCategories} from '@actions/local/category';
+import {addChannelToDefaultCategory, removeChannelFromManagedCategoryIfNeeded, handleConvertedGMCategories} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
     storeMyChannelsForTeam, updateChannelInfoFromChannel, updateMyChannelFromWebsocket, deletePostsForChannel,
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
+import {addChannelToManagedCategoryIfNeeded} from '@actions/remote/category';
 import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
@@ -17,7 +18,7 @@ import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
+import {canViewArchivedChannels, getCurrentChannelId, getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -56,7 +57,10 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
                 }
             }
         }
-        operator.batchRecords(models, 'handleChannelCreatedEvent');
+        await operator.batchRecords(models, 'handleChannelCreatedEvent');
+        if (channels?.[0]) {
+            await addChannelToManagedCategoryIfNeeded(serverUrl, channels[0]);
+        }
     } catch {
         // do nothing
     }
@@ -115,7 +119,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
-        operator.batchRecords(models, 'handleChannelUpdatedEvent');
+        await operator.batchRecords(models, 'handleChannelUpdatedEvent');
 
         // This indicates a GM was converted to a private channel
         if (existingChannelType === General.GM_CHANNEL && updatedChannel.type === General.PRIVATE_CHANNEL) {
@@ -181,7 +185,7 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
         }, []);
 
         if (members.length) {
-            operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
+            await operator.batchRecords(members, 'handleMultipleCahnnelViewedEvent');
         }
     } catch {
         // do nothing
@@ -215,7 +219,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }
-        operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
+        await operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
     } catch {
         // do nothing
     }
@@ -280,7 +284,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
             models.push(...userModels);
         }
 
-        operator.batchRecords(models, 'handleDirectAddedEvent');
+        await operator.batchRecords(models, 'handleDirectAddedEvent');
     } catch {
         // do nothing
     }
@@ -295,6 +299,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUser = await getCurrentUser(database);
         const models: Model[] = [];
+        let joinedChannel: Channel | undefined;
 
         if (userId === currentUser?.id) {
             if (EphemeralStore.isAddingToTeam(teamId) || EphemeralStore.isJoiningChannel(channelId)) {
@@ -303,6 +308,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 
             const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
             if (channels && memberships) {
+                joinedChannel = channels[0];
                 const prepare = await prepareMyChannelsForTeam(operator, teamId, channels, memberships);
                 if (prepare.length) {
                     const prepareModels = await Promise.all(prepare);
@@ -352,6 +358,10 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
             await operator.batchRecords(models, 'handleUserAddedToChannelEvent');
         }
 
+        if (joinedChannel) {
+            await addChannelToManagedCategoryIfNeeded(serverUrl, joinedChannel);
+        }
+
         await fetchChannelStats(serverUrl, channelId, false);
     } catch {
         // Do nothing
@@ -388,6 +398,11 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         if (user.id === userId) {
+            const channelBeforeRemove = await getChannelById(database, channelId);
+            if (channelBeforeRemove?.teamId) {
+                await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeRemove.teamId, channelId);
+            }
+
             const currentChannelId = await getCurrentChannelId(database);
             if (currentChannelId && currentChannelId === channelId) {
                 await handleKickFromChannel(serverUrl, currentChannelId);
@@ -405,7 +420,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             }
         }
 
-        operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
+        await operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
     } catch (error) {
         logDebug('cannot handle user removed from channel websocket event', error);
     }
@@ -424,19 +439,24 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
             return;
         }
 
+        const channelBeforeDelete = await getChannelById(database, channelId);
+
         await setChannelDeleteAt(serverUrl, channelId, deleteAt);
         if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
 
         const currentChannel = await getCurrentChannel(database);
-        const config = await getConfig(database);
 
-        if (config?.ExperimentalViewArchivedChannels !== 'true') {
+        if (!(await canViewArchivedChannels(database))) {
             if (currentChannel && currentChannel.id === channelId) {
                 await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ARCHIVED);
             }
             await removeCurrentUserFromChannel(serverUrl, channelId);
+        }
+
+        if (channelBeforeDelete?.teamId) {
+            await removeChannelFromManagedCategoryIfNeeded(serverUrl, channelBeforeDelete.teamId, channelId);
         }
     } catch {
         // Do nothing

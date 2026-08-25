@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {setAgentsConfig} from '@agents/store/agents_config';
-
 import NetworkManager from '@managers/network_manager';
 import {logDebug} from '@utils/log';
 

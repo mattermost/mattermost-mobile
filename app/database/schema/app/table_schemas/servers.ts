@@ -15,6 +15,7 @@ export default tableSchema({
         {name: 'url', type: 'string', isIndexed: true},
         {name: 'last_active_at', type: 'number', isIndexed: true},
         {name: 'identifier', type: 'string', isIndexed: true},
+        {name: 'persistence_flag', type: 'string'},
     ],
 });
 

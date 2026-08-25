@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AgentsHandler, {type AgentsHandlerMix} from '@agents/database/operators/handlers';
+import BoardsHandler, {type BoardsHandlerMix} from '@boards/database/operators/handlers';
 
+import AgentsHandler, {type AgentsHandlerMix} from '@agents/database/operators/handlers';
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
 import CategoryHandler, {type CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
 import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
 import CustomProfileHandler, {type CustomProfileHandlerMix} from '@database/operator/server_data_operator/handlers/custom_profile';
 import GroupHandler, {type GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
 import PostHandler, {type PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
+import PropertiesHandler, {type PropertiesHandlerMix} from '@database/operator/server_data_operator/handlers/properties';
 import TeamHandler, {type TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
 import TeamThreadsSyncHandler, {type TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
 import ThreadHandler, {type ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
@@ -20,12 +22,14 @@ import type {Database} from '@nozbe/watermelondb';
 
 interface ServerDataOperator extends
     AgentsHandlerMix,
+    BoardsHandlerMix,
     CategoryHandlerMix,
     ChannelHandlerMix,
     CustomProfileHandlerMix,
     GroupHandlerMix,
     PlaybookHandlerMix,
     PostHandlerMix,
+    PropertiesHandlerMix,
     ServerDataOperatorBase,
     TeamHandlerMix,
     ThreadHandlerMix,
@@ -35,12 +39,14 @@ interface ServerDataOperator extends
 
 class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     AgentsHandler,
+    BoardsHandler,
     CategoryHandler,
     ChannelHandler,
     CustomProfileHandler,
     GroupHandler,
     PlaybookHandler,
     PostHandler,
+    PropertiesHandler,
     TeamHandler,
     ThreadHandler,
     TeamThreadsSyncHandler,

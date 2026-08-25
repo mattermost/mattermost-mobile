@@ -4,5 +4,3 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTConstants.h>
-#import "AppDelegate.h"
-#import <Expo/Expo.h>

@@ -14,6 +14,9 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {logError} from '@utils/log';
 import {tryOpenURL} from '@utils/url';
 
+import type {CompassIconName} from '@components/compass_icon';
+import type {SectionNoticeButtonProps} from '@components/section_notice/types';
+
 const TIME_TO_IDLE = 3000;
 
 type Props = {
@@ -43,7 +46,7 @@ const SendTestNotificationNotice = ({
     const serverUrl = useServerUrl();
     const [buttonState, setButtonState] = useState<ButtonState>('idle');
     const isSending = useRef(false);
-    const timeout = useRef<NodeJS.Timeout>();
+    const timeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
     const [href] = useExternalLink({
         userId,
@@ -81,9 +84,9 @@ const SendTestNotificationNotice = ({
         };
     }, []);
 
-    const primaryButton = useMemo(() => {
+    const primaryButton: SectionNoticeButtonProps = useMemo(() => {
         let text;
-        let icon;
+        let icon: CompassIconName | undefined;
         let loading;
         switch (buttonState) {
             case 'idle':
@@ -109,7 +112,7 @@ const SendTestNotificationNotice = ({
         };
     }, [buttonState, intl, onSendTestNotificationClick]);
 
-    const secondaryButton = useMemo(() => {
+    const secondaryButton: SectionNoticeButtonProps = useMemo(() => {
         return {
             onClick: onGoToNotificationDocumentation,
             text: intl.formatMessage({id: 'user_settings.notifications.test_notification.go_to_docs', defaultMessage: 'Troubleshooting docs'}),

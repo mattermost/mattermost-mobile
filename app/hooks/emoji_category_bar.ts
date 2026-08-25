@@ -4,9 +4,11 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
+import type {CompassIconName} from '@components/compass_icon';
+
 export type EmojiCategoryBarIcon = {
     key: string;
-    icon: string;
+    icon: CompassIconName;
 }
 
 type EmojiCategoryBar = {

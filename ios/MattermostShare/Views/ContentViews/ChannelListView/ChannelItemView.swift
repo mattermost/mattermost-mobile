@@ -41,6 +41,7 @@ struct ChannelItemView: View {
       }
       .padding(.vertical, 8)
     }
+    .accessibilityIdentifier("channel_item.\(channel.name)")
     .frame(minHeight: 44, maxHeight: 58)
     .buttonStyle(.borderless)
     .listRowSeparator(.hidden)

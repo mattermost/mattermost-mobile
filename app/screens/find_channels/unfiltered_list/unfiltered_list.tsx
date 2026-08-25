@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import React, {useCallback, useEffect, useState} from 'react';
+import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Platform, SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
-import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
+import Animated, {FadeInDown, FadeOutUp, useAnimatedStyle, type SharedValue} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
@@ -16,10 +16,15 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     close: () => Promise<void>;
-    keyboardOverlap: number;
+    keyboardHeight: SharedValue<number>;
     recentChannels: ChannelModel[];
     showTeamName: boolean;
     testID?: string;
+}
+
+type Section = {
+    name: MessageDescriptor;
+    data: ChannelModel[];
 }
 
 const sectionNames = defineMessages({
@@ -33,11 +38,11 @@ const style = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const buildSections = (recentChannels: ChannelModel[]) => {
-    const sections = [];
+const buildSections = (recentChannels: ChannelModel[]): Section[] => {
+    const sections: Section[] = [];
     if (recentChannels.length) {
         sections.push({
-            ...sectionNames.recent,
+            name: sectionNames.recent,
             data: recentChannels,
         });
     }
@@ -45,19 +50,18 @@ const buildSections = (recentChannels: ChannelModel[]) => {
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, testID}: Props) => {
+const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(recentChannels));
-    const sectionListStyle = useMemo(() => ({paddingBottom: keyboardOverlap}), [keyboardOverlap]);
 
     const onPress = useCallback(async (c: Channel | ChannelModel) => {
         await close();
         switchToChannelById(serverUrl, c.id);
     }, [serverUrl, close]);
 
-    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel>) => (
-        <FindChannelsHeader sectionName={intl.formatMessage({id: section.id, defaultMessage: section.defaultMessage})}/>
+    const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel, Section>) => (
+        <FindChannelsHeader sectionName={intl.formatMessage(section.name)}/>
     ), [intl]);
 
     const renderSectionItem = useCallback(({item}: SectionListRenderItemInfo<ChannelModel>) => {
@@ -73,6 +77,12 @@ const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, t
         );
     }, [onPress, showTeamName, testID]);
 
+    const sectionListStyle = useAnimatedStyle(() => {
+        return {
+            marginBottom: keyboardHeight.value,
+        };
+    });
+
     useEffect(() => {
         setSections(buildSections(recentChannels));
     }, [recentChannels]);
@@ -81,10 +91,9 @@ const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, t
         <Animated.View
             entering={FadeInDown.duration(200)}
             exiting={Platform.select({ios: FadeOutUp.duration(100)}) /* https://mattermost.atlassian.net/browse/MM-63814?focusedCommentId=178584 */}
-            style={style.flex}
+            style={[style.flex, sectionListStyle]}
         >
             <SectionList
-                contentContainerStyle={sectionListStyle}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='handled'
                 renderItem={renderSectionItem}

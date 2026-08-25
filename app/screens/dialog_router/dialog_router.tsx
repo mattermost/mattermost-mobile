@@ -1,39 +1,23 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {type IntlShape, useIntl} from 'react-intl';
-import {Navigation} from 'react-native-navigation';
 
 import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/integrations';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import InteractiveDialog from '@screens/interactive_dialog';
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
-    componentId: AvailableScreens;
-    isAppsFormEnabled: boolean;
 };
 
-/**
- * DialogRouter - Routes between legacy InteractiveDialog and modern AppsForm
- * Based on webapp DialogRouter component from PR #31821
- *
- * When InteractiveDialogAppsForm feature flag is enabled:
- * - Converts dialog config to AppForm format
- * - Renders AppsFormContainer with conversion handlers
- *
- * When feature flag is disabled:
- * - Renders legacy InteractiveDialog component
- */
 /**
  * Converts error to user-friendly message based on error type
  */
@@ -67,10 +51,8 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
 
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
-    componentId,
-    isAppsFormEnabled,
 }) => {
-
+    const navigation = useNavigation();
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
@@ -111,17 +93,13 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     }, []);
 
     // Update modal title when dialog config changes
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentConfig?.dialog?.title) {
-            Navigation.mergeOptions(componentId, {
-                topBar: {
-                    title: {
-                        text: currentConfig.dialog.title,
-                    },
-                },
+            navigation.setOptions({
+                title: currentConfig.dialog.title,
             });
         }
-    }, [currentConfig?.dialog?.title, componentId]);
+    }, [currentConfig?.dialog?.title, navigation]);
 
     // Create submit handler that converts AppForm values back to legacy format
     const handleSubmit = useCallback(async (values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
@@ -215,18 +193,17 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
-        if (!isAppsFormEnabled || !currentConfig?.dialog) {
+        if (!currentConfig?.dialog) {
             return null;
         }
 
         try {
-            const converted = InteractiveDialogAdapter.convertToAppForm(currentConfig);
-
-            return converted;
+            return InteractiveDialogAdapter.convertToAppForm(currentConfig);
         } catch (error) {
+            logDebug('[DialogRouter.appForm]', getFullErrorMessage(error));
             return null;
         }
-    }, [currentConfig, isAppsFormEnabled]);
+    }, [currentConfig]);
 
     // Helper function to find the dialog element by field name
     function findDialogElement(elements: any[], fieldName: string) {
@@ -358,37 +335,30 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
 
-    if (isAppsFormEnabled && appForm && appForm.fields) {
-        // Pre-populate form fields with accumulated values to preserve field refresh state
-        const formWithValues = {
-            ...appForm,
-            fields: appForm.fields.map((field) => {
-                if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
-                    return {
-                        ...field,
-                        value: accumulatedValues[field.name],
-                    };
-                }
-                return field;
-            }),
-        };
-
-        return (
-            <AppsFormComponent
-                form={formWithValues}
-                componentId={componentId}
-                submit={handleSubmit}
-                performLookupCall={performLookupCall}
-                refreshOnSelect={refreshOnSelect}
-            />
-        );
+    if (!appForm || !appForm.fields) {
+        return null;
     }
 
-    // Feature flag disabled or AppsForm failed - use legacy InteractiveDialog
+    // Pre-populate form fields with accumulated values to preserve field refresh state
+    const formWithValues = {
+        ...appForm,
+        fields: appForm.fields.map((field) => {
+            if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
+                return {
+                    ...field,
+                    value: accumulatedValues[field.name],
+                };
+            }
+            return field;
+        }),
+    };
+
     return (
-        <InteractiveDialog
-            config={currentConfig}
-            componentId={componentId}
+        <AppsFormComponent
+            form={formWithValues}
+            submit={handleSubmit}
+            performLookupCall={performLookupCall}
+            refreshOnSelect={refreshOnSelect}
         />
     );
 });

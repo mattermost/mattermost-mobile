@@ -18,7 +18,7 @@ type FileHandler = {
         channelId: string;
         rootId: string;
         lastTimeStored: number;
-        onError: Array<(msg: string) => void>;
+        onError: Array<(msg: string, name?: string) => void>;
         onProgress: Array<(p: number, b: number) => void>;
         isEditPost?: boolean;
         updateFileCallback?: (fileInfo: FileInfo) => void;
@@ -64,8 +64,9 @@ class DraftEditPostUploadManagerSingleton {
         };
 
         const onError = (response: ClientResponseError) => {
-            const message = response.message || 'Unkown error';
-            this.handleError(message, file.clientId!);
+            const message = response.message || 'Unknown error';
+            const errorName = (response as ClientResponseError & {name?: string}).name;
+            this.handleError(message, file.clientId!, errorName);
         };
 
         const {error, cancel} = uploadFile(serverUrl, file, channelId, onProgress, onComplete, onError, skipBytes);
@@ -102,7 +103,7 @@ class DraftEditPostUploadManagerSingleton {
         };
     };
 
-    public registerErrorHandler = (clientId: string, callback: (errMessage: string) => void) => {
+    public registerErrorHandler = (clientId: string, callback: (errMessage: string, errName?: string) => void) => {
         if (!this.handlers[clientId]) {
             return undefined;
         }
@@ -160,7 +161,7 @@ class DraftEditPostUploadManagerSingleton {
         await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
     };
 
-    private handleError = async (errorMessage: string, clientId: string) => {
+    private handleError = async (errorMessage: string, clientId: string, errorName?: string) => {
         const h = this.handlers[clientId];
         if (!h) {
             return;
@@ -168,7 +169,7 @@ class DraftEditPostUploadManagerSingleton {
 
         delete this.handlers[clientId];
 
-        h.onError.forEach((c) => c(errorMessage));
+        h.onError.forEach((c) => c(errorMessage, errorName));
 
         const fileInfo = {...h.fileInfo};
         fileInfo.failed = true;

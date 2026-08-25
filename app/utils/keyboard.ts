@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Keyboard, Platform} from 'react-native';
+import {Keyboard} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
+
+import {isEdgeToEdge} from '@constants/device';
 
 /**
  * Dismisses the keyboard using platform-specific implementation.
@@ -11,10 +13,11 @@ import {KeyboardController} from 'react-native-keyboard-controller';
  *   is not used on Android (to avoid layout issues)
  */
 export const dismissKeyboard = async (): Promise<void> => {
-    if (Platform.OS === 'ios') {
-        await KeyboardController.dismiss();
+    if (isEdgeToEdge) {
+        await KeyboardController.dismiss({animated: false});
     } else {
         Keyboard.dismiss();
+        await new Promise((resolve) => setTimeout(resolve, 250));
     }
 };
 
@@ -25,7 +28,7 @@ export const dismissKeyboard = async (): Promise<void> => {
  *   is not used on Android (to avoid layout issues)
  */
 export const isKeyboardVisible = (): boolean => {
-    if (Platform.OS === 'ios') {
+    if (isEdgeToEdge) {
         return KeyboardController.isVisible();
     }
     return Keyboard.isVisible();

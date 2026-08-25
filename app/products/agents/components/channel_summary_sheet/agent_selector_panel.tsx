@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {type Agent} from '@agents/client/rest';
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, type ListRenderItemInfo, Pressable, View} from 'react-native';
+import {type ListRenderItemInfo, Pressable, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
+import {type Agent} from '@agents/client/rest';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -104,36 +105,32 @@ const AgentSelectorPanel = ({
         </View>
     ), [styles.emptyContainer, styles.emptyText]);
 
-    const renderHeader = useCallback(() => (
-        <View style={styles.headerRow}>
-            <Pressable
-                onPress={onBack}
-                style={({pressed}) => [styles.backButton, pressed && {opacity: 0.72}]}
-                testID='agents.selector.back'
-            >
-                <CompassIcon
-                    name='arrow-left'
-                    size={24}
-                    color={theme.centerChannelColor}
-                />
-            </Pressable>
-            <FormattedText
-                id='agents.selector.title'
-                defaultMessage='Select Agent'
-                style={styles.headerTitle}
-            />
-        </View>
-    ), [onBack, styles.backButton, styles.headerRow, styles.headerTitle, theme.centerChannelColor]);
-
     return (
         <View style={styles.container}>
-            <FlatList
+            <View style={styles.headerRow}>
+                <Pressable
+                    onPress={onBack}
+                    style={({pressed}) => [styles.backButton, pressed && {opacity: 0.72}]}
+                    testID='agents.selector.back'
+                >
+                    <CompassIcon
+                        name='arrow-left'
+                        size={24}
+                        color={theme.centerChannelColor}
+                    />
+                </Pressable>
+                <FormattedText
+                    id='agents.selector.title'
+                    defaultMessage='Select Agent'
+                    style={styles.headerTitle}
+                />
+            </View>
+            <BottomSheetFlatList
                 data={agents}
                 keyExtractor={keyExtractor}
                 renderItem={renderItem}
                 ItemSeparatorComponent={renderSeparator}
                 ListEmptyComponent={renderEmpty}
-                ListHeaderComponent={renderHeader}
                 showsVerticalScrollIndicator={false}
             />
         </View>

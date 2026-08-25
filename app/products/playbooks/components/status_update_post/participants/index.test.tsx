@@ -3,6 +3,7 @@
 
 import React, {type ComponentProps} from 'react';
 
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
@@ -42,7 +43,7 @@ describe('EnhancedParticipants (withObservables and withDatabase)', () => {
     function getBaseProps(): ComponentProps<typeof EnhancedParticipants> {
         return {
             participantIds: ['user-1', 'user-2'],
-            location: 'Channel',
+            location: Screens.CHANNEL,
             baseTextStyle: {},
         };
     }

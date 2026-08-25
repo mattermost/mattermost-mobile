@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {types} from '@react-native-documents/picker';
 import React, {useMemo} from 'react';
 import {type MessageDescriptor, useIntl} from 'react-intl';
-import DocumentPicker from 'react-native-document-picker';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type PickerUtil from '@utils/file/file_picker';
+import type {CompassIconName} from '@components/compass_icon';
+import type FilePickerUtil from '@utils/file/file_picker';
 import type {ImageSource} from 'expo-image';
 
 type PanelType = {
-    icon: string | ImageSource;
+    icon: CompassIconName | ImageSource;
     onPress: () => Promise<void> | void;
     testID: string;
     text: MessageDescriptor;
@@ -22,13 +23,13 @@ type PanelType = {
 type PanelItemProps = {
     onRemoveProfileImage?: UploadExtractedFile;
     pickerAction: 'takePhoto' | 'browsePhotoLibrary' | 'browseFiles' | 'removeProfilePicture';
-    pictureUtils?: PickerUtil;
+    pictureUtils?: FilePickerUtil;
 };
 
 const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItemProps) => {
     const intl = useIntl();
 
-    const panelTypes = useMemo(() => ({
+    const panelTypes: Record<string, PanelType> = useMemo(() => ({
         takePhoto: {
             icon: 'camera-outline',
             onPress: async () => {
@@ -51,7 +52,7 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
             icon: 'file-multiple-outline',
             onPress: async () => {
                 await dismissBottomSheet();
-                pictureUtils?.attachFileFromFiles(DocumentPicker.types.images);
+                pictureUtils?.attachFileFromFiles(types.images);
             },
             testID: 'attachment.browseFiles',
             text: {id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'},

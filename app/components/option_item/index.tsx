@@ -5,7 +5,7 @@ import React, {useCallback, useMemo} from 'react';
 import {type LayoutChangeEvent, Platform, Switch, Text, TouchableOpacity, View} from 'react-native';
 
 import UserChip from '@components/chips/user_chip';
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -119,7 +119,7 @@ export type OptionItemProps = {
     description?: string;
     destructive?: boolean;
     disabled?: boolean;
-    icon?: string;
+    icon?: CompassIconName;
     iconColor?: string;
     info?: string | UserChipData;
     isInfoDestructive?: boolean;

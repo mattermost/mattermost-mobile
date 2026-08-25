@@ -22,18 +22,18 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {isCallsStartedMessage} from '@calls/utils';
-import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
+import {Device, Events, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
+import InAppNotificationStore from '@store/in_app_notification_store';
+import {NavigationStore} from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
-import {logDebug, logInfo} from '@utils/log';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const messages = defineMessages({
@@ -56,6 +56,7 @@ class PushNotificationsSingleton {
     subscriptions?: EmitterSubscription[];
 
     init(register: boolean) {
+        logDebug('PushNotifications: Initializing');
         this.subscriptions?.forEach((v) => v.remove());
         this.subscriptions = [
             Notifications.events().registerNotificationOpened(this.onNotificationOpened),
@@ -71,12 +72,20 @@ class PushNotificationsSingleton {
         }
     }
 
+    cleanup() {
+        this.subscriptions?.forEach((v) => v.remove());
+        this.subscriptions = [];
+    }
+
     async registerIfNeeded() {
         const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
         if (!isRegistered) {
             await requestNotifications(['alert', 'sound', 'badge']);
         }
         Notifications.registerRemoteNotifications();
+
+        // Never call Notifications.registerPushKit() — PushKit is owned by
+        // @mattermost/calls-native; a second PKPushRegistry would break it.
     }
 
     createReplyCategory = () => {
@@ -91,12 +100,8 @@ class PushNotificationsSingleton {
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
-        if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return payload?.server_url;
-        }
-
-        let serverUrl = payload.server_url;
-        if (!serverUrl && payload.server_id) {
+        let serverUrl = payload?.server_url;
+        if (!serverUrl && payload?.server_id) {
             serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
         }
 
@@ -119,10 +124,10 @@ class PushNotificationsSingleton {
                             unread_replies: 0,
                             last_viewed_at: Date.now(),
                         };
-                        updateThread(serverUrl, payload.root_id, data);
+                        await updateThread(serverUrl, payload.root_id, data);
                     }
                 } else {
-                    markChannelAsViewed(serverUrl, payload.channel_id);
+                    await markChannelAsViewed(serverUrl, payload.channel_id);
                 }
             }
         }
@@ -154,7 +159,7 @@ class PushNotificationsSingleton {
 
             let isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL;
             if (isTabletDevice) {
-                isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
+                isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL_LIST;
             }
             const isInThreadScreen = NavigationStore.getVisibleScreen() === Screens.THREAD;
 
@@ -173,17 +178,7 @@ class PushNotificationsSingleton {
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
-                // Dismiss the screen if it's already visible or else it blocks the navigation
-                DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
-
-                const screen = Screens.IN_APP_NOTIFICATION;
-                const passProps = {
-                    notification,
-                    serverName,
-                    serverUrl,
-                };
-
-                showOverlay(screen, passProps);
+                InAppNotificationStore.show(notification, serverUrl, serverName);
             }
         }
     };
@@ -199,7 +194,9 @@ class PushNotificationsSingleton {
                 // Handle notification tapped
                 openNotification(serverUrl, notification);
             } else {
-                backgroundNotification(serverUrl, notification);
+                // Awaited so the caller can keep the app alive until the DB write
+                // completes (see onNotificationReceivedBackground).
+                await backgroundNotification(serverUrl, notification);
             }
         }
     };
@@ -224,13 +221,13 @@ class PushNotificationsSingleton {
         if (payload) {
             switch (payload.type) {
                 case PushNotification.NOTIFICATION_TYPE.CLEAR:
-                    this.handleClearNotification(notification);
+                    await this.handleClearNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.MESSAGE:
-                    this.handleMessageNotification(notification);
+                    await this.handleMessageNotification(notification);
                     break;
                 case PushNotification.NOTIFICATION_TYPE.SESSION:
-                    this.handleSessionNotification(notification);
+                    await this.handleSessionNotification(notification);
                     break;
             }
         }
@@ -253,12 +250,28 @@ class PushNotificationsSingleton {
     onNotificationReceivedBackground = async (incoming: Notification, completion: (response: NotificationBackgroundFetchResult) => void) => {
         if (incoming.payload.verified === 'false') {
             logDebug('not handling background notification because it was not verified, ackId=', incoming.payload.ackId);
+
+            // Always finish the iOS background completion handler, or the OS
+            // keeps the app awake until it times out and then terminates it.
+            completion(NotificationBackgroundFetchResult.NO_DATA);
             return;
         }
         const notification = convertToNotificationData(incoming, false);
-        this.processNotification(notification);
 
-        completion(NotificationBackgroundFetchResult.NEW_DATA);
+        // Wait until the notification is fully processed (including its DB
+        // read/write) before signaling completion. iOS keeps the app alive
+        // until the fetch completion handler is called; calling it early lets
+        // the OS re-suspend the app while a WatermelonDB statement still holds
+        // the shared App Group SQLite lock, which triggers a RUNNINGBOARD
+        // 0xdead10cc termination. completion() must run on every path,
+        // including failures, for the same reason.
+        try {
+            await this.processNotification(notification);
+            completion(NotificationBackgroundFetchResult.NEW_DATA);
+        } catch (error) {
+            logWarning('onNotificationReceivedBackground', error);
+            completion(NotificationBackgroundFetchResult.FAILED);
+        }
     };
 
     // This triggers when the app was in the foreground (Android and iOS)
@@ -297,7 +310,8 @@ class PushNotificationsSingleton {
 
             const token = `${prefix}-v2:${deviceToken}`;
             storeDeviceToken(token);
-            logDebug('Notification token registered', token);
+            const redactedDeviceId = deviceToken.substring(0, 16);
+            logDebug('Notification token registered', `${prefix}-v2:${redactedDeviceId}...`);
 
             // Store the device token in the default database
             this.requestNotificationReplyPermissions();

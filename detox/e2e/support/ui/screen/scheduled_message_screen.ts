@@ -3,7 +3,7 @@
 
 import {Alert} from '@support/ui/component';
 import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class ScheduledMessageScreen {
     testID = {
@@ -49,7 +49,7 @@ class ScheduledMessageScreen {
     };
 
     assertScheduledMessageExists = async (scheduledMessageText: string) => {
-        await waitFor(this.scheduledMessageText).toBeVisible().withTimeout(500);
+        await waitFor(this.scheduledMessageText).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         await expect(element(by.text(scheduledMessageText))).toBeVisible();
     };
 
@@ -90,12 +90,23 @@ class ScheduledMessageScreen {
      * @param expectedText - The text you expect in the element
      */
     assertScheduleTimeTextIsVisible = async (expectedText: string) => {
-        const attr = await this.scheduledDraftTime.getAttributes();
-        const actualText = 'text' in attr ? attr.text : null;
+        const expected = this.normalize(expectedText);
+        let actualText = '';
 
-        if (this.normalize(actualText || '') !== this.normalize(expectedText)) {
-            throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
+        await waitFor(this.scheduledDraftTime).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        const deadline = Date.now() + timeouts.TWENTY_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() < deadline) {
+            const attr = await this.scheduledDraftTime.getAttributes();
+            actualText = this.normalize(('text' in attr ? attr.text : null) ?? '');
+            if (actualText === expected) {
+                return;
+            }
+            await wait(timeouts.HALF_SEC);
         }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
     };
 
     getRoundedTime = async (): Promise<Date> => {
@@ -151,6 +162,28 @@ class ScheduledMessageScreen {
         const timePart = adjustedTime.toLocaleTimeString(locale, timeOptions);
 
         return this.normalize(`Send on ${datePart}, ${timePart}`);
+    };
+
+    tomorrowAtNineAm = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+
+        const locale = 'en-US';
+        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
+        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
+
+        const datePart = tomorrow.toLocaleDateString(locale, dateOptions);
+        const timePart = tomorrow.toLocaleTimeString(locale, timeOptions);
+
+        return this.normalize(`Send on ${datePart}, ${timePart}`);
+    };
+
+    expectedLabelForScheduleOption = async (option: 'tomorrow' | 'next_monday' | 'monday') => {
+        if (option === 'tomorrow') {
+            return this.tomorrowAtNineAm();
+        }
+        return this.nextMonday();
     };
 
     /**

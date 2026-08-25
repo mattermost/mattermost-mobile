@@ -31,11 +31,12 @@ export interface ClientPostsMix {
     searchPostsWithParams: (teamId: string, params: PostSearchParams) => Promise<SearchPostResponse>;
     searchPosts: (teamId: string, terms: string, isOrSearch: boolean) => Promise<SearchPostResponse>;
     doPostAction: (postId: string, actionId: string, selectedOption?: string) => Promise<any>;
-    doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string) => Promise<any>;
+    doPostActionWithCookie: (postId: string, actionId: string, actionCookie: string, selectedOption?: string, query?: Record<string, string>, integrationFormat?: PostActionIntegrationFormat) => Promise<any>;
     acknowledgePost: (postId: string, userId: string) => Promise<PostAcknowledgement>;
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
     sendTestNotification: () => Promise<{status: 'OK'}>;
     revealBoRPost: (postId: string) => Promise<Post>;
+    getPostInfo: (postId: string) => Promise<PostInfo>;
 }
 
 const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -204,13 +205,18 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doPostActionWithCookie(postId, actionId, '', selectedOption);
     };
 
-    doPostActionWithCookie = async (postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
-        const msg: any = {
+    doPostActionWithCookie = async (postId: string, actionId: string, actionCookie: string, selectedOption = '', query?: Record<string, string>, integrationFormat: PostActionIntegrationFormat = 'attachment') => {
+        const msg: Record<string, unknown> = {
             selected_option: selectedOption,
         };
         if (actionCookie !== '') {
             msg.cookie = actionCookie;
         }
+        if (query && Object.keys(query).length > 0) {
+            msg.query = query;
+        }
+
+        msg.integration_format = integrationFormat;
         return this.doFetch(
             `${this.getPostRoute(postId)}/actions/${encodeURIComponent(actionId)}`,
             {method: 'post', body: msg},
@@ -241,6 +247,13 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     revealBoRPost = async (postId: string) => {
         return this.doFetch(
             `${this.getPostRoute(postId)}/reveal`,
+            {method: 'get'},
+        );
+    };
+
+    getPostInfo = async (postId: string) => {
+        return this.doFetch(
+            `${this.getPostRoute(postId)}/info`,
             {method: 'get'},
         );
     };

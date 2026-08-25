@@ -1,10 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
-import {handleAgentPostUpdate} from '@agents/actions/websocket';
-import {handleAgentsEvents} from '@agents/actions/websocket/events';
-
 import * as bookmark from '@actions/local/channel_bookmark';
 import {
     handleBoRPostAllRevealed,
@@ -12,6 +8,9 @@ import {
     handleBoRPostRevealedEvent,
 } from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
+import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
+import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
+import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
@@ -21,15 +20,25 @@ import * as channel from './channel';
 import * as files from './files';
 import * as group from './group';
 import {handleOpenDialogEvent} from './integrations';
+import {handleManagedChannelCategoriesPropertyValuesUpdated} from './managed_categories';
 import * as posts from './posts';
 import {handlePostTranslationUpdatedEvent} from './posts';
 import * as preferences from './preferences';
+import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 import * as teams from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
-import {handleUserUpdatedEvent, handleUserTypingEvent, handleStatusChangedEvent, handleCustomProfileAttributesValuesUpdatedEvent, handleCustomProfileAttributesFieldUpdatedEvent, handleCustomProfileAttributesFieldDeletedEvent} from './users';
+import {
+    handleCustomProfileAttributesFieldDeletedEvent,
+    handleCustomProfileAttributesFieldUpdatedEvent,
+    handleCustomProfileAttributesValuesUpdatedEvent,
+    handleSessionAttributesPropertyFieldEvent,
+    handleStatusChangedEvent,
+    handleUserTypingEvent,
+    handleUserUpdatedEvent,
+} from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
@@ -313,10 +322,29 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
             handleCustomProfileAttributesFieldDeletedEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.PROPERTY_FIELD_CREATED:
+        case WebsocketEvents.PROPERTY_FIELD_UPDATED:
+            handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
+            handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_FIELD_DELETED:
+            handlePropertyFieldDeleted(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.PROPERTY_VALUES_UPDATED:
+            handleManagedChannelCategoriesPropertyValuesUpdated(serverUrl, msg);
+            handlePropertyValuesUpdated(serverUrl, msg);
+            break;
+
         // Agents
         case WebsocketEvents.AGENTS_POST_UPDATE:
         case WebsocketEvents.AGENTS_TOOL_CALL_STATUS:
-            handleAgentPostUpdate(msg);
+            handleAgentPostUpdate(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.AGENTS_CONVERSATION_UPDATED:
+            handleAgentConversationUpdated(serverUrl, msg);
             break;
 
         // Burn on Read Events

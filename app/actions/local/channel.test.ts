@@ -9,10 +9,10 @@ import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
-import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -26,6 +26,7 @@ import {
     updateMyChannelFromWebsocket,
     updateChannelInfoFromChannel,
     updateLastPostAt,
+    updateMyChannelLastFetchedAt,
     updateChannelsDisplayName,
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
@@ -44,10 +45,17 @@ jest.mock('@screens/navigation', () => {
     const original = jest.requireActual('@screens/navigation');
     return {
         ...original,
-        dismissAllModalsAndPopToScreen: jest.fn(),
-        dismissAllModalsAndPopToRoot: jest.fn(),
+        dismissAllRoutesAndPopToScreen: jest.fn(),
+        navigateToRoot: jest.fn(),
     };
 });
+
+jest.mock('@store/navigation_store', () => ({
+    NavigationStore: {
+        waitUntilScreenHasLoaded: jest.fn().mockResolvedValue(true),
+        isScreenInStack: jest.fn().mockReturnValue(true),
+    },
+}));
 
 jest.mock('@utils/helpers', () => {
     const original = jest.requireActual('@utils/helpers');
@@ -102,8 +110,8 @@ describe('switchToChannel', () => {
         listener.remove();
 
         expect(error).toBeTruthy();
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -124,8 +132,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(undefined);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -149,8 +157,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -175,8 +183,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -202,8 +210,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -230,8 +238,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -258,8 +266,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -285,8 +293,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -311,8 +319,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -338,8 +346,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -365,8 +373,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -393,8 +401,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -423,8 +431,8 @@ describe('switchToChannel', () => {
         expect(teamHistory.length).toBe(0);
         expect(channelHistory.length).toBe(0);
         expect(member?.lastViewedAt).toBe(0);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(1);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(0);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(1);
+        expect(navigateToRoot).toHaveBeenCalledTimes(0);
         expect(listenerCallback).toHaveBeenCalledTimes(0);
     });
 
@@ -452,8 +460,8 @@ describe('switchToChannel', () => {
         expect(channelHistory.length).toBe(1);
         expect(channelHistory[0]).toBe(channelId);
         expect(member?.lastViewedAt).toBe(now);
-        expect(dismissAllModalsAndPopToScreen).toHaveBeenCalledTimes(0);
-        expect(dismissAllModalsAndPopToRoot).toHaveBeenCalledTimes(1);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledTimes(0);
+        expect(navigateToRoot).toHaveBeenCalledTimes(1);
         expect(listenerCallback).toHaveBeenCalledTimes(1);
     });
 });
@@ -1197,13 +1205,27 @@ describe('deletePostsForChannel', () => {
         expect(error).toBeFalsy();
     });
 
-    it('channel with no posts', async () => {
+    it('should clear intervals and reset the watermark for a channel with no posts', async () => {
+        // A PostsInChannel interval that outlived its posts is exactly the state that
+        // renders a channel blank, so this must not early-return.
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await updateMyChannelLastFetchedAt(serverUrl, channelId, 900, false);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(900);
 
-        const {models, error} = await deletePostsForChannel(serverUrl, channelId);
-        expect(models).toEqual([]);
+        const gone = TestHelper.fakePost({id: 'gone', channel_id: channelId, create_at: 500});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [gone], prepareRecordsOnly: false});
+
+        // the post is destroyed the way a received deletion destroys it, leaving the interval
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [{...gone, delete_at: 900, update_at: 900}], prepareRecordsOnly: false});
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(1);
+        expect(await getPostById(operator.database, gone.id)).toBeUndefined();
+
+        const {error} = await deletePostsForChannel(serverUrl, channelId);
         expect(error).toBeFalsy();
+
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(0);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(0);
     });
 
     it('channel with posts - batch written and event emitted', async () => {

@@ -13,7 +13,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
-import {openUserProfileModal} from '@screens/navigation';
+import {openUserProfile} from '@utils/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
@@ -142,6 +142,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         container: {
             flexGrow: 1,
+            gap: 8,
         },
         loadingContainer: {
             flex: 1,
@@ -182,7 +183,6 @@ type Props = {
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
-    includeUserMargin?: boolean;
     location: AvailableScreens;
     customSection?: (profiles: UserProfile[]) => Array<SectionListData<UserProfile>>;
 }
@@ -200,7 +200,6 @@ export default function UserList({
     term,
     testID,
     tutorialWatched,
-    includeUserMargin,
     location,
     customSection,
 }: Props) {
@@ -229,7 +228,7 @@ export default function UserList({
         return createProfilesSections(intl, profiles, channelMembers);
     }, [channelMembers, customSection, intl, loading, profiles, term]);
 
-    const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
+    const openProfile = useCallback(async (profile: UserProfile | UserModel) => {
         let user: UserModel;
         if ('create_at' in profile) {
             const res = await storeProfile(serverUrl, profile);
@@ -241,12 +240,11 @@ export default function UserList({
             user = profile;
         }
 
-        openUserProfileModal(intl, theme, {
+        openUserProfile({
             userId: user.id,
             location,
         });
-    }, [intl, location, serverUrl, theme]);
-
+    }, [location, serverUrl]);
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = selectedIds.has(item.id);
@@ -262,7 +260,7 @@ export default function UserList({
                 isChannelAdmin={isChAdmin}
                 manageMode={manageMode}
                 onPress={handleSelectProfile}
-                onLongPress={openUserProfile}
+                onLongPress={openProfile}
                 selectable={manageMode || canAdd}
                 disabled={!canAdd}
                 selected={selected}
@@ -270,10 +268,9 @@ export default function UserList({
                 testID={`${testID}.user_item`}
                 tutorialWatched={tutorialWatched}
                 user={item}
-                includeMargin={includeUserMargin}
             />
         );
-    }, [selectedIds, manageMode, handleSelectProfile, openUserProfile, showManageMode, testID, tutorialWatched, includeUserMargin]);
+    }, [selectedIds, manageMode, handleSelectProfile, openProfile, showManageMode, testID, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

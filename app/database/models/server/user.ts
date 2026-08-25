@@ -226,4 +226,31 @@ export default class UserModel extends Model implements UserModelInterface {
 
         return highlightWithoutNotificationKeys;
     }
+
+    toAPI(): UserProfile {
+        return {
+            id: this.id,
+            create_at: 0,
+            update_at: this.updateAt,
+            delete_at: this.deleteAt,
+            username: this.username,
+            auth_service: this.authService,
+            email: this.email,
+            nickname: this.nickname,
+            first_name: this.firstName,
+            last_name: this.lastName,
+            position: this.position,
+            roles: this.roles,
+            locale: this.locale,
+            notify_props: this.notifyProps ? this.notifyProps : {} as UserNotifyProps,
+            props: this.props ? this.props : {} as UserProps,
+            terms_of_service_id: this.termsOfServiceId,
+            terms_of_service_create_at: this.termsOfServiceCreateAt,
+            timezone: this.timezone ? this.timezone : undefined,
+            is_bot: this.isBot,
+            last_picture_update: this.lastPictureUpdate,
+            remote_id: this.remoteId ? this.remoteId : undefined,
+            status: this.status,
+        };
+    }
 }

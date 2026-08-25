@@ -18,7 +18,9 @@ Pod::Spec.new do |s|
   fabric_enabled = ENV["RCT_NEW_ARCH_ENABLED"] == "1"
   other_cpp_flags = fabric_enabled ? "-DRCT_NEW_ARCH_ENABLED=1" : ""
 
-  install_modules_dependencies(s)
+  user_header_search_paths = [
+    '"${PODS_CONFIGURATION_BUILD_DIR}/secure-pdf-viewer/Swift Compatibility Header"',
+  ]
 
   s.pod_target_xcconfig    = {
     'USE_HEADERMAP' => 'YES',
@@ -28,14 +30,14 @@ Pod::Spec.new do |s|
     "OTHER_CPLUSPLUSFLAGS" => other_cpp_flags,
     "OTHER_SWIFT_FLAGS" => "-no-verify-emitted-module-interface",
     "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+    "HEADER_SEARCH_PATHS" => "$(inherited) " + user_header_search_paths.join(' '),
   }
 
-  user_header_search_paths = [
-    '"${PODS_CONFIGURATION_BUILD_DIR}/secure-pdf-viewer/Swift Compatibility Header"',
-  ]
   s.user_target_xcconfig = {
-    "HEADER_SEARCH_PATHS" => user_header_search_paths,
+    "HEADER_SEARCH_PATHS" => "$(inherited) " + user_header_search_paths.join(' '),
   }
+
+  install_modules_dependencies(s)
 
   s.frameworks = ["PDFKit", "UIKit", "Foundation"]
 end

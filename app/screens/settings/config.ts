@@ -3,10 +3,9 @@
 
 import {defineMessages, type IntlShape} from 'react-intl';
 
-import {goToScreen} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type {CompassIconName} from '@components/compass_icon';
 
 export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) => ({
     color,
@@ -18,22 +17,10 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     ...typography('Body', 100, 'SemiBold'),
 });
 
-export const gotoSettingsScreen = (screen: AvailableScreens, title: string) => {
-    const passProps = {};
-    const options = {
-        topBar: {
-            backButton: {
-                popStackOnPress: false,
-            },
-        },
-    };
-    return goToScreen(screen, title, passProps, options);
-};
-
 type SettingConfigDetails = {
         defaultMessage?: string;
-        i18nId?: string;
-        icon?: string;
+        id?: string;
+        icon?: CompassIconName;
         testID?: string;
 }
 
@@ -103,41 +90,41 @@ const messages = defineMessages({
 export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
     notification: {
         defaultMessage: messages.notifications.defaultMessage,
-        i18nId: messages.notifications.id,
+        id: messages.notifications.id,
         icon: 'bell-outline',
         testID: messages.notifications.id,
     },
     display: {
         defaultMessage: messages.display.defaultMessage,
-        i18nId: messages.display.id,
+        id: messages.display.id,
         icon: 'layers-outline',
         testID: messages.display.id,
     },
     advanced_settings: {
         defaultMessage: messages.advanced_settings.defaultMessage,
-        i18nId: messages.advanced_settings.id,
+        id: messages.advanced_settings.id,
         icon: 'tune',
         testID: messages.advanced_settings.id,
     },
     about: {
         defaultMessage: messages.about.defaultMessage,
-        i18nId: messages.about.id,
+        id: messages.about.id,
         icon: 'information-outline',
         testID: messages.about.id,
     },
     help: {
         defaultMessage: messages.help.defaultMessage,
-        i18nId: messages.help.id,
+        id: messages.help.id,
         testID: messages.help.id,
     },
     report_problem: {
         defaultMessage: messages.report_problem.defaultMessage,
-        i18nId: messages.report_problem.id,
+        id: messages.report_problem.id,
         testID: messages.report_problem.id,
     },
     download_logs: {
         defaultMessage: messages.download_logs.defaultMessage,
-        i18nId: messages.download_logs.id,
+        id: messages.download_logs.id,
         testID: messages.download_logs.id,
     },
 };
@@ -149,25 +136,25 @@ export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
     },
     push_notification: {
         defaultMessage: messages.push_notifications.defaultMessage,
-        i18nId: messages.push_notifications.id,
+        id: messages.push_notifications.id,
         icon: 'cellphone',
         testID: messages.push_notifications.id,
     },
     call_notification: {
         defaultMessage: messages.call_notifications.defaultMessage,
-        i18nId: messages.call_notifications.id,
+        id: messages.call_notifications.id,
         icon: 'phone-in-talk',
         testID: messages.call_notifications.id,
     },
     email: {
         defaultMessage: messages.email.defaultMessage,
-        i18nId: messages.email.id,
+        id: messages.email.id,
         icon: 'email-outline',
         testID: messages.email.id,
     },
     automatic_dm_replies: {
         defaultMessage: messages.automatic_replies.defaultMessage,
-        i18nId: messages.automatic_replies.id,
+        id: messages.automatic_replies.id,
         icon: 'reply-outline',
         testID: messages.automatic_replies.id,
     },
@@ -176,25 +163,25 @@ export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {
 export const DisplayOptionConfig: Record<string, SettingConfigDetails> = {
     clock: {
         defaultMessage: messages.clock_display.defaultMessage,
-        i18nId: messages.clock_display.id,
+        id: messages.clock_display.id,
         icon: 'clock-outline',
         testID: messages.clock_display.id,
     },
     crt: {
         defaultMessage: messages.crt.defaultMessage,
-        i18nId: messages.crt.id,
+        id: messages.crt.id,
         icon: 'message-text-outline',
         testID: messages.crt.id,
     },
     theme: {
         defaultMessage: messages.theme.defaultMessage,
-        i18nId: messages.theme.id,
+        id: messages.theme.id,
         icon: 'palette-outline',
         testID: messages.theme.id,
     },
     timezone: {
         defaultMessage: messages.timezone.defaultMessage,
-        i18nId: messages.timezone.id,
+        id: messages.timezone.id,
         icon: 'globe',
         testID: messages.timezone.id,
     },

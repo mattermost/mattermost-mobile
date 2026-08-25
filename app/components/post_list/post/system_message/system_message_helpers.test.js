@@ -165,6 +165,56 @@ describe('renderSystemMessage', () => {
         expect(renderedMessage.toJSON()).toBeNull();
     });
 
+    test('uses renderer for shared channel state posts', () => {
+        const shared = renderWithEverything(
+            <SystemMessage
+                hideGuestTags={false}
+                post={{
+                    props: {
+                        shared_channel_state: 'shared',
+                        workspace_name: 'Acme Corp',
+                    },
+                    type: Post.POST_TYPES.SHARED_CHANNEL_STATE,
+                }}
+                {...baseProps}
+            />,
+            {database},
+        );
+        expect(shared.getByText('This channel is now shared with Acme Corp.')).toBeTruthy();
+
+        const unsharedNamed = renderWithEverything(
+            <SystemMessage
+                hideGuestTags={false}
+                post={{
+                    props: {
+                        shared_channel_state: 'unshared',
+                        workspace_name: 'Acme Corp',
+                    },
+                    type: Post.POST_TYPES.SHARED_CHANNEL_STATE,
+                }}
+                {...baseProps}
+            />,
+            {database},
+        );
+        expect(unsharedNamed.getByText('This channel is no longer shared with Acme Corp.')).toBeTruthy();
+
+        const unsharedUnknown = renderWithEverything(
+            <SystemMessage
+                hideGuestTags={false}
+                post={{
+                    props: {
+                        shared_channel_state: 'unshared',
+                        workspace_name: '',
+                    },
+                    type: Post.POST_TYPES.SHARED_CHANNEL_STATE,
+                }}
+                {...baseProps}
+            />,
+            {database},
+        );
+        expect(unsharedUnknown.getByText('This channel is no longer shared with another workspace.')).toBeTruthy();
+    });
+
     test('uses renderer for Guest added and join to channel', () => {
         const post = {
             props: {

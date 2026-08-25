@@ -50,7 +50,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
     const {headerAndFooterHidden} = useLightboxSharedValues();
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
-    const videoRef = useRef<VideoRef>();
+    const videoRef = useRef<VideoRef | undefined>(undefined);
     const [captionsEnabled, setCaptionsEnabled] = useState(true);
     const [paused, setPaused] = useState(!(initialIndex === index));
     const [videoReady, setVideoReady] = useState(false);
@@ -64,7 +64,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
     const [playbackRate, setPlaybackRate] = useState(1);
     const currentTime = useSharedValue(0);
 
-    const hideControlsTimeoutRef = useRef<NodeJS.Timeout>();
+    const hideControlsTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const progressDebounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const playbackStateDebounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 

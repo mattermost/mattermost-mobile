@@ -1,4 +1,10 @@
 {
   "name": "Mattermost",
-  "displayName": "Mattermost"
+  "displayName": "Mattermost",
+  "expo": {
+    "scheme": "mattermost",
+    "plugins": [
+      "expo-router"
+    ]
+  }
 }

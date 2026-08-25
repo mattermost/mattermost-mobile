@@ -41,7 +41,6 @@ describe('PlaybookRuns', () => {
     function getBaseProps(): ComponentProps<typeof PlaybookRuns> {
         return {
             channelId,
-            componentId: 'PlaybookRuns' as const,
         };
     }
 

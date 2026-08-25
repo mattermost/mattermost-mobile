@@ -8,7 +8,6 @@ import {
     DialogDataSources,
     DialogElementTypes,
     DialogTextSubtypes,
-    DialogErrorMessages,
     mapDialogTypeToAppFieldType,
     mapAppFieldTypeToDialogType,
     getDataSourceForAppFieldType,
@@ -59,6 +58,11 @@ describe('dialog_utils', () => {
             expect(mapDialogTypeToAppFieldType(DialogElementTypes.BOOL)).toBe('bool');
         });
 
+        it('should map date and datetime types correctly', () => {
+            expect(mapDialogTypeToAppFieldType(DialogElementTypes.DATE)).toBe('date');
+            expect(mapDialogTypeToAppFieldType(DialogElementTypes.DATETIME)).toBe('datetime');
+        });
+
         it('should default to text for unknown types', () => {
             expect(mapDialogTypeToAppFieldType('unknown_type' as any)).toBe('text');
         });
@@ -81,6 +85,11 @@ describe('dialog_utils', () => {
             expect(mapAppFieldTypeToDialogType('bool')).toBe(DialogElementTypes.BOOL);
         });
 
+        it('should map date and datetime types correctly', () => {
+            expect(mapAppFieldTypeToDialogType('date')).toBe(DialogElementTypes.DATE);
+            expect(mapAppFieldTypeToDialogType('datetime')).toBe(DialogElementTypes.DATETIME);
+        });
+
         it('should default to text for unknown types', () => {
             expect(mapAppFieldTypeToDialogType('unknown_type' as any)).toBe(DialogElementTypes.TEXT);
         });
@@ -97,6 +106,16 @@ describe('dialog_utils', () => {
             expect(getDataSourceForAppFieldType('static_select')).toBeUndefined();
             expect(getDataSourceForAppFieldType('radio')).toBeUndefined();
             expect(getDataSourceForAppFieldType('bool')).toBeUndefined();
+            expect(getDataSourceForAppFieldType('date')).toBeUndefined();
+            expect(getDataSourceForAppFieldType('datetime')).toBeUndefined();
+        });
+
+        it('should return dynamic for dynamic_select type', () => {
+            expect(getDataSourceForAppFieldType('dynamic_select')).toBe('dynamic');
+        });
+
+        it('should return correct data source for dynamic_select', () => {
+            expect(getDataSourceForAppFieldType('dynamic_select')).toBe('dynamic');
         });
 
         it('should return correct data source for dynamic_select', () => {
@@ -265,17 +284,5 @@ describe('dialog_utils', () => {
             expect(DialogTextSubtypes.TEXTAREA).toBe('textarea');
         });
 
-        it('should have dialog error message constants', () => {
-            expect(DialogErrorMessages.REQUIRED).toBe('interactive_dialog.error.required');
-            expect(DialogErrorMessages.TOO_SHORT).toBe('interactive_dialog.error.too_short');
-            expect(DialogErrorMessages.BAD_EMAIL).toBe('interactive_dialog.error.bad_email');
-            expect(DialogErrorMessages.BAD_NUMBER).toBe('interactive_dialog.error.bad_number');
-            expect(DialogErrorMessages.BAD_URL).toBe('interactive_dialog.error.bad_url');
-            expect(DialogErrorMessages.INVALID_OPTION).toBe('interactive_dialog.error.invalid_option');
-            expect(DialogErrorMessages.SUBMISSION_FAILED).toBe('interactive_dialog.submission_failed');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_NETWORK).toBe('interactive_dialog.submission_failed_network');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_VALIDATION).toBe('interactive_dialog.submission_failed_validation');
-            expect(DialogErrorMessages.SUBMISSION_FAILED_WITH_DETAILS).toBe('interactive_dialog.submission_failed_with_details');
-        });
     });
 });

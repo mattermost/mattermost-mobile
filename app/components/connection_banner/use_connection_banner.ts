@@ -18,7 +18,7 @@ const clearTimeoutRef = (ref: React.MutableRefObject<NodeJS.Timeout | null | und
     }
 };
 
-type UseConnectionBannerParams = {
+export type UseConnectionBannerParams = {
     websocketState: WebsocketConnectedState;
     networkPerformanceState: NetworkPerformanceState;
     netInfo: NetInfoState;
@@ -39,8 +39,8 @@ export const useConnectionBanner = ({
     appState,
     intl,
 }: UseConnectionBannerParams): UseConnectionBannerReturn => {
-    const closeTimeout = useRef<NodeJS.Timeout | null>();
-    const openTimeout = useRef<NodeJS.Timeout | null>();
+    const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+    const openTimeout = useRef<NodeJS.Timeout | null>(null);
     const initialAppSession = useRef(true);
     const previousWebsocketState = useRef<WebsocketConnectedState>(websocketState);
     const hasShownSlowBanner = useRef(false);

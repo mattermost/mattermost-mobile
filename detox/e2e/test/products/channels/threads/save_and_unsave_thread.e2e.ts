@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -25,18 +26,25 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {expect} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const savedText = 'Saved';
     let testChannel: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+
+        // Enable CRT for global threads UI.
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                CollapsedThreads: 'always_on',
+                ThreadAutoFollow: true,
+            },
+        });
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -61,7 +69,7 @@ describe('Threads - Save and Unsave Thread', () => {
 
         const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(postListPostItem, timeouts.FOUR_SEC);
 
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
@@ -75,21 +83,21 @@ describe('Threads - Save and Unsave Thread', () => {
 
         // # Open thread options for thread, tap on save option, and tap on thread
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.saveThreadOption.tap();
+        await ThreadOptionsScreen.tapSaveThread();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
+        // * Verify the thread is saved via ThreadOverview unsave button (.atIndex(0) for stale off-screen mounts).
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
+        // # Go back to global threads screen, open thread options for thread, tap on unsave option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.unsaveThreadOption.tap();
+        await ThreadOptionsScreen.tapUnsaveThread();
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify saved text is not displayed on the post pre-header
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        // * Verify the thread is unsaved.
+        await waitFor(ThreadScreen.getThreadOverviewSaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -116,12 +124,14 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
         await ThreadScreen.getThreadOverviewSaveButton().tap();
 
-        // * Verify saved text is displayed on the post pre-header
-        const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(parentPost.id, parentMessage);
-        await expect(postListPostItemPreHeaderText).toHaveText(savedText);
+        // * Verify the thread is saved.
+        await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on thread overview unsave button
         await ThreadScreen.getThreadOverviewUnsaveButton().tap();
+
+        // * Verify the thread is unsaved
+        await waitFor(element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

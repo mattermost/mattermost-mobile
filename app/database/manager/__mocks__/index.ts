@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BoardViewModel} from '@boards/database/models';
 import {Database, Q} from '@nozbe/watermelondb';
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs';
 import logger from '@nozbe/watermelondb/utils/common/logger';
-import {deleteAsync} from 'expo-file-system';
+import {File} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
+import {AiBotModel, AiThreadModel} from '@agents/database/models';
 import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -14,7 +16,7 @@ import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
 import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+    PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
     ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
     ScheduledPostModel,
@@ -29,7 +31,7 @@ import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
-import type ServerModel from '@typings/database/models/app/servers';
+import type {default as ServerModel, PersistenceFlag} from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
@@ -52,10 +54,11 @@ class DatabaseManagerSingleton {
         this.serverModels = [
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
-            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
+            PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, BoardViewModel,
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
+            AiBotModel, AiThreadModel,
         ];
         this.databaseDirectory = '';
     }
@@ -197,6 +200,18 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public updatePersistenceFlag = async (serverUrl: string, persistenceFlag: PersistenceFlag) => {
+        const appDatabase = this.appDatabase?.database;
+        if (appDatabase) {
+            const server = await this.getServer(serverUrl);
+            await appDatabase.write(async () => {
+                await server?.update((record) => {
+                    record.persistenceFlag = persistenceFlag;
+                });
+            });
+        }
+    };
+
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
         const server = await this.getServer(serverUrl);
         return Boolean(server);
@@ -235,6 +250,22 @@ class DatabaseManagerSingleton {
         return server;
     };
 
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const server = await this.getActiveServer();
         if (server?.url) {
@@ -259,12 +290,28 @@ class DatabaseManagerSingleton {
         }
     };
 
+    public wipeServerData = async (serverUrl: string): Promise<void> => {
+        const server = await this.getServer(serverUrl);
+        if (server) {
+            delete this.serverDatabases[serverUrl];
+            await this.deleteServerDatabaseFiles(serverUrl);
+            await this.createServerDatabase({
+                config: {
+                    dbName: urlSafeBase64Encode(serverUrl),
+                    displayName: server.displayName,
+                    identifier: '',
+                    serverUrl,
+                },
+            });
+        }
+    };
+
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
         const database = this.appDatabase?.database;
         if (database) {
             const server = await this.getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.update((record) => {
                         record.lastActiveAt = 0;
                         record.identifier = '';
@@ -272,7 +319,7 @@ class DatabaseManagerSingleton {
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };
@@ -292,7 +339,7 @@ class DatabaseManagerSingleton {
         }
     };
 
-    private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {
@@ -304,22 +351,36 @@ class DatabaseManagerSingleton {
         // On Android, we'll delete both the *.db file and the *.db-journal file
         const androidFilesDir = `${this.databaseDirectory}databases/`;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
+        const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
+        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
-            await deleteAsync(databaseFile);
+            new File(databaseFile).delete();
         } catch {
             // do nothing
         }
 
         try {
-            await deleteAsync(databaseJournal);
+            new File(databaseShm).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseWal).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseJournal).delete();
         } catch {
             // do nothing
         }
     };
 
-    factoryReset = async (shouldRemoveDirectory: boolean): Promise<boolean> => {
+    factoryReset = (shouldRemoveDirectory: boolean): boolean => {
         try {
         //On iOS, we'll delete the databases folder under the shared AppGroup folder
             if (Platform.OS === 'ios') {
@@ -329,7 +390,7 @@ class DatabaseManagerSingleton {
 
             // On Android, we'll remove the databases folder under the Document Directory
             const androidFilesDir = `${this.databaseDirectory}databases/`;
-            await deleteAsync(androidFilesDir);
+            new File(androidFilesDir).delete();
             return true;
         } catch (e) {
             return false;

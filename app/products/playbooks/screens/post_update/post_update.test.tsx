@@ -10,11 +10,11 @@ import {Alert, Keyboard} from 'react-native';
 import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
+import NavigationButton from '@components/navigation_button';
 import OptionItem from '@components/option_item';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {getLastCall} from '@test/mock_helpers';
 import TestHelper from '@test/test_helper';
@@ -25,19 +25,25 @@ jest.mock('@components/floating_input/floating_text_input_label', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingTextInput).mockImplementation((props) => React.createElement('FloatingTextInput', {testID: 'FloatingTextInput', ...props}));
+jest.mocked(FloatingTextInput).mockImplementation((props: ComponentProps<typeof FloatingTextInput>) => React.createElement('FloatingTextInput', {testID: 'FloatingTextInput', ...props}));
 
 jest.mock('@components/floating_input/floating_autocomplete_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
-jest.mocked(FloatingAutocompleteSelector).mockImplementation((props) => React.createElement('FloatingAutocompleteSelector', props));
+jest.mocked(FloatingAutocompleteSelector).mockImplementation((props: ComponentProps<typeof FloatingAutocompleteSelector>) => React.createElement('FloatingAutocompleteSelector', props));
 
 jest.mock('@components/option_item', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 jest.mocked(OptionItem).mockImplementation((props) => React.createElement('OptionItem', {...props}));
+
+jest.mock('@components/navigation_button', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(NavigationButton).mockImplementation((props) => React.createElement('NavigationButton', {...props}));
 
 jest.mock('@actions/local/post', () => ({
     getPosts: jest.fn(),
@@ -47,14 +53,30 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(() => 'https://server-url.com'),
 }));
 
-jest.mock('@hooks/navigation_button_pressed', () => ({
+jest.mock('@hooks/android_back_handler', () => ({
     __esModule: true,
     default: jest.fn(),
 }));
 
-jest.mock('@hooks/android_back_handler', () => ({
-    __esModule: true,
-    default: jest.fn(),
+jest.mock('@screens/navigation', () => ({
+    navigateBack: jest.fn(),
+    goToScreen: jest.fn(),
+    showModal: jest.fn(),
+    dismissModal: jest.fn(),
+    bottomSheet: jest.fn(),
+}));
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
 }));
 
 jest.mock('@playbooks/actions/remote/runs', () => ({
@@ -80,10 +102,25 @@ jest.mock('react-native', () => {
     };
 });
 
+jest.mock('react-native-keyboard-controller', () => {
+    const RN = jest.requireActual('react-native');
+    return {
+        KeyboardAwareScrollView: RN.ScrollView,
+        useAnimatedKeyboard: jest.fn(() => ({
+            height: {value: 0},
+            progress: {value: 0},
+            state: {value: 0},
+        })),
+        KeyboardController: {
+            setInputMode: jest.fn(),
+            setDefaultMode: jest.fn(),
+        },
+    };
+});
+
 describe('PostUpdate', () => {
     function getBaseProps(): ComponentProps<typeof PostUpdate> {
         return {
-            componentId: 'PlaybookPostUpdate',
             playbookRunId: 'playbook-run-id',
             runName: 'Test Run',
             userId: 'user-id',
@@ -124,11 +161,13 @@ describe('PostUpdate', () => {
         jest.mocked(postStatusUpdate).mockResolvedValue({data: true});
     });
 
-    it('should render loading state initially', () => {
+    it('should render loading state initially', async() => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
-        expect(getByTestId('loader')).toBeTruthy();
+        await waitFor(() => {
+            expect(getByTestId('loader')).toBeTruthy();
+        });
     });
 
     it('should render correctly after loading', async () => {
@@ -245,10 +284,12 @@ describe('PostUpdate', () => {
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         await waitFor(() => {
-            expect(setButtons).toHaveBeenCalled();
-            const lastCall = jest.mocked(setButtons).mock.calls[jest.mocked(setButtons).mock.calls.length - 1];
-            const rightButton = lastCall[1]?.rightButtons?.[0];
-            expect(rightButton?.enabled).toBe(true);
+            expect(mockSetOptions).toHaveBeenCalled();
+            const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(false);
         });
     });
 
@@ -266,9 +307,11 @@ describe('PostUpdate', () => {
         await waitFor(() => {
             const input = getByTestId('FloatingTextInput');
             expect(input).toHaveProp('value', 'Default message template');
-            const lastCall = getLastCall(jest.mocked(setButtons));
-            const rightButton = lastCall[1]?.rightButtons?.[0];
-            expect(rightButton?.enabled).toBe(true);
+            const lastCall = getLastCall(jest.mocked(mockSetOptions));
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(false);
         });
 
         const input = getByTestId('FloatingTextInput');
@@ -277,9 +320,11 @@ describe('PostUpdate', () => {
         });
 
         await waitFor(() => {
-            const lastCall = getLastCall(jest.mocked(setButtons));
-            const rightButton = lastCall[1]?.rightButtons?.[0];
-            expect(rightButton?.enabled).toBe(false);
+            const lastCall = getLastCall(jest.mocked(mockSetOptions));
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{disabled: boolean}>;
+            expect(navigationButton.props.disabled).toBe(true);
         });
     });
 
@@ -369,14 +414,18 @@ describe('PostUpdate', () => {
 
     it('should post update without confirmation when alsoMarkRunAsFinished is false', async () => {
         const props = getBaseProps();
-        renderWithIntlAndTheme(<PostUpdate {...props}/>);
+        const {getByTestId} = renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
+        // Wait for async data to load and message template to be populated
         await waitFor(() => {
-            expect(setButtons).toHaveBeenCalled();
+            expect(getByTestId('FloatingTextInput')).toHaveProp('value', 'Default message template');
         });
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
 
         await act(async () => {
             postHandler();
@@ -397,7 +446,7 @@ describe('PostUpdate', () => {
                     team_id: 'team-id',
                 },
             );
-            expect(popTopScreen).toHaveBeenCalledWith('PlaybookPostUpdate');
+            expect(navigateBack).toHaveBeenCalled();
             expect(Keyboard.dismiss).toHaveBeenCalled();
         });
     });
@@ -416,8 +465,11 @@ describe('PostUpdate', () => {
             toggle.props.action(true);
         });
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
 
         await act(async () => {
             postHandler();
@@ -457,8 +509,12 @@ describe('PostUpdate', () => {
             toggle.props.action(true);
         });
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
+
         await act(async () => {
             postHandler();
         });
@@ -494,8 +550,12 @@ describe('PostUpdate', () => {
             toggle.props.action(true);
         });
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
+
         await act(async () => {
             postHandler();
         });
@@ -533,8 +593,16 @@ describe('PostUpdate', () => {
 
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        await waitFor(() => {
+            expect(mockSetOptions).toHaveBeenCalled();
+        });
+
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
+
         await act(async () => {
             postHandler();
         });
@@ -554,11 +622,17 @@ describe('PostUpdate', () => {
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         await waitFor(() => {
-            const postHandler = jest.mocked(useNavButtonPressed).mock.calls.find(
-                (call) => call[0] === 'save-post-update',
-            )?.[2];
+            expect(mockSetOptions).toHaveBeenCalled();
+        });
 
-            postHandler?.();
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
+
+        await act(async () => {
+            postHandler();
         });
 
         await waitFor(() => {
@@ -591,12 +665,12 @@ describe('PostUpdate', () => {
         });
     });
 
-    it('should handle Android back button press', () => {
+    it('should handle Android back button press', async () => {
         const props = getBaseProps();
         renderWithIntlAndTheme(<PostUpdate {...props}/>);
 
         expect(useAndroidHardwareBackHandler).toHaveBeenCalledWith(
-            'PlaybookPostUpdate',
+            'playbook_post_update',
             expect.any(Function),
         );
 
@@ -606,8 +680,10 @@ describe('PostUpdate', () => {
             backHandler();
         });
 
-        expect(popTopScreen).toHaveBeenCalled();
-        expect(Keyboard.dismiss).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(navigateBack).toHaveBeenCalled();
+            expect(Keyboard.dismiss).toHaveBeenCalled();
+        });
     });
 
     it('should update reminder value correctly for different time options', async () => {
@@ -633,8 +709,11 @@ describe('PostUpdate', () => {
                 selector.props.onSelected({value: option.value});
             });
 
-            const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-            const postHandler = lastCall[2];
+            const lastCall = getLastCall(jest.mocked(mockSetOptions));
+            const setOptionsCall = lastCall[0];
+            const headerRight = setOptionsCall.headerRight;
+            const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+            const postHandler = navigationButton.props.onPress;
 
             // eslint-disable-next-line no-await-in-loop
             await act(async () => {
@@ -721,8 +800,12 @@ describe('PostUpdate', () => {
             toggle.props.action(true);
         });
 
-        const lastCall = getLastCall(jest.mocked(useNavButtonPressed));
-        const postHandler = lastCall[2];
+        const lastCall = getLastCall(jest.mocked(mockSetOptions));
+        const setOptionsCall = lastCall[0];
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+        const postHandler = navigationButton.props.onPress;
+
         await act(async () => {
             postHandler();
         });

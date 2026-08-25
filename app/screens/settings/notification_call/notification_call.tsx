@@ -1,30 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import CallsNative from '@mattermost/calls-native';
 import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import InCallManager from 'react-native-incall-manager';
 
 import {updateMe} from '@actions/remote/user';
 import SettingBlock from '@components/settings/block';
 import SettingContainer from '@components/settings/container';
 import SettingOption from '@components/settings/option';
 import SettingSeparator from '@components/settings/separator';
-import {Calls} from '@constants';
+import {Calls, Screens} from '@constants';
 import {Ringtone} from '@constants/calls';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import useNotificationProps from '@hooks/notification_props';
-import {popTopScreen} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: AvailableScreens;
     currentUser?: UserModel;
 };
 
@@ -35,7 +32,7 @@ const {footerText} = defineMessages({
     },
 });
 
-const NotificationCall = ({componentId, currentUser}: Props) => {
+const NotificationCall = ({currentUser}: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
@@ -52,28 +49,23 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
     });
     const [playingRingtone, setPlayingRingtone] = useState(false);
 
-    const close = useCallback(() => {
-        InCallManager.stopRingtone();
-        popTopScreen(componentId);
-    }, [componentId]);
-
     const selectOption = useCallback(async (value: string) => {
         const tone = 'calls_' + value.toLowerCase();
 
         if (value !== callsMobileNotificationSound) {
             setCallsMobileNotificationSound(value);
 
-            await InCallManager.stopRingtone();
-            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            await CallsNative.stopRingtone();
+            await CallsNative.startRingtone(tone, 0);
             setPlayingRingtone(true);
             return;
         }
 
         if (playingRingtone) {
-            await InCallManager.stopRingtone();
+            await CallsNative.stopRingtone();
             setPlayingRingtone(false);
         } else {
-            await InCallManager.startRingtone(tone, Calls.RINGTONE_VIBRATE_PATTERN);
+            await CallsNative.startRingtone(tone, 0);
             setPlayingRingtone(true);
         }
     }, [callsMobileNotificationSound, playingRingtone]);
@@ -81,7 +73,7 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
     const selectNotificationOnOff = useCallback(async (on: boolean) => {
         setCallsMobileSound(on);
         if (!on) {
-            await InCallManager.stopRingtone();
+            await CallsNative.stopRingtone();
         }
     }, []);
 
@@ -103,12 +95,12 @@ const NotificationCall = ({componentId, currentUser}: Props) => {
             };
             updateMe(serverUrl, {notify_props});
         }
-        close();
-    }, [serverUrl, canSaveSettings, close, notifyProps, callsMobileSound, callsMobileNotificationSound]);
+        CallsNative.stopRingtone();
+    }, [serverUrl, canSaveSettings, notifyProps, callsMobileSound, callsMobileNotificationSound]);
 
     useBackNavigation(saveNotificationSettings);
 
-    useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
+    useAndroidHardwareBackHandler(Screens.SETTINGS_NOTIFICATION_CALL, saveNotificationSettings);
 
     return (
         <SettingContainer testID='call_notification_settings'>

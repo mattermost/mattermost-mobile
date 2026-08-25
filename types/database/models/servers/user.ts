@@ -125,6 +125,8 @@ declare class UserModel extends Model {
 
     /** customProfileAttributes : All the custom profile attributes for this user */
     customProfileAttributes: Query<CustomProfileAttributeModel> | undefined;
+
+    toAPI: () => UserProfile;
 }
 
 export default UserModel;

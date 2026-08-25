@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {from as from$} from 'rxjs';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeFilesForPost} from '@queries/servers/file';
@@ -19,7 +19,7 @@ type Props = WithDatabaseArgs & {
 
 const enhance = withObservables(['post'], ({post, database}: Props) => {
     const files = observeFilesForPost(database, post.id).pipe(
-        switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
+        switchMap((fs) => of$(filesLocalPathValidation(fs, post.userId))),
     );
 
     return {

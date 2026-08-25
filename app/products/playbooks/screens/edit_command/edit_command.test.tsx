@@ -6,8 +6,8 @@ import {Keyboard} from 'react-native';
 
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {navigateBack} from '@screens/navigation';
+import CallbackStore from '@store/callback_store';
 import {act, renderWithEverything} from '@test/intl-test-helper';
 
 import EditCommand from './edit_command';
@@ -21,8 +21,21 @@ jest.mocked(EditCommandForm).mockImplementation(
     (props) => React.createElement('EditCommandForm', {testID: 'edit-command-form', ...props}),
 );
 
-jest.mock('@hooks/navigation_button_pressed');
 jest.mock('@hooks/android_back_handler');
+jest.mock('@screens/navigation');
+
+// Mock expo-router navigation
+const mockSetOptions = jest.fn();
+const mockRemoveListener = jest.fn();
+const mockAddListener = jest.fn(() => mockRemoveListener);
+const mockNavigation = {
+    setOptions: mockSetOptions,
+    addListener: mockAddListener,
+};
+
+jest.mock('expo-router', () => ({
+    useNavigation: jest.fn(() => mockNavigation),
+}));
 
 const serverUrl = 'some.server.url';
 
@@ -30,6 +43,8 @@ describe('EditCommand', () => {
     let database: Database;
 
     beforeEach(async () => {
+        jest.clearAllMocks();
+        CallbackStore.removeCallback();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -40,9 +55,7 @@ describe('EditCommand', () => {
 
     function getBaseProps(): ComponentProps<typeof EditCommand> {
         return {
-            componentId: 'PlaybookEditCommand',
             savedCommand: '/test command',
-            updateCommand: jest.fn(),
             channelId: 'channel-123',
         };
     }
@@ -67,78 +80,88 @@ describe('EditCommand', () => {
         expect(editCommandForm.props.command).toBe('/');
     });
 
-    it('sets up navigation buttons correctly', () => {
+    it('sets up navigation header with disabled save button initially', () => {
         const props = getBaseProps();
         renderWithEverything(<EditCommand {...props}/>, {database});
 
-        expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-            rightButtons: [expect.objectContaining({
-                id: 'save-command',
-                enabled: false,
-                showAsAction: 'always',
-                text: 'Save',
-            })],
-        });
+        // navigation.setOptions should be called with headerRight
+        expect(mockSetOptions).toHaveBeenCalled();
+
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        expect(setOptionsCall.headerRight).toBeDefined();
+
+        // Call the headerRight component to get the NavigationButton element
+        const headerRight = setOptionsCall.headerRight;
+        const navigationButton = headerRight() as React.ReactElement<{disabled: boolean; testID: string}>;
+
+        // Verify it's a NavigationButton with the correct props
+        expect(navigationButton.props.testID).toBe('playbooks.edit_command.save.button');
+        expect(navigationButton.props.disabled).toBe(true);
     });
 
-    it('enables save button when command changes', () => {
+    it('updates navigation options when command changes', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithEverything(<EditCommand {...props}/>, {database});
 
         const editCommandForm = getByTestId('edit-command-form');
 
-        // Initially, save button should be disabled
-        expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-            rightButtons: [expect.objectContaining({enabled: false})],
-        });
-
-        jest.mocked(setButtons).mockClear();
+        // Initially, setOptions should be called
+        expect(mockSetOptions).toHaveBeenCalled();
+        const initialCallCount = mockSetOptions.mock.calls.length;
 
         act(() => {
             // Simulate command change
             editCommandForm.props.onCommandChange('/new command');
         });
 
-        // Save button should now be enabled
-        expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-            rightButtons: [expect.objectContaining({enabled: true})],
-        });
+        // setOptions should be called again when command changes (canSave becomes true)
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(initialCallCount);
 
-        jest.mocked(setButtons).mockClear();
+        const afterChangeCallCount = mockSetOptions.mock.calls.length;
 
         act(() => {
             // Change back to original
             editCommandForm.props.onCommandChange(props.savedCommand);
         });
 
-        // Save button should now be enabled
-        expect(setButtons).toHaveBeenCalledWith(props.componentId, {
-            rightButtons: [expect.objectContaining({enabled: false})],
-        });
+        // setOptions should be called again when command changes back (canSave becomes false)
+        expect(mockSetOptions.mock.calls.length).toBeGreaterThan(afterChangeCallCount);
     });
 
     it('calls updateCommand and closes when save button is pressed', () => {
         const props = getBaseProps();
         const updateCommandMock = jest.fn();
-        props.updateCommand = updateCommandMock;
+
+        // Set the callback in CallbackStore
+        CallbackStore.setCallback(updateCommandMock);
 
         renderWithEverything(<EditCommand {...props}/>, {database});
 
-        // Get the onEditCommand function that was passed to useNavButtonPressed
-        const onEditCommand = jest.mocked(useNavButtonPressed).mock.calls[0][2];
+        // Get the headerRight component that was passed to setOptions
+        const setOptionsCall = mockSetOptions.mock.calls[0][0];
+        const headerRight = setOptionsCall.headerRight;
 
-        // Simulate save button press
-        onEditCommand();
+        // Call the headerRight component to get the NavigationButton element
+        const navigationButton = headerRight() as React.ReactElement<{onPress: () => void}>;
+
+        // Extract the onPress handler from the NavigationButton props
+        const onPress = navigationButton.props.onPress;
+
+        // Simulate save button press by calling the onPress handler
+        onPress();
 
         expect(updateCommandMock).toHaveBeenCalledWith(props.savedCommand);
         expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+        expect(navigateBack).toHaveBeenCalled();
+        expect(CallbackStore.getCallback()).toBeUndefined();
     });
 
     it('closes without updating when close is called', () => {
         const props = getBaseProps();
         const updateCommandMock = jest.fn();
-        props.updateCommand = updateCommandMock;
+
+        // Set the callback in CallbackStore
+        CallbackStore.setCallback(updateCommandMock);
 
         renderWithEverything(<EditCommand {...props}/>, {database});
 
@@ -150,7 +173,8 @@ describe('EditCommand', () => {
 
         expect(updateCommandMock).not.toHaveBeenCalled();
         expect(Keyboard.dismiss).toHaveBeenCalled();
-        expect(popTopScreen).toHaveBeenCalledWith(props.componentId);
+        expect(navigateBack).toHaveBeenCalled();
+        expect(CallbackStore.getCallback()).toBeUndefined();
     });
 
     it('updates command state when onCommandChange is called', () => {

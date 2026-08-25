@@ -14,7 +14,7 @@ import type {GalleryPagerItem} from '@typings/screens/gallery';
 interface PageProps extends GalleryPagerItem {
     gutterWidth: number;
     length: number;
-    renderPage: (props: GalleryPagerItem, index: number) => JSX.Element | null;
+    renderPage: (props: GalleryPagerItem, index: number) => React.ReactNode;
     shouldRenderGutter: boolean;
     getPageTranslate: (index: number, width?: number) => number;
     currentIndex: SharedValue<number>;

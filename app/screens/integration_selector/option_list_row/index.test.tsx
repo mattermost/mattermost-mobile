@@ -7,7 +7,7 @@ import {Preferences} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import OptionListRow from '.';
+import OptionListRow from './index';
 
 import type Database from '@nozbe/watermelondb/Database';
 

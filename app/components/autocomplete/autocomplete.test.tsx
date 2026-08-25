@@ -12,22 +12,27 @@ import EmojiSuggestion from './emoji_suggestion/';
 import SlashSuggestion from './slash_suggestion/';
 import AppSlashSuggestion from './slash_suggestion/app_slash_suggestion/';
 
+import type {AtMentionProps} from './at_mention/at_mention';
+import type {ChannelMentionProps} from './channel_mention/channel_mention';
+import type {EmojiSuggestionProps} from './emoji_suggestion/emoji_suggestion';
+import type {AppSlashSuggestionPropsProps} from './slash_suggestion/app_slash_suggestion/app_slash_suggestion';
+import type {SlashSuggestionProps} from './slash_suggestion/slash_suggestion';
 import type {SharedValue} from 'react-native-reanimated';
 
 jest.mock('./at_mention/');
-jest.mocked(AtMention).mockImplementation((props) => React.createElement('AtMention', {...props, testID: 'at-mention-mock'}));
+jest.mocked(AtMention).mockImplementation((props: AtMentionProps) => React.createElement('AtMention', {...props, testID: 'at-mention-mock'}));
 
 jest.mock('./channel_mention/');
-jest.mocked(ChannelMention).mockImplementation((props) => React.createElement('ChannelMention', {...props, testID: 'channel-mention-mock'}));
+jest.mocked(ChannelMention).mockImplementation((props: ChannelMentionProps) => React.createElement('ChannelMention', {...props, testID: 'channel-mention-mock'}));
 
 jest.mock('./emoji_suggestion/');
-jest.mocked(EmojiSuggestion).mockImplementation((props) => React.createElement('EmojiSuggestion', {...props, testID: 'emoji-suggestion-mock'}));
+jest.mocked(EmojiSuggestion).mockImplementation((props: EmojiSuggestionProps) => React.createElement('EmojiSuggestion', {...props, testID: 'emoji-suggestion-mock'}));
 
 jest.mock('./slash_suggestion/');
-jest.mocked(SlashSuggestion).mockImplementation((props) => React.createElement('SlashSuggestion', {...props, testID: 'slash-suggestion-mock'}));
+jest.mocked(SlashSuggestion).mockImplementation((props: SlashSuggestionProps) => React.createElement('SlashSuggestion', {...props, testID: 'slash-suggestion-mock'}));
 
 jest.mock('./slash_suggestion/app_slash_suggestion/');
-jest.mocked(AppSlashSuggestion).mockImplementation((props) => React.createElement('AppSlashSuggestion', {...props, testID: 'app-slash-suggestion-mock'}));
+jest.mocked(AppSlashSuggestion).mockImplementation((props: AppSlashSuggestionPropsProps) => React.createElement('AppSlashSuggestion', {...props, testID: 'app-slash-suggestion-mock'}));
 
 describe('Autocomplete', () => {
     function getBaseProps(): ComponentProps<typeof Autocomplete> {

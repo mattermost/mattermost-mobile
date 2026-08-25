@@ -1,0 +1,42 @@
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
+index 28a1e46..6964491 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar-android.js
+@@ -61,6 +61,10 @@ const SearchBarAndroid = forwardRef((props, ref) => {
+             (_a = inputRef.current) === null || _a === void 0 ? void 0 : _a.blur();
+             onCancel();
+         },
++        setSelection: (start, end) => {
++            var _a;
++            (_a = inputRef.current) === null || _a === void 0 ? void 0 : _a.input.setSelection(start, end);
++        },
+     }));
+     const handleFocus = (event) => {
+         onFocus(event);
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
+index 9957e0b..38dd681 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar-ios.js
+@@ -60,6 +60,10 @@ const SearchBarIOS = forwardRef((props, ref) => {
+                 onCancel();
+             }, 0);
+         },
++        setSelection: (start, end) => {
++            var _a;
++            (_a = inputRef.current) === null || _a === void 0 ? void 0 : _a.input.setSelection(start, end);
++        },
+     }));
+     const handleFocus = (event) => {
+         onFocus(event);
+diff --git a/node_modules/@rneui/base/dist/SearchBar/SearchBar.js b/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
+index ed8a053..7bf0c46 100644
+--- a/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
++++ b/node_modules/@rneui/base/dist/SearchBar/SearchBar.js
+@@ -15,6 +15,7 @@ export const SearchBar = forwardRef((props, ref) => {
+         blur: () => { var _a; return (_a = searchBarRef.current) === null || _a === void 0 ? void 0 : _a.blur(); },
+         clear: () => { var _a; return (_a = searchBarRef.current) === null || _a === void 0 ? void 0 : _a.clear(); },
+         cancel: () => { var _a; return (_a = searchBarRef.current) === null || _a === void 0 ? void 0 : _a.cancel(); },
++        setSelection: (start, end) => { var _a; return (_a = searchBarRef.current) === null || _a === void 0 ? void 0 : _a.setSelection(start, end); },
+     }));
+     const Component = SEARCH_BAR_COMPONENTS[platform] || SearchBarDefault;
+     return React.createElement(Component, Object.assign({ ref: searchBarRef }, props));

@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 
 /**
  * Secure manager for tracking PDF password authentication failures per document.
@@ -113,23 +113,14 @@ class PasswordAttemptStore(context: Context) {
         }
     }
 
-    /**
-     * Creates encrypted SharedPreferences instance with strong encryption.
-     *
-     * Uses AndroidX Security library to provide:
-     * - AES-256 encryption for both keys and values
-     * - Hardware-backed master keys when available
-     * - Automatic key rotation and management
-     *
-     * @param context Application context for accessing encryption services
-     * @return Encrypted SharedPreferences instance
-     */
     private fun createEncryptedPrefs(context: Context): SharedPreferences {
-        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
         return EncryptedSharedPreferences.create(
-            PREF_NAME,
-            masterKeyAlias,
             context,
+            PREF_NAME,
+            masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )

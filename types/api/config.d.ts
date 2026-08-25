@@ -74,6 +74,7 @@ interface ClientConfig {
     EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
+    EnableManagedChannelCategories?: string;
     EnablePermalinkPreviews: string;
     EnableMarketplace: string;
     EnableMetrics: string;
@@ -116,6 +117,7 @@ interface ClientConfig {
     ExperimentalEnableClickToReply: string;
     ExperimentalEnableDefaultChannelLeaveJoinMessages: string;
     ExperimentalEnablePostMetadata: string;
+    ExperimentalEnableWatermark: string;
     ExperimentalGroupUnreadChannels: string;
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;
@@ -125,11 +127,13 @@ interface ClientConfig {
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
-    FeatureFlagInteractiveDialogAppsForm?: string;
+    FeatureFlagMmBlocksEnabled?: string;
+    FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
@@ -162,6 +166,10 @@ interface ClientConfig {
     MobileAllowPdfLinkNavigation: string;
     MobileEnableBiometrics: string;
     MobileEnableSecureFilePreview: string;
+    MobileEphemeralModeEnabled?: string;
+    MobileEphemeralModeDisconnectionTimeoutSeconds?: string;
+    MobileEphemeralModeOfflinePersistenceTimerHours?: string;
+    MobileEphemeralModeAutoCacheCleanupDays?: string;
     MobileJailbreakProtection: string;
     MobilePreventScreenCapture: string;
     MobileExternalBrowser: string;

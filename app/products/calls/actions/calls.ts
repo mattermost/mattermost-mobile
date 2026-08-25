@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
+import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -14,6 +16,12 @@ import {
     needsRecordingWillBePostedAlert,
     showErrorAlertOnClose,
 } from '@calls/alerts';
+import {
+    endNativeCall,
+    mirrorMuteToNativeCall,
+    registerOutgoingNativeCall,
+    reportNativeCallConnected,
+} from '@calls/native_call';
 import {
     getCallsConfig,
     getCallsState,
@@ -28,23 +36,23 @@ import {
     setConfig,
     setPluginEnabled,
     setScreenShareURL,
-    setSpeakerPhone,
 } from '@calls/state';
-import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
-import {General, Preferences} from '@constants';
+import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getLicense} from '@queries/servers/system';
+import {getPostById} from '@queries/servers/post';
+import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
+import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
+import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
@@ -233,18 +241,25 @@ export const joinCall = async (
         connection.disconnect();
         connection = null;
     }
-    setSpeakerphoneOn(false);
     newCurrentCall(serverUrl, channelId, userId);
+
+    // Register with the system call UI so the user gets lock-screen /
+    // control-center controls if they background or lock mid-call. Skip
+    // when a mapping already exists — that means we're inside the
+    // inbound-push flow and the native layer already reported the call.
+    const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
 
     try {
         connection = await newConnection(serverUrl, channelId, (err?: Error) => {
             myselfLeftCall();
+            endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, title, rootId);
+        }, setScreenShareURL, hasMicPermission, intl, title, rootId);
     } catch (error) {
+        endNativeCall(serverUrl, channelId, 'failed');
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -253,6 +268,7 @@ export const joinCall = async (
         const sessionId = await connection.waitForPeerConnection();
 
         setCurrentCallConnected(channelId, sessionId);
+        reportNativeCallConnected(ownedNativeUUID);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -313,12 +329,14 @@ export const leaveCallConfirmation = async (
 export const muteMyself = () => {
     if (connection) {
         connection.mute();
+        mirrorMuteToNativeCall(true);
     }
 };
 
 export const unmuteMyself = () => {
     if (connection) {
         connection.unmute();
+        mirrorMuteToNativeCall(false);
     }
 };
 
@@ -346,13 +364,11 @@ export const sendReaction = (emoji: EmojiData) => {
     }
 };
 
-export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
-    InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
-    setSpeakerPhone(speakerphoneOn);
-};
-
-export const setPreferredAudioRoute = async (audio: AudioDevice) => {
-    return InCallManager.chooseAudioRoute(audio);
+export const setPreferredAudioRoute = async (audio: AudioDeviceType, fromUser = false) => {
+    if (fromUser) {
+        connection?.setUserSelectedAudioRoute(audio);
+    }
+    return CallsNative.setAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {
@@ -403,16 +419,10 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
     }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
-        const otherID = getUserIdFromChannelName(currentUserId, channel.name);
-        const otherUser = await getUserById(database, otherID);
-        const license = await getLicense(database);
-        const config = await getConfig(database);
-        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
             defaultMessage: 'Are you sure you want to end the call with {displayName}?',
-        }, {displayName: displayUsername(otherUser, intl.locale, displaySetting)});
+        }, {displayName: channel.displayName});
     }
 
     return msg;
@@ -709,5 +719,32 @@ export const hostRemove = async (serverUrl: string, callId: string, sessionId: s
         logDebug('error on hostRemove', getFullErrorMessage(error));
         await forceLogoutIfNecessary(serverUrl, error);
         return error;
+    }
+};
+
+export const switchToCallThread = async (serverUrl: string, rootId: string, title: string) => {
+    try {
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, rootId);
+        const channel = await getChannelById(database, post?.channelId || '');
+        const currentTeamId = await getCurrentTeamId(database);
+
+        if (channel?.teamId && currentTeamId !== channel.teamId) {
+            await setCurrentTeamId(operator, channel.teamId);
+        }
+        if (activeUrl === serverUrl) {
+            await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
+            return;
+        }
+
+        // TODO: this is a temporary solution until we have a proper cross-team thread view.
+        //  https://mattermost.atlassian.net/browse/MM-45752
+        await navigateToRoot();
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
+        WebsocketManager.initializeClient(serverUrl, 'Server Switch');
+        navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
+    } catch (error) {
+        logDebug('error on switchToCallThread', getFullErrorMessage(error));
     }
 };

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class ThreadOptionsScreen {
     testID = {
@@ -13,8 +13,8 @@ class ThreadOptionsScreen {
         openInChannelOption: 'thread_options.open_in_channel.option',
         markAsReadOption: 'thread_options.mark_as_read.option',
         markAsUnreadOption: 'thread_options.mark_as_unread.option',
-        saveThreadOption: 'post_options.save_post.option',
-        unsaveThreadOption: 'post_options.unsave_post.option',
+        saveThreadOption: 'post_options.Save_post.option',
+        unsaveThreadOption: 'post_options.Unsave_post.option',
         copyLinkOption: 'post_options.copy_permalink.option',
     };
 
@@ -30,7 +30,7 @@ class ThreadOptionsScreen {
     copyLinkOption = element(by.id(this.testID.copyLinkOption));
 
     toBeVisible = async () => {
-        await waitFor(this.threadOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.threadOptionsScreen, timeouts.TEN_SEC);
 
         return threadOptionsScreen;
     };
@@ -44,6 +44,18 @@ class ThreadOptionsScreen {
         await wait(timeouts.ONE_SEC);
         await expect(this.threadOptionsScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
+    };
+
+    tapSaveThread = async () => {
+        await this.toBeVisible();
+        await waitFor(this.saveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
+        await this.saveThreadOption.tap();
+    };
+
+    tapUnsaveThread = async () => {
+        await this.toBeVisible();
+        await waitFor(this.unsaveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
+        await this.unsaveThreadOption.tap();
     };
 }
 

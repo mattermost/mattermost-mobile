@@ -13,6 +13,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Image from './image';
 import Status from './status';
 
+import type {CompassIconName} from '@components/compass_icon';
 import type UserModel from '@typings/database/models/servers/user';
 import type {ImageSource} from 'expo-image';
 
@@ -26,7 +27,7 @@ type ProfilePictureProps = {
     containerStyle?: StyleProp<ViewStyle>;
     statusStyle?: StyleProp<ViewStyle>;
     testID?: string;
-    source?: ImageSource | string;
+    source?: ImageSource | CompassIconName;
     url?: string;
 };
 

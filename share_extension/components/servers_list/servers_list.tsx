@@ -38,6 +38,7 @@ const ServersList = ({servers, theme}: Props) => {
             <ServerItem
                 server={item}
                 theme={theme}
+                disabled={item.persistenceFlag === 'zero-persistence'}
             />
         );
     }, [theme]);

@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -26,6 +26,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         titleContainer: {
             marginLeft: 16,
             flexDirection: 'column',
+            flex: 1,
+            flexShrink: 1,
+            minWidth: 0,
         },
         displayName: {
             color: theme.centerChannelColor,
@@ -45,6 +48,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         purpose: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
+            flexShrink: 1,
         },
     };
 });
@@ -95,7 +99,7 @@ export default function ChannelListRow({
 
     const itemTestID = `${testID}.${channel.name}`;
     const channelDisplayNameTestID = `${itemTestID}.display_name`;
-    let icon = 'globe';
+    let icon: CompassIconName = 'globe';
     if (channel.delete_at) {
         icon = 'archive-outline';
     } else if (channel.shared) {
@@ -117,7 +121,6 @@ export default function ChannelListRow({
                         style={style.icon}
                     />
                     <View style={style.titleContainer}>
-
                         <Text
                             style={style.displayName}
                             testID={channelDisplayNameTestID}

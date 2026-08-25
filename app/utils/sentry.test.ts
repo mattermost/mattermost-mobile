@@ -21,8 +21,8 @@ jest.mock('@sentry/react-native', () => ({
     addBreadcrumb: jest.fn(),
     setContext: jest.fn(),
     ReactNativeTracing: jest.fn(),
-    reactNativeNavigationIntegration: jest.fn().mockImplementation(() => ({
-        name: 'reactNativeNavigation',
+    reactNativeExpoIntegration: jest.fn().mockImplementation(() => ({
+        name: 'expo-router',
     })),
 }));
 
@@ -108,9 +108,6 @@ describe('initializeSentry function', () => {
             sampleRate: 1.0,
             attachStacktrace: true, // Adjust based on your actual logic
             enableCaptureFailedRequests: false,
-            integrations: [
-                {name: 'reactNativeNavigation'},
-            ],
             beforeSend: expect.any(Function),
         });
 

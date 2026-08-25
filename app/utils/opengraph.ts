@@ -138,10 +138,12 @@ export const fetchOpenGraph = async (url: string, includeFavIcon = false): Promi
         const tagTitle = html.match(
             /<title[^>]*>[\r\n\t\s]*([^<]+)[\r\n\t\s]*<\/title>/gim,
         );
-        siteTitle = tagTitle[0].replace(
-            /<title[^>]*>[\r\n\t\s]*([^<]+)[\r\n\t\s]*<\/title>/gim,
-            '$1',
-        );
+        if (tagTitle) {
+            siteTitle = tagTitle[0].replace(
+                /<title[^>]*>[\r\n\t\s]*([^<]+)[\r\n\t\s]*<\/title>/gim,
+                '$1',
+            );
+        }
 
         const og = [];
         const metas: any = html.match(/<meta[^>]+>/gim);

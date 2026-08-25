@@ -30,7 +30,7 @@ export default function TeamList({myOrderedTeams, testID}: Props) {
                 bounces={false}
                 contentContainerStyle={styles.contentContainer}
                 data={myOrderedTeams}
-                fadingEdgeLength={30}
+                fadingEdgeLength={15}
                 keyExtractor={keyExtractor}
                 renderItem={renderTeam}
                 showsVerticalScrollIndicator={false}

@@ -6,10 +6,7 @@ import {ScrollView} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
-import SecurityManager from '@managers/security_manager';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 const edges: Edge[] = ['left', 'right', 'bottom'];
 
@@ -18,19 +15,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             backgroundColor: theme.centerChannelBg,
-            paddingHorizontal: 20,
         },
+
+        // Padding on scroll content, not the ScrollView frame, so the scroll indicator stays at the safe-area edge.
         contentContainerStyle: {
             marginTop: 8,
             flexGrow: 1,
+            paddingHorizontal: 20,
         },
     };
 });
 
 type SettingContainerProps = {
-   children: React.ReactNode;
-   testID?: string;
-}
+    children: React.ReactNode;
+    testID?: string;
+};
+
 const SettingContainer = ({children, testID}: SettingContainerProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -40,7 +40,6 @@ const SettingContainer = ({children, testID}: SettingContainerProps) => {
             edges={edges}
             style={styles.container}
             testID={`${testID}.screen`}
-            nativeID={SecurityManager.getShieldScreenId(`${testID}.screen` as AvailableScreens)}
         >
             <ScrollView
                 contentContainerStyle={styles.contentContainerStyle}

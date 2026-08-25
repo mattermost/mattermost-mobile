@@ -4,7 +4,8 @@
 import React, {useCallback, useEffect} from 'react';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle, StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import Animated, {clamp, runOnJS, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {clamp, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
@@ -57,7 +58,7 @@ const ProgressBar = ({color, containerStyle, progress, withCursor, style, onSeek
         onChange((e) => {
             if (onSeek) {
                 const clampedSeekPosition = clamp(e.x / widthValue.value, START_CURSOR_VALUE, END_CURSOR_VALUE);
-                runOnJS(onSeek)(clampedSeekPosition);
+                scheduleOnRN(onSeek, clampedSeekPosition);
             }
         }).
         onEnd(() => {
@@ -74,7 +75,7 @@ const ProgressBar = ({color, containerStyle, progress, withCursor, style, onSeek
         onEnd((e) => {
             if (onSeek) {
                 const clampedSeekPosition = clamp(e.x / widthValue.value, START_CURSOR_VALUE, END_CURSOR_VALUE);
-                runOnJS(onSeek)(clampedSeekPosition);
+                scheduleOnRN(onSeek, clampedSeekPosition);
             }
             isGestureActive.value = false;
         }).

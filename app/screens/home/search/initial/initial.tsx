@@ -11,14 +11,14 @@ import RecentSearches from './recent_searches';
 import type {SearchRef} from '@components/search';
 import type TeamModel from '@typings/database/models/servers/team';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
-import type Animated from 'react-native-reanimated';
+import type {SharedValue} from 'react-native-reanimated';
 
 type Props = {
     recentSearches: TeamSearchHistoryModel[];
-    scrollEnabled: Animated.SharedValue<boolean>;
+    scrollEnabled: SharedValue<boolean>;
     searchValue?: string;
     setRecentValue: Dispatch<SetStateAction<string>>;
-    searchRef: RefObject<SearchRef>;
+    searchRef: RefObject<SearchRef | null>;
     setSearchValue: Dispatch<SetStateAction<string>>;
     setTeamId: (value: string) => void;
     teamId: string;

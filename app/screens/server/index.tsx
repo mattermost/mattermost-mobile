@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useNavigation} from 'expo-router';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -16,7 +15,6 @@ import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch, DeepLink} from '@constants';
 import useDidMount from '@hooks/did_mount';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
@@ -24,7 +22,7 @@ import NetworkManager from '@managers/network_manager';
 import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
+import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
@@ -35,12 +33,9 @@ import ServerForm from './form';
 import ServerHeader from './header';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
-import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
-    closeButtonId?: string;
-    componentId: AvailableScreens;
     isModal?: boolean;
     theme: Theme;
 }
@@ -71,12 +66,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
-
 const Server = ({
     animated,
-    closeButtonId,
-    componentId,
     displayName: defaultDisplayName,
     extra,
     isModal,
@@ -85,9 +76,9 @@ const Server = ({
     serverUrl: defaultServerUrl,
     theme,
 }: ServerProps) => {
+    const navigation = useNavigation();
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -102,12 +93,7 @@ const Server = ({
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
 
-    const dismiss = () => {
-        NetworkManager.invalidateClient(url);
-        dismissModal({componentId});
-    };
-
-    const animatedStyles = useScreenTransitionAnimation(componentId, animated);
+    const animatedStyles = useScreenTransitionAnimation(animated);
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
@@ -160,38 +146,41 @@ const Server = ({
     }, [url, displayName, urlError, preauthSecretError]);
 
     useEffect(() => {
-        const listener = {
-            componentDidAppear: () => {
+        const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+            if (e.data.action.type === 'POP' || e.data.action.type === 'GO_BACK') {
                 if (url) {
                     NetworkManager.invalidateClient(url);
                 }
-            },
-        };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+            }
+        });
 
-        return () => unsubscribe.remove();
-    }, [componentId, url]);
+        return unsubscribe;
+    }, [navigation, url]);
 
     useDidMount(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (LocalConfig.ShowOnboarding && animated) {
-                popTopScreen(Screens.SERVER);
+                navigateBack();
                 return true;
             }
+
             if (isModal) {
-                dismiss();
+                navigateBack();
                 return true;
             }
 
             return false;
         });
 
-        PushNotifications.registerIfNeeded();
+        const registerTimeout = setTimeout(() => {
+            PushNotifications.registerIfNeeded();
+        }, 500);
 
-        return () => backHandler.remove();
+        return () => {
+            backHandler.remove();
+            clearTimeout(registerTimeout);
+        };
     });
-
-    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
@@ -207,6 +196,7 @@ const Server = ({
             serverUrl,
             ssoOptions,
             theme,
+            isModal,
         };
 
         const redirectSSO = !hasLoginForm && numberSSOs === 1;
@@ -222,7 +212,7 @@ const Server = ({
             passProps.launchType = Launch.Normal;
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions());
+        navigateToScreen(screen, passProps);
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
@@ -353,7 +343,17 @@ const Server = ({
             return;
         }
 
-        canReceiveNotifications(headRequest.url, result.canReceiveNotifications as string, intl);
+        // NOTE: canReceiveNotifications is deferred until AFTER displayLogin (below).
+        // Calling it here presents a UIAlertController on the server screen while
+        // the connect flow continues in parallel; on iOS 26.x the subsequent
+        // Navigation.push to LoginScreen races with the still-visible alert and
+        // occasionally loses the push, leaving the user stranded on the server
+        // screen. Capturing the verification token here and firing the alert
+        // post-navigation eliminates the race — the alert then renders over the
+        // login screen, which is non-blocking because the RN-Navigation transition
+        // has already completed.
+        const pushProxyVerification = result.canReceiveNotifications as string;
+
         const data = await fetchConfigAndLicense(headRequest.url, true);
         if (data.error) {
             setButtonDisabled(true);
@@ -401,31 +401,45 @@ const Server = ({
         }
 
         displayLogin(headRequest.url, data.config!, data.license!);
+
+        // Fire the push-proxy verification alert AFTER the RNN transition to
+        // LoginScreen has FULLY settled. We use setTimeout (not
+        // InteractionManager.runAfterInteractions) because RN-Navigation's
+        // Navigation.push is a native-side operation that is NOT tracked by the
+        // JS-side InteractionManager — runAfterInteractions would fire immediately
+        // (before the native push completes) and the UIAlertController would still
+        // present on the server screen.
+        //
+        // This prevents the iOS 26.x race where a UIAlertController presented on
+        // the server screen blocks or drops the subsequent Navigation.push,
+        // leaving the user stranded on the server screen. Acknowledgement
+        // persistence (via the Okay button callback in handleAlertResponse) is
+        // unaffected — the alert still targets the same serverUrl, it just
+        // renders on the login screen instead of the server screen.
+        setTimeout(() => {
+            canReceiveNotifications(headRequest.url, pushProxyVerification, intl);
+        }, 1000);
     };
 
     return (
         <View
             style={styles.flex}
             testID='server.screen'
-            nativeID={SecurityManager.getShieldScreenId(componentId, false, true)}
         >
             <Background theme={theme}/>
-            <AnimatedSafeArea
+            <Animated.View
                 key={'server_content'}
                 style={[styles.flex, animatedStyles]}
             >
                 <KeyboardAwareScrollView
                     bounces={false}
                     contentContainerStyle={styles.scrollContainer}
-                    enableAutomaticScroll={false}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={20}
+                    bottomOffset={62}
                     keyboardDismissMode='on-drag'
                     keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
+                    mode='layout'
                 >
                     <ServerHeader
                         additionalServer={additionalServer}
@@ -442,7 +456,6 @@ const Server = ({
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handlePreauthSecretTextChanged={handlePreauthSecretTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
-                        keyboardAwareRef={keyboardAwareRef}
                         preauthSecret={preauthSecret}
                         preauthSecretError={preauthSecretError}
                         setShowAdvancedOptions={setShowAdvancedOptions}
@@ -458,7 +471,7 @@ const Server = ({
                         />
                     </View>
                 </KeyboardAwareScrollView>
-            </AnimatedSafeArea>
+            </Animated.View>
         </View>
     );
 };

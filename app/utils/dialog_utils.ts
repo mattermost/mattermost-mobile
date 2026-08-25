@@ -28,6 +28,8 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    DATE: 'date' as const,
+    DATETIME: 'datetime' as const,
 } as const;
 
 /**
@@ -39,22 +41,6 @@ export const DialogTextSubtypes = {
     PASSWORD: 'password' as const,
     URL: 'url' as const,
     TEXTAREA: 'textarea' as const,
-} as const;
-
-/**
- * Dialog validation error message IDs
- */
-export const DialogErrorMessages = {
-    REQUIRED: 'interactive_dialog.error.required',
-    TOO_SHORT: 'interactive_dialog.error.too_short',
-    BAD_EMAIL: 'interactive_dialog.error.bad_email',
-    BAD_NUMBER: 'interactive_dialog.error.bad_number',
-    BAD_URL: 'interactive_dialog.error.bad_url',
-    INVALID_OPTION: 'interactive_dialog.error.invalid_option',
-    SUBMISSION_FAILED: 'interactive_dialog.submission_failed',
-    SUBMISSION_FAILED_NETWORK: 'interactive_dialog.submission_failed_network',
-    SUBMISSION_FAILED_VALIDATION: 'interactive_dialog.submission_failed_validation',
-    SUBMISSION_FAILED_WITH_DETAILS: 'interactive_dialog.submission_failed_with_details',
 } as const;
 
 /**
@@ -81,6 +67,10 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.DATE:
+            return 'date';
+        case DialogElementTypes.DATETIME:
+            return 'datetime';
         default:
             return 'text';
     }
@@ -102,6 +92,10 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'date':
+            return DialogElementTypes.DATE;
+        case 'datetime':
+            return DialogElementTypes.DATETIME;
         default:
             return DialogElementTypes.TEXT;
     }

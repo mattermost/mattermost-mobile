@@ -1,0 +1,6 @@
+{
+    "buildReactNativeFromSource": "true",
+    "buildExpoModulesFromSource": "true",
+    "deploymentTarget": "16.4",
+    "ccacheEnabled": "false"
+}

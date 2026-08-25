@@ -7,7 +7,7 @@ import {UPLOAD_ERROR_SHOW_INTERVAL} from '@constants/files';
 
 const useFileUploadError = () => {
     const [uploadError, setUploadError] = useState<React.ReactNode>(null);
-    const uploadErrorTimeout = useRef<NodeJS.Timeout>();
+    const uploadErrorTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
 
     const newUploadError = useCallback((error: React.ReactNode) => {
         if (uploadErrorTimeout.current) {

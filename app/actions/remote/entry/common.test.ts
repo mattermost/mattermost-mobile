@@ -17,7 +17,7 @@ import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {prepareEntryModels} from '@queries/servers/entry';
 import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import NavigationStore from '@store/navigation_store';
+import {NavigationStore} from '@store/navigation_store';
 import {logDebug} from '@utils/log';
 
 import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, handleEntryAfterLoadNavigation} from './common';
@@ -209,6 +209,7 @@ describe('actions/remote/entry/common', () => {
                 false,
                 nativeApplicationVersion,
                 undefined,
+                undefined,
             );
         });
 
@@ -225,6 +226,7 @@ describe('actions/remote/entry/common', () => {
                 expect.any(String),
                 false,
                 nativeApplicationVersion,
+                undefined,
                 undefined,
             );
         });

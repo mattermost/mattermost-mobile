@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {SettingsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, tapNativeBackButton, timeouts} from '@support/utils';
 
 class NotificationSettingsScreen {
     testID = {
         notificationSettingsScreen: 'notification_settings.screen',
-        backButton: 'screen.back.button',
+        backButton: 'navigation.header.back',
         scrollView: 'notification_settings.scroll_view',
         mentionsOption: 'notification_settings.mentions.option',
         pushNotificationsOption: 'notification_settings.push_notifications.option',
@@ -19,7 +18,14 @@ class NotificationSettingsScreen {
     };
 
     notificationSettingsScreen = element(by.id(this.testID.notificationSettingsScreen));
-    backButton = element(by.id(this.testID.backButton));
+
+    // Native-stack back chevron via accessibility label.
+    get backButton(): Detox.NativeElement {
+        return isIos()
+            ? element(by.label('Back')).atIndex(0)
+            : element(by.label('Navigate up')).atIndex(0);
+    }
+
     scrollView = element(by.id(this.testID.scrollView));
     mentionsOption = element(by.id(this.testID.mentionsOption));
     pushNotificationsOption = element(by.id(this.testID.pushNotificationsOption));
@@ -29,7 +35,7 @@ class NotificationSettingsScreen {
     automaticRepliesOptionInfo = element(by.id(this.testID.automaticRepliesOptionInfo));
 
     toBeVisible = async () => {
-        await waitFor(this.notificationSettingsScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.notificationSettingsScreen).toExist().withTimeout(timeouts.HALF_MIN);
 
         return this.notificationSettingsScreen;
     };
@@ -42,14 +48,9 @@ class NotificationSettingsScreen {
     };
 
     back = async () => {
-        try {
-            await waitFor(this.backButton).toExist().withTimeout(timeouts.TWO_SEC);
-            await this.backButton.tap();
-            await expect(this.notificationSettingsScreen).not.toBeVisible();
-        } catch (error) {
-            // Back button may not exist if screen failed to load or already navigated away
-            console.warn('[NotificationSettingsScreen.back] Navigation failed:', error); // eslint-disable-line no-console
-        }
+        // Native-stack back chevron.
+        await tapNativeBackButton();
+        await waitFor(this.notificationSettingsScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager from '@react-native-cookies/cookies';
+import CookieManager from '@preeternal/react-native-cookie-manager';
 import {Platform} from 'react-native';
 
 import {clearCookies, clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from './security';
 
 // Mock CookieManager
-jest.mock('@react-native-cookies/cookies', () => ({
+jest.mock('@preeternal/react-native-cookie-manager', () => ({
     get: jest.fn(),
     clearByName: jest.fn(),
     flush: jest.fn(),
@@ -71,6 +71,13 @@ describe('urlSafeBase64Encode function', () => {
         const result = urlSafeBase64Encode(input);
 
         expect(result).toEqual(expectedOutput);
+    });
+
+    it('should encode UTF-8 characters outside the Latin1 range', () => {
+        const input = 'https://ui-avatars.com/api/?name=Slack+↔+Entra+Sync';
+        const result = urlSafeBase64Encode(input);
+        expect(result.length).toBeGreaterThan(0);
+        expect(() => urlSafeBase64Encode(input)).not.toThrow();
     });
 });
 
