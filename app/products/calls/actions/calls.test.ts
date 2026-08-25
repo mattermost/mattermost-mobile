@@ -6,10 +6,11 @@ import assert from 'assert';
 import CallsNative from '@mattermost/calls-native';
 import {act, renderHook} from '@testing-library/react-native';
 import {createIntl} from 'react-intl';
-import {Alert} from 'react-native';
+import {Alert, AppState, Platform} from 'react-native';
+import RNPermissions from 'react-native-permissions';
 
 import * as CallsActions from '@calls/actions';
-import {getConnectionForTesting} from '@calls/actions/calls';
+import {getConnectionForTesting, maybeRequestMicrophonePermission, resetMicPermissionStateForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -133,6 +134,20 @@ jest.mock('@queries/servers/user', () => ({
 
 jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
+}));
+
+jest.mock('@queries/app/global', () => ({
+    getMicPermissionAsked: jest.fn(),
+}));
+
+jest.mock('@actions/app/global', () => ({
+    storeMicPermissionAsked: jest.fn(),
+}));
+
+jest.mock('@utils/general', () => ({
+    getIntlShape: jest.fn(() => ({
+        formatMessage: jest.fn(({defaultMessage}) => defaultMessage),
+    })),
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
@@ -1373,5 +1388,108 @@ describe('Actions.Calls', () => {
         });
 
         expect(errorAlert).toHaveBeenCalled();
+    });
+});
+
+describe('maybeRequestMicrophonePermission', () => {
+    const {getMicPermissionAsked} = require('@queries/app/global');
+    const {storeMicPermissionAsked} = require('@actions/app/global');
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        resetMicPermissionStateForTesting();
+        Object.defineProperty(Platform, 'OS', {value: 'ios', configurable: true});
+        Object.defineProperty(AppState, 'currentState', {value: 'active', configurable: true, writable: true});
+    });
+
+    it('returns immediately on Android without checking DB', async () => {
+        Object.defineProperty(Platform, 'OS', {value: 'android', configurable: true});
+        await maybeRequestMicrophonePermission();
+        expect(getMicPermissionAsked).not.toHaveBeenCalled();
+    });
+
+    it('returns and resets flag when app is not active', async () => {
+        Object.defineProperty(AppState, 'currentState', {value: 'background', configurable: true, writable: true});
+        await maybeRequestMicrophonePermission();
+        expect(getMicPermissionAsked).not.toHaveBeenCalled();
+        // Flag reset: a later foreground call should proceed
+        getMicPermissionAsked.mockResolvedValue(false);
+        jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
+        storeMicPermissionAsked.mockResolvedValue({});
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        Object.defineProperty(AppState, 'currentState', {value: 'active', configurable: true, writable: true});
+        await maybeRequestMicrophonePermission();
+        expect(mockAlert).toHaveBeenCalled();
+    });
+
+    it('returns and resets flag when already asked', async () => {
+        getMicPermissionAsked.mockResolvedValue(true);
+        const mockCheck = jest.spyOn(Permissions, 'checkMicrophonePermissionStatus');
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        await maybeRequestMicrophonePermission();
+        expect(mockAlert).not.toHaveBeenCalled();
+        // Flag reset: a second call should check DB again
+        await maybeRequestMicrophonePermission();
+        expect(getMicPermissionAsked).toHaveBeenCalledTimes(2);
+        expect(mockCheck).not.toHaveBeenCalled();
+    });
+
+    it('returns and resets flag when permission is not DENIED', async () => {
+        getMicPermissionAsked.mockResolvedValue(false);
+        const mockCheck = jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.GRANTED);
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        await maybeRequestMicrophonePermission();
+        expect(mockAlert).not.toHaveBeenCalled();
+        // Flag reset: a second call should check permission again
+        await maybeRequestMicrophonePermission();
+        expect(mockCheck).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns and resets flag when store write fails', async () => {
+        getMicPermissionAsked.mockResolvedValue(false);
+        jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
+        storeMicPermissionAsked.mockResolvedValue({error: new Error('db error')});
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        await maybeRequestMicrophonePermission();
+        expect(mockAlert).not.toHaveBeenCalled();
+    });
+
+    it('shows alert with Not now and Enable mic buttons when all conditions are met', async () => {
+        getMicPermissionAsked.mockResolvedValue(false);
+        jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
+        storeMicPermissionAsked.mockResolvedValue({});
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        await maybeRequestMicrophonePermission();
+        expect(mockAlert).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(String),
+            expect.arrayContaining([
+                expect.objectContaining({style: 'cancel'}),
+                expect.objectContaining({onPress: expect.any(Function)}),
+            ]),
+        );
+    });
+
+    it('calls Permissions.request when Enable mic button is pressed', async () => {
+        getMicPermissionAsked.mockResolvedValue(false);
+        jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
+        storeMicPermissionAsked.mockResolvedValue({});
+        const mockRequest = jest.spyOn(RNPermissions, 'request').mockResolvedValue(RNPermissions.RESULTS.GRANTED);
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        await maybeRequestMicrophonePermission();
+        const buttons = mockAlert.mock.calls[0][2] as Array<{onPress?: () => void}>;
+        const continueButton = buttons.find((b) => typeof b.onPress === 'function');
+        continueButton!.onPress!();
+        expect(mockRequest).toHaveBeenCalledWith(RNPermissions.PERMISSIONS.IOS.MICROPHONE);
+    });
+
+    it('blocks concurrent invocations with the in-flight guard', async () => {
+        getMicPermissionAsked.mockResolvedValue(false);
+        jest.spyOn(Permissions, 'checkMicrophonePermissionStatus').mockResolvedValue(RNPermissions.RESULTS.DENIED);
+        storeMicPermissionAsked.mockResolvedValue({});
+        const mockAlert = jest.spyOn(Alert, 'alert');
+        // Two concurrent calls — only one alert should appear
+        await Promise.all([maybeRequestMicrophonePermission(), maybeRequestMicrophonePermission()]);
+        expect(mockAlert).toHaveBeenCalledTimes(1);
     });
 });

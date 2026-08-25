@@ -88,9 +88,13 @@ const micPermissionMessages = defineMessages({
 // flag check before the DB write completes. Stays true once the alert is shown.
 let micPermissionRequestInFlight = false;
 
+export const resetMicPermissionStateForTesting = () => {
+    micPermissionRequestInFlight = false;
+};
+
 // iOS-only: shows an in-app explainer and then the system mic prompt the first
 // time a calls-enabled server is connected.
-const maybeRequestMicrophonePermission = async () => {
+export const maybeRequestMicrophonePermission = async () => {
     if (Platform.OS !== 'ios' || micPermissionRequestInFlight) {
         return;
     }
