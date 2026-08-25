@@ -43,12 +43,19 @@ const isTimelineEvent = (value: unknown): value is TimelineEvent => {
         typeof event.subject_user_id === 'string';
 };
 
+// Only task_state_modified events are read (by getTaskActivity), but a run's timeline also carries
+// status updates, participant changes and property changes. Since the whole array lives in one JSON
+// column that is rewritten on every incremental update and handed to every checklist row, keeping
+// events nothing consumes makes the blob grow without bound for no benefit. Widen this if another
+// consumer appears — and rename the column if it stops meaning "task state changes".
+const CONSUMED_EVENT_TYPES = new Set<string>(['task_state_modified']);
+
 const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
     if (!Array.isArray(value)) {
         return [];
     }
 
-    return value.filter(isTimelineEvent);
+    return value.filter((event) => isTimelineEvent(event) && CONSUMED_EVENT_TYPES.has(event.event_type));
 };
 
 /**
@@ -119,7 +126,8 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
 
     /**
-     * timeline_events : The latest run timeline events.
+     * timeline_events : The run's task state change events. Other timeline event types are dropped on
+     * the way in, so this is not the full server-side timeline.
      *
      * Memoized on the stored JSON string: the events are handed to `withObservables` as a trigger
      * prop by the checklist items, so a fresh array on every read would tear down and recreate every

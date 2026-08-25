@@ -526,6 +526,31 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual(['b']);
     });
 
+    // Two updates for the same run can interleave: the handler is dispatched fire-and-forget
+    // (app/actions/websocket/event.ts and ./events.ts both call it without awaiting), and it reads
+    // the stored events synchronously when calling handlePlaybookRun but does not commit until
+    // batchRecords. Both reads therefore see the pre-commit list and the second write clobbers the
+    // first. The lost event is not recovered by a later resync, so the affected task's chip is
+    // permanently wrong.
+    it('keeps both events when two updates for the same run interleave', async () => {
+        await seedRunWithEvents([event('a', 1)]);
+
+        await Promise.all([
+            dispatch({
+                id: playbookRunId,
+                playbook_run_updated_at: Date.now(),
+                changed_fields: {timeline_events: [event('b', 2)]},
+            }),
+            dispatch({
+                id: playbookRunId,
+                playbook_run_updated_at: Date.now() + 1,
+                changed_fields: {timeline_events: [event('c', 3)]},
+            }),
+        ]);
+
+        expect(await storedEventIds()).toEqual(['a', 'b', 'c']);
+    });
+
     it('leaves stored events alone when an update does not concern them', async () => {
         await seedRunWithEvents([event('a', 1), event('b', 2)]);
 

@@ -203,7 +203,7 @@ is_active boolean
 active_stage number
 active_stage_title string
 participant_ids string # stringified array of user IDs
-timeline_events string NULL # stringified array of timeline events
+timeline_events string NULL # stringified array of task_state_modified timeline events; other event types are not stored
 summary string
 current_status string # (valid values InProgres, Finished)
 owner_user_id string INDEX FK >- User.id

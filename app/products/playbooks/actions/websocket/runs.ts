@@ -29,11 +29,13 @@ export const mergeTimelineEvents = (
 ): TimelineEvent[] => {
     const byId = new Map(stored.map((event) => [event.id, event]));
 
-    for (const event of delta ?? []) {
+    // Guard the shapes rather than trusting them: these come straight off the wire, and a non-array
+    // here would throw inside a fire-and-forget handler where nothing would report it.
+    for (const event of Array.isArray(delta) ? delta : []) {
         byId.set(event.id, event);
     }
 
-    for (const id of hardDeletes ?? []) {
+    for (const id of Array.isArray(hardDeletes) ? hardDeletes : []) {
         byId.delete(id);
     }
 
@@ -84,15 +86,47 @@ export const handlePlaybookRunUpdated = async (serverUrl: string, msg: WebSocket
     await handlePlaybookRuns(serverUrl, [playbookRun], false, true);
 };
 
+const runUpdateQueues = new Map<string, Promise<void>>();
+
+// Incremental updates are dispatched fire-and-forget — neither app/actions/websocket/event.ts nor
+// ./events.ts awaits the handler — so two payloads for the same run can be in flight at once.
+// Applying one is a read-merge-write spanning several awaits: the stored timeline events are read when
+// handlePlaybookRun is called, but nothing is committed until batchRecords. Overlapping applications
+// would therefore both read the pre-commit list, and the later write would drop the earlier one's
+// event for good, since a full run fetch is gated on lastFetchAt and never brings it back. Queueing
+// per run id keeps one application atomic with respect to the others for that run.
+const serializePerRun = <T>(runId: string, apply: () => Promise<T>): Promise<T> => {
+    const previous = runUpdateQueues.get(runId) ?? Promise.resolve();
+
+    // Proceed whether or not the previous application settled cleanly: one failed payload must not
+    // wedge every later update for this run.
+    const applied = previous.then(apply, apply);
+    const settled = applied.then(() => undefined, () => undefined);
+    runUpdateQueues.set(runId, settled);
+
+    settled.then(() => {
+        // Only drop the entry while still the tail, so the map does not retain every run seen.
+        if (runUpdateQueues.get(runId) === settled) {
+            runUpdateQueues.delete(runId);
+        }
+    });
+
+    return applied;
+};
+
 export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg: WebSocketMessage) => {
     if (!msg.data.payload) {
         return;
     }
     const data = safeParseJSON(msg.data.payload) as PlaybookRunUpdate;
-    if (!data || !data.changed_fields || typeof data.changed_fields !== 'object') {
+    if (!data || !data.id || !data.changed_fields || typeof data.changed_fields !== 'object') {
         return;
     }
 
+    await serializePerRun(data.id, () => applyRunUpdatedIncremental(serverUrl, data));
+};
+
+const applyRunUpdatedIncremental = async (serverUrl: string, data: PlaybookRunUpdate) => {
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
     const run = await getPlaybookRunById(database, data.id);

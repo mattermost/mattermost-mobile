@@ -74,6 +74,40 @@ describe('PlaybookRunModel', () => {
             expect(runModel.timelineEvents).toEqual([validEvent]);
         });
 
+        // The column is rewritten on every incremental update and handed to every checklist row, so
+        // event types no consumer reads are dropped rather than accumulating in the blob.
+        it('drops event types the task activity resolver does not consume', async () => {
+            const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
+            await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
+            const runModel = await operator.database.get<PlaybookRunModel>(PLAYBOOK_RUN).find(run.id);
+
+            const taskEvent = {
+                id: 'event-task',
+                playbook_run_id: run.id,
+                create_at: 1,
+                event_at: 1000,
+                event_type: 'task_state_modified',
+                summary: '',
+                details: '{"action":"skip"}',
+                post_id: '',
+                subject_user_id: 'user-1',
+                creator_user_id: 'user-1',
+            };
+
+            await operator.database.write(async () => {
+                await runModel.update((record) => {
+                    (record._raw as unknown as Record<string, string>).timeline_events = JSON.stringify([
+                        taskEvent,
+                        {...taskEvent, id: 'event-status', event_type: 'status_updated'},
+                        {...taskEvent, id: 'event-joined', event_type: 'user_joined_left'},
+                        {...taskEvent, id: 'event-created', event_type: 'incident_created'},
+                    ]);
+                });
+            });
+
+            expect(runModel.timelineEvents).toEqual([taskEvent]);
+        });
+
         it('returns the same array until the stored events change', async () => {
             const run = TestHelper.createPlaybookRuns(1, 0, 0, true)[0];
             await operator.handlePlaybookRun({runs: [run], prepareRecordsOnly: false, processChildren: true});
