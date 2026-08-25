@@ -15,7 +15,8 @@ jest.mock('@screens/navigation', () => ({
     navigateBack: jest.fn(),
 }));
 
-const TABLE_HORIZONTAL_PADDING = 10;
+// Mirrors the screen: 5pt of padding on each side, so 10pt of width in total.
+const TABLE_HORIZONTAL_INSET = 5 * 2;
 
 describe('Table screen', () => {
     const originalOS = Platform.OS;
@@ -37,7 +38,7 @@ describe('Table screen', () => {
 
         const {width: windowWidth} = RNUtils.getWindowDimensions();
         expect(StyleSheet.flatten(getByTestId('table.scroll_view').props.contentContainerStyle)).toEqual({
-            width: windowWidth - TABLE_HORIZONTAL_PADDING,
+            width: windowWidth - TABLE_HORIZONTAL_INSET,
         });
     });
 
@@ -60,7 +61,7 @@ describe('Table screen', () => {
 
         const {width: windowWidth} = RNUtils.getWindowDimensions();
         expect(StyleSheet.flatten(getByTestId('table.scroll_view').props.contentContainerStyle)).toEqual({
-            width: windowWidth - 47 - 47 - TABLE_HORIZONTAL_PADDING,
+            width: windowWidth - 47 - 47 - TABLE_HORIZONTAL_INSET,
         });
     });
 
