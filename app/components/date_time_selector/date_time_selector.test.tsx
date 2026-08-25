@@ -125,8 +125,10 @@ describe('DateTimeSelector', () => {
         fireEvent.changeText(input, '14:30');
         fireEvent(input, 'submitEditing');
 
-        expect(mockHandleChange).toHaveBeenCalledTimes(1);
-        const picked = mockHandleChange.mock.calls[0][0] as moment.Moment;
+        // Committed on change and again on submitEditing; both carry the same time,
+        // so assert on the value delivered rather than on the call count.
+        expect(mockHandleChange).toHaveBeenCalled();
+        const picked = mockHandleChange.mock.calls[mockHandleChange.mock.calls.length - 1][0] as moment.Moment;
         expect(picked.hour()).toBe(14);
         expect(picked.minute()).toBe(30);
         expect(picked.second()).toBe(0);
@@ -135,6 +137,54 @@ describe('DateTimeSelector', () => {
         expect(picked.year()).toBe(initialDate.year());
         expect(picked.month()).toBe(initialDate.month());
         expect(picked.date()).toBe(initialDate.date());
+    });
+
+    // Regression: MM-T2530H. Tapping a form's Submit button does not reliably blur a
+    // focused TextInput on iOS, so a value that only committed on submitEditing/blur
+    // could be submitted as empty while the input visibly showed the typed time.
+    it('commits a manual time entry on change, without submitEditing or blur', () => {
+        const initialDate = moment.tz('2026-04-20 09:00', timezone);
+        const testID = 'dt';
+        const {getByTestId} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                initialDate={initialDate}
+                testID={testID}
+            />,
+            {database},
+        );
+
+        fireEvent.press(getByTestId(`${testID}.time.button`));
+        fireEvent.changeText(getByTestId(`${testID}.manual_time.input`), '14:30');
+
+        expect(mockHandleChange).toHaveBeenCalled();
+        const picked = mockHandleChange.mock.calls[mockHandleChange.mock.calls.length - 1][0] as moment.Moment;
+        expect(picked.hour()).toBe(14);
+        expect(picked.minute()).toBe(30);
+        expect(picked.second()).toBe(0);
+    });
+
+    it('does not commit partial manual input while the user is still typing', () => {
+        const testID = 'dt';
+        const {getByTestId} = renderWithEverything(
+            <DateTimeSelector
+                {...baseProps}
+                allowManualTimeEntry={true}
+                testID={testID}
+            />,
+            {database},
+        );
+
+        fireEvent.press(getByTestId(`${testID}.time.button`));
+        const input = getByTestId(`${testID}.manual_time.input`);
+        mockHandleChange.mockClear();
+
+        fireEvent.changeText(input, '1');
+        fireEvent.changeText(input, '14');
+        fireEvent.changeText(input, '14:3');
+
+        expect(mockHandleChange).not.toHaveBeenCalled();
     });
 
     it('does not call handleChange when manual time entry is invalid', () => {
