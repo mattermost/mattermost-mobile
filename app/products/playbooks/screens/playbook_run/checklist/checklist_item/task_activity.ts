@@ -116,13 +116,10 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents: Timeline
         }
     }
 
-    // Skip requires event confirmation, unlike check/uncheck. The routes both clients actually use
-    // (PUT .../item/{n}/skip and .../restore -> SkipChecklistItem/RestoreChecklistItem) record
-    // neither state_modified nor a timeline event; a skip's time lands in LastSkipped (serialized as
-    // `delete_at`, which mobile does not persist). So for a skipped task state_modified is either 0
-    // or a leftover from an earlier check/uncheck, and labelling that "Skipped" would show a time the
-    // skip did not happen at. Showing nothing is correct until the server records skips; this then
-    // lights up on its own, since ModifyCheckedState already emits action: 'skip'.
+    // Skip needs event confirmation, unlike check/uncheck: a skip's time lands in LastSkipped
+    // (serialized as `delete_at`, which mobile does not persist), so a skipped task's state_modified
+    // is 0 or a leftover from an earlier check/uncheck. Against a server that emits no skip event,
+    // showing nothing beats showing a time the skip did not happen at.
     if (item.state === 'skipped' && !matched) {
         return undefined;
     }
