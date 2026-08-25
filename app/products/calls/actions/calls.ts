@@ -68,11 +68,11 @@ import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib
 const micPermissionMessages = defineMessages({
     title: {
         id: 'mobile.calls_mic_permission.title',
-        defaultMessage: 'Microphone access',
+        defaultMessage: 'Enable your mic for calls',
     },
     message: {
         id: 'mobile.calls_mic_permission.message',
-        defaultMessage: 'Mattermost needs microphone access to make or receive calls.',
+        defaultMessage: "You'll be asked to allow microphone access on the next screen. Grant it so you can talk and be heard on any Mattermost call.",
     },
     notNow: {
         id: 'mobile.calls_mic_permission.not_now',
@@ -80,7 +80,7 @@ const micPermissionMessages = defineMessages({
     },
     continue: {
         id: 'mobile.calls_mic_permission.continue',
-        defaultMessage: 'Continue',
+        defaultMessage: 'Enable mic',
     },
 });
 
