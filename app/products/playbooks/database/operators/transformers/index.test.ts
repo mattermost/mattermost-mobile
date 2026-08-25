@@ -330,6 +330,40 @@ describe('*** PLAYBOOK_RUN Prepare Records Test ***', () => {
         expect(preparedRecord.lastSyncAt).toBeGreaterThan(lastSyncAt);
     });
 
+    // A full run payload carries the complete event list, so replacing is correct here. Incremental
+    // websocket updates send a delta instead and must merge before reaching this transformer — see
+    // mergeTimelineEvents. Moving the merge down into this layer would silently break resync.
+    it('=> transformPlaybookRunRecord: should replace stored timeline events when the payload supplies its own', async () => {
+        const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
+
+        let existingRecord: PlaybookRunModel | undefined;
+        await database!.write(async () => {
+            existingRecord = await database!.get<PlaybookRunModel>(PLAYBOOK_RUN).create((record) => {
+                record._raw.id = 'playbook_run_timeline_replace';
+                record.timelineEvents = [timelineEvent];
+            });
+        });
+
+        const replacement: TimelineEvent = {...timelineEvent, id: 'event_2'};
+        const preparedRecord = await transformPlaybookRunRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: existingRecord,
+                raw: {
+                    id: 'playbook_run_timeline_replace',
+                    timeline_events: [replacement],
+                } as PlaybookRun,
+            },
+        });
+
+        await database!.write(async () => {
+            await database!.batch(preparedRecord);
+        });
+
+        expect(preparedRecord.timelineEvents).toEqual([replacement]);
+    });
+
     it('=> transformPlaybookRunRecord: should set default type to PlaybookType when playbookId is present', async () => {
         const database = await createTestConnection({databaseName: 'playbook_run_prepare_records', setActive: true});
 

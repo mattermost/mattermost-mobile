@@ -16,6 +16,33 @@ const isValidEvent = (data: unknown) => {
     return true;
 };
 
+// Unlike every other run field in changed_fields, timeline_events is a delta: the server sends only the
+// events it just created or soft-deleted, so assigning it would drop the rest of the run's history.
+// Deletions arrive two ways and both have to leave, because a full run fetch selects on DeleteAt = 0 —
+// anything kept past that point can never be corrected by a resync. A soft delete comes through as an
+// update carrying a non-zero delete_at (timeline events are otherwise immutable); a hard delete comes
+// through out-of-band as an id in timeline_event_deletes.
+export const mergeTimelineEvents = (
+    stored: TimelineEvent[],
+    delta: TimelineEvent[] | undefined,
+    hardDeletes: string[] | undefined,
+): TimelineEvent[] => {
+    const byId = new Map(stored.map((event) => [event.id, event]));
+
+    for (const event of delta ?? []) {
+        byId.set(event.id, event);
+    }
+
+    for (const id of hardDeletes ?? []) {
+        byId.delete(id);
+    }
+
+    // Matches the server's ORDER BY EventAt ASC, so a merged list and a freshly fetched one agree.
+    return Array.from(byId.values()).
+        filter((event) => !event.delete_at).
+        sort((a, b) => a.event_at - b.event_at);
+};
+
 export const handlePlaybookRunCreated = async (serverUrl: string, msg: WebSocketMessage) => {
     if (!msg.data.payload) {
         return;
@@ -82,11 +109,21 @@ export const handlePlaybookRunUpdatedIncremental = async (serverUrl: string, msg
 
     const models: Model[] = [];
 
+    // Hard deletes travel outside changed_fields, so they can be the only thing a payload carries.
+    const touchesTimeline = 'timeline_events' in data.changed_fields || Boolean(data.timeline_event_deletes?.length);
+
     const hasRunChangedFields = Object.keys(data.changed_fields).filter((key) => key !== 'checklists').length > 0;
-    if (hasRunChangedFields) {
+    if (hasRunChangedFields || touchesTimeline) {
         const runModels = await operator.handlePlaybookRun({
             runs: [{
                 ...data.changed_fields,
+                ...(touchesTimeline ? {
+                    timeline_events: mergeTimelineEvents(
+                        run.timelineEvents,
+                        data.changed_fields.timeline_events,
+                        data.timeline_event_deletes,
+                    ),
+                } : {}),
                 checklists: undefined, // Remove the checklists from the update
                 id: data.id,
                 update_at: data.playbook_run_updated_at,

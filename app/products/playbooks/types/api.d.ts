@@ -66,6 +66,11 @@ type TimelineEvent = {
     id: string;
     playbook_run_id: string;
     create_at: number;
+
+    // Optional because events persisted before this field was read back may not carry it. A full run
+    // fetch only ever returns events with delete_at 0; a non-zero value reaches clients solely through
+    // an incremental update announcing the soft delete.
+    delete_at?: number;
     event_at: number;
     event_type: string;
     summary: string;
