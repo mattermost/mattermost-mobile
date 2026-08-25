@@ -36,6 +36,7 @@ import {
     setCalls,
     setChannelEnabled,
     setConfig,
+    setJoiningChannelId,
     setPluginEnabled,
     setScreenShareURL,
     startOutgoingCall,
@@ -318,6 +319,19 @@ export const joinCall = async (
 export const openOutgoingCallScreen = (serverUrl: string, channelId: string) => {
     startOutgoingCall(serverUrl, channelId);
     navigateToScreen(Screens.CALL);
+};
+
+export const joinCallAndOpenCallScreen = async (intl: IntlShape, serverUrl: string, channelId: string) => {
+    setJoiningChannelId(channelId);
+    try {
+        const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        if (joined) {
+            navigateToScreen(Screens.CALL);
+        }
+        return joined;
+    } finally {
+        setJoiningChannelId(null);
+    }
 };
 
 export const leaveCall = (err?: Error) => {

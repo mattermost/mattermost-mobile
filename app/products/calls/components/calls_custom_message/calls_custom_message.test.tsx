@@ -4,24 +4,19 @@
 import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import {leaveCallConfirmation} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert} from '@calls/alerts';
+import {joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import {CallsCustomMessage} from './calls_custom_message';
 
 jest.mock('@calls/actions/calls', () => ({
+    joinCallAndOpenCallScreen: jest.fn(),
     leaveCallConfirmation: jest.fn(),
 }));
 
 jest.mock('@calls/alerts', () => ({
-    leaveAndJoinWithAlert: jest.fn(),
     showLimitRestrictedAlert: jest.fn(),
-}));
-
-jest.mock('@calls/state', () => ({
-    setJoiningChannelId: jest.fn(),
 }));
 
 const CALLER_ID = 'caller-id';
@@ -69,7 +64,7 @@ describe('CallsCustomMessage', () => {
         expect(leaveCallConfirmation).toHaveBeenCalled();
     });
 
-    it('should show the callee an incoming call, with a join button', () => {
+    it('should show the callee an incoming call, with a join button that opens the call screen', () => {
         const props = asCallee(getBaseProps());
         const {getByText, getByTestId} = renderWithIntlAndTheme(<CallsCustomMessage {...props}/>);
 
@@ -77,7 +72,7 @@ describe('CallsCustomMessage', () => {
         getByText('Join');
 
         fireEvent.press(getByTestId('calls_custom_message.join_button'));
-        expect(leaveAndJoinWithAlert).toHaveBeenCalled();
+        expect(joinCallAndOpenCallScreen).toHaveBeenCalledWith(expect.anything(), expect.any(String), CHANNEL_ID);
     });
 
     it('should show a started call once the callee answers, even though call_status is still calling', () => {

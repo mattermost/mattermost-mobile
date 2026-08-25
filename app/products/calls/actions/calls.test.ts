@@ -10,7 +10,7 @@ import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import * as CallsActions from '@calls/actions';
-import {getConnectionForTesting, leaveCallConfirmation} from '@calls/actions/calls';
+import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -1523,5 +1523,45 @@ describe('Actions.Calls', () => {
         });
 
         expect(errorAlert).toHaveBeenCalled();
+    });
+
+    describe('joinCallAndOpenCallScreen', () => {
+        const intl = createIntl({locale: 'en', messages: {}});
+
+        beforeEach(async () => {
+            jest.mocked(getChannelById).mockResolvedValue(TestHelper.fakeChannelModel({type: General.DM_CHANNEL}));
+            require('@queries/servers/user').getCurrentUser.mockResolvedValue({id: 'myUserId', roles: 'system_user'});
+
+            // callStarted only registers the channel as having a call after an await, and the join
+            // hinges on that: a call the store doesn't know about yet is treated as a new one.
+            await act(async () => {
+                addFakeCall('server1', 'channel-id');
+            });
+        });
+
+        it('should open the call screen once we are in the call', async () => {
+            // eslint-disable-next-line no-console
+            console.log('DEBUG channelsWithCalls', JSON.stringify(State.getChannelsWithCalls('server1')), 'calls', Object.keys(State.getCallsState('server1').calls), 'currentCall', State.getCurrentCall()?.channelId, 'config', JSON.stringify(State.getCallsConfig('server1')));
+            const joined = await joinCallAndOpenCallScreen(intl, 'server1', 'channel-id');
+            // eslint-disable-next-line no-console
+            console.log('DEBUG joined', joined, 'alertCalls', jest.mocked(Alert.alert).mock?.calls?.length);
+
+            assert.equal(joined, true);
+            expect(router.push).toHaveBeenCalledWith(expect.objectContaining({pathname: '/(authenticated)/call'}));
+
+            // The cards that render a 'Joining...' state have to be let go of again.
+            assert.equal(State.getGlobalCallsState().joiningChannelId, null);
+        });
+
+        it('should leave the call screen closed when the join never happened', async () => {
+            // No current user means doJoinCall bails before connecting.
+            require('@queries/servers/user').getCurrentUser.mockResolvedValue(undefined);
+
+            const joined = await joinCallAndOpenCallScreen(intl, 'server1', 'channel-id');
+
+            assert.equal(joined, false);
+            expect(router.push).not.toHaveBeenCalled();
+            assert.equal(State.getGlobalCallsState().joiningChannelId, null);
+        });
     });
 });

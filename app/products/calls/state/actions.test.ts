@@ -414,6 +414,18 @@ describe('useCallsState', () => {
         assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
     });
 
+    it('should stamp dmCalleeAnsweredAt as we join a call another user is already in, before our own session arrives', () => {
+        // The call bar and the call view render from here, well before our user_joined event lands.
+        // Leaving the stamp to that event made them count from the call's start_at in between and
+        // then jump back to zero.
+        setCallsState('server1', {...DefaultCallsState, myUserId: 'myUserId', calls: {'channel-1': call1}});
+        const {result} = renderHook(() => useCurrentCall());
+
+        act(() => atAnsweredTime(() => newCurrentCall('server1', 'channel-1', 'myUserId')));
+
+        assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
+    });
+
     it('leftCall', () => {
         const initialCallsState = {
             ...DefaultCallsState,

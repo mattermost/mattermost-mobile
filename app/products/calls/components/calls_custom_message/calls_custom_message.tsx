@@ -6,9 +6,8 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 
-import {leaveCallConfirmation} from '@calls/actions/calls';
-import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
-import {setJoiningChannelId} from '@calls/state';
+import {joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
+import {showLimitRestrictedAlert} from '@calls/alerts';
 import {CallCardState} from '@calls/types/calls';
 import {getCallCardState, getCallPropsFromPost} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
@@ -18,6 +17,7 @@ import FormattedTime from '@components/formatted_time';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserTimezone} from '@utils/user';
@@ -166,16 +166,15 @@ export const CallsCustomMessage = ({
     const isLimitRestricted = Boolean(limitRestrictedInfo?.limitRestricted);
     const joiningMsg = intl.formatMessage({id: 'mobile.calls_joining', defaultMessage: 'Joining...'});
 
-    const joinHandler = useCallback(async () => {
+    const handleJoinPress = useCallback(async () => {
         if (isLimitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo!, intl);
             return;
         }
 
-        setJoiningChannelId(post.channelId);
-        await leaveAndJoinWithAlert(intl, serverUrl, post.channelId);
-        setJoiningChannelId(null);
+        await joinCallAndOpenCallScreen(intl, serverUrl, post.channelId);
     }, [isLimitRestricted, post.channelId, intl, serverUrl, limitRestrictedInfo]);
+    const joinHandler = usePreventDoubleTap(handleJoinPress);
 
     // Hanging up while a DM call is still ringing is what the server turns into a canceled call,
     // so the caller's "Cancel" and a participant's "Leave" are the same action.

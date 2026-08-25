@@ -620,7 +620,7 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
     stopRingback();
     ringbackWindowStartedAt = Date.now();
 
-    setCurrentCall({
+    const nextCurrentCall: CurrentCall = {
         ...DefaultCurrentCall,
         ...existingCall,
         serverUrl,
@@ -632,7 +632,17 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         // Whoever starts a call hosts it, so say so now rather than letting the host badge drop in
         // on the participant card when call_start arrives with the same answer.
         hostId: startedByMe && !existingCall.hostId ? myUserId : existingCall.hostId,
-    });
+    };
+
+    // A DM call's duration counts from when it was answered, and joining a call somebody else is
+    // already in means that moment is now. Stamped here rather than waiting for our own user_joined
+    // event: the call bar and the call view render in between, and they would count from the call's
+    // start_at until the event landed and then jump back to zero.
+    if (hasOtherUserJoined(existingCall.sessions, myUserId)) {
+        nextCurrentCall.dmCalleeAnsweredAt = Date.now();
+    }
+
+    setCurrentCall(nextCurrentCall);
 };
 
 // Seeds the current call the instant the user taps the call button, before any of the connecting
