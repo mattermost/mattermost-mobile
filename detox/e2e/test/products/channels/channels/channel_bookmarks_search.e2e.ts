@@ -136,7 +136,7 @@ describe('Channels - Channel Bookmarks Search', () => {
         await waitFor(bookmarkEl).toExist().withTimeout(timeouts.HALF_MIN);
 
         // # Long press on the bookmark to open options
-        await bookmarkEl.longPress();
+        await bookmarkEl.longPress(timeouts.TWO_SEC);
 
         // * Verify bookmark options appear
         await expect(ChannelBookmarkScreen.deleteOption).toBeVisible();

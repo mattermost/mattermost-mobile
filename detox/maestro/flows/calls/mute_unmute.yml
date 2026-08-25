@@ -21,20 +21,22 @@ tags:
   - MM-T4832
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in and open the test channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
+# # Start the call from channel quick actions
 - runFlow: ../../subflows/calls/join_channel_call.yml
 
 - waitForAnimationToEnd:
     timeout: 3000
 
-# Expand the call bar into the full call screen (retries the tap; see subflow header).
+# # Expand the call bar into the full call screen (retries the tap; see subflow header).
 - runFlow: ../../subflows/calls/open_call_screen.yml
 
-# The user may join the call already muted (emulator: no physical mic).
-# Establish a known unmuted state before the test: if the button shows
-# "Unmute" (muted), tap once to unmute, then wait for "Mute" to appear.
+# # Establish a known unmuted state before the test.
+# The user may join the call already muted (emulator: no physical mic). If the
+# button shows "Unmute" (muted), tap once to unmute, then wait for "Mute".
 - runFlow:
     when:
       visible:
@@ -47,43 +49,44 @@ appId: ${MAESTRO_APP_ID}
             text: "Mute"
           timeout: 10000
 
-# Confirm the unmuted baseline (button shows "Mute")
+# * Verify the unmuted baseline (button shows "Mute")
 - extendedWaitUntil:
     visible:
       text: "Mute"
     timeout: 5000
 - takeScreenshot: calls-mute-initial-state
 
-# ── Mute: tap the mute-unmute button ────────────────────────────────────────
-# Button shows "Mute" (unmuted) → tap → should show "Unmute" (muted)
+# # Mute: button shows "Mute" (unmuted) → tap → should show "Unmute" (muted)
 - tapOn:
     id: "mute-unmute"
 
-# Verify the button now shows "Unmute" (confirms muted state)
+# * Verify the button now shows "Unmute" (confirms muted state)
 - extendedWaitUntil:
     visible:
       text: "Unmute"
     timeout: 10000
 - takeScreenshot: calls-muted-state
 
-# ── Unmute: tap again to restore audio ───────────────────────────────────────
+# # Unmute: tap again to restore audio
 - tapOn:
     id: "mute-unmute"
 
-# Verify the button now shows "Mute" (confirms unmuted state)
+# * Verify the button now shows "Mute" (confirms unmuted state)
 - extendedWaitUntil:
     visible:
       text: "Mute"
     timeout: 10000
 - takeScreenshot: calls-unmuted-state
 
-# Clean up: leave the call.
+# # Clean up: leave the call.
 # Tapping Leave shows a confirmation dialog; confirm with "Leave call".
 - tapOn:
     id: "leave"
 - tapOn:
     text: "Leave call"
     optional: true
+
+# * Verify the call screen is gone after leaving
 - extendedWaitUntil:
     notVisible:
       id: "mute-unmute"

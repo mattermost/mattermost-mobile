@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Validates detox/maestro/flows/**/*.yml against the header contract in GUIDELINES.md.
+# Validates detox/maestro/flows/**/*.yml against the header contract in GUIDELINES.md,
+# and every flow/subflow/preflight body against the step/assertion comment convention.
 # Run from repo root: bash detox/maestro/scripts/validate-flow-headers.sh
 set -euo pipefail
 
@@ -74,11 +75,57 @@ validate_flow() {
 
 }
 
+# Every comment block that introduces one or more commands must start with the step/
+# assertion marker from GUIDELINES.md §2 — `# #` for a step, `# *` for an assertion —
+# mirroring the Detox `// #` / `// *` convention so both suites map onto the same test
+# management system. Continuation lines stay plain `#`. Comment blocks that introduce no
+# command (trailing notes) are exempt.
+validate_body_comments() {
+  local file="$1"
+  local rel="${file#${MAESTRO_DIR}/}"
+  local bad_lines
+  bad_lines="$(awk '
+    BEGIN { body = 0; n = 0 }
+    body == 0 {
+      if ($0 ~ /^---[[:space:]]*$/) { body = 1 }
+      next
+    }
+    { n++; line[n] = $0; lineno[n] = FNR }
+    END {
+      i = 1
+      while (i <= n) {
+        if (line[i] !~ /^[[:space:]]*#/) { i++; continue }
+        start = i
+        j = i
+        while (j <= n && line[j] ~ /^[[:space:]]*#/) { j++ }
+        k = j
+        while (k <= n && line[k] ~ /^[[:space:]]*$/) { k++ }
+        if (k <= n && line[k] ~ /^[[:space:]]*-/ && line[start] !~ /^[[:space:]]*# [#*] /) {
+          print lineno[start]
+        }
+        i = j
+      }
+    }
+  ' "${file}")"
+
+  local lineno
+  for lineno in ${bad_lines}; do
+    echo "::error file=${rel},line=${lineno}::Comment block introducing a command must start with '# #' (step) or '# *' (assertion) — see GUIDELINES.md §2"
+    failures=$((failures + 1))
+  done
+}
+
 while IFS= read -r -d '' flow; do
   base="$(basename "${flow}")"
   [[ "${base}" == _* ]] && continue
   validate_flow "${flow}"
 done < <(find "${FLOWS_DIR}" -name '*.yml' -type f -print0 | sort -z)
+
+# The comment convention applies to every flow file, including the `_`-prefixed and
+# subflow/preflight fragments that are exempt from the Zephyr header contract.
+while IFS= read -r -d '' flow; do
+  validate_body_comments "${flow}"
+done < <(find "${FLOWS_DIR}" "${MAESTRO_DIR}/subflows" "${MAESTRO_DIR}/preflight" -name '*.yml' -type f -print0 2>/dev/null | sort -z)
 
 if [[ "${failures}" -gt 0 ]]; then
   echo ""

@@ -22,11 +22,13 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
+    let lockAcquired = false;
     let testUser: any;
 
     beforeAll(async () => {
         lockOwner = createClassificationLockOwner();
         await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
 
         await System.apiPatchConfig(siteOneUrl, {
             FeatureFlags: {
@@ -44,6 +46,12 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterAll(async () => {
+        // Never tear down shared server state we do not own — see the same guard in
+        // classification_banner_across_screens.e2e.ts.
+        if (!lockAcquired) {
+            return;
+        }
+
         try {
             await Properties.apiCleanupClassification(siteOneUrl);
             await System.apiPatchConfig(siteOneUrl, {
@@ -59,6 +67,13 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterEach(async () => {
+        // Same ownership guard as afterAll: jest-circus still runs afterEach for each
+        // test it marks failed after a beforeAll failure, so a shard that never acquired
+        // the lock would delete the classification config of the shard that did.
+        if (!lockAcquired) {
+            return;
+        }
+
         await Properties.apiCleanupClassification(siteOneUrl);
     });
 

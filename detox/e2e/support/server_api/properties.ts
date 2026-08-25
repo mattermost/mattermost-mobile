@@ -226,14 +226,6 @@ export const apiSetupClassificationWithBanner = async (
         throw new Error(`Failed to set system property value for field_id=${linkedField.id}, value=${selectedOption.id}: ${JSON.stringify(patchResult.error)}`);
     }
 
-    // Poll the same list endpoint the mobile app uses until the linked field (and its selected
-    // option) are readable. On cloud servers the config/property write propagates slowly, so a
-    // single GET right after create races propagation and the app's post-reload fetch then logs
-    // "No classification fields returned". Polling here guarantees the server has fully
-    // propagated before the test reloads the app.
-    // NOTE: pass '' for target_id to mirror the app client exactly — app/client/rest/properties.ts
-    // uses `if (targetId !== undefined)` and CLASSIFICATIONS_FIELD_TARGET_ID = '', so the app sends
-    // `&target_id=`. The verify GET must send the identical URL or it proves nothing.
     const checkLinkedVisible = async (): Promise<string | undefined> => {
         const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, LINKED_OBJECT_TYPE, TARGET_TYPE, '') as {fields?: any[]; error?: unknown};
         const visibleLinked = (verify.fields ?? []).filter(
@@ -247,6 +239,19 @@ export const apiSetupClassificationWithBanner = async (
         const linkedOptions = (visibleLinked[0].attrs?.options as PropertyFieldOption[] | undefined) ?? [];
         if (!linkedOptions.some((o) => o.id === selectedOption.id)) {
             return `linked field missing selected option ${selectedOption.id}. options=${JSON.stringify(linkedOptions)}`;
+        }
+
+        const verifyValues = await apiGetSystemPropertyValues(baseUrl, GROUP_NAME) as {values?: any[]; error?: unknown};
+        const linkedValue = (verifyValues.values ?? []).find((v) => v.field_id === linkedField.id);
+        if (!linkedValue) {
+            return `no system property value for linked field ${linkedField.id} from GET ` +
+                `/properties/groups/${GROUP_NAME}/system/values ` +
+                `(values returned: ${verifyValues.values?.length ?? 'none'}, ` +
+                `request errored: ${verifyValues.error ? 'yes' : 'no'})`;
+        }
+        if (linkedValue.value !== selectedOption.id) {
+            return `system property value for linked field ${linkedField.id} is ` +
+                `${JSON.stringify(linkedValue.value)}, expected ${selectedOption.id}`;
         }
         return undefined;
     };

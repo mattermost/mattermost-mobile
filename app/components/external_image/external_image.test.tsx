@@ -16,7 +16,7 @@ jest.mock('@managers/network_manager', () => ({
     __esModule: true,
     default: {
         getClient: () => ({
-            getBaseRoute: () => 'https://server.example.com/api/v4',
+            getAPIRoute: () => 'https://server.example.com/api/v4',
         }),
     },
 }));

@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import loopInStore from '@agents/store/loop_in_store';
 import streamingStore from '@agents/store/streaming_store';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -150,11 +151,13 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     });
 
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
+    EphemeralStore.clearClassificationCache(serverUrl);
 
     // Drop ephemeral agents caches for this server only; other connected
     // servers must keep their cached conversations and in-flight streams.
     clearConversationCacheForServer(serverUrl);
     streamingStore.removeServer(serverUrl);
+    loopInStore.removeServer(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {

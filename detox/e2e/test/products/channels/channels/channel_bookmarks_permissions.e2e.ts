@@ -123,7 +123,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await expect(element(by.text('Add a bookmark'))).not.toBeVisible();
 
         // # Long press on the bookmark to check available options
-        await permissionBookmarkEl.longPress();
+        await permissionBookmarkEl.longPress(timeouts.FOUR_SEC);
         await wait(timeouts.ONE_SEC);
 
         // * Verify Edit and Delete options ARE visible.
@@ -150,9 +150,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip: dismissOptionsSheet still fails after swipe fix on Android CI
-    // (repeated fails 29cdff, 59ec6ae, a4c0e33).
-    it.skip('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
+    it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
         const channelT5725 = await createChannel();
 
         // Create while the admin user's WebSocket is connected so channel info has
@@ -202,7 +200,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
                 withAncestor(by.id(ChannelInfoScreen.testID.bookmarksList)),
         );
         await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-        await archiveBookmarkEl.longPress();
+        await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
         await wait(timeouts.ONE_SEC);
 
         // Assert while any options sheet is up, then dismiss so close is hittable.

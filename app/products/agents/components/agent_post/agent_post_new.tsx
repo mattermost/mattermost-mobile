@@ -1,23 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
-import {useConversation, useTurnForPost} from '@agents/store/conversation_store';
+import {useConversation} from '@agents/store/conversation_store';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
     anyToolHasArguments,
     anyToolHasResult,
+    buildRoundsFromTurns,
     deriveApprovalStageForPost,
-    extractAnnotationsFromTurn,
-    extractReasoningFromTurn,
-    extractToolCallsForPost,
 } from '@agents/turn_content';
-import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
+import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
@@ -37,10 +35,16 @@ import StreamingIndicator from './streaming_indicator';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+// Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
+const LIVE_ROUND_ID = 'live';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
+        },
+        roundSpacing: {
+            marginTop: 8,
         },
         messageContainer: {
             flexDirection: 'row',
@@ -65,6 +69,77 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+interface RoundViewProps {
+    round: Round;
+    postId: string;
+    location: AvailableScreens;
+    isDM: boolean;
+    approvalStage: ToolApprovalStage;
+    canApprove: boolean;
+    canExpand: boolean;
+    showCursor: boolean;
+    isReasoningLoading: boolean;
+    isFirst: boolean;
+}
+
+// Renders one assistant round as a vertical sequence reasoning -> text -> tools,
+// reproducing the true text/tool interleaving of a multi-step agent response.
+const RoundView = ({
+    round,
+    postId,
+    location,
+    isDM,
+    approvalStage,
+    canApprove,
+    canExpand,
+    showCursor,
+    isReasoningLoading,
+    isFirst,
+}: RoundViewProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
+    // The server filters per-user already, so non-DMs hide tools whose
+    // arguments/results were redacted for this viewer.
+    const showArguments = isDM || anyToolHasArguments(round.toolCalls);
+    const showResults = isDM || anyToolHasResult(round.toolCalls);
+
+    return (
+        <View style={isFirst ? undefined : styles.roundSpacing}>
+            {round.reasoning.summary !== '' && (
+                <ReasoningDisplay
+                    reasoningSummary={round.reasoning.summary}
+                    isReasoningLoading={isReasoningLoading}
+                />
+            )}
+            {round.text !== '' && (
+                <View style={styles.messageContainer}>
+                    <Markdown
+                        baseTextStyle={styles.messageText}
+                        value={round.text}
+                        theme={theme}
+                        location={location}
+                    />
+                    {showCursor && (
+                        <StreamingIndicator/>
+                    )}
+                </View>
+            )}
+            {round.toolCalls.length > 0 && (
+                <ToolApprovalSet
+                    postId={postId}
+                    toolCalls={round.toolCalls}
+                    approvalStage={approvalStage}
+                    canApprove={canApprove}
+                    canExpand={canExpand}
+                    showArguments={showArguments}
+                    showResults={showResults}
+                />
+            )}
+        </View>
+    );
+};
+
 export interface AgentPostNewProps {
     post: PostModel;
     conversationId: string;
@@ -73,87 +148,66 @@ export interface AgentPostNewProps {
     isDM: boolean;
 }
 
-interface DisplayState {
-    toolCalls: ToolCall[];
-    annotations: Annotation[];
-    reasoning: string;
-    showReasoning: boolean;
-    approvalStage: ToolApprovalStage;
-}
-
-const INITIAL_DISPLAY_STATE: DisplayState = {
-    toolCalls: [],
-    annotations: [],
-    reasoning: '',
-    showReasoning: false,
-    approvalStage: ToolApprovalStage.Call,
-};
-
-// Buffers tool calls / reasoning / annotations through the brief window
-// between POST_EDITED clearing the streaming store and the invalidated
-// conversation fetch resolving with fresh turn data.
 const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: AgentPostNewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
     const {conversation, loading: conversationLoading, error: conversationError} = useConversation(serverUrl, conversationId);
-    const turn = useTurnForPost(conversation, post.id);
 
     const streamingState = useStreamingState(serverUrl, post.id);
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
+    const isGenerationInProgress = isGenerating || isReasoningLoading;
 
-    const [displayState, setDisplayState] = useState<DisplayState>(INITIAL_DISPLAY_STATE);
-    const {toolCalls, annotations, reasoning, showReasoning, approvalStage} = displayState;
+    // Persisted rounds derived from the conversation turns (the server truth).
+    const persistedRounds = useMemo(
+        () => (conversation ? buildRoundsFromTurns(conversation, post.id) : []),
+        [conversation, post.id],
+    );
 
-    // Skip while streaming or when the anchor turn is missing so a stale
-    // conversation doesn't overwrite data already received over the wire.
-    useEffect(() => {
-        if (!conversation || !turn || isGenerating) {
-            return;
-        }
-        const reasoningText = extractReasoningFromTurn(turn).summary;
-        setDisplayState({
-            toolCalls: extractToolCallsForPost(conversation, post.id),
-            annotations: extractAnnotationsFromTurn(turn),
-            reasoning: reasoningText,
-            showReasoning: reasoningText !== '',
-            approvalStage: deriveApprovalStageForPost(conversation, post.id),
-        });
-    }, [conversation, turn, post.id, isGenerating]);
-
-    // Only update on non-empty streaming values; handleRegenerate clears state on restart.
-    useEffect(() => {
+    // The in-progress round assembled from the live streaming buffers.
+    const liveRound = useMemo<Round | null>(() => {
         if (!streamingState) {
-            return;
+            return null;
         }
-        setDisplayState((prev) => {
-            const next: DisplayState = {...prev};
-            let changed = false;
-            if (streamingState.toolCalls.length > 0 && streamingState.toolCalls !== prev.toolCalls) {
-                next.toolCalls = streamingState.toolCalls;
-                changed = true;
-            }
-            if (streamingState.annotations.length > 0 && streamingState.annotations !== prev.annotations) {
-                next.annotations = streamingState.annotations;
-                changed = true;
-            }
-            if (streamingState.reasoning !== '' && streamingState.reasoning !== prev.reasoning) {
-                next.reasoning = streamingState.reasoning;
-                changed = true;
-            }
-            if (streamingState.showReasoning && !prev.showReasoning) {
-                next.showReasoning = true;
-                changed = true;
-            }
-            return changed ? next : prev;
-        });
+        const {message, toolCalls, reasoning, annotations} = streamingState;
+        if (message === '' && toolCalls.length === 0 && reasoning === '' && annotations.length === 0) {
+            return null;
+        }
+        return {
+            id: LIVE_ROUND_ID,
+            text: message,
+            toolCalls,
+            reasoning: {summary: reasoning, signature: ''},
+            annotations,
+        };
     }, [streamingState]);
 
+    // While streaming, stack the persisted prefix (prior rounds, e.g. after a
+    // tool-approval continue) + snapshotted rounds + the live round. Once the
+    // stream settles, the refetched conversation becomes the source of truth;
+    // until it reflects this response, keep streamed rounds visible so content
+    // doesn't blink out during the refetch gap.
+    const {renderedRounds, lastPersistedIdx} = useMemo(() => {
+        const storeRounds = streamingState?.rounds ?? [];
+        if (isGenerationInProgress) {
+            const out = [...persistedRounds, ...storeRounds];
+            if (liveRound) {
+                out.push(liveRound);
+            }
+            return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
+        }
+        if (persistedRounds.length > 0) {
+            return {renderedRounds: persistedRounds, lastPersistedIdx: persistedRounds.length - 1};
+        }
+        const out = liveRound ? [...storeRounds, liveRound] : [...storeRounds];
+        return {renderedRounds: out, lastPersistedIdx: -1};
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds]);
+
     // Invalidate the cached conversation when a stream finishes so the next
-    // fetch surfaces the finalised turn.
+    // fetch surfaces the finalised turns.
     const wasGeneratingRef = useRef(isGenerating);
     useEffect(() => {
         const wasGenerating = wasGeneratingRef.current;
@@ -163,24 +217,71 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
     }, [serverUrl, conversationId, isGenerating]);
 
-    const displayMessage = streamingState?.message ?? post.message ?? '';
+    // A tool-approval `continue` resume bumps continueSeq; refetch so the
+    // just-resolved prior round (now persisted server-side) appears above the
+    // resumed live round. Safe to fire alongside the stream-end refetch above —
+    // refetchConversation dedupes in-flight requests.
+    const continueSeq = streamingState?.continueSeq ?? 0;
+    const lastContinueSeqRef = useRef(continueSeq);
+    useEffect(() => {
+        if (continueSeq > lastContinueSeqRef.current) {
+            lastContinueSeqRef.current = continueSeq;
+            refetchConversation(serverUrl, conversationId);
+        } else if (continueSeq < lastContinueSeqRef.current) {
+            // Streaming state was cleared (continueSeq reset to 0); realign the
+            // ref so a later continue in a fresh stream triggers a refetch again.
+            lastContinueSeqRef.current = continueSeq;
+        }
+    }, [serverUrl, conversationId, continueSeq]);
+
+    // Once a finished stream's refetch has populated the persisted rounds, drop
+    // the streaming store entry so the snapshotted rounds aren't rendered twice
+    // (POST_EDITED also clears it; this guards the refetch-before-POST_EDITED gap).
+    useEffect(() => {
+        if (streamingState && !isGenerationInProgress && persistedRounds.length > 0) {
+            streamingStore.removePost(serverUrl, post.id);
+        }
+    }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
-    const canExpand = isDM || isRequester;
+    const canExpand = isRequester;
 
-    // The server filters per-user already, so non-DMs hide tools whose
-    // arguments/results were redacted for this viewer.
-    const showArguments = isDM || anyToolHasArguments(toolCalls);
-    const showResults = isDM || anyToolHasResult(toolCalls);
+    // Only the post anchor (last persisted round, when it is also the last
+    // rendered round) gets a real approval stage; live/snapshotted rounds always
+    // render as 'done'.
+    const anchorStage = conversation ? deriveApprovalStageForPost(conversation, post.id) : ToolApprovalStage.Done;
+    const lastRenderedIdx = renderedRounds.length - 1;
 
-    const isGenerationInProgress = isGenerating || isReasoningLoading;
+    // Combined Sources list at the bottom, aggregated across rounds. Dedupe only
+    // by non-empty url; citations without a url can't be meaningfully deduped and
+    // are all kept (matches the legacy renderer + CitationsList, which key on index).
+    const annotations = useMemo<Annotation[]>(() => {
+        const seen = new Set<string>();
+        const all: Annotation[] = [];
+        for (const round of renderedRounds) {
+            for (const annotation of round.annotations) {
+                if (annotation.url && seen.has(annotation.url)) {
+                    continue;
+                }
+                seen.add(annotation.url);
+                all.push(annotation);
+            }
+        }
+        return all;
+    }, [renderedRounds]);
 
+    const noRegenProp = (post.props as Record<string, unknown>)?.no_regen;
+    const noRegen = noRegenProp === true || noRegenProp === 'true';
+    const hasContent = renderedRounds.length > 0;
     const showStopButton = isGenerationInProgress && isRequester;
-    const hasContent = displayMessage !== '' || reasoning !== '';
-    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM;
+    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
+    const showCursorOnLive = isGenerating && !isPrecontent;
 
     const handleStop = useCallback(async () => {
+        // Mark stopped first so late `next` events are ignored before the
+        // server's cancel/end lands.
+        streamingStore.markStopped(serverUrl, post.id);
         const {error} = await stopGeneration(serverUrl, post.id);
         if (error) {
             showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
@@ -188,9 +289,8 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     }, [serverUrl, post.id]);
 
     const handleRegenerate = useCallback(async () => {
-        // Clear local display + streaming store so the new stream starts from
-        // a clean slate instead of showing the previous round's data.
-        setDisplayState(INITIAL_DISPLAY_STATE);
+        // Clear the streaming store so the new stream starts from a clean slate
+        // instead of showing the previous round's data.
         streamingStore.removePost(serverUrl, post.id);
         const {error} = await regenerateResponse(serverUrl, post.id);
         if (error) {
@@ -207,12 +307,25 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                     style={styles.precontentText}
                 />
             ) : null}
-            {showReasoning && (
-                <ReasoningDisplay
-                    reasoningSummary={reasoning}
-                    isReasoningLoading={isReasoningLoading}
-                />
-            )}
+            {renderedRounds.map((round, idx) => {
+                const isLive = round.id === LIVE_ROUND_ID;
+                const stage = (idx === lastPersistedIdx && idx === lastRenderedIdx) ? anchorStage : ToolApprovalStage.Done;
+                return (
+                    <RoundView
+                        key={round.id}
+                        round={round}
+                        postId={post.id}
+                        location={location}
+                        isDM={isDM}
+                        approvalStage={stage}
+                        canApprove={canApprove}
+                        canExpand={canExpand}
+                        showCursor={isLive && showCursorOnLive}
+                        isReasoningLoading={isLive && isReasoningLoading}
+                        isFirst={idx === 0}
+                    />
+                );
+            })}
             {isPrecontent && (
                 <View style={styles.precontentContainer}>
                     <FormattedText
@@ -221,32 +334,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         style={styles.precontentText}
                     />
                     <StreamingIndicator/>
-                </View>
-            )}
-            {toolCalls.length > 0 && (
-                <ToolApprovalSet
-                    postId={post.id}
-                    toolCalls={toolCalls}
-                    approvalStage={approvalStage}
-                    canApprove={canApprove}
-                    canExpand={canExpand}
-                    showArguments={showArguments}
-                    showResults={showResults}
-                />
-            )}
-            {!isPrecontent && (displayMessage || isGenerating) && (
-                <View style={styles.messageContainer}>
-                    {displayMessage ? (
-                        <Markdown
-                            baseTextStyle={styles.messageText}
-                            value={displayMessage}
-                            theme={theme}
-                            location={location}
-                        />
-                    ) : null}
-                    {isGenerating && (
-                        <StreamingIndicator/>
-                    )}
                 </View>
             )}
             {annotations.length > 0 && (

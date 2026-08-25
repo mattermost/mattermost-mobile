@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RUNNING_E2E} from '@env';
 import React, {
     useMemo,
     useCallback,
@@ -28,6 +29,10 @@ import {getLabelPositions} from './utils';
 
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
+
+// Expose the input's value/testID to the accessibility tree only in E2E builds so
+// Maestro can read the typed value. Gated so real builds are byte-for-byte unchanged.
+const isRunningE2e = RUNNING_E2E === 'true';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -194,9 +199,13 @@ const FloatingInputContainer = ({
     return (
         <TouchableWithoutFeedback
             onLayout={onLayout}
+            accessible={isRunningE2e ? false : undefined}
         >
             <View style={styles.container}>
-                <Pressable onPress={handlePressOnContainer}>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    accessible={isRunningE2e ? false : undefined}
+                >
                     <Animated.Text
                         style={[styles.label, textAnimatedTextStyle]}
                         suppressHighlighting={true}

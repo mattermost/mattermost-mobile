@@ -72,8 +72,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — expanded-table horizontal scroll cannot reveal the right column.
-    (isIos() ? it.skip : it)('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
+    it('MM-T4899_2 - should be able to display markdown table with long text wrapped properly', async () => {
         // # Open a channel screen and post a markdown table with long text
         const markdownTable =
             '| Left header that wraps | Center header that wraps | Right header that wraps |\n' +
@@ -157,8 +156,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (ios) — vertical scroll full view flake
-    (isIos() ? it.skip : it)('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
+    it('MM-T4899_4 - should be able to open markdown table in full view and allow vertical scroll', async () => {
         // # Open a channel screen and post a markdown table with more rows past vertical view
         const markdownTable =
             '| Header | Header | Header VS last |\n' +
@@ -203,8 +201,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — duplicate Back accessibility nodes break table dismissal.
-    (isIos() ? it.skip : it)('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
+    it('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
         // # Open a channel screen and post a markdown table with multiple row heights
         const markdownTable =
             '| Header | Header | Header |\n' +
@@ -243,8 +240,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    // Skip iOS: CI run 30000635898 — expand control is not hittable for the large table.
-    (isIos() ? it.skip : it)('MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
+    it('MM-T4899_5 - should be able to open markdown table in full view and allow both horizontal and vertical scrolls', async () => {
         // # Open a channel screen and post a markdown table with more columns and rows past horizontal and vertical views
         const markdownTable =
             '| Header | Header | Header | Header | Header | Header | Header | Header last |\n' +

@@ -111,6 +111,13 @@ on:
         required: false
         type: string
         default: ""
+      durations_key:
+        description: >
+          Spec-duration manifest key (e.g. detox-android). Enables duration-aware
+          shard packing. Empty keeps the even alphabetical split.
+        required: false
+        type: string
+        default: ""
     outputs:
       STATUS:
         value: ${{ jobs.generate-report.outputs.STATUS }}
@@ -186,6 +193,22 @@ jobs:
           echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
           echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
 
+      # Duration history from the last main-push run; absent → even split.
+      # continue-on-error: this job gates the entire test matrix, and shard packing
+      # is an optimization — a missing manifest or an AWS hiccup must not stop the
+      # run, it must fall back to the even split.
+      - name: Restore spec-duration manifest
+        if: inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -194,6 +217,7 @@ jobs:
           search_path: ${{ inputs.search_path }}
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
+          durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
 
   e2e-android:
     name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
@@ -489,6 +513,9 @@ jobs:
       actions: read
       # Per-job TSIO finalize posts detox-android (or CMT <shard>).
       statuses: write
+      # Finalize re-reads the PR labels so a result landing after E2E/Override was
+      # applied reports success instead of re-blocking the merge.
+      issues: read
     outputs:
       TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -523,6 +550,58 @@ jobs:
         run: |
           path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
           echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
+
+      # ── Spec durations for the next run's shard packing ────────────────────
+      # Must run before e2e:save-report, which deletes the android-results-* dirs
+      # the per-shard jest-results.json live in. Only main-push publishes (a PR
+      # must not steer how other branches shard); PR runs still compute it so the
+      # step is exercised on every PR that touches this workflow.
+      # Re-fetch first: this is a different runner from generate-specs, so without
+      # it the EWMA would have no history and collapse to "last run only".
+      - name: Restore previous spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          mode: restore
+
+      - name: Build spec-duration manifest
+        if: always() && inputs.durations_key != ''
+        continue-on-error: true
+        env:
+          DURATIONS_KEY: ${{ inputs.durations_key }}
+        run: |
+          node detox/utils/spec-durations.js \
+            --dir detox/artifacts \
+            --previous detox/artifacts/spec-durations.json \
+            --output detox/artifacts/spec-durations.next.json \
+            --key "$DURATIONS_KEY" \
+            --repo-root "$GITHUB_WORKSPACE"
+
+      # spec-durations.js merges the restored manifest into the new one, so the
+      # freshly built manifest already carries every valid entry of the previously
+      # published one — there is nothing to fall back to. (Entries the restored
+      # manifest had that were malformed or non-positive are dropped on purpose.)
+      # An empty/zero manifest is rejected by
+      # the action's `validate` guard rather than published (publishing one would
+      # poison duration packing for every branch until main rewrote it).
+      - name: Publish spec-duration manifest
+        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
+        continue-on-error: true
+        uses: ./.github/actions/s3-spec-durations
+        env:
+          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
+          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
+        with:
+          key: ${{ inputs.durations_key }}
+          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
+          manifest-path: detox/artifacts/spec-durations.next.json
+          mode: save
 
       # ── TSIO report upload (before e2e:save-report) ────────────────────────
       # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
@@ -585,11 +664,21 @@ jobs:
           json-path: detox/artifacts/jest-results-merged.json
           screenshots-dir: detox/artifacts/
 
+      # Resolved here rather than inside tsio-report-status.js so the GitHub API
+      # call stays in the Actions layer and the reporter acts on its inputs.
+      - name: Check E2E/Override on the PR
+        id: e2e-override
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
+        uses: ./.github/actions/e2e-override-label
+        with:
+          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
+
       - name: Post per-job TSIO commit status
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
+          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-android.result }}
           JOB_STATUS: ${{ job.status }}
@@ -615,6 +704,7 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --e2e-override="$E2E_OVERRIDE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
