@@ -68,6 +68,7 @@ beforeAll(() => {
 
 beforeEach(async () => {
     jest.clearAllMocks();
+    jest.mocked(localUpdateChecklistItem).mockResolvedValue({data: true});
     await DatabaseManager.init([serverUrl]);
 });
 
@@ -137,6 +138,17 @@ describe('checklist', () => {
                     {id: 'req2', label: 'Notes', value: 'keep'},
                 ],
             );
+        });
+
+        it('should return local update errors after a successful server update', async () => {
+            const localError = new Error('local write failed');
+            mockClient.setChecklistItemState.mockResolvedValueOnce({});
+            jest.mocked(localUpdateChecklistItem).mockResolvedValueOnce({error: localError});
+
+            const result = await updateChecklistItem(serverUrl, playbookRunId, itemId, checklistNumber, itemNumber, 'closed');
+
+            expect(result).toEqual({error: localError});
+            expect(result.data).toBeUndefined();
         });
     });
 

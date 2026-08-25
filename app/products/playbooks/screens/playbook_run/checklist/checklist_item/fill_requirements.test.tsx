@@ -63,6 +63,8 @@ describe('FillRequirements', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<FillRequirements {...props}/>);
 
+        expect(getByTestId('requirement-value-r1').props.maxLength).toBe(1024);
+
         fireEvent.changeText(getByTestId('requirement-value-r1'), '  https://ticket  ');
         fireEvent.press(getByTestId('modal-save-requirements'));
 
@@ -79,6 +81,16 @@ describe('FillRequirements', () => {
         });
         expect(navigateBack).toHaveBeenCalled();
         expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
+    });
+
+    it('should truncate requirement values to the server max length', () => {
+        const props = getBaseProps();
+        const {getByTestId} = renderWithIntlAndTheme(<FillRequirements {...props}/>);
+        const longValue = 'a'.repeat(1100);
+
+        fireEvent.changeText(getByTestId('requirement-value-r1'), longValue);
+
+        expect(getByTestId('requirement-value-r1').props.value).toHaveLength(1024);
     });
 
     it('should require all fields before marking complete', async () => {

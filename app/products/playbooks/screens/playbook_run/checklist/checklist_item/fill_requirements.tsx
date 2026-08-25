@@ -20,6 +20,9 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+// Matches server MaxTaskRequirementValueLength / desktop fill modal.
+export const MAX_REQUIREMENT_VALUE_LENGTH = 1024;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
@@ -75,7 +78,7 @@ const RequirementField = ({
     onChange,
 }: RequirementFieldProps) => {
     const onChangeText = useCallback((next: string) => {
-        onChange(requirement.id, next);
+        onChange(requirement.id, next.slice(0, MAX_REQUIREMENT_VALUE_LENGTH));
     }, [onChange, requirement.id]);
 
     return (
@@ -88,6 +91,7 @@ const RequirementField = ({
                 theme={theme}
                 error={error}
                 editable={editable}
+                maxLength={MAX_REQUIREMENT_VALUE_LENGTH}
             />
         </View>
     );

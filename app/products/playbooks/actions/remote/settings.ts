@@ -15,6 +15,10 @@ export const updatePlaybooksSettings = async (serverUrl: string) => {
         const isPlaybooksEnabled = await fetchIsPlaybooksEnabled(database);
         if (!isPlaybooksEnabled) {
             logDebug('updatePlaybooksSettings: skipping settings fetch, playbooks below minimum version');
+            const {error} = await setPlaybooksTaskRequirementsEnabled(serverUrl, false);
+            if (error) {
+                return {error};
+            }
             return {
                 data: {
                     enable_experimental_features: false,

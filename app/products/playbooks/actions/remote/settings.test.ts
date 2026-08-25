@@ -46,6 +46,29 @@ describe('updatePlaybooksSettings', () => {
         expect(mockClient.fetchPlaybooksSettings).not.toHaveBeenCalled();
     });
 
+    it('should clear a stale task-requirements flag when playbooks is below the minimum version', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.PLAYBOOKS_TASK_REQUIREMENTS_ENABLED, value: true}],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await updatePlaybooksSettings(serverUrl);
+
+        expect(result).toEqual({
+            data: {
+                enable_experimental_features: false,
+                enable_task_requirements: false,
+            },
+        });
+        expect(mockClient.fetchPlaybooksSettings).not.toHaveBeenCalled();
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const systemValues = await querySystemValue(database, SYSTEM_IDENTIFIERS.PLAYBOOKS_TASK_REQUIREMENTS_ENABLED);
+        expect(systemValues).toHaveLength(1);
+        expect(systemValues[0].value).toBe(false);
+    });
+
     it('should fetch settings and persist task requirements flag', async () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleSystem({

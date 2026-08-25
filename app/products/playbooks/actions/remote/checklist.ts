@@ -44,7 +44,10 @@ export const updateChecklistItem = async (
             }));
         }
 
-        await localUpdateChecklistItem(serverUrl, itemId, state, requirements);
+        const localResult = await localUpdateChecklistItem(serverUrl, itemId, state, requirements);
+        if (localResult.error) {
+            return {error: localResult.error};
+        }
         return {data: true};
     } catch (error) {
         logDebug('error on updateChecklistItem', getFullErrorMessage(error));

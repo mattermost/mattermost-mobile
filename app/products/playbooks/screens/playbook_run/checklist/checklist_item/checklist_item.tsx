@@ -126,7 +126,7 @@ const ChecklistItem = ({
 
     const conditionReason = 'conditionReason' in item ? item.conditionReason : item.condition_reason || '';
     const conditionAction = 'conditionAction' in item ? item.conditionAction : item.condition_action || '';
-    const requirements = useMemo(() => item.requirements || [], [item.requirements]);
+    const requirements = useMemo(() => item.requirements ?? [], [item.requirements]);
 
     const showConditionIcon = conditionReason !== '' || conditionAction === 'shown_because_modified';
     const isErrorState = conditionAction === 'shown_because_modified';
