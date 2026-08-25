@@ -47,6 +47,22 @@ describe('dismissKeyboard', () => {
         expect(KeyboardController.dismiss).toHaveBeenCalledWith({animated: false});
         expect(Keyboard.dismiss).not.toHaveBeenCalled();
     });
+
+    // Regression: KeyboardController.dismiss() waits for a `keyboardDidHide` event that
+    // can never arrive when the library's internal isClosed flag is stale. Callers used
+    // to await that forever — showPostOptions() then never navigated, so long-pressing a
+    // post did nothing at all until the flag happened to resync.
+    it('should not hang on edge-to-edge when KeyboardController.dismiss never settles', async () => {
+        setEdgeToEdge(true);
+        jest.mocked(KeyboardController.dismiss).mockReturnValue(new Promise<void>(() => {
+            // Never settles, exactly as it behaves after a missed keyboardDidHide.
+        }));
+
+        const dismissPromise = dismissKeyboard();
+        await advanceTimers(250);
+
+        await expect(dismissPromise).resolves.toBeUndefined();
+    });
 });
 
 describe('isKeyboardVisible', () => {
