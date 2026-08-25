@@ -411,6 +411,7 @@ export default function PlaybookRun({
                         </View>
                         <ChecklistList
                             checklists={checklists}
+
                             // Only for a run that is not in the database, where these are the sole
                             // source of task activity. A persisted run's rows observe it directly, and
                             // passing the events here as well would churn a `withObservables` trigger

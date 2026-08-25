@@ -42,10 +42,10 @@ describe('getTaskActivity', () => {
         });
     });
 
-    it.each<ChecklistItemState>(['open', ''])('returns the unchecked action for the mobile open state %p', (state) => {
+    it('returns the unchecked action for an open task', () => {
         const event = makeEvent({details: JSON.stringify({action: 'uncheck', task: 'Deploy release'})});
 
-        expect(getTaskActivity(makeItem({state}), [event])).toEqual({
+        expect(getTaskActivity(makeItem({state: ''}), [event])).toEqual({
             action: 'uncheck',
             actorUserId: 'user-1',
             timestamp: 1000,
@@ -61,7 +61,7 @@ describe('getTaskActivity', () => {
     });
 
     it.each([
-        makeItem({state: 'open', state_modified: 0}),
+        makeItem({state: '', state_modified: 0}),
         makeItem({state: 'in_progress'}),
     ])('does not show activity for untouched or in-progress tasks', (item) => {
         expect(getTaskActivity(item, [makeEvent()])).toBeUndefined();
@@ -89,7 +89,7 @@ describe('getTaskActivity', () => {
     it('returns the restore action for an open task whose event says it was restored', () => {
         const event = makeEvent({details: JSON.stringify({action: 'restore', task: 'Deploy release'})});
 
-        expect(getTaskActivity(makeItem({state: 'open'}), [event])).toEqual({
+        expect(getTaskActivity(makeItem({state: ''}), [event])).toEqual({
             action: 'restore',
             actorUserId: 'user-1',
             timestamp: 1000,
@@ -97,7 +97,7 @@ describe('getTaskActivity', () => {
     });
 
     it('falls back to uncheck for an open task with no matching event, since open cannot distinguish it from a restore', () => {
-        expect(getTaskActivity(makeItem({state: 'open'}), [])).toEqual({
+        expect(getTaskActivity(makeItem({state: ''}), [])).toEqual({
             action: 'uncheck',
             actorUserId: undefined,
             timestamp: 1000,
@@ -107,7 +107,7 @@ describe('getTaskActivity', () => {
     it.each<[ChecklistItemState, string]>([
         ['closed', 'skip'],
         ['skipped', 'check'],
-        ['open', 'check'],
+        ['', 'check'],
     ])('ignores an event whose action the %p state could not have produced (%p)', (state, action) => {
         const event = makeEvent({details: JSON.stringify({action, task: 'Deploy release'})});
 

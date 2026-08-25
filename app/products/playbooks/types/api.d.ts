@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-type ChecklistItemState = '' | 'open' | 'in_progress' | 'closed' | 'skipped';
+// Mirrors ChecklistItemState in the playbooks plugin, where an unchecked task is the empty string.
+// Adding a word for it would typecheck against comparisons that can never match.
+type ChecklistItemState = '' | 'in_progress' | 'closed' | 'skipped';
 
 type ConditionAction = '' | 'hidden' | 'shown_because_modified';
 

@@ -41,7 +41,6 @@ const getCandidateActions = (state: ChecklistItemState): TaskActivityAction[] =>
         case 'skipped':
             return ['skip'];
         case '':
-        case 'open':
             return ['uncheck', 'restore'];
         default:
             return [];
@@ -116,10 +115,12 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents: Timeline
         }
     }
 
-    // Skip needs event confirmation, unlike check/uncheck: a skip's time lands in LastSkipped
-    // (serialized as `delete_at`, which mobile does not persist), so a skipped task's state_modified
-    // is 0 or a leftover from an earlier check/uncheck. Against a server that emits no skip event,
-    // showing nothing beats showing a time the skip did not happen at.
+    // Skip needs event confirmation, unlike check/uncheck, and only for older servers: those record a
+    // skip solely in LastSkipped and leave state_modified at 0 or at a leftover from an earlier
+    // check/uncheck, so labelling it "Skipped" would show a time the skip did not happen at. Servers
+    // that record skips set state_modified and emit the event, so the match succeeds and this does not
+    // fire. Note the asymmetry it leaves behind: with no event a skipped task shows nothing while a
+    // checked task still shows a chip without an actor.
     if (item.state === 'skipped' && !matched) {
         return undefined;
     }

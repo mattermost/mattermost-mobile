@@ -203,7 +203,7 @@ describe('run utils', () => {
         it('should return true for items in the open state past due date', () => {
             const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
                 due_date: Date.now() - 1000, // Past due date
-                state: 'open',
+                state: '',
             });
 
             expect(isOverdue(item)).toBe(true);
@@ -334,7 +334,7 @@ describe('run utils', () => {
         it('should return true for items in the open state', () => {
             const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
                 due_date: Date.now() + (2 * 60 * 60 * 1000), // 2 hours from now
-                state: 'open',
+                state: '',
             });
 
             expect(isPending(item)).toBe(true);
@@ -398,7 +398,7 @@ describe('run utils', () => {
 
         it('should return true for items in the open state', () => {
             const item = TestHelper.fakePlaybookChecklistItem('checklist-id', {
-                state: 'open',
+                state: '',
             });
 
             expect(isOutstanding(item)).toBe(true);
