@@ -95,24 +95,30 @@ const maybeRequestMicrophonePermission = async () => {
         return;
     }
 
+    // Set guard before any awaits so concurrent calls (e.g. rapid reconnects)
+    // cannot both pass the check above while DB reads are in flight.
+    micPermissionRequestInFlight = true;
+
     // doReconnect fires while backgrounded (e.g. a native call keeps the
     // websocket alive). Alert.alert is a no-op when backgrounded, so skip to
     // avoid storing the flag before the dialog has appeared.
     if (AppState.currentState !== 'active') {
+        micPermissionRequestInFlight = false;
         return;
     }
 
     const alreadyAsked = await getMicPermissionAsked();
     if (alreadyAsked) {
+        micPermissionRequestInFlight = false;
         return;
     }
 
     const status = await checkMicrophonePermissionStatus();
     if (status !== Permissions.RESULTS.DENIED) {
+        micPermissionRequestInFlight = false;
         return;
     }
 
-    micPermissionRequestInFlight = true;
     const result = await storeMicPermissionAsked();
     if (result && 'error' in result) {
         micPermissionRequestInFlight = false;

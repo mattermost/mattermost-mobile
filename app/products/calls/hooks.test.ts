@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {act, renderHook, waitFor} from '@testing-library/react-native';
-import {Alert, AppState} from 'react-native';
+import {Alert, AppState, Platform} from 'react-native';
 import Permissions from 'react-native-permissions';
 
 import {initializeVoiceTrack} from '@calls/actions/calls';
@@ -156,6 +156,78 @@ describe('Calls Hooks', () => {
             const mockCheck = jest.spyOn(Permissions, 'check');
             renderHook(() => usePermissionsChecker(true));
             expect(mockCheck).not.toHaveBeenCalled();
+        });
+
+        it('requests permission on iOS when status is DENIED (undetermined)', async () => {
+            Object.defineProperty(Platform, 'OS', {value: 'ios', configurable: true});
+            jest.spyOn(Permissions, 'check').mockResolvedValue(Permissions.RESULTS.DENIED);
+            jest.spyOn(Permissions, 'request').mockResolvedValue(Permissions.RESULTS.GRANTED);
+
+            const {result} = renderHook(() => usePermissionsChecker(false));
+
+            await act(async () => {
+                AppState.currentState = 'active';
+                const callback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+                await callback('active');
+            });
+
+            expect(Permissions.request).toHaveBeenCalled();
+            expect(initializeVoiceTrack).toHaveBeenCalled();
+            expect(setMicPermissionsGranted).toHaveBeenCalledWith(true);
+            expect(result.current).toBe(true);
+        });
+
+        it('stays false on iOS when DENIED request is also denied', async () => {
+            Object.defineProperty(Platform, 'OS', {value: 'ios', configurable: true});
+            jest.spyOn(Permissions, 'check').mockResolvedValue(Permissions.RESULTS.DENIED);
+            jest.spyOn(Permissions, 'request').mockResolvedValue(Permissions.RESULTS.DENIED);
+
+            const {result} = renderHook(() => usePermissionsChecker(false));
+
+            await act(async () => {
+                AppState.currentState = 'active';
+                const callback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+                await callback('active');
+            });
+
+            expect(Permissions.request).toHaveBeenCalled();
+            expect(initializeVoiceTrack).not.toHaveBeenCalled();
+            expect(result.current).toBe(false);
+        });
+
+        it('does not request permission on Android when status is DENIED', async () => {
+            Object.defineProperty(Platform, 'OS', {value: 'android', configurable: true});
+            jest.spyOn(Permissions, 'check').mockResolvedValue(Permissions.RESULTS.DENIED);
+            const mockRequest = jest.spyOn(Permissions, 'request');
+
+            const {result} = renderHook(() => usePermissionsChecker(false));
+
+            await act(async () => {
+                AppState.currentState = 'active';
+                const callback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+                await callback('active');
+            });
+
+            expect(mockRequest).not.toHaveBeenCalled();
+            expect(initializeVoiceTrack).not.toHaveBeenCalled();
+            expect(result.current).toBe(false);
+        });
+
+        it('does not request permission when status is BLOCKED', async () => {
+            Object.defineProperty(Platform, 'OS', {value: 'ios', configurable: true});
+            jest.spyOn(Permissions, 'check').mockResolvedValue(Permissions.RESULTS.BLOCKED);
+            const mockRequest = jest.spyOn(Permissions, 'request');
+
+            renderHook(() => usePermissionsChecker(false));
+
+            await act(async () => {
+                AppState.currentState = 'active';
+                const callback = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+                await callback('active');
+            });
+
+            expect(mockRequest).not.toHaveBeenCalled();
+            expect(initializeVoiceTrack).not.toHaveBeenCalled();
         });
     });
 
