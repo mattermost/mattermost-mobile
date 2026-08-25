@@ -108,7 +108,7 @@ type Props = {
     checklist: PlaybookChecklistModel | PlaybookChecklist;
     checklistNumber: number;
     items: Array<PlaybookChecklistItemModel | PlaybookChecklistItem>;
-    timelineEvents: TimelineEvent[];
+    timelineEvents: TimelineEvent[] | undefined;
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;

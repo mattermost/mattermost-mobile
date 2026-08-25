@@ -93,7 +93,7 @@ type Props = {
      * Only forwarded to the bottom sheet, which resolves its own activity so that it keeps updating
      * while it is open. The row's own chip uses the resolved activity below.
      */
-    timelineEvents: TimelineEvent[];
+    timelineEvents: TimelineEvent[] | undefined;
     activity?: TaskActivity;
     activityActor?: UserModel;
     assignee?: UserModel;

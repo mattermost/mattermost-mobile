@@ -10,7 +10,7 @@ import type PlaybookChecklistModel from '@playbooks/types/database/models/playbo
 
 type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
-    timelineEvents: TimelineEvent[];
+    timelineEvents: TimelineEvent[] | undefined;
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;

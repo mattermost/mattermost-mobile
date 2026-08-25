@@ -20,9 +20,13 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type OwnProps = {
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     runId: string;
-    timelineEvents: TimelineEvent[];
+    timelineEvents: TimelineEvent[] | undefined;
 } & WithDatabaseArgs;
 
+// timelineEvents is only passed for a run absent from the database, where it is the sole source of task
+// activity; for a persisted run it is undefined and the events come from the observed run below. Keeping
+// it stable in that case matters because a trigger change makes withObservables render null until every
+// observable re-emits, which would empty an open sheet while the user is reading it.
 const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, runId, timelineEvents, database}: OwnProps) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
