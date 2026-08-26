@@ -25,7 +25,9 @@ import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
+// here: up to 45m of queuing behind the other two classification suites (they share one
+// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -67,7 +69,10 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-    });
+
+        // The hook gets its own budget so the lock wait does not have to fit inside the
+        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
+    }, timeouts.ONE_MIN * 50);
 
     afterAll(async () => {
         // Never tear down shared server state we do not own — see the same guard in
