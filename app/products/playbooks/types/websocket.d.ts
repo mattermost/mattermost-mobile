@@ -12,8 +12,7 @@ type PlaybookRunUpdate = {
         checklists?: PlaybookChecklistUpdate[];
     };
 
-    // Hard-deleted timeline event ids. The server strips these out of changed_fields into a sibling
-    // field, so a payload can carry deletes with changed_fields left empty.
+    // Hard-deleted timeline event ids. The server sends these alongside changed_fields, not inside it.
     timeline_event_deletes?: string[];
 }
 
