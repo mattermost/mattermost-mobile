@@ -12,7 +12,6 @@
 // list, search input behavior (wildcard, clear, replace), and focus state.
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -127,10 +126,8 @@ describe('Search - Recents and Input', () => {
         const messageB = `Message ${termB}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageA);
-        const {post: postA} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.postMessage(messageB);
-        const {post: postB} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: postA} = await ChannelScreen.postMessageAndVerify(messageA, testChannel.id, siteOneUrl);
+        const {post: postB} = await ChannelScreen.postMessageAndVerify(messageB, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen
@@ -178,9 +175,12 @@ describe('Search - Recents and Input', () => {
         const msgTwo = `Message ${termTwo}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(msgOne);
-        await ChannelScreen.postMessage(msgTwo);
-        const {post: postTwo} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // Both sends are verified: this test searches for termOne later, so a dropped msgOne would
+        // fail as an empty search result rather than as the send failure it actually is. Only
+        // msgTwo's id is needed, hence the discarded result on the first.
+        await ChannelScreen.postMessageAndVerify(msgOne, testChannel.id, siteOneUrl);
+        const {post: postTwo} = await ChannelScreen.postMessageAndVerify(msgTwo, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen, search for term one to save it as recent
@@ -232,10 +232,9 @@ describe('Search - Recents and Input', () => {
 
         // # Post a message so there are results
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // Fetch post ID immediately after posting before any other posts can be created
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen

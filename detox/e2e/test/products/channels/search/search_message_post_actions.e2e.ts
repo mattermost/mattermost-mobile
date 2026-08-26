@@ -68,7 +68,7 @@ describe('Search - Search Message Post Actions', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -80,7 +80,6 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.editPostOption.tap();
 
@@ -141,7 +140,7 @@ describe('Search - Search Message Post Actions', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -152,7 +151,6 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -194,7 +192,7 @@ describe('Search - Search Message Post Actions', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -206,7 +204,6 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
 
         await PostOptionsScreen.tapPinPost();

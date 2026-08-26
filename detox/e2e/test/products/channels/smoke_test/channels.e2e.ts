@@ -30,7 +30,7 @@ import {
     ServerScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
 describe('Smoke Test - Channels', () => {
@@ -74,7 +74,7 @@ describe('Smoke Test - Channels', () => {
         // * Verify on newly joined channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(channel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, channel.display_name, timeouts.HALF_MIN);
 
         // # Go back to channel list screen and switch to an existing channel
         await ChannelScreen.back();
@@ -99,7 +99,7 @@ describe('Smoke Test - Channels', () => {
         // * Verify on newly created public channel
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, displayName, timeouts.HALF_MIN);
 
         // # As admin, create a new user to open direct message with, then go back to channel list screen, open create direct message screen and open direct message with new user
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
@@ -118,7 +118,7 @@ describe('Smoke Test - Channels', () => {
         // * Verify on direct message channel screen for the new user
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(newUserDisplayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(newUserDisplayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, newUserDisplayName, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

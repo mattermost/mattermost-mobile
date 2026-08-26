@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -57,11 +56,10 @@ describe('Messaging - Markdown Code', () => {
         const message = `${line1}\n${line2}\n${line3}`;
         const markdownCodeBlock = `\`\`\`\n${message}\n\`\`\``;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownCodeBlock);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownCodeBlock, testChannel.id, siteOneUrl);
         await ChannelScreen.dismissKeyboard();
 
         // * Verify markdown code block is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
@@ -78,11 +76,10 @@ describe('Messaging - Markdown Code', () => {
         const message = '<html>\n<body>\n<span>This is html block</span>\n</body>\n</html>';
         const markdownHtml = `\`\`\`html\n${message}\n\`\`\``;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownHtml);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownHtml, testChannel.id, siteOneUrl);
         await ChannelScreen.dismissKeyboard();
 
         // * Verify markdown html is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 

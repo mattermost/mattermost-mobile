@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -236,5 +236,5 @@ async function verifyDetailsOnChannelScreen(display_name: string) {
 
     await ChannelScreen.toBeVisible();
     await expect(ChannelScreen.headerTitle).toHaveText(display_name);
-    await expect(ChannelScreen.introDisplayName).toHaveText(display_name);
+    await waitForElementToHaveText(ChannelScreen.introDisplayName, display_name, timeouts.HALF_MIN);
 }

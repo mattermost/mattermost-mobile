@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -58,8 +57,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         // and keeps this suite moving when the Detox API client would otherwise wedge.
         const codeBlockMessage = '```\nconst x = 1;\n```';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(codeBlockMessage);
-        const {post: codePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: codePost} = await ChannelScreen.postMessageAndVerify(codeBlockMessage, testChannel.id, siteOneUrl);
         if (!codePost?.id) {
             throw new Error('MM-T1433_1: could not resolve code-block post after UI send');
         }

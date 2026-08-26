@@ -346,22 +346,38 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // The iOS simulator intermittently drops the first POST to a freshly-provisioned server
-    // (-1005) without retrying, so cross-check via the API and resend once.
+    /**
+     * Post a message through the UI and hand back the post the server actually stored.
+     *
+     * Never read "the last post in the channel" straight after a send tap. The iOS simulator
+     * drops the POST behind that tap often enough to matter — a bare -1005 against a
+     * freshly-provisioned server, or a plain `Operation timed out` as in CI run 32977845485 —
+     * and the app leaves the text sitting in a failed post. The API then returns the PREVIOUS
+     * post, and a caller that pairs that id with this message builds a matcher which can never
+     * match: MM-T4862_2 spent 1m51s on exactly that before reporting "post doesn't exist"
+     * rather than "the send failed".
+     */
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
-        let result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
-        if (result.post?.message === message) {
+
+        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s). Three reasons over
+        // reading the last post once: a send that was accepted can be slow to ack, and resending on
+        // ack lag alone posts the message twice, which silently breaks any caller that counts posts;
+        // matching on content rather than position cannot be fooled by an unrelated later post; and
+        // `exact` keeps it from latching onto a longer post that merely contains this message.
+        let result = await Post.apiFindPostInChannelByMessage(siteUrl, channelId, message, {exact: true});
+        if (result.post?.id) {
             return result;
         }
 
-        // Send likely failed (e.g. iOS sim -1005). Retry once.
+        // The poll found nothing, so the send really was dropped rather than slow. Resend once.
         await this.postMessage(message);
-        result = await Post.apiGetLastPostInChannel(siteUrl, channelId);
-        if (result.post?.message === message) {
+        result = await Post.apiFindPostInChannelByMessage(siteUrl, channelId, message, {exact: true});
+        if (result.post?.id) {
             return result;
         }
-        throw new Error(`message send failed twice, likely sim network -1005 (last post: ${JSON.stringify(result.post?.message ?? result.error ?? 'none')})`);
+
+        throw new Error(`message never reached the server after two sends, likely dropped by the sim network (${JSON.stringify(result.error ?? 'no post and no error')})`);
     };
 
     postSlashCommand = async (command: string) => {

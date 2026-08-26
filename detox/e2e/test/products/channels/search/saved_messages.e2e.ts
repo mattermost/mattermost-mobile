@@ -93,9 +93,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -140,9 +139,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -215,9 +213,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
@@ -248,9 +245,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);

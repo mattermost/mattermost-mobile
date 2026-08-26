@@ -117,11 +117,23 @@ export const apiGetLastPostInChannel = async (
     return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
+/**
+ * Poll a channel until it contains a post for `message`.
+ *
+ * `exact` matters once callers use this to confirm their own send: substring matching can return an
+ * unrelated post whose text merely contains theirs (`Message abc` inside `Message abc reply`), and a
+ * caller that then treats it as "my post" acts on the wrong id. Verification callers pass
+ * `exact: true`; the default stays substring so existing content-search callers are unaffected.
+ *
+ * Relies on apiGetPostsInChannel returning newest-first (it maps the API's `order` array, which is
+ * why apiGetLastPostInChannel can take `posts[0]`). So when a suite legitimately posts the same text
+ * twice to one channel, this returns the newer one — the one the caller just sent.
+ */
 export const apiFindPostInChannelByMessage = async (
     baseUrl: string,
     channelId: string,
     message: string,
-    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC, exact = false} = {},
 ): Promise<any> => {
     /* eslint-disable no-await-in-loop -- poll until the target post is indexed */
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -139,7 +151,9 @@ export const apiFindPostInChannelByMessage = async (
             continue;
         }
 
-        const post = response.posts?.find((candidate: any) => candidate.message.includes(message));
+        const post = response.posts?.find((candidate: any) => (
+            exact ? candidate.message === message : candidate.message.includes(message)
+        ));
         if (post) {
             return {post};
         }

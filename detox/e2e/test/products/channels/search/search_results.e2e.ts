@@ -150,7 +150,7 @@ describe('Search - Result Interactions', () => {
         const message = `Message ${searchTerm}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen and search for the message
@@ -158,7 +158,6 @@ describe('Search - Result Interactions', () => {
         await submitSearch(searchTerm);
 
         // # Get post and open post options for the search result
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await SearchMessagesScreen.openPostOptionsFor(searchedPost.id, message);
 
         // * Verify "Add Reaction" pick reaction button is NOT present in post options
@@ -179,8 +178,7 @@ describe('Search - Result Interactions', () => {
         const message = `Message ${searchTerm}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: postedMessage} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: postedMessage} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen and search for the posted message
@@ -216,7 +214,7 @@ describe('Search - Result Interactions', () => {
         const message = `Message ${searchTerm}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search, search for term, and save the result
@@ -229,7 +227,6 @@ describe('Search - Result Interactions', () => {
             await SearchMessagesScreen.searchInput.replaceText(searchTerm);
             await SearchMessagesScreen.searchInput.tapReturnKey();
 
-            const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
             searchedPostId = searchedPost.id;
 
             const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(searchedPostId, message);

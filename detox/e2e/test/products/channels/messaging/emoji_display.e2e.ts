@@ -68,10 +68,9 @@ describe('Messaging - Emoji Display', () => {
         // # Open a channel screen and post a message with only 1-3 emojis (no text)
         const emojiOnlyMessage = '😀😁😂';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(emojiOnlyMessage);
 
         // # Get the last post
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(emojiOnlyMessage, testChannel.id, siteOneUrl);
 
         // * Verify the emoji-only post is visible in the channel
         // The post renders via the JumboEmoji component (not regular Markdown) when
@@ -197,8 +196,7 @@ describe('Messaging - Emoji Display', () => {
         // # Post a message with an invalid emoji name (not a real emoji)
         const invalidEmojiMessage = ':notarealemoji:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(invalidEmojiMessage);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(invalidEmojiMessage, testChannel.id, siteOneUrl);
 
         // * Verify the post is visible and the text renders as plain text (not as an emoji image)
         const postItemMatcher = by.id(`channel.post_list.post.${post.id}`);
