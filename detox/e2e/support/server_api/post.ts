@@ -9,18 +9,6 @@ import {withTransportRetry} from '@support/utils/transport_retry';
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
 
-// ****************************************************************
-// Posts
-// See https://api.mattermost.com/#tag/posts
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
-
 /**
  * Create a new post in a channel. To create the post as a comment on another post, provide root_id.
  * See https://api.mattermost.com/#operation/CreatePost

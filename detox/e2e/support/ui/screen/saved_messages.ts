@@ -73,9 +73,8 @@ class SavedMessagesScreen {
     };
 
     // freezeOnBlur can leave this list stale. reloadReactNative SIGSEGVs in
-    // Reanimated on iOS CI (5865fcd T4910_3: Action received: reactNativeReload,
-    // then Signal 11, screenshot is SpringBoard). Pull-to-refresh re-runs
-    // fetchSavedPosts without tearing down the RN runtime.
+    // Reanimated on iOS CI. Pull-to-refresh re-runs fetchSavedPosts without
+    // tearing down the RN runtime.
     remount = async () => {
         try {
             await this.getFlatPostList().swipe('down', 'slow', 0.5, 0.5, 0.25);

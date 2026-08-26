@@ -158,7 +158,7 @@ class PostOptionsScreen {
         await this.toBeVisible();
 
         // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
-        // label text is hittable (CI MM-T4864 testFnFailure — Save visible, matcher not).
+        // label text is hittable.
         await device.disableSynchronization();
         try {
             const candidates = [

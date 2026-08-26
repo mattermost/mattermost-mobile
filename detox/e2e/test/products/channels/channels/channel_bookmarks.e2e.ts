@@ -98,7 +98,7 @@ describe('Channels - Channel Bookmarks', () => {
         }
 
         // Default scroll start is the bottom of the list, which sits under the
-        // tab bar (5865fcd T5612: "View is not scrollable at the given start
+        // tab bar (T5612: "View is not scrollable at the given start
         // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
         await waitFor(displayNameEl).
             toBeVisible().

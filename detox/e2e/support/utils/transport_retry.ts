@@ -27,31 +27,11 @@ export const isTransportFailure = (result: ApiResult): boolean => {
         normalizedMessage.includes('no response from server');
 };
 
-/**
- * Wall-clock ceiling for the whole retry sequence.
- *
- * The client already spends up to RETRY_BUDGET_MS (90s) retrying one request
- * internally, so an attempt count alone lets this helper multiply that into more
- * than Jest's 300s hook budget. Measured: CI run 32543957273, iOS shard 3 — a
- * beforeAll spent all 300s on two attempts of the same POST and reported only
- * "Exceeded timeout of 300000 ms for a hook".
- */
 export const TRANSPORT_RETRY_BUDGET_MS = 120_000;
 
 export type TransportRetryOptions = {
     delayMs?: number;
 
-    /**
-     * Whether replaying `operation` is safe.
-     *
-     * Required, with no default, so that every call site states it: a transport
-     * failure means we never saw a response, so a write may already have been
-     * committed and replaying it duplicates the record. Reads, and writes that are
-     * idempotent by construction (a PUT of a full config, a lock write keyed on a
-     * fixed name), pass `true`. A create — a post, a channel, a file upload — is
-     * NOT idempotent and must either pass `false` (fail fast, let the caller
-     * reconcile) or justify `allowDuplicateWrites`.
-     */
     idempotent: boolean;
 
     /**

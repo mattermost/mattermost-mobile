@@ -44,7 +44,6 @@ describe('Messaging - Emoji Display', () => {
         testTeam = team;
         testUser = user;
 
-        // Dedicated channel for MM-T162_1 so MM-T160_1 jumbo posts cannot virtualize the root off-screen.
         const {channel: threadChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: team.id});
         await Channel.apiAddUserToChannel(siteOneUrl, user.id, threadChannel.id);
         emojiThreadChannel = threadChannel;
@@ -75,11 +74,6 @@ describe('Messaging - Emoji Display', () => {
         // * Verify the emoji-only post is visible in the channel
         // The post renders via the JumboEmoji component (not regular Markdown) when
         // the message contains only 1-8 emojis and no leading 4+ spaces.
-        // JumboEmoji renders each emoji with testID 'markdown_emoji'.
-        // TODO: The JumboEmoji component does not currently expose a dedicated 'jumbo_emoji'
-        // container testID — it reuses 'markdown_emoji'. To assert jumbo rendering distinctly,
-        // a testID such as 'jumbo_emoji.container' would need to be added to
-        // app/components/jumbo_emoji/index.tsx.
         const postItemMatcher = by.id(`channel.post_list.post.${post.id}`);
         const emojiElement = element(by.id('markdown_emoji').withAncestor(postItemMatcher));
         await waitFor(emojiElement).toExist().withTimeout(timeouts.TEN_SEC);
@@ -93,7 +87,6 @@ describe('Messaging - Emoji Display', () => {
 
     it('MM-T162_1 - should display emoji-only replies as jumbo in thread view', async () => {
         // # Post a root message and emoji-only reply via API in an empty dedicated channel.
-        // Sharing testChannel with MM-T160_1 leaves the root virtualized off-screen.
         const rootMessage = 'Root message for emoji reply test';
         await Post.apiCreatePost(siteOneUrl, {
             channelId: emojiThreadChannel.id,

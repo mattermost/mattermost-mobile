@@ -25,14 +25,7 @@ const loginAsAdmin = async (baseUrl: string) => {
     return userId;
 };
 
-/**
- * The lock cell is an admin user preference on the shared test server.
- *
- * The admin id is resolved once and reused — the acquire loop polls every 2s for up to 20
- * minutes, so logging in per poll would be hundreds of needless logins. It is dropped again
- * whenever a call fails, so a session invalidated mid-run (or a server that came back on a
- * new host) is picked up by the next attempt rather than wedging the store.
- */
+// The lock cell is an admin user preference on the shared test server.
 const createPreferenceLockStore = (baseUrl: string): LockStore => {
     let userId: string | undefined;
 

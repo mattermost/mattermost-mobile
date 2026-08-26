@@ -346,17 +346,7 @@ class ChannelScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    /**
-     * Post a message through the UI and hand back the post the server actually stored.
-     *
-     * Never read "the last post in the channel" straight after a send tap. The iOS simulator
-     * drops the POST behind that tap often enough to matter — a bare -1005 against a
-     * freshly-provisioned server, or a plain `Operation timed out` as in CI run 32977845485 —
-     * and the app leaves the text sitting in a failed post. The API then returns the PREVIOUS
-     * post, and a caller that pairs that id with this message builds a matcher which can never
-     * match: MM-T4862_2 spent 1m51s on exactly that before reporting "post doesn't exist"
-     * rather than "the send failed".
-     */
+    // Post a message through the UI and hand back the post the server actually stored.
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
 

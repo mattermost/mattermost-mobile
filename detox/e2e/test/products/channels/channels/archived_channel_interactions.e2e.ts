@@ -85,8 +85,6 @@ describe('Channels - Archived Channel Interactions', () => {
         await HomeScreen.logout();
     });
 
-    // SEC-10995 / SEC-11021: iOS uses search/permalink (not browse modal); Android browse path
-    // now waits for a hittable display-name before asserting the archived channel screen.
     it('MM-T1671_1 - should be able to view members in an archived channel', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(

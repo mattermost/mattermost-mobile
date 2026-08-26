@@ -34,19 +34,6 @@ export type AcquireLockOptions = {
 
 /**
  * How long a waiter will queue behind a live holder. timeouts.ONE_MIN * 45.
- *
- * Sized from measurement, not taste. The three classification suites live on three
- * different iOS shards (6, 8 and 20 in CI run 32961060389) and all three shard numbers are
- * even, so the site rotation in e2e-ios-template.yml puts all three on the *same* server —
- * one lock, three contenders. Shard 8 held it for 23 minutes (12:25:59 → ~12:49) for nine
- * tests, so a full three-way pile-up serialises ~70 minutes of work and the last waiter can
- * legitimately queue for ~46 minutes.
- *
- * The old budget was 20 minutes. In that same run the two-way collision would have cleared
- * with only ~5 minutes to spare even if the holder's release had worked. A budget this size
- * is only safe because a lease is now renewed (see DEFAULT_TTL_MS): a long wait can only
- * mean a *live* holder is ahead of us, never a leaked lock we will never get.
- *
  * Callers must give their beforeAll hook a timeout larger than this — Jest's per-hook
  * timeout, not jest.setTimeout, is what bounds the acquire.
  */
@@ -58,14 +45,6 @@ export const DEFAULT_TIMEOUT_MS = 45 * 60_000;
  * A holder renews its lease every DEFAULT_RENEW_MS for as long as it lives (see
  * startHeartbeat), so a legitimate 30-minute suite keeps the lock on a 5-minute lease. The
  * TTL therefore only bounds how long a *dead* holder's lock stays un-stealable.
- *
- * This used to be 35 minutes with no renewal, which made it strictly greater than the
- * 20-minute acquire budget — so a lock leaked by a holder that failed to release could
- * never be recovered by a waiter, no matter how long it waited. CI run 32961060389, iOS
- * shard 8: releaseClassificationLock threw `getaddrinfo ENOTFOUND` at 12:49, shard 6 timed
- * out waiting at 12:54:31, and the leaked lease would not have expired until 13:03:27 —
- * nine minutes after the waiter had already failed all six of its tests.
- *
  * The invariant that prevents that (timeoutMs > ttlMs) is now asserted in acquireLock.
  */
 export const DEFAULT_TTL_MS = 5 * 60_000;
@@ -225,9 +204,7 @@ export const acquireLock = async (
     const pollMs = options.pollMs ?? DEFAULT_POLL_MS;
     const renewMs = options.renewMs ?? DEFAULT_RENEW_MS;
 
-    // The whole point of a TTL is that a waiter can outlast a dead holder's lease. If the
-    // acquire budget is the shorter of the two, a leaked lock is permanent until someone
-    // clears it by hand — which is exactly how six tests died in CI run 32961060389.
+    // The whole point of a TTL is that a waiter can outlast a dead holder's lease.
     if (timeoutMs <= ttlMs) {
         throw new Error(
             `classification lock: acquire budget (${timeoutMs}ms) must exceed the lease TTL ` +
@@ -273,9 +250,6 @@ export const acquireLock = async (
             lastTransportError = error;
             consecutiveTransportFailures += 1;
 
-            // Absorb a blip, but do not sit here for the full contention deadline
-            // (20 min by default) when the server is simply down — that would turn a
-            // 15ms failure into a 20-minute one for every spec that takes the lock.
             if (consecutiveTransportFailures >= MAX_CONSECUTIVE_TRANSPORT_FAILURES) {
                 throw new Error(
                     `classification lock: ${consecutiveTransportFailures} consecutive transport ` +

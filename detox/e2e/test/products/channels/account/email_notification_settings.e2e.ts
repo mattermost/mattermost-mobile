@@ -62,7 +62,6 @@ describe('Account - Settings - Email Notification Settings', () => {
         await expect(EmailNotificationSettingsScreen.emailThreadsOptionToggledOn).toBeVisible();
     });
 
-    // CI 1ed059f failed because the simulator went offline while saving the preference.
     (isIos() ? it.skip : it)('MM-T5109_2 - should be able to change email notification settings and save by tapping navigation back button', async () => {
         // # Tap on never option
         await EmailNotificationSettingsScreen.neverOption.tap();

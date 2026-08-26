@@ -7,15 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-// NOTE: These tests rely on `device.setURLBlacklist` to simulate HTTP offline
-// behaviour for reload/cache hydration (MM-T6206 / MM-T6208).
-//
-// SEC-11016: MM-T6207_1 (stale cache after server change while "offline") was
-// removed — setURLBlacklist does not cut the WebSocket, so a server-side
-// property patch can still land in the local DB and the stale-value assert is
-// untrustworthy. Do not re-add that case until Detox can reliably
-// disconnect/block WebSocket (or the app exposes a test-only WS cut hook).
-
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup} from '@support/server_api';

@@ -19,24 +19,6 @@ const jar = new CookieJar();
 // can sit in test_fn until Jest's 300s cap with zero Detox UI actions.
 const REQUEST_TIMEOUT_MS = 45_000;
 
-/**
- * Wall-clock ceiling for ALL retries of a single logical request, across every
- * interceptor below.
- *
- * Attempt counts alone are not a bound when each attempt can burn the full 45s
- * timeout: 1 + 3 timeout retries is 180s of retrying, and an outer layer
- * (retryTransient in setup.ts, withTransportRetry) multiplies that again. A
- * measured example — CI run 32543957273, iOS shard 3, search_messages.e2e.ts —
- * spent its entire 300s beforeAll on two POST /api/v4/teams attempts that each
- * timed out four times, and died with a bare "Exceeded timeout of 300000 ms for a
- * hook" instead of a diagnosable network error. Every other spec on that shard
- * and server passed.
- *
- * 90s leaves room for exactly one more full-timeout attempt, while a fast failure
- * (a 502 in 2s) still gets several. Retries never start unless the remaining
- * budget can cover another whole attempt, so the ceiling is a real bound rather
- * than a target that the last attempt overshoots.
- */
 export const RETRY_BUDGET_MS = 90_000;
 
 type RetryBudgetConfig = {_retryDeadlineAt?: number};

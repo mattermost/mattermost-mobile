@@ -17,7 +17,6 @@ const observedFlagValues = async (baseUrl: string) => {
 
 export const enableClassificationMarkings = async (baseUrl: string): Promise<void> => {
     // Idempotent flag patch. CI cloud often drops the TCP response (axios 30s → status 0).
-    // Re-patch if client config lags after a sibling suite turned the flag off (MM-T6204_1).
     let lastObserved: {server?: unknown; client?: unknown} = {};
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */

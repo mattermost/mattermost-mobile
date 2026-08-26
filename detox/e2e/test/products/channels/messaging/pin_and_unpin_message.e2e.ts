@@ -185,8 +185,6 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // SEC-11013: iOS previously overran the 5m timeout on the 75% visibility scroll after pin.
-    // Re-enable with a 40% visibility wait; hang-step profiling still needed if CI overruns again.
     it('MM-T142 - pinning an older message should not move it to bottom of channel, and pinned posts should display with newest at top', async () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
