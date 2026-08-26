@@ -243,6 +243,10 @@ export default function PlaybookRun({
         setCollapseAll((prev) => !prev);
     }, []);
 
+    const clearFilters = useCallback(() => {
+        setFilters(DEFAULT_TASK_FILTERS);
+    }, []);
+
     const openTaskFilter = usePreventDoubleTap(useCallback(() => {
         bottomSheet(
             () => (
@@ -524,6 +528,7 @@ export default function PlaybookRun({
                             filters={filters}
                             currentUserId={currentUserId}
                             collapseAll={collapseAll}
+                            onClearFilters={clearFilters}
                         />
                     </View>
                     {!readOnly && (

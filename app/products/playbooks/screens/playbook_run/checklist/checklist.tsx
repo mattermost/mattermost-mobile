@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, type GestureResponderEvent, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
@@ -15,7 +16,7 @@ import {renameChecklist, addChecklistItem} from '@playbooks/actions/remote/check
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
 import {getChecklistProgress} from '@playbooks/utils/progress';
-import {isItemVisible, itemMatchesFilters, type TaskFilters} from '@playbooks/utils/task_filters';
+import {areDefaultTaskFilters, isItemVisible, itemMatchesFilters, type TaskFilters} from '@playbooks/utils/task_filters';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
@@ -104,7 +105,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         fontSize: 18,
         color: changeOpacity(theme.centerChannelColor, 0.64),
     },
+    emptyFilterContainer: {
+        gap: 8,
+        alignItems: 'flex-start',
+    },
+    emptyFilterText: {
+        ...typography('Body', 100, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+    },
 }));
+
+const messages = defineMessages({
+    noMatchingTasks: {
+        id: 'playbooks.checklist.no_matching_tasks',
+        defaultMessage: 'No tasks match your filters',
+    },
+    clearFilters: {
+        id: 'playbooks.checklist.clear_filters',
+        defaultMessage: 'Clear filters',
+    },
+});
 
 type Props = {
     checklist: PlaybookChecklistModel | PlaybookChecklist;
@@ -119,6 +139,7 @@ type Props = {
     filters: TaskFilters;
     currentUserId: string;
     collapseAll: boolean;
+    onClearFilters: () => void;
 }
 
 const Checklist = ({
@@ -139,6 +160,7 @@ const Checklist = ({
     filters,
     currentUserId,
     collapseAll,
+    onClearFilters,
 }: Props) => {
     const [expanded, setExpanded] = useState(() => !collapseAll);
     const intl = useIntl();
@@ -165,6 +187,9 @@ const Checklist = ({
     const visibleItems = items.
         map((item, itemNumber) => ({item, itemNumber})).
         filter(({item}) => isItemVisible(item) && itemMatchesFilters(item, filters, currentUserId));
+
+    const filtersActive = !areDefaultTaskFilters(filters);
+    const showFilteredEmpty = filtersActive && visibleItems.length === 0;
 
     const handleRename = useCallback(async (newTitle: string) => {
         const res = await renameChecklist(serverUrl, playbookRunId, checklistNumber, checklist.id, newTitle);
@@ -256,17 +281,38 @@ const Checklist = ({
                 style={[styles.checklistItemsContainer, animatedStyle]}
                 testID='checklist-items-container'
             >
-                {visibleItems.map(({item, itemNumber}) => (
-                    <ChecklistItem
-                        key={item.id}
-                        item={item}
-                        channelId={channelId}
-                        checklistNumber={checklistNumber}
-                        itemNumber={itemNumber}
-                        playbookRunId={playbookRunId}
-                        isDisabled={isFinished || !isParticipant}
-                    />
-                ))}
+                {showFilteredEmpty ? (
+                    <View
+                        style={styles.emptyFilterContainer}
+                        testID='checklist-filtered-empty'
+                    >
+                        <FormattedText
+                            id={messages.noMatchingTasks.id}
+                            defaultMessage={messages.noMatchingTasks.defaultMessage}
+                            style={styles.emptyFilterText}
+                        />
+                        <Button
+                            text={intl.formatMessage(messages.clearFilters)}
+                            onPress={onClearFilters}
+                            theme={theme}
+                            size='s'
+                            emphasis='tertiary'
+                            testID='checklist-clear-filters'
+                        />
+                    </View>
+                ) : (
+                    visibleItems.map(({item, itemNumber}) => (
+                        <ChecklistItem
+                            key={item.id}
+                            item={item}
+                            channelId={channelId}
+                            checklistNumber={checklistNumber}
+                            itemNumber={itemNumber}
+                            playbookRunId={playbookRunId}
+                            isDisabled={isFinished || !isParticipant}
+                        />
+                    ))
+                )}
                 {!isFinished && isParticipant && (
                     <Button
                         text={intl.formatMessage({id: 'playbooks.checklist_item.add.button', defaultMessage: 'New'})}
@@ -284,17 +330,30 @@ const Checklist = ({
                 style={calculatorStyle}
                 onLayout={calculatorOnLayout}
             >
-                {visibleItems.map(({item, itemNumber}) => (
-                    <ChecklistItem
-                        key={`calc-${item.id}`}
-                        item={item}
-                        channelId={channelId}
-                        checklistNumber={checklistNumber}
-                        itemNumber={itemNumber}
-                        playbookRunId={playbookRunId}
-                        isDisabled={isFinished || !isParticipant}
-                    />
-                ))}
+                {showFilteredEmpty ? (
+                    <View style={styles.emptyFilterContainer}>
+                        <Text style={styles.emptyFilterText}>
+                            {intl.formatMessage(messages.noMatchingTasks)}
+                        </Text>
+                        <View style={styles.addButton}>
+                            <Text style={styles.addButtonText}>
+                                {intl.formatMessage(messages.clearFilters)}
+                            </Text>
+                        </View>
+                    </View>
+                ) : (
+                    visibleItems.map(({item, itemNumber}) => (
+                        <ChecklistItem
+                            key={`calc-${item.id}`}
+                            item={item}
+                            channelId={channelId}
+                            checklistNumber={checklistNumber}
+                            itemNumber={itemNumber}
+                            playbookRunId={playbookRunId}
+                            isDisabled={isFinished || !isParticipant}
+                        />
+                    ))
+                )}
                 {!isFinished && isParticipant && (
                     <View style={styles.addButton}>
                         <CompassIcon

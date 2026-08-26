@@ -98,6 +98,7 @@ describe('Checklist', () => {
             filters: DEFAULT_TASK_FILTERS,
             currentUserId: 'current-user-id',
             collapseAll: false,
+            onClearFilters: jest.fn(),
             checklistProgress: {
                 skipped: false,
                 completed: 0,
@@ -554,6 +555,25 @@ describe('Checklist', () => {
 
             // 'checked' sits at index 1 and is filtered out; the items after it keep their own indices.
             expect(items.map((i) => i.props.itemNumber)).toEqual([0, 2, 3, 4]);
+        });
+
+        it('should show an empty state with clear filters when nothing matches', () => {
+            const props = getFilterProps();
+            props.filters = {
+                showChecked: false,
+                showSkipped: false,
+                showAssignedToMe: false,
+                showUnassigned: false,
+                showAssignedToOthers: false,
+            };
+
+            const {getByTestId, queryAllByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(queryAllByTestId('checklist-item')).toHaveLength(0);
+            expect(getByTestId('checklist-filtered-empty')).toBeTruthy();
+
+            fireEvent.press(getByTestId('checklist-clear-filters'));
+            expect(props.onClearFilters).toHaveBeenCalled();
         });
     });
 

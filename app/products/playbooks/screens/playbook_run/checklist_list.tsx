@@ -19,6 +19,7 @@ type Props = {
     filters: TaskFilters;
     currentUserId: string;
     collapseAll: boolean;
+    onClearFilters: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -37,6 +38,7 @@ const ChecklistList = ({
     filters,
     currentUserId,
     collapseAll,
+    onClearFilters,
 }: Props) => {
     return (
         <View style={(isFinished || !isParticipant) ? styles.container : undefined}>
@@ -53,6 +55,7 @@ const ChecklistList = ({
                     filters={filters}
                     currentUserId={currentUserId}
                     collapseAll={collapseAll}
+                    onClearFilters={onClearFilters}
                 />
             ))}
         </View>

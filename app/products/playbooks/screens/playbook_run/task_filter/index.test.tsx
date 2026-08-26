@@ -4,7 +4,7 @@
 import React, {type ComponentProps} from 'react';
 
 import OptionItem from '@components/option_item';
-import {DEFAULT_TASK_FILTERS, NO_TASK_FILTERS} from '@playbooks/utils/task_filters';
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {act, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import TaskFilter from './index';
@@ -77,7 +77,7 @@ describe('TaskFilter', () => {
         expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(true);
     });
 
-    it('should clear every filter when All tasks is pressed while fully selected', () => {
+    it('should leave filters unchanged when All tasks is pressed while fully selected', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
 
@@ -87,24 +87,9 @@ describe('TaskFilter', () => {
             getByTestId('playbooks.task_filter.all_tasks').props.action();
         });
 
-        expect(props.onFiltersChanged).toHaveBeenCalledWith(NO_TASK_FILTERS);
-        expect(getByTestId('playbooks.task_filter.all_tasks').props.selected).toBe(false);
-        expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(false);
-        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(false);
-    });
-
-    it('should select everything again when All tasks is pressed twice', () => {
-        const props = getBaseProps();
-        const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
-
-        act(() => {
-            getByTestId('playbooks.task_filter.all_tasks').props.action();
-        });
-        act(() => {
-            getByTestId('playbooks.task_filter.all_tasks').props.action();
-        });
-
-        expect(props.onFiltersChanged).toHaveBeenLastCalledWith(DEFAULT_TASK_FILTERS);
+        expect(props.onFiltersChanged).not.toHaveBeenCalled();
         expect(getByTestId('playbooks.task_filter.all_tasks').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(true);
     });
 });

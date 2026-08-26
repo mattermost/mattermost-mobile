@@ -8,7 +8,7 @@ import {Text, View} from 'react-native';
 import MenuDivider from '@components/menu_divider';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
-import {areDefaultTaskFilters, DEFAULT_TASK_FILTERS, NO_TASK_FILTERS, type TaskFilters} from '@playbooks/utils/task_filters';
+import {areDefaultTaskFilters, DEFAULT_TASK_FILTERS, type TaskFilters} from '@playbooks/utils/task_filters';
 import BottomSheetContent, {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -91,11 +91,13 @@ const TaskFilter = ({filters, onFiltersChanged}: Props) => {
         onFiltersChanged(next);
     }, [onFiltersChanged, selected]);
 
-    // Acts as a select-all checkbox: it turns every filter on, or clears them all when they are already on.
+    // Select-all only: when everything is already on, leave filters alone so we never hide every task.
     const toggleAll = useCallback(() => {
-        const next = areDefaultTaskFilters(selected) ? NO_TASK_FILTERS : DEFAULT_TASK_FILTERS;
-        setSelected(next);
-        onFiltersChanged(next);
+        if (areDefaultTaskFilters(selected)) {
+            return;
+        }
+        setSelected(DEFAULT_TASK_FILTERS);
+        onFiltersChanged(DEFAULT_TASK_FILTERS);
     }, [onFiltersChanged, selected]);
 
     const toggleChecked = useCallback(() => update({showChecked: !selected.showChecked}), [selected.showChecked, update]);
