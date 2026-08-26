@@ -33,13 +33,13 @@ appId: ${MAESTRO_APP_ID}
 # # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml
 
-# # Open the Account tab
-- tapOn:
-    id: "tab_bar.account.tab"
+# # Open the Account tab (retry + overlay dismiss; a raw tab tap is swallowed
+# by Save Password / notification sheets after login).
+- runFlow: ../../subflows/navigation/open_account.yml
 - extendedWaitUntil:
     visible:
-      id: "account.screen"
-    timeout: 10000
+      id: "account.settings.option"
+    timeout: 15000
 
 # # Open Settings and reveal Report a Problem.
 # Report a Problem can sit below the fold; also wait for config sync on first login.
@@ -82,23 +82,35 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: false
-      - waitForAnimationToEnd:
-          timeout: 30000
-      - extendedWaitUntil:
-          visible:
-            id: "tab_bar.home.tab"
-          timeout: 30000
-      - tapOn:
-          id: "tab_bar.account.tab"
+      # # Relaunch until the app is actually back on the Home tab.
+      # The readiness checks belong inside the retry: a relaunch that starts but
+      # never reaches the Home tab has to trigger another relaunch, and it cannot
+      # if the wait sits after the retry block has already succeeded.
+      - retry:
+          maxRetries: 3
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+            - waitForAnimationToEnd:
+                timeout: 30000
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 30000
+      - runFlow: ../../subflows/navigation/open_account.yml
       - extendedWaitUntil:
           visible:
             id: "account.settings.option"
-          timeout: 10000
+          timeout: 15000
       - tapOn:
           id: "account.settings.option"
+      # # Relaunch is a second cold start; wait for Settings before scrolling
+      # to Report a Problem (the row is config-gated and can be below the fold).
+      - extendedWaitUntil:
+          visible:
+            id: "settings"
+          timeout: 15000
 - runFlow:
     when:
       platform: Android
@@ -110,5 +122,9 @@ appId: ${MAESTRO_APP_ID}
     element:
       id: "settings.report_problem.option"
     direction: DOWN
-    timeout: 15000
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
 - takeScreenshot: report-problem-dismissed

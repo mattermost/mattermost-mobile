@@ -4,7 +4,21 @@
 import {Keyboard} from 'react-native';
 import {KeyboardController} from 'react-native-keyboard-controller';
 
-import {isEdgeToEdge} from '@constants/device';
+import * as Device from '@constants/device';
+
+const DISMISS_ANIMATION_TIMEOUT = 250;
+
+// Resolve on whichever comes first, and always clear the timer.
+const withTimeout = async (promise: Promise<void>, ms: number) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+        await Promise.race([promise, new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, ms);
+        })]);
+    } finally {
+        clearTimeout(timer);
+    }
+};
 
 /**
  * Dismisses the keyboard using platform-specific implementation.
@@ -13,12 +27,25 @@ import {isEdgeToEdge} from '@constants/device';
  *   is not used on Android (to avoid layout issues)
  */
 export const dismissKeyboard = async (): Promise<void> => {
-    if (isEdgeToEdge) {
-        await KeyboardController.dismiss({animated: false});
-    } else {
-        Keyboard.dismiss();
-        await new Promise((resolve) => setTimeout(resolve, 250));
+    if (Device.isEdgeToEdge) {
+        const dismissed = KeyboardController.dismiss({animated: false});
+
+        // Android only: this promise settles on a `keyboardDidHide` event, and a missed
+        // one leaves the library's internal state saying "open" so it never settles at
+        // all. Callers await this before navigating (showPostOptions does), so a missed
+        // event stops a long press from opening post options. iOS keeps the unbounded
+        // await — there the event is what tells us the keyboard has left the screen.
+        if (Device.isAndroidEdgeToEdge) {
+            await withTimeout(dismissed, DISMISS_ANIMATION_TIMEOUT);
+            return;
+        }
+
+        await dismissed;
+        return;
     }
+
+    Keyboard.dismiss();
+    await new Promise((resolve) => setTimeout(resolve, DISMISS_ANIMATION_TIMEOUT));
 };
 
 /**
@@ -28,7 +55,7 @@ export const dismissKeyboard = async (): Promise<void> => {
  *   is not used on Android (to avoid layout issues)
  */
 export const isKeyboardVisible = (): boolean => {
-    if (isEdgeToEdge) {
+    if (Device.isEdgeToEdge) {
         return KeyboardController.isVisible();
     }
     return Keyboard.isVisible();
