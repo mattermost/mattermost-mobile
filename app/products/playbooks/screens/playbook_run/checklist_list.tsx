@@ -11,6 +11,7 @@ import type {TaskFilters} from '@playbooks/utils/task_filters';
 
 type Props = {
     checklists: Array<PlaybookChecklistModel | PlaybookChecklist>;
+    timelineEvents: TimelineEvent[] | undefined;
     channelId: string;
     playbookRunId: string;
     playbookRunName: string;
@@ -31,6 +32,7 @@ const styles = StyleSheet.create({
 
 const ChecklistList = ({
     checklists,
+    timelineEvents,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -48,6 +50,7 @@ const ChecklistList = ({
                 <ChecklistRow
                     key={checklist.id}
                     checklist={checklist}
+                    timelineEvents={timelineEvents}
                     channelId={channelId}
                     playbookRunId={playbookRunId}
                     playbookRunName={playbookRunName}

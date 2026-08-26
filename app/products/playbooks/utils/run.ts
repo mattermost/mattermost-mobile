@@ -41,8 +41,12 @@ export function getMaxRunUpdateAt(runs: PlaybookRun[]): number {
     return max;
 }
 
+// A task that is not closed and not skipped is still waiting to be done. An unchecked task carries the
+// empty string, not a word — see ChecklistItemStateOpen in the plugin.
+const PENDING_STATES = new Set<ChecklistItemState>(['', 'in_progress']);
+
 export function isPending(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
-    return item.state === '' || item.state === 'in_progress';
+    return PENDING_STATES.has(item.state);
 }
 
 export function isOverdue(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
@@ -72,5 +76,5 @@ export function isDueSoon(item: PlaybookChecklistItemModel | PlaybookChecklistIt
 }
 
 export function isOutstanding(item: PlaybookChecklistItemModel | PlaybookChecklistItem): boolean {
-    return item.state === '' || item.state === 'in_progress';
+    return PENDING_STATES.has(item.state);
 }
