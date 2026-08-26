@@ -56,7 +56,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {getIntlShape} from '@utils/general';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
@@ -103,49 +103,51 @@ export const maybeRequestMicrophonePermission = async () => {
     // cannot both pass the check above while DB reads are in flight.
     micPermissionRequestInFlight = true;
 
-    // doReconnect fires while backgrounded (e.g. a native call keeps the
-    // websocket alive). Alert.alert is a no-op when backgrounded, so skip to
-    // avoid storing the flag before the dialog has appeared.
-    if (AppState.currentState !== 'active') {
-        micPermissionRequestInFlight = false;
-        return;
-    }
+    try {
+        // doReconnect fires while backgrounded (e.g. a native call keeps the
+        // websocket alive). Alert.alert is a no-op when backgrounded, so skip to
+        // avoid storing the flag before the dialog has appeared.
+        if (AppState.currentState !== 'active') {
+            return;
+        }
 
-    const alreadyAsked = await getMicPermissionAsked();
-    if (alreadyAsked) {
-        micPermissionRequestInFlight = false;
-        return;
-    }
+        const alreadyAsked = await getMicPermissionAsked();
+        if (alreadyAsked) {
+            return;
+        }
 
-    const status = await checkMicrophonePermissionStatus();
-    if (status !== Permissions.RESULTS.DENIED) {
-        micPermissionRequestInFlight = false;
-        return;
-    }
+        const status = await checkMicrophonePermissionStatus();
+        if (status !== Permissions.RESULTS.DENIED) {
+            return;
+        }
 
-    const result = await storeMicPermissionAsked();
-    if (result && 'error' in result) {
-        micPermissionRequestInFlight = false;
-        return;
-    }
+        const result = await storeMicPermissionAsked();
+        if (result && 'error' in result) {
+            return;
+        }
 
-    const {formatMessage} = getIntlShape();
-    Alert.alert(
-        formatMessage(micPermissionMessages.title),
-        formatMessage(micPermissionMessages.message),
-        [
-            {
-                text: formatMessage(micPermissionMessages.notNow),
-                style: 'cancel',
-            },
-            {
-                text: formatMessage(micPermissionMessages.continue),
-                onPress: () => {
-                    Permissions.request(Permissions.PERMISSIONS.IOS.MICROPHONE);
+        const {formatMessage} = getIntlShape();
+        Alert.alert(
+            formatMessage(micPermissionMessages.title),
+            formatMessage(micPermissionMessages.message),
+            [
+                {
+                    text: formatMessage(micPermissionMessages.notNow),
+                    style: 'cancel',
                 },
-            },
-        ],
-    );
+                {
+                    text: formatMessage(micPermissionMessages.continue),
+                    onPress: () => {
+                        Permissions.request(Permissions.PERMISSIONS.IOS.MICROPHONE);
+                    },
+                },
+            ],
+        );
+    } catch (e) {
+        logError('error on maybeRequestMicrophonePermission', getFullErrorMessage(e));
+    } finally {
+        micPermissionRequestInFlight = false;
+    }
 };
 
 let connection: CallsConnection | null = null;
