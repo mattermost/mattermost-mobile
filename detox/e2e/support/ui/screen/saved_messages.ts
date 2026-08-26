@@ -72,17 +72,26 @@ class SavedMessagesScreen {
         await wait(timeouts.TWO_SEC);
     };
 
-    // Tab-switch once if the first paint still lags the preference write.
+    // freezeOnBlur can leave this list stale. reloadReactNative SIGSEGVs in
+    // Reanimated on iOS CI. Pull-to-refresh re-runs fetchSavedPosts without
+    // tearing down the RN runtime.
+    remount = async () => {
+        try {
+            await this.getFlatPostList().swipe('down', 'slow', 0.5, 0.5, 0.25);
+        } catch {
+            // Empty list / not swipeable
+        }
+        await wait(timeouts.TWO_SEC);
+        await this.toBeVisible();
+    };
+
     waitForPostInList = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
         try {
             await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            await HomeScreen.channelListTab.tap();
-            await wait(timeouts.ONE_SEC);
-            await HomeScreen.savedMessagesTab.tap();
-            await this.toBeVisible();
+            await this.remount();
             await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
         }
     };
@@ -126,10 +135,7 @@ class SavedMessagesScreen {
         try {
             await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
         } catch {
-            await HomeScreen.channelListTab.tap();
-            await wait(timeouts.ONE_SEC);
-            await HomeScreen.savedMessagesTab.tap();
-            await this.toBeVisible();
+            await this.remount();
             await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
         }
     };

@@ -128,7 +128,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -145,7 +145,6 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain messages from user
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
@@ -160,7 +159,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -180,7 +179,6 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
         // * Verify search results contain messages in channel
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
@@ -198,11 +196,9 @@ describe('Search - Search Messages', () => {
         const messageWithNonExcludedTerm = `${messagePrefix} ${getRandomId()}`;
         const messageWithExcludedTerm = `${messagePrefix} ${excludedTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageWithNonExcludedTerm);
-        const {post: nonExcludedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: nonExcludedPost} = await ChannelScreen.postMessageAndVerify(messageWithNonExcludedTerm, testChannel.id, siteOneUrl);
         const {postListPostItem: nonExcludedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(nonExcludedPost.id, messageWithNonExcludedTerm);
-        await ChannelScreen.postMessage(messageWithExcludedTerm);
-        const {post: excludedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: excludedPost} = await ChannelScreen.postMessageAndVerify(messageWithExcludedTerm, testChannel.id, siteOneUrl);
         const {postListPostItem: excludedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(excludedPost.id, messageWithExcludedTerm);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -239,11 +235,9 @@ describe('Search - Search Messages', () => {
         const messageWithNonIncludedTerm = `${messagePrefix} ${getRandomId()}`;
         const messageWithIncludedTerm = `${messagePrefix} ${includedTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageWithNonIncludedTerm);
-        const {post: nonIncludedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: nonIncludedPost} = await ChannelScreen.postMessageAndVerify(messageWithNonIncludedTerm, testChannel.id, siteOneUrl);
         const {postListPostItem: nonIncludedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(nonIncludedPost.id, messageWithNonIncludedTerm);
-        await ChannelScreen.postMessage(messageWithIncludedTerm);
-        const {post: includedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: includedPost} = await ChannelScreen.postMessageAndVerify(messageWithIncludedTerm, testChannel.id, siteOneUrl);
         const {postListPostItem: includedPostListPostItem} = SearchMessagesScreen.getPostListPostItem(includedPost.id, messageWithIncludedTerm);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
@@ -283,7 +277,7 @@ describe('Search - Search Messages', () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -296,7 +290,6 @@ describe('Search - Search Messages', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Verify search results only contain messages from user in channel
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
@@ -312,7 +305,7 @@ describe('Search - Search Messages', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await SearchMessagesScreen.open();
 
@@ -325,7 +318,6 @@ describe('Search - Search Messages', () => {
         await wait(timeouts.TEN_SEC);
 
         // * Verify search results contain searched message
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 

@@ -60,12 +60,6 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
-// Nest-safe sync-off. Synchronization is ALWAYS restored when the outermost
-// wrapper exits: setup.ts only calls safeEnableSynchronization() in its global
-// beforeAll, so a wrapper that left sync off used to leave every remaining test in
-// the same Jest file running unsynchronized. That is how MM-T4909_5 broke
-// MM-T4909_3 in CI run 32543957273 — the next test's list refresh raced the UI and
-// failed the 100% visibility threshold on a view that was still settling.
 let syncDisableDepth = 0;
 
 // Retry enableSynchronization after Android Fabric ReactContext null races.

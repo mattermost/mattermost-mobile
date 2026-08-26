@@ -28,7 +28,9 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
+// here: up to 45m of queuing behind the other two classification suites (they share one
+// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
 // Skip Android: suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
@@ -61,7 +63,10 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-    });
+
+        // The hook gets its own budget so the lock wait does not have to fit inside the
+        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
+    }, timeouts.ONE_MIN * 50);
 
     afterAll(async () => {
         if (!lockAcquired) {

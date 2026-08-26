@@ -381,17 +381,11 @@ for batch_paths in "${BATCHES[@]}"; do
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"
     BATCH_FAILED=1
-    # Main run 31472714588: batch 2 (channel_bookmark_link_external) exited 1 but wrote no
-    # JUnit XML. mergeMaestroJunitReports then silently skipped it ("Merged 5 … 0 failures")
-    # and TSIO reported e2e-test/maestro-ios green. Synthesize a failure so counts stay honest.
+
     if [[ ! -s "$batch_xml" ]]; then
       flow_label="${path_arr[0]:-unknown_flow}"
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
-      # Escape for XML attributes/text so parseMaestroReport accepts the report.
-      # Use sed (not ${var//pat/repl}): Bash 5.2 corrupts < > " with unescaped & in
-      # the replacement; Bash 3.2 treats \& as a literal backslash. sed is portable.
-      # Order: & first so later replacements do not double-escape amp entities.
       xml_escape() {
         printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
       }

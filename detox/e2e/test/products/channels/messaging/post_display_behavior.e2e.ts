@@ -55,13 +55,11 @@ describe('Messaging - Post Display Behavior', () => {
 
         // # Post first message
         const firstMessage = `First message ${getRandomId()}`;
-        await ChannelScreen.postMessage(firstMessage);
-        const {post: firstPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: firstPost} = await ChannelScreen.postMessageAndVerify(firstMessage, testChannel.id, siteOneUrl);
 
         // # Post second consecutive message as the same user
         const secondMessage = `Second message ${getRandomId()}`;
-        await ChannelScreen.postMessage(secondMessage);
-        const {post: secondPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: secondPost} = await ChannelScreen.postMessageAndVerify(secondMessage, testChannel.id, siteOneUrl);
 
         // * Verify first post has a display name header
         const {postListPostItemHeaderDisplayName: firstPostHeader} = ChannelScreen.getPostListPostItem(firstPost.id, firstMessage);
@@ -124,10 +122,9 @@ describe('Messaging - Post Display Behavior', () => {
 
         // # Send a new message from the UI
         const newMessage = `New bottom message ${getRandomId()}`;
-        await ChannelScreen.postMessage(newMessage);
 
         // * Verify the new message is visible (view scrolled to bottom)
-        const {post: lastPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: lastPost} = await ChannelScreen.postMessageAndVerify(newMessage, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(lastPost.id, newMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 

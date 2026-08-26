@@ -83,7 +83,7 @@ on:
         description: "Number of parallel test shards"
         required: false
         type: string
-        default: "22"
+        default: "20"
       android_avd_name:
         description: "Android Emulator name"
         required: false
@@ -224,10 +224,6 @@ jobs:
     name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
-    # Backstop for hangs the per-step caps don't cover. Duration-packed shards are
-    # estimated at ~28m and the slowest observed real shard was ~83m, so 150m keeps
-    # a wide margin while ensuring a wedged shard can no longer pin the
-    # e2e-test/detox-android status for four hours.
     timeout-minutes: 150
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
@@ -243,13 +239,6 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
-      # does most of its setup, so pinning every shard to the same server would put
-      # all parallel shards on one instance while the second sits mostly idle —
-      # concurrent setup on one server is what drives API rate limiting and
-      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
-      # that load evenly while still giving each shard two distinct sites for the
-      # multi-server specs.
       - name: Rotate logical test sites by shard
         env:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
@@ -277,23 +266,6 @@ jobs:
       # Only libpulse0 is a real dependency here — the Android emulator needs it for
       # audio. xvfb is already in the runner image (apt reports "already the newest
       # version"), and it is listed only so a future image change fails loudly.
-      #
-      # ffmpeg and scrot were dropped deliberately. ffmpeg is a Detox *video*
-      # dependency and video is disabled in .detoxrc.json; scrot is an X11 screenshot
-      # tool, while Detox captures Android screenshots over adb. Neither is referenced
-      # anywhere else in the repo, but ffmpeg alone pulled in ~110 extra packages
-      # (114 MB: libflite1 13.6 MB, fonts-urw-base35 11 MB, libcodec2 9 MB, ...).
-      # That download is what made this step wildly non-uniform — the archive mirror's
-      # throughput varies per runner, so in run 32079267984 the same step took 25s on
-      # most shards, 3m50s on one and 13m42s on another (13m07s of it spent fetching
-      # those 114 MB). Fetching ~1.3 MB instead removes the variance at its source.
-      #
-      # The remaining guards cover apt itself hanging: `apt-get update` has blocked
-      # indefinitely on these runners (110m+ on 4 of 22 shards in run 32066827133),
-      # which used to pin the e2e-test/detox-android status until the job timeout. The
-      # image ships a populated apt cache, so try the install first and only pay for
-      # `apt-get update` when a package cannot be resolved from it; the step cap turns
-      # a wedged apt into a fast single-shard failure instead of a stalled suite.
       - name: Install Dependencies
         timeout-minutes: 6
         run: |
@@ -469,8 +441,6 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # mm_blocks specs are sharded alone (split-tests.js). Script bounds curls and
-      # exits 0 on tunnel failure; prefer WEBHOOK_PUBLIC_BASE_URL over trycloudflare.
       - name: Start mm_blocks webhook sidecar
         if: contains(matrix.specs, 'mm_blocks_')
         continue-on-error: true
@@ -593,13 +563,6 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
-      # spec-durations.js merges the restored manifest into the new one, so the
-      # freshly built manifest already carries every valid entry of the previously
-      # published one — there is nothing to fall back to. (Entries the restored
-      # manifest had that were malformed or non-positive are dropped on purpose.)
-      # An empty/zero manifest is rejected by
-      # the action's `validate` guard rather than published (publishing one would
-      # poison duration packing for every branch until main rewrote it).
       - name: Publish spec-duration manifest
         if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
         continue-on-error: true
@@ -613,9 +576,8 @@ jobs:
           manifest-path: detox/artifacts/spec-durations.next.json
           mode: save
 
-      # Merge before report generation so TSIO and summary.json use the same results.
-      - name: Merge per-shard Jest JSON
-        if: always()
+      - name: Merge per-shard Jest JSON for TSIO
+        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
         run: |
           set +e
@@ -627,7 +589,7 @@ jobs:
             --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found or merge failed."
+            echo "No jest-results.json found or merge failed — skipping TSIO upload."
             exit 0
           fi
           echo "skip=false" >> "$GITHUB_OUTPUT"

@@ -46,11 +46,6 @@ class NavigationHeader {
                 await element(by.id(this.testID.backButton)).atIndex(index).tap();
                 return;
             } catch (error) {
-                // Only an out-of-bounds index means "fewer headers are mounted, try a
-                // lower one". Anything else — a back button that exists but is covered,
-                // or a tap that landed somewhere unexpected — is a real failure, and
-                // swallowing it here would tap a DIFFERENT header's back button and
-                // leave the app on an unexpected screen for the rest of the spec.
                 if (!isIndexOutOfBounds(error)) {
                     throw error;
                 }

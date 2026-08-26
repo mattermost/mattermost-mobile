@@ -16,23 +16,11 @@ import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, Login
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
+// here: up to 45m of queuing behind the other two classification suites (they share one
+// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// INVARIANT — ClassificationMarkings is enabled once per suite and never unset.
-//
-// FeatureFlags.ClassificationMarkings is server-GLOBAL config and ~10 Detox shards share
-// each provisioned server (shard parity picks the server; see the "Rotate logical test
-// sites by shard" step in e2e-ios-template.yml). This suite used to flip the flag ~13
-// times. Concurrent even shards then collided: this suite and
-// classification_banner_across_screens both landed on SERVER_B, 20 seconds apart.
-// The other suite blocked ~13 minutes and then failed with
-// "FeatureFlagClassificationMarkings did not become true" — it needed the flag steadily on
-// while this suite was toggling it off.
-//
-// So: enable in beforeAll, never patch it false, and let each classification suite enable
-// it idempotently under its own lock. MM-T6204_1 is the single exception (toggling off is
-// the behaviour it exists to assert); it runs LAST and restores the flag before releasing.
 describe('Classification Banner - Global Classification Banner', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -54,7 +42,10 @@ describe('Classification Banner - Global Classification Banner', () => {
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-    });
+
+        // The hook gets its own budget so the lock wait does not have to fit inside the
+        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
+    }, timeouts.ONE_MIN * 50);
 
     afterAll(async () => {
         // Never tear down shared server state we do not own — see the same guard in
@@ -224,11 +215,6 @@ describe('Classification Banner - Global Classification Banner', () => {
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-
-        // The reload-and-retry that used to guard this assertion is gone with its cause:
-        // it only existed because MM-T6204_1 turned ClassificationMarkings off immediately
-        // before this test, so the first reload could race the client config catching up on
-        // re-enable. MM-T6204_1 now runs last and the flag is never off here.
         await GlobalClassificationBanner.toBeVisible();
 
         await Properties.apiCleanupClassification(siteOneUrl);
@@ -246,11 +232,6 @@ describe('Classification Banner - Global Classification Banner', () => {
         await ChannelScreen.back();
     });
 
-    // LAST TEST BY DESIGN. This is the only place the suite unsets the shared
-    // ClassificationMarkings flag, because toggling it off is the behaviour under test.
-    // Running last means no sibling test in this file needs the flag on afterwards, and the
-    // flag is restored below before afterAll releases the lock — so the window in which a
-    // concurrent suite could observe it off is confined to this test, under the lock.
     it('MM-T6204_1 - should remove the banner when the feature flag is toggled off', async () => {
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
             levelId: 'lvltopsecret00000000000000',

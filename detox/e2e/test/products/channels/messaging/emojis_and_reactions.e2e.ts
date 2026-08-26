@@ -65,8 +65,7 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Open a channel screen, post a message, and open post options for message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // * Verify six default reactions are displayed
@@ -115,8 +114,7 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and add a reaction
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();
         await device.disableSynchronization();
@@ -155,11 +153,13 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'brown fox :fox_face: lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+
+        // The server stores the literal `:fox_face:` form, so verify against `message`; the
+        // rendered text below is only what the post list displays.
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // * Verify message is posted with emojis
         const resolvedMessage = 'brown fox 🦊 lazy dog 🐶';
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
         await expect(postListPostItem).toBeVisible();
 
@@ -195,8 +195,7 @@ describe('Messaging - Emojis and Reactions', () => {
         // # Open a channel screen, post a message, open post options for message, open emoji picker screen, and search for a non-existent emoji
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const searchTerm = 'blahblahblahblah';
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EmojiPickerScreen.open();

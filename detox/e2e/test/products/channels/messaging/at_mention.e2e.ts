@@ -70,18 +70,16 @@ describe('Messaging - At-Mention', () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const camelCaseUsernameMessage = `Message @${testUser.username.substring(0, 1).toUpperCase()}${testUser.username.substring(1)}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(camelCaseUsernameMessage);
 
         // * Verify at-mention is posted as lowercase
-        const {post: lowerCasePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: lowerCasePost} = await ChannelScreen.postMessageAndVerify(camelCaseUsernameMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(lowerCasePost.id, `Message @${testUser.username.toLowerCase()}`);
 
         // # Post a message with uppercase at-mention
         const upperCaseUsernameMessage = `Message @${testOtherUser.username.toUpperCase()}`;
-        await ChannelScreen.postMessage(upperCaseUsernameMessage);
 
         // * Verify at-mention is posted as lowercase
-        const {post: upperCasePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: upperCasePost} = await ChannelScreen.postMessageAndVerify(upperCaseUsernameMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(upperCasePost.id, `Message @${testOtherUser.username.toLowerCase()}`);
 
         // # Go back to channel list screen
@@ -150,8 +148,7 @@ describe('Messaging - At-Mention', () => {
         // # Open a channel screen, post a message with at-mention, and tap on at-mention
         const message = `@${testUser.username}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const mention = element(by.text(message).withAncestor(by.id(`channel.post_list.post.${post.id}`)));
         await waitFor(mention).toExist().withTimeout(timeouts.TEN_SEC);
         await mention.tap({x: 5, y: 10});

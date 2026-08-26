@@ -12,7 +12,6 @@
 // list, search input behavior (wildcard, clear, replace), and focus state.
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -127,15 +126,9 @@ describe('Search - Recents and Input', () => {
         const messageB = `Message ${termB}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageA);
-        const {post: postA} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.postMessage(messageB);
-        const {post: postB} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: postA} = await ChannelScreen.postMessageAndVerify(messageA, testChannel.id, siteOneUrl);
+        const {post: postB} = await ChannelScreen.postMessageAndVerify(messageB, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
-
-        // Search can lag behind the channel timeline, so wait for both fixtures to be indexed.
-        await Post.waitForPostMessageInSearch(siteOneUrl, termA, postA.id, messageA);
-        await Post.waitForPostMessageInSearch(siteOneUrl, termB, postB.id, messageB);
 
         // # Open search messages screen
         await SearchMessagesScreen.open();
@@ -182,29 +175,24 @@ describe('Search - Recents and Input', () => {
         const msgTwo = `Message ${termTwo}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(msgOne);
-        await ChannelScreen.postMessage(msgTwo);
-        const {post: postTwo} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        await ChannelScreen.back();
 
-        await Post.waitForPostMessageInSearch(siteOneUrl, termTwo, postTwo.id, msgTwo);
+        // Both sends are verified: this test searches for termOne later, so a dropped msgOne would
+        // fail as an empty search result rather than as the send failure it actually is. Only
+        // msgTwo's id is needed, hence the discarded result on the first.
+        await ChannelScreen.postMessageAndVerify(msgOne, testChannel.id, siteOneUrl);
+        const {post: postTwo} = await ChannelScreen.postMessageAndVerify(msgTwo, testChannel.id, siteOneUrl);
+        await ChannelScreen.back();
 
         // # Open search messages screen, search for term one to save it as recent
         await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchInput.replaceText(termOne);
+        await SearchMessagesScreen.searchInput.typeText(termOne);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
 
         // # Clear and search for term two to save it as recent
         await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.searchInput.replaceText(termTwo);
+        await SearchMessagesScreen.searchInput.typeText(termTwo);
         await SearchMessagesScreen.searchInput.tapReturnKey();
-
-        // PR #10081 moved addSearchToTeamSearchHistory into Promise.all with search operations.
-        // Observable signal that the search (and its history persistence) completed: termTwo's results appear.
-        // Waiting for this state ensures both search completion AND history DB write before clearing.
-        const {postListPostItem: postItemTwo} = SearchMessagesScreen.getPostListPostItem(postTwo.id, msgTwo);
-        await waitForElementToBeVisible(postItemTwo, timeouts.HALF_MIN);
 
         // # Clear search to show recent search list
         await SearchMessagesScreen.searchClearButton.tap();
@@ -244,10 +232,9 @@ describe('Search - Recents and Input', () => {
 
         // # Post a message so there are results
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // Fetch post ID immediately after posting before any other posts can be created
-        const {post: searchedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: searchedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen

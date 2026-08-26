@@ -61,7 +61,7 @@
     "detox:config-gen": "cd utils && node generate_detox_config_ci.js",
     "check": "npm run lint && npm run tsc && npm run test:unit && npm run validate:flow-headers",
     "validate:flow-headers": "bash maestro/scripts/validate-flow-headers.sh",
-    "test:unit": "node --test utils/*.test.js && npx tsx --test e2e/support/utils/transport_retry.test.ts",
+    "test:unit": "node --test utils/*.test.js && npx tsx --test e2e/support/utils/transport_retry.test.ts && npx tsx --test e2e/support/classification_lock_core.test.ts",
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
     "e2e:save-report": "node save_report.js",

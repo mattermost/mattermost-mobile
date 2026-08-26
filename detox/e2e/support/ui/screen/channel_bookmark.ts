@@ -47,7 +47,7 @@ class ChannelBookmarkScreen {
     attachAFileOption = element(by.id(this.testID.addFileOption));
 
     // Gorhom sheet: Detox idle never settles, so toExist reports "'not null' doesn't match
-    // the selected view" (CI MM-T5608_1 / MM-T5604_1). Corner tap avoids the row-center miss.
+    // the selected view". Corner tap avoids the row-center miss.
     tapAddALinkOption = async () => {
         await withSynchronizationDisabled(async () => {
             await waitForElementToExist(this.addALinkOption, timeouts.TEN_SEC);

@@ -154,11 +154,6 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
-      # disable_ios_autofill.js (called later during simulator boot) lives in
-      # detox/utils/ and requires `shelljs` from detox/package.json. The repo-root
-      # `prepare-node-deps` only installs top-level node_modules, so we need a
-      # separate install for the detox sub-package or the script throws
-      # `Cannot find module 'shelljs'`.
       - name: Install Detox Dependencies
         run: cd detox && npm ci --prefer-offline --no-audit --no-fund
 
@@ -203,9 +198,6 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           rm -f mobile-artifacts/*.zip
 
-      # Maestro-only: enable Files-app access for channel_bookmark_file picker flows.
-      # Must patch Info.plist before simctl install (see e2e-maestro-template comment
-      # in the prior Install step).
       - name: Patch iOS app Info.plist for file-sharing flows
         run: |
           APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
@@ -220,10 +212,6 @@ jobs:
             plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
           echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
-      # Same simulator boot / autofill / install sequence as Detox iOS CI.
-      # Skip pre-warm: Maestro login.yml uses clearState:true every flow, so a
-      # pre-warm launch is discarded immediately and can leave launchd in a
-      # bad state on iOS 26 before the first Maestro launchApp.
       - name: Pre-boot iOS Simulator (Detox-compatible)
         env:
           DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
@@ -279,12 +267,6 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Push test fixture into iOS simulator
-        # Required by detox/maestro/flows/channels/channel_bookmark_file.yml: the
-        # iOS document picker can only see files that already exist in the
-        # local File Provider storage at maestro launch time. We drop the
-        # detox image fixture there so the picker's "On My iPhone > Browse"
-        # path can reach it. Android does the equivalent via `adb push` in
-        # the Android job below.
         continue-on-error: true
         run: |
           set +e
@@ -317,12 +299,6 @@ jobs:
           echo $! > build/sim-device.pid
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
-      # Gate the suite on connectivity so an infra failure is reported as infra rather
-      # than as a test failure in whichever flow happens to run first.
-      # The simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
-      # against a valid chain, the app issued zero /api/v4 requests, and the failure
-      # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
-      # trust evaluation before the reported flows run.
       - name: Pre-flight — simulator can reach test server
         id: maestro-ios-preflight
         env:
@@ -382,13 +358,6 @@ jobs:
           fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
-        # Isolated step: patch the server config to AllowDownloadLogs=false,
-        # run the single flow, then restore. Always restore even on failure.
-        # Failure here does not fail the job — the main report is the source
-        # of truth; this is additive coverage.
-        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
-        # Skip when pre-flight failed: otherwise TSIO reports this one flow as
-        # 0/1 and hides that the main Maestro suite never ran (CMT 32335934401).
         if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
@@ -655,8 +624,6 @@ jobs:
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
-    # Match iOS (90). apt-get update can take ~38m then the suite cancelled mid leave_call
-    # at 60m with 7 passed / 0 failures (SHARD_CANCELLED → STATUS=error).
     timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -673,18 +640,6 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Moved before node/Maestro/seed: zero deps on checkout beyond the action.
-      #
-      # Only libpulse0 is a real dependency (emulator audio); xvfb already ships in the
-      # runner image. ffmpeg and scrot were dropped — Maestro records no video here and
-      # captures screenshots itself, and neither tool is referenced anywhere else in the
-      # repo. ffmpeg alone pulled ~110 packages / 114 MB, and that download is what made
-      # this step take tens of minutes on some runners and seconds on others.
-      #
-      # `apt-get update` has also blocked outright on these runners, which is what forced
-      # this job's 90m timeout. The image ships a populated apt cache, so try the install
-      # first and only run `apt-get update` when a package cannot be resolved from it; the
-      # step cap turns a wedged apt into a fast failure instead of a stalled suite.
       - name: Install system dependencies
         timeout-minutes: 6
         run: |

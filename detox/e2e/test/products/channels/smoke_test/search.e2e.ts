@@ -60,14 +60,13 @@ describe('Smoke Test - Search', () => {
         // # Open a channel screen, post a message with at-mention to current user, go back to channel list screen, and open recent mentions screen
         const message = `@${testUser.username}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
 
         // * Verify on recent mentions screen and recent mention is displayed
         await RecentMentionsScreen.toBeVisible();
         await RecentMentionsScreen.recentMentionPostListToBeVisible();
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = RecentMentionsScreen.getPostListPostItem(post.id, message);
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
@@ -79,8 +78,7 @@ describe('Smoke Test - Search', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
         await ChannelScreen.back();
@@ -98,8 +96,7 @@ describe('Smoke Test - Search', () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
         await withSynchronizationDisabled(async () => {
@@ -126,8 +123,7 @@ describe('Smoke Test - Search', () => {
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await Post.waitForPostMessageInSearch(siteOneUrl, searchTerm, post.id, message);
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();

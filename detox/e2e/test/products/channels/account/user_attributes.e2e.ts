@@ -7,8 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup} from '@support/server_api';
-import {serverOneUrl, siteOneUrl, hasCustomProfileAttributes} from '@support/test_config';
+import {Setup} from '@support/server_api';
+import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     AccountScreen,
     ChannelListScreen,
@@ -33,8 +33,9 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Spinwick does not set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES.
-(hasCustomProfileAttributes ? describe : describe.skip)('Account - User Attributes (MM-T5781_1, MM-T5781_2)', () => {
+// Spinwick does not yet set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES, and the server
+// forces the client flag back to false after API config updates.
+describe.skip('Account - User Attributes', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
@@ -160,10 +161,9 @@ import {expect, waitFor} from 'detox';
 
     it('MM-T5781_2 - should display user attribute values in profile pop-over when tapping on post username', async () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage('Checking user attributes');
         await wait(timeouts.ONE_SEC);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify('Checking user attributes', testChannel.id, siteOneUrl);
         const {postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, 'Checking user attributes');
         await postListPostItemHeaderDisplayName.tap();
         await wait(timeouts.ONE_SEC);

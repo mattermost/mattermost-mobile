@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -23,7 +22,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {getRandomId, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -79,8 +78,7 @@ describe('Channels - Channel Post List', () => {
                 await safeEnableSynchronization();
             }
         }
-        await waitForElementToExist(ChannelScreen.introDisplayName, timeouts.TEN_SEC);
-        await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, testChannel.display_name, timeouts.HALF_MIN);
         await expect(ChannelScreen.introSetHeaderAction).toExist();
         await expect(ChannelScreen.introChannelInfoAction).toExist();
         await expect(ChannelScreen.postList.getFlatList()).toExist();
@@ -113,10 +111,9 @@ describe('Channels - Channel Post List', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open('channels', testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 

@@ -49,10 +49,6 @@ describe('Search - Saved Messages', () => {
         testTeam = team;
         testUser = user;
 
-        // Reply should leave the thread Following (same CRT setup as reply_to_thread.e2e.ts).
-        // Capture the current values so afterAll can put them back: these are global
-        // server settings, so leaving them flipped changes thread behaviour for every
-        // suite that runs after this one on the same server.
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         previousCollapsedThreads = originalConfig?.ServiceSettings?.CollapsedThreads;
         previousThreadAutoFollow = originalConfig?.ServiceSettings?.ThreadAutoFollow;
@@ -107,9 +103,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -154,9 +149,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
 
@@ -184,8 +178,6 @@ describe('Search - Saved Messages', () => {
         await ChannelScreen.assertPostMessageEdited(savedPost.id, updatedMessage, 'saved_messages_page');
 
         // # Open post options for updated saved message and tap on reply option
-        // Post text now renders as "<message> edit (edited)", so the exact-text matcher
-        // would not match; use the post-id-only matcher (same pattern as message_edit.e2e.ts).
         const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id);
         await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.replyPostOption.tap();
@@ -229,9 +221,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
@@ -264,9 +255,8 @@ describe('Search - Saved Messages', () => {
         // # Open a channel screen, post a message, open post options for message, tap on save option, go back to channel list screen, and open saved messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
 
@@ -326,14 +316,10 @@ describe('Search - Saved Messages', () => {
         await SavedMessagesScreen.close();
     });
 
-    // Run last so the first Saved tab mount happens after a save (production order).
-    // Prior tests unsave or delete their posts, so this opens an empty list.
     it('MM-T4910_1 - should match elements on saved messages screen', async () => {
         // # Open saved messages screen
         await SavedMessagesScreen.open();
 
-        // T4910_3 on 5865fcd SIGSEGV'd during reloadReactNative before delete.
-        // Screenshot showed leftover "Message 1c9777" instead of empty state.
         const flagged = await Post.apiGetFlaggedPosts(siteOneUrl, testUser.id);
         if (flagged.error) {
             throw new Error(`MM-T4910_1: flagged posts lookup failed: ${JSON.stringify(flagged.error)}`);

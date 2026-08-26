@@ -28,7 +28,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // Several tests here call device.reloadReactNative(), which can take 30-90s on iOS CI.
@@ -108,7 +108,7 @@ describe('Channels - Browse Channels', () => {
         // * Verify on newly joined public channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(channel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, channel.display_name, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
