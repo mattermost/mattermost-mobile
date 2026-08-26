@@ -8,22 +8,26 @@ export type ChecklistItem = PlaybookChecklistItemModel | PlaybookChecklistItem;
 export type TaskFilters = {
     showChecked: boolean;
     showSkipped: boolean;
+    showUnchecked: boolean;
     showAssignedToMe: boolean;
     showUnassigned: boolean;
     showAssignedToOthers: boolean;
 };
 
+/** All task states on; no assignee refine (assignee toggles only narrow when selected). */
 export const DEFAULT_TASK_FILTERS: TaskFilters = {
     showChecked: true,
     showSkipped: true,
-    showAssignedToMe: true,
-    showUnassigned: true,
-    showAssignedToOthers: true,
+    showUnchecked: true,
+    showAssignedToMe: false,
+    showUnassigned: false,
+    showAssignedToOthers: false,
 };
 
 export const NO_TASK_FILTERS: TaskFilters = {
     showChecked: false,
     showSkipped: false,
+    showUnchecked: false,
     showAssignedToMe: false,
     showUnassigned: false,
     showAssignedToOthers: false,
@@ -32,25 +36,43 @@ export const NO_TASK_FILTERS: TaskFilters = {
 export const areDefaultTaskFilters = (filters: TaskFilters) => (
     filters.showChecked &&
     filters.showSkipped &&
-    filters.showAssignedToMe &&
-    filters.showUnassigned &&
-    filters.showAssignedToOthers
+    filters.showUnchecked &&
+    !filters.showAssignedToMe &&
+    !filters.showUnassigned &&
+    !filters.showAssignedToOthers
 );
 
 const getAssigneeId = (item: ChecklistItem) => ('assigneeId' in item ? item.assigneeId : item.assignee_id);
 const getConditionAction = (item: ChecklistItem) => ('conditionAction' in item ? item.conditionAction : item.condition_action);
 const getCompletedAt = (item: ChecklistItem) => ('completedAt' in item ? item.completedAt : item.completed_at);
+const getState = (item: ChecklistItem) => item.state;
 
 // An item hidden by a condition stays out of the list until it has been completed.
 export const isItemVisible = (item: ChecklistItem) => !(getConditionAction(item) === 'hidden' && !getCompletedAt(item));
 
-export const itemMatchesFilters = (item: ChecklistItem, filters: TaskFilters, currentUserId: string) => {
-    if (!filters.showChecked && item.state === 'closed') {
-        return false;
+const matchesTaskState = (item: ChecklistItem, filters: TaskFilters) => {
+    const state = getState(item);
+    if (state === 'closed') {
+        return filters.showChecked;
+    }
+    if (state === 'skipped') {
+        return filters.showSkipped;
     }
 
-    if (!filters.showSkipped && item.state === 'skipped') {
-        return false;
+    // '', 'in_progress', and any other open-like state
+    return filters.showUnchecked;
+};
+
+const hasAssigneeFilter = (filters: TaskFilters) => (
+    filters.showAssignedToMe ||
+    filters.showUnassigned ||
+    filters.showAssignedToOthers
+);
+
+const matchesAssignee = (item: ChecklistItem, filters: TaskFilters, currentUserId: string) => {
+    // No assignee selected → do not narrow by assignee.
+    if (!hasAssigneeFilter(filters)) {
+        return true;
     }
 
     const assigneeId = getAssigneeId(item);
@@ -64,3 +86,7 @@ export const itemMatchesFilters = (item: ChecklistItem, filters: TaskFilters, cu
 
     return filters.showAssignedToOthers;
 };
+
+export const itemMatchesFilters = (item: ChecklistItem, filters: TaskFilters, currentUserId: string) => (
+    matchesTaskState(item, filters) && matchesAssignee(item, filters, currentUserId)
+);

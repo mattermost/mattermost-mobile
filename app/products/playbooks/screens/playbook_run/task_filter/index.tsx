@@ -41,6 +41,10 @@ const messages = defineMessages({
         id: 'playbooks.task_filter.show_checked',
         defaultMessage: 'Show checked tasks',
     },
+    showUnchecked: {
+        id: 'playbooks.task_filter.show_unchecked',
+        defaultMessage: 'Show unchecked tasks',
+    },
     showSkipped: {
         id: 'playbooks.task_filter.show_skipped',
         defaultMessage: 'Show skipped tasks',
@@ -64,7 +68,7 @@ const messages = defineMessages({
 });
 
 const SECTION_HEADER_HEIGHT = 40;
-const NUMBER_OF_OPTIONS = 6;
+const NUMBER_OF_OPTIONS = 7;
 const NUMBER_OF_SECTIONS = 2;
 const DIVIDERS_HEIGHT = 2;
 
@@ -101,6 +105,7 @@ const TaskFilter = ({filters, onFiltersChanged}: Props) => {
     }, [onFiltersChanged, selected]);
 
     const toggleChecked = useCallback(() => update({showChecked: !selected.showChecked}), [selected.showChecked, update]);
+    const toggleUnchecked = useCallback(() => update({showUnchecked: !selected.showUnchecked}), [selected.showUnchecked, update]);
     const toggleSkipped = useCallback(() => update({showSkipped: !selected.showSkipped}), [selected.showSkipped, update]);
     const toggleMe = useCallback(() => update({showAssignedToMe: !selected.showAssignedToMe}), [selected.showAssignedToMe, update]);
     const toggleUnassigned = useCallback(() => update({showUnassigned: !selected.showUnassigned}), [selected.showUnassigned, update]);
@@ -131,6 +136,13 @@ const TaskFilter = ({filters, onFiltersChanged}: Props) => {
                     selected={selected.showChecked}
                     action={toggleChecked}
                     testID='playbooks.task_filter.show_checked'
+                />
+                <OptionItem
+                    label={intl.formatMessage(messages.showUnchecked)}
+                    type='select'
+                    selected={selected.showUnchecked}
+                    action={toggleUnchecked}
+                    testID='playbooks.task_filter.show_unchecked'
                 />
                 <OptionItem
                     label={intl.formatMessage(messages.showSkipped)}

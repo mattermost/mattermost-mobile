@@ -26,16 +26,17 @@ describe('TaskFilter', () => {
         };
     }
 
-    it('should show every option selected when no filter is applied', () => {
+    it('should show All tasks and every task-state option selected by default', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
 
         expect(getByTestId('playbooks.task_filter.all_tasks').props.selected).toBe(true);
         expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.show_unchecked').props.selected).toBe(true);
         expect(getByTestId('playbooks.task_filter.show_skipped').props.selected).toBe(true);
-        expect(getByTestId('playbooks.task_filter.me').props.selected).toBe(true);
-        expect(getByTestId('playbooks.task_filter.unassigned').props.selected).toBe(true);
-        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.me').props.selected).toBe(false);
+        expect(getByTestId('playbooks.task_filter.unassigned').props.selected).toBe(false);
+        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(false);
     });
 
     it('should turn a filter off and report it', () => {
@@ -49,7 +50,7 @@ describe('TaskFilter', () => {
         expect(props.onFiltersChanged).toHaveBeenCalledWith({...DEFAULT_TASK_FILTERS, showChecked: false});
     });
 
-    it('should stop showing All tasks as selected once a filter is off', () => {
+    it('should stop showing All tasks as selected once a filter changes', () => {
         const props = getBaseProps();
         props.filters = {...DEFAULT_TASK_FILTERS, showSkipped: false};
         const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
@@ -58,13 +59,14 @@ describe('TaskFilter', () => {
         expect(getByTestId('playbooks.task_filter.show_skipped').props.selected).toBe(false);
     });
 
-    it('should restore every filter when All tasks is pressed while partially selected', () => {
+    it('should restore defaults when All tasks is pressed while partially selected', () => {
         const props = getBaseProps();
         props.filters = {
-            showChecked: false,
+            showChecked: true,
+            showUnchecked: false,
             showSkipped: false,
-            showAssignedToMe: false,
-            showUnassigned: true,
+            showAssignedToMe: true,
+            showUnassigned: false,
             showAssignedToOthers: false,
         };
         const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
@@ -75,9 +77,11 @@ describe('TaskFilter', () => {
 
         expect(props.onFiltersChanged).toHaveBeenCalledWith(DEFAULT_TASK_FILTERS);
         expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.show_unchecked').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.me').props.selected).toBe(false);
     });
 
-    it('should leave filters unchanged when All tasks is pressed while fully selected', () => {
+    it('should leave filters unchanged when All tasks is pressed while already default', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<TaskFilter {...props}/>);
 
@@ -90,6 +94,6 @@ describe('TaskFilter', () => {
         expect(props.onFiltersChanged).not.toHaveBeenCalled();
         expect(getByTestId('playbooks.task_filter.all_tasks').props.selected).toBe(true);
         expect(getByTestId('playbooks.task_filter.show_checked').props.selected).toBe(true);
-        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(true);
+        expect(getByTestId('playbooks.task_filter.others').props.selected).toBe(false);
     });
 });

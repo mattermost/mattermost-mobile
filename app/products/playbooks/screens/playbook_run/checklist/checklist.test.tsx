@@ -518,32 +518,53 @@ describe('Checklist', () => {
             expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'mine', 'theirs']);
         });
 
-        it('should hide items assigned to the current user when Me is off', () => {
+        it('should hide unchecked items when showUnchecked is off', () => {
             const props = getFilterProps();
-            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToMe: false};
+            props.filters = {...DEFAULT_TASK_FILTERS, showUnchecked: false};
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'theirs']);
+            expect(renderedItemIds(getByTestId)).toEqual(['checked', 'skipped']);
         });
 
-        it('should hide items assigned to other users when Others is off', () => {
+        it('should show only checked items when only showChecked is on and no assignee is selected', () => {
             const props = getFilterProps();
-            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToOthers: false};
+            props.filters = {
+                ...DEFAULT_TASK_FILTERS,
+                showUnchecked: false,
+                showSkipped: false,
+            };
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'mine']);
+            expect(renderedItemIds(getByTestId)).toEqual(['checked']);
         });
 
-        it('should hide unassigned items when Unassigned is off', () => {
+        it('should further narrow to Me when that assignee refine is on', () => {
             const props = getFilterProps();
-            props.filters = {...DEFAULT_TASK_FILTERS, showUnassigned: false};
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToMe: true};
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
-            // Only the two items that have an assignee remain.
-            expect(renderedItemIds(getByTestId)).toEqual(['mine', 'theirs']);
+            expect(renderedItemIds(getByTestId)).toEqual(['mine']);
+        });
+
+        it('should further narrow to Others when that assignee refine is on', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToOthers: true};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['theirs']);
+        });
+
+        it('should further narrow to Unassigned when that assignee refine is on', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showUnassigned: true};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped']);
         });
 
         it('should keep the server index of items that survive a filter', () => {
@@ -562,6 +583,7 @@ describe('Checklist', () => {
             props.filters = {
                 showChecked: false,
                 showSkipped: false,
+                showUnchecked: false,
                 showAssignedToMe: false,
                 showUnassigned: false,
                 showAssignedToOthers: false,
