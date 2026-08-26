@@ -32,6 +32,17 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 24,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_RUN,
+                columns: [
+                    {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 23,
         steps: [
 
