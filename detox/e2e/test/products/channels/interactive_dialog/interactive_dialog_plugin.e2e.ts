@@ -14,6 +14,7 @@ import {
     DemoPlugin,
     Plugin,
     Setup,
+    System,
     User,
     Post,
 } from '@support/server_api';
@@ -237,8 +238,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
-    let demoPluginReady = false;
-    let didLogin = false;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
@@ -246,32 +245,30 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-
-        let statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
-        if (!statusCheck.isActive) {
-            // Never install_from_url — that 524s the origin. Enable or upload the runner fixture.
-            const upload = await Plugin.apiUploadAndEnablePlugin({baseUrl: siteOneUrl});
-            if (upload.error) {
-                // eslint-disable-next-line no-console
-                console.warn(`Demo plugin install failed: ${upload.error.message || JSON.stringify(upload.error)}`);
-            }
-            statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
+        const configResult = await System.apiUpdateConfig(siteOneUrl, {
+            PluginSettings: {
+                PluginStates: {
+                    [DemoPlugin.id]: {Enable: true},
+                },
+                Plugins: {
+                    [DemoPlugin.id]: {
+                        DialogOnlyMode: true,
+                    },
+                },
+            },
+        });
+        if (configResult.error) {
+            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
         }
+
+        const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
-            // eslint-disable-next-line no-console
-            console.warn(`Demo plugin (${DemoPlugin.id}) is not active — skipping suite`);
-            return;
+            throw new Error(`Demo plugin (${DemoPlugin.id}) is not active. Run Detox server provisioning before this suite.`);
         }
-
-        // Provision already set DialogOnlyMode. Do not PUT PluginSettings here —
-        // that reload races Cloudflare 524 and is what used to fail this entire file.
-
         await Command.waitForSlashCommandTrigger(siteOneUrl, testChannel.team_id, 'dialog', {timeoutMs: 60000});
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
-        didLogin = true;
-        demoPluginReady = true;
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
@@ -284,16 +281,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         } catch { /* best-effort */ }
     });
 
-    beforeEach(() => {
-        if (!demoPluginReady) {
-            pending(`Demo plugin (${DemoPlugin.id}) is not active`);
-        }
-    });
-
     afterAll(async () => {
-        if (!didLogin) {
-            return;
-        }
         try {
             await HomeScreen.logout();
         } catch {
@@ -302,9 +290,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterEach(async () => {
-        if (!demoPluginReady) {
-            return;
-        }
         await dismissErrorAlert();
 
         // Close an integration selector modal if one is stuck open (e.g.,
@@ -926,27 +911,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.id('AppFormElement.local_manual.time.button')).tap();
         await wait(500);
 
-        // Set the whole value in one native write. typeText injects five separate
-        // keystrokes, and this TextInput is controlled (value={manualTimeText}), so on a
-        // loaded simulator a keystroke can land while React is still committing the
-        // previous value and get reverted. The field then holds something that
-        // parseTimeString rejects — nothing is committed to the form and the dialog
-        // submits local_manual empty, which is exactly what CI run 32554729409 recorded
-        // ("Dialog Submitted: local_manual:" with london_dropdown populated) even though
-        // every Detox action reported success. replaceText fires onChangeText once with
-        // the complete string, so there is no intermediate value to lose.
+        // # Replace any prefilled text with the manual time entry (parseTimeString accepts 24-hour without am/pm)
         const manualInput = element(by.id('AppFormElement.local_manual.manual_time.input'));
         await waitFor(manualInput).toBeVisible().withTimeout(2000);
-        await manualInput.tap();
         await manualInput.replaceText('14:30');
-        await wait(500);
 
-        // Second commit path: onSubmitEditing/onBlur re-commit the same text, which
-        // covers a replaceText that did not deliver onChangeText.
-        try {
-            await manualInput.tapReturnKey();
-        } catch { /* keyboard may already be dismissed */ }
-        await wait(300);
+        // # Commit by pressing Done — fires onSubmitEditing → handleManualTimeSubmit → handleChange
+        await manualInput.tapReturnKey();
+        await wait(500);
 
         // # Submit dialog
         await InteractiveDialogScreen.submit();
@@ -956,20 +928,19 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
 
         // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
-        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker
-        // values would be :00). Sub-second digits are not stable across iOS simulators.
+        // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
         // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
-        // list, so \s* crosses the newline and captures the next item's "-" bullet. That
-        // is why an EMPTY field used to report itself as "got: -".
+        // list, so \s* would cross the newline and capture the next item's "-" bullet.
+        // That is how an empty field previously reported itself as "got: -".
         const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
         const submitted = match?.[1]?.trim() ?? '';
         if (!submitted) {
             throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        if (!/T\d{2}:30:\d{2}(?:\.\d+)?Z$/.test(submitted)) {
+        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });

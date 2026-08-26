@@ -64,9 +64,6 @@ class AccountScreen {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
     };
 
-    // The status sheet slides up and the account-row indicator mounts asynchronously,
-    // so a one-shot expect() races both and reports "No elements found ... AT INDEX(0)".
-    // Wait for the target row to become visible rather than sleeping a fixed duration.
     selectUserStatus = async (option: Detox.NativeElement) => {
         await this.userPresenceOption.tap();
         await waitFor(option).toBeVisible().withTimeout(timeouts.TEN_SEC);

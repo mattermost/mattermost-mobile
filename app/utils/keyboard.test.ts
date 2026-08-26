@@ -73,8 +73,7 @@ describe('dismissKeyboard', () => {
     });
 
     // iOS relies on the event to know the keyboard has actually left the screen. Cutting
-    // that wait short let callers navigate over a still-visible keyboard, which failed six
-    // post-option specs on run 32913011566 (MM-T4863_1/_2, MM-T4784_2, MM-T4864_1,
+    // that wait short let callers navigate over a still-visible keyboard.
     // MM-T4865_1, MM-T361_1) that all passed on the commit before it.
     it('should keep awaiting KeyboardController.dismiss on iOS', async () => {
         setEdgeToEdge(true);

@@ -15,7 +15,11 @@ import CallbackStore from '@store/callback_store';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const TABLE_HORIZONTAL_PADDING = 10;
+// Per-side padding applied by styles.fullHeight below.
+const TABLE_PADDING_HORIZONTAL = 5;
+
+// Total width the padding removes: one TABLE_PADDING_HORIZONTAL on each side.
+const TABLE_HORIZONTAL_INSET = TABLE_PADDING_HORIZONTAL * 2;
 
 export type TableScreenProps = {
     renderAsFlex: boolean;
@@ -31,7 +35,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     fullHeight: {
         height: '100%',
-        paddingHorizontal: 5,
+        paddingHorizontal: TABLE_PADDING_HORIZONTAL,
     },
     noTableText: {
         color: theme.dndIndicator,
@@ -58,7 +62,7 @@ const Table = ({renderAsFlex, width}: TableScreenProps) => {
     let viewStyle: {width: number} | {flex: number} = {width};
     if (renderAsFlex) {
         viewStyle = Platform.OS === 'android' ? {flex: 1} : {
-            width: windowWidth - insets.left - insets.right - TABLE_HORIZONTAL_PADDING,
+            width: windowWidth - insets.left - insets.right - TABLE_HORIZONTAL_INSET,
         };
     }
 
