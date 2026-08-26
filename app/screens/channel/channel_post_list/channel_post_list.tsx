@@ -30,7 +30,7 @@ type Props = {
     lastViewedAt: number;
     posts: PostModel[];
     shouldShowJoinLeaveMessages: boolean;
-    isUnread: boolean;
+    lastPostAt: number;
 }
 
 const edges: Edge[] = [];
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
 
 const ChannelPostList = ({
     channelId, contentContainerStyle, isCRTEnabled,
-    isUnread, lastViewedAt, posts, shouldShowJoinLeaveMessages,
+    lastPostAt, lastViewedAt, posts, shouldShowJoinLeaveMessages,
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
@@ -130,16 +130,23 @@ const ChannelPostList = ({
         markAsRead(boundaryKey);
     }, [appState, boundaryKey, isChannelVisible, markAsRead]);
 
-    // With nothing unread there is no separator to wait for and nothing to lose, so view the channel
-    // right away. That keeps it registered as the active channel on the server, which is what
-    // suppresses its push notifications while the user is looking at it. This reads isUnread rather
-    // than the message count because resetMessageCount zeroes that count locally when the more
-    // messages button is dismissed, which says nothing about the channel having been read.
+    // With nothing newer than what the user has already seen there is no separator to wait for and
+    // nothing to lose, so view the channel right away. That keeps it registered as the active channel
+    // on the server, which is what suppresses its push notifications while the user is reading.
+    //
+    // This compares timestamps rather than asking whether the channel is unread, because the unread
+    // flag and the message count are both cleared locally and optimistically before this screen
+    // mounts: switchToChannel calls markChannelAsViewed on every open, and resetMessageCount zeroes
+    // the count when the more messages button is dismissed. Either would make every channel look
+    // already read and send the read unconditionally. lastPostAt comes from the server's channel
+    // record, so it still describes messages we failed to fetch, and viewedAt is the boundary the
+    // separator is drawn from; together they say whether anything is left to see.
+    const hasUnseenPosts = lastPostAt > lastViewedAt;
     useEffect(() => {
-        if (!isUnread && appState === 'active') {
+        if (!hasUnseenPosts && appState === 'active') {
             markChannelAsRead(serverUrl, channelId, true);
         }
-    }, [isUnread, appState, channelId, serverUrl]);
+    }, [hasUnseenPosts, appState, channelId, serverUrl]);
 
     useDidUpdate(() => {
         if (appState !== 'active') {
