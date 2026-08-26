@@ -20,8 +20,7 @@ const isValidEvent = (data: unknown) => {
 // events it just created or soft-deleted, so assigning it would drop the rest of the run's history.
 // Deletions arrive two ways and both have to leave, because a full run fetch selects on DeleteAt = 0 —
 // anything kept past that point can never be corrected by a resync. A soft delete comes through as an
-// update carrying a non-zero delete_at (timeline events are otherwise immutable); a hard delete comes
-// through out-of-band as an id in timeline_event_deletes.
+// update carrying a non-zero delete_at; timeline events are otherwise immutable.
 export const mergeTimelineEvents = (
     stored: TimelineEvent[],
     delta: TimelineEvent[] | undefined,

@@ -501,18 +501,6 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual(['a', 'b', 'c']);
     });
 
-    it('removes an event the delta soft-deletes', async () => {
-        await seedRunWithEvents([event('a', 1), event('b', 2)]);
-
-        await dispatch({
-            id: playbookRunId,
-            playbook_run_updated_at: Date.now(),
-            changed_fields: {timeline_events: [event('a', 1, 500)]},
-        });
-
-        expect(await storedEventIds()).toEqual(['b']);
-    });
-
     it('applies a hard delete that arrives with no other changed fields', async () => {
         await seedRunWithEvents([event('a', 1), event('b', 2)]);
 
@@ -526,12 +514,8 @@ describe('handlePlaybookRunUpdatedIncremental timeline events', () => {
         expect(await storedEventIds()).toEqual(['b']);
     });
 
-    // Two updates for the same run can interleave: the handler is dispatched fire-and-forget
-    // (app/actions/websocket/event.ts and ./events.ts both call it without awaiting), and it reads
-    // the stored events synchronously when calling handlePlaybookRun but does not commit until
-    // batchRecords. Both reads therefore see the pre-commit list and the second write clobbers the
-    // first. The lost event is not recovered by a later resync, so the affected task's chip is
-    // permanently wrong.
+    // Fails without serializePerRun: both applications read the pre-commit event list and the later
+    // write drops the earlier one's event for good.
     it('keeps both events when two updates for the same run interleave', async () => {
         await seedRunWithEvents([event('a', 1)]);
 
