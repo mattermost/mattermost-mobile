@@ -7,8 +7,8 @@ import {
 } from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
-import {device, expect, waitFor} from 'detox';
+import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class AccountScreen {
     testID = {
@@ -43,44 +43,6 @@ class AccountScreen {
     customStatusFailureMessage = element(by.id(this.testID.customStatusFailureMessage));
     customStatusClearButton = element(by.id(this.testID.customStatusClearButton));
 
-    clearCustomStatus = async () => {
-        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // Sync is disabled around the tap on iOS only, where the clear can otherwise block
-        // on an idle wait. Android taps everything else in this suite with sync on, and
-        // archived_channel_navigation.ts already records that turning it off there races
-        // Fabric view insertion — so do not carry that risk for a plain button press.
-        if (isAndroid()) {
-            await this.customStatusClearButton.tap();
-            await wait(timeouts.ONE_SEC);
-        } else {
-            await device.disableSynchronization();
-            try {
-                await this.customStatusClearButton.tap();
-                await wait(timeouts.ONE_SEC);
-            } finally {
-                await safeEnableSynchronization();
-            }
-        }
-
-        try {
-            await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.HALF_MIN);
-            return;
-        } catch {
-            // The row can retain the pre-clear user after the DELETE succeeds. Android had no
-            // recovery for this at all and simply burned the 30s (MM-T4990_4 / MM-T3891 /
-            // MM-T3892, Android shard 12 on f181296), so both platforms now share this one.
-            // unsetCustomStatus re-fetches /users/me, so reaching here should be rare.
-        }
-
-        // Reloading runs app entry, which persists the authoritative current user fetched
-        // from the server before the Account screen is reopened.
-        await device.reloadReactNative();
-        await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
-        await this.open();
-        await waitFor(this.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    };
-
     getUserInfo = (userId: string) => {
         const userInfoTestId = `${this.testID.userInfoPrefix}${userId}`;
         const userInfoProfilePictureMatcher = ProfilePicture.getProfilePictureItemMatcher(this.testID.userInfoPrefix, userId);
@@ -102,9 +64,6 @@ class AccountScreen {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
     };
 
-    // The status sheet slides up and the account-row indicator mounts asynchronously,
-    // so a one-shot expect() races both and reports "No elements found ... AT INDEX(0)".
-    // Wait for the target row to become visible rather than sleeping a fixed duration.
     selectUserStatus = async (option: Detox.NativeElement) => {
         await this.userPresenceOption.tap();
         await waitFor(option).toBeVisible().withTimeout(timeouts.TEN_SEC);

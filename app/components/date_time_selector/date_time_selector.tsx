@@ -3,7 +3,7 @@
 
 import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
 import moment, {type Moment} from 'moment-timezone';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Button, Platform, TextInput} from 'react-native';
 
@@ -116,8 +116,6 @@ const DateTimeSelector = ({
         }
         return getRoundedTime(currentTime, effectiveInterval);
     });
-    const dateRef = useRef(date);
-    dateRef.current = date;
     const [mode, setMode] = useState<AndroidMode>(showInitially || 'date');
     const [show, setShow] = useState<boolean>(Boolean(showInitially));
     const [manualTimeText, setManualTimeText] = useState<string>('');
@@ -164,32 +162,35 @@ const DateTimeSelector = ({
         }
     }, [allowManualTimeEntry, useManualEntry, date, isMilitaryTime, show, mode]);
 
-    const applyManualTimeText = useCallback((text: string) => {
+    // Returns whether the text was a time we could commit.
+    const commitManualTime = useCallback((text: string) => {
         const parsed = parseTimeString(text);
         if (!parsed) {
             return false;
         }
-        const newDate = dateRef.current.clone().hour(parsed.hours).minute(parsed.minutes).second(0);
-        dateRef.current = newDate;
+
+        const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0);
         setDate(newDate);
         handleChange(newDate);
         return true;
-    }, [handleChange]);
+    }, [date, handleChange]);
 
-    const onManualTimeChange = useCallback((text: string) => {
+    // Commit as soon as the text parses, rather than only on submit/blur. Tapping a
+    // form's Submit button does not reliably blur a focused TextInput on iOS, so a
+    // commit-on-blur-only field could be submitted showing a valid time while the
+    // form still held no value for it — the value the user typed was silently lost.
+    // Partial input ("14:3", "9:00 A") does not parse, so it never commits garbage.
+    const handleManualTimeChange = useCallback((text: string) => {
         setManualTimeText(text);
-        applyManualTimeText(text);
-    }, [applyManualTimeText]);
+        commitManualTime(text);
+    }, [commitManualTime]);
 
     const handleManualTimeSubmit = useCallback(() => {
-        if (applyManualTimeText(manualTimeText)) {
-            return;
-        }
-        if (manualTimeText.trim()) {
+        if (!commitManualTime(manualTimeText) && manualTimeText.trim()) {
             // Invalid input — reset to current date value
-            setManualTimeText(dateRef.current.format(isMilitaryTime ? 'HH:mm' : 'h:mm A'));
+            setManualTimeText(date.format(isMilitaryTime ? 'HH:mm' : 'h:mm A'));
         }
-    }, [applyManualTimeText, manualTimeText, isMilitaryTime]);
+    }, [commitManualTime, manualTimeText, date, isMilitaryTime]);
 
     const timeHint = isMilitaryTime ? '14:30' : '2:30 PM';
 
@@ -220,7 +221,7 @@ const DateTimeSelector = ({
                         testID={testID ? `${testID}.manual_time.input` : 'custom_date_time_picker.manual_time.input'}
                         style={styles.manualTimeInput}
                         value={manualTimeText}
-                        onChangeText={onManualTimeChange}
+                        onChangeText={handleManualTimeChange}
                         onSubmitEditing={handleManualTimeSubmit}
                         onBlur={handleManualTimeSubmit}
                         placeholder={timeHint}

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused} from '@react-navigation/native';
-import React, {type ComponentProps} from 'react';
+import React from 'react';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import {ActionType, Preferences} from '@constants';
@@ -10,7 +10,7 @@ import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {act, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import SavedMessages from './saved_messages';
+import SavedMessages from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -39,29 +39,25 @@ jest.mock('@context/post_config', () => {
     };
 });
 
+// Rendered through ./index rather than ./saved_messages so the withObservables
+// pipeline (preferences -> saved post ids -> posts) is what feeds the list. That
+// pipeline is the part this screen gets wrong when it churns, so it is the part
+// worth covering.
 describe('SavedMessages', () => {
     const serverUrl = 'https://example.com';
     const savedPostId = 'saved-post-id';
     const savedMessage = 'a saved message';
+    const otherPostId = 'other-post-id';
+    const otherMessage = 'another saved message';
     let database: Database;
     let operator: ServerDataOperator;
 
-    function getBaseProps(): ComponentProps<typeof SavedMessages> {
-        return {
-            currentUser: TestHelper.fakeUserModel(),
-            customEmojiNames: [],
-            database,
-        };
-    }
-
-    // Seeds the real records the screen's pipeline reads: a post plus the
-    // flagged_post preference that marks it saved.
-    async function seedSavedPost() {
+    async function seedPost(id: string, message: string) {
         const post = TestHelper.fakePost({
-            id: savedPostId,
+            id,
             channel_id: TestHelper.basicChannel!.id,
             user_id: TestHelper.basicUser!.id,
-            message: savedMessage,
+            message,
         });
 
         await operator.handlePosts({
@@ -70,11 +66,14 @@ describe('SavedMessages', () => {
             posts: [post],
             prepareRecordsOnly: false,
         });
+    }
 
+    // Writes the flagged_post preference that marks a post saved.
+    async function savePost(id: string) {
         await operator.handlePreferences({
             preferences: [{
                 category: Preferences.CATEGORIES.SAVED_POST,
-                name: post.id,
+                name: id,
                 user_id: TestHelper.basicUser!.id,
                 value: 'true',
             }],
@@ -83,8 +82,8 @@ describe('SavedMessages', () => {
     }
 
     // Drops the flagged_post preference, i.e. what "unsave" does to the database.
-    async function unsaveSeededPost() {
-        const preferences = await querySavedPostsPreferences(database, savedPostId).fetch();
+    async function unsavePost(id: string) {
+        const preferences = await querySavedPostsPreferences(database, id).fetch();
         await database.write(async () => {
             await Promise.all(preferences.map((preference) => preference.destroyPermanently()));
         });
@@ -95,65 +94,69 @@ describe('SavedMessages', () => {
         const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
         operator = server.operator;
-        jest.mocked(useIsFocused).mockReturnValue(false);
+        jest.mocked(useIsFocused).mockReturnValue(true);
     });
 
     afterEach(async () => {
         await TestHelper.tearDown(serverUrl);
     });
 
-    it('should derive saved posts from the database only while the tab is focused', async () => {
-        await seedSavedPost();
+    it('should render a saved post from the database', async () => {
+        await seedPost(savedPostId, savedMessage);
+        await savePost(savedPostId);
 
-        const props = getBaseProps();
-        const {queryByText, rerender} = renderWithEverything(
-            <SavedMessages {...props}/>,
-            {database, serverUrl},
-        );
+        const {queryByText} = renderWithEverything(<SavedMessages/>, {database, serverUrl});
 
-        // Blurred: the screen must not subscribe, so nothing is derived and no
-        // saved-posts fetch is issued.
-        expect(queryByText(savedMessage)).toBeNull();
-        expect(fetchSavedPosts).not.toHaveBeenCalled();
-
-        jest.mocked(useIsFocused).mockReturnValue(true);
         await act(async () => {
-            rerender(<SavedMessages {...props}/>);
+            await Promise.resolve();
         });
 
-        // Focused: the seeded post reaches the rendered list through the real
-        // querySavedPostsPreferences -> observeSavedPostsByIds -> posts pipeline.
         expect(queryByText(savedMessage)).not.toBeNull();
         expect(fetchSavedPosts).toHaveBeenCalledWith(serverUrl);
+    });
 
-        jest.mocked(useIsFocused).mockReturnValue(false);
+    it('should add a newly saved post to the list', async () => {
+        await seedPost(savedPostId, savedMessage);
+        await savePost(savedPostId);
+        await seedPost(otherPostId, otherMessage);
+
+        const {queryByText} = renderWithEverything(<SavedMessages/>, {database, serverUrl});
+
         await act(async () => {
-            rerender(<SavedMessages {...props}/>);
+            await Promise.resolve();
+        });
+        expect(queryByText(otherMessage)).toBeNull();
+
+        // The id set genuinely changes here, so the distinctUntilChanged guards in
+        // index.ts must not swallow it.
+        await act(async () => {
+            await savePost(otherPostId);
         });
 
-        // Blurred again: the subscription is torn down, so unsaving the post in the
-        // database no longer reaches the screen. The already-rendered list stays put
-        // (this is a bottom tab that remains mounted while blurred).
+        expect(queryByText(savedMessage)).not.toBeNull();
+        expect(queryByText(otherMessage)).not.toBeNull();
+    });
+
+    it('should remove a post from the list when it is unsaved', async () => {
+        await seedPost(savedPostId, savedMessage);
+        await savePost(savedPostId);
+
+        const {queryByText} = renderWithEverything(<SavedMessages/>, {database, serverUrl});
+
         await act(async () => {
-            await unsaveSeededPost();
+            await Promise.resolve();
         });
         expect(queryByText(savedMessage)).not.toBeNull();
 
-        // Refocusing re-subscribes, and the fresh subscription reads current database
-        // state — which is what makes a save/unsave that happened while blurred show up.
-        jest.mocked(useIsFocused).mockReturnValue(true);
         await act(async () => {
-            rerender(<SavedMessages {...props}/>);
+            await unsavePost(savedPostId);
         });
 
         expect(queryByText(savedMessage)).toBeNull();
     });
 
     it('should render no posts when nothing is saved', async () => {
-        jest.mocked(useIsFocused).mockReturnValue(true);
-
-        const props = getBaseProps();
-        const {queryByText} = renderWithEverything(<SavedMessages {...props}/>, {database, serverUrl});
+        const {queryByText} = renderWithEverything(<SavedMessages/>, {database, serverUrl});
 
         await act(async () => {
             await Promise.resolve();
@@ -161,5 +164,17 @@ describe('SavedMessages', () => {
 
         expect(queryByText(savedMessage)).toBeNull();
         expect(fetchSavedPosts).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should not fetch saved posts while the tab is blurred', async () => {
+        jest.mocked(useIsFocused).mockReturnValue(false);
+
+        renderWithEverything(<SavedMessages/>, {database, serverUrl});
+
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(fetchSavedPosts).not.toHaveBeenCalled();
     });
 });

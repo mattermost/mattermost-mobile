@@ -114,9 +114,12 @@ describe('Search - Result Interactions', () => {
         // # Search for the common word
         const flatList = await submitSearch(commonWord);
 
-        // # Scroll the results list down to verify it is scrollable
+        // # Scroll the results list down to verify it is scrollable.
+        // No explicit start point: the (0.5, 0.5) variant begins its drag in the middle of a
+        // post row and dwells there long enough for iOS's long-press recognizer to win, which
+        // opens the post-options sheet over the list.
         try {
-            await flatList.scroll(300, 'down', 0.5, 0.5);
+            await flatList.scroll(300, 'down');
         } catch {
             // List may be too short to scroll — scrollability already satisfied
         }

@@ -4,7 +4,6 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
-import {withTransportRetry} from '@support/utils/transport_retry';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
@@ -49,6 +48,11 @@ export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId
 
         return {post: response.data};
     } catch (err) {
+        // Throw rather than return {error}. Almost every call site destructures
+        // {post} without checking `error`, so a transport failure here used to
+        // surface as `TypeError: Cannot read properties of undefined` on whichever
+        // later line first touched the missing post, with nothing about the network
+        // in the report.
         const error = getResponseFromError(err);
         throw new Error(`apiCreatePost failed: ${JSON.stringify(error.error)}`);
     }
@@ -268,17 +272,10 @@ export const apiUploadFileToChannel = async (
         // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
-
-    // Multipart upload is the slowest call in the fixture path and regularly exceeds the
-    // client's timeout when several shards hit the server at once, surfacing as
-    // {error, status: 0} rather than a rejection. apiUploadFile builds a fresh FormData
-    // and read stream per call, so re-invoking it is safe. A replayed upload can leave an
-    // extra FileInfo behind, but an unreferenced file is invisible to every assertion in
-    // the suite, whereas losing the upload fails the test outright.
-    const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
+    const result = await apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    }), {idempotent: false, allowDuplicateWrites: true, label: 'apiUploadFileToChannel'});
+    });
     if (result.error) {
         return result;
     }
@@ -294,45 +291,25 @@ export const apiUploadFileToChannel = async (
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to post in
  * @param {string} rootId - (optional) root post ID for thread replies
- * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
+ * @return {Object} returns {post, fileId} on success or {error, status} on error
  */
 export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
-    // Throw, do not return {error}: all eleven call sites across file_preview_gallery,
-    // file_upload, file_type_preview and image_attachment_post_options destructure
-    // `{post, fileId}` and none of them checks `error`. Returning an error-only object
-    // left `post` undefined and the real reason was lost — MM-T1750 in run 32214085246
-    // surfaced as `TypeError: Cannot read properties of undefined (reading 'id')` seven
-    // lines later, at `ChannelScreen.getPostListPostItem(post.id, '')`, with nothing
-    // about the upload or the attach anywhere in the report.
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
-    if (uploadError || !fileId) {
-        throw new Error(`apiCreatePostWithImageAttachment: file upload failed: ${JSON.stringify(uploadError)}`);
+    if (uploadError) {
+        return {error: uploadError};
     }
-
-    // Creating a post is not idempotent and a duplicate IS observable — it shows up in
-    // the channel and breaks post-count assertions. A timed-out create may already have
-    // committed, so fail and let the caller surface it rather than posting twice.
-    let post;
-    try {
-        const result = await apiCreatePost(baseUrl, {
-            channelId,
-            message: '',
-            rootId: rootId || undefined,
-            fileIds: [fileId],
-        });
-        post = result.post;
-    } catch (err) {
-        throw new Error(`apiCreatePostWithImageAttachment: post create failed: ${String(err)}`);
-    }
-    if (!post?.id) {
-        throw new Error('apiCreatePostWithImageAttachment: post create returned no post ID');
+    const {post, error: postError} = await apiCreatePost(baseUrl, {
+        channelId,
+        message: '',
+        rootId: rootId || undefined,
+        fileIds: [fileId],
+    });
+    if (postError) {
+        return {error: postError};
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
-        throw new Error(
-            'apiCreatePostWithImageAttachment: server did not attach the file to the post. ' +
-            `post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`,
-        );
+        return {error: {message: `Server did not attach file to post. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`}};
     }
     return {post, fileId};
 };
