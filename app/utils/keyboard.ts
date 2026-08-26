@@ -8,29 +8,15 @@ import * as Device from '@constants/device';
 
 const DISMISS_ANIMATION_TIMEOUT = 250;
 
-// KeyboardController.dismiss() settles only when a `keyboardDidHide` event arrives,
-// and it decides whether to wait on a module-level `isClosed` flag that the library
-// maintains from its own keyboardWillShow/keyboardDidHide listeners. If a hide event
-// is ever missed — for example the keyboard is torn down by a navigation at the same
-// moment KeyboardStateProvider is disabled and calls in here — that flag is left
-// saying "open" while the keyboard is already gone, and the promise never settles.
-// Every awaiting caller then hangs for the rest of the session: showPostOptions()
-// awaits this before navigating, so long-pressing a post silently does nothing.
-// Bound the wait so a missed event degrades to a slightly early return instead of a
-// permanently wedged UI. `animated: false` means there is no animation to outlast.
-const dismissWithKeyboardController = async () => {
+// Resolve on whichever comes first, and always clear the timer.
+const withTimeout = async (promise: Promise<void>, ms: number) => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-        await Promise.race([
-            KeyboardController.dismiss({animated: false}),
-            new Promise<void>((resolve) => {
-                timer = setTimeout(resolve, DISMISS_ANIMATION_TIMEOUT);
-            }),
-        ]);
+        await Promise.race([promise, new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, ms);
+        })]);
     } finally {
-        if (timer) {
-            clearTimeout(timer);
-        }
+        clearTimeout(timer);
     }
 };
 
@@ -42,11 +28,24 @@ const dismissWithKeyboardController = async () => {
  */
 export const dismissKeyboard = async (): Promise<void> => {
     if (Device.isEdgeToEdge) {
-        await dismissWithKeyboardController();
-    } else {
-        Keyboard.dismiss();
-        await new Promise((resolve) => setTimeout(resolve, DISMISS_ANIMATION_TIMEOUT));
+        const dismissed = KeyboardController.dismiss({animated: false});
+
+        // Android only: this promise settles on a `keyboardDidHide` event, and a missed
+        // one leaves the library's internal state saying "open" so it never settles at
+        // all. Callers await this before navigating (showPostOptions does), so a missed
+        // event stops a long press from opening post options. iOS keeps the unbounded
+        // await — there the event is what tells us the keyboard has left the screen.
+        if (Device.isAndroidEdgeToEdge) {
+            await withTimeout(dismissed, DISMISS_ANIMATION_TIMEOUT);
+            return;
+        }
+
+        await dismissed;
+        return;
     }
+
+    Keyboard.dismiss();
+    await new Promise((resolve) => setTimeout(resolve, DISMISS_ANIMATION_TIMEOUT));
 };
 
 /**
