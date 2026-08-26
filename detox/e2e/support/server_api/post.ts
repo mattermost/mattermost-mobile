@@ -52,8 +52,7 @@ export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId
         // {post} without checking `error`, so a transport failure here used to
         // surface as `TypeError: Cannot read properties of undefined` on whichever
         // later line first touched the missing post, with nothing about the network
-        // in the report. MM-T4805_4 in run 32560548619 died that way after a single
-        // `getaddrinfo ENOTFOUND` against the site-2 test server.
+        // in the report.
         const error = getResponseFromError(err);
         throw new Error(`apiCreatePost failed: ${JSON.stringify(error.error)}`);
     }

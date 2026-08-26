@@ -87,9 +87,7 @@ const UserStatus = ({currentUser}: Props) => {
         // that still had the dismissing sheet as its parent: "addViewAt: cannot insert view
         // into parent: View already has a parent". That is a host exception, so ReactHost
         // destroyed the React instance and every later Detox action failed with
-        // "ReactContext is null!" — MM-T4988_2 plus the seven account_menu tests after it on
-        // Android shard 17 (e27844130). updateStatus touches no component state, so running
-        // it after the sheet is gone is safe.
+        // "ReactContext is null!"
         await dismiss();
         updateStatus(status);
         return null;

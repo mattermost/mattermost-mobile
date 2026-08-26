@@ -138,11 +138,7 @@ export const acquireClassificationLock = async (
     do {
         // A transport fault against the ephemeral test server is the same kind of
         // "try again shortly" this loop already exists for, so absorb it here rather
-        // than abandoning acquisition on the first blip. Run 32808521698 lost
-        // MM-T6206_1 and MM-T6208_1 to a single `getaddrinfo ENOTFOUND` on the read:
-        // each test died in under 15ms with no retry, while the blip itself lasted
-        // ~120ms and every other shard reached the same host fine. If the fault
-        // outlasts the deadline the error is rethrown below, so nothing is hidden.
+        // than abandoning acquisition on the first blip.
         try {
             // eslint-disable-next-line no-await-in-loop -- advisory lock acquisition must be sequential
             lastLock = await getClassificationLock(baseUrl, userId);

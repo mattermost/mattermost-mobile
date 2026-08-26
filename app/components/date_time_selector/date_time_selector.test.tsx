@@ -125,8 +125,6 @@ describe('DateTimeSelector', () => {
         fireEvent.changeText(input, '14:30');
         fireEvent(input, 'submitEditing');
 
-        // Committed on change and again on submitEditing; both carry the same time,
-        // so assert on the value delivered rather than on the call count.
         expect(mockHandleChange).toHaveBeenCalled();
         const picked = mockHandleChange.mock.calls[mockHandleChange.mock.calls.length - 1][0] as moment.Moment;
         expect(picked.hour()).toBe(14);
@@ -139,9 +137,6 @@ describe('DateTimeSelector', () => {
         expect(picked.date()).toBe(initialDate.date());
     });
 
-    // Regression: MM-T2530H. Tapping a form's Submit button does not reliably blur a
-    // focused TextInput on iOS, so a value that only committed on submitEditing/blur
-    // could be submitted as empty while the input visibly showed the typed time.
     it('commits a manual time entry on change, without submitEditing or blur', () => {
         const initialDate = moment.tz('2026-04-20 09:00', timezone);
         const testID = 'dt';
