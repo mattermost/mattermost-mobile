@@ -94,9 +94,19 @@ class ServerListScreen {
             // the existence wait above returns, so dismiss between attempts rather
             // than once up front.
             /* eslint-disable no-await-in-loop -- retry visibility around a tutorial dismissal */
+            // Assert presentation on the sheet's title, not on `${testID}.screen`.
+            // server_list.screen is BottomSheetContent's outer container (content.tsx:69);
+            // its frame does not pass Detox's 75% iOS threshold even when the sheet is
+            // correctly presented, opaque and unoccluded — proven by the
+            // DETOX_VISIBILITY_*_SCREEN.png pair for MM-T4691_1 in CI run 33036930610,
+            // where the capture taken at check time shows the fully drawn sheet and the
+            // assertion still reported "does not pass visibility percent threshold (75)".
+            // The title is inside the sheet, so it is 0% visible while dismissed and
+            // fully visible once presented: it still separates presentation from mere
+            // existence, which is what this wait is for.
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
-                    await waitForElementToBeVisible(this.serverListScreen, timeouts.FOUR_SEC);
+                    await waitForElementToBeVisible(this.serverListTitle, timeouts.FOUR_SEC);
                     return this.serverListScreen;
                 } catch (error) {
                     // Only retry when a tutorial was actually there and went away. Any
