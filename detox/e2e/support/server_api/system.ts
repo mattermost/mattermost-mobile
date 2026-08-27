@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
 
 import client from './client';
@@ -110,7 +111,7 @@ export const waitForClientConfigFlag = async (
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
         const {config} = await apiGetClientConfigOld(baseUrl);
-        if (config?.[flagKey] === expectedValue) {
+        if (String(config?.[flagKey]) === expectedValue) {
             return true;
         }
 
@@ -147,13 +148,16 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
-    try {
-        // Use config/patch endpoint for partial updates — no need to GET+merge+PUT the full config
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    // A config patch is idempotent: replaying the same partial config converges on
+    // the same server state.
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
 /**
@@ -179,12 +183,15 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
-    try {
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiPatchConfig'});
 };
 
 /**

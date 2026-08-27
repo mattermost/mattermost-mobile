@@ -105,7 +105,7 @@ describe('DateTimeSelector', () => {
         expect(queryByTestId(`${testID}.manual_time.input`)).toBeNull();
     });
 
-    it('submits a manual time entry by calling handleChange with the parsed time', () => {
+    it('commits a manual time entry as the user types', () => {
         const initialDate = moment.tz('2026-04-20 09:00', timezone);
         const testID = 'dt';
         const {getByTestId} = renderWithEverything(
@@ -123,7 +123,6 @@ describe('DateTimeSelector', () => {
         const input = getByTestId(`${testID}.manual_time.input`);
 
         fireEvent.changeText(input, '14:30');
-        fireEvent(input, 'submitEditing');
 
         expect(mockHandleChange).toHaveBeenCalled();
         const picked = mockHandleChange.mock.calls[mockHandleChange.mock.calls.length - 1][0] as moment.Moment;

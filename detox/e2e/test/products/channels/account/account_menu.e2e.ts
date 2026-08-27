@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup, User} from '@support/server_api';
+import {Setup, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -234,12 +234,11 @@ describe('Account - Account Menu', () => {
         const newUsername = `nu${getRandomId()}`;
         await HomeScreen.channelListTab.tap();
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // Wait for keyboard to dismiss and message to be posted
         await wait(timeouts.TWO_SEC);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem, postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(postListPostItemHeaderDisplayName).toHaveText(testUser.username);

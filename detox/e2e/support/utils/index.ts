@@ -60,6 +60,45 @@ export const timeouts = {
     FOUR_MIN: MINUTE * 4,
 };
 
+let syncDisableDepth = 0;
+
+// Retry enableSynchronization after Android Fabric ReactContext null races.
+export async function safeEnableSynchronization(): Promise<void> {
+    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+    /* eslint-disable no-await-in-loop */
+    for (let i = 0; i <= delays.length; i++) {
+        try {
+            await device.enableSynchronization();
+            return;
+        } catch (error) {
+            const message = (error as Error)?.message ?? String(error);
+            if (!message.includes('ReactContext is null')) {
+                throw error;
+            }
+            if (i === delays.length) {
+                throw error;
+            }
+            await wait(delays[i] ?? delays[delays.length - 1] ?? timeouts.ONE_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
+export async function withSynchronizationDisabled<T>(fn: () => Promise<T>): Promise<T> {
+    if (syncDisableDepth === 0) {
+        await device.disableSynchronization();
+    }
+    syncDisableDepth += 1;
+    try {
+        return await fn();
+    } finally {
+        syncDisableDepth -= 1;
+        if (syncDisableDepth === 0) {
+            await safeEnableSynchronization();
+        }
+    }
+}
+
 export async function retryWithReload(
     func: () => Promise<void>,
     retries: number = 2,
@@ -110,30 +149,49 @@ export async function scrollElementIntoView(
     scrollContainer: Detox.NativeMatcher,
     maxScrolls = 15,
 ): Promise<void> {
-    const visibilityThreshold = isIos() ? 50 : 25;
+    const visibilityThreshold = isIos() ? 40 : 25;
+    const {expect: detoxExpect} = require('detox');
+
+    if (isIos()) {
+        await withSynchronizationDisabled(async () => {
+            /* eslint-disable no-await-in-loop -- bounded scroll; waitFor(whileElement) can ignore withTimeout */
+            // Inverted channel list: down travels toward older posts/intro, up toward newest.
+            // Alternating directions nets ~0 movement and never reveals an off-screen row.
+            const downCount = Math.ceil(maxScrolls / 2);
+            for (let i = 0; i < maxScrolls; i++) {
+                try {
+                    await detoxExpect(target).toBeVisible(visibilityThreshold);
+                    return;
+                } catch {
+                    const direction = i < downCount ? 'down' : 'up';
+                    try {
+                        await element(scrollContainer).scroll(200, direction, 0.5, 0.5);
+                    } catch {
+                        // List edge.
+                    }
+                    await wait(timeouts.HALF_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        });
+        await waitForElementToBeVisible(target, timeouts.FIVE_SEC, timeouts.HALF_SEC, visibilityThreshold);
+        return;
+    }
+
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i < maxScrolls; i++) {
         try {
             await waitFor(target).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
             return;
         } catch {
-            if (isIos()) {
-                await device.disableSynchronization();
-            }
-            try {
-                for (const direction of ['down', 'up'] as const) {
-                    try {
-                        await waitFor(target).
-                            toBeVisible(visibilityThreshold).
-                            whileElement(scrollContainer).
-                            scroll(250, direction);
-                        return;
-                    } catch { /* try opposite direction */ }
-                }
-            } finally {
-                if (isIos()) {
-                    await safeEnableSynchronization();
-                }
+            for (const direction of ['down', 'up'] as const) {
+                try {
+                    await waitFor(target).
+                        toBeVisible(visibilityThreshold).
+                        whileElement(scrollContainer).
+                        scroll(250, direction);
+                    return;
+                } catch { /* try opposite direction */ }
             }
         }
     }
@@ -159,7 +217,14 @@ export async function longPressWithScrollRetry(
         if (deadlineMs !== undefined && Date.now() > deadlineMs) {
             throw new Error(`longPressWithScrollRetry exceeded deadline after ${attempt - 1} attempts`);
         }
-        await scrollElementIntoView(target, scrollContainer);
+        try {
+            await scrollElementIntoView(target, scrollContainer);
+        } catch (scrollError) {
+            if (!isIos() || attempt === maxAttempts) {
+                throw scrollError;
+            }
+            continue;
+        }
 
         if (isAndroid()) {
             try {
@@ -174,33 +239,31 @@ export async function longPressWithScrollRetry(
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.FIVE_SEC;
         await wait(waitDuration);
 
-        if (isIos()) {
-            await device.disableSynchronization();
-        }
-        let longPressFailed = false;
-        try {
-            await target.longPress(pressDuration);
-        } catch (pressError) {
-            if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
-                longPressFailed = true;
-            } else {
+        const pressAndAwaitSheet = async (): Promise<boolean> => {
+            try {
+                await target.longPress(pressDuration);
+            } catch (pressError) {
+                if (isIos() && attempt < maxAttempts && isIosHittableError(pressError)) {
+                    return false;
+                }
                 throw pressError;
             }
-        } finally {
-            if (isIos()) {
-                await safeEnableSynchronization();
+            try {
+                await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+                return true;
+            } catch {
+                if (attempt === maxAttempts) {
+                    throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
+                }
+                return false;
             }
-        }
-        if (longPressFailed) {
-            continue;
-        }
-        try {
-            await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+        };
+
+        // Keep sync off through the sheet wait. Re-enabling after the press lets
+        // the next expect()/disableSynchronization() sit on a wedged idle timer.
+        const opened = isIos() ? await withSynchronizationDisabled(pressAndAwaitSheet) : await pressAndAwaitSheet();
+        if (opened) {
             return;
-        } catch {
-            if (attempt === maxAttempts) {
-                throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
-            }
         }
     }
     /* eslint-enable no-await-in-loop */
@@ -227,9 +290,37 @@ export async function longPressWithRetry(
 
         const pressDuration = isAndroid() ? timeouts.FOUR_SEC : timeouts.TWO_SEC;
 
-        if (isAndroid()) {
-            await device.disableSynchronization();
+        const pressAndAwaitSheet = async (): Promise<boolean> => {
+            try {
+                await target.longPress(pressDuration);
+            } catch (error) {
+                if (attempt === maxAttempts) {
+                    throw error;
+                }
+                await wait(timeouts.THREE_SEC);
+                return false;
+            }
+            try {
+                await waitForElementToExist(checkElement, timeouts.TEN_SEC);
+                return true;
+            } catch {
+                if (attempt === maxAttempts) {
+                    throw new Error(`Element did not appear after ${maxAttempts} longPress attempts`);
+                }
+                await wait(timeouts.THREE_SEC);
+                return false;
+            }
+        };
+
+        if (isIos()) {
+            const opened = await withSynchronizationDisabled(pressAndAwaitSheet);
+            if (opened) {
+                return;
+            }
+            continue;
         }
+
+        await device.disableSynchronization();
         try {
             try {
                 await target.longPress(pressDuration);
@@ -241,9 +332,7 @@ export async function longPressWithRetry(
                 continue;
             }
         } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
+            await safeEnableSynchronization();
         }
         try {
             await waitForElementToExist(checkElement, timeouts.TEN_SEC);
@@ -342,26 +431,28 @@ export async function waitForElementToExist(
     await detoxExpect(detoxElement).toExist();
 }
 
-// Retry enableSynchronization after Android Fabric ReactContext null races.
-export async function safeEnableSynchronization(): Promise<void> {
-    const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+export async function waitForElementToHaveText(
+    detoxElement: Detox.NativeElement,
+    text: string,
+    timeout: number = timeouts.TEN_SEC,
+    pollInterval: number = timeouts.HALF_SEC,
+): Promise<void> {
+    const {expect: detoxExpect} = require('detox');
+    const startTime = Date.now();
     /* eslint-disable no-await-in-loop */
-    for (let i = 0; i <= delays.length; i++) {
+    while (Date.now() - startTime < timeout) {
         try {
-            await device.enableSynchronization();
+            await detoxExpect(detoxElement).toHaveText(text);
             return;
         } catch (error) {
-            const message = (error as Error)?.message ?? String(error);
-            if (!message.includes('ReactContext is null')) {
+            if ((Date.now() - startTime) + pollInterval >= timeout) {
                 throw error;
             }
-            if (i === delays.length) {
-                throw error;
-            }
-            await wait(delays[i]!);
+            await wait(pollInterval);
         }
     }
     /* eslint-enable no-await-in-loop */
+    await detoxExpect(detoxElement).toHaveText(text);
 }
 
 // Platform back: Android uses hardware back; iOS taps the native-stack chevron.
