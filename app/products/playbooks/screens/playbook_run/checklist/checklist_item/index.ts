@@ -27,12 +27,10 @@ type OwnProps = {
     playbookRunId: string;
 } & WithDatabaseArgs;
 
-// timelineEvents has to stay a trigger, because for a run absent from the database it is the only
-// source of task activity and the row must re-derive when it changes. It is safe as one because
-// playbook_run.tsx passes it only in that case: for a persisted run it is undefined and never changes
-// identity. That matters because on a trigger change withObservables resets to
-// `{isFetching: true, values: {}}` and renders null until every observable below re-emits, so a
-// churning value here would blank and re-subscribe every row in the checklist on each task change.
+// timelineEvents is a trigger so a row re-derives when it changes, which is only safe because it
+// never churns for a persisted run. On a trigger change withObservables resets to
+// `{isFetching: true, values: {}}` and renders null until every observable below re-emits, so a value
+// that did churn here would blank and re-subscribe every row in the checklist on each task change.
 const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelineEvents'], ({item, timelineEvents, database, channelId, playbookRunId}: OwnProps) => {
     const teammateNameDisplay = observeTeammateNameDisplay(database);
     const currentUserId = observeCurrentUserId(database);
@@ -49,8 +47,6 @@ const enhanced = withObservables(['item', 'channelId', 'playbookRunId', 'timelin
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
-        // The run in the database owns the timeline events; the received ones are the fallback for a
-        // run that was never persisted, which is how a run opened from the run list arrives.
         const run = observePlaybookRunById(database, playbookRunId).pipe(
             shareReplay({bufferSize: 1, refCount: true}),
         );
