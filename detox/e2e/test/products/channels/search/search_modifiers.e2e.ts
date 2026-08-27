@@ -139,9 +139,7 @@ describe('Search - Modifiers', () => {
         await ChannelListScreen.open();
     });
 
-    // CI 59ec6ae/ce729d/bc6df62 iOS: exceeds 300s Jest timeout after disableSynchronization
-    // + cleanup harden (recent-item race / hung search return). Skip until search sync is stable.
-    it.skip('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
+    it('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
         // # Post a message for plain text search
         const plainTerm = `plain${getRandomId()}`;
         const message = `Message ${plainTerm}`;

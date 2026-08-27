@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {of as of$} from 'rxjs';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -21,7 +24,11 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {observePostsById, observeSavedPostsByIds} from '@queries/servers/post';
+import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {useCurrentScreen} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
+import {logError} from '@utils/log';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
 
@@ -35,7 +42,7 @@ type Props = {
     appsEnabled?: boolean;
     currentUser: UserModel;
     customEmojiNames: string[];
-    posts: PostModel[];
+    database: Database;
 }
 
 const edges: Edge[] = ['left', 'right'];
@@ -51,9 +58,41 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Props) {
+// The pipeline that used to live in index.ts, moved verbatim. Only where it is
+// subscribed has changed, so this fixes the missed notify without altering what
+// the screen derives.
+function observeSavedPosts(database: Database) {
+    return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
+        map((rows) => rows.map((preference) => preference.name)),
+        distinctUntilChanged(sameIds),
+        switchMap((ids) => {
+            if (!ids.length) {
+                return of$(new Set<string>());
+            }
+            return observeSavedPostsByIds(database, ids);
+        }),
+
+        // Sorted so the comparison below is order-insensitive; observePostsById
+        // applies the real ordering.
+        map((savedPostIds) => [...savedPostIds].sort()),
+        distinctUntilChanged(sameIds),
+        switchMap((ids) => {
+            if (!ids.length) {
+                return of$([]);
+            }
+            return observePostsById(database, ids, Q.asc);
+        }),
+    );
+}
+
+function sameIds(previous: string[], next: string[]) {
+    return previous.length === next.length && previous.every((id, index) => id === next[index]);
+}
+
+function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: Props) {
     const intl = useIntl();
-    const [loading, setLoading] = useState(!posts.length);
+    const [posts, setPosts] = useState<PostModel[]>([]);
+    const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -84,6 +123,30 @@ function SavedMessages({appsEnabled, posts, currentUser, customEmojiNames}: Prop
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused, opacity, translateSide, translateX]);
+
+    // Re-derive saved posts on every focus by (re)subscribing fresh. This screen is
+    // a freezeOnBlur bottom-tab that mounts once and stays mounted, so a subscription
+    // created at mount time predates any later save. On the SQLite/JSI (device)
+    // adapter a pre-existing PREFERENCE-table Query.observe() is not reliably notified
+    // of a preference CREATE (a fresh .fetch() sees the row; the live subscription does
+    // not), which left the screen empty after a save. A fresh subscription always reads
+    // current DB state on subscribe, so tearing down on blur and re-subscribing on focus
+    // sidesteps the missed notify. Unsave still works via the EphemeralStore combine
+    // inside observeSavedPostsByIds while focused.
+    //
+    // The pipeline is the one that previously lived in index.ts, unchanged — only
+    // where it is subscribed has moved. Keeping it identical means this fixes the
+    // missed-notify without also altering what the screen derives.
+    useEffect(() => {
+        if (!isFocused) {
+            return undefined;
+        }
+        const subscription = observeSavedPosts(database).subscribe({
+            next: setPosts,
+            error: (error) => logError('error on SavedMessages posts subscription', getFullErrorMessage(error)),
+        });
+        return () => subscription.unsubscribe();
+    }, [database, isFocused]);
 
     useEffect(() => {
         if (isFocused) {
