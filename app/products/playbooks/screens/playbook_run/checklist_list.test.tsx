@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
 import {act} from '@testing-library/react-native';
+import React, {type ComponentProps} from 'react';
 
 import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {renderWithIntl} from '@test/intl-test-helper';
