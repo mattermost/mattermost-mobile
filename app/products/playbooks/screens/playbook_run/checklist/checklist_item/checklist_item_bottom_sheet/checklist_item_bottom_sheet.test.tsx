@@ -106,7 +106,19 @@ describe('ChecklistItemBottomSheet', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         jest.mocked(useIsTablet).mockReturnValue(false);
+        jest.mocked(dismissBottomSheet).mockResolvedValue(undefined);
     });
+
+    function mockDeferredDismiss() {
+        let resolveDismiss: () => void = () => {
+            // noop until assigned
+        };
+        const dismissPromise = new Promise<void>((resolve) => {
+            resolveDismiss = resolve;
+        });
+        jest.mocked(dismissBottomSheet).mockReturnValue(dismissPromise);
+        return {resolveDismiss};
+    }
 
     it('renders correctly with all props', () => {
         const props = getBaseProps();
@@ -397,17 +409,26 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the command modal when the command is clicked', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
         const commandItem = getByTestId('checklist_item.command');
 
-        await act(async () => {
-            await commandItem.props.action();
+        let actionPromise!: Promise<void>;
+        act(() => {
+            actionPromise = commandItem.props.action();
         });
 
         expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToEditCommand).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveDismiss();
+            await actionPromise;
+        });
+
         expect(goToEditCommand).toHaveBeenCalledWith(
             'Run 1',
             'test command',
@@ -431,6 +452,7 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the set date modal when the due date is clicked', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
@@ -440,10 +462,20 @@ describe('ChecklistItemBottomSheet', () => {
         });
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
         const dueDateItem = getByTestId('checklist_item.due_date');
-        await act(async () => {
-            await dueDateItem.props.action();
+
+        let actionPromise!: Promise<void>;
+        act(() => {
+            actionPromise = dueDateItem.props.action();
         });
+
         expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToSelectDate).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveDismiss();
+            await actionPromise;
+        });
+
         expect(goToSelectDate).toHaveBeenCalledWith(
             'Run 1',
             expect.any(Function),
@@ -492,6 +524,7 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the select assigneed screen when the assignee option item is pressed', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
@@ -500,11 +533,19 @@ describe('ChecklistItemBottomSheet', () => {
         const assigneeItem = getByTestId('checklist_item.assignee');
         const onPress = assigneeItem.props.action;
 
-        await act(async () => {
-            await onPress('user-1');
+        let actionPromise!: Promise<void>;
+        act(() => {
+            actionPromise = onPress('user-1');
         });
 
         expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToSelectUser).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveDismiss();
+            await actionPromise;
+        });
+
         expect(goToSelectUser).toHaveBeenCalledWith(
             'Run 1',
             'Assignee',
@@ -857,6 +898,7 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         it('should open edit modal when edit button is pressed', async () => {
+            const {resolveDismiss} = mockDeferredDismiss();
             const props = getBaseProps();
             props.item = TestHelper.fakePlaybookChecklistItemModel({
                 id: 'item-1',
@@ -868,11 +910,15 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const editButton = getByTestId('checklist_item.edit_button');
-            await act(async () => {
-                fireEvent.press(editButton);
-            });
+            fireEvent.press(editButton);
 
             expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(goToEditChecklistItem).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveDismiss();
+            });
+
             expect(goToEditChecklistItem).toHaveBeenCalledWith(
                 'Run 1',
                 'Test Checklist Item',
@@ -882,6 +928,7 @@ describe('ChecklistItemBottomSheet', () => {
         });
 
         it('should open edit modal with undefined description when item has no description', async () => {
+            const {resolveDismiss} = mockDeferredDismiss();
             const props = getBaseProps();
             props.item = TestHelper.fakePlaybookChecklistItemModel({
                 ...mockItem,
@@ -890,11 +937,15 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const editButton = getByTestId('checklist_item.edit_button');
-            await act(async () => {
-                fireEvent.press(editButton);
-            });
+            fireEvent.press(editButton);
 
             expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(goToEditChecklistItem).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveDismiss();
+            });
+
             expect(goToEditChecklistItem).toHaveBeenCalledWith(
                 'Run 1',
                 'Test Checklist Item',

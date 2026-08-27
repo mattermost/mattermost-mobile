@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, type GestureResponderEvent, type LayoutChangeEvent, useWindowDimensions, StyleSheet} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -11,7 +11,6 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import useDidUpdate from '@hooks/did_update';
 import {renameChecklist, addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToRenameChecklist, goToAddChecklistItem} from '@playbooks/screens/navigation';
@@ -138,7 +137,8 @@ type Props = {
     checklistProgress: ReturnType<typeof getChecklistProgress>;
     filters: TaskFilters;
     currentUserId: string;
-    collapseAll: boolean;
+    expanded: boolean;
+    onToggleExpanded: () => void;
     onClearFilters: () => void;
 }
 
@@ -159,25 +159,16 @@ const Checklist = ({
     },
     filters,
     currentUserId,
-    collapseAll,
+    expanded,
+    onToggleExpanded,
     onClearFilters,
 }: Props) => {
-    const [expanded, setExpanded] = useState(() => !collapseAll);
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const height = useSharedValue(0);
     const windowDimensions = useWindowDimensions();
-
-    // Follow the run-level collapse/expand control whenever the user triggers it.
-    useDidUpdate(() => {
-        setExpanded(!collapseAll);
-    }, [collapseAll]);
-
-    const toggleExpanded = useCallback(() => {
-        setExpanded((prev) => !prev);
-    }, []);
 
     // `items` holds every item in the checklist's canonical order, so an item's position here is the
     // index the server expects. Pair each item with that index before filtering, otherwise hiding an
@@ -244,7 +235,7 @@ const Checklist = ({
         <View style={styles.checklistContainer}>
             <TouchableOpacity
                 style={styles.checklistHeader}
-                onPress={toggleExpanded}
+                onPress={onToggleExpanded}
             >
                 <View style={styles.checklistHeaderContent}>
                     <CompassIcon

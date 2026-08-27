@@ -666,7 +666,7 @@ describe('PlaybookRun', () => {
             const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
             const checklistList = getByTestId('checklist-list');
-            expect(checklistList.props.collapseAll).toBe(false);
+            expect(checklistList.props.expandedById).toEqual({});
             expect(checklistList.props.filters).toEqual(DEFAULT_TASK_FILTERS);
             expect(checklistList.props.currentUserId).toBe(props.currentUserId);
         });
@@ -676,20 +676,25 @@ describe('PlaybookRun', () => {
             const {getByTestId} = renderWithEverything(<PlaybookRun {...props}/>, {database});
 
             const button = getByTestId('playbook-run.collapse-all-button');
+            const checklistIds = props.checklists.map((checklist) => checklist.id);
 
             act(() => {
                 fireEvent.press(button);
             });
 
             let checklistList = getByTestId('checklist-list');
-            expect(checklistList.props.collapseAll).toBe(true);
+            expect(checklistList.props.expandedById).toEqual(
+                Object.fromEntries(checklistIds.map((id) => [id, false])),
+            );
 
             act(() => {
                 fireEvent.press(button);
             });
 
             checklistList = getByTestId('checklist-list');
-            expect(checklistList.props.collapseAll).toBe(false);
+            expect(checklistList.props.expandedById).toEqual(
+                Object.fromEntries(checklistIds.map((id) => [id, true])),
+            );
         });
 
         it('should open the task filter bottom sheet', () => {

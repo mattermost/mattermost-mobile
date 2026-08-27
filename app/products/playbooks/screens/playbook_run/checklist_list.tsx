@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import Checklist from './checklist';
@@ -18,7 +18,8 @@ type Props = {
     isParticipant: boolean;
     filters: TaskFilters;
     currentUserId: string;
-    collapseAll: boolean;
+    expandedById: Record<string, boolean>;
+    onToggleChecklistExpanded: (checklistId: string) => void;
     onClearFilters: () => void;
 }
 
@@ -37,13 +38,14 @@ const ChecklistList = ({
     isParticipant,
     filters,
     currentUserId,
-    collapseAll,
+    expandedById,
+    onToggleChecklistExpanded,
     onClearFilters,
 }: Props) => {
     return (
         <View style={(isFinished || !isParticipant) ? styles.container : undefined}>
             {checklists.map((checklist, index) => (
-                <Checklist
+                <ChecklistRow
                     key={checklist.id}
                     checklist={checklist}
                     channelId={channelId}
@@ -54,12 +56,56 @@ const ChecklistList = ({
                     isParticipant={isParticipant}
                     filters={filters}
                     currentUserId={currentUserId}
-                    collapseAll={collapseAll}
+                    expanded={expandedById[checklist.id] ?? true}
+                    onToggleChecklistExpanded={onToggleChecklistExpanded}
                     onClearFilters={onClearFilters}
                 />
             ))}
         </View>
     );
 };
+
+type ChecklistRowProps = Omit<Props, 'checklists' | 'expandedById'> & {
+    checklist: PlaybookChecklistModel | PlaybookChecklist;
+    checklistNumber: number;
+    expanded: boolean;
+};
+
+// Local row so each checklist can take a stable onToggleExpanded without an inline arrow in the map.
+function ChecklistRow({
+    checklist,
+    channelId,
+    playbookRunId,
+    playbookRunName,
+    checklistNumber,
+    isFinished,
+    isParticipant,
+    filters,
+    currentUserId,
+    expanded,
+    onToggleChecklistExpanded,
+    onClearFilters,
+}: ChecklistRowProps) {
+    const onToggleExpanded = useCallback(() => {
+        onToggleChecklistExpanded(checklist.id);
+    }, [checklist.id, onToggleChecklistExpanded]);
+
+    return (
+        <Checklist
+            checklist={checklist}
+            channelId={channelId}
+            playbookRunId={playbookRunId}
+            playbookRunName={playbookRunName}
+            checklistNumber={checklistNumber}
+            isFinished={isFinished}
+            isParticipant={isParticipant}
+            filters={filters}
+            currentUserId={currentUserId}
+            expanded={expanded}
+            onToggleExpanded={onToggleExpanded}
+            onClearFilters={onClearFilters}
+        />
+    );
+}
 
 export default ChecklistList;

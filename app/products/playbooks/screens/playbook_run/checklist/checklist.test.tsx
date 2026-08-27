@@ -97,7 +97,8 @@ describe('Checklist', () => {
             isParticipant: true,
             filters: DEFAULT_TASK_FILTERS,
             currentUserId: 'current-user-id',
-            collapseAll: false,
+            expanded: true,
+            onToggleExpanded: jest.fn(),
             onClearFilters: jest.fn(),
             checklistProgress: {
                 skipped: false,
@@ -121,7 +122,7 @@ describe('Checklist', () => {
 
     it('toggles expanded state on header press', async () => {
         const props = getBaseProps();
-        const {getByText, getByTestId} = renderWithIntl(<Checklist {...props}/>);
+        const {getByText, getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         const header = getByText('Test Checklist');
 
@@ -134,6 +135,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalledTimes(1);
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={false}
+            />,
+        );
 
         // Should still be rendered but with different height
         await waitFor(() => {
@@ -144,6 +153,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalledTimes(2);
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={true}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
@@ -335,7 +352,7 @@ describe('Checklist', () => {
 
     it('toggles expanded state which affects chevron icon', async () => {
         const props = getBaseProps();
-        const {getByText, getByTestId, getAllByTestId} = renderWithIntl(<Checklist {...props}/>);
+        const {getByText, getByTestId, getAllByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         const header = getByText('Test Checklist');
 
@@ -352,6 +369,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalled();
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={false}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
@@ -365,6 +390,13 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={true}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
@@ -600,7 +632,7 @@ describe('Checklist', () => {
     });
 
     describe('collapse all', () => {
-        it('should collapse when the run collapses all checklists', async () => {
+        it('should collapse when expanded becomes false', async () => {
             const props = getBaseProps();
             const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
@@ -611,7 +643,7 @@ describe('Checklist', () => {
             rerender(
                 <Checklist
                     {...props}
-                    collapseAll={true}
+                    expanded={false}
                 />,
             );
 
@@ -620,9 +652,9 @@ describe('Checklist', () => {
             });
         });
 
-        it('should start collapsed when mounted while collapseAll is true', async () => {
+        it('should start collapsed when mounted while expanded is false', async () => {
             const props = getBaseProps();
-            props.collapseAll = true;
+            props.expanded = false;
 
             const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
 
@@ -631,9 +663,9 @@ describe('Checklist', () => {
             });
         });
 
-        it('should expand when the run expands all checklists', async () => {
+        it('should expand when expanded becomes true', async () => {
             const props = getBaseProps();
-            props.collapseAll = true;
+            props.expanded = false;
             const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
             await waitFor(() => {
@@ -643,7 +675,7 @@ describe('Checklist', () => {
             rerender(
                 <Checklist
                     {...props}
-                    collapseAll={false}
+                    expanded={true}
                 />,
             );
 

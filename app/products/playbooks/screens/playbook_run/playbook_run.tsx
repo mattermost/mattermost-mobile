@@ -235,12 +235,30 @@ export default function PlaybookRun({
     const lastSyncAt = playbookRun && 'lastSyncAt' in playbookRun ? playbookRun.lastSyncAt : 0;
 
     const [filters, setFilters] = useState<TaskFilters>(DEFAULT_TASK_FILTERS);
-    const [collapseAll, setCollapseAll] = useState(false);
+    const [expandedById, setExpandedById] = useState<Record<string, boolean>>({});
 
     const filtersActive = !areDefaultTaskFilters(filters);
 
+    // Derive the header icon from actual checklist state so a press after manual
+    // per-checklist toggles never becomes a no-op (dead press).
+    const anyChecklistExpanded = checklists.some((checklist) => expandedById[checklist.id] !== false);
+
     const toggleCollapseAll = useCallback(() => {
-        setCollapseAll((prev) => !prev);
+        const nextExpanded = !anyChecklistExpanded;
+        setExpandedById((prev) => {
+            const next = {...prev};
+            for (const checklist of checklists) {
+                next[checklist.id] = nextExpanded;
+            }
+            return next;
+        });
+    }, [anyChecklistExpanded, checklists]);
+
+    const toggleChecklistExpanded = useCallback((checklistId: string) => {
+        setExpandedById((prev) => ({
+            ...prev,
+            [checklistId]: !(prev[checklistId] ?? true),
+        }));
     }, []);
 
     const clearFilters = useCallback(() => {
@@ -495,11 +513,11 @@ export default function PlaybookRun({
                                     style={collapseAllButtonStyle}
                                     hitSlop={HIT_SLOP}
                                     accessibilityRole='button'
-                                    accessibilityLabel={intl.formatMessage(collapseAll ? messages.expandAll : messages.collapseAll)}
+                                    accessibilityLabel={intl.formatMessage(anyChecklistExpanded ? messages.collapseAll : messages.expandAll)}
                                     testID='playbook-run.collapse-all-button'
                                 >
                                     <CompassIcon
-                                        name={collapseAll ? 'arrow-expand' : 'arrow-collapse'}
+                                        name={anyChecklistExpanded ? 'arrow-collapse' : 'arrow-expand'}
                                         style={styles.tasksHeaderIcon}
                                     />
                                 </Pressable>
@@ -527,7 +545,8 @@ export default function PlaybookRun({
                             isParticipant={isParticipant}
                             filters={filters}
                             currentUserId={currentUserId}
-                            collapseAll={collapseAll}
+                            expandedById={expandedById}
+                            onToggleChecklistExpanded={toggleChecklistExpanded}
                             onClearFilters={clearFilters}
                         />
                     </View>
