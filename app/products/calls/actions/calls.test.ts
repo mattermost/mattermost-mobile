@@ -1480,8 +1480,8 @@ describe('maybeRequestMicrophonePermission', () => {
         const mockRequest = jest.spyOn(RNPermissions, 'request').mockResolvedValue(RNPermissions.RESULTS.GRANTED);
         const mockAlert = jest.spyOn(Alert, 'alert');
         await maybeRequestMicrophonePermission();
-        const buttons = mockAlert.mock.calls[0][2] as Array<{onPress?: () => void}>;
-        const continueButton = buttons.find((b) => typeof b.onPress === 'function');
+        const buttons = mockAlert.mock.calls[0][2] as Array<{text?: string; onPress?: () => void}>;
+        const continueButton = buttons.find((b) => b.text === 'Enable mic');
         continueButton!.onPress!();
         expect(mockRequest).toHaveBeenCalledWith(RNPermissions.PERMISSIONS.IOS.MICROPHONE);
     });

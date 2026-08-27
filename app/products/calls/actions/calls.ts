@@ -102,6 +102,7 @@ export const maybeRequestMicrophonePermission = async () => {
     // Set guard before any awaits so concurrent calls (e.g. rapid reconnects)
     // cannot both pass the check above while DB reads are in flight.
     micPermissionRequestInFlight = true;
+    let alertShown = false;
 
     try {
         // doReconnect fires while backgrounded (e.g. a native call keeps the
@@ -127,6 +128,7 @@ export const maybeRequestMicrophonePermission = async () => {
         }
 
         const {formatMessage} = getIntlShape();
+        alertShown = true;
         Alert.alert(
             formatMessage(micPermissionMessages.title),
             formatMessage(micPermissionMessages.message),
@@ -134,10 +136,12 @@ export const maybeRequestMicrophonePermission = async () => {
                 {
                     text: formatMessage(micPermissionMessages.notNow),
                     style: 'cancel',
+                    onPress: () => { micPermissionRequestInFlight = false; },
                 },
                 {
                     text: formatMessage(micPermissionMessages.continue),
                     onPress: () => {
+                        micPermissionRequestInFlight = false;
                         Permissions.request(Permissions.PERMISSIONS.IOS.MICROPHONE);
                     },
                 },
@@ -146,7 +150,9 @@ export const maybeRequestMicrophonePermission = async () => {
     } catch (e) {
         logError('error on maybeRequestMicrophonePermission', getFullErrorMessage(e));
     } finally {
-        micPermissionRequestInFlight = false;
+        if (!alertShown) {
+            micPermissionRequestInFlight = false;
+        }
     }
 };
 
