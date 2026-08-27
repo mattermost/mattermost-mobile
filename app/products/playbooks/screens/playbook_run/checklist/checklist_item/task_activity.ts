@@ -68,16 +68,21 @@ const getDetailsAction = (details: TaskStateDetails): TaskActivityAction | undef
     return typeof action === 'string' && KNOWN_ACTIONS.has(action) ? action as TaskActivityAction : undefined;
 };
 
-export const getTaskActivity = (item: TaskActivityItem, timelineEvents: TimelineEvent[] = []): TaskActivity | undefined => {
+export const getTaskActivity = (item: TaskActivityItem, timelineEvents?: TimelineEvent[]): TaskActivity | undefined => {
     const timestamp = 'stateModified' in item ? item.stateModified : item.state_modified;
     const candidates = getCandidateActions(item.state);
     if (!timestamp || !candidates.length) {
         return undefined;
     }
 
+    // Guarded rather than defaulted: a run absent from the database hands these straight off the API
+    // response, where the plugin's nil timeline slice can arrive as null. A default parameter only
+    // covers undefined.
+    const events = Array.isArray(timelineEvents) ? timelineEvents : [];
+
     // Restricting candidates by the resting state also keeps a stale or contradictory event from
     // matching, e.g. a check event against an open task.
-    const matches = timelineEvents.flatMap<ActionMatch>((event) => {
+    const matches = events.flatMap<ActionMatch>((event) => {
         if (event.event_at !== timestamp) {
             return [];
         }

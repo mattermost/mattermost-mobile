@@ -34,6 +34,15 @@ const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => ({
 });
 
 describe('getTaskActivity', () => {
+    // A run absent from the database has its events read straight off the API response, where the
+    // plugin's nil timeline slice can serialize to null. A default parameter only covers undefined.
+    it('treats a null event list as no events, since the API can send null for an empty timeline', () => {
+        expect(getTaskActivity(makeItem(), null as unknown as TimelineEvent[])).toEqual({
+            action: 'check',
+            timestamp: 1000,
+        });
+    });
+
     it('returns the checked action, timestamp, and actor for one exact event', () => {
         expect(getTaskActivity(makeItem(), [makeEvent()])).toEqual({
             action: 'check',
