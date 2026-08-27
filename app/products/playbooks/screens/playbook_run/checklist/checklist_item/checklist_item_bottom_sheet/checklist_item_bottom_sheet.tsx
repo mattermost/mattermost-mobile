@@ -23,7 +23,9 @@ import {typography} from '@utils/typography';
 import {getTimezone} from '@utils/user';
 
 import Checkbox from '../checkbox';
+import TaskActivityIndicator from '../task_activity_indicator';
 
+import type {TaskActivity} from '../task_activity';
 import type PlaybookChecklistItemModel from '@playbooks/types/database/models/playbook_checklist_item';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -105,11 +107,20 @@ const SCROLL_CONTENT_GAP = 12;
 const TITLE_LINE_HEIGHT = 24; // From typography 300
 const BODY_LINE_HEIGHT = 24; // From typography 200
 const BODY_LINES_COUNT = 3;
+const MENU_DIVIDER_HEIGHT = 17; // 1px line plus its 8px default vertical margins.
+const ACTIVITY_LINE_HEIGHT = 20; // From typography 100, used by the action label and the actor name.
+const ACTIVITY_DATE_LINE_HEIGHT = 16; // From typography 75, used by the absolute time.
+const ACTIVITY_TEXT_GAP = 2;
+
+// Three text lines with their internal gaps, the divider the section renders after itself, and one
+// content gap for each of those two children.
+const ACTIVITY_SECTION_HEIGHT = (ACTIVITY_LINE_HEIGHT * 2) + ACTIVITY_DATE_LINE_HEIGHT + (ACTIVITY_TEXT_GAP * 2) + MENU_DIVIDER_HEIGHT + (SCROLL_CONTENT_GAP * 2);
 
 export const BOTTOM_SHEET_HEIGHT = {
     base: (N_OPTIONS * ITEM_HEIGHT) + (OPTIONS_GAP * (N_OPTIONS - 1)) + (SCROLL_CONTENT_GAP * 2) + TITLE_LINE_HEIGHT + (BODY_LINE_HEIGHT * BODY_LINES_COUNT),
     actionButtons: ACTION_BUTTON_HEIGHT + SCROLL_CONTENT_GAP,
     conditionSection: (BODY_LINE_HEIGHT * 2) + SCROLL_CONTENT_GAP + (OPTIONS_GAP * (Platform.OS === 'android' ? 2 : 1)),
+    activitySection: ACTIVITY_SECTION_HEIGHT,
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
@@ -201,12 +212,15 @@ type Props = {
     channelId: string;
     item: PlaybookChecklistItemModel | PlaybookChecklistItem;
     assignee?: UserModel;
+    activity?: TaskActivity;
+    activityActor?: UserModel;
     onCheck: () => void;
     onSkip: () => void;
     onRunCommand: () => void;
     teammateNameDisplay: string;
     isDisabled: boolean;
     currentUserTimezone: UserTimezone | null | undefined;
+    isMilitaryTime: boolean;
     participantIds: string[];
     conditionReason: string;
     showConditionIcon: boolean;
@@ -221,12 +235,15 @@ const ChecklistItemBottomSheet = ({
     channelId,
     item,
     assignee,
+    activity,
+    activityActor,
     onCheck,
     onSkip,
     onRunCommand,
     teammateNameDisplay,
     isDisabled,
     currentUserTimezone,
+    isMilitaryTime,
     participantIds,
     conditionReason,
     showConditionIcon,
@@ -483,6 +500,20 @@ const ChecklistItemBottomSheet = ({
                 </View>
             </View>
             <MenuDivider/>
+            {activity && (
+                <>
+                    <TaskActivityIndicator
+                        activity={activity}
+                        actor={activityActor}
+                        teammateNameDisplay={teammateNameDisplay}
+                        timezone={timezone}
+                        isMilitaryTime={isMilitaryTime}
+                        variant='detail'
+                        onActorPress={onUserChipPress}
+                    />
+                    <MenuDivider/>
+                </>
+            )}
             {!isDisabled && renderActionButtons()}
             {renderTaskDetails()}
             {showConditionIcon && renderConditionSection()}
