@@ -190,12 +190,16 @@ const ChannelBookmarkOptions = ({
                     {bookmark.displayName}
                 </Text>
             </View>
-            <View style={styles.flex}>
+            <View
+                style={styles.flex}
+                testID='channel_bookmark.options.sheet'
+            >
                 {canEditBookmarks &&
                     <OptionItem
                         action={onEdit}
                         label={intl.formatMessage({id: 'channel_bookmark.edit_option', defaultMessage: 'Edit'})}
                         icon='pencil-outline'
+                        testID='channel_bookmark.options.edit'
                         type='default'
                     />
                 }

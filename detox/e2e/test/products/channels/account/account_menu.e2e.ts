@@ -135,23 +135,20 @@ describe('Account - Account Menu', () => {
         const statusText = 'In a meeting';
         const statusDuration = 'one_hour';
 
-        // # Tap set status on account screen
-        await AccountScreen.setStatusOption.tap();
-        await CustomStatusScreen.toBeVisible();
+        // CustomStatusScreen.open scrolls the account list so Set status is hittable.
+        await CustomStatusScreen.open();
 
         // # Select a suggested status and save
         const {customStatusSuggestion: inMeetingStatus} =
             CustomStatusScreen.getSuggestedCustomStatus(statusEmoji, statusText, statusDuration);
         await inMeetingStatus.tap();
         await CustomStatusScreen.doneButton.tap();
-        await wait(timeouts.TWO_SEC);
 
         // * Verify custom status appears on account screen
-        await AccountScreen.toBeVisible();
-        const {accountCustomStatusText} = AccountScreen.getCustomStatus(statusEmoji, statusDuration);
-        await expect(accountCustomStatusText).toHaveText(statusText);
+        await AccountScreen.waitForCustomStatus({emoji: statusEmoji, duration: statusDuration, text: statusText});
 
         // # Clear custom status
+        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await AccountScreen.customStatusClearButton.tap();
         await wait(timeouts.ONE_SEC);
     });
