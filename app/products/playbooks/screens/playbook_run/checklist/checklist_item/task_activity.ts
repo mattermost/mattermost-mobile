@@ -32,8 +32,7 @@ const KNOWN_ACTIONS = new Set<string>(['check', 'uncheck', 'skip', 'restore']);
 
 // A task's resting state bounds which actions could have produced it. Only the open states are
 // ambiguous — both an uncheck and a restore-from-skip land on open — so a matched timeline event is
-// what tells those apart; with no event we fall back to the first candidate. A state with no
-// candidates renders nothing.
+// what tells those apart. A state with no candidates renders nothing.
 const getCandidateActions = (state: ChecklistItemState): TaskActivityAction[] => {
     switch (state) {
         case 'closed':
@@ -104,7 +103,7 @@ export const getTaskActivity = (item: TaskActivityItem, timelineEvents: Timeline
         // Note the title tiebreak is weaker than it looks: the server writes details.task stripped of
         // markdown while item.title keeps it, so it cannot match for markdown titles. It is a last
         // resort only, and unresolved ambiguity deliberately yields no actor rather than a guess.
-        const legacy = matches.filter(({details}) => !details.item_id || details.item_id === item.id);
+        const legacy = matches.filter(({details}) => !details.item_id);
         if (legacy.length === 1) {
             matched = legacy[0];
         } else if (legacy.length > 1) {

@@ -23,10 +23,9 @@ type OwnProps = {
     timelineEvents: TimelineEvent[] | undefined;
 } & WithDatabaseArgs;
 
-// timelineEvents is only passed for a run absent from the database, where it is the sole source of task
-// activity; for a persisted run it is undefined and the events come from the observed run below. Keeping
-// it stable in that case matters because a trigger change makes withObservables render null until every
-// observable re-emits, which would empty an open sheet while the user is reading it.
+// timelineEvents is a trigger, which is only safe because it never churns for a persisted run: a
+// trigger change makes withObservables render null until every observable re-emits, emptying the
+// sheet while the user is reading it.
 const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, runId, timelineEvents, database}: OwnProps) => {
     const currentUserTimezone = observeCurrentUser(database).pipe(switchMap((u) => of$(u?.timezone)));
     const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
@@ -45,10 +44,8 @@ const enhanced = withObservables(['item', 'runId', 'timelineEvents'], ({item, ru
             shareReplay({bufferSize: 1, refCount: true}),
         );
 
-        // The activity is resolved here rather than received from the checklist item row so that an
-        // open sheet keeps up with the task being checked, skipped or restored elsewhere. The run in
-        // the database owns the timeline events; the received ones are the fallback for a run that
-        // was never persisted.
+        // Resolved here rather than received from the checklist item row so that an open sheet keeps
+        // up with the task being checked, skipped or restored elsewhere.
         const activity = combineLatest([observedItem, run]).pipe(
             map(([i, r]) => getTaskActivity(i, r?.timelineEvents ?? timelineEvents)),
             shareReplay({bufferSize: 1, refCount: true}),

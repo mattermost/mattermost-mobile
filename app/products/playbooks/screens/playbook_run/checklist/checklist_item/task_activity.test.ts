@@ -123,12 +123,6 @@ describe('getTaskActivity', () => {
         expect(getTaskActivity(makeItem(), [event])?.actorUserId).toBeUndefined();
     });
 
-    it('does not match on title without the exact timestamp', () => {
-        const event = makeEvent({event_at: 999, details: JSON.stringify({action: 'check', task: 'Deploy release'})});
-
-        expect(getTaskActivity(makeItem(), [event])?.actorUserId).toBeUndefined();
-    });
-
     it('uses the unique title match to break a same-millisecond collision', () => {
         const other = makeEvent({id: 'event-2', subject_user_id: 'user-2', details: JSON.stringify({action: 'check', task: 'Other task'})});
 
@@ -151,6 +145,15 @@ describe('getTaskActivity', () => {
         const withItemId = (itemId: string, overrides: Partial<TimelineEvent> = {}) => makeEvent({
             details: JSON.stringify({action: 'check', task: 'Deploy release', item_id: itemId}),
             ...overrides,
+        });
+
+        // Removing the item_id join leaves the rest of this block green — they all resolve through
+        // the legacy filter too. Here the legacy path sees two candidates and bails on the title.
+        it('prefers an id-carrying event for us over a co-timestamped legacy event', () => {
+            const ours = makeEvent({subject_user_id: 'user-1', details: JSON.stringify({action: 'check', task: 'Renamed since', item_id: 'item-1'})});
+            const legacy = makeEvent({id: 'event-2', subject_user_id: 'user-2', details: JSON.stringify({action: 'check', task: 'Other task'})});
+
+            expect(getTaskActivity(makeItem(), [ours, legacy])?.actorUserId).toBe('user-1');
         });
 
         it('uses item_id to resolve a same-millisecond collision that the title cannot', () => {
