@@ -85,9 +85,8 @@ describe('Threads - Global Threads', () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
 
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -132,9 +131,8 @@ describe('Threads - Global Threads', () => {
         // # Create a thread started by the current user and current user unfollows the thread
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
         await wait(timeouts.TWO_SEC);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await wait(timeouts.TWO_SEC);

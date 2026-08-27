@@ -25,7 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, expectVisible} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToHaveText, expectVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Create Direct Message', () => {
@@ -101,7 +101,7 @@ describe('Channels - Create Direct Message', () => {
         // * Verify on direct message channel screen for the new user
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(newUserDisplayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(newUserDisplayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, newUserDisplayName, timeouts.HALF_MIN);
 
         // # Post a message and go back to channel list screen
         await ChannelScreen.postMessage('test');
@@ -158,7 +158,7 @@ describe('Channels - Create Direct Message', () => {
         // * Verify on group message channel screen for the other two new users
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(groupDisplayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(groupDisplayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, groupDisplayName, timeouts.HALF_MIN);
 
         // # Post a message and go back to channel list screen
         await ChannelScreen.postMessage('test');

@@ -4,6 +4,9 @@
 set -ex
 set -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 SDK_VERSION=${1:-35}           # First argument is SDK version
 AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api suffix — added below)
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
@@ -196,7 +199,7 @@ configure_chrome_for_ci() {
 }
 
 push_e2e_fixtures() {
-    local fixture="../detox/e2e/support/fixtures/image.png"
+    local fixture="${SCRIPT_DIR}/e2e/support/fixtures/image.png"
     if [[ -f "$fixture" ]]; then
         adb push "$fixture" /sdcard/Download/test_bookmark.png
         echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
@@ -207,7 +210,7 @@ push_e2e_fixtures() {
 
 start_server() {
     echo "Starting the server..."
-    cd ..
+    cd "$REPO_ROOT"
     RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
 
@@ -283,13 +286,55 @@ setup_adb_reverse() {
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
-    cd detox
+    cd "$SCRIPT_DIR"
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
     npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
 }
 
+emulator_is_ready() {
+    adb devices 2>/dev/null | grep -qE '^emulator-[0-9]+\s+device' || return 1
+    [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]] || return 1
+    adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
+}
+
+reset_app_for_retry() {
+    local bundle_id="com.mattermost.rnbeta"
+    echo "Resetting app state for failed-spec retry..."
+    adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
+    adb shell am force-stop "$bundle_id" 2>/dev/null || true
+    adb shell pm clear "$bundle_id" 2>/dev/null || true
+    if ! adb shell pm list packages 2>/dev/null | grep -q "$bundle_id"; then
+        echo "App missing after pm clear — reinstalling"
+        install_app
+    fi
+}
+
+run_tests_only() {
+    if ! emulator_is_ready; then
+        echo "TESTS_ONLY: emulator is not ready"
+        exit 2
+    fi
+    reset_app_for_retry
+    grant_android_runtime_permissions
+    configure_emulator_for_tests
+    setup_adb_reverse
+    if ! nc -z localhost 8081 2>/dev/null; then
+        echo "Metro is down — restarting"
+        start_server
+    fi
+    push_e2e_fixtures
+    run_detox_tests "$@"
+}
+
 main() {
+    cd "$SCRIPT_DIR"
+
+    if [[ "${TESTS_ONLY:-}" == "true" ]]; then
+        run_tests_only "${TEST_FILES[@]}"
+        return
+    fi
+
     setup_avd_home
 
     if ! emulator -list-avds | grep -q "$AVD_NAME"; then

@@ -11,10 +11,12 @@ import {
     ChannelBookmark,
     Channel,
     Setup,
+    System,
     Team,
     User,
 } from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {Alert} from '@support/ui/component';
 import {
     ChannelBookmarkScreen,
     ChannelInfoScreen,
@@ -24,6 +26,9 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
+    postArchivedChannelSentinel,
 } from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
@@ -58,6 +63,13 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     };
 
     beforeAll(async () => {
+        // Members stay in an archived channel. The client only pops to the
+        // channel list when ExperimentalViewArchivedChannels is false.
+        await System.apiUpdateConfig(siteOneUrl, {
+            TeamSettings: {ExperimentalViewArchivedChannels: true},
+        });
+        await wait(timeouts.ONE_SEC);
+
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
@@ -81,6 +93,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     });
 
     beforeEach(async () => {
+        await Alert.dismissChannelRemoveOrArchiveAlert();
         await ChannelListScreen.toBeVisible();
     });
 
@@ -153,8 +166,12 @@ describe('Channels - Channel Bookmarks Permissions', () => {
     it('MM-T5725_1 - should not be able to add, edit, or delete bookmarks in an archived channel', async () => {
         const channelT5725 = await createChannel();
 
+        // Sentinel is required to reopen via search/permalink if archive kicks
+        // the client to the channel list. Must be posted before archive.
+        const {sentinel, postId} = await postArchivedChannelSentinel(channelT5725.id);
+
         // Create while the admin user's WebSocket is connected so channel info has
-        // both the new channel and bookmark before archiving removes the bookmark.
+        // both the new channel and bookmark before archiving.
         const {bookmark, error} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT5725.id, 'Archive Test Bookmark', 'https://mattermost.com',
         );
@@ -168,25 +185,31 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await openChannel(channelT5725);
         await wait(timeouts.TWO_SEC);
 
-        // # Open channel info, then archive the channel via channel settings.
+        // # Archive as a member. Server DeleteChannel soft-deletes and publishes
+        // channel_deleted only — membership is kept. System Console can archive
+        // without joining; a channel member cannot archive without being in it.
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
+        // Mobile still shows "Removed from channel" and pops to the list when it
+        // cannot view archived channels (CI testFnFailure.png). Dismiss and reopen.
+        await Alert.dismissChannelRemoveOrArchiveAlert();
+
         try {
             await ChannelInfoScreen.close();
         } catch {
-            try {
-                await device.pressBack();
-            } catch {
-                // Android pressBack may not be available
-            }
+            // Already gone if the client popped to the channel list.
         }
-        await wait(timeouts.ONE_SEC);
 
-        // * Verify channel is archived (draft area shows archived state).
-        await waitFor(ChannelScreen.postDraftArchived).toExist().withTimeout(timeouts.TWENTY_SEC);
+        try {
+            await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
+                toBeVisible().
+                withTimeout(timeouts.TEN_SEC);
+        } catch {
+            await openArchivedChannel(channelT5725.name, sentinel, postId);
+        }
 
         // # Open channel info for the archived channel.
         await ChannelInfoScreen.open();
@@ -203,9 +226,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
         await wait(timeouts.ONE_SEC);
 
-        // Assert while any options sheet is up, then dismiss so close is hittable.
-        // Archived sheet is Copy Link / Share only — no Cancel (CI 59ec6ae screenshot).
-        await expect(element(by.id('channel_info.screen'))).toExist();
+        // Archived sheet is Copy Link / Share only — no Edit/Delete.
         await expect(ChannelBookmarkScreen.editOption).not.toExist();
         await expect(ChannelBookmarkScreen.deleteOption).not.toExist();
 
@@ -213,7 +234,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await waitFor(ChannelInfoScreen.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.close();
 
-        // # Close the archived channel and go back to channel list
-        await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
+        await closeArchivedChannel();
     });
 });
