@@ -109,10 +109,30 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Android pushes the right-side columns beyond the viewport, so scroll the table
-        // horizontally until the right header and row become visible.
-        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
-        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
+        // The right-side column sits beyond the viewport — the content is 3 * CELL_MAX_WIDTH =
+        // 576pt against a ~400pt viewport — so scroll the table horizontally to reveal it.
+        //
+        // iOS pins the gesture's start point near the top of the scroll view so it lands on the
+        // table. The iOS table screen has no horizontal ScrollView: table.scroll_view is a
+        // full-height vertical one holding over-wide content, and this table is only two rows
+        // (~125pt), so Detox's default start point — the scroll view's vertical centre — is
+        // ~250pt of empty space below the table. A touch there never reaches the scroll view:
+        // RN's Fabric ScrollView hit-tests only the content container's children and otherwise
+        // returns the wrapper component view, which is the parent of the underlying UIScrollView,
+        // so its pan recogniser never sees the gesture and the content offset stays at 0.
+        // MM-T4899_3/_5 escape this because their 8-column tables are tall enough that the centre
+        // of the scroll view is still on the table.
+        //
+        // Android keeps the default start point: there table.scroll_view is a real horizontal
+        // ScrollView sized to the content, so its centre is already on the table.
+        //
+        // Keep the waitFor/whileElement form: one 150pt scroll is not enough on Android, where the
+        // viewport is narrower relative to the 576pt table and a single scroll leaves the column
+        // only ~38% visible, under the 50% threshold. The retry scrolls again and reaches the
+        // content edge. On iOS one scroll already clears the threshold, so the loop stops there.
+        const scrollStartPositionY = isIos() ? 0.05 : NaN;
+        await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right', NaN, scrollStartPositionY);
+        await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right', NaN, scrollStartPositionY);
 
         // # Go back to channel list screen
         await TableScreen.back();
