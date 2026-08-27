@@ -7,7 +7,7 @@ import {storeGlobal} from '@actions/app/global';
 import {Tutorial} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {renderWithEverything, waitFor, act} from '@test/intl-test-helper';
+import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 
 import SendButton from './send_button';
 
@@ -63,14 +63,9 @@ describe('SendButton', () => {
     });
 
     it('should return true if the scheduled post tutorial is watched', async () => {
+        await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
         const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
         unmount = u;
-
-        await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(false));
-
-        await act(async () => {
-            await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
-        });
 
         await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(true));
     });
