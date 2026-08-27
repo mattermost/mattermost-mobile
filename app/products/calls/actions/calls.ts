@@ -136,7 +136,9 @@ export const maybeRequestMicrophonePermission = async () => {
                 {
                     text: formatMessage(micPermissionMessages.notNow),
                     style: 'cancel',
-                    onPress: () => { micPermissionRequestInFlight = false; },
+                    onPress: () => {
+                        micPermissionRequestInFlight = false;
+                    },
                 },
                 {
                     text: formatMessage(micPermissionMessages.continue),
