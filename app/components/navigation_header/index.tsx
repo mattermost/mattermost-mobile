@@ -30,6 +30,13 @@ type Props = SearchProps & {
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
+
+    // Replaces the subtitle row entirely when provided. The header is a fixed
+    // height with no room for a third line, so a caller that needs to show
+    // something richer than text on that line displaces the subtitle rather than
+    // sitting beside it. Ignored on large-title screens, where the subtitle is
+    // rendered by NavigationHeaderLargeTitle and only accepts a string.
+    subtitleComponent?: React.ReactElement;
     title?: string;
     titleCompanion?: React.ReactElement;
 }
@@ -55,6 +62,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
     showBackButton,
     subtitle,
     subtitleCompanion,
+    subtitleComponent,
     title = '',
     titleCompanion,
     hideHeader,
@@ -102,6 +110,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>(({
                 showBackButton={showBackButton}
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
+                subtitleComponent={subtitleComponent}
                 theme={theme}
                 title={title}
                 titleCompanion={titleCompanion}

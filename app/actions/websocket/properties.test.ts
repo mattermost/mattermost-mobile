@@ -3,6 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
+import {setAccessControlGroupId} from '@actions/local/channel_attributes';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -291,5 +292,97 @@ describe('handlePropertyValuesUpdated', () => {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         expect(await getStoredValues(database, 'system')).toHaveLength(1);
         expect(await getStoredValues(database, channelId)).toHaveLength(1);
+    });
+
+    describe('pruning', () => {
+        const channelId = 'channel-prune';
+
+        // The group this feature owns, published the way the field fetch would.
+        const ownedGroupId = 'access_control_group';
+
+        const ownedValue = makeValue('owned-field', 'opt-1', {
+            id: 'val-owned',
+            target_id: channelId,
+            target_type: 'channel',
+            group_id: ownedGroupId,
+        });
+
+        // Another feature's per-channel value on the same channel. Managed channel
+        // categories stores these in the same table.
+        const foreignValue = makeValue('foreign-field', 'category', {
+            id: 'val-foreign',
+            target_id: channelId,
+            target_type: 'channel',
+            group_id: 'managed_channel_categories',
+        });
+
+        const clearedMessage = (data: Record<string, string>) => ({
+            event: 'property_values_updated',
+            data: {values: '[]', ...data},
+            broadcast: {},
+            seq: 1,
+        } as WebSocketMessage);
+
+        beforeEach(async () => {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            await operator.handlePropertyValues({values: [ownedValue, foreignValue], prepareRecordsOnly: false});
+            await setAccessControlGroupId(serverUrl, ownedGroupId);
+        });
+
+        it('should prune this feature\'s values when a target is cleared', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const remaining = await getStoredValues(database, channelId);
+            expect(remaining).toHaveLength(1);
+            expect(remaining[0].id).toBe('val-foreign');
+        });
+
+        it('should leave another property group\'s value on the same channel alone', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const foreign = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('id', 'val-foreign')).fetch();
+            expect(foreign).toHaveLength(1);
+        });
+
+        it('should prune nothing when the group id is not known yet', async () => {
+            await setAccessControlGroupId(serverUrl, '');
+
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+        });
+
+        it('should prune every value of a field when that field is cleared', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({field_id: 'owned-field'}));
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const remaining = await getStoredValues(database, channelId);
+            expect(remaining).toHaveLength(1);
+            expect(remaining[0].id).toBe('val-foreign');
+        });
+
+        it('should not prune when a non-empty list arrives, since it is only the changed values', async () => {
+            const msg = {
+                event: 'property_values_updated',
+                data: {target_id: channelId, values: JSON.stringify([{...ownedValue, value: 'opt-2'}])},
+                broadcast: {},
+                seq: 1,
+            } as WebSocketMessage;
+
+            await handlePropertyValuesUpdated(serverUrl, msg);
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+        });
+
+        it('should prune nothing when an empty list carries no target or field', async () => {
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({}));
+
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+        });
     });
 });
