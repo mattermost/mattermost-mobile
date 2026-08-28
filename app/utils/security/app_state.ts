@@ -46,36 +46,38 @@ export const handleAppStateResume = async (
     const isActive = appState === 'active';
     const isBackground = appState === 'background';
 
-    if (isActive && state.previousAppState === 'background') {
-        if (!strategy.isEnabled()) {
-            state.previousAppState = appState;
-            return;
-        }
-
-        // The open gate owns the decision; starting another would stack a second prompt
-        // behind the alert already on screen.
-        if (strategy.isGateOpen()) {
-            logDebug(`${strategy.source}: Resume ignored, authentication already in progress`);
-            state.previousAppState = appState;
-            return;
-        }
-
-        const authExpired = state.backgroundSince > 0 && (Date.now() - state.backgroundSince) >= PROMPT_AUTH_AFTER;
-
-        if (authExpired || strategy.promptWhenNotExpired) {
-            const blocked = await strategy.shouldBlock?.();
-            if (!blocked) {
-                const authenticated = await strategy.authenticate(authExpired);
-                if (authenticated) {
-                    state.backgroundSince = 0;
-                }
-            }
-        } else {
-            state.backgroundSince = 0;
-        }
-    } else if (isBackground) {
+    if (isBackground) {
         state.backgroundSince = Date.now();
     }
 
+    const isResuming = isActive && state.previousAppState === 'background';
+
+    // Recorded before awaiting, so a background that happens while the gate is open is
+    // not overwritten by this stale value once the gate resolves.
     state.previousAppState = appState;
+
+    if (!isResuming || !strategy.isEnabled()) {
+        return;
+    }
+
+    // The open gate owns the decision; starting another would stack a second prompt
+    // behind the alert already on screen.
+    if (strategy.isGateOpen()) {
+        logDebug(`${strategy.source}: Resume ignored, authentication already in progress`);
+        return;
+    }
+
+    const authExpired = state.backgroundSince > 0 && (Date.now() - state.backgroundSince) >= PROMPT_AUTH_AFTER;
+
+    if (authExpired || strategy.promptWhenNotExpired) {
+        const blocked = await strategy.shouldBlock?.();
+        if (!blocked) {
+            const authenticated = await strategy.authenticate(authExpired);
+            if (authenticated) {
+                state.backgroundSince = 0;
+            }
+        }
+    } else {
+        state.backgroundSince = 0;
+    }
 };

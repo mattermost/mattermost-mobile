@@ -145,9 +145,9 @@ class ManagedAppSingleton {
         try {
             return await this.runAuthenticationGate(authExpired);
         } catch (error) {
-            // Never leave the flag latched, or every future prompt and resume is blocked.
+            // Nobody failed authentication here, so the app stays open; the finally below
+            // keeps the flag from latching and blocking every future prompt.
             logDebug('ManagedApp: Authentication gate failed', {reason: getFullErrorMessage(error)});
-            Emm.exitApp();
             return false;
         } finally {
             this.performingAuthentication = false;
