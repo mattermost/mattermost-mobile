@@ -167,7 +167,16 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(overLimitMessage);
-        await ChannelScreen.postInput.typeText('a');
+
+        // The extra keystroke is iOS-only: iOS raises the over-limit alert on the following
+        // keystroke, while Android's replaceText fires onChangeText synchronously and the app
+        // opens the native "Message Length" dialog immediately (post_input.tsx:239-272), which
+        // covers the draft input — typeText('a') then fails with "No views in hierarchy found
+        // matching ... effective visibility <VISIBLE>" (run 33173240310, shard 4: replaceText
+        // succeeded 09:31:07.713, typeText exception 09:31:08.457).
+        if (isIos()) {
+            await ChannelScreen.postInput.typeText('a');
+        }
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();
