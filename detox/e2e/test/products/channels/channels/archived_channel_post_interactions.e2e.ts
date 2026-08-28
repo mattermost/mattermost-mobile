@@ -16,7 +16,7 @@ import {
     closeArchivedChannel,
     openArchivedChannel,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 // Android skipped — Detox/Fabric text-input idle check crashes on API 35.
@@ -58,7 +58,9 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await HomeScreen.logout();
     });
 
-    (isAndroid() ? it.skip : it)('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
+    // Android skip carried from the RF→Detox migration with no recorded failure and no
+    // ticket; the same assertions pass on iOS. Re-verified on Android in PR #10050.
+    it('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
         // # Create a public channel, post a unique searchable message, and archive it.
         const message = `archived-channel-reaction-test-${Date.now()}`;
         const {channel: archivedChannel} = await Channel.apiCreateChannel(

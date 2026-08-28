@@ -31,7 +31,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
@@ -483,8 +483,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // iOS-only skip carried over from the RF→Detox migration with no recorded failure;
-    // Android still covers this case. Re-enable once the iOS path is re-verified.
-    (isIos() ? it.skip : it)('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
+    // Android still covers this case. No failure mechanism was ever recorded (SEC-11020).
+    // Re-enabled so the next CI run either proves the iOS path or records the mechanism.
+    it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');
         await ensureDialogOpen();
