@@ -52,9 +52,9 @@ export const handleAppStateResume = async (
 
     const isResuming = isActive && state.previousAppState === 'background';
 
-    // Recorded before awaiting, so a background that happens while the gate is open is
-    // not overwritten by this stale value once the gate resolves.
-    state.previousAppState = appState;
+    if (appState !== 'inactive') {
+        state.previousAppState = appState;
+    }
 
     if (!isResuming || !strategy.isEnabled()) {
         return;

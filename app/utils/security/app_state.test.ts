@@ -108,6 +108,29 @@ describe('handleAppStateResume', () => {
         expect(state.previousAppState).toBe('active');
     });
 
+    test('should authenticate across the background -> inactive -> active sequence iOS emits', async () => {
+        const state: ResumeGateState = {backgroundSince: 0, previousAppState: 'active'};
+        const strategy = buildStrategy();
+
+        await handleAppStateResume('background' as AppStateStatus, state, strategy);
+        state.backgroundSince = Date.now() - PROMPT_AUTH_AFTER - 1000;
+        await handleAppStateResume('inactive' as AppStateStatus, state, strategy);
+        await resume(state, strategy);
+
+        expect(strategy.authenticate).toHaveBeenCalledWith(true);
+        expect(state.backgroundSince).toBe(0);
+    });
+
+    test('should not treat a transient inactive as a resume', async () => {
+        const state: ResumeGateState = {backgroundSince: 0, previousAppState: 'active'};
+        const strategy = buildStrategy();
+
+        await handleAppStateResume('inactive' as AppStateStatus, state, strategy);
+        await resume(state, strategy);
+
+        expect(strategy.authenticate).not.toHaveBeenCalled();
+    });
+
     test('should ignore a resume that did not come from the background', async () => {
         const state: ResumeGateState = {backgroundSince: 0, previousAppState: 'inactive'};
         const strategy = buildStrategy();
