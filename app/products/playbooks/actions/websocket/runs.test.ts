@@ -450,6 +450,24 @@ describe('mergeTimelineEvents', () => {
 
         expect(ids(mergeTimelineEvents([], [withoutDeleteAt], undefined))).toEqual(['a']);
     });
+
+    // Without this every id-less event collapses onto the same undefined map key, so two distinct
+    // events become one — and timeline_event_deletes could never name it to undo the damage.
+    it('drops delta events that carry no id rather than collapsing them together', () => {
+        const {id: _unused, ...withoutId} = event('a', 1);
+        const delta = [withoutId, {...withoutId, event_at: 2}] as TimelineEvent[];
+
+        expect(ids(mergeTimelineEvents([event('kept', 5)], delta, undefined))).toEqual(['kept']);
+    });
+
+    it('drops delta events whose shape or type would not survive a read back', () => {
+        const delta = [
+            {...event('no_subject', 1), subject_user_id: undefined},
+            {...event('status', 2), event_type: 'status_updated'},
+        ] as TimelineEvent[];
+
+        expect(ids(mergeTimelineEvents([event('kept', 5)], delta, undefined))).toEqual(['kept']);
+    });
 });
 
 describe('handlePlaybookRunUpdatedIncremental timeline events', () => {

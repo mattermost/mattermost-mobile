@@ -65,6 +65,7 @@ describe('PlaybookRunModel', () => {
                     (record._raw as unknown as Record<string, string>).timeline_events = JSON.stringify([
                         validEvent,
                         {event_type: 'task_state_modified'}, // missing event_at/details/subject_user_id
+                        {...validEvent, id: undefined}, // unaddressable: the merge keys on id, as does timeline_event_deletes
                         'not-an-object',
                         null,
                     ]);
