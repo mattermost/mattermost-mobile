@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {safeParseTimelineEvents} from '@playbooks/database/models/playbook_run';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import EphemeralStore from '@store/ephemeral_store';
 import {safeParseJSON} from '@utils/helpers';
@@ -26,11 +27,14 @@ export const mergeTimelineEvents = (
     delta: TimelineEvent[] | undefined,
     hardDeletes: string[] | undefined,
 ): TimelineEvent[] => {
+    // `stored` has already been through safeParseTimelineEvents on its way out of the JSON column.
     const byId = new Map(stored.map((event) => [event.id, event]));
 
     // Guard the shapes rather than trusting them: these come straight off the wire, and a non-array
-    // here would throw inside a fire-and-forget handler where nothing would report it.
-    for (const event of Array.isArray(delta) ? delta : []) {
+    // here would throw inside a fire-and-forget handler where nothing would report it. Sanitizing the
+    // delta with the same predicate the column is read through keeps what is stored to exactly what
+    // can be read back, and drops id-less events before they collapse onto one another's map key.
+    for (const event of safeParseTimelineEvents(delta)) {
         byId.set(event.id, event);
     }
 

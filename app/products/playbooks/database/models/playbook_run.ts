@@ -30,14 +30,17 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
 // Timeline events are JSON objects. The shared string-array sanitizer is used by
 // the run's ID arrays, but would intentionally discard these object values. Validate
 // the fields the task-activity resolver relies on so malformed entries are dropped
-// rather than surfacing as a false TimelineEvent to consumers.
+// rather than surfacing as a false TimelineEvent to consumers. `id` is checked even
+// though the resolver never reads it: the incremental merge keys events by id, so an
+// id-less event would collapse onto a shared key that timeline_event_deletes can never name.
 const isTimelineEvent = (value: unknown): value is TimelineEvent => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
         return false;
     }
 
     const event = value as Partial<TimelineEvent>;
-    return typeof event.event_type === 'string' &&
+    return typeof event.id === 'string' &&
+        typeof event.event_type === 'string' &&
         typeof event.event_at === 'number' &&
         typeof event.details === 'string' &&
         typeof event.subject_user_id === 'string';
@@ -50,7 +53,7 @@ const isTimelineEvent = (value: unknown): value is TimelineEvent => {
 // consumer appears — and rename the column if it stops meaning "task state changes".
 const CONSUMED_EVENT_TYPES = new Set<string>(['task_state_modified']);
 
-const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
+export const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
     if (!Array.isArray(value)) {
         return [];
     }
