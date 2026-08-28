@@ -17,6 +17,7 @@ import Setup from './setup';
 import Status from './status';
 import System from './system';
 import Team from './team';
+import Thread, {apiWaitForThreadFollowState} from './thread';
 import User from './user';
 import Webhook from './webhook';
 
@@ -42,6 +43,8 @@ export {
     Status,
     System,
     Team,
+    Thread,
+    apiWaitForThreadFollowState,
     User,
     Webhook,
 };

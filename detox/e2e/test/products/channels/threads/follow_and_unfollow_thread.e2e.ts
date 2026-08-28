@@ -10,6 +10,7 @@
 import {
     Setup,
     System,
+    apiWaitForThreadFollowState,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -33,10 +34,12 @@ describe('Threads - Follow and Unfollow Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
 
         // # Enable Collapsed Reply Threads so the global threads UI surfaces
         // are rendered (ThreadsButton in the channel-list sidebar, follow
@@ -227,7 +230,18 @@ describe('Threads - Follow and Unfollow Thread', () => {
 
         // # Tap on unfollow thread option
         await ThreadOptionsScreen.followingThreadOption.tap();
-        await wait(timeouts.TWO_SEC);
+
+        // * Verify the SERVER accepted the unfollow before asserting the UI. The tap can
+        // fail in a transport blip without the test noticing — run 33122005735, MM-T4806_4:
+        // "error on updateThreadFollowing ... URLSessionTask failed with error: cannot parse
+        // response" (the app only logs it, thread.ts:207) — and the thread item then stayed
+        // in the list, failing the old bare 2s+not.toBeVisible assertion. The app updates
+        // its local thread (and the list) once the server confirms, so the server-side
+        // poll is the mechanism check, not a blind wait.
+        const {followed, error} = await apiWaitForThreadFollowState(siteOneUrl, testTeam.id, parentPost.id, false, timeouts.TEN_SEC);
+        if (followed) {
+            throw new Error(`unfollow did not reach the server (thread=${parentPost.id}): ${String(error)}`);
+        }
 
         // * Verify thread is not displayed anymore in all your threads section
         await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
