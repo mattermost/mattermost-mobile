@@ -144,6 +144,11 @@ describe('Search - Search Messages', () => {
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
+        // wait(TWO_SEC) lets the search request land before asserting — same pattern as
+        // MM-T5294_4 below. Without it the bare toBeVisible() races the results fetch and
+        // fails "was null" (run 33036930610, MM-T5294_2).
+        await wait(timeouts.TWO_SEC);
+
         // * Verify search results contain messages from user
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
@@ -177,6 +182,11 @@ describe('Search - Search Messages', () => {
         } = Autocomplete.getChannelMentionItem(testChannel.name);
         await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+
+        // wait(TWO_SEC) lets the search request land before asserting — same pattern as
+        // MM-T5294_4. Without it the bare toBeVisible() races the results fetch and fails
+        // "was null" (run 33036930610, MM-T5294_3).
+        await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages in channel
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
