@@ -9,7 +9,6 @@
 
 import {
     Channel,
-    Post,
     Setup,
     System,
     Team,
@@ -28,7 +27,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, isIos} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToHaveText, isIos} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Cross Team Search', () => {
@@ -99,7 +98,7 @@ describe('Search - Cross Team Search', () => {
 
         // * a) Verify in Off-Topic channel
         await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.introDisplayName).toHaveText(offTopicChannel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, offTopicChannel.display_name, timeouts.HALF_MIN);
 
         // # Dismiss "Type a message" pop-up if present
         try {
@@ -111,10 +110,9 @@ describe('Search - Cross Team Search', () => {
         }
 
         // # b) In the "Write to..." field, type "Horses are fun" then tap on the airplane icon
-        await ChannelScreen.postMessage(searchTerm);
 
         // * b) Verify message posted in the channel
-        const {post: offTopicPostResult} = await Post.apiGetLastPostInChannel(siteOneUrl, offTopicChannel.id);
+        const {post: offTopicPostResult} = await ChannelScreen.postMessageAndVerify(searchTerm, offTopicChannel.id, siteOneUrl);
         offTopicPost = offTopicPostResult;
         const {postListPostItem: offTopicPostItem} = ChannelScreen.getPostListPostItem(offTopicPost.id, searchTerm);
         await expect(offTopicPostItem).toBeVisible();
@@ -138,13 +136,12 @@ describe('Search - Cross Team Search', () => {
 
         // * e) Verify in Town Square channel
         await ChannelScreen.toBeVisible();
-        await expect(ChannelScreen.introDisplayName).toHaveText(townSquareChannel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, townSquareChannel.display_name, timeouts.HALF_MIN);
 
         // # f) In the "Write to..." field, type "Horses are fun" then tap on the airplane icon
-        await ChannelScreen.postMessage(searchTerm);
 
         // * f) Verify message posted in the channel
-        const {post: townSquarePostResult} = await Post.apiGetLastPostInChannel(siteOneUrl, townSquareChannel.id);
+        const {post: townSquarePostResult} = await ChannelScreen.postMessageAndVerify(searchTerm, townSquareChannel.id, siteOneUrl);
         townSquarePost = townSquarePostResult;
         const {postListPostItem: townSquarePostItem} = ChannelScreen.getPostListPostItem(townSquarePost.id, searchTerm);
         await expect(townSquarePostItem).toBeVisible();
