@@ -43,8 +43,17 @@ describe('Account - Account Menu', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on account screen
-        await AccountScreen.toBeVisible();
+        // * Verify on account screen. If a prior test destroyed the React instance (see
+        // MM-T4988_2) the harness relaunches the dead app — a fresh launch lands on the
+        // channel list with the drawer closed, so re-open it instead of asserting a state
+        // a relaunch cannot restore (7 cascade timeouts at account.ts:94 in run
+        // 33122005735 shard 10 before this).
+        try {
+            await AccountScreen.toBeVisible();
+        } catch {
+            await AccountScreen.open();
+            await AccountScreen.toBeVisible();
+        }
     });
 
     afterAll(async () => {

@@ -77,12 +77,24 @@ let syncDisableDepth = 0;
 //              after it hang
 //
 // The wrapper decrements to 0 before calling this, so its own restore still runs.
+//
+// A ReactContext-null that persists through the bounded retry below is NOT a slow start —
+// the JS instance was destroyed while the OS process lives (run 33122005735 shard 10,
+// MM-T4988_2: Fabric SurfaceMountingManager "addViewAt: cannot insert view [1014] into
+// parent [1026]: View already has a parent" → ReactHost handleHostException →
+// "reactInstance is null"; account.screen gone, 20s of 'not null' polls fail, and all four
+// enable attempts 23:04:30.8/31.3/32.3/34.3 hit the same null). Detox then REUSES the
+// dead app for every remaining test in the worker — 7 cascade failures in that run. The
+// only recovery for a destroyed instance is a fresh app launch, so do it here, once, and
+// re-enable sync on the new instance. The current test still fails (its UI is gone), but
+// the worker is healed — the same trade ChannelListScreen.toBeVisible's relaunch makes.
 export async function safeEnableSynchronization(): Promise<void> {
     if (syncDisableDepth > 0) {
         return;
     }
 
     const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+    let relaunched = false;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i <= delays.length; i++) {
         try {
@@ -94,7 +106,19 @@ export async function safeEnableSynchronization(): Promise<void> {
                 throw error;
             }
             if (i === delays.length) {
-                throw error;
+                if (relaunched) {
+                    throw error;
+                }
+                relaunched = true;
+
+                // Instance destroyed, not starting: relaunch so the worker's later tests
+                // run against a live app instead of a dead one Detox keeps reusing. One
+                // relaunch, then the remaining retries give the fresh instance its own
+                // bounded window; if it still fails, surface the error.
+                i = -1;
+                // eslint-disable-next-line no-await-in-loop -- recovery launch, not a poll
+                await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
+                continue;
             }
             await wait(delays[i] ?? delays[delays.length - 1] ?? timeouts.ONE_SEC);
         }
