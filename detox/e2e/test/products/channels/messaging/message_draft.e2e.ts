@@ -171,7 +171,12 @@ describe('Messaging - Message Draft', () => {
 
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();
-        await Alert.okButton.tap();
+
+        // dismissMessageLengthAlert verifies the alert is actually gone afterwards.
+        // A bare Alert.okButton.tap() dispatched the button tap but the UIAlertController
+        // sometimes stayed on screen, so the next step's tapBackButton hit the alert's
+        // dimming view instead of the header (run 33036930610, MM-T107).
+        await Alert.dismissMessageLengthAlert();
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();
