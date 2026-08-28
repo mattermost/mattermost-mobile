@@ -2535,7 +2535,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-network-client (1.11.1):
+  - react-native-network-client (1.11.2):
     - Alamofire (~> 5.11.2)
     - boost
     - DoubleConversion
@@ -2567,7 +2567,7 @@ PODS:
     - Starscream (~> 4.0.8)
     - SwiftyJSON (~> 5.0.2)
     - Yoga
-  - react-native-network-client-session-attributes (1.11.1)
+  - react-native-network-client-session-attributes (1.11.2)
   - react-native-notifications (5.2.2):
     - React-Core
   - react-native-paste-input (2.0.1):
@@ -4463,7 +4463,7 @@ SPEC CHECKSUMS:
   fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: 28814c9c9296d16aef26cb514de5378d18885e44
+  hermes-engine: f9aed8041a90723c1e15c5d973e57e1f1137f94e
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -4521,8 +4521,8 @@ SPEC CHECKSUMS:
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
   react-native-keyboard-controller: f8979f50dc2752ff5dc1656bd315d58cd6e78bba
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
-  react-native-network-client: 6e184ea9701fa46ad36fc0fa07b2842decb87e2f
-  react-native-network-client-session-attributes: 26e328a0f5fdda2d9670cb68aec7c1ac24e1e5ff
+  react-native-network-client: e50f0a63f14641be7b4c969df23f4bb70e437769
+  react-native-network-client-session-attributes: b80d7492a3de9c2103e28b3839fe91ff6ce2375b
   react-native-notifications: e2d3c022d6077de7e420ba5c01b4bd9464f3941d
   react-native-paste-input: 4b1423c882afacf39d7e2617e6c94835dcefaf39
   react-native-performance: a7a65d0b0f3055c5db33e1433e4345143ef6a100
