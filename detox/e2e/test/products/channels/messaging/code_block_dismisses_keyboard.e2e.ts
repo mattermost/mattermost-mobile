@@ -70,8 +70,11 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
         // Scroll up fails when the post list is already at the top (Detox scroll boundary).
+        // momentum 0 (no inertia): with momentum 0.5 the fling rubber-bands the short list,
+        // leaving the code block parked under the status-bar inset at y≈17 where the tap
+        // fails "not hittable at its visible point" (run 33036930610, MM-T1433_1).
         try {
-            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
+            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0, 0.5);
         } catch { /* already at top — non-fatal */ }
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
