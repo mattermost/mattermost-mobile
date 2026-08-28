@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
@@ -72,6 +72,13 @@ describe('Classification Banner - Global Classification Banner', () => {
         if (!lockAcquired) {
             return;
         }
+
+        // This suite patches the shared flag per test (MM-T6196_1 asserts the flag-off
+        // behavior), so a stolen lock here means ANOTHER suite's banner assertions are
+        // running against our flag-off window — fail fast naming the stealer
+        // (run 33122005735: this suite's beforeAll patch landed while shard 9 held the
+        // lock, poisoning its six banner tests).
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
 
         await Properties.apiCleanupClassification(siteOneUrl);
     });

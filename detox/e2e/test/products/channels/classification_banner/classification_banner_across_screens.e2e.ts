@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Post, Properties, Setup} from '@support/server_api';
+import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {
@@ -67,6 +67,30 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         // The hook gets its own budget so the lock wait does not have to fit inside the
         // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
     }, timeouts.ONE_MIN * 50);
+
+    beforeEach(async () => {
+        // Two guards against the run 33122005735 failure mode (shard 18 began patching
+        // FeatureFlagClassificationMarkings=false at 22:44:43 while this suite held the lock
+        // ~22:43:00–22:50:27; the app then read the flag as off at entry, its 1h banner cache
+        // marked by the silent disabled path, and all six tests timed out on
+        // global_classification_banner):
+        // 1. Re-validate the lock — the store is a single last-write-wins preference row and
+        //    acquire confirms ownership only once, so a racing shard can overwrite it
+        //    unnoticed. Fail fast naming the stealer instead of six opaque timeouts.
+        // 2. Re-verify the flag through the client-config endpoint the app itself consumes;
+        //    if another suite flipped it during the window, re-enable (this suite holds the
+        //    lock, so re-enabling restores OUR precondition rather than racing anyone).
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
+        const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+        if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
+            // eslint-disable-next-line no-console
+            console.warn(
+                '[beforeEach] FeatureFlagClassificationMarkings flipped off mid-suite ' +
+                `(client=${String(clientConfig?.FeatureFlagClassificationMarkings)}) — re-enabling`,
+            );
+            await enableClassificationMarkings(siteOneUrl);
+        }
+    });
 
     afterAll(async () => {
         if (!lockAcquired) {
