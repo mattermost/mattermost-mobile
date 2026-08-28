@@ -284,6 +284,18 @@ class ChannelInfoScreen {
             // Content may not require scrolling.
         }
 
+        // Empty channels render the AddBookmark button without a bookmarks FlatList, so the
+        // button itself must also gate the early return — waiting only for the list falls
+        // through to scrollTo('bottom') on empty channels, which scrolls the button (sitting
+        // right under the title) out of the viewport above it (CI 33173240310 shard 4:
+        // bookmarks.list absent for channelT5602/5604/5608, scroll-to-bottom then ran).
+        try {
+            await waitFor(element(by.id(this.testID.addBookmarkButton))).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            return;
+        } catch {
+            // Bookmarks section may be below the fold — scroll channel info.
+        }
+
         try {
             await waitFor(bookmarksList).toBeVisible().withTimeout(timeouts.THREE_SEC);
             return;
@@ -310,53 +322,35 @@ class ChannelInfoScreen {
     tapAddBookmark = async () => {
         await this.scrollToBookmarks();
 
-        // The button exists but covers <75% of its area when clipped by the scroll view edge, so
-        // find it with toExist() then scroll it into the visibility tap() requires.
         const addBookmark = element(by.id(this.testID.addBookmarkButton));
         const scrollViewMatcher = by.id(this.testID.scrollView);
 
+        // Scroll the button fully (100%) into the viewport from either edge, let the scroll
+        // settle, then tap its CENTER. The previous corner tap at {x: 1, y: 1} hit wherever
+        // the view's top-left corner sits — when the scroll recovery leaves the button
+        // clipped at the viewport top, that point is in the clipped region and the press
+        // never reaches the rneui Pressable (CI 33173240310 shard 4, MM-T5602_1 device.log:
+        // 'Performing detoxsingletap click' on the button at 09:14:25.625 after an
+        // 'overly-running fling' at 09:14:25.596, then 40 polls of 'not null' on
+        // channel_bookmark.type.link — the sheet never mounted). The center of a
+        // fully-visible button is always inside the visible area.
         try {
-            await waitFor(addBookmark).toExist().whileElement(scrollViewMatcher).scroll(150, 'down');
-        } catch {
-            /* eslint-disable no-await-in-loop -- bounded scroll: stops when row exists */
-            for (let i = 0; i < 15; i++) {
-                try {
-                    await waitFor(addBookmark).toExist().withTimeout(timeouts.TWO_SEC);
-                    break;
-                } catch (e) {
-                    if (i === 14) {
-                        throw new Error('Add a bookmark button not found after 15 scroll attempts');
-                    }
-                    try {
-                        await this.scrollView.scroll(150, 'down', 0.5, 0.5);
-                    } catch {
-                        // Scroll view at the bottom edge.
-                    }
-                }
-            }
-            /* eslint-enable no-await-in-loop */
-        }
-
-        // Scroll into 75% visibility for tap() — Detox requires it.
-        try {
-            await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'down');
+            await waitFor(addBookmark).toBeVisible(100).whileElement(scrollViewMatcher).scroll(150, 'up');
         } catch {
             try {
-                await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'up');
-            } catch { /* at scroll edge — tap may still work */ }
+                await waitFor(addBookmark).toBeVisible(100).whileElement(scrollViewMatcher).scroll(150, 'down');
+            } catch {
+                // Already at a scroll edge; tap() still enforces its own 75% visibility constraint.
+            }
         }
-        await addBookmark.tap({x: 1, y: 1});
+        await wait(timeouts.HALF_SEC);
+        await addBookmark.tap();
 
         // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
         // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
         const addLinkOption = element(by.id('channel_bookmark.type.link'));
         await withSynchronizationDisabled(async () => {
-            try {
-                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
-            } catch {
-                await addBookmark.tap({x: 1, y: 1});
-                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
-            }
+            await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
         });
     };
 
