@@ -297,6 +297,30 @@ class ChannelListScreen {
         /* eslint-enable no-await-in-loop */
     };
 
+    // The app parks on its own "Couldn't load categories" error screen when the initial
+    // team/channel load fails transiently (categories.tsx renders <LoadCategoriesError/> when
+    // the flattened list is empty after load — run 33122005735 shard 10: helper probed 60s
+    // with ALL category headers absent while the hierarchy showed the error title + Retry).
+    // The error view REPLACES the FlashList, so flat_list never mounts. Tap the app's OWN
+    // Retry control (retryInitialTeamAndChannel) before falling back to a relaunch.
+    recoverFromCategoriesLoadError = async () => {
+        try {
+            const retryButton = element(by.text('Retry')).atIndex(0);
+            await waitForElementToExist(retryButton, timeouts.TWO_SEC);
+            // eslint-disable-next-line no-console
+            console.warn('[ChannelListScreen] Categories failed to load — tapping the app\'s Retry');
+            await retryButton.tap();
+        } catch {
+            // Not the categories error state (list may just be loading).
+            return;
+        }
+        try {
+            await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
+        } catch {
+            // Loading indicator already gone or never shown.
+        }
+    };
+
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
         const recoverAndWait = async () => {
             try {
@@ -313,6 +337,16 @@ class ChannelListScreen {
                 await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
             } catch {
                 // Loading indicator already gone or never shown.
+            }
+
+            // If the categories fetch failed, the app shows its own error screen with a
+            // Retry control — use it (the app's own recovery path) before considering a
+            // relaunch. Uses a short probe so the healthy path pays at most 2s, and only
+            // when the FlashList is missing.
+            try {
+                await waitForElementToExist(this.channelList, timeouts.THREE_SEC);
+            } catch {
+                await this.recoverFromCategoriesLoadError();
             }
 
             // FlashList unmounts while categories are loading — waiting only for
@@ -361,6 +395,7 @@ class ChannelListScreen {
                 } catch {
                     // Loading indicator already gone or never shown.
                 }
+                await this.recoverFromCategoriesLoadError();
                 await waitForElementToExist(this.channelList, timeouts.TWO_MIN);
             } catch (recoveryError) {
                 // eslint-disable-next-line no-console

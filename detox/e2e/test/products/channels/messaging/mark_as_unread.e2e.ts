@@ -93,20 +93,10 @@ describe('Messaging - Mark as Unread', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
+        // * Verify on channel list screen. ChannelListScreen.toBeVisible handles the app's
+        // "Couldn't load categories" error state (taps the app's Retry) and waits for the
+        // categories FlashList, so the sidebar is actually populated here.
         await ChannelListScreen.toBeVisible();
-
-        const retryButton = element(by.text('Retry'));
-        try {
-            await waitFor(retryButton).toBeVisible().withTimeout(timeouts.THREE_SEC);
-            await retryButton.tap();
-        } catch {
-            // Initial category load did not show the recovery screen.
-        }
-
-        await waitFor(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).
-            toExist().
-            withTimeout(timeouts.HALF_MIN);
     });
 
     afterAll(async () => {
