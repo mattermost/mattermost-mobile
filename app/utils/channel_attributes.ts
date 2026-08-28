@@ -349,10 +349,10 @@ export function deriveChannelAttributeBanner(
         `**${option.name}**` :
         stripUnresolvedTokens(nativeBannerText);
 
-    // Classification options carry the canonical colour for their level (red for
-    // SECRET, etc.). That option colour always wins so the banner matches the chip.
-    // The channel's authored colour is a fallback for text-type attributes that
-    // designate a banner but carry no option (and therefore no option colour).
+    // Option colour is the canonical visual identity of the level (e.g. red for
+    // SECRET). It always wins when present. The channel's authored background_color
+    // is a fallback only for text-type attributes that designate a banner but carry
+    // no option colour.
     const backgroundColor = option.color || authoredColor;
 
     // An unrenderable banner still reports hasBanner, so it continues to suppress

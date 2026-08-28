@@ -3,6 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
+import {setAccessControlGroupId} from '@actions/local/channel_attributes';
 import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -402,7 +403,7 @@ describe('fetchChannelAttributeValues', () => {
     };
 
     it('should do nothing when feature flag is not true', async () => {
-        setConfig({FeatureFlagClassificationMarkings: 'false'});
+        setConfig({FeatureFlagChannelAttributes: 'false'});
 
         const result = await fetchChannelAttributeValues(serverUrl, channelId);
 
@@ -411,7 +412,7 @@ describe('fetchChannelAttributeValues', () => {
     });
 
     it('should persist channel values to DB on happy path', async () => {
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
 
         const result = await fetchChannelAttributeValues(serverUrl, channelId);
@@ -427,7 +428,10 @@ describe('fetchChannelAttributeValues', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [channelValue], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        // The group-scoped prune only fires when the group id is known.
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([]);
 
         const result = await fetchChannelAttributeValues(serverUrl, channelId);
@@ -437,7 +441,7 @@ describe('fetchChannelAttributeValues', () => {
     });
 
     it('should return error when network client throws', async () => {
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         const networkError = new Error('network failure');
         mockClient.getPropertyValues.mockRejectedValueOnce(networkError);
 
@@ -449,7 +453,7 @@ describe('fetchChannelAttributeValues', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
@@ -463,7 +467,7 @@ describe('fetchChannelAttributeValues', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
@@ -472,7 +476,10 @@ describe('fetchChannelAttributeValues', () => {
         await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(true);
+
+        // Cache key is fieldId:optionId so the guard is scoped to the field, preventing
+        // an option with the same short id on a different field from hitting the guard.
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown')).toBe(true);
     });
 
     it('should look the option up on the channel field rather than the system field', async () => {
@@ -480,7 +487,7 @@ describe('fetchChannelAttributeValues', () => {
         const channelOnly = {...channelField, attrs: {options: [{id: 'opt-channel-only', name: 'CHANNEL ONLY', color: '#00FF00'}]}};
         await operator.handlePropertyFields({fields: [systemField, channelOnly], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-channel-only'}]);
 
         await fetchChannelAttributeValues(serverUrl, channelId);
@@ -492,21 +499,21 @@ describe('fetchChannelAttributeValues', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]); // value opt-secret is a known option
 
         await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-secret')).toBe(false);
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-secret')).toBe(false);
     });
 
     it('should not force a field refresh again for an option already attempted this session', async () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
-        EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-unknown');
+        EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown');
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
 
         await fetchChannelAttributeValues(serverUrl, channelId);
@@ -518,13 +525,13 @@ describe('fetchChannelAttributeValues', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
 
         await fetchChannelAttributeValues(serverUrl, channelId);
 
         // A transient refresh failure must leave the guard unset so a later update retries.
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(false);
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown')).toBe(false);
     });
 });

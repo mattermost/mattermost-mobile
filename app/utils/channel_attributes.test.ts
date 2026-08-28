@@ -276,8 +276,22 @@ describe('deriveChannelAttributeBanner', () => {
         expect(result.banner?.text).toBe('Team');
     });
 
-    it('should let the authored colour win for a designated attribute', () => {
+    it('should use the option colour for a designated attribute, authored colour is fallback when option has none', () => {
         const result = deriveChannelAttributeBanner([designated], [designatedValue], 'Text', '#ABCDEF', true);
+
+        // option.color (#112233) wins; #ABCDEF is only the fallback for text-type
+        // attributes that have no option colour at all.
+        expect(result.banner?.background_color).toBe('#112233');
+    });
+
+    it('should fall back to the authored colour when the designated option has no colour', () => {
+        const noColor = field({
+            id: 'cf-20',
+            name: 'label',
+            attrs: {options: [{id: 'opt', name: 'LABEL'}], actions: ['display_banner_top']},
+        });
+        const val = {fieldId: 'cf-20', value: 'opt'} as ChannelAttributeValue;
+        const result = deriveChannelAttributeBanner([noColor], [val], 'Text', '#ABCDEF', true);
         expect(result.banner?.background_color).toBe('#ABCDEF');
     });
 

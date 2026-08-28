@@ -107,7 +107,10 @@ export function ChannelBanner({bannerInfo, attributeBanner, isTopItem, skipHeade
     }
 
     return (
-        <View style={[containerStyle, isTopItem && style.containerTopItem]}>
+        <View
+            style={[containerStyle, isTopItem && style.containerTopItem]}
+            testID='channel.banner'
+        >
             <Pressable
                 onPress={handlePress}
                 style={({pressed}) => [style.bannerTextContainer, pressed && {opacity: 0.8}]}
