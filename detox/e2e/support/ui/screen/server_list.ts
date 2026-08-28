@@ -130,8 +130,16 @@ class ServerListScreen {
         // sheet is its own window — `channel_list.servers.server_icon` behind it is then
         // unmatchable and the wait below times out with the list already on screen
         // (MM-T4675_2, ios-results-gl6zupuras-7). Treat an open sheet as already open.
+        //
+        // Gate that early return on the title being VISIBLE, not on server_list.screen
+        // existing. As toBeVisible() above documents, the sheet's view stays in the
+        // hierarchy after it is dismissed, so a toExist() probe is true forever once the
+        // sheet has been opened once in a suite — open() then returned without tapping the
+        // server icon and left the app on the channel list. testFnFailure.png for
+        // MM-T4691_4 in run 33173240310 (ios shard 18) is that channel list: header still
+        // "Server 1", no sheet, and the following row swipe therefore had nothing to act on.
         try {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
             return this.serverListScreen;
         } catch {
             // Sheet is closed — open it from the channel list header below.
