@@ -77,6 +77,7 @@ type ChecklistRowProps = Omit<Props, 'checklists' | 'expandedById'> & {
 // Local row so each checklist can take a stable onToggleExpanded without an inline arrow in the map.
 function ChecklistRow({
     checklist,
+    timelineEvents,
     channelId,
     playbookRunId,
     playbookRunName,
@@ -96,6 +97,7 @@ function ChecklistRow({
     return (
         <Checklist
             checklist={checklist}
+            timelineEvents={timelineEvents}
             channelId={channelId}
             playbookRunId={playbookRunId}
             playbookRunName={playbookRunName}
