@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
@@ -70,12 +70,18 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await waitFor(postListPostItemCodeBlock).toExist().withTimeout(timeouts.TEN_SEC);
 
         // Scroll up fails when the post list is already at the top (Detox scroll boundary).
-        // momentum 0 (no inertia): with momentum 0.5 the fling rubber-bands the short list,
-        // leaving the code block parked under the status-bar inset at y≈17 where the tap
-        // fails "not hittable at its visible point" (run 33036930610, MM-T1433_1).
         try {
-            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0, 0.5);
+            await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
         } catch { /* already at top — non-fatal */ }
+
+        // Existence is not presentation. In run 33036930610 the toExist() wait above passed
+        // while the post was not painted at all: the DETOX_VISIBILITY_*_SCREEN.png captured
+        // at check time shows only the channel intro and the System join message — no code
+        // block, and no keyboard (device.log has zero UIKeyboardWillShow). Detox still
+        // resolved the element (bounds 328 x 34.67) and then failed tap()'s 100% gate with
+        // "View is not visible around point". Wait for it to actually render before tapping.
+
+        await waitForElementToBeVisible(postListPostItemCodeBlock, timeouts.TEN_SEC);
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
         await postListPostItemCodeBlock.tap();
