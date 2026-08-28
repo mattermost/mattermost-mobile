@@ -68,6 +68,10 @@ export const messages = defineMessages({
         id: 'mobile.managed.retry',
         defaultMessage: 'Retry',
     },
+    auth_interrupted_message: {
+        id: 'security_manager.auth_interrupted_message',
+        defaultMessage: 'Authentication could not be completed. Please try again.',
+    },
     authentication_required_title: {
         id: 'security_manager.authentication_required_title',
         defaultMessage: 'Authentication Required',
@@ -206,7 +210,9 @@ export const buildSecurityAlertOptions = async (
         });
     }
 
-    if (otherServers.length > 0) {
+    // Without a server every other server matches the filter above, which would offer a
+    // managed user a way around the policy that just blocked them.
+    if (server && otherServers.length > 0) {
         if (otherServers.length === 1 && otherServers[0] === activeServer) {
             buttons.push({
                 text: translations[messages.okay.id],
@@ -232,6 +238,9 @@ export const buildSecurityAlertOptions = async (
             text: translations[messages.retry.id],
             style: 'default',
             onPress: () => {
+                // Cleanup first, so state from the previous attempt (e.g. blur) does not
+                // survive into the retry.
+                callback?.(true);
                 retryCallback();
             },
         });
@@ -278,30 +287,49 @@ export const showDeviceNotTrustedAlert = async (server: string, siteName: string
 /**
  * Shows an alert when the device does not have biometrics or passcode set.
  */
-export const showNotSecuredAlert = async (server: string, siteName: string | undefined, locale?: string) => {
+export const showNotSecuredAlert = async (server: string, siteName: string | undefined, locale?: string, exitOnly = false) => {
     const buttons: AlertButton[] = [];
     let serverSiteName;
-    try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
-        serverSiteName = await getConfigValue(database, 'SiteName');
-    } catch (error) {
-        logError('showNotSecuredAlert', error);
+    if (server) {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
+            serverSiteName = await getConfigValue(database, 'SiteName');
+        } catch (error) {
+            logError('showNotSecuredAlert', error);
+        }
     }
 
     const translations = getTranslations(locale || DEFAULT_LOCALE);
     const securedBy = siteName || serverSiteName || 'Mattermost';
+
+    let dismiss: () => void;
+    const dismissed = new Promise<void>((resolve) => {
+        dismiss = resolve;
+    });
 
     if (Platform.OS === 'android') {
         buttons.push({
             text: translations[messages.androidSettings.id],
             onPress: () => {
                 Emm.openSecuritySettings();
+                dismiss();
             },
         });
     }
 
-    const alertButtons = await buildSecurityAlertOptions(server, translations);
-    buttons.push(...alertButtons);
+    if (exitOnly) {
+        buttons.push({
+            text: translations[messages.exit.id],
+            style: 'destructive',
+            onPress: () => {
+                dismiss();
+                Emm.exitApp();
+            },
+        });
+    } else {
+        const alertButtons = await buildSecurityAlertOptions(server, translations, () => dismiss());
+        buttons.push(...alertButtons);
+    }
 
     let message;
     if (serverSiteName || siteName) {
@@ -318,6 +346,8 @@ export const showNotSecuredAlert = async (server: string, siteName: string | und
         buttons,
         {cancelable: false},
     );
+
+    return dismissed;
 };
 
 /**
@@ -334,10 +364,16 @@ export const showBiometricFailureAlert = async (server: string, blurOnAuthentica
 
     const translations = getTranslations(locale || DEFAULT_LOCALE);
 
+    let dismiss: () => void;
+    const dismissed = new Promise<void>((resolve) => {
+        dismiss = resolve;
+    });
+
     const buttons = await buildSecurityAlertOptions(server, translations, () => {
         if (blurOnAuthenticate) {
             Emm.removeBlurEffect();
         }
+        dismiss();
     }, retryCallback);
     const securedBy = siteName || serverSiteName || 'Mattermost';
 
@@ -347,6 +383,8 @@ export const showBiometricFailureAlert = async (server: string, blurOnAuthentica
         buttons,
         {cancelable: false},
     );
+
+    return dismissed;
 };
 
 export const showBiometricFailureAlertForOrganization = async (server: string, locale?: string, retryCallback?: () => void) => {
@@ -354,6 +392,56 @@ export const showBiometricFailureAlertForOrganization = async (server: string, l
     const organization = translations[messages.organization.id];
 
     return showBiometricFailureAlert(server, true, organization, locale, retryCallback);
+};
+
+/**
+ * Shows an alert when authentication could not be attempted or was interrupted.
+ *
+ * Buttons are built here rather than via buildSecurityAlertOptions so that no destructive
+ * option can appear: nobody failed authentication on this path, so the session must survive.
+ */
+export const showAuthenticationInterruptedAlert = async (server: string, siteName: string | undefined, locale?: string): Promise<'retry' | 'dismiss'> => {
+    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const securedBy = siteName || 'Mattermost';
+
+    const allServers = await queryAllActiveServers()?.fetch();
+    const otherServers = allServers?.filter((s) => s.url !== server).map((s) => s.url) || [];
+
+    return new Promise((resolve) => {
+        const buttons: AlertButton[] = [];
+
+        if (otherServers.length > 0) {
+            buttons.push({
+                text: translations[messages.switchServer.id],
+                onPress: () => {
+                    goToPreviousServer(otherServers[0]);
+                    resolve('dismiss');
+                },
+            });
+        }
+
+        buttons.push({
+            text: translations[messages.exit.id],
+            style: 'destructive',
+            onPress: () => {
+                resolve('dismiss');
+                Emm.exitApp();
+            },
+        });
+
+        buttons.push({
+            text: translations[messages.retry.id],
+            style: 'default',
+            onPress: () => resolve('retry'),
+        });
+
+        Alert.alert(
+            translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+            translations[messages.auth_interrupted_message.id],
+            buttons,
+            {cancelable: false},
+        );
+    });
 };
 
 /**

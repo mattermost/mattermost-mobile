@@ -49,6 +49,10 @@ jest.mock('@i18n', () => ({
     getTranslations: jest.fn(),
 }));
 
+// The alert helpers resolve when a button is pressed, so awaiting them directly would
+// hang. Flush pending work instead and assert on what was displayed.
+const untilShown = () => new Promise((resolve) => setImmediate(resolve));
+
 describe('buildSecurityAlertOptions', () => {
     const serverUrl = 'https://example.com';
     const mockTranslations = {
@@ -374,7 +378,8 @@ describe('showNotSecuredAlert', () => {
     it('should show iOS-specific message with vendor name', async () => {
         Platform.OS = 'ios';
 
-        await showNotSecuredAlert(serverUrl, 'CustomSite', 'en');
+        showNotSecuredAlert(serverUrl, 'CustomSite', 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by CustomSite',
@@ -387,7 +392,8 @@ describe('showNotSecuredAlert', () => {
     it('should show Android-specific message with vendor name', async () => {
         Platform.OS = 'android';
 
-        await showNotSecuredAlert(serverUrl, 'CustomSite', 'en');
+        showNotSecuredAlert(serverUrl, 'CustomSite', 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by CustomSite',
@@ -401,7 +407,8 @@ describe('showNotSecuredAlert', () => {
         Platform.OS = 'ios';
         jest.mocked(getConfigValue).mockResolvedValue(undefined);
 
-        await showNotSecuredAlert(serverUrl, undefined, 'en');
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by Mattermost',
@@ -415,7 +422,8 @@ describe('showNotSecuredAlert', () => {
         Platform.OS = 'android';
         jest.mocked(getConfigValue).mockResolvedValue(undefined);
 
-        await showNotSecuredAlert(serverUrl, undefined, 'en');
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by Mattermost',
@@ -428,7 +436,8 @@ describe('showNotSecuredAlert', () => {
     it('should add Android settings button on Android platform', async () => {
         Platform.OS = 'android';
 
-        await showNotSecuredAlert(serverUrl, undefined, 'en');
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const settingsButton = buttons.find((b: AlertButton) => b.text === 'Go to settings');
@@ -438,7 +447,8 @@ describe('showNotSecuredAlert', () => {
     it('should call Emm.openSecuritySettings when Android settings button is pressed', async () => {
         Platform.OS = 'android';
 
-        await showNotSecuredAlert(serverUrl, undefined, 'en');
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const settingsButton = buttons.find((b: AlertButton) => b.text === 'Go to settings');
@@ -450,20 +460,23 @@ describe('showNotSecuredAlert', () => {
     it('should not add Android settings button on iOS platform', async () => {
         Platform.OS = 'ios';
 
-        await showNotSecuredAlert(serverUrl, undefined, 'en');
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const settingsButton = buttons.find((b: AlertButton) => b.text === 'Go to settings');
         expect(settingsButton).toBeUndefined();
     });
 
-    it('should handle errors gracefully', async () => {
+    it('should still show the alert when the database read fails', async () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation(() => {
             throw new Error('Database error');
         });
 
-        // Should not throw
-        await expect(showNotSecuredAlert(serverUrl, undefined, 'en')).resolves.not.toThrow();
+        showNotSecuredAlert(serverUrl, undefined, 'en');
+        await untilShown();
+
+        expect(Alert.alert).toHaveBeenCalled();
     });
 });
 
@@ -495,7 +508,8 @@ describe('showBiometricFailureAlert', () => {
     });
 
     it('should show alert with correct title and message', async () => {
-        await showBiometricFailureAlert(serverUrl, false, 'CustomSite', 'en');
+        showBiometricFailureAlert(serverUrl, false, 'CustomSite', 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by CustomSite',
@@ -508,7 +522,8 @@ describe('showBiometricFailureAlert', () => {
     it('should include retry button when retryCallback is provided', async () => {
         const mockRetryCallback = jest.fn();
 
-        await showBiometricFailureAlert(serverUrl, false, undefined, 'en', mockRetryCallback);
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en', mockRetryCallback);
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const retryButton = buttons.find((b: AlertButton) => b.text === 'Retry');
@@ -518,7 +533,8 @@ describe('showBiometricFailureAlert', () => {
     it('should call retryCallback when retry button is pressed', async () => {
         const mockRetryCallback = jest.fn();
 
-        await showBiometricFailureAlert(serverUrl, false, undefined, 'en', mockRetryCallback);
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en', mockRetryCallback);
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const retryButton = buttons.find((b: AlertButton) => b.text === 'Retry');
@@ -537,7 +553,8 @@ describe('showBiometricFailureAlert', () => {
             fetch: jest.fn().mockResolvedValue([{url: serverUrl}]),
         } as unknown as Query<ServersModel>);
 
-        await showBiometricFailureAlert(serverUrl, true, undefined, 'en');
+        showBiometricFailureAlert(serverUrl, true, undefined, 'en');
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const logoutButton = buttons.find((b: AlertButton) => b.text === 'Logout');
@@ -556,7 +573,8 @@ describe('showBiometricFailureAlert', () => {
             fetch: jest.fn().mockResolvedValue([{url: serverUrl}]),
         } as unknown as Query<ServersModel>);
 
-        await showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        await untilShown();
 
         const buttons = (Alert.alert as jest.Mock).mock.calls[0][2];
         const logoutButton = buttons.find((b: AlertButton) => b.text === 'Logout');
@@ -566,7 +584,8 @@ describe('showBiometricFailureAlert', () => {
     });
 
     it('should use site name from server config when not provided', async () => {
-        await showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by TestSite',
@@ -579,7 +598,8 @@ describe('showBiometricFailureAlert', () => {
     it('should use Mattermost as default when no site name available', async () => {
         jest.mocked(getConfigValue).mockResolvedValue(undefined);
 
-        await showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        await untilShown();
 
         expect(Alert.alert).toHaveBeenCalledWith(
             'Blocked by Mattermost',
@@ -589,12 +609,14 @@ describe('showBiometricFailureAlert', () => {
         );
     });
 
-    it('should handle errors gracefully', async () => {
+    it('should still show the alert when the database read fails', async () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockImplementation(() => {
             throw new Error('Database error');
         });
 
-        // Should not throw
-        await expect(showBiometricFailureAlert(serverUrl, false, undefined, 'en')).resolves.not.toThrow();
+        showBiometricFailureAlert(serverUrl, false, undefined, 'en');
+        await untilShown();
+
+        expect(Alert.alert).toHaveBeenCalled();
     });
 });

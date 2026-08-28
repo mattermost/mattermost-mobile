@@ -1486,6 +1486,7 @@
   "search_bar.search.placeholder": "Search timezone",
   "security_manager.access_blocked_message": "Your organization has blocked access to this app. Please contact your IT administrator for assistance.",
   "security_manager.access_blocked_title": "Access Blocked",
+  "security_manager.auth_interrupted_message": "Authentication could not be completed. Please try again.",
   "security_manager.authentication_failed_message": "Authentication failed. The affected accounts have been unenrolled. Please contact your IT administrator.",
   "security_manager.authentication_failed_title": "Authentication Failed",
   "security_manager.authentication_required_message": "Your organization requires you to sign in again to continue using Intune-managed accounts.",

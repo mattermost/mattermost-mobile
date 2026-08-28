@@ -26,7 +26,7 @@
     "@mattermost/calls-native": "file:./libraries/@mattermost/calls-native",
     "@mattermost/compass-icons": "0.1.53",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",
-    "@mattermost/react-native-emm": "1.7.0",
+    "@mattermost/react-native-emm": "2.0.0",
     "@mattermost/react-native-network-client": "1.11.1",
     "@mattermost/react-native-paste-input": "2.0.1",
     "@mattermost/react-native-turbo-log": "0.6.0",
