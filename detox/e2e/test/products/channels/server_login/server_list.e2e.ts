@@ -194,12 +194,20 @@ describe('Server Login - Server List', () => {
         // MM-T4691_5/_6/_7, which assert the original name.
         await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
 
-        // # Revert back to original first server display name and go back to first server
+        // # Revert back to original first server display name and go back to first server.
+        // Scroll first: the swipe has to start on a fully visible row, and the reveal
+        // animation leaves the edit option where the row is, not where it was.
+        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
         await ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
         // .atIndex(0) for the same reason as the first tap above.
         await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+
+        // Wait for the edit screen before typing. Without this the failure is
+        // "no elements found for edit_server_form.server_display_name.input", which
+        // reads as a missing field rather than an edit screen that never opened.
+        await EditServerScreen.toBeVisible();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
