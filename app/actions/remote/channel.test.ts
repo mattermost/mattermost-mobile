@@ -304,15 +304,6 @@ describe('app/actions/remote/channel', () => {
             expect(channel).toBeDefined();
         });
 
-        it('createChannel - returns the server channel if persist fails after create', async () => {
-            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-            (mockClient.getChannelMember as jest.Mock).mockRejectedValueOnce(new Error('member fetch failed'));
-            const {channel, error} = await createChannel(serverUrl, 'channeldisplayname', 'purpose', 'header', 'O');
-            expect(error).toBeUndefined();
-            expect(channel).toBeDefined();
-            expect(channel?.id).toBe(channelId);
-        });
-
         it('patchChannel - handle not found database', async () => {
             const {channel, error} = await patchChannel('foo', '', {});
             expect(channel).toBeUndefined();

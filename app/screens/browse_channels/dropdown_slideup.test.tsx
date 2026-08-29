@@ -41,9 +41,8 @@ describe('DropdownSlideup', () => {
         jest.clearAllMocks();
     });
 
-    // Switching the list while the sheet's views are still mounted made Fabric re-parent a
-    // ReactTextView mid-commit ("addViewAt: ... View already has a parent"), which is a host
-    // exception that tears down the React instance. The ordering is the fix, so pin it.
+    // Switching the list while the sheet is still mounted makes Fabric re-parent a view
+    // mid-commit, a host exception that tears down the React instance. Pin the ordering.
     it.each([
         ['browse_channels.dropdown_slideup_item.public_channels', PUBLIC],
         ['browse_channels.dropdown_slideup_item.archived_channels', ARCHIVED],

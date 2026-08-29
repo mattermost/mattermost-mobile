@@ -470,9 +470,8 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                // Await the write, as deleteServerDatabase above already does. Unawaited, the
-                // row deletion can land after a later createServerDatabase() re-added it,
-                // leaving the server unregistered and its database reported as not found.
+                // Await the write: unawaited, the row deletion can land after a later
+                // createServerDatabase() re-added it, leaving the server unregistered.
                 await database.write(async () => {
                     await server.destroyPermanently();
                 });

@@ -222,9 +222,6 @@ export default function SearchHandler(props: Props) {
             setSearchResults(defaultSearchResults);
             invalidatePendingSearch();
             const requestId = searchRequestId.current;
-
-            // The search endpoint already returns archived rows, which filterChannelsByType
-            // keeps by delete_at. There is no separate archived-search route.
             searchTimeout.current = setTimeout(async () => {
                 const results = await searchChannels(serverUrl, text, currentTeamId);
                 if (requestId !== searchRequestId.current) {
@@ -296,13 +293,8 @@ export default function SearchHandler(props: Props) {
         if (!isSearch) {
             invalidatePendingSearch();
             doGetChannels(typeOfChannels);
-            return;
         }
-        doSearchChannels(term);
-
-        // Re-issue only when the channel type changes; term updates go through doSearchChannels.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [typeOfChannels, isSearch, doGetChannels, doSearchChannels, invalidatePendingSearch]);
+    }, [typeOfChannels, isSearch, doGetChannels, invalidatePendingSearch]);
 
     useDidUpdate(() => {
         if (isSearch) {

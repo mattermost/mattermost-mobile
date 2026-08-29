@@ -13,10 +13,8 @@ import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-// `posts` is deliberately not wired through withObservables. This is a freezeOnBlur tab that
-// mounts once, and on the device adapter a pre-existing preference-table Query.observe() is
-// not reliably notified of a CREATE, so the screen stayed empty after a save. The component
-// owns the pipeline instead and re-subscribes on focus (see saved_messages.tsx).
+// `posts` is not wired here on purpose: the screen owns that pipeline and re-subscribes it
+// on focus (see saved_messages.tsx), so an observable here would be dead weight.
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),

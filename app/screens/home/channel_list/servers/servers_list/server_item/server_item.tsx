@@ -377,7 +377,7 @@ const ServerItem = ({
                                 size={36}
                                 unreadStyle={styles.unread}
                                 style={styles.serverIcon}
-                                testID={`${serverItem}.server_icon`}
+                                testID={`${serverItem}}.server_icon`}
                             />
                             }
                             {switching &&

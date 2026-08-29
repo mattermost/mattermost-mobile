@@ -11,7 +11,6 @@ import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {safeParseJSON, toTitleCase} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {getDeviceTimezone} from '@utils/timezone';
 
 import type {CustomProfileFieldModel, CustomProfileAttributeModel} from '@database/models/server';
 import type {CustomAttribute, CustomAttributeSet} from '@typings/api/custom_profile_attributes';
@@ -138,7 +137,7 @@ export const getUserTimezone = (user?: UserModel | UserProfile) => {
 
 export const getTimezone = (timezone?: UserTimezone | null) => {
     if (!timezone) {
-        return getDeviceTimezone();
+        return '';
     }
 
     const {useAutomaticTimezone} = timezone;
@@ -147,10 +146,11 @@ export const getTimezone = (timezone?: UserTimezone | null) => {
         useAutomatic = useAutomaticTimezone === 'true';
     }
 
-    const zone = useAutomatic ? timezone.automaticTimezone : timezone.manualTimezone;
+    if (useAutomatic) {
+        return timezone.automaticTimezone;
+    }
 
-    // An empty zone breaks moment.tz and Intl, rendering "Send on Invalid Date".
-    return zone || getDeviceTimezone();
+    return timezone.manualTimezone;
 };
 
 export const getTimezoneRegion = (timezone: string): string => {

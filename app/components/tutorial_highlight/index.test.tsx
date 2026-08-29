@@ -7,8 +7,8 @@ import {View} from 'react-native';
 
 import TutorialHighlight from './index';
 
-// The overlay only renders its children once itemBounds is measured, which comes from
-// itemRef.measure(). Supply a ref whose measure() reports a real frame.
+// The overlay renders its children only once itemBounds is measured from itemRef.measure(),
+// so the ref has to report a real frame.
 const itemRef = {
     current: {
         measureInWindow: (cb: (x: number, y: number, w: number, h: number) => void) => cb(20, 100, 300, 44),
@@ -25,8 +25,7 @@ const renderOverlay = (onDismiss: () => void) => {
         />,
     );
 
-    // The overlay's children only mount once onRootLayout has measured itemRef. The root
-    // View carries no testID, so reach it by type.
+    // Children mount only after onRootLayout; the root View has no testID, so reach it by type.
     // eslint-disable-next-line new-cap -- UNSAFE_getByType is the RNTL API name
     const root = screen.UNSAFE_getByType(View);
     act(() => {
@@ -40,9 +39,8 @@ const renderOverlay = (onDismiss: () => void) => {
 
 describe('TutorialHighlight', () => {
     it('should expose a pressable backdrop that dismisses the overlay', () => {
-        // HighlightItem's only press handler is onPress on the react-native-svg root, which
-        // routes through RNSVG's own responder and does not fire for a synthetic tap. The
-        // Pressable is the real touch target, so assert it exists and dismisses.
+        // HighlightItem's onPress goes through RNSVG's own responder and does not fire for a
+        // synthetic tap, so the Pressable is the real touch target.
         const onDismiss = jest.fn();
         renderOverlay(onDismiss);
 
@@ -52,9 +50,8 @@ describe('TutorialHighlight', () => {
     });
 
     it('should render the dimming scrim inside the pressable backdrop', () => {
-        // An empty transparent Pressable is a real touch target for a finger but owns no
-        // pixels, and hittability is derived from a pixel comparison. The backdrop has to own
-        // the scrim rather than sit over it, so pin that the Svg is inside the Pressable.
+        // Hittability is derived from pixels, so the backdrop must own the scrim rather than
+        // sit over it.
         renderOverlay(jest.fn());
 
         const backdrop = screen.getByTestId('tutorial_highlight.backdrop');

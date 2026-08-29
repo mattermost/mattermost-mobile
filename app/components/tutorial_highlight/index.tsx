@@ -61,13 +61,8 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                 style={{flex: 1}}
                 onLayout={onRootLayout}
             >
-                {/*
-                  * Dismiss target. It wraps the scrim rather than overlaying it, so the touch
-                  * target has the scrim's own pixels; HighlightItem's SVG onPress does not fire
-                  * for a synthetic tap, and TutorialSwipeLeft sets pointerEvents='none'. No
-                  * pressed style on purpose — feedback on a full-screen scrim would flash the
-                  * whole screen.
-                  */}
+                {/* Dismiss target. It wraps the scrim rather than overlaying it so the touch
+                    target owns the scrim's pixels; the SVG's own onPress does not fire. */}
                 {itemBounds.endX > 0 &&
                 <Pressable
                     onPress={onDismiss}

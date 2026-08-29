@@ -228,33 +228,24 @@ export async function createChannel(serverUrl: string, displayName: string, purp
 
         const channelData = await client.createChannel(channel);
 
-        try {
-            const member = await client.getChannelMember(channelData.id, currentUserId);
+        const member = await client.getChannelMember(channelData.id, currentUserId);
 
-            const models: Model[] = [];
-            const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
-            if (channelModels.length) {
-                const resolvedModels = await Promise.all(channelModels);
-                models.push(...resolvedModels.flat());
-            }
-
-            const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
-            if (categoriesModels.models?.length) {
-                models.push(...categoriesModels.models);
-            }
-            if (models.length) {
-                await operator.batchRecords(models, 'createChannel');
-            }
-            fetchChannelStats(serverUrl, channelData.id, false);
-        } catch (persistError) {
-            logDebug('error on createChannel persist', getFullErrorMessage(persistError));
-            forceLogoutIfNecessary(serverUrl, persistError);
-        } finally {
-            EphemeralStore.creatingChannel = false;
+        const models: Model[] = [];
+        const channelModels = await prepareMyChannelsForTeam(operator, channelData.team_id, [channelData], [member]);
+        if (channelModels.length) {
+            const resolvedModels = await Promise.all(channelModels);
+            models.push(...resolvedModels.flat());
         }
 
-        // The server already created the channel, so return it even if the local persist
-        // failed — the UI can open it instead of retrying the same name.
+        const categoriesModels = await addChannelToDefaultCategory(serverUrl, channelData, true);
+        if (categoriesModels.models?.length) {
+            models.push(...categoriesModels.models);
+        }
+        if (models.length) {
+            await operator.batchRecords(models, 'createChannel');
+        }
+        fetchChannelStats(serverUrl, channelData.id, false);
+        EphemeralStore.creatingChannel = false;
         return {channel: channelData};
     } catch (error) {
         logDebug('error on createChannel', getFullErrorMessage(error));

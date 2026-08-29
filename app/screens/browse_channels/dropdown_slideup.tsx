@@ -42,9 +42,8 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    // Await the dismissal before switching the list. Firing both in the same tick lets the
-    // parent re-render rows while the sheet's views are still mounted, which Fabric rejects
-    // with "View already has a parent" — a host exception that destroys the JS instance.
+    // Await the dismissal first: re-rendering the rows while the sheet's views are still
+    // mounted makes Fabric throw "View already has a parent" and destroys the JS instance.
     const handlePublicPress = useCallback(async () => {
         await dismissBottomSheet();
         onPress(PUBLIC);

@@ -72,9 +72,8 @@ describe('RecentSearches', () => {
 
         fireEvent.press(getByTestId('search.recent_item.hello.remove.button'));
 
-        // onRemove is async and fireEvent.press cannot await it, so poll for the deletion.
-        // The default 1s waitFor window is not enough for a WatermelonDB write on a loaded
-        // CI runner with coverage on.
+        // onRemove is async and fireEvent.press cannot await it; the default 1s waitFor
+        // window is too short for a WatermelonDB write on a loaded CI runner.
         await waitFor(async () => {
             expect(await getTeamSearchHistoryById(database, recentSearch.id)).toBeUndefined();
         }, {timeout: 10000, interval: 50});

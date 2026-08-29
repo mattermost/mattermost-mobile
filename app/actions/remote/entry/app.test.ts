@@ -11,9 +11,8 @@ jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/user');
 jest.mock('@agents/actions/remote/agents');
 
-// The global mock in test/setup.ts resolves to a singleton shared across this file's
-// registry, so reassigning a method on it in beforeEach is order-sensitive and flakes.
-// Keep this file-local factory.
+// The shared mock in test/setup.ts is a singleton, so reassigning its methods in
+// beforeEach is order-sensitive; keep this file-local factory.
 jest.mock('@database/manager', () => ({
     __esModule: true,
     default: {

@@ -301,10 +301,10 @@ describe('getUserTimezone', () => {
         expect(result).toBe('America/New_York');
     });
 
-    it('should fall back to the device timezone if the user timezone does not exist', () => {
+    it('should return an empty string if the user timezone does not exist', () => {
         const user = TestHelper.fakeUserModel({timezone: null});
         const result = getUserTimezone(user);
-        expect(result).toBe('World/Somewhere');
+        expect(result).toBe('');
     });
 });
 
@@ -321,15 +321,9 @@ describe('getTimezone', () => {
         expect(result).toBe('America/Los_Angeles');
     });
 
-    it('should fall back to the device timezone if the timezone does not exist', () => {
+    it('should return an empty string if the timezone does not exist', () => {
         const result = getTimezone(null);
-        expect(result).toBe('World/Somewhere');
-    });
-
-    it('should fall back to the device timezone when automaticTimezone is empty', () => {
-        const timezone: UserTimezone = {useAutomaticTimezone: 'true', automaticTimezone: '', manualTimezone: 'America/Los_Angeles'};
-        const result = getTimezone(timezone);
-        expect(result).toBe('World/Somewhere');
+        expect(result).toBe('');
     });
 });
 

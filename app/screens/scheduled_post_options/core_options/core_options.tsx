@@ -42,8 +42,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
     const [selectedOption, setSelectedOptions] = useState<string>();
     const [showDateTimePicker, setShowDateTimePicker] = useState(false);
 
-    // moment().tz('') is invalid and yields a NaN scheduled_at, rendering "Invalid Date".
-    const now = userTimezone ? moment().tz(userTimezone) : moment();
+    const now = moment().tz(userTimezone);
 
     const handleSelectOption = useCallback((optionKey: string) => {
         setSelectedOptions(optionKey);
@@ -72,7 +71,8 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
         onSelectOption(selectedTime.valueOf().toString());
     }, [onSelectOption]);
 
-    const nineAmTime = (userTimezone ? moment().tz(userTimezone) : moment()).
+    const nineAmTime = moment().
+        tz(userTimezone).
         set({hour: 9, minute: 0, second: 0, millisecond: 0}).
         valueOf();
     const formattedTimeString = getFormattedTime(isMilitaryTime, userTimezone, nineAmTime);
@@ -109,7 +109,7 @@ export function ScheduledPostCoreOptions({userTimezone, isMilitaryTime, onSelect
 
     let options: React.ReactElement[] = [];
 
-    switch (now.isoWeekday()) {
+    switch (now.weekday()) {
         // Sunday
         case 7:
             options = [optionTomorrow];

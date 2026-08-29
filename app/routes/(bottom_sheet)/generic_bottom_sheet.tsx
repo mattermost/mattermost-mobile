@@ -19,16 +19,10 @@ export default function GenericBottomSheetRoute() {
         snapPoints[1] += (isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN);
     }
 
-    // BottomSheetStore.reset() clears this callback on logout and server switch, and the
-    // route can still render afterwards. Nothing to show is not a crash; render nothing.
-    if (!renderContent) {
-        return null;
-    }
-
     return (
         <BottomSheet
             screen={Screens.GENERIC_BOTTOM_SHEET}
-            renderContent={renderContent}
+            renderContent={renderContent!}
             footerComponent={BottomSheetStore.getFooterComponent()}
             snapPoints={snapPoints}
         />
