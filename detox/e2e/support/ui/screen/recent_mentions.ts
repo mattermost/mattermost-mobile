@@ -170,6 +170,26 @@ class RecentMentionsScreen {
         // Poll for the edited post with the updated indicator. Since the mentions
         // feed is subscription-backed, the UI re-renders automatically when the
         // post update arrives over WebSocket. No pull-to-refresh swipe required.
+        try {
+            await this.waitForEditedRow(postListPostItem, postListPostItemMessage, postListPostItemEditedIndicator);
+        } catch {
+            // A single wait is not always enough: the edited row was still absent after
+            // server-side search confirmed the update (run 33237899744, MM-T4909_3 on
+            // both platforms). Leave + re-enter the tab to force fetchRecentMentions —
+            // the same recovery recentMentionPostListToBeVisible uses — then re-check.
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.TWO_SEC);
+            await HomeScreen.mentionsTab.tap();
+            await this.toBeVisible();
+            await this.waitForEditedRow(postListPostItem, postListPostItemMessage, postListPostItemEditedIndicator);
+        }
+    };
+
+    waitForEditedRow = async (
+        postListPostItem: Detox.NativeElement,
+        postListPostItemMessage: Detox.NativeElement,
+        postListPostItemEditedIndicator: Detox.NativeElement,
+    ) => {
         await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
         await waitForElementToExist(postListPostItemMessage, timeouts.TEN_SEC);
         await waitForElementToExist(postListPostItemEditedIndicator, timeouts.TEN_SEC);

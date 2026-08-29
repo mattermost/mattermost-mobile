@@ -87,12 +87,19 @@ describe('Messaging - At-Mention', () => {
     });
 
     it('MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', async () => {
-        // # Add more users to the channel, open a channel screen, and post @all
-        [...Array(3).keys()].forEach(async (key) => {
+        // # Add more users to the channel, open a channel screen, and post @all.
+        // Sequential awaits, not forEach with an async callback: the callback promises are
+        // not chained by forEach, so the app could reach @all while the membership updates
+        // were still in flight and skip the confirm alert (only shown when the channel has
+        // more than NOTIFY_ALL_MEMBERS = 5 members; run 33237899744 iOS shard — "No
+        // elements found for Confirm sending notifications to entire channel").
+        /* eslint-disable no-await-in-loop -- each membership update must land before the next */
+        for (let key = 0; key < 3; key++) {
             const {user} = await User.apiCreateUser(siteOneUrl, {prefix: `a-${key}-`});
             await Team.apiAddUserToTeam(siteOneUrl, user.id, testTeam.id);
             await Channel.apiAddUserToChannel(siteOneUrl, user.id, testChannel.id);
-        });
+        }
+        /* eslint-enable no-await-in-loop */
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.replaceText('@all');
         await ChannelScreen.sendButton.tap();

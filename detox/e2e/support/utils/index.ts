@@ -415,6 +415,45 @@ export async function waitForElementToBeVisible(
     await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
 }
 
+// Tap with effect verification: re-tap until `goneElement` (defaults to `target`) disappears.
+// Detox can report a tap performed while the click never reaches the view: Espresso logged
+// the OK click yet the "Message Length" dialog stayed up for the whole wait (run
+// 33237899744, MM-T107), and the account custom-status clear button tap never ran its
+// React handler (same run, MM-T3891 / MM-T4990_4 on both platforms). Retrying until the
+// effect is observable converts that class of flakes without loosening any assertion.
+export async function tapUntilGone(
+    target: Detox.NativeElement,
+    goneElement?: Detox.NativeElement,
+    maxAttempts = 3,
+): Promise<void> {
+    const toVanish = goneElement ?? target;
+    let lastError: Error | undefined;
+
+    /* eslint-disable no-await-in-loop -- sequential retries by design */
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            await target.tap();
+        } catch (error) {
+            lastError = error as Error;
+            if (attempt === maxAttempts) {
+                throw error;
+            }
+            await wait(timeouts.ONE_SEC);
+            continue;
+        }
+
+        try {
+            await waitForElementToNotExist(toVanish, timeouts.FIVE_SEC);
+            return;
+        } catch (error) {
+            lastError = error as Error;
+            await wait(timeouts.ONE_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw lastError;
+}
+
 // Poll for non-existence without Detox bridge-idle synchronization.
 export async function waitForElementToNotExist(
     detoxElement: Detox.NativeElement,

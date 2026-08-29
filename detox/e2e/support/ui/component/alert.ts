@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, tapUntilGone, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class Alert {
@@ -107,12 +107,17 @@ class Alert {
         };
 
         if (isAndroid()) {
+            // A single tap is not always delivered to the dialog's button handler (run
+            // 33237899744, MM-T107: Espresso logged the click performed and the dialog
+            // still measured VISIBLE for the full 10s wait). Same retry-until-gone
+            // discipline as the iOS path below.
             try {
-                await element(by.text('OK')).tap();
+                await tapUntilGone(element(by.text('OK')), this.messageLengthTitle);
             } catch {
-                await this.okButton.tap();
+                // Fall back to the accessibility-layer button id, re-tapping until the
+                // title is gone or the last attempt rethrows.
+                await tapUntilGone(this.okButton, this.messageLengthTitle);
             }
-            await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
             return;
         }
 

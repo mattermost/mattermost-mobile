@@ -226,13 +226,49 @@ class ServerListScreen {
 
     scrollServerListIntoView = async () => {
         if (isIos()) {
-            await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-            return;
+            // The multi-server tutorial's full-screen backdrop SVG can still be up (or
+            // re-armed) when the swipe starts, and every hit-test then resolves against
+            // it (run 33237899744 — MM-T4691_2..7 and MM-T4675_2 failed as "not hittable
+            // at its visible point" with Hit: RNSVGGroup covering the window). Dismiss
+            // the tutorial between attempts instead of relying on open() having won
+            // that race; any other failure is real and is rethrown on the last attempt.
+            /* eslint-disable no-await-in-loop -- retry the swipe around tutorial dismissal */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+                    return;
+                } catch (error) {
+                    if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                        throw error;
+                    }
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         }
         if (isAndroid()) {
             await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
             await this.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
+    };
+
+    // "Add a server" tap with tutorial-scrim recovery. The button sits below the list and
+    // a bare tap fails while the backdrop SVG intercepts the hit-test (MM-T4675_2,
+    // run 33237899744).
+    tapAddServerButton = async () => {
+        /* eslint-disable no-await-in-loop -- retry the tap around tutorial dismissal */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                await this.addServerButton.tap();
+                return;
+            } catch (error) {
+                if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                    throw error;
+                }
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
     };
 
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
