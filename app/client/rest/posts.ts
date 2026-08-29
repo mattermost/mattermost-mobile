@@ -195,9 +195,8 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
         const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
 
-        // posts/search is a read-only POST; opt into the transient-transport retry so a dead
-        // pooled socket (NSURLError -1005, cloud LB idle close) doesn't yield an empty
-        // Recent Mentions / Saved Messages feed.
+        // Read-only POST, so opt into the transient-transport retry: a dead pooled socket
+        // would otherwise yield an empty Recent Mentions / Saved Messages feed.
         return this.doFetch(endpoint, {method: 'post', body: params, retryOnTransient: true});
     };
 

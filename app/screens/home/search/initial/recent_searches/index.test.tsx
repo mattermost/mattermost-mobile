@@ -72,11 +72,9 @@ describe('RecentSearches', () => {
 
         fireEvent.press(getByTestId('search.recent_item.hello.remove.button'));
 
-        // onRemove is async and fireEvent.press cannot await it, so the deletion has to be
-        // polled for. React Native Testing Library's default waitFor window is 1s, which a
-        // WatermelonDB write does not reliably fit inside on a loaded 4-core CI runner with
-        // coverage instrumentation on: `ci / test` in run 32818925757 reported the record
-        // still present. Bound it by something a DB round-trip actually fits in.
+        // onRemove is async and fireEvent.press cannot await it, so poll for the deletion.
+        // The default 1s waitFor window is not enough for a WatermelonDB write on a loaded
+        // CI runner with coverage on.
         await waitFor(async () => {
             expect(await getTeamSearchHistoryById(database, recentSearch.id)).toBeUndefined();
         }, {timeout: 10000, interval: 50});

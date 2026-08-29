@@ -470,15 +470,9 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                // Await the write, like deleteServerDatabase above already does. Unawaited,
-                // the servers-row deletion could land after a later createServerDatabase()
-                // had re-added that row; addServerToAppDatabase() then threw on a record
-                // deleted underneath it, createServerDatabase swallowed the error and never
-                // populated serverDatabases[serverUrl], and the next
-                // getServerDatabaseAndOperator() reported "<serverUrl> database not found".
-                // That is a destroy-then-recreate race, so it also affects removing and
-                // re-adding the same server in the app, not just the init/destroy cycles
-                // that surfaced it in CI.
+                // Await the write, as deleteServerDatabase above already does. Unawaited, the
+                // row deletion can land after a later createServerDatabase() re-added it,
+                // leaving the server unregistered and its database reported as not found.
                 await database.write(async () => {
                     await server.destroyPermanently();
                 });

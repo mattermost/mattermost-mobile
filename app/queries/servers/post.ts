@@ -209,9 +209,8 @@ export const queryPostsById = (database: Database, postIds: string[], sort?: Q.S
     return database.get<PostModel>(POST).query(...clauses);
 };
 
-// Query.observe() only emits when the matching *set* changes. Edits keep the
-// same ids, so lists that render post.message (Recent Mentions, Saved, Pinned)
-// must also observe body columns. Matches combined_user_activity.
+// Query.observe() only emits when the matching set changes, and an edit keeps the same ids,
+// so lists that render post.message must observe the body columns too.
 const POST_BODY_COLUMNS = ['message', 'edit_at', 'update_at', 'delete_at'];
 
 export const observePostsById = (database: Database, postIds: string[], sort?: Q.SortOrder) => {

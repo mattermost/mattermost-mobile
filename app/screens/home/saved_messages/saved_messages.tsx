@@ -58,9 +58,8 @@ const styles = StyleSheet.create({
     },
 });
 
-// The pipeline that used to live in index.ts, moved verbatim. Only where it is
-// subscribed has changed, so this fixes the missed notify without altering what
-// the screen derives.
+// The pipeline that used to live in index.ts, moved verbatim; only where it is subscribed
+// has changed.
 function observeSavedPosts(database: Database) {
     return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
         map((rows) => rows.map((preference) => preference.name)),
@@ -124,19 +123,10 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
         translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused, opacity, translateSide, translateX]);
 
-    // Re-derive saved posts on every focus by (re)subscribing fresh. This screen is
-    // a freezeOnBlur bottom-tab that mounts once and stays mounted, so a subscription
-    // created at mount time predates any later save. On the SQLite/JSI (device)
-    // adapter a pre-existing PREFERENCE-table Query.observe() is not reliably notified
-    // of a preference CREATE (a fresh .fetch() sees the row; the live subscription does
-    // not), which left the screen empty after a save. A fresh subscription always reads
-    // current DB state on subscribe, so tearing down on blur and re-subscribing on focus
-    // sidesteps the missed notify. Unsave still works via the EphemeralStore combine
-    // inside observeSavedPostsByIds while focused.
-    //
-    // The pipeline is the one that previously lived in index.ts, unchanged — only
-    // where it is subscribed has moved. Keeping it identical means this fixes the
-    // missed-notify without also altering what the screen derives.
+    // Re-subscribe on every focus. This tab mounts once and stays mounted, and on the device
+    // adapter a pre-existing preference-table Query.observe() is not reliably notified of a
+    // CREATE, so the screen stayed empty after a save. A fresh subscription reads current DB
+    // state on subscribe. Unsave still works via the EphemeralStore combine while focused.
     useEffect(() => {
         if (!isFocused) {
             return undefined;

@@ -29,9 +29,7 @@ const renderOverlay = (onDismiss: jest.Mock) => renderWithIntlAndTheme(
 
 describe('TutorialHighlight', () => {
     // HighlightItem's only press handler is onPress on the react-native-svg root, which
-    // routes through RNSVG's own responder and does not fire for a synthetic tap — on iOS
-    // shard 19 of run 32821677136 both tap(tutorial_highlight.backdrop) and
-    // tap(tutorial_highlight) returned success with the overlay still on screen. The
+    // routes through RNSVG's own responder and does not fire for a synthetic tap. The
     // Pressable is the real touch target, so assert it exists and dismisses.
     it('should expose a pressable backdrop that dismisses the overlay', () => {
         const onDismiss = jest.fn();
@@ -47,11 +45,9 @@ describe('TutorialHighlight', () => {
         expect(onDismiss).toHaveBeenCalledTimes(1);
     });
 
-    // An empty transparent Pressable is a real touch target for a finger but has no pixels
-    // of its own, and Detox derives hittability from a pixel comparison — iOS shard 19 of
-    // run 32881947481 rejected tap(tutorial_highlight.backdrop) with "does not pass
-    // visibility percent threshold (100)". The backdrop has to OWN the scrim, not sit over
-    // it, so pin that the dimming Svg is inside the Pressable.
+    // An empty transparent Pressable is a real touch target for a finger but owns no pixels,
+    // and hittability is derived from a pixel comparison. The backdrop has to own the scrim
+    // rather than sit over it, so pin that the dimming Svg is inside the Pressable.
     it('should render the dimming scrim inside the pressable backdrop', () => {
         const {getByTestId} = renderOverlay(jest.fn());
 

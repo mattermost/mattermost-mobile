@@ -9,24 +9,9 @@ import ClientTracking from './tracking';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 
-// Cloud load balancers close idle keep-alive sockets (~40s), so the next request sent down a
-// pooled connection fails with NSURLError -1005 "network connection was lost" before it ever
-// reaches the server (response_status=-1, 0 response bytes). Reproduced against the PR cloud
-// servers: the custom-status PUT failed 2/2 that way, and one retry — which establishes a
-// fresh connection — made it pass 4/4.
-//
-// The native client is *supposed* to cover this already: getSessionInterceptor attaches a
-// RuntimeRetrier, which delegates to `request.request?.retryPolicy ?? session.retryPolicy`,
-// and the session policy we configure in NetworkManager (EXPONENTIAL_RETRY, retryLimit 3)
-// inherits Alamofire's defaultRetryableURLErrorCodes — which includes .networkConnectionLost.
-// Why that path does not fire in practice is unresolved, so treat this as a mitigation rather
-// than the root-cause fix, and keep it cheap: ONE extra attempt, which is all a dead pooled
-// socket needs. Anything more would stack on top of the native retryLimit.
-//
-// Restricted to idempotent methods, and callers that must not retry already pass `noRetry`.
-// Match on the message text only — never on the raw codes: "-1005"/"-1001" appear as
-// substrings in our own hostnames (mobile-pr-10050…, mobile-pr-10010…), which would retry
-// permanent 4xx/5xx errors.
+// An idle keep-alive socket closed by the load balancer fails the next request before it
+// reaches the server. One retry on a fresh connection recovers it. Match on message text, not
+// on the raw NSURLError codes, whose digits also occur in hostnames.
 const RETRYABLE_METHODS = new Set(['get', 'put', 'patch', 'delete']);
 const isTransientTransportError = (error: unknown) =>
     /network connection was lost|the request timed out/i.test(getFullErrorMessage(error));
@@ -261,17 +246,14 @@ export default class ClientBase extends ClientTracking {
             return this.doFetchWithTracking(url, options, returnDataOnly);
         }
 
-        // Retry idempotent methods, plus read-only POSTs that opt in via retryOnTransient
-        // (e.g. posts/search): a dead pooled socket fails with NSURLError -1005 before the
-        // request reaches the server, and one retry on a fresh connection recovers it.
+        // Idempotent methods, plus read-only POSTs that opt in via retryOnTransient.
         if (!RETRYABLE_METHODS.has(method) && options.retryOnTransient !== true) {
             return this.doFetchWithTracking(url, options, returnDataOnly);
         }
         let lastError: unknown;
         for (let attempt = 0; attempt < TRANSIENT_RETRY_ATTEMPTS; attempt++) {
             try {
-                // Sequential by design: each attempt only runs if the previous one failed with a
-                // transient transport error, so the awaits cannot be parallelised.
+                // Sequential by design: an attempt only runs if the previous one failed.
                 // eslint-disable-next-line no-await-in-loop
                 return await this.doFetchWithTracking(url, options, returnDataOnly);
             } catch (error) {

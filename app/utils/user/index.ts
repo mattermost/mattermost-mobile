@@ -149,7 +149,7 @@ export const getTimezone = (timezone?: UserTimezone | null) => {
 
     const zone = useAutomatic ? timezone.automaticTimezone : timezone.manualTimezone;
 
-    // Empty zone breaks moment.tz / Intl (scheduled "Send on Invalid Date" on iOS, MM-T5720).
+    // An empty zone breaks moment.tz and Intl, rendering "Send on Invalid Date".
     return zone || getDeviceTimezone();
 };
 
@@ -183,8 +183,8 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
 
     const customStatus = getUserCustomStatus(user);
 
-    // Empty object/`{}` is what updateLocalCustomStatus historically wrote on clear —
-    // treat "no emoji and no text" as cleared/expired so Account UI drops the clear control.
+    // updateLocalCustomStatus historically wrote {} on clear, so treat a status with neither
+    // emoji nor text as cleared and let the Account UI drop the clear control.
     if (!customStatus?.emoji && !customStatus?.text) {
         return true;
     }

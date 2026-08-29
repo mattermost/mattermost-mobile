@@ -26,13 +26,9 @@ type Props = {
     isSaved?: boolean;
     isChannelAutotranslated: boolean;
 
-    // Signature of the post's own body (message/edit_at/delete_at), supplied by the
-    // enhancer. WatermelonDB mutates model instances in place, so an edited post reaches
-    // this memoized component with the exact same `post` reference and every other prop
-    // unchanged — the shallow compare bails out and the row keeps painting the pre-edit
-    // text. Recent Mentions showed this on both platforms (MM-T4909_3 on f181296: the
-    // server and the search index both had the edited body, the row did not). This prop
-    // changes when the body does, which both defeats the bail-out and re-keys Post below.
+    // Signature of the post's body, supplied by the enhancer. WatermelonDB mutates models in
+    // place, so an edit reaches this memoized component with the same `post` reference and the
+    // shallow compare bails out. This prop changes when the body does.
     postBodyKey: string;
 }
 
@@ -70,8 +66,8 @@ function PostWithChannelInfo({
             <View style={styles.content}>
                 <Post
 
-                    // Post is memoized on the same in-place-mutated model, so it would bail
-                    // out too. Re-key it on the body signature so an edit remounts the row.
+                    // Post is memoized on the same mutated model, so re-key it on the body
+                    // signature to make an edit remount the row.
                     key={postBodyKey}
                     appsEnabled={appsEnabled}
                     currentUser={currentUser}

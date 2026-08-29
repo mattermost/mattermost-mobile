@@ -91,8 +91,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderLeftWidth: 5,
     },
 
-    // Autocomplete sits on the center canvas. Without a fill the row's
-    // press target collapses to the text glyphs.
+    // Autocomplete sits on the center canvas, and without a fill the row's press target
+    // collapses to the text glyphs.
     onCenterBg: {
         backgroundColor: theme.centerChannelBg,
     },

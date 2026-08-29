@@ -152,8 +152,8 @@ const Autocomplete = ({
         return s;
     }, [style.borders, style.shadow, hasElements, containerStyle]);
 
-    // Keep testID on a non-Reanimated View. Detox mis-measures Animated.View
-    // frames (often {0,0}) so suggestion taps fail visibility checks.
+    // Keep the testID on a non-Reanimated View: Animated.View frames are mis-measured, so
+    // suggestion taps fail visibility checks.
     const component = (
         <Animated.View
             testID='autocomplete.container'

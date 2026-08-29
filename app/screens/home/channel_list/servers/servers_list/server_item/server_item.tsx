@@ -264,8 +264,8 @@ const ServerItem = ({
         setSwitching(true);
         try {
             if (server.lastActiveAt) {
-                // Switch before dismiss so last_active_at is committed while the sheet
-                // is still mounted; dismiss-first left the UI on the prior server.
+                // Switch before dismissing so last_active_at commits while the sheet is
+                // still mounted; dismiss-first left the UI on the prior server.
                 await switchToServer(server.url);
                 await dismissBottomSheet();
                 return;

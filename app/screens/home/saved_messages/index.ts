@@ -13,17 +13,10 @@ import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-// `posts` is deliberately NOT wired through withObservables. Saved Messages is a
-// freezeOnBlur bottom-tab that mounts once and stays mounted, so a subscription
-// created here at mount time predates every later save. On the SQLite/JSI
-// (device) adapter a pre-existing PREFERENCE-table Query.observe() is not
-// reliably notified of a preference CREATE — a fresh .fetch() sees the new row,
-// the live subscription never emits — so the screen stayed empty after saving a
-// message. LokiJS re-emits, which is why unit tests never caught it.
-//
-// The component owns the same pipeline instead and re-subscribes on every focus
-// (see saved_messages.tsx). A fresh subscription reads current DB state when it
-// subscribes, which sidesteps the missed notify entirely.
+// `posts` is deliberately not wired through withObservables. This is a freezeOnBlur tab that
+// mounts once, and on the device adapter a pre-existing preference-table Query.observe() is
+// not reliably notified of a CREATE, so the screen stayed empty after a save. The component
+// owns the pipeline instead and re-subscribes on focus (see saved_messages.tsx).
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
