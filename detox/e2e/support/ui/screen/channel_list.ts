@@ -188,6 +188,27 @@ class ChannelListScreen {
             return;
         }
 
+        // Android had no scroll-into-view at all, so a row sitting under the bottom tab bar
+        // was simply reported unhittable. testFnFailure.png for MM-T69455_1 (run 33209271566,
+        // android shard 4) is a healthy, fully-populated sidebar whose LAST row is the target
+        // "Channel f561eb", clipped by the tab bar — the error was
+        // "Sidebar channel item not hittable for channel: channel-f561eb". Scroll it clear
+        // first, mirroring the iOS branch above; Espresso's own tap hit-test still decides.
+        /* eslint-disable no-await-in-loop -- bounded visibility scan */
+        for (let attempt = 0; attempt < MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS; attempt++) {
+            try {
+                await expect(label).toBeVisible(15);
+                break;
+            } catch {
+                try {
+                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                } catch {
+                    // List edge reached — the taps below still report if it stays clipped.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
         try {
             await waitForElementToExist(container, timeouts.TWO_SEC);
             await container.tap();
