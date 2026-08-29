@@ -216,6 +216,30 @@ class AccountScreen {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
+    // Clear the custom status from the account row. One tap, then wait for the row to drop
+    // the clear control.
+    //
+    // Deliberately NOT tapUntilGone's default 5s: clearCustomStatus awaits a DELETE to
+    // /users/me/status/custom before it writes locally and re-renders, so on CI the control
+    // routinely outlives a 5s window. verifyStatusCleared already allows 10s for the same
+    // element, and the app guards the handler with usePreventDoubleTap (750ms), so an early
+    // re-tap both fights that guard and fires a second DELETE.
+    clearCustomStatus = async () => {
+        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.customStatusClearButton.tap();
+
+        try {
+            await waitForElementToNotExist(this.customStatusClearButton, timeouts.TWENTY_SEC);
+            return;
+        } catch {
+            // Fall through to a single retry: a tap can be reported performed without the
+            // React handler running.
+        }
+
+        await this.customStatusClearButton.tap();
+        await waitForElementToNotExist(this.customStatusClearButton, timeouts.TWENTY_SEC);
+    };
+
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {

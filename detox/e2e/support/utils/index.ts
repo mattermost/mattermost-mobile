@@ -425,6 +425,7 @@ export async function tapUntilGone(
     target: Detox.NativeElement,
     goneElement?: Detox.NativeElement,
     maxAttempts = 3,
+    timeout: number = timeouts.FIVE_SEC,
 ): Promise<void> {
     const toVanish = goneElement ?? target;
     let lastError: Error | undefined;
@@ -443,7 +444,7 @@ export async function tapUntilGone(
         }
 
         try {
-            await waitForElementToNotExist(toVanish, timeouts.FIVE_SEC);
+            await waitForElementToNotExist(toVanish, timeout);
             return;
         } catch (error) {
             lastError = error as Error;

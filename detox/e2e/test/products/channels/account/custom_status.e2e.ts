@@ -29,7 +29,7 @@ import {
     ServerScreen,
     UserProfileScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, tapUntilGone, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Account - Custom Status', () => {
@@ -224,12 +224,8 @@ describe('Account - Custom Status', () => {
         // * Verify status is set
         await verifyStatusSetOnAccountScreen(status);
 
-        // # Clear status from account screen. tapUntilGone, not a bare tap: a tap is
-        // sometimes reported performed while the React handler never runs (run
-        // 33237899744 — MM-T4990_4 failed verifyStatusCleared on both platforms after
-        // the click was dispatched), so retry until the clear control is actually gone.
-        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await tapUntilGone(AccountScreen.customStatusClearButton);
+        // # Clear status from account screen
+        await AccountScreen.clearCustomStatus();
 
         // * Verify status is cleared
         await verifyStatusCleared();
@@ -334,10 +330,8 @@ describe('Account - Custom Status', () => {
         // * Verify status is set in account screen
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
-        // # Clear status from account screen. tapUntilGone, not a bare tap: the clear
-        // press is sometimes reported performed while its React handler never runs
-        // (run 33237899744, MM-T3891 failed exactly here on both platforms).
-        await tapUntilGone(AccountScreen.customStatusClearButton);
+        // # Clear status from account screen
+        await AccountScreen.clearCustomStatus();
         await verifyStatusCleared();
 
         // # Reopen and verify status in recent section
@@ -400,7 +394,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear and verify in recent section
-        await tapUntilGone(AccountScreen.customStatusClearButton);
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
         await expect(CustomStatusScreen.recents).toExist();
 
@@ -421,7 +415,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
-        await tapUntilGone(AccountScreen.customStatusClearButton);
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
 
         const {customStatusSuggestion: recentSuggestedStatus, customStatusClearButton: recentSuggestedClearButton} =
