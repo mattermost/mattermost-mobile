@@ -23,6 +23,11 @@ class ServerListScreen {
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
+
+        // The pressable backdrop wrapping the tutorial scrim. It is the only dismiss target
+        // that responds to a synthetic tap: HighlightItem's onPress sits on the RNSVG root
+        // and does not fire, and tutorial_swipe_left sets pointerEvents='none'.
+        tutorialBackdrop: 'tutorial_highlight.backdrop',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
@@ -34,6 +39,7 @@ class ServerListScreen {
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
+    tutorialBackdrop = element(by.id(this.testID.tutorialBackdrop));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -189,12 +195,14 @@ class ServerListScreen {
             return false;
         }
 
-        // The overlay's centre point sits under the "Swipe left on a server…" tooltip card,
+        // The backdrop's centre point sits under the "Swipe left on a server…" tooltip card,
         // and a tap there is rejected as not hittable. TUTORIAL_DISMISS_POINT is above the
-        // card and above the highlighted row's cut-out. The centre tap is kept as a fallback
-        // for builds whose overlay geometry differs (tablet, landscape).
+        // card and above the highlighted row's cut-out. The centre tap and the Modal host are
+        // kept as fallbacks for builds whose overlay geometry differs (tablet, landscape).
         /* eslint-disable no-await-in-loop -- fall through to the next dismiss target */
         const attempts: Array<() => Promise<void>> = [
+            () => this.tutorialBackdrop.tap(TUTORIAL_DISMISS_POINT),
+            () => this.tutorialBackdrop.tap(),
             () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialHighlight.tap(),
         ];
