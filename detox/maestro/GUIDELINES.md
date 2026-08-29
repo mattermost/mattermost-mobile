@@ -148,6 +148,7 @@ These align with [Maestro docs](https://docs.maestro.dev/) and lessons from Matt
   1. **iOS `FloatingTextInput` fields.** The component passes its testID to the container, not to the inner `TextInput`, so on iOS neither the field nor its value is queryable by `id:` — only the rendered label is. Hence `text: "Enter Server URL"` / `text: "Display Name"` in `subflows/server/`. Android exposes these fields normally and **must** use `id:` (`server_form.server_url.input`). The inline validation error *is* addressable: `<testID>.error` (see `app/components/floating_input/floating_input_container.tsx`).
   2. **System (SpringBoard / Android framework) alert buttons** — `Allow`, `Okay`, `Not now`, `No thanks`. These are OS-owned views with no app testID and cannot be given one. Keep them `optional: true`; do not substitute `point:`, which is more brittle than the label.
 - Verify hierarchy before authoring: `maestro --device <id> hierarchy`
+- `text:` is a **full-string regex**: a selector that is only a prefix or fragment of the rendered label silently matches nothing (a WARNED no-op under `optional: true`, a hard failure otherwise). This is exactly how MM-T5611 once passed without testing anything: `text: "mattermost.com"` never matched the OG-autofilled title "Mattermost | Collaboration Platform…". Select the exact rendered string, an `id:`, or a regex spanning the whole string — and after any fix, prove the flow can still fail a broken feature (negative control), or its assertions are decorative.
 
 testIDs follow `component.subcomponent.element`:
 

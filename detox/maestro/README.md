@@ -120,6 +120,25 @@ DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
   bash detox/scripts/preboot_ios_simulator.sh
 ```
 
+#### Stage the channel-bookmark fixture (required for `channel_bookmark_file.yml`)
+
+The iOS document picker in `channel_bookmark_file.yml` browses the AppGroup
+`FileProvider.LocalStorage` "File Provider Storage" directory — the same place CI stages
+the fixture (step "Push test fixture into iOS simulator" in
+`.github/workflows/e2e-maestro-template.yml`). If the fixture is missing there the picker
+step cannot select the file and the flow fails. Run this once per booted simulator,
+**after the app has been launched at least once** (the AppGroup container is created on
+first launch), before concluding an upload failure is an app bug:
+
+```bash
+SIMULATOR_ID=<udid>
+APP_GROUP=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/AppGroup" \
+  -name ".com.apple.mobile_container_manager.metadata.plist" \
+  -exec grep -l "FileProvider.LocalStorage" {} \; | head -1 | xargs dirname)
+mkdir -p "$APP_GROUP/File Provider Storage"
+cp detox/e2e/support/fixtures/image.png "$APP_GROUP/File Provider Storage/test_bookmark.png"
+```
+
 Additional local tweaks (optional):
 
 ```bash
@@ -172,6 +191,9 @@ cd fastlane && bundle exec fastlane ios simulator --env ios.simulator && cd ..
 unzip -o Mattermost-simulator-*.app.zip -d mobile-artifacts/
 DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
   bash detox/scripts/preboot_ios_simulator.sh
+
+# 2b. Stage the channel-bookmark fixture into the File Provider Storage dir
+#     (required by flows/channels/channel_bookmark_file.yml — see Setup step 5)
 
 # 3. Run flows
 ~/.maestro/bin/maestro test --platform ios detox/maestro/flows/
@@ -469,10 +491,9 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 | Tag | Key | Kind | Reason |
 |-----|-----|------|--------|
 | `MM-T67856_4` | `default` | Dedicated CI step (not a flake) | Isolated attach-logs variant with `SupportSettings.AllowDownloadLogs=false`. |
-| `MM-T5603` | `ios` | Intermittent failure | File bookmark upload shows “Error uploading file” on Add bookmark. Same fixture via `POST /api/v4/files` returns 201. |
 | `MM-T3260` | `android` | Driver / platform | After Chrome Custom Tab, Maestro cannot relaunch `com.mattermost.rnbeta` on API 35. |
 
-Removed as dead entries on 2026-08-11 (`_DEAD_ENTRIES_REMOVED`): `MM-T1411`, `MM-T4832`, `MM-T4833` — iOS already skips `flows/calls/` in the runner. Un-excluded 2026-08-11 (`_UNEXCLUDED_2026_08_11`): `MM-T1325`, `MM-T3260` (iOS), `MM-T5611`, `MM-T67856_1`, `MM-T67856_2`.
+Removed as dead entries on 2026-08-11 (`_DEAD_ENTRIES_REMOVED`): `MM-T1411`, `MM-T4832`, `MM-T4833` — iOS already skips `flows/calls/` in the runner. Un-excluded 2026-08-11 (`_UNEXCLUDED_2026_08_11`): `MM-T1325`, `MM-T3260` (iOS), `MM-T67856_1`, `MM-T67856_2`. Un-excluded from iOS 2026-08-29 (`_UNEXCLUDED_2026_08_29`) after 3x consecutive local greens each: `MM-T5603` (the intermittent “Error uploading file” failure never reproduced — mechanism stays unknown; re-exclude with the failing CI run ID if it returns) and `MM-T5611` (long-press id-regex proven resolving, non-vacuity verified with failing negative-control probes).
 
 #### Dedicated MM-T67856_4 step
 
