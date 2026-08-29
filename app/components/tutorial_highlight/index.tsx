@@ -63,28 +63,10 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                 testID='tutorial_highlight.overlay'
             >
                 {/*
-                  * Dismiss target. HighlightItem's only press handler is `onPress` on the
-                  * react-native-svg root, which routes through RNSVG's own responder on
-                  * RNSVGSvgView and does not fire for a synthetic tap: on iOS shard 19 of
-                  * run 32821677136 both `tap(tutorial_highlight.backdrop)` and
-                  * `tap(tutorial_highlight)` returned success and the overlay stayed up,
-                  * with testFnFailure.png still showing it. TutorialSwipeLeft cannot serve
-                  * either — its root sets pointerEvents='none', so neither it nor its
-                  * subviews can ever be the touch target.
-                  *
-                  * The Pressable WRAPS the scrim rather than sitting over it as an empty
-                  * transparent layer. An empty transparent Pressable is a real RN touch
-                  * target but has no pixels of its own, and Detox derives hittability from
-                  * a pixel comparison, so tapping it was rejected outright — iOS shard 19
-                  * of run 32881947481, messageId 87: "View is not hittable at its visible
-                  * point ... 0x11c56b660 is not visible: View does not pass visibility
-                  * percent threshold (100)", where 0x11c56b660 was this backdrop. Wrapping
-                  * the SVG gives the same touch target the scrim's own pixels, so it is
-                  * both pressable by a finger and hittable by Detox.
-                  *
-                  * No pressed-state style on purpose, unlike the usual Pressable
-                  * convention: this is a full-screen scrim, so any feedback would flash the
-                  * whole screen. The visible affordance is the highlight and its tooltip.
+                  * Dismiss target. It wraps the scrim rather than overlaying it, so the touch
+                  * target has the scrim's own pixels; HighlightItem's SVG onPress does not fire
+                  * for a synthetic tap. No pressed style on purpose — feedback on a full-screen
+                  * scrim would flash the whole screen.
                   */}
                 {itemBounds.endX > 0 &&
                 <Pressable

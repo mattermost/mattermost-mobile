@@ -42,12 +42,8 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
     let userToSave = user;
 
     if (user.id === currentUser.id) {
-        // Ignore an event that is not newer than the record we already hold. This freshness
-        // check has to gate the save below, not just the work in this block: some local
-        // writes deliberately change the user without bumping update_at (clearing the custom
-        // status writes props.customStatus directly), so persisting a stale or re-delivered
-        // copy of ourselves resurrects the value we just cleared and the Account row keeps
-        // showing the old status (MM-T4990_4 / MM-T3891, both platforms).
+        // Ignore an event no newer than the record we hold. Some local writes change the user
+        // without bumping update_at, so saving a stale copy resurrects what we just cleared.
         if (user.update_at <= (currentUser.updateAt || 0)) {
             return;
         }

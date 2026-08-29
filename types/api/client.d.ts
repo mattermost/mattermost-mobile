@@ -11,9 +11,8 @@ type ClientOptions = {
     method?: string;
     noRetry?: boolean;
 
-    // Opt a non-idempotent (POST) call into the transient-transport retry in ClientBase.doFetch.
-    // Only set this for read-only POSTs (e.g. posts/search) — a dead pooled socket returns
-    // NSURLError -1005 before reaching the server, so retrying cannot duplicate a write.
+    // Opts a POST into the transient-transport retry in ClientBase.doFetch. Only for
+    // read-only POSTs, where a retry cannot duplicate a write.
     retryOnTransient?: boolean;
     timeoutInterval?: number;
     headers?: Record<string, any>;

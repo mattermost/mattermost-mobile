@@ -8,8 +8,8 @@ import CodeScreen, {type CodeScreenProps} from '@screens/code';
 export default function CodeRoute() {
     const {code, title, ...props} = usePropsFromParams<CodeScreenProps & {title: string}>();
 
-    // Scoped back testID so Detox can hit this header uniquely when the channel
-    // header (navigation.header.back) remains mounted under expo-router.
+    // Scoped back testID: the channel header stays mounted under expo-router, so the
+    // default one is not unique.
     useAppNavigationHeader(title, false, 0, false, 'code.screen.title', 'code.screen.back');
 
     return (

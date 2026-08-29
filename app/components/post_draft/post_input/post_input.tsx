@@ -241,8 +241,8 @@ export default function PostInput({
         if (valueLength > maxMessageLength) {
             // Check if component is already aware message is too long
             if (!longMessageAlertShown) {
-                // Explicit OK button so iOS/Detox can dismiss reliably.
-                // Alerts without buttons leave a sticky native dialog that blocks nav.
+                // Explicit OK button: an alert without one leaves a sticky native dialog
+                // that blocks navigation.
                 Alert.alert(
                     intl.formatMessage({
                         id: 'mobile.message_length.title',

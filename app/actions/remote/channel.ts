@@ -253,8 +253,8 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             EphemeralStore.creatingChannel = false;
         }
 
-        // Server already created the channel. Return it even if local persist
-        // failed so the UI can open it instead of retrying the same name.
+        // The server already created the channel, so return it even if the local persist
+        // failed — the UI can open it instead of retrying the same name.
         return {channel: channelData};
     } catch (error) {
         logDebug('error on createChannel', getFullErrorMessage(error));

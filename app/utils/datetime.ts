@@ -99,8 +99,8 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
-    // Empty/invalid timeZone makes Intl throw (Node) or return "Invalid Date" (Hermes/iOS).
-    // Omit the option so formatting falls back to the device zone instead of poisoning the label.
+    // An empty timeZone makes Intl throw or return "Invalid Date"; omit the option so
+    // formatting falls back to the device zone instead of poisoning the label.
     const options: Intl.DateTimeFormatOptions = {
         month: 'short',
         day: 'numeric',
@@ -125,11 +125,8 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
         return formatted;
     }
 
-    // Hermes (iOS) returns the literal "Invalid Date" when it cannot honour an option,
-    // and timeZone is the usual culprit — Android's engine accepts the same input. An
-    // empty result makes DraftAndScheduledPostHeader drop the whole "Send on ..." row,
-    // so the label vanishes instead of merely being in the wrong zone (MM-T5720, iOS
-    // only, run 31977498176). Retry in the device zone rather than lose the label.
+    // Hermes returns the literal "Invalid Date" when it cannot honour an option, and
+    // timeZone is the usual culprit. Retry in the device zone rather than lose the label.
     delete options.timeZone;
     return format(options);
 }

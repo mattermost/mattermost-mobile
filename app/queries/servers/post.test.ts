@@ -578,12 +578,9 @@ describe('post query helpers', () => {
             expect(results.find((p) => p.id === post.id)?.message).toBe('edited mention');
         });
 
-        // The Recent Mentions screen refreshes through fetchRecentMentions -> searchPosts,
-        // which persists with a different shape than the channel path above: actionType '',
-        // an empty order, prepareRecordsOnly and then a separate batchRecords. Nothing
-        // covered that shape, so MM-70005 (observing the post body columns so an edit
-        // re-renders in Mentions/Saved/Pinned) had no test behind the path the Mentions
-        // screen actually uses.
+        // Recent Mentions refreshes through fetchRecentMentions -> searchPosts, which
+        // persists with a different shape than the channel path above: empty actionType and
+        // order, prepareRecordsOnly, then a separate batchRecords. Cover that shape too.
         it('should emit the edited body when the post is persisted the way searchPosts does', async () => {
             const channelId = TestHelper.basicChannel?.id;
             if (!channelId) {

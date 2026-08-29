@@ -49,9 +49,8 @@ describe('getReadableTimestamp', () => {
     });
 
     it('should still return a label when the engine rejects the timeZone option', () => {
-        // Hermes (iOS) returns the literal "Invalid Date" for an option it cannot honour.
-        // Returning '' there made the caller drop the whole "Send on ..." row (MM-T5720),
-        // so an unusable timeZone must fall back to the device zone, not to nothing.
+        // Hermes returns the literal "Invalid Date" for an option it cannot honour, and
+        // returning '' made the caller drop the whole row. Fall back to the device zone.
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const result = getReadableTimestamp(timestamp, 'Not/AZone', false, 'en-US');
         expect(result).not.toBe('');

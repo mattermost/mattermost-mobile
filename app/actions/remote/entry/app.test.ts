@@ -11,12 +11,9 @@ jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/user');
 jest.mock('@agents/actions/remote/agents');
 
-// Hermetic: the global `jest.mock('@database/manager')` in test/setup.ts resolves the
-// manual mock, a real singleton shared by every import in this file's registry.
-// Reassigning a method on it in beforeEach is order-sensitive and has flaked in CI
-// (`https://server.example.com database not found` — the manual mock's own throw).
-// A file-local factory removes the shared object entirely. Do not drop this again:
-// it was added in a49e398 for this exact failure and lost in cb4d01a.
+// The global mock in test/setup.ts resolves to a singleton shared across this file's
+// registry, so reassigning a method on it in beforeEach is order-sensitive and flakes.
+// Keep this file-local factory.
 jest.mock('@database/manager', () => ({
     __esModule: true,
     default: {

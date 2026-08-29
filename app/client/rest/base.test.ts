@@ -93,8 +93,8 @@ describe('doFetch transient transport retry', () => {
         expect(doFetchWithTracking).toHaveBeenCalledTimes(2);
     });
 
-    // Our own test hosts are named mobile-pr-10050 / mobile-pr-10010, which contain "-1005"
-    // and "-1001". Matching on raw error codes would retry permanent failures.
+    // Hostnames can contain the digits of the NSURLError codes, so matching on raw codes
+    // would retry permanent failures.
     it('should not retry a permanent error whose message contains the server hostname', async () => {
         doFetchWithTracking.mockRejectedValue(
             new Error('You do not have permission: https://mobile-pr-10050-ios-site-1.test.mattermost.cloud/api/v4/users/me'),
