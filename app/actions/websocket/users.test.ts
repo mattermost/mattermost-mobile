@@ -130,33 +130,6 @@ describe('WebSocket Users Actions', () => {
             expect(batchRecords).toHaveBeenCalled();
         });
 
-        it('should not save a stale update for the current user', async () => {
-            // Clearing the custom status writes props locally without bumping update_at, so a
-            // re-delivered or out-of-order event carrying the old props must not be persisted —
-            // otherwise it resurrects the status the user just cleared.
-            const mockUser = TestHelper.fakeUser({
-                id: currentUserId,
-                update_at: 1000,
-                notify_props: TestHelper.fakeUserNotifyProps({email: 'true'}),
-                props: {customStatus: '{"emoji":"calendar","text":"In a meeting"}'},
-            });
-
-            const mockCurrentUser = TestHelper.fakeUserModel({
-                id: currentUserId,
-                updateAt: 1000,
-                locale: 'en',
-            });
-
-            jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
-
-            const msg = {data: {user: mockUser}} as WebSocketMessage;
-
-            await handleUserUpdatedEvent(serverUrl, msg);
-
-            expect(handleUsers).not.toHaveBeenCalled();
-            expect(batchRecords).not.toHaveBeenCalled();
-        });
-
         it('should handle other user update', async () => {
             const mockUser = TestHelper.fakeUser({
                 id: otherUserId,

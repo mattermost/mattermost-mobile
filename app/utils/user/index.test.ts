@@ -393,14 +393,6 @@ describe('isCustomStatusExpired', () => {
         const result = isCustomStatusExpired(user);
         expect(result).toBe(true);
     });
-
-    it('should return true if the custom status is an empty object (cleared locally)', () => {
-        const user = TestHelper.fakeUser({
-            username: 'john_doe',
-            props: {customStatus: {}},
-        });
-        expect(isCustomStatusExpired(user)).toBe(true);
-    });
 });
 
 describe('isBot', () => {

@@ -241,8 +241,6 @@ export default function PostInput({
         if (valueLength > maxMessageLength) {
             // Check if component is already aware message is too long
             if (!longMessageAlertShown) {
-                // Explicit OK button: an alert without one leaves a sticky native dialog
-                // that blocks navigation.
                 Alert.alert(
                     intl.formatMessage({
                         id: 'mobile.message_length.title',
@@ -255,14 +253,6 @@ export default function PostInput({
                         max: maxMessageLength,
                         count: valueLength,
                     }),
-                    [{
-                        text: intl.formatMessage({
-                            id: 'mobile.message_length.ok',
-                            defaultMessage: 'OK',
-                        }),
-                        style: 'cancel',
-                    }],
-                    {cancelable: true},
                 );
                 setLongMessageAlertShown(true);
             }

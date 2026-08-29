@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, Platform, Pressable, StatusBar, StyleSheet, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
@@ -60,29 +60,16 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
             <View
                 style={{flex: 1}}
                 onLayout={onRootLayout}
-                testID='tutorial_highlight.overlay'
             >
-                {/*
-                  * Dismiss target. It wraps the scrim rather than overlaying it, so the touch
-                  * target has the scrim's own pixels; HighlightItem's SVG onPress does not fire
-                  * for a synthetic tap. No pressed style on purpose — feedback on a full-screen
-                  * scrim would flash the whole screen.
-                  */}
                 {itemBounds.endX > 0 &&
-                <Pressable
-                    onPress={onDismiss}
-                    style={StyleSheet.absoluteFill}
-                    testID='tutorial_highlight.backdrop'
-                >
-                    <HighlightItem
-                        borderRadius={itemBorderRadius}
-                        itemBounds={itemBounds}
-                        height={height}
-                        onDismiss={onDismiss}
-                        width={width}
-                        onLayout={handleShowTutorial}
-                    />
-                </Pressable>
+                <HighlightItem
+                    borderRadius={itemBorderRadius}
+                    itemBounds={itemBounds}
+                    height={height}
+                    onDismiss={onDismiss}
+                    width={width}
+                    onLayout={handleShowTutorial}
+                />
                 }
                 {itemBounds.endX > 0 && children}
             </View>

@@ -3,7 +3,6 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getUserById} from '@queries/servers/user';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -75,18 +74,6 @@ describe('updateLocalCustomStatus', () => {
         const result = await updateLocalCustomStatus(serverUrl, userModels[0], {text: 'customstatus'});
         expect(result).toBeDefined();
         expect(result).not.toHaveProperty('error');
-    });
-
-    it('should clear customStatus to empty string so observers drop the status', async () => {
-        const userModels = await operator.handleUsers({users: [user], prepareRecordsOnly: false});
-        await updateLocalCustomStatus(serverUrl, userModels[0], {emoji: 'calendar', text: 'In a meeting'});
-
-        const clearResult = await updateLocalCustomStatus(serverUrl, userModels[0], undefined);
-        expect(clearResult).not.toHaveProperty('error');
-
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const cleared = await getUserById(database, user.id);
-        expect(cleared?.props?.customStatus).toBe('');
     });
 });
 

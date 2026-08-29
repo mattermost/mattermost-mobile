@@ -37,12 +37,7 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models: Model[] = [];
-
-        // Clear writes '' so getUserCustomStatus parses to undefined, not a lingering {}.
-        const currentProps = {
-            ...user.props,
-            customStatus: customStatus ?? '',
-        };
+        const currentProps = {...user.props, customStatus: customStatus || {}};
         const userModel = user.prepareUpdate((u: UserModel) => {
             u.props = currentProps;
         });

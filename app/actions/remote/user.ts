@@ -747,11 +747,6 @@ export const unsetCustomStatus = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.unsetCustomStatus();
-
-        // The DELETE returns no user payload, so the optimistic local write never converges
-        // on its own. Re-read the authoritative user instead of waiting for an app reload.
-        await fetchMe(serverUrl);
-
         return {};
     } catch (error) {
         logDebug('error on unsetCustomStatus', getFullErrorMessage(error));

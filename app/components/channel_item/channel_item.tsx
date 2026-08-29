@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
@@ -41,8 +41,6 @@ type Props = {
 
 export const ROW_HEIGHT = 40;
 export const ROW_HEIGHT_WITH_TEAM = 58;
-
-const PRESSED_STYLE = {opacity: 0.72};
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -89,12 +87,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.sidebarTextActiveColor, 0.1),
         borderLeftColor: theme.sidebarTextActiveBorder,
         borderLeftWidth: 5,
-    },
-
-    // Autocomplete sits on the center canvas, and without a fill the row's press target
-    // collapses to the text glyphs.
-    onCenterBg: {
-        backgroundColor: theme.centerChannelBg,
     },
     textActive: {
         color: theme.sidebarText,
@@ -176,17 +168,15 @@ const ChannelItem = ({
         showActive && isOnHome && {
             paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
         },
-        isOnCenterBg && styles.onCenterBg,
         {minHeight: height},
-    ], [height, showActive, styles, isOnHome, isOnCenterBg]);
+    ], [height, showActive, styles, isOnHome]);
 
     return (
-        <Pressable
-            onPress={handleOnPress}
-            style={({pressed}) => [pressed && PRESSED_STYLE]}
-            testID={channelItemTestId}
-        >
-            <View style={containerStyle}>
+        <TouchableOpacity onPress={handleOnPress}>
+            <View
+                style={containerStyle}
+                testID={channelItemTestId}
+            >
                 <ChannelIcon
                     hasDraft={hasDraft}
                     isActive={isTablet && isActive}
@@ -224,7 +214,7 @@ const ChannelItem = ({
                 />
                 }
             </View>
-        </Pressable>
+        </TouchableOpacity>
     );
 };
 

@@ -23,12 +23,6 @@ class ServerListScreen {
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
-
-        // The pressable backdrop inside the tutorial Modal. tutorial_swipe_left cannot be
-        // used as the dismiss target: its root View sets pointerEvents='none'
-        // (components/tutorial_highlight/swipe_left.tsx), so a tap on it hit-tests into
-        // this sibling SVG and Detox rejects it as "not hittable".
-        tutorialBackdrop: 'tutorial_highlight.backdrop',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
@@ -40,7 +34,6 @@ class ServerListScreen {
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
-    tutorialBackdrop = element(by.id(this.testID.tutorialBackdrop));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -196,18 +189,13 @@ class ServerListScreen {
             return false;
         }
 
-        // The backdrop spans the whole window, so its centre point sits under the
-        // "Swipe left on a server…" tooltip card. Detox hit-tests a tap at the view's
-        // centre and rejects it when the target is not the visible thing there —
-        // messageId 87 on iOS shard 19 of run 32881947481: "View is not hittable at its
-        // visible point ... view point: {201, 437}". TUTORIAL_DISMISS_POINT is above the
-        // card and above the highlighted row's cut-out, so the scrim itself is what gets
-        // hit. The centre tap and the Modal host are kept as fallbacks for builds whose
-        // overlay geometry differs (tablet, landscape).
+        // The overlay's centre point sits under the "Swipe left on a server…" tooltip card,
+        // and a tap there is rejected as not hittable. TUTORIAL_DISMISS_POINT is above the
+        // card and above the highlighted row's cut-out. The centre tap is kept as a fallback
+        // for builds whose overlay geometry differs (tablet, landscape).
         /* eslint-disable no-await-in-loop -- fall through to the next dismiss target */
         const attempts: Array<() => Promise<void>> = [
-            () => this.tutorialBackdrop.tap(TUTORIAL_DISMISS_POINT),
-            () => this.tutorialBackdrop.tap(),
+            () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialHighlight.tap(),
         ];
         for (const attempt of attempts) {

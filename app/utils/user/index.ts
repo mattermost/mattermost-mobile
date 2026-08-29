@@ -183,9 +183,7 @@ export function isCustomStatusExpired(user?: UserModel | UserProfile) {
 
     const customStatus = getUserCustomStatus(user);
 
-    // updateLocalCustomStatus historically wrote {} on clear, so treat a status with neither
-    // emoji nor text as cleared and let the Account UI drop the clear control.
-    if (!customStatus?.emoji && !customStatus?.text) {
+    if (!customStatus) {
         return true;
     }
 

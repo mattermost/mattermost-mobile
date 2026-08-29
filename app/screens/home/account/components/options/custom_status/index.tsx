@@ -69,10 +69,7 @@ const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
             return;
         }
 
-        const {error: updateError} = await updateLocalCustomStatus(serverUrl, currentUser, undefined);
-        if (updateError) {
-            setShowRetryMessage(true);
-        }
+        updateLocalCustomStatus(serverUrl, currentUser, undefined);
     }, [currentUser, serverUrl]));
 
     const goToCustomStatusScreen = usePreventDoubleTap(useCallback(() => {

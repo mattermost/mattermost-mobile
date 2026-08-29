@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import React from 'react';
 
 import {MM_TABLES} from '@constants/database';
-import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import ChannelItem from './channel_item';
@@ -86,29 +86,5 @@ describe('components/channel_list/categories/body/channel_item', () => {
         );
 
         expect(wrapper.toJSON()).toMatchSnapshot();
-    });
-
-    it('should fire onPress from the row testID when used as an autocomplete item', () => {
-        const onPress = jest.fn();
-        const {getByTestId} = renderWithIntlAndTheme(
-            <ChannelItem
-                channel={{displayName: 'Town Square', type: 'O', shared: false, name: 'town-square', deleteAt: 0} as ChannelModel}
-                hasDraft={false}
-                isActive={false}
-                membersCount={0}
-                isMuted={false}
-                currentUserId={'id'}
-                testID='autocomplete.channel_mention_item'
-                onPress={onPress}
-                isUnread={false}
-                mentionsCount={0}
-                hasCall={false}
-                isOnCenterBg={true}
-                showChannelName={true}
-            />,
-        );
-
-        fireEvent.press(getByTestId('autocomplete.channel_mention_item.town-square'));
-        expect(onPress).toHaveBeenCalledTimes(1);
     });
 });

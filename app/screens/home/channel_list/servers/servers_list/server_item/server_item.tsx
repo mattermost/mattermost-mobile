@@ -3,7 +3,8 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, type StyleProp, Text, View, type ViewStyle, Pressable} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, processColor, type StyleProp, Text, View, type ViewStyle} from 'react-native';
+import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
@@ -355,12 +356,13 @@ const ServerItem = ({
                 <View
                     style={containerStyle}
                     ref={viewRef}
+                    testID={serverItemTestId}
                     onLayout={onLayout}
                 >
-                    <Pressable
+                    <RectButton
                         onPress={onServerPressed}
-                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
-                        testID={serverItemTestId}
+                        style={styles.button}
+                        rippleColor={processColor(changeOpacity(theme.centerChannelColor, 0.16))}
                     >
                         <View style={serverStyle}>
                             {!switching &&
@@ -421,7 +423,7 @@ const ServerItem = ({
                             />
                         </View>
                         }
-                    </Pressable>
+                    </RectButton>
                 </View>
             </Swipeable>
             {Boolean(pushAlertText && server.persistenceFlag !== 'wiped' && pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
