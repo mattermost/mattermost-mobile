@@ -194,7 +194,10 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
 
     searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
         const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
-        return this.doFetch(endpoint, {method: 'post', body: params});
+
+        // Read-only POST, so opt into the transient-transport retry: a dead pooled socket
+        // would otherwise yield an empty Recent Mentions / Saved Messages feed.
+        return this.doFetch(endpoint, {method: 'post', body: params, retryOnTransient: true});
     };
 
     searchPosts = async (teamId: string, terms: string, isOrSearch: boolean) => {

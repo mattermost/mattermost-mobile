@@ -393,6 +393,23 @@ class ServerListScreen {
     };
 
     switchToServer = async (serverDisplayName: string) => {
+        // Expand the sheet before hunting for the row. Collapsed, iOS exposes only the
+        // list's top ~114pt while reporting its full frame, so a row below the fold can
+        // never reach scrollServerItemIntoView's 95% threshold no matter how far the list
+        // scrolls. Dragging the sheet up is what a user does to see the whole list, and
+        // every spec-level flow already does it -- this helper was the one that did not.
+        //
+        // Best-effort on purpose: scrollServerListIntoView rethrows when its swipe fails on
+        // the last attempt, and this helper never swiped before. Making it fatal here would
+        // add a failure mode rather than remove one -- scrollServerItemIntoView below has
+        // its own scroll loop and reports the real problem if the row stays out of reach.
+        try {
+            await this.scrollServerListIntoView();
+        } catch {
+            // Sheet already expanded, or the drag did not take; carry on and let
+            // scrollServerItemIntoView decide.
+        }
+
         const target = await this.getServerItem(serverDisplayName);
         await this.scrollServerItemIntoView(target);
         await target.tap({x: 36, y: 36});

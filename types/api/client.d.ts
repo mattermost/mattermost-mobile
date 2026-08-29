@@ -10,6 +10,10 @@ type ClientOptions = {
     body?: any;
     method?: string;
     noRetry?: boolean;
+
+    // Opts a POST into the transient-transport retry in ClientBase.doFetch. Only for
+    // read-only POSTs, where a retry cannot duplicate a write.
+    retryOnTransient?: boolean;
     timeoutInterval?: number;
     headers?: Record<string, any>;
     groupLabel?: RequestGroupLabel;

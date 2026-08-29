@@ -243,5 +243,10 @@ describe('Search - Search Message Post Actions', () => {
         await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
         await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
-    });
+
+        // Two full pin/unpin round-trips, each with a server-side confirmation wait and a
+        // channel-list -> channel -> channel info -> pinned messages navigation. That work
+        // does not fit the 300s CI default; same convention as cross_team_search and
+        // follow_and_unfollow_thread, which already carry explicit budgets.
+    }, 360000);
 });

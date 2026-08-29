@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-import {firstValueFrom} from 'rxjs';
+import {Q, Database} from '@nozbe/watermelondb';
+import {firstValueFrom, of as of$} from 'rxjs';
+import {filter, switchMap, take} from 'rxjs/operators';
 
 import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -21,6 +22,7 @@ import {
     queryPostsBetween,
     queryPinnedPostsInChannel,
     observePinnedPostsInChannel,
+    observePostsById,
     getIsPostPriorityEnabled,
     getIsPostAcknowledgementsEnabled,
     observeIsPostPriorityEnabled,
@@ -29,6 +31,7 @@ import {
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
 } from './post';
+import {observeRecentMentions} from './system';
 
 describe('Post Queries', () => {
     const serverUrl = 'post.test.com';
@@ -510,6 +513,124 @@ describe('post query helpers', () => {
             await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
             const results = await firstValueFrom(observePinnedPostsInChannel(database, TestHelper.basicChannel!.id));
             expect(results.map((p) => p.id)).toContain(post.id);
+        });
+
+        it('should emit when a pinned post message is edited', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
+            const post = TestHelper.fakePost({
+                channel_id: channelId,
+                is_pinned: true,
+                message: 'original pinned',
+            });
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+
+            const edited$ = observePinnedPostsInChannel(database, channelId).pipe(
+                filter((rows) => rows.some((p) => p.id === post.id && p.message === 'edited pinned')),
+                take(1),
+            );
+            const editedPromise = firstValueFrom(edited$);
+
+            await operator.handlePosts({
+                posts: [{...post, message: 'edited pinned', edit_at: post.update_at + 1, update_at: post.update_at + 1}],
+                order: [post.id],
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+
+            const results = await editedPromise;
+            expect(results).toHaveLength(1);
+            expect(results.find((p) => p.id === post.id)?.message).toBe('edited pinned');
+        });
+    });
+
+    describe('observePostsById', () => {
+        it('should emit when an existing post message is edited', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
+            const post = TestHelper.fakePost({
+                channel_id: channelId,
+                message: 'original mention',
+            });
+            await operator.handlePosts({posts: [post], order: [post.id], previousPostId: '', actionType: ActionType.POSTS.RECEIVED_NEW, prepareRecordsOnly: false});
+
+            const edited$ = observePostsById(database, [post.id]).pipe(
+                filter((rows) => rows.some((p) => p.id === post.id && p.message === 'edited mention')),
+                take(1),
+            );
+            const editedPromise = firstValueFrom(edited$);
+
+            await operator.handlePosts({
+                posts: [{...post, message: 'edited mention', edit_at: post.update_at + 1, update_at: post.update_at + 1}],
+                order: [post.id],
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+
+            const results = await editedPromise;
+            expect(results).toHaveLength(1);
+            expect(results.find((p) => p.id === post.id)?.message).toBe('edited mention');
+        });
+
+        // Recent Mentions refreshes through fetchRecentMentions -> searchPosts, which
+        // persists with a different shape than the channel path above: empty actionType and
+        // order, prepareRecordsOnly, then a separate batchRecords. Cover that shape too.
+        it('should emit the edited body when the post is persisted the way searchPosts does', async () => {
+            const channelId = TestHelper.basicChannel?.id;
+            if (!channelId) {
+                throw new Error('basicChannel is required');
+            }
+            const post = TestHelper.fakePost({channel_id: channelId, message: 'Own mention abc @user1'});
+
+            const persistLikeSearchPosts = async (raws: Post[]) => {
+                const models = await operator.handlePosts({
+                    actionType: '',
+                    order: [],
+                    posts: raws,
+                    previousPostId: '',
+                    prepareRecordsOnly: true,
+                });
+                await operator.batchRecords(models, 'searchPosts');
+            };
+
+            await persistLikeSearchPosts([post]);
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.RECENT_MENTIONS, value: JSON.stringify([post.id])}],
+                prepareRecordsOnly: false,
+            });
+
+            // The pipeline the recent_mentions enhancer builds.
+            const mentions$ = observeRecentMentions(database).pipe(
+                switchMap((ids) => (ids.length ? observePostsById(database, ids, Q.asc) : of$([]))),
+            );
+
+            const initial = await firstValueFrom(mentions$.pipe(take(1)));
+            expect(initial).toHaveLength(1);
+            expect(initial[0].message).toBe('Own mention abc @user1');
+            expect(initial[0].editAt).toBe(0);
+
+            const editedPromise = firstValueFrom(mentions$.pipe(
+                filter((rows) => rows.some((p) => p.message === 'Own mention abc @user1 edit')),
+                take(1),
+            ));
+
+            await persistLikeSearchPosts([{
+                ...post,
+                message: 'Own mention abc @user1 edit',
+                edit_at: post.update_at + 1000,
+                update_at: post.update_at + 1000,
+            }]);
+
+            const edited = await editedPromise;
+            expect(edited).toHaveLength(1);
+            expect(edited[0].message).toBe('Own mention abc @user1 edit');
+            expect(edited[0].editAt).toBeGreaterThan(0);
         });
     });
 

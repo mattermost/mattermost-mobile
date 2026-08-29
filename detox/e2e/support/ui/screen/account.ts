@@ -27,12 +27,14 @@ class AccountScreen {
         offlineUserStatusOption: 'user_status.offline.option',
         customStatusFailureMessage: 'account.custom_status.failure_message',
         customStatusClearButton: 'account.custom_status.clear.button',
+        customStatusText: 'account.custom_status.custom_status_text',
     };
 
     accountScreen = element(by.id(this.testID.accountScreen));
     accountScrollView = element(by.id(this.testID.accountScrollView));
     userPresenceOption = element(by.id(this.testID.userPresenceOption));
     setStatusOption = element(by.id(this.testID.setStatusOption));
+    customStatusText = element(by.id(this.testID.customStatusText));
     yourProfileOption = element(by.id(this.testID.yourProfileOption));
     settingsOption = element(by.id(this.testID.settingsOption));
     logoutOption = element(by.id(this.testID.logoutOption));
@@ -216,28 +218,32 @@ class AccountScreen {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
-    // Clear the custom status from the account row. One tap, then wait for the row to drop
-    // the clear control.
+    // Clear the custom status from the account row and wait for the row to show its unset
+    // state.
     //
-    // Deliberately NOT tapUntilGone's default 5s: clearCustomStatus awaits a DELETE to
-    // /users/me/status/custom before it writes locally and re-renders, so on CI the control
-    // routinely outlives a 5s window. verifyStatusCleared already allows 10s for the same
-    // element, and the app guards the handler with usePreventDoubleTap (750ms), so an early
-    // re-tap both fights that guard and fires a second DELETE.
+    // Two things are deliberate. It waits on the OUTCOME rather than on the clear control
+    // disappearing, because that control is known to linger after a successful clear, so
+    // asserting its absence fails clears that worked -- and when it does fail, the row text
+    // in the message says which mode it was: still showing the old status means the tap did
+    // not land; showing the unset text means the control lingered.
+    //
+    // And it falls back to a coordinate tap. A plain tap on this control is enough in
+    // smoke_test/account.e2e.ts, but taps on it have also been measured dead-ending on a
+    // simulator while a coordinate tap at the same spot worked. The fallback costs nothing
+    // when the first tap lands.
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.customStatusClearButton.tap();
 
         try {
-            await waitForElementToNotExist(this.customStatusClearButton, timeouts.TWENTY_SEC);
+            await waitFor(this.setStatusOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
             return;
         } catch {
-            // Fall through to a single retry: a tap can be reported performed without the
-            // React handler running.
+            // First tap did not take; retry on the control's centre.
         }
 
-        await this.customStatusClearButton.tap();
-        await waitForElementToNotExist(this.customStatusClearButton, timeouts.TWENTY_SEC);
+        await this.customStatusClearButton.tap({x: 20, y: 20});
+        await waitFor(this.setStatusOption).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
     };
 
     logout = async (serverDisplayName: string | null = null) => {

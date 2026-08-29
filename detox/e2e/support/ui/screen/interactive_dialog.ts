@@ -42,11 +42,18 @@ class InteractiveDialogScreen {
         try {
             const dialogScrollView = element(by.id(this.testID.interactiveDialogScreen));
             if (isPasswordOrTextarea) {
-                // The software keyboard (291px tall, top edge at window y≈583 — device.log
-                // run 33173240310 shard 2, 62 UIKeyboardFrameEndUserInfoKey notifications)
-                // occludes the lower half of the dialog. A fixed 200px scroll left the
-                // textarea (window y 606–731) fully behind it and toBeVisible(75) timed out.
-                // Scroll to the end of the dialog content so the field clears the keyboard.
+                // Dismiss the keyboard the previous field opened BEFORE scrolling. It is
+                // ~291px tall and covers the lower half of the dialog, so scrolling alone
+                // cannot get the textarea to the default 75% visibility threshold -- the
+                // field lands in view but behind the keyboard, and toBeVisible times out.
+                // Tapping the dialog title is what a user does to put it away; the same tap
+                // already runs after typing below.
+                try {
+                    await element(by.id(this.testID.dialogTitle)).tap();
+                    await wait(500);
+                } catch {
+                    // No keyboard up, or the title is not tappable — scrolling still helps.
+                }
                 await dialogScrollView.scrollTo('bottom');
                 await wait(500);
             } else {

@@ -603,8 +603,10 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 };
 
 const verifyStatusCleared = async () => {
-    // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265).
-    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    await expect(AccountScreen.setStatusOption).toExist();
+    // Assert the visible outcome, not the clear control's absence. The control can linger
+    // after a successful clear (CI 30250131265) -- in existence, not only in visibility --
+    // so asserting on it fails tests whose clear actually worked. MM-T5114_1 checks the
+    // emoji/text/expiry for exactly this reason and passes on both platforms.
+    await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
+    await expect(AccountScreen.customStatusText).toHaveText('Set a custom status');
 };

@@ -2,11 +2,20 @@
 // See LICENSE.txt for license information.
 
 import {Calls} from '@constants';
+import {getFullErrorMessage} from '@utils/errors';
 
 import * as ClientConstants from './constants';
 import ClientTracking from './tracking';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
+
+// An idle keep-alive socket closed by the load balancer fails the next request before it
+// reaches the server. One retry on a fresh connection recovers it. Match on message text, not
+// on the raw NSURLError codes, whose digits also occur in hostnames.
+const RETRYABLE_METHODS = new Set(['get', 'put', 'patch', 'delete']);
+const isTransientTransportError = (error: unknown) =>
+    /network connection was lost|the request timed out/i.test(getFullErrorMessage(error));
+const TRANSIENT_RETRY_ATTEMPTS = 2;
 
 export default class ClientBase extends ClientTracking {
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string, preauthSecret?: string) {
@@ -232,6 +241,30 @@ export default class ClientBase extends ClientTracking {
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {
-        return this.doFetchWithTracking(url, options, returnDataOnly);
+        const method = options.method?.toLowerCase();
+        if (options.noRetry || method == null) {
+            return this.doFetchWithTracking(url, options, returnDataOnly);
+        }
+
+        // Idempotent methods, plus read-only POSTs that opt in via retryOnTransient.
+        if (!RETRYABLE_METHODS.has(method) && options.retryOnTransient !== true) {
+            return this.doFetchWithTracking(url, options, returnDataOnly);
+        }
+        let lastError: unknown;
+        for (let attempt = 0; attempt < TRANSIENT_RETRY_ATTEMPTS; attempt++) {
+            try {
+                // Sequential by design: an attempt only runs if the previous one failed.
+                // eslint-disable-next-line no-await-in-loop
+                return await this.doFetchWithTracking(url, options, returnDataOnly);
+            } catch (error) {
+                lastError = error;
+                if (!isTransientTransportError(error) || attempt === TRANSIENT_RETRY_ATTEMPTS - 1) {
+                    throw error;
+                }
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((resolve) => setTimeout(resolve, 400 * Math.pow(2, attempt)));
+            }
+        }
+        throw lastError;
     };
 }

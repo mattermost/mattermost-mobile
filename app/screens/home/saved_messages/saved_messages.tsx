@@ -24,7 +24,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
-import {observeSavedPostsByIds, queryPostsById} from '@queries/servers/post';
+import {observePostsById, observeSavedPostsByIds} from '@queries/servers/post';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -71,7 +71,7 @@ function observeSavedPosts(database: Database) {
             return observeSavedPostsByIds(database, ids);
         }),
 
-        // Sorted so the comparison below is order-insensitive; queryPostsById
+        // Sorted so the comparison below is order-insensitive; observePostsById
         // applies the real ordering.
         map((savedPostIds) => [...savedPostIds].sort()),
         distinctUntilChanged(sameIds),
@@ -79,7 +79,7 @@ function observeSavedPosts(database: Database) {
             if (!ids.length) {
                 return of$([]);
             }
-            return queryPostsById(database, ids, Q.asc).observe();
+            return observePostsById(database, ids, Q.asc);
         }),
     );
 }

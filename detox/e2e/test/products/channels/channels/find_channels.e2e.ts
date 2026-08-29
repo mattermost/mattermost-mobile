@@ -138,7 +138,13 @@ describe('Channels - Find Channels', () => {
                 withTimeout(timeouts.HALF_MIN);
         }
 
-        // # Search for the group message channel
+        // # Search for the group message channel. Clear first: this is the second search in
+        // the same session and the field still holds the previous term with its results
+        // rendered, where replaceText does not reliably re-fire the debounced search. The
+        // DM search above works precisely because it is the first one. A user clears and
+        // retypes; line 103 in this file already does the same.
+        await FindChannelsScreen.searchInput.clearText();
+        await wait(timeouts.ONE_SEC);
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
         // * Verify search returns the target group message channel item and tap it

@@ -25,6 +25,11 @@ type Props = {
     skipSavedPostsHighlight?: boolean;
     isSaved?: boolean;
     isChannelAutotranslated: boolean;
+
+    // Signature of the post's body, supplied by the enhancer. WatermelonDB mutates models in
+    // place, so an edit reaches this memoized component with the same `post` reference and the
+    // shallow compare bails out. This prop changes when the body does.
+    postBodyKey: string;
 }
 
 const styles = StyleSheet.create({
@@ -50,6 +55,7 @@ function PostWithChannelInfo({
     skipSavedPostsHighlight = false,
     isSaved,
     isChannelAutotranslated,
+    postBodyKey,
 }: Props) {
     return (
         <View style={styles.container}>
@@ -59,6 +65,10 @@ function PostWithChannelInfo({
             />
             <View style={styles.content}>
                 <Post
+
+                    // Post is memoized on the same mutated model, so re-key it on the body
+                    // signature to make an edit remount the row.
+                    key={postBodyKey}
                     appsEnabled={appsEnabled}
                     currentUser={currentUser}
                     customEmojiNames={customEmojiNames}

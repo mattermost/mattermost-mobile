@@ -195,9 +195,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
 
         // # Revert back to original first server display name and go back to first server.
-        // Scroll first: the swipe has to start on a fully visible row, and the reveal
-        // animation leaves the edit option where the row is, not where it was.
-        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
+        // The scroll above already left this row fully visible, which is what the swipe needs.
         await ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
