@@ -67,6 +67,8 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
                 // Delete posts for all channels with user autotranslation enabled when locale changes
                 await deletePostsForChannelsWithAutotranslation(serverUrl);
             }
+        } else {
+            return;
         }
     } else {
         const channels = await queryUserChannelsByTypes(database, user.id, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
