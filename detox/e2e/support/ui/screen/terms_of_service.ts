@@ -36,9 +36,9 @@ class TermsOfServiceScreen {
         await LoginScreen.toBeVisible();
 
         await LoginScreen.usernameInput.tap({x: 150, y: 10});
-        await LoginScreen.usernameInput.replaceText(user.newUser?.email || user.email);
+        await LoginScreen.usernameInput.replaceText(user.newUser?.email ?? user.email);
         await LoginScreen.passwordInput.tap();
-        await LoginScreen.passwordInput.replaceText(user.newUser?.password || user.password);
+        await LoginScreen.passwordInput.replaceText(user.newUser?.password ?? user.password);
         await LoginScreen.loginFormInfoText.tap();
         await LoginScreen.signinButton.tap();
 
