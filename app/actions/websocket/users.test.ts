@@ -130,6 +130,33 @@ describe('WebSocket Users Actions', () => {
             expect(batchRecords).toHaveBeenCalled();
         });
 
+        it('should not persist a current user update older than the stored profile', async () => {
+            const mockUser = TestHelper.fakeUser({
+                id: currentUserId,
+                update_at: 900,
+                notify_props: TestHelper.fakeUserNotifyProps({email: 'true'}),
+            });
+
+            const mockCurrentUser = TestHelper.fakeUserModel({
+                id: currentUserId,
+                updateAt: 1000,
+                locale: 'en',
+            });
+
+            jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
+
+            const msg = {
+                data: {
+                    user: mockUser,
+                },
+            } as WebSocketMessage;
+
+            await handleUserUpdatedEvent(serverUrl, msg);
+
+            expect(handleUsers).not.toHaveBeenCalled();
+            expect(batchRecords).not.toHaveBeenCalled();
+        });
+
         it('should handle other user update', async () => {
             const mockUser = TestHelper.fakeUser({
                 id: otherUserId,
