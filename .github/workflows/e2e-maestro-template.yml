@@ -267,7 +267,7 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Re-apply server config baseline (self-healing)
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        if: hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         run: |
           set -a
           source detox/maestro/.maestro-test-env.sh
@@ -278,34 +278,12 @@ jobs:
           # config into this run.
           # - AllowDownloadLogs must be true for attach_logs.yml; the T67856_4
           #   dedicated step flips it around its own run and restores itself.
-          # - The login field placeholder is config-driven: login.yml matches
-          #   "Email, Username or AD/LDAP Username", which the app only shows
-          #   when email + username + LDAP sign-in are all enabled (the
-          #   placeholder segments are assembled from server config).
           echo "==> Re-applying config baseline on ${SITE_1_URL}"
           curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          LDAP_ON=$(curl -sS -H "Authorization: Bearer $ADMIN_TOKEN" "${SITE_1_URL}/api/v4/config" \
-            | python3 -c 'import json,sys; print(json.load(sys.stdin).get("LdapSettings",{}).get("Enable") is True)')
-          if [ "$LDAP_ON" != "True" ]; then
-            # # Stock/off-LDAP servers need a placeholder-only LDAP config for
-            # the login form. The credentials are deliberately non-functional:
-            # real logins keep using email+password, no directory is reached.
-            # Servers that already have LDAP enabled are skipped entirely so
-            # genuine directory config is never overwritten.
-            echo "==> LDAP disabled on server; provisioning placeholder-only LDAP config"
-            curl -f -sS --show-error -X PUT \
-              -H "Authorization: Bearer $ADMIN_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '{"LdapSettings":{"Enable":true,"LdapServer":"ldap.invalid","LdapBindUsername":"cn=unused","LdapBindPassword":"unused","BaseDN":"dc=invalid","EmailAttribute":"mail","UsernameAttribute":"sAMAccountName","IdAttribute":"objectGUID","FirstNameAttribute":"givenName","LastNameAttribute":"sn","NicknameAttribute":"nickname","LoginIdAttribute":"uid"}}' \
-              "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-          else
-            echo "==> LDAP already enabled; server LDAP config left untouched"
-          fi
 
       - name: Push test fixture into iOS simulator
         continue-on-error: true
@@ -762,7 +740,7 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Re-apply server config baseline (self-healing)
-        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        if: hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         run: |
           set -a
           source detox/maestro/.maestro-test-env.sh
@@ -777,19 +755,6 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          LDAP_ON=$(curl -sS -H "Authorization: Bearer $ADMIN_TOKEN" "${SITE_1_URL}/api/v4/config" \
-            | python3 -c 'import json,sys; print(json.load(sys.stdin).get("LdapSettings",{}).get("Enable") is True)')
-          if [ "$LDAP_ON" != "True" ]; then
-            echo "==> LDAP disabled on server; provisioning placeholder-only LDAP config"
-            curl -f -sS --show-error -X PUT \
-              -H "Authorization: Bearer $ADMIN_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '{"LdapSettings":{"Enable":true,"LdapServer":"ldap.invalid","LdapBindUsername":"cn=unused","LdapBindPassword":"unused","BaseDN":"dc=invalid","EmailAttribute":"mail","UsernameAttribute":"sAMAccountName","IdAttribute":"objectGUID","FirstNameAttribute":"givenName","LastNameAttribute":"sn","NicknameAttribute":"nickname","LoginIdAttribute":"uid"}}' \
-              "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-          else
-            echo "==> LDAP already enabled; server LDAP config left untouched"
-          fi
 
       - name: Enable KVM
         run: |

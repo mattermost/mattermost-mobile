@@ -486,22 +486,28 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 
 #### Current `exclude_tags.json` entries
 
-`run_ci_batches.sh` joins `default` plus the platform key (`ios` / `android`). Reasons live in the JSON `_` comment keys and are summarized here so quarantine is visible next to the runner docs.
+`run_ci_batches.sh` joins `default` plus the platform key (`ios` / `android`); the JSON holds nothing but those three lists. **The reason for every exclusion lives here** — add a row below when you add a tag, so a quarantine is never a bare string with no rationale.
 
 | Tag | Key | Kind | Reason |
 |-----|-----|------|--------|
 | `MM-T67856_4` | `default` | Dedicated CI step (not a flake) | Isolated attach-logs variant with `SupportSettings.AllowDownloadLogs=false`. |
 | `MM-T3260` | `android` | Driver / platform | After Chrome Custom Tab, Maestro cannot relaunch `com.mattermost.rnbeta` on API 35. |
+| `MM-T5603` | `ios` | Intermittent, mechanism unknown | `channel_bookmark_file.yml` upload shows “Error uploading file” on Add bookmark, so it never reaches `channel_bookmark.file.upload_complete`. Not server-side: the same fixture via `POST /api/v4/files` returns 201. |
 
-Removed as dead entries on 2026-08-11 (`_DEAD_ENTRIES_REMOVED`): `MM-T1411`, `MM-T4832`, `MM-T4833` — iOS already skips `flows/calls/` in the runner. Un-excluded 2026-08-11 (`_UNEXCLUDED_2026_08_11`): `MM-T1325`, `MM-T3260` (iOS), `MM-T67856_1`, `MM-T67856_2`. Un-excluded from iOS 2026-08-29 (`_UNEXCLUDED_2026_08_29`) after 3x consecutive local greens each: `MM-T5603` (the intermittent “Error uploading file” failure never reproduced — mechanism stays unknown; re-exclude with the failing CI run ID if it returns) and `MM-T5611` (long-press id-regex proven resolving, non-vacuity verified with failing negative-control probes).
+To un-exclude a tag: prove the flow green 5x consecutively **inside its CI batch, in batch order with its siblings**, and prove it can still fail — a negative control that breaks the feature and makes the flow fail. A flow that only stopped failing has not been fixed. If CI reddens an un-excluded tag, put it back **with the failing run ID**.
+
+#### Known flake: QUIC transport on the iOS Simulator
+
+Intermittent connect/login failures on the iOS Simulator are HTTP/3 (QUIC) transport teardown — **not** certificate trust, and not a defect in whatever flow happened to be running. The tell is `-1005 NSURLErrorNetworkConnectionLost` on a request to the server, surfacing in-app as “The network connection was lost”. Trust evaluation succeeds every time it completes; `-1202`/`-1203` strings and “Cancelled during verify block” lines in the device log are benign noise, not evidence of a TLS problem.
+
+If you hit it: re-run. Do not exclude the tag, and do not work around it in the flow. A potential app-side fix (disabling or falling back from HTTP/3, `RUNNING_E2E`-gated) is tracked separately as a Product Engineering decision.
 
 #### Dedicated MM-T67856_4 step
 
-This is **intentional topology**, not a flake to “fix” by putting the tag back in the default PR batch.
+Intentional topology, not a flake to “fix” by returning the tag to the default PR batch.
 
-- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs has a step that patches `SupportSettings.AllowDownloadLogs=false`, runs `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml`, and restores `true` via `trap` on EXIT. `continue-on-error: true`; the main batch report is the source of truth.
+- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs patches `SupportSettings.AllowDownloadLogs=false`, runs `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml`, and restores `true` on the way out. `continue-on-error: true`; the main batch report is the source of truth. The restore is a standalone `always()` step rather than only an in-step `trap`, because a trap does not fire if the runner is hard-killed or the step is skipped — and a job that dies mid-flip leaves the flag `false` for every later `attach_logs` run on a shared server.
 - **Local:** same curl as `detox/maestro/GUIDELINES.md` (AllowDownloadLogs is under `SupportSettings`, not `ServiceSettings`), then `maestro test` that flow, then restore.
-- `MM-T67856_4` is env-gated; `MM-T67856_1`/`_2` are no longer tag-excluded.
 
 ### Reports
 
