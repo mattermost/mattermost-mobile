@@ -40,13 +40,6 @@ describe('Autocomplete - Edit Channel', () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
 
-        // # Open a channel screen, open channel info screen, and open edit channel screen.
-        // Reach channel info from the header, not the intro card. The intro is the post
-        // list's ListFooterComponent, so it only exists once the initial post batch has
-        // rendered -- and this runs in beforeAll immediately after login, the coldest point
-        // in the session, where even a 30s existence wait times out. The header title is
-        // present as soon as the channel screen is, is what a user actually taps, and is the
-        // route every other spec uses. MM-T4928_2 still covers the intro action itself.
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.toBeVisible();

@@ -130,7 +130,7 @@ describe('Teams - Invite', () => {
         await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Threshold 40: the summary panel is only partly on screen on iOS, so the default
-        // 75 can never be met (MM-T5363, run 31977498176).
+        // 75 can never be met
         await expect(Invite.getSummaryReportSent()).toBeVisible(40);
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportTextItem(noUserEmailFormat)).toBeVisible();
@@ -161,7 +161,7 @@ describe('Teams - Invite', () => {
         await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Threshold 40: the summary panel is only partly on screen on iOS, so the default
-        // 75 can never be met (MM-T5363, run 31977498176).
+        // 75 can never be met
         await expect(Invite.getSummaryReportSent()).toBeVisible(40);
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
@@ -225,24 +225,11 @@ describe('Teams - Invite', () => {
         await wait(timeouts.TWO_SEC);
 
         // * Validate summary.
-        // These waitFor chains were neither awaited nor given a withTimeout, so they never
-        // ran and asserted nothing. Threshold 40 because the summary panel is only partly on
-        // screen on iOS — the default 75 is unreachable (MM-T5365, run 31977498176).
         await waitFor(Invite.screenSummary).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
 
         // * Validate summary report not sent
         await expect(Invite.getSummaryReportNotSent()).toBeVisible(40);
         await expect(Invite.getSummaryReportUserItem(testUser.id)).toBeVisible(40);
-
-        // toHaveText, not toBeVisible(<string>): toBeVisible takes a visibility percentage,
-        // and `username1` does not exist on these fixtures, so the argument was undefined
-        // and the username was never actually checked.
-        //
-        // testUser is the logged-in user (that is why this invite lands in "not sent" —
-        // "This person is already a team member"), and UserItem appends " (you)" to the
-        // current user's display name. It also runs the result through nonBreakingString,
-        // which rewrites every space as U+00A0, so the node reads "<username>[U+00A0](you)"
-        // — the plain username never matched (run 32089683192, both platforms).
         await expect(Invite.getSummaryReportUserItemText(testUser.id)).toHaveText(`${testUser.username}\u00a0(you)`);
 
         // * Validate summary report sent

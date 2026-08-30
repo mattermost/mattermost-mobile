@@ -105,19 +105,6 @@ class ManageChannelMembersScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    // Tap the coach mark away on BOTH platforms — never device.pressBack().
-    //
-    // TutorialHighlight is a full-screen RN <Modal> whose onRequestClose is wired to the
-    // dismiss handler, but the app ships without android:enableOnBackInvokedCallback, so
-    // Android logs "OnBackInvokedCallback is not enabled for the application" and the back
-    // press never reaches onRequestClose. The modal then stays up indefinitely and hides
-    // manage_members.screen from Espresso — MM-T3196_1 polled it for 30s / 174 times and
-    // never saw it, even though the screen was mounted and intact behind the overlay
-    // (proven locally: tapping the overlay revealed the full member list).
-    //
-    // tutorial_swipe_left has pointerEvents='none', so the tap falls through to
-    // HighlightItem's <Svg onPress={onDismiss}> and only hides the modal — it does not
-    // navigate. This is the path iOS already used successfully.
     dismissLongPressProfileTutorial = async () => {
         try {
             await waitFor(this.tutorialSwipeLeft).toExist().withTimeout(timeouts.THREE_SEC);
@@ -175,4 +162,3 @@ class ManageChannelMembersScreen {
 
 const manageChannelMembersScreen = new ManageChannelMembersScreen();
 export default manageChannelMembersScreen;
-

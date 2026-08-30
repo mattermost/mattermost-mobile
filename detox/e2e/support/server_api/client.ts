@@ -146,11 +146,6 @@ baseClient.interceptors.response.use(
  * Name resolution failures for a freshly provisioned test server. Unlike a timeout, these
  * are provably side-effect-free — the request never left the machine — so a POST is as safe
  * to replay as a GET, and the idempotency rule above does not apply.
- *
- * MM-T4877_2 on iOS shard 4 (f181296) died on
- * "getaddrinfo ENOTFOUND mobile-pr-10050-ios-site-2-....test.mattermost.cloud" during
- * apiCreatePost, while every other spec on that shard reached the same server: the runner
- * had cached a negative lookup from before the record propagated.
  */
 const DNS_ERROR_CODES: ReadonlySet<string> = new Set(['ENOTFOUND', 'EAI_AGAIN']);
 

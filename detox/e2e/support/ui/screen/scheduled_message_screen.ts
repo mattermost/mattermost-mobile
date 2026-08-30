@@ -85,26 +85,11 @@ class ScheduledMessageScreen {
     };
 
     selectDateTime = async () => {
-        // Save stays disabled until handleChange fires with a time ≠ scheduledAt.
-        // Tapping Select Date/Time alone does not change the value — nudge the
-        // iOS spinner so onChange runs (MM-T5720).
         await this.selectTimeButton.tap();
         if (isIos()) {
             const saveButton = element(by.id('reschedule_draft.save.button'));
             await waitFor(saveButton).toExist().withTimeout(timeouts.FIVE_SEC);
 
-            // Nudge FIRST, every time, and never gate on the button's `enabled` attribute.
-            // reschedule_draft.save.button is a Pressable whose disabled state is only a
-            // 0.32-opacity text colour, and Detox read it back as enabled while it was
-            // visibly greyed out: iOS shard 12 of run 32881947481 shows one getAttributes
-            // call, zero picker swipes, and then a Save tap — so the guard skipped the very
-            // nudge it existed to drive, selectedTime still equalled draft.scheduledAt,
-            // canSave stayed false and both Save taps were no-ops against a disabled
-            // Pressable. testFnFailure.png is the picker still up with Save greyed.
-            //
-            // The app's real precondition is "the picked time differs from scheduledAt",
-            // and only a swipe produces that, so swipe then tap, and take the picker going
-            // away as the only proof the save committed.
             /* eslint-disable no-await-in-loop -- swipe the spinner until the save commits */
             for (let attempt = 0; attempt < 4; attempt++) {
                 if (!await this.nudgeIosPicker()) {
@@ -208,17 +193,8 @@ class ScheduledMessageScreen {
         return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
 
-    // The app renders these labels in the *device's* timezone; these helpers used to build
-    // them from `new Date()` in the Node runner's timezone. In CI the runner is UTC and the
-    // emulator is America/New_York, so between 00:00 and 04:00 UTC the two disagree on what
-    // day it is: MM-T5720 on Android shard 21 (f181296) expected "Send on Aug 26, 9:00 AM"
-    // at 02:53 UTC and the app correctly showed "Send on Aug 25, 9:00 AM" — the device was
-    // still on Aug 24. Anchor the calendar arithmetic to the device timezone instead.
     deviceTimeZone: string | undefined = undefined;
 
-    // The app pushes the device timezone to the server on home mount (autoUpdateTimezone),
-    // so the stored user timezone is the same zone the labels are formatted in. Falls back
-    // to the runner's zone, which is correct for local runs where both share a host.
     resolveDeviceTimeZone = async (baseUrl: string, userId: string) => {
         try {
             const {user} = await User.apiGetUserById(baseUrl, userId);

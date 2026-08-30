@@ -42,12 +42,6 @@ class InteractiveDialogScreen {
         try {
             const dialogScrollView = element(by.id(this.testID.interactiveDialogScreen));
             if (isPasswordOrTextarea) {
-                // Dismiss the keyboard the previous field opened BEFORE scrolling. It is
-                // ~291px tall and covers the lower half of the dialog, so scrolling alone
-                // cannot get the textarea to the default 75% visibility threshold -- the
-                // field lands in view but behind the keyboard, and toBeVisible times out.
-                // Tapping the dialog title is what a user does to put it away; the same tap
-                // already runs after typing below.
                 try {
                     await element(by.id(this.testID.dialogTitle)).tap();
                     await wait(500);

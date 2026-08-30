@@ -6,27 +6,16 @@ import {ChannelListScreen} from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Point inside the tutorial scrim, clear of both the tooltip card (vertically centred)
-// and the highlighted server row's cut-out (in the bottom sheet). Element-relative, and
-// the scrim spans the whole window.
 const TUTORIAL_DISMISS_POINT = {x: 40, y: 140};
 
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
         serverListTitle: 'server_list.title',
-
-        // The scrollable FlatList holding the server rows. NOT 'server_list' — that id goes
-        // to BottomSheetContent, which renders it as `${testID}.screen` (content.tsx:69) on
-        // a plain, non-scrollable View. Same .screen trap as draft_options and post_list.
         serverList: 'server_list.flat_list',
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
-
-        // The pressable backdrop wrapping the tutorial scrim. It is the only dismiss target
-        // that responds to a synthetic tap: HighlightItem's onPress sits on the RNSVG root
-        // and does not fire, and tutorial_swipe_left sets pointerEvents='none'.
         tutorialBackdrop: 'tutorial_highlight.backdrop',
     };
 
@@ -75,34 +64,9 @@ class ServerListScreen {
 
     toBeVisible = async () => {
         if (isIos()) {
-            // Existence is not presentation. The sheet's view stays in the hierarchy while
-            // it is dismissed, so an existence-only wait let open() report success with the
-            // app still on the channel list — and swipeRevealOption then swiped a row that
-            // was nowhere on screen. Proven by testFnFailure.png for MM-T4691_4 in CI run
-            // 32543957273: the screenshot at the moment of failure is the channel list, and
-            // the edit option's frame was RNGH's closed translate (x = -10000 + row x).
             await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
 
-            // The multi-server tutorial is a full-screen RN Modal whose backdrop SVG
-            // paints a 30%-opacity wash over every pixel of the window. Detox on iOS
-            // derives visibility from a pixel comparison, so while it is up
-            // server_list.screen measures 0% visible and can never reach the 75%
-            // threshold (MM-T4691_1..7 and MM-T4675_2 on f181296 — see the
-            // DETOX_VISIBILITY_*.png pair in those shards, where the whole sheet is
-            // washed grey). It is armed 500ms after the row lays out, which is after
-            // the existence wait above returns, so dismiss between attempts rather
-            // than once up front.
-            /* eslint-disable no-await-in-loop -- retry visibility around a tutorial dismissal */
-            // Assert presentation on the sheet's title, not on `${testID}.screen`.
-            // server_list.screen is BottomSheetContent's outer container (content.tsx:69);
-            // its frame does not pass Detox's 75% iOS threshold even when the sheet is
-            // correctly presented, opaque and unoccluded — proven by the
-            // DETOX_VISIBILITY_*_SCREEN.png pair for MM-T4691_1 in CI run 33036930610,
-            // where the capture taken at check time shows the fully drawn sheet and the
-            // assertion still reported "does not pass visibility percent threshold (75)".
-            // The title is inside the sheet, so it is 0% visible while dismissed and
-            // fully visible once presented: it still separates presentation from mere
-            // existence, which is what this wait is for.
+            /* eslint-disable no-await-in-loop -- bounded retry: only re-throw when the tutorial is genuinely blocking */
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
                     await waitForElementToBeVisible(this.serverListTitle, timeouts.FOUR_SEC);
@@ -125,18 +89,6 @@ class ServerListScreen {
     open = async () => {
         await dismissKnownModals(2);
 
-        // Switching servers from the sheet does not always dismiss it, and on iOS the
-        // sheet is its own window — `channel_list.servers.server_icon` behind it is then
-        // unmatchable and the wait below times out with the list already on screen
-        // (MM-T4675_2, ios-results-gl6zupuras-7). Treat an open sheet as already open.
-        //
-        // Gate that early return on the title being VISIBLE, not on server_list.screen
-        // existing. As toBeVisible() above documents, the sheet's view stays in the
-        // hierarchy after it is dismissed, so a toExist() probe is true forever once the
-        // sheet has been opened once in a suite — open() then returned without tapping the
-        // server icon and left the app on the channel list. testFnFailure.png for
-        // MM-T4691_4 in run 33173240310 (ios shard 18) is that channel list: header still
-        // "Server 1", no sheet, and the following row swipe therefore had nothing to act on.
         try {
             await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
             return this.serverListScreen;
@@ -183,9 +135,6 @@ class ServerListScreen {
         await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
-    // Dismiss the multi-server tutorial Modal if it is up. Returns whether it was
-    // present AND dismissed, so callers can tell "there was nothing to do" apart from
-    // "the blocker is still there" instead of swallowing the difference.
     dismissTutorialIfPresent = async (): Promise<boolean> => {
         try {
             await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TWO_SEC);
@@ -195,17 +144,14 @@ class ServerListScreen {
             return false;
         }
 
-        // The backdrop's centre point sits under the "Swipe left on a server…" tooltip card,
-        // and a tap there is rejected as not hittable. TUTORIAL_DISMISS_POINT is above the
-        // card and above the highlighted row's cut-out. The centre tap and the Modal host are
-        // kept as fallbacks for builds whose overlay geometry differs (tablet, landscape).
-        /* eslint-disable no-await-in-loop -- fall through to the next dismiss target */
         const attempts: Array<() => Promise<void>> = [
             () => this.tutorialBackdrop.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialBackdrop.tap(),
             () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialHighlight.tap(),
         ];
+
+        /* eslint-disable no-await-in-loop -- bounded fallback chain: each dismiss target must run before the next */
         for (const attempt of attempts) {
             try {
                 await attempt();
@@ -234,12 +180,6 @@ class ServerListScreen {
 
     scrollServerListIntoView = async () => {
         if (isIos()) {
-            // The multi-server tutorial's full-screen backdrop SVG can still be up (or
-            // re-armed) when the swipe starts, and every hit-test then resolves against
-            // it (run 33237899744 — MM-T4691_2..7 and MM-T4675_2 failed as "not hittable
-            // at its visible point" with Hit: RNSVGGroup covering the window). Dismiss
-            // the tutorial between attempts instead of relying on open() having won
-            // that race; any other failure is real and is rethrown on the last attempt.
             /* eslint-disable no-await-in-loop -- retry the swipe around tutorial dismissal */
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
@@ -260,9 +200,6 @@ class ServerListScreen {
         }
     };
 
-    // "Add a server" tap with tutorial-scrim recovery. The button sits below the list and
-    // a bare tap fails while the backdrop SVG intercepts the hit-test (MM-T4675_2,
-    // run 33237899744).
     tapAddServerButton = async () => {
         /* eslint-disable no-await-in-loop -- retry the tap around tutorial dismissal */
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -393,16 +330,7 @@ class ServerListScreen {
     };
 
     switchToServer = async (serverDisplayName: string) => {
-        // Expand the sheet before hunting for the row. Collapsed, iOS exposes only the
-        // list's top ~114pt while reporting its full frame, so a row below the fold can
-        // never reach scrollServerItemIntoView's 95% threshold no matter how far the list
-        // scrolls. Dragging the sheet up is what a user does to see the whole list, and
-        // every spec-level flow already does it -- this helper was the one that did not.
-        //
-        // Best-effort on purpose: scrollServerListIntoView rethrows when its swipe fails on
-        // the last attempt, and this helper never swiped before. Making it fatal here would
-        // add a failure mode rather than remove one -- scrollServerItemIntoView below has
-        // its own scroll loop and reports the real problem if the row stays out of reach.
+
         try {
             await this.scrollServerListIntoView();
         } catch {

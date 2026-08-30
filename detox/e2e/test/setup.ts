@@ -148,13 +148,6 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
-// Espresso picks its root view by asking which window currently has focus. When
-// the display sleeps, the keyguard returns, or a system dialog (ANR, "app keeps
-// stopping") sits on top, every window reports has-window-focus=false and the
-// launch check dies on "Waited for the root of the view hierarchy to have window
-// focus ... for 10 seconds" without the app ever getting a chance to render.
-// Relaunching the app does not fix any of those, so the retry loop below has to
-// put the device back into an interactive state before it tries again.
 function recoverAndroidDevice(): void {
     if (device.getPlatform() !== 'android') {
         return;

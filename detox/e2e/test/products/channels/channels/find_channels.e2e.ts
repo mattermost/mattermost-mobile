@@ -47,9 +47,6 @@ describe('Channels - Find Channels', () => {
     });
 
     beforeEach(async () => {
-        // Dismiss any lingering "Removed from channel" or "Archived channel"
-        // dialogs that may appear asynchronously via WebSocket events from
-        // the previous test's channel archival (e.g. MM-T4907_5).
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         // * Verify on channel list screen
@@ -115,9 +112,6 @@ describe('Channels - Find Channels', () => {
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, testOtherUser1.id]);
         const {channel: groupMessageChannel} = await Channel.apiCreateGroupChannel(siteOneUrl, [testUser.id, testOtherUser1.id, testOtherUser2.id]);
 
-        // Reload so API-created DM/GM land in the local DB before Find Channels search
-        // (CI 29935363789 iOS: GM visible by display name but channel_item name matcher
-        // raced a 2s wait, then bare user_item tap failed).
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
@@ -125,8 +119,6 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
         // * Verify search returns a result for the target direct message channel.
-        // When the DM is synced via WS it shows as channel_item; if not yet synced
-        // searchProfiles stores the user profile and it shows as user_item.
         await wait(timeouts.TWO_SEC);
         try {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(directMessageChannel.name)).
@@ -138,18 +130,11 @@ describe('Channels - Find Channels', () => {
                 withTimeout(timeouts.HALF_MIN);
         }
 
-        // # Search for the group message channel. Clear first: this is the second search in
-        // the same session and the field still holds the previous term with its results
-        // rendered, where replaceText does not reliably re-fire the debounced search. The
-        // DM search above works precisely because it is the first one. A user clears and
-        // retypes; line 103 in this file already does the same.
+        // # Search for the group message channel.
         await FindChannelsScreen.searchInput.clearText();
         await wait(timeouts.ONE_SEC);
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
-        // * Verify search returns the target group message channel item and tap it
-        // The GM appears as a channel_item when synced via WS; if not yet synced,
-        // fall back to the user_item which still opens a channel screen.
         await wait(timeouts.TWO_SEC);
         try {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).

@@ -306,8 +306,6 @@ class ChannelScreen {
                 // A long press that degrades into a tap opens the post's thread. The
                 // channel post list item cannot exist there, so every remaining attempt
                 // is doomed and the helper burns its whole budget on a lost cause.
-                // Proven by testFnFailure.png for MM-T4910_5 in CI run 32554749293:
-                // the screenshot is the Thread screen for the post being long-pressed.
                 let navigatedToThread = false;
                 try {
                     await ThreadScreen.toBeVisible();
@@ -394,11 +392,7 @@ class ChannelScreen {
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
 
-        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s). Three reasons over
-        // reading the last post once: a send that was accepted can be slow to ack, and resending on
-        // ack lag alone posts the message twice, which silently breaks any caller that counts posts;
-        // matching on content rather than position cannot be fooled by an unrelated later post; and
-        // `exact` keeps it from latching onto a longer post that merely contains this message.
+        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s).
         let result = await Post.apiFindPostInChannelByMessage(siteUrl, channelId, message, {exact: true});
         if (result.post?.id) {
             return result;
@@ -684,24 +678,7 @@ class ChannelScreen {
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
-
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-        // Message and "Edited" must be matched as ONE pattern against ONE node.
-        //
-        // A regex passed to by.text() is matched against the whole of a node's text,
-        // not searched within it. The message and the "Edited" marker render into the
-        // same text node, so `/message/i` on its own matches nothing — the node reads
-        // "message…Edited" and the anchored pattern fails. Only `message.*Edited`
-        // spans it.
-        //
-        // Splitting this into two assertions is what broke MM-T4783_1, MM-T4783_3 and
-        // MM-T4786_1, which pass on main (report 01a00ea6-c2f1-73fd-974f-6d966c8ff716)
-        // and failed here on both platforms at this line — the split's premise, that
-        // "Edited" is a separate node, is contradicted by main passing with the
-        // combined pattern.
-        //
-        // `s` on Android so `.` also crosses newlines in the flattened text.
         const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
         const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
         await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.HALF_MIN);

@@ -119,8 +119,6 @@ describe('Channels - Channel Bookmarks Search', () => {
         await HomeScreen.logout();
     });
 
-    // API-created bookmarks can lag in channel_info.bookmarks.list; reuse
-    // ChannelInfoScreen.waitForBookmarkInChannelInfo (same as channel_bookmarks.e2e.ts).
     it('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelDelete);

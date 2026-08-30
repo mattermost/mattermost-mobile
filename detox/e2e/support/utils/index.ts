@@ -62,32 +62,6 @@ export const timeouts = {
 
 let syncDisableDepth = 0;
 
-// Retry enableSynchronization after Android Fabric ReactContext null races.
-//
-// No-op while an outer withSynchronizationDisabled() is still in scope. Eighteen helpers
-// in this support layer pair a raw device.disableSynchronization() with a direct call to
-// this function in their own `finally`, none of which touch syncDisableDepth. Called from
-// inside a wrapper, they used to switch synchronization back ON for the remainder of the
-// outer block, and on a screen whose JS run loop never idles every later action then
-// stalled to the 300s cap. Two measured examples from run 32821677136:
-//
-//   MM-T585_1  wrap -> ChannelListScreen.open() -> channel_list.ts:434 -> sync ON at
-//              msgId 311 -> tap tab_bar.home.tab (323) hangs
-//   MM-T5294_12 wrap -> search_messages.ts:125 -> sync ON at msgId 560 -> the actions
-//              after it hang
-//
-// The wrapper decrements to 0 before calling this, so its own restore still runs.
-//
-// A ReactContext-null that persists through the bounded retry below is NOT a slow start —
-// the JS instance was destroyed while the OS process lives (run 33122005735 shard 10,
-// MM-T4988_2: Fabric SurfaceMountingManager "addViewAt: cannot insert view [1014] into
-// parent [1026]: View already has a parent" → ReactHost handleHostException →
-// "reactInstance is null"; account.screen gone, 20s of 'not null' polls fail, and all four
-// enable attempts 23:04:30.8/31.3/32.3/34.3 hit the same null). Detox then REUSES the
-// dead app for every remaining test in the worker — 7 cascade failures in that run. The
-// only recovery for a destroyed instance is a fresh app launch, so do it here, once, and
-// re-enable sync on the new instance. The current test still fails (its UI is gone), but
-// the worker is healed — the same trade ChannelListScreen.toBeVisible's relaunch makes.
 export async function safeEnableSynchronization(): Promise<void> {
     if (syncDisableDepth > 0) {
         return;
@@ -415,12 +389,6 @@ export async function waitForElementToBeVisible(
     await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
 }
 
-// Tap with effect verification: re-tap until `goneElement` (defaults to `target`) disappears.
-// Detox can report a tap performed while the click never reaches the view: Espresso logged
-// the OK click yet the "Message Length" dialog stayed up for the whole wait (run
-// 33237899744, MM-T107), and the account custom-status clear button tap never ran its
-// React handler (same run, MM-T3891 / MM-T4990_4 on both platforms). Retrying until the
-// effect is observable converts that class of flakes without loosening any assertion.
 export async function tapUntilGone(
     target: Detox.NativeElement,
     goneElement?: Detox.NativeElement,
@@ -487,9 +455,6 @@ export async function waitForElementToNotExist(
     }
 }
 
-// Poll for existence without Detox bridge-idle synchronization.
-// Hierarchy existence check on all platforms so callers probing off-screen items before
-// scrolling do not time out. For visibility, use waitForElementToBeVisible instead.
 export async function waitForElementToExist(
     detoxElement: Detox.NativeElement,
     timeout: number = timeouts.HALF_MIN,

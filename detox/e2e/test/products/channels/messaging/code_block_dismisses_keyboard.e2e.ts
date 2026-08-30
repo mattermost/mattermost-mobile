@@ -74,19 +74,6 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
         } catch { /* already at top — non-fatal */ }
 
-        // A short block next to an open keyboard keeps failing the 75% iOS default
-        // threshold (run 33237899744 — "does not pass visibility percent threshold
-        // (75)"): the keyboard eats the lower half of the viewport, so a block sitting
-        // just above it may be fully painted yet well under 75% of its own height
-        // visible. Scroll the row into the visible slice first (same discipline
-        // openPostOptionsFor uses), then require only a tap-sufficient 25%.
-        // Existence is not presentation. In run 33036930610 the toExist() wait above passed
-        // while the post was not painted at all: the DETOX_VISIBILITY_*_SCREEN.png captured
-        // at check time shows only the channel intro and the System join message — no code
-        // block, and no keyboard (device.log has zero UIKeyboardWillShow). Detox still
-        // resolved the element (bounds 328 x 34.67) and then failed tap()'s 100% gate with
-        // "View is not visible around point". Wait for it to actually render before tapping.
-
         try {
             await scrollElementIntoView(postListPostItemCodeBlock, by.id('channel.post_list.flat_list'));
         } catch { /* fell back to plain scroll above; the wait below still gates the tap */ }

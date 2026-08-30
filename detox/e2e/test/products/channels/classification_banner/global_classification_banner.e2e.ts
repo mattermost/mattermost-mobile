@@ -16,9 +16,6 @@ import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, Login
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
-// here: up to 45m of queuing behind the other two classification suites (they share one
-// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
 describe('Classification Banner - Global Classification Banner', () => {
@@ -66,18 +63,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterEach(async () => {
-        // Same ownership guard as afterAll: jest-circus still runs afterEach for each
-        // test it marks failed after a beforeAll failure, so a shard that never acquired
-        // the lock would delete the classification config of the shard that did.
         if (!lockAcquired) {
             return;
         }
 
-        // This suite patches the shared flag per test (MM-T6196_1 asserts the flag-off
-        // behavior), so a stolen lock here means ANOTHER suite's banner assertions are
-        // running against our flag-off window — fail fast naming the stealer
-        // (run 33122005735: this suite's beforeAll patch landed while shard 9 held the
-        // lock, poisoning its six banner tests).
         await assertClassificationLockOwnership(siteOneUrl, lockOwner);
 
         await Properties.apiCleanupClassification(siteOneUrl);

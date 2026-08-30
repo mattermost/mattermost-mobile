@@ -105,13 +105,6 @@ class CreateDirectMessageScreen {
     };
 
     toBeVisible = async () => {
-        // On iOS wait for the screen root and then the search input.
-        // A RNSVGGroup (part of the plus-menu icon animation) sits on top of the
-        // input immediately after navigation and intercepts taps even though the element
-        // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
-        // time to finish its animation.
-        // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
-        // view still exists — dismiss the long-press tooltip before visibility checks.
         if (isAndroid()) {
             await this.dismissLongPressProfileTutorial();
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
@@ -148,14 +141,6 @@ class CreateDirectMessageScreen {
 
         await dismissKnownModals(2);
         await ChannelListScreen.openPlusMenu();
-
-        // Wait for the plus menu to be drawn, not merely present, BEFORE synchronization
-        // goes off. Tapping a row while the sheet is still committing its open animation
-        // makes Fabric move a ReactTextView the sheet still owns; that host exception
-        // destroys the React instance and every later action fails with "ReactContext is
-        // null!" — MM-T4730_4 on Android shard 15 of run 32881947481: tap
-        // plus_menu_item.open_direct_message at 14:37:02.489, "addViewAt: cannot insert
-        // view [19230] into parent [19242]" at 14:37:02.683.
         await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
         await wait(timeouts.HALF_SEC);
 

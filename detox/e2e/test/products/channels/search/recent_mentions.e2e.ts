@@ -229,8 +229,6 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture. Mentions list observes
-    // message/edit_at columns so the edited body can re-render.
     it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
@@ -259,13 +257,6 @@ describe('Search - Recent Mentions', () => {
 
         // * Refresh and verify the edited state in the recent-mentions UI.
         await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
-
-        // # Open post options. openPostOptionsFor, not a bare longPress on post_header.date_time:
-        // the bare version has no scroll, no wait for the sheet and no retry, and it left
-        // post_options.screen unopened so replyPostOption was never there. The helper scrolls the
-        // row in, then longPressWithRetry's until post_options.screen actually appears — and it
-        // already opened options for this same post earlier in this test, so it clears the
-        // @mention handler that the date_time target was chosen to avoid.
         await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id);
         await PostOptionsScreen.replyPostOption.tap();
         await ThreadScreen.toBeVisible();

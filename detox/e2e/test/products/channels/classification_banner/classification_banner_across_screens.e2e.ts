@@ -33,7 +33,6 @@ import {by, device, element, expect, waitFor} from 'detox';
 // server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// Skip Android: suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -69,17 +68,6 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     }, timeouts.ONE_MIN * 50);
 
     beforeEach(async () => {
-        // Two guards against the run 33122005735 failure mode (shard 18 began patching
-        // FeatureFlagClassificationMarkings=false at 22:44:43 while this suite held the lock
-        // ~22:43:00–22:50:27; the app then read the flag as off at entry, its 1h banner cache
-        // marked by the silent disabled path, and all six tests timed out on
-        // global_classification_banner):
-        // 1. Re-validate the lock — the store is a single last-write-wins preference row and
-        //    acquire confirms ownership only once, so a racing shard can overwrite it
-        //    unnoticed. Fail fast naming the stealer instead of six opaque timeouts.
-        // 2. Re-verify the flag through the client-config endpoint the app itself consumes;
-        //    if another suite flipped it during the window, re-enable (this suite holds the
-        //    lock, so re-enabling restores OUR precondition rather than racing anyone).
         await assertClassificationLockOwnership(siteOneUrl, lockOwner);
         const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
         if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
@@ -98,13 +86,6 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         }
 
         try {
-            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the session logged in for later suites.
-            //
-            // ClassificationMarkings is deliberately NOT unset here. It is server-global and
-            // ~10 shards share each provisioned server, so unsetting it yanks the flag out
-            // from under any concurrent classification suite. See the invariant documented in
-            // global_classification_banner.e2e.ts; every suite enables it idempotently.
             try {
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {

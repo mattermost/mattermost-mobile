@@ -48,20 +48,6 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
             newUser,
         );
 
-        // The server never echoes the password back, so `{...response.data}` alone
-        // produces a user whose `password` is undefined. Callers that hand the whole
-        // object to `apiLogin` — which reads `user.username` / `user.password` — then
-        // post a blank password and get
-        // `api.user.login.blank_pwd.app_error / "Password field must not be blank"`,
-        // which `getResponseFromError` only console.warns; nothing checks the returned
-        // `{error}`, so the client silently keeps whatever session it already had.
-        // custom_status.e2e.ts logged that 400 before every single test of run
-        // 32184155037 (ios-results shard 9), which means its per-test
-        // `apiUnsetCustomStatus` reset never ran as the test user.
-        //
-        // Carry the generated credentials on the returned user so `user.username` /
-        // `user.password` mean what every call site already assumes. `newUser` stays
-        // for the call sites that reach through it.
         return {user: {...response.data, password: newUser.password, newUser}};
     } catch (err) {
         return getResponseFromError(err);

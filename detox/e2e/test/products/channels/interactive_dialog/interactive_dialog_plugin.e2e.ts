@@ -44,8 +44,6 @@ async function waitForDialogSelectorButton(testId: string) {
     await waitForElementToExist(element(by.id(testId)), timeouts.TEN_SEC);
 }
 
-// Selector rows differ per data source: user_list.user_item.<id>.<id>, channel_list.<id>,
-// options by text. Tap the display_name id — by.text hits the search field instead.
 async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
     const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
     const displayNameId = `${userItemId}.display_name`;
@@ -186,12 +184,6 @@ async function ensureDialogClosed() {
         } catch {}
     }
 
-    // iOS 26+ may leave the keyboard rendered after dialog close even when no
-    // input is focused, obscuring the post list and failing later visibility
-    // checks. Tap empty space at the top of the post list scroll view to
-    // defocus the input and retract the keyboard. Coordinates target an area
-    // above any rendered post or the channel intro to avoid triggering
-    // actions like "Edit Header".
     try {
         await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
         await wait(500);
@@ -203,9 +195,6 @@ async function ensureDialogClosed() {
         await wait(300);
     } catch {}
 
-    // The defocus tap above can land on a post and open its thread, which would
-    // strand the next test off the channel. If the channel post draft is no longer
-    // visible, a thread (or other pushed screen) opened — back out of it.
     try {
         await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
     } catch {
@@ -482,9 +471,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // iOS-only skip carried over from the RF→Detox migration with no recorded failure;
-    // Android still covers this case. No failure mechanism was ever recorded (SEC-11020).
-    // Re-enabled so the next CI run either proves the iOS path or records the mechanism.
     it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog textfields');

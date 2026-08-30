@@ -30,10 +30,6 @@ import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementTo
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
-    // Delegate to parent-owned ChannelScreen.openPostOptionsFor, which handles both platforms correctly:
-    // - Android: swipes UP (correct for older messages scrolled up) then uses longPressWithScrollRetry (8 attempts)
-    // - iOS: dismisses keyboard, then uses longPressWithScrollRetry with 1-minute deadline
-    // This replaces the bespoke Android logic that scrolled DOWN (wrong direction for older messages).
     await ChannelScreen.openPostOptionsFor(postId, message);
 }
 

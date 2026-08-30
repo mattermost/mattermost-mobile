@@ -66,11 +66,6 @@ describe('Search - Search Messages', () => {
     });
 
     beforeEach(async () => {
-        // A test that fails mid-flow never reaches its own searchClearButton tap, so its
-        // query stays in the search box. The next test then opens onto the results view
-        // instead of "Search options", and its searchModifier* lookups fail — which is how
-        // a single failure took out all six of MM-T5294_3.._8 in CI 31329196036. Closing
-        // the screen alone does not reset the query, so clear it here first.
         try {
             await waitForElementToExist(SearchMessagesScreen.searchClearButton, timeouts.TWO_SEC);
             await SearchMessagesScreen.searchClearButton.tap();
@@ -146,7 +141,7 @@ describe('Search - Search Messages', () => {
 
         // wait(TWO_SEC) lets the search request land before asserting — same pattern as
         // MM-T5294_4 below. Without it the bare toBeVisible() races the results fetch and
-        // fails "was null" (run 33036930610, MM-T5294_2).
+        // fails "was null"
         await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages from user
@@ -185,7 +180,7 @@ describe('Search - Search Messages', () => {
 
         // wait(TWO_SEC) lets the search request land before asserting — same pattern as
         // MM-T5294_4. Without it the bare toBeVisible() races the results fetch and fails
-        // "was null" (run 33036930610, MM-T5294_3).
+        // "was null"
         await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages in channel
@@ -221,7 +216,6 @@ describe('Search - Search Messages', () => {
 
         // Corner-tap: a centre tap here landed without inserting the "-" modifier, so the
         // query became "Message<term>" instead of "Message -<term>" and returned 0 results
-        // (CI 31329196036 MM-T5294_4). Same clip as searchModifierIn/Phrases.
         await SearchMessagesScreen.searchModifierExclude.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(excludedTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();

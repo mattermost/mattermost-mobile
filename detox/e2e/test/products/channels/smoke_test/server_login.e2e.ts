@@ -76,8 +76,7 @@ describe('Smoke Test - Server Login', () => {
         const {user} = await Setup.apiInit(siteTwoUrl);
 
         // tapAddServerButton, not a bare tap: the multi-server tutorial's full-screen
-        // backdrop SVG can intercept the hit-test at the button (run 33237899744,
-        // MM-T4675_2 — "Failed to hit view ... Hit: RNSVGGroup"), so dismiss it and retry.
+        // backdrop SVG can intercept the hit-test at the button
         await ServerListScreen.tapAddServerButton();
         await wait(timeouts.TWO_SEC);
         await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);

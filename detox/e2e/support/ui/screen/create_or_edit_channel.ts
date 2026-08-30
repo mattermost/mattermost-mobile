@@ -182,12 +182,6 @@ class CreateOrEditChannelScreen {
         return false;
     };
 
-    // Alternate short channel-screen waits with tooltip dismissals instead of opening one
-    // fixed window for the tooltip up front. The tooltip is armed by the draft input
-    // mounting, which happens *after* navigation, so a pre-check right after the create tap
-    // is systematically too early: MM-T4944_1 (Android shard 22, f181296) dismissed nothing
-    // in its 2s window and then burned 10s + 10s + 10s against a channel screen its own
-    // testFnFailure.png shows was already open behind the tooltip.
     waitForChannelScreen = async (totalTimeout: number): Promise<boolean> => {
         const deadline = Date.now() + totalTimeout;
         const maxAttempts = Math.max(1, Math.ceil(totalTimeout / timeouts.TWO_SEC));

@@ -95,8 +95,7 @@ class Alert {
 
         // Android AlertDialog: by.text('OK') is the proven green path (same as Alert.okButton).
         // iOS UIAlertController: app-hierarchy label taps often no-op (Maestro logout.yml uses
-        // coordinate taps for the same reason). Prefer system dialog API, then text/label/traits,
-        // then device.tap at the single-button band (~50%,57% on 402x874 iPhone 17 Pro).
+        // coordinate taps for the same reason).
         const titleGone = async (ms: number = timeouts.TWO_SEC) => {
             try {
                 await waitFor(this.messageLengthTitle).not.toExist().withTimeout(ms);
@@ -107,10 +106,6 @@ class Alert {
         };
 
         if (isAndroid()) {
-            // A single tap is not always delivered to the dialog's button handler (run
-            // 33237899744, MM-T107: Espresso logged the click performed and the dialog
-            // still measured VISIBLE for the full 10s wait). Same retry-until-gone
-            // discipline as the iOS path below.
             try {
                 await tapUntilGone(element(by.text('OK')), this.messageLengthTitle);
             } catch {

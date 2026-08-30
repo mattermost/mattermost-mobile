@@ -188,13 +188,7 @@ class ChannelListScreen {
             return;
         }
 
-        // Android had no scroll-into-view at all, so a row sitting under the bottom tab bar
-        // was simply reported unhittable. testFnFailure.png for MM-T69455_1 (run 33209271566,
-        // android shard 4) is a healthy, fully-populated sidebar whose LAST row is the target
-        // "Channel f561eb", clipped by the tab bar — the error was
-        // "Sidebar channel item not hittable for channel: channel-f561eb". Scroll it clear
-        // first, mirroring the iOS branch above; Espresso's own tap hit-test still decides.
-        /* eslint-disable no-await-in-loop -- bounded visibility scan */
+        /* eslint-disable no-await-in-loop -- bounded retry: scroll until the clipped row is visible */
         for (let attempt = 0; attempt < MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS; attempt++) {
             try {
                 await expect(label).toBeVisible(15);
@@ -242,8 +236,6 @@ class ChannelListScreen {
         await dismissKnownModals(5);
     };
 
-    // Leftover gorhom post-options keep Detox idle busy, so beforeEach
-    // waitFor() never times out (MM-T4911_4 hook 300s after MM-T4911_3).
     private dismissPostOptionsIfOpen = async (): Promise<void> => {
         const sheet = element(by.id('post_options.screen'));
         try {
@@ -318,12 +310,6 @@ class ChannelListScreen {
         /* eslint-enable no-await-in-loop */
     };
 
-    // The app parks on its own "Couldn't load categories" error screen when the initial
-    // team/channel load fails transiently (categories.tsx renders <LoadCategoriesError/> when
-    // the flattened list is empty after load — run 33122005735 shard 10: helper probed 60s
-    // with ALL category headers absent while the hierarchy showed the error title + Retry).
-    // The error view REPLACES the FlashList, so flat_list never mounts. Tap the app's OWN
-    // Retry control (retryInitialTeamAndChannel) before falling back to a relaunch.
     recoverFromCategoriesLoadError = async () => {
         try {
             const retryButton = element(by.text('Retry')).atIndex(0);

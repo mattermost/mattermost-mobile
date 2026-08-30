@@ -13,15 +13,7 @@ class DraftScreen {
         draftScreen: 'global_drafts_list',
         scheduledList: 'global_scheduled_post_list',
         draftTooltipCloseButton: 'draft.tooltip.close.button',
-
-        // Long-press target is the Pressable wrapper (draft_post), not the
-        // nested markdown body — body can sit under the nav/tab header on iOS.
         draftPost: 'draft_post',
-
-        // BottomSheet renders its content as `${testID}.screen`
-        // (app/screens/bottom_sheet/index.tsx), so the sheet raised by
-        // <BottomSheet testID='draft_options'> is draft_options.screen. Matching the bare
-        // id found 0 nodes, so every long press was retried 8 times and then failed.
         draftOptions: 'draft_options.screen',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
@@ -41,11 +33,6 @@ class DraftScreen {
     draftMessageContent = element(by.id(this.testID.draftMessageContent));
     deleteDraft = element(by.id(this.testID.deleteDraft));
 
-    // The drafts tutorial tooltip is shown once per app install, 300ms after the list
-    // mounts. While it is up, react-native-walkthrough-tooltip renders a *second copy*
-    // of the first row inside its modal (renderChildInTooltip), so `draft_post` matches
-    // twice on iOS ("Multiple elements found") and on Android the modal overlay swallows
-    // the long press so `draft_options` never opens. Settle it before touching a row.
     dismissTutorialTooltip = async () => {
         const closeButton = element(by.id(this.testID.draftTooltipCloseButton));
         try {
@@ -75,16 +62,6 @@ class DraftScreen {
         }
     };
 
-    // Do NOT scope this with withAncestor(global_drafts_list): in the *native* tree the
-    // FlatList's ScrollView is a sibling of the global_drafts_list view, both under
-    // draft_list_container, so that matcher resolves to ZERO nodes and every
-    // openDraftPostActions call fails on both platforms (verified locally: uiautomator
-    // ancestor walk is draft_post < ScrollView < draft_list_container).
-    //
-    // atIndex(0) instead: dismissTutorialTooltip normally leaves exactly one draft_post
-    // (verified locally across 25 hierarchy dumps), but if the tooltip dismissal ever
-    // misses, react-native-walkthrough-tooltip's duplicate row would otherwise raise
-    // "Multiple elements found". Indexing tolerates both without ever matching zero.
     private getFirstDraftPost = () => {
         return element(by.id(this.testID.draftPost)).atIndex(0);
     };

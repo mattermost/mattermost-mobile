@@ -104,10 +104,6 @@ describe('Messaging - Message Draft', () => {
         }
 
         // # Go back to channel list, then fully close and re-open the app.
-        // Note: device.sendToHome() + launchApp({newInstance:false}) is unreliable on iOS 26 —
-        // Detox's waitForBackground handshake does not complete, so the test hangs for 240s.
-        // launchApp({newInstance:true}) starts a fresh process; the user session and the
-        // saved draft both persist in the local DB, which is what this test verifies.
         await ChannelScreen.back();
         await device.launchApp({newInstance: true});
         await wait(timeouts.ONE_SEC);
@@ -168,12 +164,6 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.replaceText(overLimitMessage);
 
-        // The extra keystroke is iOS-only: iOS raises the over-limit alert on the following
-        // keystroke, while Android's replaceText fires onChangeText synchronously and the app
-        // opens the native "Message Length" dialog immediately (post_input.tsx:239-272), which
-        // covers the draft input — typeText('a') then fails with "No views in hierarchy found
-        // matching ... effective visibility <VISIBLE>" (run 33173240310, shard 4: replaceText
-        // succeeded 09:31:07.713, typeText exception 09:31:08.457).
         if (isIos()) {
             await ChannelScreen.postInput.typeText('a');
         }
@@ -181,10 +171,6 @@ describe('Messaging - Message Draft', () => {
         // * Verify message length alert is shown
         await expect(Alert.messageLengthTitle).toBeVisible();
 
-        // dismissMessageLengthAlert verifies the alert is actually gone afterwards.
-        // A bare Alert.okButton.tap() dispatched the button tap but the UIAlertController
-        // sometimes stayed on screen, so the next step's tapBackButton hit the alert's
-        // dimming view instead of the header (run 33036930610, MM-T107).
         await Alert.dismissMessageLengthAlert();
 
         // # Clear post draft and go back to channel list screen

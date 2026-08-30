@@ -306,22 +306,6 @@ export const releaseLock = async (store: LockStore, owner: string): Promise<void
     }
 };
 
-/**
- * Re-validate that `owner` still holds the lock, WITHOUT taking it.
- *
- * The acquire path confirms ownership exactly once (write + confirm read). That leaves a
- * window: a second shard that raced the same read-modify-write can overwrite the cell after
- * our confirmation, and because the underlying store is a single last-write-wins preference
- * row, both shards then believe they hold the lock and mutate the shared server config
- * concurrently — which is exactly how run 33122005735's shard 18 (global_classification_banner)
- * began patching FeatureFlagClassificationMarkings=false at 22:44:43 while shard 9
- * (classification_banner_across_screens) held the lock from ~22:43:00 to ~22:50:27. Shard 9's
- * six banner tests then ran against a flag the app saw as off.
- *
- * Callers invoke this before every config mutation and in their beforeEach: losing the lock
- * now fails fast with the stealer's identity in the message, instead of surfacing later as
- * opaque per-test timeouts against a flag another suite is flipping.
- */
 export const assertLockOwnership = async (store: LockStore, owner: string): Promise<void> => {
     if (!owner) {
         throw new Error('classification lock: owner must not be empty');

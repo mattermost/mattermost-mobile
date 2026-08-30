@@ -54,8 +54,6 @@ describe('Channels - Browse Channels', () => {
 
     beforeEach(async () => {
         // Dismiss any lingering "Removed from channel" or "Archived channel"
-        // dialogs that may appear asynchronously via WebSocket events from
-        // the previous test's channel archival (e.g. MM-T4729_5).
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         // * Verify on channel list screen
@@ -98,9 +96,6 @@ describe('Channels - Browse Channels', () => {
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
         // # Tap on the new public channel item.
-        // Keep the row (not its display_name label) as the tap target and keep multiTap:
-        // a single tap on the label left the app on Browse Channels and `channel.screen`
-        // never mounted, while this form has been green on main.
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
         await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.dismissScheduledPostTooltip();
@@ -127,9 +122,6 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for browse channels
-        // On Android edge-to-edge the empty-state text can render with <50% area visible
-        // (status/nav bar insets). Use toExist() on Android — the text is present and
-        // the assertion confirms the correct empty state is shown.
         await wait(timeouts.ONE_SEC);
         if (isAndroid()) {
             await waitForElementToExist(element(by.text(`No matches found for \u201C${searchTerm}\u201D`)), timeouts.HALF_MIN);
@@ -177,12 +169,6 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    // ExperimentalViewArchivedChannels lives under TeamSettings (not ServiceSettings).
-    // Provision already enables it; absent client-config value also means "on" (app treats
-    // only explicit 'false' as off). device.reloadReactNative() on Android causes indefinite
-    // hang (LooperIdlingResource never becomes idle). Use device.launchApp({newInstance: true})
-    // for cold-start refresh (config is re-read via appEntry in Launch.Normal with coldStart === true),
-    // and session persists in the local DB so the user stays logged in (see message_draft.e2e.ts MM-T4781_2).
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
@@ -219,7 +205,6 @@ describe('Channels - Browse Channels', () => {
             await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
 
             // Keep Detox sync enabled for archived filter tap — disableSynchronization
-            // amplifies Fabric addViewAt races when the slide-up unmounts (CI 29362218938).
             await BrowseChannelsScreen.channelDropdownTextPublic.tap();
             await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
             await ChannelDropdownMenuScreen.archivedChannelsItem.tap();

@@ -94,16 +94,6 @@ class AccountScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitFor(this.accountScreen).toExist().withTimeout(timeout);
-
-        // Detox's `toExist()` only confirms the account drawer view is in the
-        // hierarchy — on iOS 26 the slide-up animation can still be in progress
-        // at that moment, so immediately-following child visibility assertions
-        // can fail the 75% threshold because the
-        // child's bounds are still being transformed. Wait for a known
-        // always-rendered row (the Log out option) to pass the visibility
-        // threshold instead of sleeping a fixed duration: this is the actual
-        // condition callers depend on, completes as soon as the modal lands,
-        // and fails fast if the drawer never settles.
         await waitFor(this.logoutOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
 
         return this.accountScreen;

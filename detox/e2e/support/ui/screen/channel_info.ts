@@ -222,15 +222,6 @@ class ChannelInfoScreen {
             by.id(this.testID.scrollView),
         );
 
-        // longPressWithRetry only waits for the sheet's rows to EXIST, and the tap below
-        // is injected with synchronization off, so it can land while the sheet is still
-        // committing its open animation. Asking that half-mounted tree to dismiss makes
-        // Fabric move a ReactTextView the sheet still owns, which is a host exception, so
-        // ReactHost destroys the instance and every later action fails with "ReactContext
-        // is null!" — MM-T869_1 on Android shard 4 of run 32881947481: tap at 14:25:53.201,
-        // "addViewAt: cannot insert view [3094] into parent [3106]" at 14:25:53.472,
-        // getOrCreateDestroyTask() at 14:25:53.495. Wait for the row to be drawn, not just
-        // present, so the tap lands on a settled tree.
         const cancelAction = element(by.id(this.testID.copyHeaderCancelAction));
         await waitForElementToBeVisible(cancelAction, timeouts.FIVE_SEC);
         await wait(timeouts.HALF_SEC);
@@ -285,10 +276,7 @@ class ChannelInfoScreen {
         }
 
         // Empty channels render the AddBookmark button without a bookmarks FlatList, so the
-        // button itself must also gate the early return — waiting only for the list falls
-        // through to scrollTo('bottom') on empty channels, which scrolls the button (sitting
-        // right under the title) out of the viewport above it (CI 33173240310 shard 4:
-        // bookmarks.list absent for channelT5602/5604/5608, scroll-to-bottom then ran).
+        // button itself must also gate the early return
         try {
             await waitFor(element(by.id(this.testID.addBookmarkButton))).toBeVisible().withTimeout(timeouts.THREE_SEC);
             return;
@@ -325,15 +313,6 @@ class ChannelInfoScreen {
         const addBookmark = element(by.id(this.testID.addBookmarkButton));
         const scrollViewMatcher = by.id(this.testID.scrollView);
 
-        // Scroll the button fully (100%) into the viewport from either edge, let the scroll
-        // settle, then tap its CENTER. The previous corner tap at {x: 1, y: 1} hit wherever
-        // the view's top-left corner sits — when the scroll recovery leaves the button
-        // clipped at the viewport top, that point is in the clipped region and the press
-        // never reaches the rneui Pressable (CI 33173240310 shard 4, MM-T5602_1 device.log:
-        // 'Performing detoxsingletap click' on the button at 09:14:25.625 after an
-        // 'overly-running fling' at 09:14:25.596, then 40 polls of 'not null' on
-        // channel_bookmark.type.link — the sheet never mounted). The center of a
-        // fully-visible button is always inside the visible area.
         try {
             await waitFor(addBookmark).toBeVisible(100).whileElement(scrollViewMatcher).scroll(150, 'up');
         } catch {
@@ -346,17 +325,12 @@ class ChannelInfoScreen {
         await wait(timeouts.HALF_SEC);
         await addBookmark.tap();
 
-        // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
-        // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
         const addLinkOption = element(by.id('channel_bookmark.type.link'));
         await withSynchronizationDisabled(async () => {
             await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
         });
     };
 
-    // Close/reopen channel info to re-trigger bookmark fetch when API-created
-    // bookmarks are not yet in the client after beforeAll reload (CI 29935363789:
-    // Add bookmark visible but pre-created titles missing from bookmarks.list).
     waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
         {

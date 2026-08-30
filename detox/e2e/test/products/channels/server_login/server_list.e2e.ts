@@ -69,8 +69,7 @@ describe('Server Login - Server List', () => {
 
         // * Verify basic elements on server list screen. Scroll the row into view first:
         // on iOS the collapsed sheet clips the bottom rows and toBeVisible(75) fails
-        // even though the row is rendered (run 33237899744 — "View is clipped by one or
-        // more of its superviews' bounds").
+        // even though the row is rendered
         await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
         await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(serverOneDisplayName));
         await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
@@ -190,8 +189,7 @@ describe('Server Login - Server List', () => {
 
         // * Verify the new first server display name. Scroll it into view first: the renamed
         // row can sit below the collapsed sheet's fold, where a bare toBeVisible fails on a
-        // row that exists and is correct. A failure here also leaves the server renamed for
-        // MM-T4691_5/_6/_7, which assert the original name.
+        // row that exists and is correct.
         await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
 
         // # Revert back to original first server display name and go back to first server.

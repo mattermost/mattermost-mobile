@@ -447,8 +447,6 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is set with expiry time
-        // iOS-26 wrapper-View visibility quirk for the emoji (see MM-T3890 above);
-        // text and expiry are plain <Text> nodes and use toBeVisible normally.
         await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
@@ -561,10 +559,6 @@ const clearStatusInput = async () => {
 
 const verifyAllSuggestedStatuses = async () => {
     await expect(CustomStatusScreen.suggestions).toExist();
-
-    // Verify each suggestion exists on screen (either in suggestions or recents).
-    // On fresh runs, suggestions land in the suggestions block; when state leaks
-    // from a prior run, some may already be in recents — the item is still visible.
     await verifySuggestedOrRecentCustomStatus('calendar', 'In a meeting', 'one_hour');
     await verifySuggestedOrRecentCustomStatus('hamburger', 'Out for lunch', 'thirty_minutes');
     await verifySuggestedOrRecentCustomStatus('sneezing_face', 'Out sick', 'today');
@@ -573,9 +567,6 @@ const verifyAllSuggestedStatuses = async () => {
 };
 
 const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: string, duration: string) => {
-    // Try suggestions first; fall back to recents if the item was leaked from a prior run.
-    // Emoji uses `toExist` (iOS-26 wrapper-View visibility quirk on <View> around <Emoji>);
-    // text and duration are plain <Text> and use `toBeVisible` normally.
     try {
         const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
             CustomStatusScreen.getSuggestedCustomStatus(emojiName, text, duration);
@@ -603,10 +594,6 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
 };
 
 const verifyStatusCleared = async () => {
-    // Assert the visible outcome, not the clear control's absence. The control can linger
-    // after a successful clear (CI 30250131265) -- in existence, not only in visibility --
-    // so asserting on it fails tests whose clear actually worked. MM-T5114_1 checks the
-    // emoji/text/expiry for exactly this reason and passes on both platforms.
     await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
     await expect(AccountScreen.customStatusText).toHaveText('Set a custom status');
 };
