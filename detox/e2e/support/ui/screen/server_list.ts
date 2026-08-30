@@ -220,6 +220,7 @@ class ServerListScreen {
         const maxScrolls = isIos() ? 10 : 5;
         const scrollAmount = isIos() ? 40 : 120;
         const visibilityThreshold = isIos() ? 95 : 75;
+        let lastError: unknown;
         try {
             await this.serverList.scrollTo('top');
         } catch {
@@ -229,12 +230,20 @@ class ServerListScreen {
         /* eslint-disable no-await-in-loop -- bounded scan of the server FlatList */
         for (let attempt = 0; attempt < maxScrolls; attempt++) {
             try {
-                await expect(item).toBeVisible(visibilityThreshold);
+                // waitFor, not a bare expect: the sheet animates in and the rows re-render
+                // after a server switch, and an instant assertion loses that race. Every one
+                // of the ten attempts used to resolve in milliseconds, so the whole loop
+                // finished inside the presentation animation. MM-T4675_2's Detox visibility
+                // dump caught it exactly there — the row half-drawn and clipped by the
+                // sheet's edge — and reported "clipped by one or more of its superviews'
+                // bounds". Scrolling could never have fixed that; only waiting can.
+                await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
                 return;
             } catch (error) {
-                if (attempt === maxScrolls - 1) {
-                    throw error;
-                }
+                lastError = error;
+            }
+
+            if (attempt < maxScrolls - 1) {
                 try {
                     // iOS reports the list's full 464pt frame even when the collapsed
                     // sheet exposes only its top ~114pt. A 40pt gesture beginning 10%
@@ -246,6 +255,8 @@ class ServerListScreen {
             }
         }
         /* eslint-enable no-await-in-loop */
+
+        throw lastError;
     };
 
     getServerItem = async (serverDisplayName: string) => {

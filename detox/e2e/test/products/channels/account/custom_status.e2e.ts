@@ -593,7 +593,10 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
     await expect(accountCustomStatusExpiry).toBeVisible();
 };
 
+// Wait for the unset row text rather than asserting it outright: clearing goes through
+// unsetCustomStatus() and a local DB write, so a bare expect() reads the row while the old
+// status is still on screen. `setStatusOption` is not a usable gate here — the app renders that
+// row whether or not a status is set.
 const verifyStatusCleared = async () => {
-    await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
-    await expect(AccountScreen.customStatusText).toHaveText('Set a custom status');
+    await AccountScreen.waitForCustomStatusCleared();
 };

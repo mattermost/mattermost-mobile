@@ -206,6 +206,13 @@ describe('Server Login - Server List', () => {
         await EditServerScreen.toBeVisible();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
+
+        // Wait for the reverted row before tapping it, the same way the first save above is
+        // followed by scrollServerItemIntoView. The row's testID is keyed by display name, so
+        // until the rename lands and the sheet re-renders, only "<name> new" exists and the
+        // tap fails with "No elements found for ...server_1.active".
+        await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TWENTY_SEC);
+        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
@@ -217,17 +224,15 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
-        if (isIos()) {
-            // iOS: the Logout button overlaps Remove during the reveal animation, so wait for 100%
-            // visibility. TEN_SEC matches MM-T4691_6/7 — the reveal can take over 5s on CI.
-            await waitFor(ServerListScreen.getServerItemRemoveOption(serverOneDisplayName)).
-                toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
-        } else {
-            await wait(timeouts.ONE_SEC);
-        }
-        await ServerListScreen.getServerItemRemoveOption(serverOneDisplayName).atIndex(0).tap();
+
+        // swipeRevealAndTapOption, not swipe + toBeVisible(100) + tap: the 100% gate never
+        // resolved on iOS even with the reveal panel fully drawn on screen, while the Android
+        // branch of the same step only ever waited a second. The helper gates on Detox's
+        // `hittable` attribute — the thing a tap actually needs — and retries the swipe.
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverOneDisplayName,
+            ServerListScreen.getServerItemRemoveOption(serverOneDisplayName),
+        );
 
         // * Verify remove server alert is displayed
         await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);
@@ -257,22 +262,15 @@ describe('Server Login - Server List', () => {
         // # Open server list screen, swipe left on third server and tap on logout option
         await ServerListScreen.open();
 
-        // Partial swipe on iOS: a full swipe pushes the target too close to an edge and the
-        // reveal panel buttons then fail the 100% hittability threshold.
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverThreeDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
 
-        // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        // On iOS, also wait for the logout option to be fully visible before tapping.
-        if (isIos()) {
-            await waitFor(ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName)).
-                toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
-        } else {
-            await wait(timeouts.TWO_SEC);
-        }
-        await ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName).atIndex(0).tap();
+        // See MM-T4691_5: the helper gates the reveal on hittability instead of a 100% pixel
+        // threshold that never resolved on iOS, and retries the swipe.
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverThreeDisplayName,
+            ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName),
+        );
 
         // * Verify logout server alert is displayed
         await waitForElementToBeVisible(Alert.logoutTitle(serverThreeDisplayName), timeouts.TEN_SEC);
@@ -282,9 +280,12 @@ describe('Server Login - Server List', () => {
         await Alert.logoutButton.tap();
         await wait(timeouts.TWO_SEC);
 
-        // * Verify third server is logged out
-        await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).swipe('left', 'slow');
-        await expect(ServerListScreen.getServerItemLoginOption(serverThreeDisplayName)).toBeVisible();
+        // * Verify third server is logged out. swipeRevealOption is the assertion: it only
+        // returns once the Log in option is revealed and hittable.
+        await ServerListScreen.swipeRevealOption(
+            serverThreeDisplayName,
+            ServerListScreen.getServerItemLoginOption(serverThreeDisplayName),
+        );
 
         // # Go back to first server
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
@@ -339,22 +340,15 @@ describe('Server Login - Server List', () => {
         await ServerScreen.close();
         await ServerListScreen.open();
 
-        // Partial swipe on iOS: a full swipe pushes the target too close to an edge and the
-        // reveal panel buttons then fail the 100% hittability threshold.
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).atIndex(0).swipe('left', 'slow');
 
-        // TWO_SEC lets the reveal animation fully settle before tapping the action button.
-        // On iOS, also wait for the logout option to be fully visible before tapping.
-        if (isIos()) {
-            await waitFor(ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName)).
-                toBeVisible(100).
-                withTimeout(timeouts.TEN_SEC);
-        } else {
-            await wait(timeouts.TWO_SEC);
-        }
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
+        // See MM-T4691_5: the helper gates the reveal on hittability instead of a 100% pixel
+        // threshold that never resolved on iOS, and retries the swipe.
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverTwoDisplayName,
+            ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
+        );
         await wait(timeouts.FOUR_SEC);
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
         await Alert.logoutButton.tap();

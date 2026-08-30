@@ -208,16 +208,29 @@ class AccountScreen {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
+    // Wait for the account row to show its unset state.
+    //
+    // The row's unset TEXT is the signal, not `setStatusOption`. That id
+    // ('account.custom_status.option') belongs to the row's outer TouchableOpacity, which the
+    // app renders whether or not a status is set, so waiting on it never waits for anything --
+    // which is what let the clear assertions race unsetCustomStatus()'s round trip and read
+    // the status that was still on screen.
+    waitForCustomStatusCleared = async (timeout: number = timeouts.TWENTY_SEC) => {
+        // Android: toHaveText requires visibility and the row can exist before it passes the
+        // visibility threshold -- match id and text with toExist, as waitForCustomStatus does.
+        if (isAndroid()) {
+            const clearedMatcher = by.id(this.testID.customStatusText).and(by.text('Set a custom status'));
+            await waitFor(element(clearedMatcher)).toExist().withTimeout(timeout);
+            return;
+        }
+
+        await waitFor(this.customStatusText).toHaveText('Set a custom status').withTimeout(timeout);
+    };
+
     // Clear the custom status from the account row and wait for the row to show its unset
     // state.
     //
-    // Two things are deliberate. It waits on the OUTCOME rather than on the clear control
-    // disappearing, because that control is known to linger after a successful clear, so
-    // asserting its absence fails clears that worked -- and when it does fail, the row text
-    // in the message says which mode it was: still showing the old status means the tap did
-    // not land; showing the unset text means the control lingered.
-    //
-    // And it falls back to a coordinate tap. A plain tap on this control is enough in
+    // The coordinate tap fallback is deliberate. A plain tap on this control is enough in
     // smoke_test/account.e2e.ts, but taps on it have also been measured dead-ending on a
     // simulator while a coordinate tap at the same spot worked. The fallback costs nothing
     // when the first tap lands.
@@ -226,14 +239,19 @@ class AccountScreen {
         await this.customStatusClearButton.tap();
 
         try {
-            await waitFor(this.setStatusOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await this.waitForCustomStatusCleared(timeouts.TEN_SEC);
             return;
         } catch {
             // First tap did not take; retry on the control's centre.
         }
 
-        await this.customStatusClearButton.tap({x: 20, y: 20});
-        await waitFor(this.setStatusOption).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
+        try {
+            await this.customStatusClearButton.tap({x: 20, y: 20});
+        } catch {
+            // The clear button is only rendered while a status is set, so it is gone if the
+            // first tap landed just after the wait above expired. Fall through to the wait.
+        }
+        await this.waitForCustomStatusCleared(timeouts.TWENTY_SEC);
     };
 
     logout = async (serverDisplayName: string | null = null) => {

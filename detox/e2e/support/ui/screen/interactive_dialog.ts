@@ -7,7 +7,11 @@ import {expect, waitFor} from 'detox';
 class InteractiveDialogScreen {
     testID = {
         interactiveDialogScreen: 'interactive_dialog.screen',
-        dialogTitle: 'interactive_dialog.dialog_title',
+
+        // The scrollable is the KeyboardAwareScrollView inside the screen, not the screen
+        // itself: 'interactive_dialog.screen' sits on a SafeAreaView, so scrollTo() against
+        // it throws and the surrounding catch turned every scroll into a silent no-op.
+        interactiveDialogScrollView: 'interactive_dialog.scroll_view',
         submitButton: 'interactive_dialog.submit.button',
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
@@ -40,13 +44,19 @@ class InteractiveDialogScreen {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScreen));
+            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
             if (isPasswordOrTextarea) {
+                // Dismiss the keyboard by tapping the scroll view's own background. The form
+                // sets keyboardShouldPersistTaps='handled', so a tap that no input claims
+                // dismisses it. The previous target, 'interactive_dialog.dialog_title', is not
+                // rendered anywhere in the app, so that tap always threw into the catch and no
+                // keyboard was ever dismissed. On iOS the keyboard overlays the content rather
+                // than resizing it, which is why the last field stayed unreachable there.
                 try {
-                    await element(by.id(this.testID.dialogTitle)).tap();
+                    await dialogScrollView.tap({x: 20, y: 20});
                     await wait(500);
                 } catch {
-                    // No keyboard up, or the title is not tappable — scrolling still helps.
+                    // No keyboard up, or the tap landed on a field — scrolling still helps.
                 }
                 await dialogScrollView.scrollTo('bottom');
                 await wait(500);
@@ -64,9 +74,11 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(appsFormElement, value);
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
+        // Same dead target as above: the old 'interactive_dialog.dialog_title' is rendered
+        // nowhere, so this only ever reached its fallback. Tap the scroll view's background,
+        // which the form's keyboardShouldPersistTaps='handled' turns into a dismissal.
         try {
-            const dialogHeader = element(by.id(this.testID.dialogTitle));
-            await dialogHeader.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
@@ -177,10 +189,10 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(textInput, value);
         await wait(1000);
 
-        // Dismiss keyboard by tapping outside
+        // Dismiss the keyboard by tapping the scroll view's background. 'screen.title.text' is
+        // not rendered by this screen, so the previous target never dismissed anything.
         try {
-            const dialogTitle = element(by.id('screen.title.text'));
-            await dialogTitle.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch (error) {
             // Could not dismiss keyboard, continue
         }

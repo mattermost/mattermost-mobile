@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -229,7 +229,20 @@ class ChannelScreen {
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
 
-            await NavigationHeader.tapBackButton(0);
+            // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
+            // and PinnedMessagesScreen.back() already do. With sync on, this tap blocks on
+            // Detox's idle wait, and in MM-T5294_12 it never returned: the touch was
+            // dispatched (device.log "Sending UIEvent type: 0" + "send gesture actions") but
+            // Detox reported app_status busy — "Run loop 'JS Run Loop' is awake", main-queue
+            // work items pending — continuously for 296s, until the test's whole budget was
+            // gone. Nothing else in that test came close to a second of that.
+            if (isIos()) {
+                await withSynchronizationDisabled(async () => {
+                    await NavigationHeader.tapBackButton(0);
+                });
+            } else {
+                await NavigationHeader.tapBackButton(0);
+            }
             navigated = true;
         } catch {
             // Back button not in hierarchy — fall through to tab/native back.

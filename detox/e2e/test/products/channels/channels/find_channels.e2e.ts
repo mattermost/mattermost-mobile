@@ -135,18 +135,16 @@ describe('Channels - Find Channels', () => {
         await wait(timeouts.ONE_SEC);
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
+        // No user_item fallback here. A group message always renders through the channel
+        // branch of find_channels' filtered list, never as a user_item, so that fallback
+        // could only ever time out — and because the tap sat inside the try, a tap that
+        // failed its hittability check was reported 30s later as "user_item not found",
+        // pointing at the wrong thing entirely.
         await wait(timeouts.TWO_SEC);
-        try {
-            await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
-                toExist().
-                withTimeout(timeouts.TWENTY_SEC);
-            await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
-        } catch {
-            await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`))).
-                toExist().
-                withTimeout(timeouts.HALF_MIN);
-            await element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`)).tap();
-        }
+        await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
+            toExist().
+            withTimeout(timeouts.TWENTY_SEC);
+        await FindChannelsScreen.tapFilteredChannelItem(groupMessageChannel.name);
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on target GM screen

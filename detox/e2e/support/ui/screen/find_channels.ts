@@ -69,6 +69,19 @@ class FindChannelsScreen {
         await label.tap({x: 1, y: 1});
     };
 
+    // Same idiom as tapFilteredUserItem, and for the same reason. A plain tap on the row
+    // fails on iOS: Detox checks hittability at the view's centre point against a 100%
+    // visibility threshold, and MM-T4907_4's group-message row failed it —
+    //   "View is not hittable at its visible point ... does not pass visibility percent
+    //    threshold (100)", view bounds {362, 40}, visible bounds {362, 40}
+    // — i.e. the row was fully on screen and fully drawn. A corner tap on the row's label
+    // clears the same check.
+    tapFilteredChannelItem = async (channelName: string) => {
+        const label = this.getFilteredChannelItemDisplayName(channelName);
+        await waitFor(label).toBeVisible(40).withTimeout(timeouts.HALF_MIN);
+        await label.tap({x: 1, y: 1});
+    };
+
     toBeVisible = async () => {
         await waitFor(this.findChannelsScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
