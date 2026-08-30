@@ -68,13 +68,6 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
                 await deletePostsForChannelsWithAutotranslation(serverUrl);
             }
         } else {
-            // The stored profile is already at least as new as this event, so there is
-            // nothing here to apply. Falling through would still persist `userToSave` --
-            // the raw, sanitized websocket payload -- over fresher local state, which is
-            // exactly what the fetchMe above exists to prevent. That write is how a
-            // custom status cleared from the account row can silently reappear: the
-            // clear updates props locally without moving update_at, so a late or
-            // redelivered user_updated carrying the pre-clear props still overwrote it.
             return;
         }
     } else {

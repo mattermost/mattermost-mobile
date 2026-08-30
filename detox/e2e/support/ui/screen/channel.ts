@@ -691,20 +691,8 @@ class ChannelScreen {
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
-        // Assert the message and the "Edited" label separately rather than as one
-        // `${message}.*Edited` regex. A regex text matcher only ever sees a single <Text>
-        // node, and Markdown splits a post body into several of them -- renderAtMention in
-        // components/markdown/markdown.tsx renders @mentions as their own <AtMention>.
-        // That is why the combined matcher passed for message_edit (MM-T4783_1/2/3), saved
-        // (MM-T4910_3) and pinned (MM-T4918_3), whose fixtures are plain `Message <id> edit`
-        // and render as one node, but timed out on both platforms for recent mentions
-        // (MM-T4909_3), whose fixture is `Own mention <id> @<username> edit`.
         const editedIndicatorMatcher = by.id('edited_indicator').withAncestor(postItemMatcher);
         await waitFor(element(editedIndicatorMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
-
-        // The indicator above already proves the post is edited; this pins the new body.
-        // Prefer the whole message, then fall back to its trailing token, which survives
-        // the node split when the message contains a mention.
         const trailingToken = updatedMessage.trim().split(/\s+/).pop();
         const messageMatchers = [by.text(updatedMessage).withAncestor(postItemMatcher)];
         if (trailingToken && trailingToken !== updatedMessage.trim()) {

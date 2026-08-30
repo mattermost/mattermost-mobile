@@ -169,10 +169,6 @@ const DateTimeSelector = ({
             return false;
         }
 
-        // millisecond(0) alongside second(0): a manually entered time means exactly that
-        // hour and minute, but the cloned date carried whatever milliseconds it happened to
-        // hold, so the committed value serialised as e.g. 14:30:00.265Z instead of
-        // 14:30:00.000Z.
         const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0).millisecond(0);
         setDate(newDate);
         handleChange(newDate);
