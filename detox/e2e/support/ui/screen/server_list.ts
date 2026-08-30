@@ -219,7 +219,7 @@ class ServerListScreen {
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
         const maxScrolls = isIos() ? 10 : 5;
         const scrollAmount = isIos() ? 40 : 120;
-        const visibilityThreshold = isIos() ? 95 : 75;
+        const visibilityThreshold = 75;
         let lastError: unknown;
         try {
             await this.serverList.scrollTo('top');
