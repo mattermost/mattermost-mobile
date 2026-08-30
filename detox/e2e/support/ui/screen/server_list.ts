@@ -219,7 +219,16 @@ class ServerListScreen {
     scrollServerItemIntoView = async (item: Detox.NativeElement) => {
         const maxScrolls = isIos() ? 10 : 5;
         const scrollAmount = isIos() ? 40 : 120;
-        const visibilityThreshold = isIos() ? 95 : 75;
+        // Detox's default visibility threshold is 75%, which is what Android uses here and
+        // what every one of these flows passes at. The iOS 95% was stricter than the default
+        // and is what MM-T4691_5/_6/_7 and MM-T4675_2 timed out on: with three servers the
+        // sheet's max snap point already fits the whole list (SERVER_ITEM_HEIGHT * n +
+        // chrome, see channel_list/servers/index.tsx), so the rows are never below the fold
+        // and no amount of scrolling below can help -- the row is simply clipped a few
+        // percent by the sheet's rounded edge and never reaches 95. Nothing is weakened by
+        // matching Android: this helper only brings a row on screen, and every caller
+        // re-checks `isOptionHittable` (iOS `hittable`) before it taps.
+        const visibilityThreshold = 75;
         let lastError: unknown;
         try {
             await this.serverList.scrollTo('top');
