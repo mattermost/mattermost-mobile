@@ -29,15 +29,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 if (!recentMentions.length) {
                     return of$([]);
                 }
-
-                // observeWithColumns, not observe: a plain query observe() only re-emits when
-                // the SET of matching posts changes. Editing a mention changes `message` and
-                // `edit_at` on a post that is already in the set, so the list kept rendering
-                // the pre-edit body with no "Edited" marker until the tab was remounted
-                // (MM-T4909_3, both platforms). Saved messages avoids this only because it
-                // re-subscribes on focus.
-                return queryPostsById(database, recentMentions, Q.asc).
-                    observeWithColumns(['message', 'edit_at', 'update_at', 'delete_at', 'metadata', 'props']);
+                return queryPostsById(database, recentMentions, Q.asc).observe();
             }),
         ),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),

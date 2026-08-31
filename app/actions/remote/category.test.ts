@@ -218,11 +218,6 @@ describe('toggleFavoriteChannel', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
     });
 
-    // Real-user path: the sidebar shows three channels under CHANNELS and the user taps
-    // "Favorite" on one of them (MM-T4929_1). updateChannelCategories REPLACES a category's
-    // membership with whatever is sent, and toggleFavoriteChannel builds that list from local
-    // CategoryChannel rows via toCategoryWithChannels(). The two tests below differ only in
-    // how much of that local state has synced.
     const offTopicCC: CategoryChannel = {
         id: 'teamid1_offtopic',
         category_id: 'default_category_id',
@@ -271,12 +266,6 @@ describe('toggleFavoriteChannel', () => {
         expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).toEqual(['offtopic', 'townsquare']);
     });
 
-    // The defect. Only the tapped channel's CategoryChannel row has synced -- the state right
-    // after launch, or mid-prune, since toggleFavoriteChannel fires fetchCategories(prune=true)
-    // unawaited on every toggle. channel_ids is then [channelId], the splice empties it, and the
-    // app PUTs "CHANNELS has no channels" to the server. That is why the wiped sidebar in
-    // MM-T4929_1 was still empty for MM-T4929_2 two minutes later: a purely local wipe would
-    // have been repaired by the next fetch, but this one is written to the server.
     it('should not tell the server a category is empty just because local rows are missing', async () => {
         const mockClient = await favouriteSetup([{...categoryChannels, category_id: defaultCategory.id}]);
 

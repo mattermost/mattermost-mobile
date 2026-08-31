@@ -162,8 +162,7 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
         // mid-sync -- this function itself fires fetchCategories(prune=true) unawaited on
         // every toggle -- and building the payload from a truncated local list silently
         // deletes the user's other channels from that category ON THE SERVER, emptying the
-        // sidebar for good (MM-T4929_1, where the wipe was still there two minutes later).
-        // Prefer the server's copy; fall back to local so an offline toggle still works.
+        // sidebar for good
         const {categories: remoteCategories} = await fetchCategories(serverUrl, teamId, false, true);
         const remoteById = new Map((remoteCategories ?? []).map((c) => [c.id, c]));
         const toWithChannels = async (category: CategoryModel): Promise<CategoryWithChannels> => {
