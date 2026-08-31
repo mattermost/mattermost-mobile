@@ -98,11 +98,30 @@ export const apiAssertCustomTermsOfServiceActive = async (baseUrl: string, terms
     }
 };
 
+/**
+ * Throw unless the client config the app consumes reports custom ToS as off.
+ *
+ * The mirror of apiAssertCustomTermsOfServiceActive, and load-bearing for the same reason:
+ * the config patch returns before the server regenerates client config, so handing the
+ * server to the next suite straight after the disable can do so while it still serves
+ * EnableCustomTermsOfService=true. That suite's app would fetch the stale config and get the
+ * ToS modal in front of its login — the exact interference the disable is meant to end.
+ *
+ * @param {string} baseUrl - the base server URL
+ */
+export const apiAssertCustomTermsOfServiceInactive = async (baseUrl: string): Promise<void> => {
+    const disabled = await System.waitForClientConfigFlag(baseUrl, 'EnableCustomTermsOfService', 'false');
+    if (!disabled) {
+        throw new Error('apiAssertCustomTermsOfServiceInactive: client config EnableCustomTermsOfService never became "false" — the server may still force other suites through ToS');
+    }
+};
+
 const TermsOfService = {
     apiCreateTermsOfService,
     apiEnableCustomTermsOfService,
     apiDisableCustomTermsOfService,
     apiAssertCustomTermsOfServiceActive,
+    apiAssertCustomTermsOfServiceInactive,
 };
 
 export default TermsOfService;

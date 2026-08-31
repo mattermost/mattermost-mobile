@@ -106,6 +106,11 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
             if (error) {
                 throw new Error(`Failed to disable custom ToS after suite: ${describeApiError(error, status)}`);
             }
+
+            // Hold the lock until the disable is actually visible in client config. The patch
+            // returns before the server regenerates it, so releasing here would let the next
+            // SITE_3 suite start against a server still advertising ToS as on.
+            await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
         } finally {
             // Releasing even when the disable failed is deliberate: holding the lock forever
             // would block every later run, and the next holder disables ToS on acquire.
