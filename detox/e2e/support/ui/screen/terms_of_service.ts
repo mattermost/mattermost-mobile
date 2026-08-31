@@ -30,7 +30,12 @@ class TermsOfServiceScreen {
     };
 
     /**
-     * Submit login credentials and wait for the custom ToS modal (not the channel list).
+     * Submit login credentials and wait for the custom ToS modal.
+     *
+     * Custom ToS is NOT a login gate. `channel_list.tsx` navigates to
+     * Screens.TERMS_OF_SERVICE once `observeShowToS` emits true, so the channel list mounts
+     * first and the ToS arrives on top of it as a transparent modal. Waiting for the ToS
+     * "instead of" the channel list therefore describes a flow the app does not implement.
      */
     loginUntilVisible = async (user: any = {}) => {
         await LoginScreen.toBeVisible();
@@ -64,6 +69,12 @@ class TermsOfServiceScreen {
                 // not present
             }
         }
+
+        // Assert the post-login destination first: the channel list exists underneath the
+        // transparent ToS overlay, so this separates "login itself failed" from "login
+        // succeeded but the ToS modal never mounted" instead of reporting both as a ToS
+        // timeout.
+        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.ONE_MIN);
 
         return this.toBeVisible();
     };

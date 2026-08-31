@@ -11,6 +11,7 @@ import {
     User,
     Setup,
 } from '@support/server_api';
+import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -43,14 +44,30 @@ describe('Server Login - Server List', () => {
     let serverOneUser: any;
     let serverTwoUser: any;
     let serverThreeUser: any;
+    let lockOwner = '';
+    let lockAcquired = false;
 
     beforeAll(async () => {
+        // MM-T4691_5 logs in to SITE_3, and custom_terms_of_service turns on server-wide
+        // custom ToS there — that modal would land on top of that login and swallow the taps
+        // that follow. Both suites hold the SITE_3 lock so they never overlap. Held for the
+        // whole suite rather than around the one test: acquiring mid-suite would mean
+        // releasing on paths that have already navigated.
+        if (hasThreeDistinctServers) {
+            lockOwner = siteThreeLock.createOwner();
+            await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
+            lockAcquired = true;
+        }
+
         // # Log in to the first server
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await waitForElementToBeVisible(ServerScreen.headerTitleConnectToServer, timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
-    });
+
+        // The hook gets its own budget so the lock wait above does not have to fit inside the
+        // default per-test timeout.
+    }, timeouts.ONE_MIN * 22);
 
     beforeEach(async () => {
         // * Verify on channel list screen
@@ -58,8 +75,14 @@ describe('Server Login - Server List', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await HomeScreen.logout();
+        try {
+            // # Log out
+            await HomeScreen.logout();
+        } finally {
+            if (lockAcquired) {
+                await siteThreeLock.release(siteThreeUrl, lockOwner);
+            }
+        }
     });
 
     it('MM-T4691_1 - should match elements on server list screen', async () => {

@@ -28,8 +28,17 @@ export const apiCreateTermsOfService = async (baseUrl: string, text: string): Pr
 };
 
 /**
- * Enable custom terms of service (uses latest created terms from the server).
+ * Enable custom terms of service.
  * Requires Enterprise license with CustomTermsOfService.
+ *
+ * The server field is `SupportSettings.CustomTermsOfServiceEnabled` (server
+ * `model/config.go`). `EnableCustomTermsOfService` is the *client* config key the app reads;
+ * it is derived in `config/client.go` as
+ * `props["EnableCustomTermsOfService"] = FormatBool(*c.SupportSettings.CustomTermsOfServiceEnabled)`.
+ * Patching the client key name instead is silently dropped as an unknown field — the patch
+ * still returns 200 and ToS is never enabled, which is why apiAssertCustomTermsOfServiceActive
+ * below verifies against the client config rather than trusting the patch response.
+ *
  * @param {string} baseUrl - the base server URL
  * @param {number} reAcceptancePeriodDays - days until re-acceptance is required
  * @return {Object} returns {config} on success or {error, status} on error
@@ -40,7 +49,7 @@ export const apiEnableCustomTermsOfService = async (
 ): Promise<any> => {
     return System.apiUpdateConfig(baseUrl, {
         SupportSettings: {
-            EnableCustomTermsOfService: true,
+            CustomTermsOfServiceEnabled: true,
             CustomTermsOfServiceReAcceptancePeriod: reAcceptancePeriodDays,
         },
     });
@@ -54,15 +63,46 @@ export const apiEnableCustomTermsOfService = async (
 export const apiDisableCustomTermsOfService = async (baseUrl: string): Promise<any> => {
     return System.apiUpdateConfig(baseUrl, {
         SupportSettings: {
-            EnableCustomTermsOfService: false,
+            CustomTermsOfServiceEnabled: false,
         },
     });
+};
+
+/**
+ * Throw unless the client config the app actually consumes has custom ToS active for
+ * `termsId`.
+ *
+ * Asserted against `/api/v4/config/client` rather than the admin config because that is what
+ * `observeShowToS` reads, and because the two ToS keys only exist there: the server derives
+ * `EnableCustomTermsOfService` from `CustomTermsOfServiceEnabled`, and sets
+ * `CustomTermsOfServiceId` from `TermsOfService().GetLatest()` — it is not a config field, so
+ * this also catches another suite's terms being the latest row.
+ *
+ * Client config is regenerated asynchronously, hence the poll rather than a single read.
+ *
+ * @param {string} baseUrl - the base server URL
+ * @param {string} termsId - id the suite expects to be active
+ */
+export const apiAssertCustomTermsOfServiceActive = async (baseUrl: string, termsId: string): Promise<void> => {
+    const enabled = await System.waitForClientConfigFlag(baseUrl, 'EnableCustomTermsOfService', 'true');
+    if (!enabled) {
+        throw new Error('apiAssertCustomTermsOfServiceActive: client config EnableCustomTermsOfService never became "true" — check the Enterprise licence covers CustomTermsOfService');
+    }
+
+    const {config, error, status} = await System.apiGetClientConfigOld(baseUrl);
+    if (!config) {
+        throw new Error(`apiAssertCustomTermsOfServiceActive: could not read client config (status ${status ?? 'unknown'}): ${error?.message ?? 'unknown error'}`);
+    }
+    if (config.CustomTermsOfServiceId !== termsId) {
+        throw new Error(`apiAssertCustomTermsOfServiceActive: CustomTermsOfServiceId is "${String(config.CustomTermsOfServiceId)}", expected "${termsId}"`);
+    }
 };
 
 const TermsOfService = {
     apiCreateTermsOfService,
     apiEnableCustomTermsOfService,
     apiDisableCustomTermsOfService,
+    apiAssertCustomTermsOfServiceActive,
 };
 
 export default TermsOfService;
