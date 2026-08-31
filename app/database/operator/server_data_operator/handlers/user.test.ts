@@ -11,6 +11,7 @@ import {
 } from '@database/operator/server_data_operator/transformers/user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type UserModel from '@typings/database/models/servers/user';
 
 describe('*** Operator: User Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -160,5 +161,55 @@ describe('*** Operator: User Handlers tests ***', () => {
             buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
         }, 'handlePreferences(NEVER)');
+    });
+
+    it('=> HandleUsers: a presence-only payload must not carry stale props back in', async () => {
+        // shouldUpdateUserRecord admits a payload whose `status` differs even when it is not
+        // newer than the stored record. Such a payload is stale in every other field, and
+        // writing it back used to resurrect a custom status the user had just cleared.
+        const serverUrl = 'presenceOnly.test.com';
+        await DatabaseManager.init([serverUrl]);
+        const presenceOperator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+
+        const base = {
+            id: 'userid1',
+            update_at: 1000,
+            status: 'online',
+            username: 'sara.doe',
+            email: 'sara@example.com',
+            first_name: 'Sara',
+            last_name: 'Doe',
+            nickname: '',
+            locale: 'en',
+            position: '',
+            roles: 'system_user',
+            auth_service: '',
+            delete_at: 0,
+            notify_props: {},
+            props: {customStatus: JSON.stringify({emoji: 'calendar', text: 'In a meeting'})},
+        } as unknown as UserProfile;
+
+        await presenceOperator.handleUsers({users: [base], prepareRecordsOnly: false});
+
+        // The user clears the custom status locally; this does not bump update_at.
+        const stored = await database.get<UserModel>('User').find('userid1');
+        await database.write(async () => {
+            await stored.update((u) => {
+                u.props = {...u.props, customStatus: {}};
+            });
+        });
+
+        // A payload that is not newer arrives, differing only in presence.
+        await presenceOperator.handleUsers({
+            users: [{...base, status: 'away'} as unknown as UserProfile],
+            prepareRecordsOnly: false,
+        });
+
+        const after = await database.get<UserModel>('User').find('userid1');
+        expect(after.status).toBe('away');
+        expect(after.props?.customStatus).toEqual({});
+
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 });
