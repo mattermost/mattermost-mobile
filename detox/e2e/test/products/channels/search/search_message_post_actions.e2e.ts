@@ -234,19 +234,22 @@ describe('Search - Search Message Post Actions', () => {
         // * Verify searched message is not displayed anymore on pinned messages screen
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
+        // # Go back to channel list screen
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
-        await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
-        await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
 
-        // Two full pin/unpin round-trips, each with a server-side confirmation wait and a
-        // channel-list -> channel -> channel info -> pinned messages navigation. That work
-        // does not fit the 300s CI default; same convention as cross_team_search and
+        // No search-input cleanup here, unlike the other tests in this spec. Re-opening the
+        // search screen to clear an input and drop one recent item costs a whole extra
+        // navigation cycle, and this test measured 389s against its 360s budget with no
+        // single stall -- it is uniformly slow, so the only honest lever is doing less work.
+        // `searchTerm` is a per-test getRandomId(), each test removes its own recent item,
+        // and nothing here asserts on another test's recents, so leaving this one is inert.
+        //
+        // Two full pin/unpin round-trips remain, each with a server-side confirmation wait
+        // and a channel-list -> channel -> channel info -> pinned messages navigation. That
+        // still does not fit the 300s CI default; same convention as cross_team_search and
         // follow_and_unfollow_thread, which already carry explicit budgets.
     }, 360000);
 });

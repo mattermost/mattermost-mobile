@@ -227,16 +227,23 @@ class ServerListScreen {
             // The list may already be at its boundary.
         }
 
+        // Settle at the top before scrolling anywhere. The sheet animates in and the rows
+        // re-render after a server switch, so the first check has to outlast the presentation.
+        // It previously got TWO_SEC like every other attempt, expired inside the animation,
+        // and the loop then scrolled DOWN — walking a row that was already at the top up
+        // under the sheet's header, where it could never reach the threshold again no matter
+        // how many attempts were left. MM-T4675_2's failure screenshot is exactly that end
+        // state: "Server 1" clipped by the sheet header after the full run of scrolls.
+        try {
+            await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TEN_SEC);
+            return;
+        } catch (error) {
+            lastError = error;
+        }
+
         /* eslint-disable no-await-in-loop -- bounded scan of the server FlatList */
         for (let attempt = 0; attempt < maxScrolls; attempt++) {
             try {
-                // waitFor, not a bare expect: the sheet animates in and the rows re-render
-                // after a server switch, and an instant assertion loses that race. Every one
-                // of the ten attempts used to resolve in milliseconds, so the whole loop
-                // finished inside the presentation animation. MM-T4675_2's Detox visibility
-                // dump caught it exactly there — the row half-drawn and clipped by the
-                // sheet's edge — and reported "clipped by one or more of its superviews'
-                // bounds". Scrolling could never have fixed that; only waiting can.
                 await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
                 return;
             } catch (error) {
@@ -302,12 +309,20 @@ class ServerListScreen {
             // gesture problem that is not there. Confirm presentation first and say so.
             await this.toBeVisible();
 
-            const target = await this.getServerItem(serverDisplayName);
-            await this.scrollServerItemIntoView(target);
             try {
+                // Re-check before touching the row. A swipe from an earlier attempt persists,
+                // and an already-open row is translated out from under the sheet's left edge
+                // with the Edit/Remove/Log out panel in its place — so it can never satisfy
+                // scrollServerItemIntoView's visibility gate. Running that gate first (and,
+                // worse, outside this try, where its failure skipped the open() recovery
+                // below) is what burned MM-T4691_5/_6/_7: the row was swiped open and on
+                // screen the whole time, exactly as their failure screenshots show.
                 if (await this.isOptionHittable(revealed)) {
                     return revealed;
                 }
+
+                const target = await this.getServerItem(serverDisplayName);
+                await this.scrollServerItemIntoView(target);
                 await target.swipe('left', 'fast', 0.5, 0.9, 0.5);
                 await expect(this.serverListScreen).toBeVisible();
                 if (await this.isOptionHittable(revealed)) {
