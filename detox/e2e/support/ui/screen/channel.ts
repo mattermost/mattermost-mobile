@@ -691,27 +691,10 @@ class ChannelScreen {
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
-        const editedIndicatorMatcher = by.id('edited_indicator').withAncestor(postItemMatcher);
-        await waitFor(element(editedIndicatorMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
-        const trailingToken = updatedMessage.trim().split(/\s+/).pop();
-        const messageMatchers = [by.text(updatedMessage).withAncestor(postItemMatcher)];
-        if (trailingToken && trailingToken !== updatedMessage.trim()) {
-            messageMatchers.push(by.text(trailingToken).withAncestor(postItemMatcher));
-        }
-
-        let lastError: unknown;
-        /* eslint-disable no-await-in-loop -- matchers are tried in order, not in parallel */
-        for (const messageMatcher of messageMatchers) {
-            try {
-                await waitFor(element(messageMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-                return;
-            } catch (error) {
-                lastError = error;
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-
-        throw lastError;
+        const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
     };
 }
 
