@@ -434,7 +434,7 @@ describe('ChecklistItem', () => {
         });
     });
 
-    it('renders task activity and includes its detail row in the bottom-sheet height', () => {
+    it('should render task activity and includes its detail row in the bottom-sheet height', () => {
         const props = getBaseProps();
         props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
         props.activityActor = mockAssignee;

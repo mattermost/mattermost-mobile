@@ -514,7 +514,7 @@ describe('PlaybookRun', () => {
     // The rows of a persisted run observe the run for its timeline events, so passing them down as well
     // would only churn a withObservables trigger and blank the checklist on every task change. A run
     // that never reached the database has no such source, so there the events must be handed over.
-    it('passes timeline events down only for a run absent from the database', () => {
+    it('should pass timeline events down only for a run absent from the database', () => {
         const props = getBaseProps();
 
         const {getByTestId, rerender} = renderWithEverything(<PlaybookRun {...props}/>, {database});
