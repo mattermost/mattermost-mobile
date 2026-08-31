@@ -4,7 +4,7 @@
 import {isTransportFailure} from '@support/utils/transport_retry';
 
 import Channel from './channel';
-import {isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
+import {isHtmlInterstitialError, isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
 import Team from './team';
 import User from './user';
 
@@ -17,6 +17,13 @@ const isTransientServerError = (error: any): boolean => {
     // Cloudflare JSON body uses `status`; Mattermost API errors use `status_code`.
     const statusCode = error.status_code ?? error.statusCode ?? error.status;
     if (error.cloudflare_error === true || error.error_code === 524) {
+        return true;
+    }
+
+    // The edge answered with an HTML interstitial (cloud cold start, or a Cloudflare bot
+    // challenge) and the client's own retries were not enough. The request never reached
+    // Mattermost, so replaying it here is side-effect-free.
+    if (isHtmlInterstitialError(error)) {
         return true;
     }
     if (isTransientHttpStatus(statusCode)) {
