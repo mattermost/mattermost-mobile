@@ -259,6 +259,7 @@ const TermsOfService = ({
                     theme={theme}
                     text={intl.formatMessage({id: 'terms_of_service.acceptButton', defaultMessage: 'Accept'})}
                     size={'lg'}
+                    testID='terms_of_service.accept.button'
                 />
 
                 <Button
@@ -267,6 +268,7 @@ const TermsOfService = ({
                     text={intl.formatMessage({id: 'terms_of_service.decline', defaultMessage: 'Decline'})}
                     size={'lg'}
                     emphasis={'link'}
+                    testID='terms_of_service.decline.button'
                 />
 
             </>
@@ -283,10 +285,18 @@ const TermsOfService = ({
     }, [styles, insets]);
 
     return (
-        <View style={styles.root}>
+        <View
+            style={styles.root}
+            testID='terms_of_service.screen'
+        >
             <View style={containerStyle}>
                 <View style={styles.wrapper}>
-                    <Text style={styles.title}>{intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'})}</Text>
+                    <Text
+                        style={styles.title}
+                        testID='terms_of_service.title'
+                    >
+                        {intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'})}
+                    </Text>
                     {content}
                 </View>
             </View>
