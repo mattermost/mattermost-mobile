@@ -218,6 +218,73 @@ describe('toggleFavoriteChannel', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
     });
 
+    // Real-user path: the sidebar shows three channels under CHANNELS and the user taps
+    // "Favorite" on one of them (MM-T4929_1). updateChannelCategories REPLACES a category's
+    // membership with whatever is sent, and toggleFavoriteChannel builds that list from local
+    // CategoryChannel rows via toCategoryWithChannels(). The two tests below differ only in
+    // how much of that local state has synced.
+    const offTopicCC: CategoryChannel = {
+        id: 'teamid1_offtopic',
+        category_id: 'default_category_id',
+        channel_id: 'offtopic',
+        sort_order: 2,
+    };
+    const townSquareCC: CategoryChannel = {
+        id: 'teamid1_townsquare',
+        category_id: 'default_category_id',
+        channel_id: 'townsquare',
+        sort_order: 3,
+    };
+
+    // The server always knows all three channels; only the local rows vary.
+    const serverCategories: CategoryWithChannels[] = [
+        {...defaultCategory, channel_ids: [channelId, 'offtopic', 'townsquare']} as CategoryWithChannels,
+        {...favCategory, channel_ids: []} as CategoryWithChannels,
+    ];
+    const favouriteSetup = async (categoryChannelRows: CategoryChannel[]) => {
+        await operator.handleCategoryChannels({categoryChannels: categoryChannelRows, prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        const mockClient = {
+            updateChannelCategories: jest.fn().mockResolvedValue({}),
+            getCategories: jest.fn().mockResolvedValue({categories: serverCategories}),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+        return mockClient;
+    };
+    const sentCategory = (mockClient: {updateChannelCategories: jest.Mock}, type: string) => {
+        const [, , categories] = mockClient.updateChannelCategories.mock.calls[0];
+        return (categories as CategoryWithChannels[]).find((c) => c.type === type);
+    };
+
+    it('should send the remaining channels when favoriting with the sidebar fully synced', async () => {
+        const mockClient = await favouriteSetup([
+            {...categoryChannels, category_id: defaultCategory.id},
+            offTopicCC,
+            townSquareCC,
+        ]);
+
+        await toggleFavoriteChannel(serverUrl, channelId, false);
+
+        expect(sentCategory(mockClient, FAVORITES_CATEGORY)?.channel_ids).toEqual([channelId]);
+        expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).toEqual(['offtopic', 'townsquare']);
+    });
+
+    // The defect. Only the tapped channel's CategoryChannel row has synced -- the state right
+    // after launch, or mid-prune, since toggleFavoriteChannel fires fetchCategories(prune=true)
+    // unawaited on every toggle. channel_ids is then [channelId], the splice empties it, and the
+    // app PUTs "CHANNELS has no channels" to the server. That is why the wiped sidebar in
+    // MM-T4929_1 was still empty for MM-T4929_2 two minutes later: a purely local wipe would
+    // have been repaired by the next fetch, but this one is written to the server.
+    it('should not tell the server a category is empty just because local rows are missing', async () => {
+        const mockClient = await favouriteSetup([{...categoryChannels, category_id: defaultCategory.id}]);
+
+        await toggleFavoriteChannel(serverUrl, channelId, false);
+
+        expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).not.toEqual([]);
+    });
+
     it('should handle error during toggle favorite channel', async () => {
         await operator.handleCategoryChannels({categoryChannels: [categoryChannels], prepareRecordsOnly: false});
         await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
