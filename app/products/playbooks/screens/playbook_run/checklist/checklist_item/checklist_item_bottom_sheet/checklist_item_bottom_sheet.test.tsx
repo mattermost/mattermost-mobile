@@ -144,7 +144,7 @@ describe('ChecklistItemBottomSheet', () => {
         expect(queryByText('This is a test description')).toBeNull();
     });
 
-    it('renders the latest task activity details when available', () => {
+    it('should render the latest task activity details when available', () => {
         const props = getBaseProps();
         props.activity = {action: 'check', actorUserId: mockAssignee.id, timestamp: Date.now()};
         props.activityActor = mockAssignee;

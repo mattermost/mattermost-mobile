@@ -33,7 +33,7 @@ describe('TaskActivityIndicator', () => {
     const actor = TestHelper.fakeUserModel({id: 'user-1', username: 'alex'});
 
     beforeEach(() => {
-        jest.useFakeTimers();
+        jest.useFakeTimers({doNotFake: ['nextTick']});
         jest.setSystemTime(new Date(2026, 6, 21, 12, 30));
     });
 
@@ -41,7 +41,7 @@ describe('TaskActivityIndicator', () => {
         jest.useRealTimers();
     });
 
-    it('renders a compact checked row chip with a bare check icon and the actor avatar', () => {
+    it('should render a compact checked row chip with a bare check icon and the actor avatar', () => {
         const onActorPress = jest.fn();
         const {getByTestId} = renderWithIntl(
             <TaskActivityIndicator
@@ -74,7 +74,7 @@ describe('TaskActivityIndicator', () => {
         expect(onActorPress).toHaveBeenCalledWith(actor.id);
     });
 
-    it('renders an unchecked time-only chip without guessing an actor', () => {
+    it('should render an unchecked time-only chip without guessing an actor', () => {
         const {getByTestId, queryByTestId} = renderWithIntl(
             <TaskActivityIndicator
                 activity={{action: 'uncheck', timestamp}}
@@ -104,7 +104,7 @@ describe('TaskActivityIndicator', () => {
         ['restore', 'Restored'],
     ];
 
-    it.each(actionCases)('renders the %p action with its own icon and verb in the row chip', (action, verb) => {
+    it.each(actionCases)('should render the %p action with its own icon and verb in the row chip', (action, verb) => {
         const {getByTestId} = renderWithIntl(
             <TaskActivityIndicator
                 activity={{action, timestamp}}
@@ -122,7 +122,7 @@ describe('TaskActivityIndicator', () => {
         expect(getByTestId('playbook_run.checklist_item.task_activity.chip').props.label).toBe('2h ago');
     });
 
-    it.each(actionCases)('renders the %p action with its own icon and verb in the detail row', (action, verb) => {
+    it.each(actionCases)('should render the %p action with its own icon and verb in the detail row', (action, verb) => {
         const {getByTestId, getByText} = renderWithIntl(
             <TaskActivityIndicator
                 activity={{action, timestamp}}
@@ -138,7 +138,7 @@ describe('TaskActivityIndicator', () => {
         expect(getByText(`${verb} 2 hours ago`)).toBeVisible();
     });
 
-    it('shows who, relative time, and absolute time in the detail row', () => {
+    it('should show who, relative time, and absolute time in the detail row', () => {
         const onActorPress = jest.fn();
         const {getByLabelText, getByTestId, getByText, queryByTestId} = renderWithIntl(
             <TaskActivityIndicator
@@ -170,7 +170,7 @@ describe('TaskActivityIndicator', () => {
         expect(onActorPress).toHaveBeenCalledWith(actor.id);
     });
 
-    it('renders the absolute time in the provided timezone, not UTC', () => {
+    it('should render the absolute time in the provided timezone, not UTC', () => {
         // 07:27 UTC is 12:57 in Asia/Kolkata (UTC+5:30). A missing/UTC timezone would render 7:27 AM.
         const utcTimestamp = Date.UTC(2026, 6, 21, 7, 27);
         const {getByText} = renderWithIntl(
@@ -187,7 +187,7 @@ describe('TaskActivityIndicator', () => {
         expect(getByText('Jul 21, 2026 at 12:57 PM')).toBeVisible();
     });
 
-    it('renders a 24-hour absolute time when the user prefers military time', () => {
+    it('should render a 24-hour absolute time when the user prefers military time', () => {
         const utcTimestamp = Date.UTC(2026, 6, 21, 13, 24);
         const {getByText} = renderWithIntl(
             <TaskActivityIndicator
@@ -203,7 +203,7 @@ describe('TaskActivityIndicator', () => {
         expect(getByText('Jul 21, 2026 at 13:24')).toBeVisible();
     });
 
-    it('renders a 12-hour absolute time when the user does not prefer military time', () => {
+    it('should render a 12-hour absolute time when the user does not prefer military time', () => {
         const utcTimestamp = Date.UTC(2026, 6, 21, 13, 24);
         const {getByText} = renderWithIntl(
             <TaskActivityIndicator

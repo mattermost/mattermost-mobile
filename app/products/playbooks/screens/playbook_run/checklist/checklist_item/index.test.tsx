@@ -257,7 +257,7 @@ describe('ChecklistItem', () => {
             expect(checklistItem.props.assignee).toBeUndefined();
         });
 
-        it('resolves and refreshes the task activity actor from timeline events', async () => {
+        it('should resolve and refresh the task activity actor from timeline events', async () => {
             const actorId = 'activity-actor-id';
             await operator.handleUsers({
                 prepareRecordsOnly: false,
