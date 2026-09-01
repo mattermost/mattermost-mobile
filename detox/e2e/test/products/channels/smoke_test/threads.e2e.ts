@@ -71,8 +71,7 @@ describe('Smoke Test - Threads', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         const {postListPostItem: parentPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(parentPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
@@ -167,8 +166,7 @@ describe('Smoke Test - Threads', () => {
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         const {postListPostItem: parentPostItem2} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(parentPostItem2).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);

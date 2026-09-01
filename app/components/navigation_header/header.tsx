@@ -31,6 +31,7 @@ type Props = {
     theme: Theme;
     title?: string;
     titleCompanion?: React.ReactElement;
+    titleTestID?: string;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -139,6 +140,7 @@ const Header = ({
     theme,
     title,
     titleCompanion,
+    titleTestID = 'navigation.header.title',
 }: Props) => {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
@@ -218,7 +220,7 @@ const Header = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 style={[styles.title, opacity]}
-                                testID='navigation.header.title'
+                                testID={titleTestID}
                             >
                                 {title}
                             </Animated.Text>

@@ -81,8 +81,15 @@ const UserStatus = ({currentUser}: Props) => {
             return confirmOutOfOfficeDisabled(intl, status, updateStatus);
         }
 
-        updateStatus(status);
+        // Dismiss before updating, like the out-of-office branch above already does.
+        // Updating first re-rendered the account row (status indicator + label) while this
+        // sheet's views were still mounted, and Fabric then tried to insert a ReactTextView
+        // that still had the dismissing sheet as its parent: "addViewAt: cannot insert view
+        // into parent: View already has a parent". That is a host exception, so ReactHost
+        // destroyed the React instance and every later Detox action failed with
+        // "ReactContext is null!"
         await dismiss();
+        updateStatus(status);
         return null;
     }, [currentUser.status, dismiss, intl, updateStatus]);
 
