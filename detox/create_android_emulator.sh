@@ -14,7 +14,8 @@ TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test f
 EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
 
 setup_avd_home() {
-    if [[ "$CI" == "true" ]]; then
+    # ${CI:-} so `set -u` cannot abort the TESTS_ONLY retry path on a local run.
+    if [[ "${CI:-}" == "true" ]]; then
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
         mkdir -p "$ANDROID_AVD_HOME"
     fi
@@ -352,8 +353,23 @@ reset_app_for_retry() {
 }
 
 run_tests_only() {
+    # The AVD lives under ANDROID_AVD_HOME (detox/.android/avd), not the default
+    # ~/.android/avd. main() only exports it on the cold-boot path, so the retry
+    # used to reach Detox with it unset: AVDValidator ran `emulator -list-avds`
+    # against the default home, got nothing, and killed the retry in 0.35s with
+    # "Cannot boot Android Emulator with the name: 'detox_pixel_8_api_35'" before
+    # a single test ran. Idempotent — the cold-boot path calls it too.
+    setup_avd_home
+
     if ! emulator_is_ready; then
         echo "TESTS_ONLY: emulator is not ready"
+        exit 2
+    fi
+
+    # Exit 2 is the caller's "retry the cold-boot way" signal. Falling back beats
+    # failing the shard outright if the AVD is somehow still not visible.
+    if ! emulator -list-avds | grep -q "$AVD_NAME"; then
+        echo "TESTS_ONLY: '${AVD_NAME}' not listed under ANDROID_AVD_HOME=${ANDROID_AVD_HOME:-<unset>} — falling back to cold boot"
         exit 2
     fi
     reset_app_for_retry
