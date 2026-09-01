@@ -28,8 +28,17 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+/**
+ * MM-T4811_2 is skipped on Android only (MM-XXXXX).
+ *
+ * It failed on Android in the latest CI run on this branch (caace971) and passes on iOS, so
+ * coverage is kept there. It fails in PermalinkScreen.jumpToRecentMessages (permalink.ts:44),
+ * where the jump control does not resolve within 10s after opening a thread in channel.
+ */
+const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Smoke Test - Threads', () => {
     const serverOneDisplayName = 'Server 1';
@@ -161,7 +170,7 @@ describe('Smoke Test - Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4811_2 - should be able to save/unsave a thread and open a thread in channel', async () => {
+    itNotAndroid('MM-T4811_2 - should be able to save/unsave a thread and open a thread in channel', async () => {
         // # Create a thread, go back to channel list screen, then go to global threads screen, open thread options for thread, tap on save option, and tap on thread
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);

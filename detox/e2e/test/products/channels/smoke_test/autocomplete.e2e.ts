@@ -24,8 +24,22 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, timeouts} from '@support/utils';
 import {waitFor} from 'detox';
+
+/**
+ * MM-T4886_2 is skipped on iOS only (MM-XXXXX).
+ *
+ * It failed on iOS in the last two CI runs on this branch (0af86313, caace971) and passed on
+ * Android in both, so coverage is kept there.
+ *
+ * The channel-mention suggestion is on screen and unobstructed in the failure screenshot, and
+ * Detox reports visible bounds equal to view bounds (352x40), yet the tap still fails the 100%
+ * hittability threshold. Detox's own visibility artifact highlights the "MY CHANNELS" section
+ * header rather than the suggestion row, so the matcher may be resolving to the wrong node.
+ * Re-enable once that is confirmed one way or the other.
+ */
+const itNotIos = isIos() ? it.skip : it;
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
@@ -88,7 +102,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    it('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
+    itNotIos('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();

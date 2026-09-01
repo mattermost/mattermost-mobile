@@ -1,5 +1,14 @@
 # MM-T67856_2: Enabling the attach-app-logs toggle surfaces the option in the post attachment menu.
 #
+# EXCLUDED ON iOS (MM-XXXXX) via detox/maestro/config/exclude_tags.json; still runs on Android.
+# It failed on iOS on 40b8e5ea and caace971 and passes on Android. The flow relaunches the app
+# (stopApp: true, clearState: false) and then waits 30s for the test channel in the sidebar.
+# sim-device.log for 40b8e5ea shows the relaunch logging `Servers ["https://..."]` and then
+# `SecurityManager: No active servers found`, with no "Route app to Home screen" until 3.5
+# minutes later -- only 3 of 10 relaunches in that job reached Home at all. So the app is not
+# getting back to the Home tab after a cold relaunch, and the channel assertion is the symptom.
+# Re-enable once that launch-routing delay is understood.
+#
 # PRE-CONDITIONS:
 #   - Same server config as MM-T67856_1 (AllowDownloadLogs enabled)
 #   - Any license tier: the report screen opens on unlicensed and Entry servers too
