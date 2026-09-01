@@ -249,7 +249,7 @@ describe('websocket event handlers', () => {
             } as WebSocketMessage<EmptyData>);
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith('custom_com.mattermost.calls_call_end', {channelId});
             expect(callEnded).toHaveBeenCalledWith(serverUrl, channelId);
-            expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'remoteEnded');
+            expect(endNativeCall).toHaveBeenCalledWith(serverUrl, channelId, 'remoteEnded', undefined);
         });
     });
 
