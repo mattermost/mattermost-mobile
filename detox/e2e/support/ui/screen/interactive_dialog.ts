@@ -4,8 +4,6 @@
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-import IntegrationSelectorScreen from './integration_selector';
-
 class InteractiveDialogScreen {
     testID = {
         interactiveDialogScreen: 'interactive_dialog.screen',
@@ -79,48 +77,14 @@ class InteractiveDialogScreen {
         // Same dead target as above: the old 'interactive_dialog.dialog_title' is rendered
         // nowhere, so this only ever reached its fallback. Tap the scroll view's background,
         // which the form's keyboardShouldPersistTaps='handled' turns into a dismissal.
-        //
-        // Not {x: 20, y: 20}: that is the scroll view's top-left, and the first control in
-        // the field-refresh form is the project_type select. Depending on where the previous
-        // field left the scroll offset, that corner lands on the select and REOPENS the
-        // integration selector. MM-T4983 on the iOS run for 0af8631 failed exactly so --
-        // React was selected, both text fields filled, then this dismissal ran at 23:20:14
-        // and by 23:20:19 interactive_dialog.submit.button was gone; teardown at 23:20:33
-        // found integration_selector.screen open. A tap near the bottom edge lands below the
-        // last field, where the form has padding rather than controls.
         try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 8});
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
             } catch {
                 await wait(1000);
             }
-        }
-
-        // Belt and braces: if the dismissal (or an earlier one) still managed to open a
-        // selector, close it before the caller goes looking for the dialog's own controls.
-        // Cheap when nothing is open -- one existence check.
-        await this.dismissStraySelector();
-    };
-
-    /**
-     * Close an integration selector that opened unintentionally, so the interactive dialog is
-     * the frontmost screen again. No-op when no selector is up.
-     */
-    dismissStraySelector = async () => {
-        try {
-            await waitFor(element(by.id('integration_selector.screen'))).toExist().withTimeout(timeouts.ONE_SEC);
-        } catch {
-            return;
-        }
-
-        try {
-            // cancel() re-checks the selector is on screen before tapping navigation back,
-            // which other pushed screens also render.
-            await IntegrationSelectorScreen.cancel();
-        } catch {
-            // Leave it to the caller's own waits to report a clearer failure than this would.
         }
     };
 

@@ -62,53 +62,6 @@ export const timeouts = {
 
 let syncDisableDepth = 0;
 
-/**
- * How long to wait for Detox to confirm the app is idle when turning synchronization back
- * on. Detox resolves enableSynchronization() only once the app reports idle, and it polls
- * for that forever.
- *
- * After ChannelScreen.back() the app can stay busy indefinitely. Measured on the iOS run
- * for 0af8631 (detox.log): the back tap itself completed in 4.0s with synchronization
- * already disabled, then enableSynchronization() polled `app_status: "busy"` every 20s --
- * 237.6s in MM-T585_1 and 294.4s in MM-T5294_12, consuming both tests' entire budgets and
- * timing them out. The busy resources never cleared:
- *   one_time_events {event: "Runloop Perform Block", object: "JS Run Loop"}
- *   run_loop        {name: "JS Run Loop"} / {name: "Main Run Loop"}
- *   dispatch_queue  Main Queue, works_count 1-2
- *
- * Detox dispatches setSyncSettings{enabled: true} before that idle wait begins, so
- * synchronization is already back on app-side by the time we stop waiting; only the idle
- * confirmation is outstanding. Giving up on that confirmation therefore restores the
- * setting either way, and every caller still has its own explicit waits.
- */
-const ENABLE_SYNC_IDLE_BUDGET_MS = 30 * SECOND;
-
-/**
- * device.enableSynchronization(), bounded. Resolves 'timeout' instead of hanging when the
- * app never reports idle. A late rejection is kept handled so racing past it cannot surface
- * as an unhandled rejection after the caller has moved on.
- */
-async function enableSynchronizationBounded(): Promise<'enabled' | 'timeout'> {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const guard = new Promise<'timeout'>((resolve) => {
-        timer = setTimeout(() => resolve('timeout'), ENABLE_SYNC_IDLE_BUDGET_MS);
-    });
-
-    const enabled = device.enableSynchronization().then(() => 'enabled' as const);
-    enabled.catch(() => {
-        // Handled here so a rejection arriving after the guard won cannot go unhandled;
-        // the race below still sees it when it arrives first.
-    });
-
-    try {
-        return await Promise.race([enabled, guard]);
-    } finally {
-        if (timer) {
-            clearTimeout(timer);
-        }
-    }
-}
-
 export async function safeEnableSynchronization(): Promise<void> {
     if (syncDisableDepth > 0) {
         return;
@@ -119,10 +72,7 @@ export async function safeEnableSynchronization(): Promise<void> {
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i <= delays.length; i++) {
         try {
-            if (await enableSynchronizationBounded() === 'timeout') {
-                // eslint-disable-next-line no-console
-                console.warn(`[safeEnableSynchronization] app still busy after ${ENABLE_SYNC_IDLE_BUDGET_MS}ms; synchronization is on, continuing without the idle confirmation`);
-            }
+            await device.enableSynchronization();
             return;
         } catch (error) {
             const message = (error as Error)?.message ?? String(error);
