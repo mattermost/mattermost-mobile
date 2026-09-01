@@ -21,6 +21,7 @@ import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
 import ChannelSettingsScreen from './channel_settings';
 import ClockDisplaySettingsScreen from './clock_display_settings';
+import CodeScreen from './code';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
 import CustomStatusScreen from './custom_status';
@@ -57,6 +58,7 @@ import ServerListScreen from './server_list';
 import SettingsScreen from './settings';
 import TableScreen from './table';
 import TeamDropdownMenuScreen from './team_dropdown_menu';
+import TermsOfServiceScreen from './terms_of_service';
 import ThemeDisplaySettingsScreen from './theme_display_settings';
 import ThreadScreen from './thread';
 import ThreadOptionsScreen from './thread_options';
@@ -78,6 +80,7 @@ export {
     ChannelConfigurationScreen,
     ChannelSettingsScreen,
     ClockDisplaySettingsScreen,
+    CodeScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
     CustomStatusScreen,
@@ -112,6 +115,7 @@ export {
     SettingsScreen,
     TableScreen,
     TeamDropdownMenuScreen,
+    TermsOfServiceScreen,
     ThemeDisplaySettingsScreen,
     ThreadScreen,
     ThreadOptionsScreen,

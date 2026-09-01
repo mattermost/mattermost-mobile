@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
     Status,
     User,
@@ -467,9 +466,8 @@ describe('Account - Custom Status', () => {
         // # Create post and verify status in user profile
         await ChannelListScreen.open();
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(messageText);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(messageText, testChannel.id, siteOneUrl);
         const {postListPostItem, postListPostItemHeaderDisplayName} =
             ChannelScreen.getPostListPostItem(post.id, messageText, {userId: testUser.id});
         await expect(postListPostItem).toBeVisible();

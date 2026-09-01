@@ -107,6 +107,12 @@ class SearchMessagesScreen {
             await HomeScreen.searchTab.tap({x: 1, y: 1});
         }
 
+        try {
+            await waitFor(this.searchMessagesScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            await HomeScreen.searchTab.tap();
+        }
+
         return this.toBeVisible();
     };
 

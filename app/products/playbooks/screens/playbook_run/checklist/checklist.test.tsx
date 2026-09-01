@@ -9,6 +9,7 @@ import {useServerUrl} from '@context/server';
 import {addChecklistItem} from '@playbooks/actions/remote/checklist';
 import ProgressBar from '@playbooks/components/progress_bar';
 import {goToAddChecklistItem} from '@playbooks/screens/navigation';
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
@@ -16,6 +17,8 @@ import {showPlaybookErrorSnackbar} from '@utils/snack_bar';
 
 import Checklist from './checklist';
 import ChecklistItem from './checklist_item';
+
+import type {ReactTestInstance} from 'react-test-renderer';
 
 const serverUrl = 'test-server-url';
 
@@ -92,6 +95,11 @@ describe('Checklist', () => {
             playbookRunName: 'Test Run',
             isFinished: false,
             isParticipant: true,
+            filters: DEFAULT_TASK_FILTERS,
+            currentUserId: 'current-user-id',
+            expanded: true,
+            onToggleExpanded: jest.fn(),
+            onClearFilters: jest.fn(),
             checklistProgress: {
                 skipped: false,
                 completed: 0,
@@ -114,7 +122,7 @@ describe('Checklist', () => {
 
     it('toggles expanded state on header press', async () => {
         const props = getBaseProps();
-        const {getByText, getByTestId} = renderWithIntl(<Checklist {...props}/>);
+        const {getByText, getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         const header = getByText('Test Checklist');
 
@@ -127,6 +135,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalledTimes(1);
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={false}
+            />,
+        );
 
         // Should still be rendered but with different height
         await waitFor(() => {
@@ -137,6 +153,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalledTimes(2);
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={true}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
@@ -328,7 +352,7 @@ describe('Checklist', () => {
 
     it('toggles expanded state which affects chevron icon', async () => {
         const props = getBaseProps();
-        const {getByText, getByTestId, getAllByTestId} = renderWithIntl(<Checklist {...props}/>);
+        const {getByText, getByTestId, getAllByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
 
         const header = getByText('Test Checklist');
 
@@ -345,6 +369,14 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+        expect(props.onToggleExpanded).toHaveBeenCalled();
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={false}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
@@ -358,6 +390,13 @@ describe('Checklist', () => {
         act(() => {
             fireEvent.press(header);
         });
+
+        rerender(
+            <Checklist
+                {...props}
+                expanded={true}
+            />,
+        );
 
         await waitFor(() => {
             expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
@@ -427,6 +466,222 @@ describe('Checklist', () => {
             );
             expect(showPlaybookErrorSnackbar).not.toHaveBeenCalled();
             expect(logError).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('hiding items', () => {
+        const renderedItems = (getByTestId: (id: string) => ReactTestInstance) =>
+            within(getByTestId('checklist-items-container')).queryAllByTestId('checklist-item');
+
+        it('should not render a hidden incomplete item, but keep the server index of the items after it', () => {
+            const props = getBaseProps();
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-1', title: 'Item 1'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-2', title: 'Hidden', conditionAction: 'hidden', completedAt: 0}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-3', title: 'Item 3'}),
+            ];
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+            const items = renderedItems(getByTestId);
+
+            expect(items).toHaveLength(2);
+            expect(items[0].props.item.id).toBe('item-1');
+            expect(items[1].props.item.id).toBe('item-3');
+
+            // item-3 is third in the checklist, so the server still knows it as index 2 even though
+            // it is rendered second. Passing its rendered position instead would mutate item-2.
+            expect(items[0].props.itemNumber).toBe(0);
+            expect(items[1].props.itemNumber).toBe(2);
+        });
+
+        it('should render a hidden item once it has been completed', () => {
+            const props = getBaseProps();
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-1', title: 'Item 1'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'item-2', title: 'Hidden', conditionAction: 'hidden', state: 'closed', completedAt: 123}),
+            ];
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItems(getByTestId)).toHaveLength(2);
+        });
+    });
+
+    describe('task filters', () => {
+        const renderedItemIds = (getByTestId: (id: string) => ReactTestInstance) =>
+            within(getByTestId('checklist-items-container')).
+                queryAllByTestId('checklist-item').
+                map((item) => item.props.item.id);
+
+        function getFilterProps(): ComponentProps<typeof Checklist> {
+            const props = getBaseProps();
+            props.currentUserId = 'me';
+            props.items = [
+                TestHelper.fakePlaybookChecklistItemModel({id: 'unchecked', state: ''}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'checked', state: 'closed'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'skipped', state: 'skipped'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'mine', assigneeId: 'me'}),
+                TestHelper.fakePlaybookChecklistItemModel({id: 'theirs', assigneeId: 'someone-else'}),
+            ];
+            return props;
+        }
+
+        it('should render every item with the default filters', () => {
+            const {getByTestId} = renderWithIntl(<Checklist {...getFilterProps()}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped', 'mine', 'theirs']);
+        });
+
+        it('should hide checked items when showChecked is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showChecked: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'skipped', 'mine', 'theirs']);
+        });
+
+        it('should hide skipped items when showSkipped is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showSkipped: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'mine', 'theirs']);
+        });
+
+        it('should hide unchecked items when showUnchecked is off', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showUnchecked: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['checked', 'skipped']);
+        });
+
+        it('should show only checked items when only showChecked is on and no assignee is selected', () => {
+            const props = getFilterProps();
+            props.filters = {
+                ...DEFAULT_TASK_FILTERS,
+                showUnchecked: false,
+                showSkipped: false,
+            };
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['checked']);
+        });
+
+        it('should further narrow to Me when that assignee refine is on', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToMe: true};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['mine']);
+        });
+
+        it('should further narrow to Others when that assignee refine is on', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showAssignedToOthers: true};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['theirs']);
+        });
+
+        it('should further narrow to Unassigned when that assignee refine is on', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showUnassigned: true};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(renderedItemIds(getByTestId)).toEqual(['unchecked', 'checked', 'skipped']);
+        });
+
+        it('should keep the server index of items that survive a filter', () => {
+            const props = getFilterProps();
+            props.filters = {...DEFAULT_TASK_FILTERS, showChecked: false};
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+            const items = within(getByTestId('checklist-items-container')).queryAllByTestId('checklist-item');
+
+            // 'checked' sits at index 1 and is filtered out; the items after it keep their own indices.
+            expect(items.map((i) => i.props.itemNumber)).toEqual([0, 2, 3, 4]);
+        });
+
+        it('should show an empty state with clear filters when nothing matches', () => {
+            const props = getFilterProps();
+            props.filters = {
+                showChecked: false,
+                showSkipped: false,
+                showUnchecked: false,
+                showAssignedToMe: false,
+                showUnassigned: false,
+                showAssignedToOthers: false,
+            };
+
+            const {getByTestId, queryAllByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            expect(queryAllByTestId('checklist-item')).toHaveLength(0);
+            expect(getByTestId('checklist-filtered-empty')).toBeTruthy();
+
+            fireEvent.press(getByTestId('checklist-clear-filters'));
+            expect(props.onClearFilters).toHaveBeenCalled();
+        });
+    });
+
+    describe('collapse all', () => {
+        it('should collapse when expanded becomes false', async () => {
+            const props = getBaseProps();
+            const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+            });
+
+            rerender(
+                <Checklist
+                    {...props}
+                    expanded={false}
+                />,
+            );
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+        });
+
+        it('should start collapsed when mounted while expanded is false', async () => {
+            const props = getBaseProps();
+            props.expanded = false;
+
+            const {getByTestId} = renderWithIntl(<Checklist {...props}/>);
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+        });
+
+        it('should expand when expanded becomes true', async () => {
+            const props = getBaseProps();
+            props.expanded = false;
+            const {getByTestId, rerender} = renderWithIntl(<Checklist {...props}/>);
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 0});
+            });
+
+            rerender(
+                <Checklist
+                    {...props}
+                    expanded={true}
+                />,
+            );
+
+            await waitFor(() => {
+                expect(getByTestId('checklist-items-container')).toHaveAnimatedStyle({paddingVertical: 16});
+            });
         });
     });
 });
