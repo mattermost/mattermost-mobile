@@ -12,11 +12,8 @@ import WebRTC
 /// integration point officially documented by react-native-webrtc.
 ///
 /// All AVAudioSession mutations go through `RTCAudioSession.sharedInstance()`
-/// (WebRTC's proxy) to avoid races with WebRTC's own configuration lock.
-/// The only exception is `AVAudioSession.sharedInstance()` read-only
-/// properties used to inspect the current route — those are safe per the
-/// RTCAudioSession header comment ("Callers should not call setters on
-/// AVAudioSession directly, but other method invocations are fine").
+/// (WebRTC's proxy) via `withConfigurationLock`; only read-only route inspection
+/// touches AVAudioSession directly.
 @objc public final class AudioSessionManager: NSObject {
     private var rtcSession: RTCAudioSession { RTCAudioSession.sharedInstance() }
     private var avSession: AVAudioSession { AVAudioSession.sharedInstance() }
@@ -36,6 +33,19 @@ import WebRTC
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Configuration lock
+
+    /// Runs `body` holding WebRTC's configuration lock, which every `RTCAudioSession`
+    /// proxy setter requires: they open with a `checkLock:` and fail with
+    /// `kRTCAudioSessionErrorLockRequired` ("Must call lockForConfiguration before
+    /// calling this method") when it isn't held. `setCategory` and `setActive` are the
+    /// two we use.
+    private func withConfigurationLock<T>(_ body: () throws -> T) rethrows -> T {
+        rtcSession.lockForConfiguration()
+        defer { rtcSession.unlockForConfiguration() }
+        return try body()
     }
 
     // MARK: - Call session configuration
@@ -68,14 +78,14 @@ import WebRTC
         webRTCConfig.mode = AVAudioSession.Mode.voiceChat.rawValue
         RTCAudioSessionConfiguration.setWebRTC(webRTCConfig)
 
-        rtcSession.lockForConfiguration()
-        defer { rtcSession.unlockForConfiguration() }
         do {
-            try rtcSession.setCategory(
-                .playAndRecord,
-                mode: .voiceChat,
-                options: [.allowBluetoothHFP, .allowBluetoothA2DP, .duckOthers]
-            )
+            try withConfigurationLock {
+                try rtcSession.setCategory(
+                    .playAndRecord,
+                    mode: .voiceChat,
+                    options: [.allowBluetoothHFP, .allowBluetoothA2DP, .duckOthers]
+                )
+            }
             GekidouLogger.shared.log(.info,
                 "AudioSessionManager: configured category=playAndRecord mode=voiceChat")
         } catch {
@@ -92,11 +102,14 @@ import WebRTC
     /// registration failed and `didDeactivate` will never fire, this is the only
     /// teardown path.
     @objc public func resetSession() {
-        rtcSession.lockForConfiguration()
-        defer { rtcSession.unlockForConfiguration() }
         do {
-            rtcSession.isAudioEnabled = false
-            try rtcSession.setActive(false)
+            try withConfigurationLock {
+                // `isAudioEnabled` doesn't need the lock, but pairing it with the deactivation
+                // in one locked region keeps CallKit's concurrent `deactivated(_:)` from
+                // interleaving between the two.
+                rtcSession.isAudioEnabled = false
+                try rtcSession.setActive(false)
+            }
             GekidouLogger.shared.log(.info, "AudioSessionManager: resetSession — session deactivated")
         } catch {
             GekidouLogger.shared.log(.error,
@@ -233,6 +246,10 @@ import WebRTC
     /// ready. Per react-native-webrtc's iOS docs:
     ///   "your CXProviderDelegate should call through to
     ///    RTCAudioSession.sharedInstance.audioSessionDidActivate accordingly."
+    ///
+    /// No configuration lock here or in `deactivated(_:)`: neither
+    /// `audioSessionDidActivate`/`Deactivate` nor `isAudioEnabled` is a
+    /// lock-required proxy, and CallKit calls these on its own thread.
     @objc func activated(_ audioSession: AVAudioSession) {
         rtcSession.audioSessionDidActivate(audioSession)
         // Allow WebRTC to initialize its audio unit now that CallKit has
