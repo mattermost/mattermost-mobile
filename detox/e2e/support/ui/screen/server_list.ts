@@ -227,13 +227,6 @@ class ServerListScreen {
             // The list may already be at its boundary.
         }
 
-        // Settle at the top before scrolling anywhere. The sheet animates in and the rows
-        // re-render after a server switch, so the first check has to outlast the presentation.
-        // It previously got TWO_SEC like every other attempt, expired inside the animation,
-        // and the loop then scrolled DOWN — walking a row that was already at the top up
-        // under the sheet's header, where it could never reach the threshold again no matter
-        // how many attempts were left. MM-T4675_2's failure screenshot is exactly that end
-        // state: "Server 1" clipped by the sheet header after the full run of scrolls.
         try {
             await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TEN_SEC);
             return;
@@ -304,19 +297,9 @@ class ServerListScreen {
 
         /* eslint-disable no-await-in-loop -- a row press can win the iOS swipe gesture */
         for (let attempt = 0; attempt < 3; attempt++) {
-            // Swiping a row inside a sheet that is not presented cannot reveal anything, and
-            // the resulting "swipe did not reveal the action option" sends the reader after a
-            // gesture problem that is not there. Confirm presentation first and say so.
             await this.toBeVisible();
 
             try {
-                // Re-check before touching the row. A swipe from an earlier attempt persists,
-                // and an already-open row is translated out from under the sheet's left edge
-                // with the Edit/Remove/Log out panel in its place — so it can never satisfy
-                // scrollServerItemIntoView's visibility gate. Running that gate first (and,
-                // worse, outside this try, where its failure skipped the open() recovery
-                // below) is what burned MM-T4691_5/_6/_7: the row was swiped open and on
-                // screen the whole time, exactly as their failure screenshots show.
                 if (await this.isOptionHittable(revealed)) {
                     return revealed;
                 }

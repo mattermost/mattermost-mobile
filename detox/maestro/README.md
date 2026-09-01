@@ -484,18 +484,6 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
 - `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
-#### Current `exclude_tags.json` entries
-
-`run_ci_batches.sh` joins `default` plus the platform key (`ios` / `android`); the JSON holds nothing but those three lists. **The reason for every exclusion lives here** — add a row below when you add a tag, so a quarantine is never a bare string with no rationale.
-
-| Tag | Key | Kind | Reason |
-|-----|-----|------|--------|
-| `MM-T67856_4` | `default` | Dedicated CI step (not a flake) | Isolated attach-logs variant with `SupportSettings.AllowDownloadLogs=false`. |
-| `MM-T3260` | `android` | Driver / platform | After Chrome Custom Tab, Maestro cannot relaunch `com.mattermost.rnbeta` on API 35. |
-| `MM-T5603` | `ios` | Intermittent, mechanism unknown | `channel_bookmark_file.yml` upload shows “Error uploading file” on Add bookmark, so it never reaches `channel_bookmark.file.upload_complete`. Not server-side: the same fixture via `POST /api/v4/files` returns 201. |
-
-To un-exclude a tag: prove the flow green 5x consecutively **inside its CI batch, in batch order with its siblings**, and prove it can still fail — a negative control that breaks the feature and makes the flow fail. A flow that only stopped failing has not been fixed. If CI reddens an un-excluded tag, put it back **with the failing run ID**.
-
 #### Known flake: QUIC transport on the iOS Simulator
 
 Intermittent connect/login failures on the iOS Simulator are HTTP/3 (QUIC) transport teardown — **not** certificate trust, and not a defect in whatever flow happened to be running. The tell is `-1005 NSURLErrorNetworkConnectionLost` on a request to the server, surfacing in-app as “The network connection was lost”. Trust evaluation succeeds every time it completes; `-1202`/`-1203` strings and “Cancelled during verify block” lines in the device log are benign noise, not evidence of a TLS problem.

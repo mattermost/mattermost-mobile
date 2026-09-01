@@ -31,13 +31,6 @@ import {
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-/**
- * MM-T4811_2 is skipped on Android only (MM-XXXXX).
- *
- * It failed on Android in the latest CI run on this branch (caace971) and passes on iOS, so
- * coverage is kept there. It fails in PermalinkScreen.jumpToRecentMessages (permalink.ts:44),
- * where the jump control does not resolve within 10s after opening a thread in channel.
- */
 const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Smoke Test - Threads', () => {
@@ -86,14 +79,6 @@ describe('Smoke Test - Threads', () => {
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await waitFor(ThreadScreen.postInput).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
-
-        // * Verify thread is followed by user by default via thread navigation
-        // Disable Detox sync: each detoxExpect().toBeVisible() waits for bridge idle
-        // before querying the view hierarchy. On slow emulators the JS bridge stays busy
-        // for 15-20s stretches after a send (keyboard animation + WatermelonDB writes),
-        // which blocks both the poll and the thread_updated WebSocket event dispatch.
-        // With sync disabled, polls run every 500ms directly against the native view
-        // hierarchy; sync is re-enabled before each tap so gestures remain reliable.
         await device.disableSynchronization();
         await waitForElementToBeVisible(ThreadScreen.followingButton, timeouts.HALF_MIN);
         await device.enableSynchronization();

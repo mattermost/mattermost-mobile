@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent, render, screen} from '@testing-library/react-native';
+import {act, fireEvent, render, screen, within} from '@testing-library/react-native';
 import React from 'react';
 import {View} from 'react-native';
+import Svg from 'react-native-svg';
 
 import TutorialHighlight from './index';
 
@@ -56,6 +57,7 @@ describe('TutorialHighlight', () => {
 
         const backdrop = screen.getByTestId('tutorial_highlight.backdrop');
 
-        expect(backdrop.findByType('RNSVGSvgView' as never)).toBeTruthy();
+        // eslint-disable-next-line new-cap -- UNSAFE_getByType is the RNTL API name
+        expect(within(backdrop).UNSAFE_getByType(Svg)).toBeTruthy();
     });
 });

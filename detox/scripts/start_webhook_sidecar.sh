@@ -64,10 +64,6 @@ mark_ready() {
 
 mark_unavailable() {
     local reason="$1"
-    # Not "will fail" — they skip. mm_blocks_incoming_webhook wraps its whole describe in
-    # describe.skip and mm_blocks_ephemeral gates the callback cases with it.skip when
-    # hasStableWebhookIngress is false. Wording this as a failure made a benign, expected
-    # condition read like a broken shard.
     echo "::warning::Webhook sidecar unavailable — mm_blocks specs needing Cloud→sidecar callbacks will SKIP (hasStableWebhookIngress=false). ${reason}"
     if [[ -n "${GITHUB_ENV:-}" ]]; then
         {
@@ -211,26 +207,6 @@ if [[ -n "${WEBHOOK_PUBLIC_BASE_URL:-}" ]]; then
 fi
 
 # --- Last resort: trycloudflare quick tunnel (flaky DNS) ---
-#
-# Only reachable when WEBHOOK_PUBLIC_BASE_URL is unset, and in that case it cannot turn a
-# single spec on, so do not spend the budget on it. Two independent guards make a quick
-# tunnel useless for the tests:
-#
-#   * a tunnel that comes up is marked `mark_ready "$url" false`, i.e.
-#     WEBHOOK_CALLBACKS_REACHABLE=false, because Mattermost→tunnel callbacks hang; and
-#   * test_config's hasStableWebhookIngress excludes any *.trycloudflare.com origin
-#     outright.
-#
-# hasStableWebhookIngress is the only flag the specs read — hasWebhookSidecar is exported
-# but has no consumers. So the end state is identical whether the tunnel succeeds or
-# fails, and the attempt costs a cloudflared download plus up to
-# TUNNEL_TOTAL_BUDGET_SECS (120s) x TUNNEL_ATTEMPTS on the mm_blocks shard of every run.
-#
-# Opt back in with WEBHOOK_ALLOW_TRYCLOUDFLARE=true for local experimentation.
-if [[ "${WEBHOOK_ALLOW_TRYCLOUDFLARE:-}" != "true" ]]; then
-    mark_unavailable "no stable webhook ingress configured — set WEBHOOK_PUBLIC_BASE_URL (+ optional CLOUDFLARED_TUNNEL_TOKEN). The trycloudflare quick tunnel was skipped because it cannot satisfy hasStableWebhookIngress; set WEBHOOK_ALLOW_TRYCLOUDFLARE=true to attempt it anyway."
-    exit 0
-fi
 
 if ! ensure_cloudflared; then
     mark_unavailable "Failed to download cloudflared (or unsupported platform $(uname -s)-$(uname -m))"

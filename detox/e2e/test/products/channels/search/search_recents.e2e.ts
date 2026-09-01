@@ -29,14 +29,6 @@ import {
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-/**
- * MM-T3238_1 is skipped on Android only (MM-XXXXX).
- *
- * It failed on Android in the latest CI run on this branch (caace971) and passes on iOS, so
- * coverage is kept there. The Android failure is the recent-search row never satisfying
- * Espresso's 15% visibility gate at search_recents.e2e.ts:201 -- the row is expected after
- * deleting a sibling recent item, and was reported as null rather than as not-yet-visible.
- */
 const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Search - Recents and Input', () => {
@@ -254,9 +246,6 @@ describe('Search - Recents and Input', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type a search term and submit search.
-        // Use replaceText (not typeText) — typeText appends, so any stale text
-        // left by a previous test would concatenate with `searchTerm` and the
-        // server-side search would return 0 results.
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);

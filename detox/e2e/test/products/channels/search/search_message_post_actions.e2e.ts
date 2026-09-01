@@ -29,19 +29,6 @@ import {
 import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
 
-/**
- * MM-T5294_12 is skipped on iOS only (MM-XXXXX).
- *
- * It failed on iOS in the last three CI runs on this branch (59176a39, 0af86313, caace971)
- * and passed on Android in all of them, so coverage is kept there.
- *
- * Same iOS cause as MM-T585_1 in search_modifiers.e2e.ts: detox.log for 0af86313 shows the
- * navigation.header.back tap finishing in 4.0s, then enableSynchronization() polling
- * `app_status: "busy"` for 294.4s of the test's 383s budget. Bounding that wait was tried in
- * 5a58d186 and reverted -- abandoning the in-flight Detox request makes the next action fail
- * with "multiple interactions taking place simultaneously". Trimming the test's own work
- * (b1ba91b1) only moved 389s to 383s, because the work was never the problem.
- */
 const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Search Message Post Actions', () => {
@@ -254,17 +241,5 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
-
-        // No search-input cleanup here, unlike the other tests in this spec. Re-opening the
-        // search screen to clear an input and drop one recent item costs a whole extra
-        // navigation cycle, and this test measured 389s against its 360s budget with no
-        // single stall -- it is uniformly slow, so the only honest lever is doing less work.
-        // `searchTerm` is a per-test getRandomId(), each test removes its own recent item,
-        // and nothing here asserts on another test's recents, so leaving this one is inert.
-        //
-        // Two full pin/unpin round-trips remain, each with a server-side confirmation wait
-        // and a channel-list -> channel -> channel info -> pinned messages navigation. That
-        // still does not fit the 300s CI default; same convention as cross_team_search and
-        // follow_and_unfollow_thread, which already carry explicit budgets.
     }, 360000);
 });

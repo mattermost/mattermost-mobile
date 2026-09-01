@@ -134,11 +134,6 @@ class SearchMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-
-        // Dismiss keyboard first so the 75%-visibility check in waitForElementToBeVisible
-        // doesn't fail on Android when the keyboard is still covering the bottom of the list.
-        // A ~100pt scroll is sufficient to dismiss the keyboard in the search results list.
-        // This is a keyboard-dismissal scroll, not a "bring element into view" scroll.
         const flatList = this.postList.getFlatList();
         try {
             await flatList.scroll(100, 'down');
@@ -146,9 +141,6 @@ class SearchMessagesScreen {
             // List too short to scroll — keyboard already dismissed or not open
         }
         await wait(timeouts.ONE_SEC);
-
-        // Poll for the post to become visible without waiting for idle bridge.
-        // The waitForElementToBeVisible assertion enforces the actual visibility threshold.
         await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
         try {
             await waitForElementToBeVisible(postListPostItem, timeouts.FIVE_SEC);
@@ -160,9 +152,6 @@ class SearchMessagesScreen {
             ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))
             : postListPostItem;
 
-        // Use longPressWithRetry instead of longPressWithScrollRetry to avoid nested
-        // sync-disable cycles. The pre-scroll above + visibility check ensure the post
-        // is in view; retrying the long press itself (without scrolling) is sufficient.
         await longPressWithRetry(
             longPressTarget,
             PostOptionsScreen.postOptionsScreen,

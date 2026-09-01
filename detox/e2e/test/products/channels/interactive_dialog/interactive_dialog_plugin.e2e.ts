@@ -222,19 +222,6 @@ async function dismissErrorAlert() {
     } catch {}
 }
 
-/**
- * MM-T4983 is skipped on iOS only (MM-XXXXX).
- *
- * It failed on iOS in every CI run on this branch and passes on Android, so coverage is kept
- * there.
- *
- * detox.log for 0af86313 shows the dialog fully interactive -- React selected, both text
- * fields filled -- until fillTextElement's keyboard-dismiss tap at 23:20:14, after which
- * interactive_dialog.submit.button was gone and teardown found integration_selector.screen
- * open again. Moving that tap off the scroll view's top-left and adding a stray-selector
- * guard was tried in fc17fa28 and reverted: MM-T4983 still failed (and got slower, 222s ->
- * 342s) and MM-T4499 in this same spec regressed from passing to failing.
- */
 const itNotIos = isIos() ? it.skip : it;
 
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
@@ -295,10 +282,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     afterEach(async () => {
         await dismissErrorAlert();
-
-        // Close an integration selector modal if one is stuck open (e.g.,
-        // when a selectUser tap failed to fire). Cancel first, then try
-        // done() if cancel didn't apply.
         try {
             await IntegrationSelectorScreen.cancel();
         } catch {}
@@ -393,7 +376,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ChannelScreen.hasPostMessage(post.id, 'Dialog Submitted:');
     });
 
-    // TODO: previously failed when selectUser tapped search-field text (CI 30250131265).
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog selectfields');
@@ -600,24 +582,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // Skip Android: exceeds the 300s budget. What the artifacts show (run 33209271566,
-    // android shard 4): the app is idle at the end ("The app seems to be idle", 21:18:02,
-    // 15s before onTestFnFailure), so it waited on an assertion that never became true
-    // rather than hanging. testFnFailure.png shows a "TOP SECRET" classification banner
-    // active on this unrelated demoplugin channel, plus a "2 new messages" toast over the
-    // top of the post list — both add chrome this spec does not expect.
-    //
-    // The banner is there by design, not by accident: classification_banner_across_screens
-    // deliberately does NOT unset FeatureFlagClassificationMarkings in afterAll ("It is
-    // server-global and ~10 shards share each provisioned server, so unsetting it yanks the
-    // flag out from under any concurrent classification suite"), so once any classification
-    // suite runs, every later suite on that server inherits the banner.
-    //
-    // Causation is NOT established — I could not tie the timeout to the banner. Fixing it by
-    // unsetting the flag would break that documented invariant and the 6 classification tests
-    // (MM-T6209_1..MM-T6214_1) that depend on it, so this is the deliberate trade: skip one
-    // Android test rather than risk a six-test cluster. iOS passes this test, so coverage is
-    // kept there. Re-enable once the timeout's actual mechanism is identified.
     (isAndroid() ? it.skip : it)('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog multistep');
@@ -679,10 +643,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
-    // TODO: iOS 26 + react-native-keyboard-controller contamination.
-    // Field-refresh dialog with text inputs leaves keyboard/animation state that
-    // poisons later tests with progressViewOffset: NaN in RCTRefreshControl.
-    // Re-enable once the keyboard library handles iOS 26 transitions cleanly.
     itNotIos('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog field-refresh');
@@ -867,7 +827,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // * Verify timezone indicator appears for London field
         // London is GMT in winter, BST in summer — mobile renders without emoji.
-        // Datetime-timezone dialog can show the indicator twice (CI 30216081940).
+        // Datetime-timezone dialog can show the indicator twice.
         try {
             await expect(element(by.text('Times in GMT')).atIndex(0)).toExist();
         } catch {
@@ -915,9 +875,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     it('MM-T2530H should accept manual time entry on datetime field', async () => {
-        // NOTE: Placed last in the file — manual TextInput entry leaves keyboard/animation
-        // state on iOS 26 + react-native-keyboard-controller that can break subsequent dialog tests.
-        // # Open datetime-timezone dialog (has fields with allow_manual_time_entry)
         await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
         await ensureDialogOpen();
 

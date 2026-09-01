@@ -158,8 +158,7 @@ class CreateOrEditChannelScreen {
 
     // The scheduled-post tutorial modal (app/components/post_draft/send_button/
     // scheduled_post_tooltip.tsx) steals Espresso's window focus on Android, which makes
-    // channel.screen unselectable while it is up. Tap whichever of its two testIDs is
-    // present; both exist on the same control (the TouchableOpacity and its icon).
+    // channel.screen unselectable while it is up.
     dismissScheduledPostTooltip = async (): Promise<boolean> => {
         const targets = [
             ChannelScreen.scheduledPostTooltipCloseButton,

@@ -62,7 +62,9 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                 onLayout={onRootLayout}
             >
                 {/* Dismiss target. It wraps the scrim rather than overlaying it so the touch
-                    target owns the scrim's pixels; the SVG's own onPress does not fire. */}
+                    target owns the scrim's pixels; the SVG's own onPress does not fire.
+                    No pressed style on purpose: feedback on a full-screen scrim would flash
+                    the whole screen. */}
                 {itemBounds.endX > 0 &&
                 <Pressable
                     onPress={onDismiss}

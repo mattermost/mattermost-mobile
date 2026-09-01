@@ -7,10 +7,6 @@ import {expect, waitFor} from 'detox';
 class InteractiveDialogScreen {
     testID = {
         interactiveDialogScreen: 'interactive_dialog.screen',
-
-        // The scrollable is the KeyboardAwareScrollView inside the screen, not the screen
-        // itself: 'interactive_dialog.screen' sits on a SafeAreaView, so scrollTo() against
-        // it throws and the surrounding catch turned every scroll into a silent no-op.
         interactiveDialogScrollView: 'interactive_dialog.scroll_view',
         submitButton: 'interactive_dialog.submit.button',
         closeButton: 'close.interactive_dialog.button',
@@ -25,8 +21,6 @@ class InteractiveDialogScreen {
 
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
-    // Close button (X in header) - interactive dialogs render via the dialog_router route,
-    // whose testID is set in app/routes/(modals)/dialog_router.tsx
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
@@ -46,12 +40,6 @@ class InteractiveDialogScreen {
         try {
             const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
             if (isPasswordOrTextarea) {
-                // Dismiss the keyboard by tapping the scroll view's own background. The form
-                // sets keyboardShouldPersistTaps='handled', so a tap that no input claims
-                // dismisses it. The previous target, 'interactive_dialog.dialog_title', is not
-                // rendered anywhere in the app, so that tap always threw into the catch and no
-                // keyboard was ever dismissed. On iOS the keyboard overlays the content rather
-                // than resizing it, which is why the last field stayed unreachable there.
                 try {
                     await dialogScrollView.tap({x: 20, y: 20});
                     await wait(500);
@@ -74,9 +62,6 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(appsFormElement, value);
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
-        // Same dead target as above: the old 'interactive_dialog.dialog_title' is rendered
-        // nowhere, so this only ever reached its fallback. Tap the scroll view's background,
-        // which the form's keyboardShouldPersistTaps='handled' turns into a dismissal.
         try {
             await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch {
@@ -116,8 +101,6 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        // Scroll the dialog so the submit control is not obscured by the keyboard /
-        // safe-area on iOS (MM-T4102 borderline visibility).
         try {
             await this.interactiveDialogScreen.scroll(200, 'down');
         } catch { /* short dialogs may not scroll */ }

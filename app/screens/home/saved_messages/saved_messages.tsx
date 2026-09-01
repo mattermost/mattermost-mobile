@@ -58,6 +58,13 @@ const styles = StyleSheet.create({
     },
 });
 
+function sameIds(previous: string[], next: string[]) {
+    return previous.length === next.length && previous.every((id, index) => id === next[index]);
+}
+
+// observeSavedPostsByIds emits a fresh Set on every emission of either of its two sources,
+// so without the distinctUntilChanged guards the switchMaps tear down and rebuild the posts
+// query on changes that leave the saved-post ids identical. That churn made the list flicker.
 function observeSavedPosts(database: Database) {
     return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
         map((rows) => rows.map((preference) => preference.name)),
@@ -80,10 +87,6 @@ function observeSavedPosts(database: Database) {
             return queryPostsById(database, ids, Q.asc).observe();
         }),
     );
-}
-
-function sameIds(previous: string[], next: string[]) {
-    return previous.length === next.length && previous.every((id, index) => id === next[index]);
 }
 
 function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: Props) {

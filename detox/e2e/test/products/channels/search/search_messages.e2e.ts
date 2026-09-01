@@ -138,10 +138,6 @@ describe('Search - Search Messages', () => {
         await waitForElementToBeVisible(atMentionItem, timeouts.TWO_SEC);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
-
-        // wait(TWO_SEC) lets the search request land before asserting — same pattern as
-        // MM-T5294_4 below. Without it the bare toBeVisible() races the results fetch and
-        // fails "was null"
         await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages from user
@@ -177,10 +173,6 @@ describe('Search - Search Messages', () => {
         } = Autocomplete.getChannelMentionItem(testChannel.name);
         await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await SearchMessagesScreen.searchInput.tapReturnKey();
-
-        // wait(TWO_SEC) lets the search request land before asserting — same pattern as
-        // MM-T5294_4. Without it the bare toBeVisible() races the results fetch and fails
-        // "was null"
         await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages in channel

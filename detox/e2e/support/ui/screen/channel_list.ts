@@ -346,10 +346,6 @@ class ChannelListScreen {
                 // Loading indicator already gone or never shown.
             }
 
-            // If the categories fetch failed, the app shows its own error screen with a
-            // Retry control — use it (the app's own recovery path) before considering a
-            // relaunch. Uses a short probe so the healthy path pays at most 2s, and only
-            // when the FlashList is missing.
             try {
                 await waitForElementToExist(this.channelList, timeouts.THREE_SEC);
             } catch {

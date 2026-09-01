@@ -356,9 +356,6 @@ run_tests_only() {
     # The AVD lives under ANDROID_AVD_HOME (detox/.android/avd), not the default
     # ~/.android/avd. main() only exports it on the cold-boot path, so the retry
     # used to reach Detox with it unset: AVDValidator ran `emulator -list-avds`
-    # against the default home, got nothing, and killed the retry in 0.35s with
-    # "Cannot boot Android Emulator with the name: 'detox_pixel_8_api_35'" before
-    # a single test ran. Idempotent — the cold-boot path calls it too.
     setup_avd_home
 
     if ! emulator_is_ready; then

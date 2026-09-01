@@ -29,15 +29,6 @@ import {
 import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-/**
- * MM-T4929_3 is skipped on Android only (MM-XXXXX).
- *
- * It failed on Android in the latest CI run on this branch (caace971) and passes on iOS, so
- * coverage is kept there. It fails in CreateDirectMessageScreen.open() -- the DM creation
- * screen never appears within 20s. The sidebar is healthy in the failure screenshot (channels,
- * Off-Topic, Town Square and DIRECT MESSAGES all present), so this is not the category-sync
- * family that affects MM-T4929_1/_2.
- */
 const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Channels - Favorite and Unfavorite Channel', () => {

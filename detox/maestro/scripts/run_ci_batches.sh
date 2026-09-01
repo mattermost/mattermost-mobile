@@ -291,15 +291,6 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
-# True when the batch died because Maestro's XCUITest driver never came up, rather than
-# because a flow assertion failed. That failure happens before any flow runs, so the batch
-# writes no JUnit XML and CI reports whichever flow the batch happened to hold -- which is
-# why it looks like a different "flaky" test each run.
-#
-# Observed on the iOS run for 0af8631: batch 1 (clock_display.yml) burned 251s and exited 1
-# with "IOSDriverTimeoutException: iOS driver not ready in time", MAESTRO_DRIVER_STARTUP_TIMEOUT
-# already at 180000. The pre-flight step warms a driver, but each `maestro test` invocation
-# starts its own, so that warming does not carry into the batches.
 driver_startup_failed() {
   local batch_log=$1
   [[ -f "$batch_log" ]] || return 1

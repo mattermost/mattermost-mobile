@@ -99,36 +99,27 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
-    // An empty timeZone makes Intl throw or return "Invalid Date"; omit the option so
-    // formatting falls back to the device zone instead of poisoning the label.
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: !isMilitaryTime,
-        ...(timeZone ? {timeZone} : {}),
-        ...(isCurrentYear ? {} : {year: 'numeric'}),
-    };
-
-    const format = (opts: Intl.DateTimeFormatOptions) => {
+    const format = (zone?: string) => {
         try {
-            const formatted = date.toLocaleString(currentUserLocale, opts);
+            const formatted = date.toLocaleString(currentUserLocale, {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: !isMilitaryTime,
+                ...(zone ? {timeZone: zone} : {}),
+                ...(isCurrentYear ? {} : {year: 'numeric'}),
+            });
             return formatted === 'Invalid Date' ? '' : formatted;
         } catch {
             return '';
         }
     };
 
-    const formatted = format(options);
-    if (formatted) {
-        return formatted;
-    }
-
-    // Hermes returns the literal "Invalid Date" when it cannot honour an option, and
-    // timeZone is the usual culprit. Retry in the device zone rather than lose the label.
-    delete options.timeZone;
-    return format(options);
+    // Hermes returns the literal "Invalid Date" (iOS) or throws when it cannot honour an
+    // option, and timeZone is the usual culprit — empty or unknown. Losing the label is
+    // worse than showing the time in the device zone, so retry without it.
+    return format(timeZone) || format();
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {

@@ -37,16 +37,6 @@ import {expect} from 'detox';
 
 const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
-/**
- * MM-T4691_4 is skipped on iOS only (MM-XXXXX).
- *
- * It has been unstable on iOS across recent CI runs on this branch -- failed on 59176a39,
- * passed on 0af86313, failed again on caace971 -- and passes on Android throughout, so
- * coverage is kept there. The iOS failure is edit_server_form.save.button not passing the 75%
- * visibility threshold. Re-enable once the save button's visibility on iOS is understood;
- * b1ba91b1's scrollServerItemIntoView rework fixed the neighbouring MM-T4691_5/_6/_7 but not
- * this one.
- */
 const itThreeServersNotIos = isIos() ? it.skip : itWithThreeServers;
 
 describe('Server Login - Server List', () => {
@@ -60,11 +50,6 @@ describe('Server Login - Server List', () => {
     let lockAcquired = false;
 
     beforeAll(async () => {
-        // MM-T4691_5 logs in to SITE_3, and custom_terms_of_service turns on server-wide
-        // custom ToS there — that modal would land on top of that login and swallow the taps
-        // that follow. Both suites hold the SITE_3 lock so they never overlap. Held for the
-        // whole suite rather than around the one test: acquiring mid-suite would mean
-        // releasing on paths that have already navigated.
         if (hasThreeDistinctServers) {
             lockOwner = siteThreeLock.createOwner();
             await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
@@ -234,18 +219,9 @@ describe('Server Login - Server List', () => {
 
         // .atIndex(0) for the same reason as the first tap above.
         await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
-
-        // Wait for the edit screen before typing. Without this the failure is
-        // "no elements found for edit_server_form.server_display_name.input", which
-        // reads as a missing field rather than an edit screen that never opened.
         await EditServerScreen.toBeVisible();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
-
-        // Wait for the reverted row before tapping it, the same way the first save above is
-        // followed by scrollServerItemIntoView. The row's testID is keyed by display name, so
-        // until the rename lands and the sheet re-renders, only "<name> new" exists and the
-        // tap fails with "No elements found for ...server_1.active".
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TWENTY_SEC);
         await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
@@ -260,10 +236,6 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
 
-        // swipeRevealAndTapOption, not swipe + toBeVisible(100) + tap: the 100% gate never
-        // resolved on iOS even with the reveal panel fully drawn on screen, while the Android
-        // branch of the same step only ever waited a second. The helper gates on Detox's
-        // `hittable` attribute — the thing a tap actually needs — and retries the swipe.
         await ServerListScreen.swipeRevealAndTapOption(
             serverOneDisplayName,
             ServerListScreen.getServerItemRemoveOption(serverOneDisplayName),

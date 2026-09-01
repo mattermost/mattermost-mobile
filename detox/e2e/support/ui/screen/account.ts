@@ -209,12 +209,6 @@ class AccountScreen {
     };
 
     // Wait for the account row to show its unset state.
-    //
-    // The row's unset TEXT is the signal, not `setStatusOption`. That id
-    // ('account.custom_status.option') belongs to the row's outer TouchableOpacity, which the
-    // app renders whether or not a status is set, so waiting on it never waits for anything --
-    // which is what let the clear assertions race unsetCustomStatus()'s round trip and read
-    // the status that was still on screen.
     waitForCustomStatusCleared = async (timeout: number = timeouts.TWENTY_SEC) => {
         // Android: toHaveText requires visibility and the row can exist before it passes the
         // visibility threshold -- match id and text with toExist, as waitForCustomStatus does.
@@ -229,11 +223,6 @@ class AccountScreen {
 
     // Clear the custom status from the account row and wait for the row to show its unset
     // state.
-    //
-    // The coordinate tap fallback is deliberate. A plain tap on this control is enough in
-    // smoke_test/account.e2e.ts, but taps on it have also been measured dead-ending on a
-    // simulator while a coordinate tap at the same spot worked. The fallback costs nothing
-    // when the first tap lands.
     clearCustomStatus = async () => {
         await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.customStatusClearButton.tap();

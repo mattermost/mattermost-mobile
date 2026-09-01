@@ -158,16 +158,6 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    // Assert through ChannelScreen.assertPostMessageEdited, the same helper the saved-messages,
-    // pinned-messages, search-results and channel edit tests use — it already defines a
-    // `recent_mentions_page` locator for this screen.
-    //
-    // The previous matcher, by.id(row).withDescendant(by.text(updatedMessage)), cannot match an
-    // edited row on Android: markdown.tsx appends the edited_indicator node into the message's
-    // last paragraph, RN flattens that paragraph into a single ReactTextView, and Espresso's
-    // by.text() is an exact match — so the view's text is "<message>  Edited" and never equals
-    // the message alone. assertPostMessageEdited matches /<message>.*Edited/ instead, which is
-    // also the stronger assertion: it pins the message and the indicator to the same row.
     verifyPostEdited = async (postId: string, updatedMessage: string) => {
         try {
             await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');

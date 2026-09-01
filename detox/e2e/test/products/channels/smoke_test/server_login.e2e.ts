@@ -30,16 +30,6 @@ import {isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist}
 import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
-
-/**
- * MM-T4675_2 is skipped on iOS only (MM-XXXXX).
- *
- * It failed on iOS in all four of the last CI runs on this branch (127dfb53, 9295a796,
- * 03da4330, 40b8e5ea) and passed on Android in every one of them, so coverage is kept there.
- * The iOS failure is the server row never satisfying the sheet's visibility gate; b1ba91b1
- * reworked scrollServerItemIntoView and did fix the neighbouring MM-T4691_5/_6/_7, but not this
- * one. Re-enable once the iOS-specific cause is identified.
- */
 const itSecondServerNotIos = isIos() ? it.skip : itWithSecondServer;
 
 describe('Smoke Test - Server Login', () => {
