@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -65,10 +65,9 @@ describe('Smoke Test - Messaging', () => {
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(originalPostListPostItem).toBeVisible();
 
@@ -106,8 +105,7 @@ describe('Smoke Test - Messaging', () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await postListPostItem.tap();
 
@@ -138,14 +136,10 @@ describe('Smoke Test - Messaging', () => {
         // # Open a channel screen and post a message that includes emojis
         const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is posted with emojis (wait for post row by id — emoji text nodes can lag)
         const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        if (!post?.id) {
-            throw new Error('MM-T4786_3: expected post after emoji message');
-        }
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
         await waitForElementToExist(postListPostItem, timeouts.TWENTY_SEC);
         await expect(postListPostItem).toBeVisible();
@@ -170,15 +164,14 @@ describe('Smoke Test - Messaging', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: CI run 30000635898 — iOS post-option actions are unhittable and Android cascades at channel setup.
-    it.skip('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
+    it('MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on follow message option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.followThreadOption.tap();
+        await waitFor(PostOptionsScreen.followThreadOption).toExist().withTimeout(timeouts.TEN_SEC);
+        await PostOptionsScreen.followThreadOption.tap({x: 1, y: 1});
 
         // * Verify post options closed and message is followed by user via post footer
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -193,12 +186,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message and tap on save option
         await ChannelScreen.openPostOptionsFor(post.id, message);
-
-        if (isAndroid()) {
-            await PostOptionsScreen.savePostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.savePostOption.tap();
-        }
+        await PostOptionsScreen.tapSavePost();
 
         // * Verify post options closed and saved text is displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -210,11 +198,7 @@ describe('Smoke Test - Messaging', () => {
         await ThreadScreen.toBeVisible();
         await wait(timeouts.ONE_SEC);
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        if (isAndroid()) {
-            await PostOptionsScreen.unsavePostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.unsavePostOption.tap();
-        }
+        await PostOptionsScreen.tapUnsavePost();
 
         // * Verify post options closed and saved text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -222,11 +206,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message and tap on pin to channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        if (isAndroid()) {
-            await PostOptionsScreen.pinPostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.pinPostOption.tap();
-        }
+        await PostOptionsScreen.tapPinPost();
 
         // * Verify post options closed and pinned text is displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -236,11 +216,7 @@ describe('Smoke Test - Messaging', () => {
         // # Go back to channel, open post options for message, and tap on unpin from channel option
         await ThreadScreen.back();
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        if (isAndroid()) {
-            await PostOptionsScreen.unpinPostOptionLabel.tap();
-        } else {
-            await PostOptionsScreen.unpinPostOption.tap();
-        }
+        await PostOptionsScreen.tapUnpinPost();
 
         // * Verify post options closed and pinned text is not displayed on the post pre-header
         await waitFor(PostOptionsScreen.postOptionsScreen).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -256,10 +232,9 @@ describe('Smoke Test - Messaging', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const message = `Message @${testUser.username} ~${targetChannel.name}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify at-mention is posted as lowercase and channel mention is posted as display name
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(post.id, `Message @${testUser.username.toLowerCase()} ~${targetChannel.display_name}`);
 
         // # Go back to channel list screen
@@ -283,10 +258,9 @@ describe('Smoke Test - Messaging', () => {
         const channelLinkLabel = `channel-link-${getRandomId()}`;
         const channelLinkMessage = `[${channelLinkLabel}](${serverOneUrl}/${testTeam.name}/channels/${targetChannel.name})`;
         const message = `Message ${permalinkMessage} ${channelLinkMessage}`;
-        await ChannelScreen.postMessage(message);
 
         // * Verify permalink and channel link are posted as labeled links
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(post.id, `Message ${permalinkLabel} ${channelLinkLabel}`);
 
         // # Go back to channel list screen
@@ -298,10 +272,9 @@ describe('Smoke Test - Messaging', () => {
         const message = `Message ${getRandomId()}`;
         const markdown = `#### ${message}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdown);
 
         // * Verify message with markdown is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdown, testChannel.id, siteOneUrl);
         const {postListPostItemHeading} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemHeading).toBeVisible();
         await expect(element(by.text(message))).toBeVisible();

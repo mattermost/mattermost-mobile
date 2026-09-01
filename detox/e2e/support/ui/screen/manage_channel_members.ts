@@ -3,7 +3,7 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
@@ -37,23 +37,26 @@ class ManageChannelMembersScreen {
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
     backButton = element(by.id(this.testID.backButton));
 
+    // Same {id}.{userId} nesting as CreateDirectMessageScreen — prefer display_name (SEC-11049).
     getUserItem = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };
 
     getUserItemProfilePicture = (userId: string) => {
-        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, userId));
+        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, `${userId}.${userId}`));
     };
 
     getUserItemDisplayName = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
     };
 
+    selectUser = async (userId: string) => {
+        const displayName = this.getUserItemDisplayName(userId);
+        await waitFor(displayName).toBeVisible(isAndroid() ? 40 : 75).withTimeout(timeouts.HALF_MIN);
+        await displayName.tap({x: 1, y: 1});
+    };
+
     toBeVisible = async () => {
-        // Use polling on both platforms: navigating to ManageChannelMembersScreen triggers
-        // a stack push and network/DB fetch for the member list. This keeps the JS bridge
-        // busy, causing waitFor().toExist() bridge-idle sync to block for the full timeout
-        // (especially for archived channels where member fetch is a distinct API path).
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         await waitForElementToExist(this.manageMembersScreen, timeout);
 
@@ -61,8 +64,6 @@ class ManageChannelMembersScreen {
     };
 
     open = async () => {
-        // Scroll down to bring the members option into view — on iOS 26.x the channel
-        // info screen is taller than the viewport and the members option can be clipped.
         try {
             await ChannelInfoScreen.scrollView.scroll(200, 'down');
         } catch {
@@ -76,10 +77,6 @@ class ManageChannelMembersScreen {
 
     close = async () => {
         if (isIos()) {
-            // The navigation.header.back button on this screen is permanently obscured by
-            // iOS 26.3's liquid-glass UIVisualEffectView, causing EarlGrey's 100% visibility
-            // threshold tap to fail. Use the iOS interactive pop gesture (left-edge swipe)
-            // instead, which the UINavigationController intercepts at the system level.
             await this.manageMembersScreen.swipe('right', 'slow', 0.75, 0.01, 0.5);
         } else {
             await device.pressBack();
@@ -101,6 +98,18 @@ class ManageChannelMembersScreen {
         await wait(timeouts.ONE_SEC);
     };
 
+    longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
+
+    dismissLongPressProfileTutorial = async () => {
+        try {
+            await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
+            await device.pressBack();
+            await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            // Tutorial not shown or already dismissed.
+        }
+    };
+
     closeTutorial = async () => {
         try {
             if (isIos()) {
@@ -108,16 +117,7 @@ class ManageChannelMembersScreen {
                 await this.tutorialSwipeLeft.tap();
                 await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
             } else {
-                // On Android, TutorialHighlight uses a React Native Modal (separate Dialog window).
-                // Espresso searches the focused Dialog window, not the Activity. The 'tutorial_highlight'
-                // testID is on the Modal element itself and is never found. The 'tutorial_swipe_left'
-                // View inside the Modal IS accessible from the Dialog window.
-                await waitForElementToExist(this.tutorialSwipeLeft, timeouts.HALF_MIN);
-                await device.pressBack();
-
-                // Poll until the tutorial disappears; waitFor().not.toExist() blocks on bridge-idle
-                // after the pressBack dismiss animation and can spuriously time out.
-                await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
+                await this.dismissLongPressProfileTutorial();
             }
         } catch {
             // Tutorial may not appear if already dismissed in a previous run
