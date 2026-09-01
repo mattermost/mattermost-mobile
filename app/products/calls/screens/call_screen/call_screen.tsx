@@ -10,6 +10,7 @@ import {
     type LayoutRectangle,
     Platform,
     Pressable,
+    type PressableStateCallbackType,
     ScrollView,
     StatusBar,
     Text,
@@ -123,24 +124,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         gap: 8,
         paddingHorizontal: 24,
     },
-    headerLeft: {
+    headerSide: {
+        flex: 1,
+        minWidth: 57,
         flexDirection: 'row',
-        justifyContent: 'flex-start',
         alignItems: 'center',
-        width: 93,
         gap: 8,
     },
-    headerLeftRightRecOff: {
-        width: 57,
+    headerLeft: {
+        justifyContent: 'flex-start',
     },
-    time: {
+    timerText: {
         color: theme.buttonColor,
-        ...typography('Heading', 200),
-        width: 56,
-    },
-    callingText: {
-        color: theme.buttonColor,
-        ...typography('Heading', 200),
+        ...typography('Body', 100, 'SemiBold'),
     },
     headerPortraitSpacer: {
         height: 12,
@@ -156,10 +152,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         top: -1000,
     },
     headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'flex-end',
-        width: 93,
+    },
+    headerRightPressed: {
+        opacity: 0.72,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -175,7 +171,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         width: '100%',
     },
     usersScrollContainerScreenOn: {
-        marginTop: -20,
+        flex: 0,
     },
     usersScrollViewCentered: {
         flex: 1,
@@ -296,7 +292,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
-        flex: 2,
+        flex: 1,
         width: '100%',
         height: '100%',
         alignItems: 'center',
@@ -378,7 +374,7 @@ const CallScreen = ({
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
 
     const leaveCallHandler = useCallback(() => {
-        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', navigateBack);
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '');
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const muteUnmuteHandler = useCallback(() => {
@@ -396,6 +392,12 @@ const CallScreen = ({
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
+
+    const collapseButtonStyle = useCallback(({pressed}: PressableStateCallbackType) => [
+        style.headerSide,
+        style.headerRight,
+        pressed && style.headerRightPressed,
+    ], [style.headerSide, style.headerRight, style.headerRightPressed]);
 
     const startRecording = useCallback(async () => {
         Keyboard.dismiss();
@@ -533,7 +535,7 @@ const CallScreen = ({
 
         const avatarCellHeight = avatarSize + 20 + 20 + 20; // avatar + name + host pill + padding
         const usernameSize = smallerAvatar ? usernameM : usernameL;
-        const avatarCellWidth = usernameSize + 20; // name width + padding
+        const avatarCellWidth = usernameSize + 32; // name width + card padding (24) + margin (8)
 
         const perRow = Math.floor(layout.width / avatarCellWidth);
         const totalHeight = Math.ceil(numSessions / perRow) * avatarCellHeight;
@@ -674,13 +676,13 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            <View style={[style.headerLeft, !(waitingForRecording || recording || isDMCalling || isDMConnecting) && style.headerLeftRightRecOff]}>
+            <View style={[style.headerSide, style.headerLeft]}>
                 {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                 {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                 <CallStatusTimer
                     isConnecting={isDMConnecting}
                     isCalling={isDMCalling}
-                    style={isDMCalling || isDMConnecting ? style.callingText : style.time}
+                    style={style.timerText}
                     value={dmCalleeAnsweredAt}
                     truncateWhenLong={true}
                 />
@@ -695,7 +697,7 @@ const CallScreen = ({
             <Pressable
                 testID='calls.collapse.button'
                 onPress={navigateBack}
-                style={[style.headerRight, !(waitingForRecording || recording || isDMCalling || isDMConnecting) && style.headerLeftRightRecOff]}
+                style={collapseButtonStyle}
             >
                 <CompassIcon
                     name='arrow-collapse'

@@ -50,7 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         ...typography('Body', 100, 'SemiBold'),
     },
     usernameShort: {
-        marginTop: 0,
         width: usernameM,
     },
 }));
