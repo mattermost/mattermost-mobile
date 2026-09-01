@@ -49,12 +49,13 @@ export const apiAddUserToChannel = async (baseUrl: string, userId: string, chann
  * @param {Object} option.channel - channel object to be created
  * @return {Object} returns {channel} on success or {error, status} on error
  */
-export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null}: any = {}): Promise<any> => {
+export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null, propertyValues = undefined}: any = {}): Promise<any> => {
     try {
-        const response = await client.post(
-            `${baseUrl}/api/v4/channels`,
-            channel || generateRandomChannel(teamId, type, prefix),
-        );
+        const channelData = channel || generateRandomChannel(teamId, type, prefix);
+        const body = propertyValues === undefined
+            ? channelData
+            : {...channelData, property_values: propertyValues};
+        const response = await client.post(`${baseUrl}/api/v4/channels`, body);
 
         return {channel: response.data};
     } catch (err) {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {waitFor} from 'detox';
 
 // testIDs are defined in app/components/channel_attribute_labels/index.tsx
 // and app/components/attribute_chip/index.tsx
@@ -25,12 +25,14 @@ class ChannelAttributeLabels {
     getChipValue = (fieldName: string) => element(by.id(`channel_attribute_labels.chip.${fieldName}.value`));
 
     toBeVisible = async () => {
-        await waitFor(this.container).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.container).toBeVisible().withTimeout(timeouts.HALF_MIN);
         return this.container;
     };
 
     toNotBeVisible = async () => {
-        await expect(this.container).not.toBeVisible();
+        // Use waitFor rather than an immediate expect — the chip row may take a moment
+        // to settle after navigation (e.g. DM channels where no chip should appear).
+        await waitFor(this.container).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

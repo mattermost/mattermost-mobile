@@ -4,6 +4,54 @@
 import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 
+/**
+ * Attempt to disable the ChannelAttributes feature flag on the server.
+ *
+ * Returns true if the flag was successfully set to false, false if the server
+ * controls the flag via an environment variable and it cannot be overridden.
+ * Never throws — callers that require the flag to be off should check the return
+ * value and skip or fail with a clear message.
+ */
+export const disableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
+    const patchResult = await System.apiPatchConfig(baseUrl, {
+        FeatureFlags: {
+            ChannelAttributes: false,
+        },
+    });
+    if (patchResult.error) {
+        return false;
+    }
+
+    let disabled = await System.waitForClientConfigFlag(
+        baseUrl,
+        'FeatureFlagChannelAttributes',
+        'false',
+        {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+    );
+    if (!disabled) {
+        const {config, error} = await System.apiGetConfig(baseUrl);
+        if (error || !config) {
+            return false;
+        }
+
+        config.FeatureFlags = config.FeatureFlags ?? {};
+        config.FeatureFlags.ChannelAttributes = false;
+        const replaceResult = await System.apiReplaceConfig(baseUrl, config);
+        if (replaceResult.error) {
+            return false;
+        }
+
+        disabled = await System.waitForClientConfigFlag(
+            baseUrl,
+            'FeatureFlagChannelAttributes',
+            'false',
+            {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+        );
+    }
+
+    return disabled;
+};
+
 export const enableChannelAttributes = async (baseUrl: string): Promise<void> => {
     const patchResult = await System.apiPatchConfig(baseUrl, {
         FeatureFlags: {

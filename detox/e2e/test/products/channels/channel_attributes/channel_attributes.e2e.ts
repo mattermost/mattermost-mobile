@@ -7,9 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {enableChannelAttributes} from '@support/channel_attributes_test_helper';
+import {acquireChannelAttributesLock, createChannelAttributesLockOwner, releaseChannelAttributesLock} from '@support/channel_attributes_lock';
+import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Channel, Post, Properties, Setup, System, User} from '@support/server_api';
+import {Channel, Post, Properties, System, Team, User} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -59,35 +60,56 @@ async function openChannel(channelName: string) {
 
 describe('Channel Attributes - Header chips and Channel Info section', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
+    let lockAcquired = false;
+
+    // False when the server controls FeatureFlagChannelAttributes via an env var and
+    // the config API cannot override it. Tests that require the flag to be off skip
+    // themselves when this is false.
+    let canControlFlag = false;
     let testUser: any;
-    let testChannel: any;
+    let testTeam: any;
+
+    // Set per-test; cleared and deleted in afterEach. null = no regular channel created this test.
+    let testChannel: any = null;
 
     beforeAll(async () => {
-        // Start with ChannelAttributes off so each test controls the flag state explicitly.
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ChannelAttributes: false,
-            },
-        });
+        lockOwner = createChannelAttributesLockOwner();
+        await acquireChannelAttributesLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
 
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
-        testChannel = channel;
-        testUser = user;
-
+        // Defensive cleanup — a prior interrupted run may have left required attribute fields that
+        // would block channel creation. Do this before any channel is created.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
+        canControlFlag = await disableChannelAttributes(siteOneUrl);
+
+        // Create a shared team and user. Channels are created per-test so that each test can
+        // supply property_values at creation time matching its required attribute fields.
+        const teamResult = await Team.apiCreateTeam(siteOneUrl, {prefix: 'team'});
+        testTeam = teamResult.team;
+        const userResult = await User.apiCreateUser(siteOneUrl, {prefix: 'user'});
+        testUser = userResult.user;
+        await Team.apiAddUserToTeam(siteOneUrl, testUser.id, testTeam.id);
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ChannelAttributes: false,
-            },
-        });
-        await HomeScreen.logout();
+        if (!lockAcquired) {
+            return;
+        }
+
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
+            if (canControlFlag) {
+                await disableChannelAttributes(siteOneUrl);
+            }
+            await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
+            await HomeScreen.logout();
+        } finally {
+            await releaseChannelAttributesLock(siteOneUrl, lockOwner);
+        }
     });
 
     beforeEach(async () => {
@@ -97,16 +119,31 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     afterEach(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
+        // Delete the per-test channel so attribute fields on it do not leak into the next test.
+        if (testChannel) {
+            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            testChannel = null;
+        }
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ChannelAttributes: false,
-            },
-        });
+
+        // Unconditional: T6311 enables ClassificationMarkings; ensure it is always off.
+        await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
+        if (canControlFlag) {
+            await disableChannelAttributes(siteOneUrl);
+        }
     });
 
     it('MM-T6300_1 - should not render attribute chips in the header when ChannelAttributes flag is off', async () => {
-        // # Create a header-designated attribute field and set a value on the channel.
+        if (!canControlFlag) {
+            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
+            return;
+        }
+
+        // # Create a header-designated attribute field.
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -115,12 +152,18 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        // # Create the channel and add the user. Flag is off so property_values at creation
+        // # are ignored by the server; set the value via PATCH after creation.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
         await device.reloadReactNative();
 
         // # Navigate to the channel.
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * No chips row should be visible with the flag off.
         await ChannelAttributeLabels.toNotBeVisible();
@@ -131,7 +174,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6301_1 - should render an attribute chip in the channel header when a value is set and the flag is on', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        // # Create a header-designated attribute field and set a value on the channel.
+        // # Create a header-designated attribute field.
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -140,12 +183,21 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        // # Create the channel with the attribute value supplied at creation time, mirroring
+        // # real-world channel creation flow when the ChannelAttributes flag is on.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'HIGH')}],
+        });
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         // # Navigate to the channel.
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * Chip container and the HIGH chip are visible.
         await ChannelAttributeLabels.toBeVisible();
@@ -158,7 +210,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6302_1 - should not render a chip for an unset optional attribute', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        // # Create a header-designated field but do NOT set a value.
+        // # Create an optional header-designated field.
         await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -167,11 +219,16 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
+
+        // # Create the channel without a value — optional field so the server accepts it.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         // # Navigate to the channel.
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * No chip row because there is nothing to show.
         await ChannelAttributeLabels.toNotBeVisible();
@@ -182,7 +239,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6303_1 - should render both chips inline when exactly 2 attributes are designated for the header', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        // # Create two header-designated fields, each with a value.
+        // # Create two header-designated fields.
         const {channelFieldId: field1Id, optionIdsByName: opts1} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -199,14 +256,24 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, field1Id, requireOption(opts1, 'HIGH'));
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, field2Id, requireOption(opts2, 'HIGH2'));
+
+        // # Create the channel with both values set at creation time.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [
+                {field_id: field1Id, value: requireOption(opts1, 'HIGH')},
+                {field_id: field2Id, value: requireOption(opts2, 'HIGH2')},
+            ],
+        });
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         // # Navigate to the channel. With MAX_VISIBLE_CHIPS=2 and exactly 2 fields, both fit
         // # inline and no overflow +N button should be shown.
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * Both chips visible.
         await ChannelAttributeLabels.toBeVisible();
@@ -222,9 +289,6 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6304_1 - should not render attribute chips on a DM channel', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        // # Create a second user for the DM. DMs are server-global; no shared team needed.
-        const {user: dmTarget} = await User.apiCreateUser(siteOneUrl);
-
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -233,6 +297,9 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
+
+        // # Create a second user for the DM. DMs are server-global; no shared team needed.
+        const {user: dmTarget} = await User.apiCreateUser(siteOneUrl);
 
         // # Create the DM and post a message so it appears in the sidebar.
         const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, dmTarget.id]);
@@ -245,9 +312,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await ChannelListScreen.toBeVisible();
 
         // # Navigate to the DM — DMs appear under 'direct_messages' category.
+        // Channel item testIDs use channel.name, which for DMs is userId__userId,
+        // NOT the other user's username.
         await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
         await wait(timeouts.TWO_SEC);
-        await ChannelScreen.open('direct_messages', dmTarget.username);
+        await ChannelScreen.open('direct_messages', dmChannel.name);
 
         // * No chips on a DM.
         await ChannelAttributeLabels.toNotBeVisible();
@@ -266,11 +335,19 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_info'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'MEDIUM'));
+
+        // # Create the channel with the attribute value at creation time.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'MEDIUM')}],
+        });
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // # Open Channel Info.
         await ChannelInfoScreen.open();
@@ -285,9 +362,14 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
-        await enableChannelAttributes(siteOneUrl);
+        // # Create the channel BEFORE the required attribute field exists. The server enforces
+        // # required attribute values only at channel creation time. Creating the field after the
+        // # channel means the existing channel has no value — exactly what we want to verify.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
-        // # Create a required info-designated field but do NOT set a value.
+        // # Now create the required field (no value set on the channel).
         await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -297,10 +379,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 required: true,
             },
         );
+        await enableChannelAttributes(siteOneUrl);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // # Open Channel Info.
         await ChannelInfoScreen.open();
@@ -317,7 +400,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6307_1 - should not show optional unset attribute row in Channel Info', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        // # Create an optional info-designated field with no value set.
+        // # Create an optional info-designated field.
         await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -327,10 +410,15 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 required: false,
             },
         );
+
+        // # Create the channel without a value — optional field so the server accepts it.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // # Open Channel Info.
         await ChannelInfoScreen.open();
@@ -353,11 +441,31 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_banner_top'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        // # Create the channel with the attribute value at creation time.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'HIGH')}],
+        });
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
+        // After reload the app may restore a previous-session channel (e.g. a DM from an
+        // earlier test that left an unread), pushing it onto the nav stack. Dismiss any
+        // auto-opened channel before navigating so ChannelScreen.back() at the end lands
+        // on the channel list rather than the DM.
+        await wait(timeouts.TWO_SEC);
+        try {
+            await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            await device.pressBack();
+            await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        }
+
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * Channel-level banner is mounted (testID='channel.banner' added to channel_banner.tsx)
         // * and the option name is visible (RemoveMarkdown strips the **bold** markers from the
@@ -369,7 +477,13 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6309_1 - should not show channel attribute banner when the flag is off', async () => {
-        // # ChannelAttributes flag is off (afterEach resets it; flag was never enabled this test).
+        if (!canControlFlag) {
+            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
+            return;
+        }
+
+        // # ChannelAttributes flag is off. Create field and channel, then PATCH the value
+        // # (property_values at creation are ignored by the server when the flag is off).
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
@@ -378,15 +492,22 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_banner_top'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * The banner component returns null when the gate fails; use not.toExist() not
         // * not.toBeVisible() — a null-returned component has no element in the hierarchy at all.
-        await expect(element(by.id('channel.banner'))).not.toExist();
+        // * Use waitFor with a timeout: after reload the WatermelonDB may briefly hold a
+        // * stale FeatureFlagChannelAttributes=true value (from the previous banner test)
+        // * until the fresh server config sync completes.
+        await waitFor(element(by.id('channel.banner'))).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         await ChannelScreen.back();
     });
@@ -402,11 +523,19 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        // # Create the channel with HIGH as the initial value.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'HIGH')}],
+        });
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * Chip shows HIGH initially.
         await ChannelAttributeLabels.toBeVisible();
@@ -416,11 +545,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await ChannelScreen.back();
 
         // # Change the value to LOW via the API and reload.
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'LOW'));
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'LOW'));
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * Chip now shows LOW; HIGH is no longer shown.
         await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('LOW').withTimeout(timeouts.TEN_SEC);
@@ -430,6 +559,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6311_1 - should not show attribute chips when ChannelAttributes is off even if ClassificationMarkings is on', async () => {
+        if (!canControlFlag) {
+            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
+            return;
+        }
+
         // # Enable classification markings only; channel attributes flag stays off.
         await enableClassificationMarkings(siteOneUrl);
 
@@ -441,18 +575,21 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
                 actions: ['display_label_header'],
             },
         );
-        await Properties.apiSetChannelAttributeValue(siteOneUrl, testChannel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
+
+        // # Create the channel and set the value via PATCH (ChannelAttributes flag is off so
+        // # property_values at creation are ignored by the server).
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, requireOption(optionIdsByName, 'HIGH'));
         await device.reloadReactNative();
 
         await ChannelListScreen.toBeVisible();
-        await openChannel(testChannel.name);
+        await openChannel(channel.name);
 
         // * No channel attribute chips because ChannelAttributes flag is off.
         await ChannelAttributeLabels.toNotBeVisible();
 
         await ChannelScreen.back();
-
-        // # Disable ClassificationMarkings for a clean afterEach state.
-        await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
     });
 });

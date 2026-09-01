@@ -343,7 +343,7 @@ export const apiCleanupClassification = async (baseUrl: string) => {
 };
 
 const CHANNEL_OBJECT_TYPE = 'channel';
-const CHANNEL_TARGET_TYPE = 'channel';
+const CHANNEL_TARGET_TYPE = 'system';
 
 type ChannelAttributeFieldOptions = {
     fieldName: string;
@@ -389,12 +389,12 @@ export const apiSetupChannelAttributeField = async (
     }
     const templateField = templateResult_.field;
 
-    const channelFieldAttrs: Record<string, unknown> = {actions};
+    const channelFieldAttrs: Record<string, unknown> = {
+        actions,
+        required,
+    };
     if (displayName) {
         channelFieldAttrs.display_name = displayName;
-    }
-    if (required) {
-        channelFieldAttrs.required = true;
     }
 
     const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
