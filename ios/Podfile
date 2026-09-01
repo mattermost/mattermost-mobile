@@ -28,7 +28,7 @@ ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1' if podfile_properties['buildReactNativeFr
 ENV['EXPO_USE_PRECOMPILED_MODULES'] ||= '1' if podfile_properties['buildExpoModulesFromSource'] != 'true'
 ENV['RCT_HERMES_V1_ENABLED'] ||= '1' if podfile_properties['useHermesV1'] == 'true'
 
-platform :ios, podfile_properties['deploymentTarget'] || '16.4' #min_ios_version_supported
+platform :ios, podfile_properties['deploymentTarget'] || '18.0' #min_ios_version_supported
 prepare_react_native_project!
 
 Pod::UI.puts "Configuring Pod with statically linked Frameworks".green

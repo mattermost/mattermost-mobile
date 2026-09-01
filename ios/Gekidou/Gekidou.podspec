@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.license               = 'MIT'
   s.homepage              = 'https://github.com/mattermost/mattermost-mobile'
   s.summary               = 'Gekidou core library'
-  s.platform              = :ios, '15.1'               # match repo baseline
+  s.platform              = :ios, '18.0'               # match repo baseline
   s.swift_versions        = ['5.9', '5.10']            # safe spread
   s.source                = { :git => ".git", :tag => "#{s.version}" }
   s.source_files          = 'Sources/**/*.{swift,h,m,mm}'
