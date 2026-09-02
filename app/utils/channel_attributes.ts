@@ -13,7 +13,10 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 // payloads satisfy, so the same pure helpers serve the observers and the tests.
 // Selection by group, object_type and delete_at happens in the scoped queries in
 // @queries/servers/properties; these helpers only project what was selected.
-export type ChannelAttributeField = Pick<PropertyFieldModel, 'id' | 'name' | 'attrs'>;
+// `type` and `permissionValues` are here for the editor: the first decides
+// whether an editor exists for the field at all, the second is the per-field
+// permission tier layered above the channel-level one.
+export type ChannelAttributeField = Pick<PropertyFieldModel, 'id' | 'name' | 'type' | 'attrs' | 'permissionValues'>;
 export type ChannelAttributeValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
 
 export type ResolvedChannelAttribute = {
@@ -30,6 +33,25 @@ export type ResolvedChannelAttribute = {
     displayValue: string;
 };
 
+// Why a row cannot be edited. Shown to the user rather than hidden: a row that
+// silently does nothing when tapped reads as broken, and hiding it makes a
+// correctly marked channel look like one missing a marking.
+export type AttributeLockReason = 'never' | 'raise_only' | 'lower_only' | 'permission' | 'unsupported_type';
+
+export type AttributeEditability =
+    | {editable: true}
+    | {editable: false; reason: AttributeLockReason};
+
+// What a field's permission_values tier requires beyond the channel-level gate.
+export type AttributeTierGate = 'never' | 'channel_only' | 'manage_channel_roles' | 'manage_system';
+
+// The channel-wide permission answers every row is judged against.
+export type ChannelAttributePermissions = {
+    canManageChannelProperties: boolean;
+    canManageChannelRoles: boolean;
+    canManageSystem: boolean;
+};
+
 export type ChannelAttributeBannerState = {
     hasBanner: boolean;
     banner: ChannelBannerInfo | undefined;
@@ -38,6 +60,14 @@ export type ChannelAttributeBannerState = {
 const NO_BANNER: ChannelAttributeBannerState = {hasBanner: false, banner: undefined};
 
 const EMPTY_RESOLVED: ResolvedChannelAttribute[] = [];
+
+const EMPTY_OPTIONS: PropertyFieldOption[] = [];
+
+const EDITABLE: AttributeEditability = {editable: true};
+
+// The field types with an editor. Mirrors the webapp, which leaves date, user and
+// multiuser read-only.
+const EDITABLE_FIELD_TYPES = new Set<string>(['text', 'select', 'multiselect', 'rank']);
 
 // Ranks a field for display. Absent sort_order sorts last rather than first, so
 // an unconfigured field never jumps ahead of a configured one.
@@ -141,6 +171,133 @@ export function canMoveToOption(field: ChannelAttributeField, currentValue: unkn
     }
 
     return policy === 'raise_only' ? nextRank > currentRank : nextRank < currentRank;
+}
+
+/**
+ * The options a field's change policy still permits, given its current value.
+ *
+ * The editor narrows its list to these rather than rendering the rest disabled:
+ * under a directional policy the unreachable options are not choices, and showing
+ * them greyed out only invites the tap.
+ */
+export function reachableOptions(field: ChannelAttributeField, currentValue: unknown): PropertyFieldOption[] {
+    const options = getFieldOptions(field);
+    if (options.length === 0) {
+        return EMPTY_OPTIONS;
+    }
+
+    const reachable = options.filter((option) => canMoveToOption(field, currentValue, option.id));
+    return reachable.length === options.length ? options : reachable;
+}
+
+/**
+ * Whether this field's type has an editor at all.
+ *
+ * date, user and multiuser attributes are displayed but not editable — there is
+ * no editor for them on the webapp either, and inventing one on a phone first is
+ * the wrong order.
+ */
+export function hasAttributeEditor(field: ChannelAttributeField): boolean {
+    return EDITABLE_FIELD_TYPES.has(field.type);
+}
+
+/**
+ * What this field's permission_values tier demands, on top of the channel-level
+ * manage_*_channel_properties gate.
+ *
+ * Anything absent or unrecognised reads as `never`, which matches the server: its
+ * switch has no default branch and a nil tier returns false. The webapp instead
+ * treats an empty tier as `member`, so it offers an edit affordance the server
+ * refuses — deliberately not copied here.
+ *
+ * A tier is returned rather than a permission name because the permissions have
+ * to be observed for the channel as a whole: one subscription each, then every
+ * row selects from the result, instead of a subscription per row.
+ */
+export function attributeTierGate(field: ChannelAttributeField): AttributeTierGate {
+    switch (field.permissionValues) {
+        case 'sysadmin':
+            return 'manage_system';
+        case 'admin':
+            return 'manage_channel_roles';
+        case 'member':
+            return 'channel_only';
+        default:
+            return 'never';
+    }
+}
+
+/**
+ * Both permission gates for one field: the channel-level one, already resolved by
+ * the caller, and this field's tier.
+ */
+export function canEditAttributeField(field: ChannelAttributeField, permissions: ChannelAttributePermissions): boolean {
+    if (!permissions.canManageChannelProperties) {
+        return false;
+    }
+
+    switch (attributeTierGate(field)) {
+        case 'channel_only':
+            return true;
+        case 'manage_channel_roles':
+            return permissions.canManageChannelRoles;
+        case 'manage_system':
+            return permissions.canManageSystem;
+        default:
+            return false;
+    }
+}
+
+/**
+ * Whether a row may be edited, and when it may not, which of the reasons to show.
+ *
+ * `hasPermission` is both permission gates already resolved: the channel-level
+ * one and this field's tier.
+ *
+ * Two details are easy to get wrong and both are load-bearing:
+ *
+ * - The check reads the stored value, not the display string. A stored option id
+ *   that no longer resolves still counts as set, and — being unresolvable — is
+ *   correctly refused by canMoveToOption.
+ * - A locked policy only locks a field that already has a value. The server
+ *   exempts the first write, so a required attribute whose creation-time write
+ *   failed is not stranded as "Not set" forever.
+ */
+export function getAttributeEditability(
+    field: ChannelAttributeField,
+    currentValue: unknown,
+    hasPermission: boolean,
+): AttributeEditability {
+    if (!hasAttributeEditor(field)) {
+        return {editable: false, reason: 'unsupported_type'};
+    }
+
+    // The policy is checked before the permission, so a locked field reports why it
+    // is locked even to someone who could not have edited it anyway. That reason
+    // describes the channel rather than the viewer, and it is the more useful of
+    // the two: "cannot be changed after it is set" explains the row, where "you do
+    // not have permission" only explains the reader.
+    if (isPropertyValueSet(currentValue)) {
+        const policy = getPropertyFieldChangePolicy(field);
+
+        if (policy === 'never') {
+            return {editable: false, reason: 'never'};
+        }
+
+        // A directional policy compares option ranks, so a field with nothing left
+        // to compare can never satisfy it. The server reaches the same conclusion
+        // from the other side: an unresolvable rank is refused. That also covers a
+        // text field, which only ends up here through a type change.
+        if (policy !== 'any' && reachableOptions(field, currentValue).length === 0) {
+            return {editable: false, reason: policy};
+        }
+    }
+
+    if (!hasPermission) {
+        return {editable: false, reason: 'permission'};
+    }
+
+    return EDITABLE;
 }
 
 /**

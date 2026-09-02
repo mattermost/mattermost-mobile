@@ -351,6 +351,15 @@ type ChannelAttributeFieldOptions = {
     options: PropertyFieldOption[];
     actions?: string[];
     required?: boolean;
+
+    // Governs which value moves the server will accept once a value is set. Omitted
+    // means 'any'; a directional policy also refuses a clear.
+    changePolicy?: 'any' | 'raise_only' | 'lower_only' | 'never';
+
+    // The channel field's permission tier. Defaults to 'admin', which is what the
+    // System Console writes; 'sysadmin' is how a tier the caller cannot satisfy is
+    // set up, and 'none' makes the field permanently read-only.
+    permissionValues?: 'none' | 'sysadmin' | 'admin' | 'member';
 };
 
 /**
@@ -368,7 +377,7 @@ export const apiSetupChannelAttributeField = async (
     baseUrl: string,
     opts: ChannelAttributeFieldOptions,
 ) => {
-    const {fieldName, displayName, options, actions = [], required = false} = opts;
+    const {fieldName, displayName, options, actions = [], required = false, changePolicy, permissionValues = ADMIN_PERMISSION} = opts;
 
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: fieldName,
@@ -396,6 +405,15 @@ export const apiSetupChannelAttributeField = async (
     if (displayName) {
         channelFieldAttrs.display_name = displayName;
     }
+    if (changePolicy) {
+        channelFieldAttrs.change_policy = changePolicy;
+
+        // The System Console writes editable alongside a never policy; without it a
+        // field created before change_policy existed would read as editable.
+        if (changePolicy === 'never') {
+            channelFieldAttrs.editable = false;
+        }
+    }
 
     const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
         name: fieldName,
@@ -403,6 +421,7 @@ export const apiSetupChannelAttributeField = async (
         target_type: CHANNEL_TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
+        permission_values: permissionValues,
         attrs: channelFieldAttrs,
     });
 
@@ -459,6 +478,21 @@ export const apiSetChannelAttributeValue = async (
         throw new Error(`apiSetChannelAttributeValue: ${JSON.stringify((result as any).error)}`);
     }
     return result;
+};
+
+/**
+ * The value the server holds for one channel attribute, or undefined when unset.
+ *
+ * This is what proves an edit made in the app actually reached the server, rather
+ * than only having repainted the row.
+ */
+export const apiGetChannelAttributeValue = async (
+    baseUrl: string,
+    channelId: string,
+    fieldId: string,
+): Promise<unknown> => {
+    const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId) as {values?: any[]};
+    return (result.values ?? []).find((v: any) => v.field_id === fieldId)?.value;
 };
 
 /**
@@ -524,6 +558,7 @@ export const Properties = {
     apiCleanupClassification,
     apiSetupChannelAttributeField,
     apiSetChannelAttributeValue,
+    apiGetChannelAttributeValue,
     apiCleanupChannelAttributeFields,
 };
 

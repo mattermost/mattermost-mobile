@@ -27,6 +27,11 @@ import type {PropertyFieldModel, PropertyValueModel, SystemModel} from '@databas
 
 const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE, SYSTEM}} = MM_TABLES;
 
+// ASCII unit separator. Joins per-attribute signatures with a byte no option name,
+// field name or colour can contain, so no value can forge a record boundary and
+// make two different configurations hash alike.
+const SIGNATURE_SEPARATOR = '\u001f';
+
 export const getPropertyFieldsByNames = (database: Database, names: string[]) => {
     return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
 };
@@ -167,7 +172,11 @@ export const observeChannelAttributeFields = (database: Database) => {
                 Q.where('group_id', groupId),
                 Q.where('object_type', CHANNEL_ATTRIBUTE_OBJECT_TYPE),
                 Q.where('delete_at', 0),
-            ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+
+            // permission_values is its own column, not part of attrs, so it has
+            // to be listed: relying on update_at moving would miss a patch that
+            // lands in the same millisecond as the last one.
+            ).observeWithColumns(['update_at', 'delete_at', 'attrs', 'permission_values']);
         }),
     );
 };
@@ -186,8 +195,19 @@ export const observeResolvedChannelAttributes = (
         observeChannelAttributeFields(database),
         observePropertyValuesByTargetId(database, channelId),
     ]).pipe(
-        map(([fields, values]) => resolveChannelAttributes(fields, values)),
-        distinctUntilChanged(resolvedAttributesEqual),
+        map(([fields, values]) => {
+            const attributes = resolveChannelAttributes(fields, values);
+
+            // The signature is computed here, not inside distinctUntilChanged.
+            // WatermelonDB updates a record in place and re-emits the same model
+            // instance, so by the time a comparator ran, the *previous* emission's
+            // field already reported the new attrs and every comparison of a
+            // configuration change came out equal. Snapshotting it as a string at
+            // emission time is what makes the comparison mean anything.
+            return {attributes, signature: attributes.map(renderSignature).join(SIGNATURE_SEPARATOR)};
+        }),
+        distinctUntilChanged((a, b) => a.signature === b.signature),
+        map(({attributes}) => attributes),
     );
 };
 
@@ -223,22 +243,31 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
     const {attrs} = attribute.field;
     const actions = Array.isArray(attrs?.actions) ? attrs.actions.join(',') : '';
 
+    // The option list is in here as a digest rather than by identity because it
+    // is what the editor offers. An administrator renaming, recolouring or
+    // removing an option has to reach an open row, and comparing only the
+    // rendered value meant the row kept offering an option the server had
+    // already stopped accepting. Joined with SIGNATURE_SEPARATOR rather than
+    // ':'/',' because option.name is admin-authored free text that can legally
+    // contain either, which would let two different option sets collide.
+    const options = Array.isArray(attrs?.options) ?attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) :'';
+
     return [
         attribute.field.id,
         attribute.field.name,
+        attribute.field.type,
         attribute.displayValue,
         attribute.option?.color ?? '',
         actions,
         attrs?.required === true ? '1' : '0',
         attrs?.display_name ?? '',
         typeof attrs?.sort_order === 'number' ? String(attrs.sort_order) : '',
+
+        // The three keys the editor gates on. Without them, narrowing a policy or
+        // revoking a tier produced an emission this treated as identical.
+        attrs?.change_policy ?? '',
+        attrs?.editable === false ? '0' : '1',
+        typeof attribute.field.permissionValues === 'string' ? attribute.field.permissionValues : '',
+        options,
     ].join('|');
-}
-
-function resolvedAttributesEqual(a: ResolvedChannelAttribute[], b: ResolvedChannelAttribute[]): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    return a.every((attribute, index) => renderSignature(attribute) === renderSignature(b[index]));
 }

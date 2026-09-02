@@ -16,6 +16,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type {ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 const serverUrl = 'properties.query.test.com';
 const groupId = 'access_control';
@@ -187,5 +188,112 @@ describe('observeChannelAttributeBanner', () => {
 
         const state = await firstValueFrom(observeChannelAttributeBanner(database, channelId));
         expect(state.hasBanner).toBe(false);
+    });
+});
+
+describe('observeResolvedChannelAttributes re-emission', () => {
+    const channelId = 'channel-123';
+
+    const channelField = (attrs: PropertyFieldAttrs, overrides?: Partial<PropertyField>) => makeField({
+        id: 'cf-1',
+        name: 'classification',
+        object_type: 'channel',
+        type: 'rank',
+        attrs,
+        ...overrides,
+    });
+
+    const options = [
+        {id: 'level-public', name: 'Public', color: '#00FF00', rank: 1},
+        {id: 'level-secret', name: 'Secret', color: '#FF0000', rank: 2},
+    ];
+
+    // Collects everything the observable emits while `mutate` runs, so a change
+    // the comparator wrongly swallows shows up as a missing emission rather than
+    // as a stale value nobody asserted on.
+    const emissionsWhile = async (mutate: () => Promise<void>) => {
+        const emissions: ResolvedChannelAttribute[][] = [];
+        const subscription = observeResolvedChannelAttributes(database, channelId).subscribe((resolved) => {
+            emissions.push(resolved);
+        });
+
+        await mutate();
+
+        // WatermelonDB delivers a column change on a later tick, so unsubscribing
+        // straight after the write would miss the emission being asserted on.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        subscription.unsubscribe();
+        return emissions;
+    };
+
+    it('should re-emit when a change policy is narrowed, even though the rendered value is identical', async () => {
+        await seedFields([channelField({options, change_policy: 'any'})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedFields([channelField({options, change_policy: 'raise_only'})]);
+        });
+
+        expect(emissions.length).toBeGreaterThan(1);
+        const last = emissions[emissions.length - 1];
+        expect(last[0].displayValue).toBe('Secret');
+        expect(last[0].field.attrs?.change_policy).toBe('raise_only');
+    });
+
+    it('should re-emit when the permission tier is revoked', async () => {
+        await seedFields([channelField({options}, {permission_values: 'member'})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedFields([channelField({options}, {permission_values: 'none'})]);
+        });
+
+        expect(emissions.length).toBeGreaterThan(1);
+        expect(emissions[emissions.length - 1][0].field.permissionValues).toBe('none');
+    });
+
+    it('should re-emit when an option is removed from the field', async () => {
+        await seedFields([channelField({options})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedFields([channelField({options: [options[1]]})]);
+        });
+
+        expect(emissions.length).toBeGreaterThan(1);
+        expect(emissions[emissions.length - 1][0].field.attrs?.options).toHaveLength(1);
+    });
+
+    it('should re-emit when an option rename collides under naive \':\'/\',\' joining but is a real change', async () => {
+        // Two options naively joined as "id:rank:color:name" and comma-joined would
+        // read "a:1:red:x,b:2:blue:y". Renaming the single remaining option to
+        // "x,b:2:blue:y" reproduces that exact string, so a signature built with
+        // ':'/',' would treat this as no change at all.
+        await seedFields([channelField({options: [
+            {id: 'a', name: 'x', color: 'red', rank: 1},
+            {id: 'b', name: 'y', color: 'blue', rank: 2},
+        ]})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'a'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedFields([channelField({options: [
+                {id: 'a', name: 'x,b:2:blue:y', color: 'red', rank: 1},
+            ]})]);
+        });
+
+        expect(emissions.length).toBeGreaterThan(1);
+        expect(emissions[emissions.length - 1][0].field.attrs?.options).toHaveLength(1);
+    });
+
+    it('should not re-emit when nothing the surfaces read has changed', async () => {
+        await seedFields([channelField({options})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedFields([channelField({options}, {update_at: 5000})]);
+        });
+
+        expect(emissions).toHaveLength(1);
     });
 });

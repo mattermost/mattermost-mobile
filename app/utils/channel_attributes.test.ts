@@ -2,18 +2,24 @@
 // See LICENSE.txt for license information.
 
 import {
+    attributeTierGate,
+    canEditAttributeField,
     canMoveToOption,
     compareChannelAttributeFields,
     deriveChannelAttributeBanner,
+    getAttributeEditability,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
+    hasAttributeEditor,
     isPropertyFieldRequired,
+    reachableOptions,
     isPropertyValueSet,
     resolveChannelAttributes,
     selectAttributesForAction,
     selectChannelInfoAttributes,
     stripUnresolvedTokens,
     type ChannelAttributeField,
+    type ChannelAttributePermissions,
     type ChannelAttributeValue,
 } from './channel_attributes';
 
@@ -338,5 +344,175 @@ describe('deriveChannelAttributeBanner', () => {
         });
 
         expect(deriveChannelAttributeBanner([configured], [classificationValue]).hasBanner).toBe(true);
+    });
+});
+
+describe('hasAttributeEditor', () => {
+    it('should report an editor for the four editable field types', () => {
+        for (const type of ['text', 'select', 'multiselect', 'rank']) {
+            expect(hasAttributeEditor(field({id: 'f', name: 'f', type} as Partial<ChannelAttributeField> & {id: string; name: string}))).toBe(true);
+        }
+    });
+
+    it('should report no editor for date and user field types', () => {
+        for (const type of ['date', 'user', 'multiuser']) {
+            expect(hasAttributeEditor(field({id: 'f', name: 'f', type} as Partial<ChannelAttributeField> & {id: string; name: string}))).toBe(false);
+        }
+    });
+});
+
+describe('reachableOptions', () => {
+    const rankField = field({
+        id: 'cf-1',
+        name: 'classification',
+        type: 'rank',
+        attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'raise_only'},
+    } as Partial<ChannelAttributeField> & {id: string; name: string});
+
+    it('should return every option when nothing is set, because the first write is exempt', () => {
+        expect(reachableOptions(rankField, undefined)).toHaveLength(2);
+    });
+
+    it('should narrow to the options a directional policy permits', () => {
+        const reachable = reachableOptions(rankField, 'level-public');
+        expect(reachable).toHaveLength(1);
+        expect(reachable[0].id).toBe('level-secret');
+    });
+
+    it('should return nothing when a directional policy has been exhausted', () => {
+        expect(reachableOptions(rankField, 'level-secret')).toHaveLength(0);
+    });
+
+    it('should return nothing for a field with no options', () => {
+        expect(reachableOptions(field({id: 'f', name: 'f', attrs: {}}), 'anything')).toHaveLength(0);
+    });
+});
+
+describe('attributeTierGate', () => {
+    it('should map each recognised tier to what it requires', () => {
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'sysadmin'}))).toBe('manage_system');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'admin'}))).toBe('manage_channel_roles');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'member'}))).toBe('channel_only');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'none'}))).toBe('never');
+    });
+
+    it('should fail closed on an absent, empty or unrecognised tier, matching the server', () => {
+        expect(attributeTierGate(field({id: 'f', name: 'f'}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: null}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: ''}))).toBe('never');
+        expect(attributeTierGate(field({id: 'f', name: 'f', permissionValues: 'everyone'}))).toBe('never');
+    });
+});
+
+describe('canEditAttributeField', () => {
+    const permissions = (overrides: Partial<ChannelAttributePermissions> = {}): ChannelAttributePermissions => ({
+        canManageChannelProperties: true,
+        canManageChannelRoles: false,
+        canManageSystem: false,
+        ...overrides,
+    });
+
+    it('should refuse without the channel-level permission, whatever the tier says', () => {
+        const memberField = field({id: 'f', name: 'f', permissionValues: 'member'});
+        expect(canEditAttributeField(memberField, permissions({canManageChannelProperties: false}))).toBe(false);
+    });
+
+    it('should allow a member-tier field on the channel permission alone', () => {
+        expect(canEditAttributeField(field({id: 'f', name: 'f', permissionValues: 'member'}), permissions())).toBe(true);
+    });
+
+    it('should require manage_channel_roles for an admin-tier field', () => {
+        const adminField = field({id: 'f', name: 'f', permissionValues: 'admin'});
+        expect(canEditAttributeField(adminField, permissions())).toBe(false);
+        expect(canEditAttributeField(adminField, permissions({canManageChannelRoles: true}))).toBe(true);
+    });
+
+    it('should require manage_system for a sysadmin-tier field', () => {
+        const sysadminField = field({id: 'f', name: 'f', permissionValues: 'sysadmin'});
+        expect(canEditAttributeField(sysadminField, permissions({canManageChannelRoles: true}))).toBe(false);
+        expect(canEditAttributeField(sysadminField, permissions({canManageSystem: true}))).toBe(true);
+    });
+
+    it('should refuse a none-tier field to a system admin', () => {
+        const noneField = field({id: 'f', name: 'f', permissionValues: 'none'});
+        expect(canEditAttributeField(noneField, permissions({canManageChannelRoles: true, canManageSystem: true}))).toBe(false);
+    });
+});
+
+describe('getAttributeEditability', () => {
+    function selectField(overrides: Partial<PropertyFieldAttrs> = {}): ChannelAttributeField {
+        return field({
+            id: 'cf-1',
+            name: 'classification',
+            type: 'rank',
+            attrs: {options: CLASSIFICATION_OPTIONS, ...overrides},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+    }
+
+    it('should refuse a field type with no editor before anything else', () => {
+        const dateField = field({id: 'f', name: 'f', type: 'date'} as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(dateField, undefined, true)).toEqual({editable: false, reason: 'unsupported_type'});
+    });
+
+    it('should refuse without permission', () => {
+        expect(getAttributeEditability(selectField(), 'level-public', false)).toEqual({editable: false, reason: 'permission'});
+    });
+
+    it('should report a policy lock ahead of a permission one, because it explains the row rather than the reader', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), 'level-public', false)).toEqual({editable: false, reason: 'never'});
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-secret', false)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should report a missing editor ahead of everything, since no policy can make it editable', () => {
+        const dateField = field({
+            id: 'f',
+            name: 'f',
+            type: 'date',
+            attrs: {options: CLASSIFICATION_OPTIONS, change_policy: 'never'},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(dateField, 'level-public', false)).toEqual({editable: false, reason: 'unsupported_type'});
+    });
+
+    it('should allow the first write even under a never policy, so a required attribute is not stranded', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), undefined, true)).toEqual({editable: true});
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), '', true)).toEqual({editable: true});
+    });
+
+    it('should lock a set value under a never policy', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'never'}), 'level-public', true)).toEqual({editable: false, reason: 'never'});
+    });
+
+    it('should lock a set value under editable=false, which reads as never', () => {
+        expect(getAttributeEditability(selectField({editable: false}), 'level-public', true)).toEqual({editable: false, reason: 'never'});
+    });
+
+    it('should allow a change under an any policy', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'any'}), 'level-public', true)).toEqual({editable: true});
+    });
+
+    it('should allow a raise_only field that still has somewhere to go', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-public', true)).toEqual({editable: true});
+    });
+
+    it('should report the directional reason, not never, when raise_only is exhausted', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-secret', true)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should report the directional reason when lower_only is exhausted', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'lower_only'}), 'level-public', true)).toEqual({editable: false, reason: 'lower_only'});
+    });
+
+    it('should lock a text field under a directional policy, which has no ranks to compare', () => {
+        const textField = field({
+            id: 'tf-1',
+            name: 'program',
+            type: 'text',
+            attrs: {change_policy: 'raise_only'},
+        } as Partial<ChannelAttributeField> & {id: string; name: string});
+        expect(getAttributeEditability(textField, 'Aurora', true)).toEqual({editable: false, reason: 'raise_only'});
+    });
+
+    it('should treat a stored option that no longer resolves as set, and refuse to move off it', () => {
+        expect(getAttributeEditability(selectField({change_policy: 'raise_only'}), 'level-deleted', true)).toEqual({editable: false, reason: 'raise_only'});
     });
 });

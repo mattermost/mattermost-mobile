@@ -11,7 +11,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 // Hard character cap per chip. Values longer than this are truncated with an
-// ellipsis so one long label cannot consume the whole header row.
+// ellipsis so one long label cannot consume the whole header row. The 'option'
+// variant opts out: in a picker the whole option name has to be readable, since
+// two markings can share their first fifteen characters.
 const MAX_CHARS = 15;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -59,9 +61,10 @@ type Props = {
     announceLabel?: boolean;
 
     // 'header' for chips inside the dark channel header; 'info' (default) for
-    // chips on a light surface such as Channel Info or the overflow sheet.
+    // chips on a light surface such as Channel Info or the overflow sheet;
+    // 'option' for a chip in a picker, which renders the value in full.
     // Only affects the neutral fallback colours — option colours are unchanged.
-    variant?: 'header' | 'info';
+    variant?: 'header' | 'info' | 'option';
 
     testID?: string;
 };
@@ -101,7 +104,7 @@ const AttributeChip = ({label, value, color, announceLabel = true, variant = 'in
         };
     }, [color, variant, styles]);
 
-    const displayValue = value.length > MAX_CHARS ? `${value.slice(0, MAX_CHARS)}…` : value;
+    const displayValue = variant !== 'option' && value.length > MAX_CHARS ? `${value.slice(0, MAX_CHARS)}…` : value;
 
     return (
         <View
