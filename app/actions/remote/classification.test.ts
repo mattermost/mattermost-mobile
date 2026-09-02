@@ -334,16 +334,22 @@ describe('fetchAccessControlAttributeFields', () => {
 
     it('should not cache on error so a subsequent unforced call retries', async () => {
         setConfig({FeatureFlagClassificationMarkings: 'true'});
+
+        // First invocation: two parallel requests (system + channel fields), first rejects.
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
-        mockClient.getPropertyFields.mockResolvedValue([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+
+        // Second invocation (the retry): both requests succeed with an empty list.
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
         await fetchAccessControlAttributeFields(serverUrl);
 
-        // The failure must not have stamped the cache, so an unforced retry makes a second network request.
-        setConfig({FeatureFlagClassificationMarkings: 'false'});
+        // The failure must not have stamped the cache, so an unforced retry makes a second pair of network requests.
         await fetchAccessControlAttributeFields(serverUrl);
 
-        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
+        // Four requests total: two for the failing call (Promise.all initiates both), two for the retry.
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(4);
         expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagClassificationMarkings');
         expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagChannelAttributes');
     });

@@ -109,7 +109,10 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
                 // Published for the field observables, which cannot scope
                 // themselves to this group until the id is known. Persisted, so a
                 // cold start with no network still renders from the stored rows.
-                await setAccessControlGroupId(serverUrl, groupId);
+                const {error: groupIdError} = await setAccessControlGroupId(serverUrl, groupId);
+                if (groupIdError) {
+                    return {error: groupIdError};
+                }
                 EphemeralStore.setClassificationBannerFetched(serverUrl);
                 return {};
             }
