@@ -29,9 +29,9 @@ export const transformUserRecord = ({action, database, value}: TransformerArgs<U
         // Presence-only refresh. shouldUpdateUserRecord admits a payload either because it is
         // newer or because its `status` differs. In the second case the payload can be older
         // than what we hold, so every field except `status` is stale by definition — and
-        // writing them back silently reverted local work. `props` is the visible casualty:
+        // writing them back silently reverts local work. `props` is the visible casualty:
         // clearing a custom status writes props locally, and the next presence change
-        // restored the old status permanently (MM-T4990_4, MM-T3891, both platforms).
+        // restored the old status.
         // Assign only the status and let the record keep the rest; prepareBaseRecord applies
         // this mapper through record.prepareUpdate, so unassigned fields are left untouched.
         if (!isCreateAction && record && raw.update_at <= record.updateAt) {
