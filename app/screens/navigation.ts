@@ -8,7 +8,7 @@ import {Events, Navigation, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -174,6 +174,13 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
             if (NavigationStore.getVisibleScreen() !== screenId) {
                 router.dismissTo(route);
                 await NavigationStore.waitUntilScreenIsTop(screenId);
+            }
+
+            // waitUntilScreenIsTop resolves on timeout regardless of success, so confirm the
+            // target is actually visible before applying params to whatever screen is on top.
+            if (NavigationStore.getVisibleScreen() !== screenId) {
+                logDebug('dismissAllRoutesAndPopToScreen: target screen never became visible', screenId);
+                return;
             }
 
             router.setParams(propsToParams(passProps));
