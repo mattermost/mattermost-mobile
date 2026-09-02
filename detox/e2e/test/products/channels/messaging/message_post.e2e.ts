@@ -85,8 +85,7 @@ describe('Messaging - Message Post', () => {
         // # Open a channel screen and post a long message
         const longMessage = 'The quick brown fox jumps over the lazy dog.'.repeat(40);
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(longMessage);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(longMessage, testChannel.id, siteOneUrl);
 
         // * Verify the long post exists — use toExist (not toBeVisible) since the post is taller
         // than the viewport and fails the 75% visibility threshold even when on-screen.
@@ -115,26 +114,23 @@ describe('Messaging - Message Post', () => {
     it('MM-T72 - should highlight @here. @all. @channel. even when followed by a period', async () => {
         // # Open a channel screen and post a message with @here followed by a period
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage('@here. Some text');
 
         // * Verify the post exists in the channel and @here is rendered (period is not part of the highlighted mention)
-        const {post: atHerePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: atHerePost} = await ChannelScreen.postMessageAndVerify('@here. Some text', testChannel.id, siteOneUrl);
         const {postListPostItem: atHerePostItem} = ChannelScreen.getPostListPostItem(atHerePost.id, '@here. Some text');
         await expect(atHerePostItem).toBeVisible();
 
         // # Post a message with @all followed by a period
-        await ChannelScreen.postMessage('@all. Some text');
 
         // * Verify the @all mention text is present in the post
-        const {post: atAllPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: atAllPost} = await ChannelScreen.postMessageAndVerify('@all. Some text', testChannel.id, siteOneUrl);
         const {postListPostItem: atAllPostItem} = ChannelScreen.getPostListPostItem(atAllPost.id, '@all. Some text');
         await expect(atAllPostItem).toBeVisible();
 
         // # Post a message with @channel followed by a period
-        await ChannelScreen.postMessage('@channel. Some text');
 
         // * Verify the @channel mention text is present in the post
-        const {post: atChannelPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: atChannelPost} = await ChannelScreen.postMessageAndVerify('@channel. Some text', testChannel.id, siteOneUrl);
         const {postListPostItem: atChannelPostItem} = ChannelScreen.getPostListPostItem(atChannelPost.id, '@channel. Some text');
         await expect(atChannelPostItem).toBeVisible();
 

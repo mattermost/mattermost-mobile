@@ -147,8 +147,7 @@ describe('Search - Modifiers', () => {
         const message = `Message ${plainTerm}`;
 
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: plainPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: plainPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await ChannelScreen.back();
 
         // # Open search messages screen

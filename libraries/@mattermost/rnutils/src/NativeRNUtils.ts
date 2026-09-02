@@ -71,6 +71,11 @@ export interface Spec extends TurboModule {
     removeThreadNotifications(serverUrl: string, threadId: string): void;
     removeServerNotifications(serverUrl: string): void;
 
+    // iOS only - guards against RUNNINGBOARD 0xdead10cc; null on Android or if declined.
+    beginDatabaseActivity(serverUrl: string, task: string): Promise<string | null>;
+    endDatabaseActivity(token: string): Promise<void>;
+
+    setSoftKeyboardToAdjustResize(): void;
     setSoftKeyboardToAdjustNothing(): void;
 
     createZipFile: (paths: string[]) => Promise<string>;

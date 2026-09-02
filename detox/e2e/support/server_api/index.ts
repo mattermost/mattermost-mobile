@@ -17,6 +17,7 @@ import Setup from './setup';
 import Status from './status';
 import System from './system';
 import Team from './team';
+import TermsOfService from './terms_of_service';
 import User from './user';
 import Webhook from './webhook';
 
@@ -42,6 +43,7 @@ export {
     Status,
     System,
     Team,
+    TermsOfService,
     User,
     Webhook,
 };

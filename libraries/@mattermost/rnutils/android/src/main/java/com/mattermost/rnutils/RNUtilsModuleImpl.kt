@@ -219,6 +219,14 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         serverUrl?.let { Notifications.removeServerNotifications(it) }
     }
 
+    fun beginDatabaseActivity(serverUrl: String?, task: String?, promise: Promise?) {
+        promise?.resolve(null)
+    }
+
+    fun endDatabaseActivity(token: String?, promise: Promise?) {
+        promise?.resolve(null)
+    }
+
     fun setSoftKeyboardToAdjustNothing() {
         val currentActivity: Activity = reactContext.currentActivity ?: return
         currentActivity.runOnUiThread {

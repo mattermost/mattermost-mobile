@@ -107,6 +107,19 @@ RCT_REMAP_METHOD(removeThreadNotifications, server:(NSString *)serverUrl
     [self removeThreadNotifications:serverUrl threadId:threadId];
 }
 
+RCT_EXPORT_METHOD(beginDatabaseActivity:(NSString *)serverUrl
+                  task:(NSString *)task
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject) {
+    [self beginDatabaseActivity:serverUrl task:task resolve:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(endDatabaseActivity:(NSString *)token
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject) {
+    [self endDatabaseActivity:token resolve:resolve reject:reject];
+}
+
 RCT_REMAP_METHOD(removeServerNotifications, serverUrl:(NSString *)serverUrl) {
     [self removeServerNotifications:serverUrl];
 }
@@ -216,6 +229,20 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
 
 - (void)removeServerNotifications:(NSString *)serverUrl {
     [[NotificationManager shared] removeServerNotificationsWithServerUrl:serverUrl];
+}
+
+- (void)beginDatabaseActivity:(NSString *)serverUrl task:(NSString *)task resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *token = [[DatabaseLockProtectionManager shared] begin:serverUrl task:task];
+        resolve(token);
+    });
+}
+
+- (void)endDatabaseActivity:(NSString *)token resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[DatabaseLockProtectionManager shared] end:token];
+        resolve(nil);
+    });
 }
 
 - (void)getRealFilePath:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {

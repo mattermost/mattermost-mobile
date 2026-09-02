@@ -245,6 +245,84 @@ export const apiUpdateUserActiveStatus = async (baseUrl: string, userId: string,
     }
 };
 
+type AutocompleteUser = {id: string};
+type AutocompleteUsersResult = {
+    users?: AutocompleteUser[];
+    out_of_channel?: AutocompleteUser[];
+    error?: {message?: string};
+    status?: number;
+};
+
+/**
+ * Autocomplete users in a team/channel.
+ * See https://api.mattermost.com/#operation/AutocompleteUsers
+ * @param {string} baseUrl - the base server URL
+ * @param {string} option.teamId - team ID
+ * @param {string} option.channelId - channel ID (populates out_of_channel)
+ * @param {string} option.name - name prefix to match
+ * @return {Object} returns autocomplete payload on success or {error, status} on error
+ */
+export const apiAutocompleteUsers = async (
+    baseUrl: string,
+    {teamId, channelId, name}: {teamId: string; channelId?: string; name: string},
+): Promise<AutocompleteUsersResult> => {
+    try {
+        const params = new URLSearchParams({in_team: teamId, name});
+        if (channelId) {
+            params.set('in_channel', channelId);
+        }
+        const response = await client.get(`${baseUrl}/api/v4/users/autocomplete?${params.toString()}`);
+        return response.data;
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Wait until a user appears in channel autocomplete out_of_channel results.
+ * Fresh users can miss the first search until the server index catches up.
+ */
+export const waitForUserInAutocomplete = async (
+    baseUrl: string,
+    {
+        teamId,
+        channelId,
+        userId,
+        name,
+        timeoutMs = 30000,
+        intervalMs = 1000,
+    }: {
+        teamId: string;
+        channelId: string;
+        userId: string;
+        name: string;
+        timeoutMs?: number;
+        intervalMs?: number;
+    },
+): Promise<void> => {
+    const deadline = Date.now() + timeoutMs;
+    let lastError = '';
+
+    const poll = async (): Promise<void> => {
+        const result = await apiAutocompleteUsers(baseUrl, {teamId, channelId, name});
+        if ((result.out_of_channel ?? []).some((user) => user.id === userId)) {
+            return;
+        }
+
+        lastError = result.error?.message || `HTTP ${result.status ?? 'ok'}; out_of_channel=${result.out_of_channel?.length ?? 0}`;
+        if (Date.now() >= deadline) {
+            throw new Error(`User ${userId} was not in out_of_channel autocomplete for "${name}" within ${timeoutMs}ms (${lastError}).`);
+        }
+
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, intervalMs);
+        });
+        await poll();
+    };
+
+    await poll();
+};
+
 export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
     const randomId = getRandomId(randomIdLength);
 
@@ -263,6 +341,7 @@ export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) =
 
 export const User = {
     apiAdminLogin,
+    apiAutocompleteUsers,
     apiCreateUser,
     apiDeactivateUser,
     apiDemoteUserToGuest,
@@ -276,6 +355,7 @@ export const User = {
     apiUpdateUserActiveStatus,
     apiUpdateUserRoles,
     generateRandomUser,
+    waitForUserInAutocomplete,
 };
 
 export default User;

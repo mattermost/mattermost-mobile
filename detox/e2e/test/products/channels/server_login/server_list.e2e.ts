@@ -11,6 +11,7 @@ import {
     User,
     Setup,
 } from '@support/server_api';
+import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -43,14 +44,30 @@ describe('Server Login - Server List', () => {
     let serverOneUser: any;
     let serverTwoUser: any;
     let serverThreeUser: any;
+    let lockOwner = '';
+    let lockAcquired = false;
 
     beforeAll(async () => {
+        // MM-T4691_5 logs in to SITE_3, and custom_terms_of_service turns on server-wide
+        // custom ToS there — that modal would land on top of that login and swallow the taps
+        // that follow. Both suites hold the SITE_3 lock so they never overlap. Held for the
+        // whole suite rather than around the one test: acquiring mid-suite would mean
+        // releasing on paths that have already navigated.
+        if (hasThreeDistinctServers) {
+            lockOwner = siteThreeLock.createOwner();
+            await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
+            lockAcquired = true;
+        }
+
         // # Log in to the first server
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await waitForElementToBeVisible(ServerScreen.headerTitleConnectToServer, timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
-    });
+
+        // The hook gets its own budget so the lock wait above does not have to fit inside the
+        // default per-test timeout.
+    }, timeouts.ONE_MIN * 22);
 
     beforeEach(async () => {
         // * Verify on channel list screen
@@ -58,8 +75,14 @@ describe('Server Login - Server List', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await HomeScreen.logout();
+        try {
+            // # Log out
+            await HomeScreen.logout();
+        } finally {
+            if (lockAcquired) {
+                await siteThreeLock.release(siteThreeUrl, lockOwner);
+            }
+        }
     });
 
     it('MM-T4691_1 - should match elements on server list screen', async () => {
@@ -85,10 +108,6 @@ describe('Server Login - Server List', () => {
         if (isIos()) {
             await ServerListScreen.serverListScreen.swipe('up');
         } else if (isAndroid()) {
-            // Pixel 8 API 35 uses gesture nav; a default swipe('up') on the
-            // full-screen bottom sheet starts in the system home-gesture hot
-            // zone and backgrounds the app. Use explicit coords with startY
-            // mid-screen to stay clear of the edge.
             await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
 
@@ -199,11 +218,6 @@ describe('Server Login - Server List', () => {
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
-
-        // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
-        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
-        // file already use .atIndex(0).
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify on edit server screen
@@ -236,7 +250,8 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — swipe action Remove does not become reliably hittable.
+    // Skip iOS: revealed Remove is not reliably hittable — Logout overlaps
+    // Remove during the swipe-reveal animation.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_5 - should be able to remove a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -287,7 +302,7 @@ describe('Server Login - Server List', () => {
         await LoginScreen.login(serverOneUser);
     });
 
-    // Skip iOS: CI run 30000635898 — revealed Logout action remains unhittable.
+    // Skip iOS: revealed Logout is not reliably hittable after the swipe-reveal.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_6 - should be able to log out a server from the list', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
@@ -333,7 +348,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    // Skip iOS: CI run 30000635898 — server-list Add Server action remains unhittable after scrolling.
+    // Skip iOS: Add Server is not reliably hittable after scrolling the list.
     (isIos() ? it.skip : itWithThreeServers)('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
