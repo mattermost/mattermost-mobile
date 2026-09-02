@@ -6,7 +6,7 @@ import RNUtils from '@mattermost/rnutils';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {fetchClassificationBanner} from '@actions/remote/classification';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
@@ -108,7 +108,17 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
-        fetchClassificationBanner(serverUrl, true);
+        fetchAccessControlAttributeFields(serverUrl, true);
+
+        // Values may have changed while the socket was down, and the events that
+        // would have reported it are gone. Dropping the per-channel dedupe makes
+        // the next visit to each channel refetch them — but the channel already on
+        // screen is never re-entered, so it is refetched explicitly or it would
+        // keep showing what it had when the connection dropped.
+        EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+        if (currentChannelId) {
+            fetchChannelAttributeValues(serverUrl, currentChannelId);
+        }
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 

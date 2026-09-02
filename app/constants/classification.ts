@@ -20,7 +20,14 @@
 // ---------------------------------------------------------------------------
 
 // Property-field group identifying all classification-markings entities.
-export const CLASSIFICATIONS_GROUP_NAME = 'access_control';
+// Classification is one tenant of the shared access_control group, so the name
+// and the banner actions are defined once, alongside the generic channel
+// attributes, and re-exported here for the existing classification callers.
+export {
+    ACCESS_CONTROL_GROUP_NAME as CLASSIFICATIONS_GROUP_NAME,
+    DISPLAY_BANNER_TOP,
+    DISPLAY_BANNER_BOTTOM,
+} from '@constants/channel_attributes';
 
 // Field-level target attributes shared by system and channel fields.
 // `target_type` is always 'system'; `target_id` is empty for system-scoped
@@ -38,10 +45,6 @@ export const CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID = 'system';
 
 // Channel field — drives the per-channel banner.
 export const CLASSIFICATIONS_CHANNEL_OBJECT_TYPE = 'channel';
-
-// Actions stored on the linked fields' attrs.actions to control banner placement.
-export const DISPLAY_BANNER_TOP = 'display_banner_top';
-export const DISPLAY_BANNER_BOTTOM = 'display_banner_bottom';
 
 // How long a successful classification-field fetch stays fresh in the in-memory
 // cache before the global banner mount effect will request it again (1 hour).

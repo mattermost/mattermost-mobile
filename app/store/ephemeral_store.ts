@@ -67,6 +67,11 @@ class EphemeralStoreSingleton {
     // option that is genuinely gone server-side does not trigger an infinite re-fetch loop.
     private classificationFieldSyncAttempted: {[serverUrl: string]: Set<string>} = {};
 
+    // Channels whose attribute values have been fetched from the server, so a
+    // repeated channel switch does not refetch. Values stay fresh afterwards via
+    // websocket events; the set is cleared when the connection drops.
+    private channelAttributeValuesSynced: {[serverUrl: string]: Set<string>} = {};
+
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
@@ -487,6 +492,25 @@ class EphemeralStoreSingleton {
     clearClassificationCache = (serverUrl: string) => {
         delete this.classificationBannerFetchedAt[serverUrl];
         delete this.classificationFieldSyncAttempted[serverUrl];
+    };
+
+    getChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        return this.channelAttributeValuesSynced[serverUrl]?.has(channelId) ?? false;
+    };
+
+    setChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        if (!this.channelAttributeValuesSynced[serverUrl]) {
+            this.channelAttributeValuesSynced[serverUrl] = new Set();
+        }
+        this.channelAttributeValuesSynced[serverUrl]?.add(channelId);
+    };
+
+    unsetChannelAttributeValuesSynced = (serverUrl: string, channelId: string) => {
+        this.channelAttributeValuesSynced[serverUrl]?.delete(channelId);
+    };
+
+    clearChannelAttributeValuesSynced = (serverUrl: string) => {
+        delete this.channelAttributeValuesSynced[serverUrl];
     };
 
     // Ephemeral control for rejected files

@@ -3,6 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 
+import {setAccessControlGroupId} from '@actions/local/channel_attributes';
 import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -10,7 +11,7 @@ import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {fetchClassificationBanner, fetchChannelClassificationValue} from './classification';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from './classification';
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
@@ -21,6 +22,15 @@ jest.mock('@queries/servers/system', () => ({
 }));
 
 const mockedGetConfigValue = jest.mocked(getConfigValue);
+
+// Keyed rather than ordered. The action reads two feature flags and the server
+// version, and an ordered queue of one-shot values silently mis-answers the
+// moment the number or order of reads changes.
+type TestConfig = Partial<Record<'FeatureFlagClassificationMarkings' | 'FeatureFlagChannelAttributes' | 'Version', string>>;
+
+const setConfig = (config: TestConfig) => {
+    mockedGetConfigValue.mockImplementation((_database, key) => Promise.resolve(config[key as keyof TestConfig]));
+};
 
 const serverUrl = 'classification.test.com';
 
@@ -103,18 +113,20 @@ beforeAll(() => {
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     jest.clearAllMocks();
+    setConfig({});
     EphemeralStore.clearClassificationCache(serverUrl);
+    EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
 });
 
 afterEach(async () => {
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
-describe('fetchClassificationBanner', () => {
+describe('fetchAccessControlAttributeFields', () => {
     it('should do nothing when feature flag is not true', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('false');
+        setConfig({FeatureFlagClassificationMarkings: 'false'});
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
 
         expect(result).toEqual({});
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
@@ -125,8 +137,8 @@ describe('fetchClassificationBanner', () => {
         await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
         await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('false');
-        await fetchClassificationBanner(serverUrl);
+        setConfig({FeatureFlagClassificationMarkings: 'false'});
+        await fetchAccessControlAttributeFields(serverUrl);
 
         expect(await getStoredFields(database)).toHaveLength(0);
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
@@ -137,23 +149,23 @@ describe('fetchClassificationBanner', () => {
         await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
         await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
         expect(await getStoredFields(database)).toHaveLength(0);
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
     });
 
     it('should persist fields and values to DB on happy path', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
 
         expect(result).toEqual({});
 
@@ -165,12 +177,12 @@ describe('fetchClassificationBanner', () => {
     });
 
     it('should persist system field when channel field is missing', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -178,11 +190,11 @@ describe('fetchClassificationBanner', () => {
     });
 
     it('should return early when no fields are returned by the API', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
 
         expect(result).toEqual({});
 
@@ -191,13 +203,13 @@ describe('fetchClassificationBanner', () => {
     });
 
     it('should exclude soft-deleted fields from the stored set', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         const deletedSystem = {...systemField, delete_at: 5000};
         mockClient.getPropertyFields.mockResolvedValueOnce([deletedSystem]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -205,12 +217,12 @@ describe('fetchClassificationBanner', () => {
     });
 
     it('should return early when fields have mismatched group_ids', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         const differentGroupField = {...channelField, group_id: 'other_group'};
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([differentGroupField]);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -218,20 +230,20 @@ describe('fetchClassificationBanner', () => {
     });
 
     it('should return error when network client throws', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         const networkError = new Error('network failure');
         mockClient.getPropertyFields.mockRejectedValueOnce(networkError);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
 
         expect(result).toEqual({error: networkError});
     });
 
     it('should not write to DB when network client throws', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
 
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         expect(await getStoredFields(database)).toHaveLength(0);
@@ -241,12 +253,12 @@ describe('fetchClassificationBanner', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [systemField, channelField], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
@@ -256,12 +268,12 @@ describe('fetchClassificationBanner', () => {
         await operator.handlePropertyFields({fields: [systemField, channelField], prepareRecordsOnly: false});
 
         const deletedChannel = {...channelField, delete_at: 5000};
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([deletedChannel]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([]);
 
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
     });
@@ -271,12 +283,12 @@ describe('fetchClassificationBanner', () => {
         const otherGroupField = {...systemField, id: 'other-field', group_id: 'other_group', name: 'some_field'};
         await operator.handlePropertyFields({fields: [otherGroupField], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
         const otherGroup = await queryFieldsByGroup(database, 'other_group');
@@ -286,61 +298,69 @@ describe('fetchClassificationBanner', () => {
     it('should skip the request when cached and not forced', async () => {
         EphemeralStore.setClassificationBannerFetched(serverUrl);
 
-        const result = await fetchClassificationBanner(serverUrl);
+        const result = await fetchAccessControlAttributeFields(serverUrl);
 
         expect(result).toEqual({});
         expect(mockedGetConfigValue).not.toHaveBeenCalled();
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+        expect(mockClient.searchPropertyFields).not.toHaveBeenCalled();
     });
 
     it('should bypass the cache when forced', async () => {
         EphemeralStore.setClassificationBannerFetched(serverUrl);
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        await fetchClassificationBanner(serverUrl, true);
+        await fetchAccessControlAttributeFields(serverUrl, true);
 
-        // Feature flag + server version are both read when the flag is on.
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
     });
 
     it('should cache on success so a subsequent unforced call is skipped', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        await fetchClassificationBanner(serverUrl);
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
-        // First call reads flag + version (2); the second is skipped by the cache.
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(2);
+        // Two requests on the first call (system and channel fields); the second
+        // call is answered from the cache without touching the network.
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
     });
 
     it('should not cache on error so a subsequent unforced call retries', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+
+        // First invocation: two parallel requests (system + channel fields), first rejects.
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
-        await fetchClassificationBanner(serverUrl);
+        // Second invocation (the retry): both requests succeed with an empty list.
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
 
-        mockedGetConfigValue.mockResolvedValueOnce('false');
-        await fetchClassificationBanner(serverUrl);
+        await fetchAccessControlAttributeFields(serverUrl);
 
-        // First call reads flag + version (2) before failing; the retry reads the flag (1).
-        expect(mockedGetConfigValue).toHaveBeenCalledTimes(3);
+        // The failure must not have stamped the cache, so an unforced retry makes a second pair of network requests.
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        // Four requests total: two for the failing call (Promise.all initiates both), two for the retry.
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(4);
+        expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagClassificationMarkings');
+        expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagChannelAttributes');
     });
 
     describe('when the server supports the fields search endpoint', () => {
         it('should fetch all fields with a single search request', async () => {
-            mockedGetConfigValue.mockResolvedValueOnce('true');
-            mockedGetConfigValue.mockResolvedValueOnce('11.10.0');
+            setConfig({FeatureFlagClassificationMarkings: 'true', Version: '11.10.0'});
             mockClient.searchPropertyFields.mockResolvedValueOnce([systemField, channelField]);
             mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-            const result = await fetchClassificationBanner(serverUrl);
+            const result = await fetchAccessControlAttributeFields(serverUrl);
 
             expect(result).toEqual({});
             expect(mockClient.searchPropertyFields).toHaveBeenCalledTimes(1);
@@ -363,11 +383,10 @@ describe('fetchClassificationBanner', () => {
             await operator.handlePropertyFields({fields: [systemField], prepareRecordsOnly: false});
             await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
-            mockedGetConfigValue.mockResolvedValueOnce('true');
-            mockedGetConfigValue.mockResolvedValueOnce('11.10.0');
+            setConfig({FeatureFlagClassificationMarkings: 'true', Version: '11.10.0'});
             mockClient.searchPropertyFields.mockResolvedValueOnce([]);
 
-            await fetchClassificationBanner(serverUrl);
+            await fetchAccessControlAttributeFields(serverUrl);
 
             expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
             expect(await getStoredFields(database)).toHaveLength(0);
@@ -376,7 +395,7 @@ describe('fetchClassificationBanner', () => {
     });
 });
 
-describe('fetchChannelClassificationValue', () => {
+describe('fetchChannelAttributeValues', () => {
     const channelId = 'channel-123';
 
     const channelValue: PropertyValue<string> = {
@@ -392,19 +411,19 @@ describe('fetchChannelClassificationValue', () => {
     };
 
     it('should do nothing when feature flag is not true', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('false');
+        setConfig({FeatureFlagChannelAttributes: 'false'});
 
-        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+        const result = await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(result).toEqual({});
         expect(mockClient.getPropertyValues).not.toHaveBeenCalled();
     });
 
     it('should persist channel values to DB on happy path', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
 
-        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+        const result = await fetchChannelAttributeValues(serverUrl, channelId);
         expect(result).toEqual({});
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -417,21 +436,24 @@ describe('fetchChannelClassificationValue', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [channelValue], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        // The group-scoped prune only fires when the group id is known.
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([]);
 
-        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+        const result = await fetchChannelAttributeValues(serverUrl, channelId);
         expect(result).toEqual({});
 
         expect(await getStoredValues(database, channelId)).toHaveLength(0);
     });
 
     it('should return error when network client throws', async () => {
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         const networkError = new Error('network failure');
         mockClient.getPropertyValues.mockRejectedValueOnce(networkError);
 
-        const result = await fetchChannelClassificationValue(serverUrl, channelId);
+        const result = await fetchChannelAttributeValues(serverUrl, channelId);
         expect(result).toEqual({error: networkError});
     });
 
@@ -439,11 +461,11 @@ describe('fetchChannelClassificationValue', () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [systemValue], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(1);
         expect(await getStoredValues(database, channelId)).toHaveLength(1);
@@ -453,17 +475,19 @@ describe('fetchChannelClassificationValue', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true'); // channel value flag check
-        mockedGetConfigValue.mockResolvedValueOnce('true'); // forced banner fetch flag check
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
         mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
         mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(true);
+
+        // Cache key is fieldId:optionId so the guard is scoped to the field, preventing
+        // an option with the same short id on a different field from hitting the guard.
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown')).toBe(true);
     });
 
     it('should look the option up on the channel field rather than the system field', async () => {
@@ -471,10 +495,10 @@ describe('fetchChannelClassificationValue', () => {
         const channelOnly = {...channelField, attrs: {options: [{id: 'opt-channel-only', name: 'CHANNEL ONLY', color: '#00FF00'}]}};
         await operator.handlePropertyFields({fields: [systemField, channelOnly], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-channel-only'}]);
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
@@ -483,24 +507,24 @@ describe('fetchChannelClassificationValue', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]); // value opt-secret is a known option
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-secret')).toBe(false);
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-secret')).toBe(false);
     });
 
     it('should not force a field refresh again for an option already attempted this session', async () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
-        EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'opt-unknown');
+        EphemeralStore.setClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown');
 
-        mockedGetConfigValue.mockResolvedValueOnce('true');
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
     });
@@ -509,14 +533,13 @@ describe('fetchChannelClassificationValue', () => {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyFields({fields: [channelField], prepareRecordsOnly: false});
 
-        mockedGetConfigValue.mockResolvedValueOnce('true'); // channel value flag check
-        mockedGetConfigValue.mockResolvedValueOnce('true'); // forced banner fetch flag check
+        setConfig({FeatureFlagChannelAttributes: 'true'});
         mockClient.getPropertyValues.mockResolvedValueOnce([{...channelValue, value: 'opt-unknown'}]);
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
 
-        await fetchChannelClassificationValue(serverUrl, channelId);
+        await fetchChannelAttributeValues(serverUrl, channelId);
 
         // A transient refresh failure must leave the guard unset so a later update retries.
-        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'opt-unknown')).toBe(false);
+        expect(EphemeralStore.getClassificationFieldSyncAttempted(serverUrl, 'channel-field-id:opt-unknown')).toBe(false);
     });
 });
