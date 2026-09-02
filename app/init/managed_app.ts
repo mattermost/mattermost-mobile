@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Emm from '@mattermost/react-native-emm';
+import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import deepEqual from 'deep-equal';
 import {isRootedExperimentalAsync} from 'expo-device';
 import {defineMessages} from 'react-intl';
-import {Alert, type AlertButton, AppState, type AppStateStatus, type EventSubscription, type NativeEventSubscription, Platform} from 'react-native';
+import {Alert, AppState, type AppStateStatus, type EventSubscription, type NativeEventSubscription, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
-import {toMilliseconds} from '@utils/datetime';
+import {showAuthenticationInterruptedAlert, showNotSecuredAlert} from '@utils/alerts';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
-
-const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
+import {handleAppStateResume} from '@utils/security/app_state';
+import {getAuthenticationOutcome, probeDeviceSecured} from '@utils/security/authentication';
+import {AuthenticationSource} from '@utils/security/constants';
 
 const messages = defineMessages({
     blocked: {
@@ -31,26 +33,6 @@ const messages = defineMessages({
     securedBy: {
         id: 'mobile.managed.secured_by',
         defaultMessage: 'Secured by {vendor}',
-    },
-    androidSettings: {
-        id: 'mobile.managed.settings',
-        defaultMessage: 'Go to settings',
-    },
-    notSecuredVendorIOS: {
-        id: 'mobile.managed.not_secured.ios.vendor',
-        defaultMessage: 'This device must be secured with biometrics or passcode to use {vendor}.\n\nGo to Settings > Face ID & Passcode.',
-    },
-    notSecuredVendorAndroid: {
-        id: 'mobile.managed.not_secured.android.vendor',
-        defaultMessage: 'This device must be secured with a screen lock to use {vendor}.',
-    },
-    notSecuredIOS: {
-        id: 'mobile.managed.not_secured.ios',
-        defaultMessage: 'This device must be secured with biometrics or passcode to use Mattermost.\n\nGo to Settings > Face ID & Passcode.',
-    },
-    notSecuredAndroid: {
-        id: 'mobile.managed.not_secured.android',
-        defaultMessage: 'This device must be secured with a screen lock to use Mattermost.',
     },
 });
 
@@ -159,89 +141,93 @@ class ManagedAppSingleton {
 
     handleDeviceAuthentication = async (authExpired = true) => {
         this.performingAuthentication = true;
-        const isSecured = await Emm.isDeviceSecured();
+
+        try {
+            return await this.runAuthenticationGate(authExpired);
+        } catch (error) {
+            // Nobody failed authentication here, so the app stays open; the finally below
+            // keeps the flag from latching and blocking every future prompt.
+            logDebug('ManagedApp: Authentication gate failed', {reason: getFullErrorMessage(error)});
+            return false;
+        } finally {
+            this.performingAuthentication = false;
+        }
+    };
+
+    /**
+     * Unbounded: every iteration needs a Retry tap, and the alternative on a final attempt
+     * would be closing the app on a user who never failed to authenticate.
+     */
+    private runAuthenticationGate = async (authExpired: boolean) => {
         const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
 
-        if (!isSecured) {
-            await this.showNotSecuredAlert(translations);
-            Emm.exitApp();
-            return;
-        }
+        /* eslint-disable no-await-in-loop */
+        for (;;) {
+            const secured = await probeDeviceSecured(AuthenticationSource.ManagedApp);
 
-        if (authExpired) {
-            try {
-                const auth = await Emm.authenticate({
-                    reason: translations[messages.securedBy.id].replace('{vendor}', this.vendor),
-                    fallback: true,
-                    supressEnterPassword: true,
-                });
-                if (!auth) {
-                    throw new Error('Authorization cancelled');
-                }
-            } catch (err) {
+            if (secured === 'notSecured') {
+                await showNotSecuredAlert('', this.vendor, locale, true);
                 Emm.exitApp();
-                return;
+                return false;
+            }
+
+            if (secured === 'secured' && !authExpired) {
+                return true;
+            }
+
+            if (secured === 'secured') {
+                const outcome = await this.runAuthenticationAttempt(translations);
+
+                if (outcome === 'success') {
+                    this.backgroundSince = 0;
+                    return true;
+                }
+
+                if (outcome === 'failed') {
+                    Emm.exitApp();
+                    return false;
+                }
+            }
+
+            // Cancelled, interrupted, or the secured check could not be determined: nobody
+            // failed, so offer a retry instead of closing the app.
+            const choice = await showAuthenticationInterruptedAlert('', this.vendor, locale);
+            if (choice !== 'retry') {
+                return false;
             }
         }
+    };
 
-        this.performingAuthentication = false;
+    private runAuthenticationAttempt = async (translations: Record<string, string>) => {
+        try {
+            await Emm.authenticate({
+                reason: translations[messages.securedBy.id].replace('{vendor}', this.vendor),
+                fallback: true,
+                supressEnterPassword: true,
+            });
+
+            return 'success';
+        } catch (error) {
+            const outcome = getAuthenticationOutcome(error);
+            logDebug('ManagedApp: Authentication attempt did not succeed', {outcome, reason: getFullErrorMessage(error)});
+
+            return outcome === AuthenticationOutcome.Failed ? 'failed' : 'interrupted';
+        }
     };
 
     onAppStateChange = async (appState: AppStateStatus) => {
-        const isActive = appState === 'active';
-        const isBackground = appState === 'background';
+        await handleAppStateResume(appState, this, {
+            isEnabled: () => this.enabled && this.inAppPinCode && isMainActivity(),
+            isGateOpen: () => this.performingAuthentication,
+            authenticate: (authExpired) => this.handleDeviceAuthentication(authExpired),
 
-        if (isActive && this.previousAppState === 'background' && !this.performingAuthentication) {
-            if (this.enabled && this.inAppPinCode && isMainActivity()) {
-                const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
-                await this.handleDeviceAuthentication(authExpired);
-            }
-
-            this.backgroundSince = 0;
-        } else if (isBackground) {
-            this.backgroundSince = Date.now();
-        }
-
-        this.previousAppState = appState;
-    };
-
-    showNotSecuredAlert = (translations: Record<string, string>) => {
-        return new Promise((resolve) => {
-            const buttons: AlertButton[] = [];
-
-            if (Platform.OS === 'android') {
-                buttons.push({
-                    text: translations[messages.androidSettings.id],
-                    onPress: () => {
-                        Emm.openSecuritySettings();
-                    },
-                });
-            }
-
-            buttons.push({
-                text: translations[messages.exit.id],
-                onPress: resolve,
-                style: 'cancel',
-            });
-
-            let message;
-            if (this.vendor) {
-                const platform = Platform.select({ios: messages.notSecuredVendorIOS.id, default: messages.notSecuredVendorAndroid.id});
-                message = translations[platform].replace('{vendor}', this.vendor);
-            } else {
-                const platform = Platform.select({ios: messages.notSecuredIOS.id, default: messages.notSecuredAndroid.id});
-                message = translations[platform];
-            }
-
-            Alert.alert(
-                translations[messages.blocked.id].replace('{vendor}', this.vendor),
-                message,
-                buttons,
-                {cancelable: false, onDismiss: () => resolve},
-            );
+            // The device-secured check still runs on every resume, even inside the window.
+            promptWhenNotExpired: true,
+            source: AuthenticationSource.ManagedApp,
         });
     };
+
 }
 
 const ManagedApp = new ManagedAppSingleton();
