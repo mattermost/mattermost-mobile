@@ -2394,7 +2394,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-emm (1.7.0):
+  - react-native-emm (2.0.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4463,7 +4463,7 @@ SPEC CHECKSUMS:
   fmt: 530618a01105dae0fa3a2f27c81ae11fa8f67eac
   Gekidou: 94199ed8d31b900f2caeb9d5739c19bed9defc4a
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  hermes-engine: f9aed8041a90723c1e15c5d973e57e1f1137f94e
+  hermes-engine: 28814c9c9296d16aef26cb514de5378d18885e44
   JitsiWebRTC: b47805ab5668be38e7ee60e2258f49badfe8e1d0
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -4517,7 +4517,7 @@ SPEC CHECKSUMS:
   react-native-cameraroll: ae31ba7ee17d31c5ee05d7bb248742e3af482783
   react-native-document-picker: 49c296acec7ed2374ac696f50fb2a1536c9aa100
   react-native-document-viewer: 0ed0f600b005a4b85b0a319ba329b6b4f5ed17f9
-  react-native-emm: 469f5ff2c0d6c33ba7bdc43c29e38d1fb32b7ffc
+  react-native-emm: 37d581e1e917b5285ce688fb894529c8c373177f
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
   react-native-keyboard-controller: f8979f50dc2752ff5dc1656bd315d58cd6e78bba
   react-native-netinfo: 9fad4eedfec9840a10e73ac4591ea1158523309b
