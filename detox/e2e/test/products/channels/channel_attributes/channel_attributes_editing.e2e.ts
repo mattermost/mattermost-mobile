@@ -277,18 +277,43 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6320_4 - should clear a value under an any policy', async () => {
-        const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', value: OPTION_IDS.medium, required: true});
+        // required: false — a required field can never be cleared: the server
+        // rejects a null value for it regardless of change_policy (see
+        // api.property_value.patch.required.app_error), so "clear" only has a
+        // reachable path to test against a non-required field.
+        const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', value: OPTION_IDS.medium});
 
         // # Clear the value.
         await ChannelInfoAttributes.openEditor(FIELD_NAME);
         await waitFor(ChannelInfoAttributes.getEditorClear(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoAttributes.getEditorClear(FIELD_NAME).tap();
 
-        // * The required row falls back to Not set rather than disappearing.
-        await waitFor(ChannelInfoAttributes.getNotSet(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * An unset, non-required attribute is dropped from Channel Info
+        // entirely (selectChannelInfoAttributes), so the whole section goes
+        // away rather than leaving a "Not set" row behind.
+        await ChannelInfoAttributes.toNotBeVisible();
 
         // * The server holds nothing for the field.
         assertStoredValueUnset(await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId));
+
+        await ChannelInfoScreen.close();
+    });
+
+    it('MM-T6320_5 - should refuse to clear a required attribute', async () => {
+        const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', value: OPTION_IDS.medium, required: true});
+
+        // # Attempt to clear the value.
+        await ChannelInfoAttributes.openEditor(FIELD_NAME);
+        await waitFor(ChannelInfoAttributes.getEditorClear(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelInfoAttributes.getEditorClear(FIELD_NAME).tap();
+
+        // * The server refuses to empty a required field, so the row reports
+        // the failure and keeps showing the value it still holds.
+        await waitFor(ChannelInfoAttributes.getError(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+
+        // * The server still holds the value.
+        assertStoredValue(await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId), OPTION_IDS.medium);
 
         await ChannelInfoScreen.close();
     });
