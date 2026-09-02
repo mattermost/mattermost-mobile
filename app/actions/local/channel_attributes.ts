@@ -3,6 +3,7 @@
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 /**
@@ -26,7 +27,7 @@ export async function setAccessControlGroupId(serverUrl: string, groupId: string
 
         return {data: true};
     } catch (error) {
-        logError('setAccessControlGroupId', error);
+        logError('setAccessControlGroupId', getFullErrorMessage(error));
         return {error};
     }
 }

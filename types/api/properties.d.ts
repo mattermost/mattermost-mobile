@@ -39,6 +39,8 @@ type PropertyFieldOption = {
     rank?: number;
 };
 
+type PropertyFieldAction = 'display_banner_top' | 'display_banner_bottom' | 'display_label_header' | 'display_label_info';
+
 type PropertyFieldAttrs = {
     sort_order?: number;
     options?: PropertyFieldOption[];
@@ -46,7 +48,8 @@ type PropertyFieldAttrs = {
     // Where a channel attribute's value displays. Server-validated allow-list;
     // see @constants/channel_attributes. An empty array means an administrator
     // chose no locations, which is not the same as the key being absent.
-    actions?: string[];
+    // Unknown values from a future server are retained via the index signature below.
+    actions?: PropertyFieldAction[];
 
     // Channel-attribute configuration written by the System Console's Channels
     // resource row. `editable` predates `change_policy`; false reads as 'never'.

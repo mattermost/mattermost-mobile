@@ -465,8 +465,9 @@ export const apiSetChannelAttributeValue = async (
  * Delete all non-deleted channel attribute fields with the given names, plus their templates.
  *
  * Channel-linked fields are deleted first (server enforces dependency ordering: linked before
- * template). The channel object type is queried with target_type=channel; the system linked
- * fields use target_type=system, matching the server-side field scoping.
+ * template). Both the channel object type and the system-linked object type are queried with
+ * target_type=system (CHANNEL_TARGET_TYPE and TARGET_TYPE are both 'system'); the two entries
+ * in objectTypePairs differ only by object_type ('channel' vs 'system').
  *
  * @param {string} baseUrl - the base server URL
  * @param {string[]} fieldNames - field names to delete from all object types
@@ -478,8 +479,8 @@ export const apiCleanupChannelAttributeFields = async (baseUrl: string, fieldNam
     }
     const nameSet = new Set(fieldNames);
 
-    // Channel fields use CHANNEL_TARGET_TYPE; system-linked fields use TARGET_TYPE.
-    // Delete channel-scoped fields first (server enforces dependency order).
+    // Both pairs use target_type=system (CHANNEL_TARGET_TYPE === TARGET_TYPE === 'system');
+    // they differ only by object_type. Delete channel-scoped fields first (server enforces dependency order).
     const objectTypePairs: Array<[string, string]> = [
         [CHANNEL_OBJECT_TYPE, CHANNEL_TARGET_TYPE],
         [LINKED_OBJECT_TYPE, TARGET_TYPE],

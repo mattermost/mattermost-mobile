@@ -303,6 +303,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
 
         // # Create the DM and post a message so it appears in the sidebar.
         const {channel: dmChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, dmTarget.id]);
+        testChannel = dmChannel;
         await Post.apiCreatePost(siteOneUrl, {channelId: dmChannel.id, message: 'hello'});
 
         // # Set an attribute value on the DM channel (server accepts it; mobile must not show it).
@@ -451,18 +452,6 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
-
-        // After reload the app may restore a previous-session channel (e.g. a DM from an
-        // earlier test that left an unread), pushing it onto the nav stack. Dismiss any
-        // auto-opened channel before navigating so ChannelScreen.back() at the end lands
-        // on the channel list rather than the DM.
-        await wait(timeouts.TWO_SEC);
-        try {
-            await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        } catch {
-            await device.pressBack();
-            await waitFor(element(by.id('channel_list.screen'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        }
 
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);

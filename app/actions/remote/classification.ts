@@ -21,6 +21,7 @@ import NetworkManager from '@managers/network_manager';
 import {getAccessControlGroupId, getAccessControlValuesForTarget, getPropertyFieldsByGroupId, getPropertyFieldsByIds, getPropertyFieldsByNames} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
@@ -125,7 +126,7 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
         EphemeralStore.setClassificationBannerFetched(serverUrl);
         return {};
     } catch (error) {
-        logError('fetchAccessControlAttributeFields', 'Failed to fetch access control attribute fields', error);
+        logError('fetchAccessControlAttributeFields', 'Failed to fetch access control attribute fields', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -211,13 +212,13 @@ export async function fetchChannelAttributeValues(serverUrl: string, channelId: 
             });
         }
 
-        EphemeralStore.setChannelAttributeValuesSynced(serverUrl, channelId);
-
         await resyncStaleOptions(serverUrl, database, values);
+
+        EphemeralStore.setChannelAttributeValuesSynced(serverUrl, channelId);
 
         return {};
     } catch (error) {
-        logError('fetchChannelAttributeValues', 'Failed to fetch channel attribute values', error);
+        logError('fetchChannelAttributeValues', 'Failed to fetch channel attribute values', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

@@ -223,7 +223,7 @@ export function resolveChannelAttributes(
  */
 export function selectAttributesForAction(
     attributes: ResolvedChannelAttribute[],
-    action: string,
+    action: PropertyFieldAction,
 ): ResolvedChannelAttribute[] {
     const selected = attributes.filter((attribute) => {
         if (!attribute.displayValue) {
@@ -245,7 +245,7 @@ export function selectAttributesForAction(
  */
 export function selectChannelInfoAttributes(
     attributes: ResolvedChannelAttribute[],
-    action: string,
+    action: PropertyFieldAction,
 ): ResolvedChannelAttribute[] {
     const listed = attributes.filter((attribute) => {
         if (!hasAction(attribute.field, action)) {
@@ -256,7 +256,7 @@ export function selectChannelInfoAttributes(
     return listed.length === 0 ? EMPTY_RESOLVED : listed;
 }
 
-function hasAction(field: ChannelAttributeField, action: string): boolean {
+function hasAction(field: ChannelAttributeField, action: PropertyFieldAction): boolean {
     const {actions} = field.attrs ?? {};
     return Array.isArray(actions) && actions.includes(action);
 }

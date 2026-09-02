@@ -335,13 +335,15 @@ describe('fetchAccessControlAttributeFields', () => {
     it('should not cache on error so a subsequent unforced call retries', async () => {
         setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockRejectedValueOnce(new Error('network failure'));
+        mockClient.getPropertyFields.mockResolvedValue([]);
 
         await fetchAccessControlAttributeFields(serverUrl);
 
-        // The failure must not have stamped the cache, so an unforced retry runs.
+        // The failure must not have stamped the cache, so an unforced retry makes a second network request.
         setConfig({FeatureFlagClassificationMarkings: 'false'});
         await fetchAccessControlAttributeFields(serverUrl);
 
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
         expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagClassificationMarkings');
         expect(mockedGetConfigValue).toHaveBeenCalledWith(expect.anything(), 'FeatureFlagChannelAttributes');
     });
