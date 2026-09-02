@@ -60,6 +60,52 @@ describe('ClientProperties', () => {
         expect(url).toContain('target_id=tid');
     });
 
+    describe('patchPropertyValues', () => {
+        it('should PATCH the same URL the read uses, with a bare array body', async () => {
+            (client.doFetch as jest.Mock).mockResolvedValueOnce([]);
+
+            await client.patchPropertyValues<string>('access_control', 'channel', 'channel_id_1', [{field_id: 'field_id_1', value: 'option_id_1'}]);
+
+            expect(client.doFetch).toHaveBeenCalledWith(
+                `${client.urlVersion}/properties/groups/access_control/channel/values/channel_id_1`,
+                {method: 'patch', body: [{field_id: 'field_id_1', value: 'option_id_1'}]},
+            );
+        });
+
+        it('should send a null value through as a clear rather than dropping the key', async () => {
+            (client.doFetch as jest.Mock).mockResolvedValueOnce([]);
+
+            await client.patchPropertyValues<string>('access_control', 'channel', 'channel_id_1', [{field_id: 'field_id_1', value: null}]);
+
+            const options = (client.doFetch as jest.Mock).mock.calls[0][1];
+            expect(options.body).toEqual([{field_id: 'field_id_1', value: null}]);
+        });
+
+        it('should return the upserted values', async () => {
+            const data = [{id: 'v1', field_id: 'field_id_1', value: 'option_id_1'}];
+            (client.doFetch as jest.Mock).mockResolvedValueOnce(data);
+
+            const result = await client.patchPropertyValues<string>('access_control', 'channel', 'channel_id_1', [{field_id: 'field_id_1', value: 'option_id_1'}]);
+
+            expect(result).toEqual(data);
+        });
+
+        it('should propagate a rejection, so a 403 from a change policy reaches the caller', async () => {
+            (client.doFetch as jest.Mock).mockRejectedValueOnce({status_code: 403, message: 'change policy does not permit this change'});
+
+            await expect(client.patchPropertyValues<string>('access_control', 'channel', 'channel_id_1', [{field_id: 'field_id_1', value: 'option_id_1'}])).
+                rejects.toMatchObject({status_code: 403});
+        });
+
+        it('should return [] when doFetch resolves to a non-array', async () => {
+            (client.doFetch as jest.Mock).mockResolvedValueOnce({});
+
+            const result = await client.patchPropertyValues<string>('g', 'channel', 't', [{field_id: 'f', value: 'v'}]);
+
+            expect(result).toEqual([]);
+        });
+    });
+
     describe('should return [] when doFetch resolves to a non-array', () => {
         it('should return [] for getPropertyValues', async () => {
             (client.doFetch as jest.Mock).mockResolvedValueOnce({});

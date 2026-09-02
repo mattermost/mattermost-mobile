@@ -10,6 +10,7 @@ export interface ClientPropertiesMix {
     getPropertyFields: (groupName: string, objectType: string, targetType: string, targetId?: string, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
     searchPropertyFields: (groupName: string, options: PropertyFieldSearchOpts, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
     getSystemPropertyValues: <T>(groupName: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
+    patchPropertyValues: <T>(groupName: string, objectType: string, targetId: string, items: Array<PropertyValuePatchItem<T>>, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
 }
 
 const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -34,6 +35,18 @@ const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBa
     getSystemPropertyValues = async <T>(groupName: string, groupLabel?: RequestGroupLabel) => {
         const url = `${this.urlVersion}/properties/groups/${groupName}/system/values`;
         return safeArrayCast<PropertyValue<T>>(await this.doFetch(url, {method: 'get', groupLabel}));
+    };
+
+    // The route takes a bare array, not an object, and upserts every item. A null
+    // value clears the field: the response carries a null-valued row rather than
+    // signalling a delete.
+    //
+    // The server caps the batch at MAX_PROPERTY_VALUE_PATCH_ITEMS and rejects a
+    // larger one outright rather than truncating, so a caller that ever batches
+    // has to chunk. Every caller today sends a single item.
+    patchPropertyValues = async <T>(groupName: string, objectType: string, targetId: string, items: Array<PropertyValuePatchItem<T>>, groupLabel?: RequestGroupLabel) => {
+        const url = `${this.urlVersion}/properties/groups/${groupName}/${objectType}/values/${targetId}`;
+        return safeArrayCast<PropertyValue<T>>(await this.doFetch(url, {method: 'patch', body: items, groupLabel}));
     };
 };
 
