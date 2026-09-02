@@ -164,14 +164,19 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
         }
 
         if (NavigationStore.isScreenInStack(screenId)) {
-            // dismissTo only resolves divergence at the outermost navigator level
-            // it finds. With our nesting (root Stack -> (authenticated) Stack), one
-            // call only peels outer routes (modals, bottom sheets). A second call
-            // then operates on the inner stack and pops down to the target.
+            // `router.dismissTo(route)` pops back to the given screen at the highest navigation layer it can reach.
+            // Since our app uses nested navigators (e.g., modals on top of stacks), a single call may not suffice.
+            // Calling it twice ensures we fully dismiss both outer layers (like modals/bottom sheets) and inner stacks,
+            // guaranteeing our target screen is brought to the top.
             router.dismissTo(route);
-            router.dismissTo(route);
+            await NavigationStore.waitUntilScreenIsTop(screenId);
+
+            if (NavigationStore.getVisibleScreen() !== screenId) {
+                router.dismissTo(route);
+                await NavigationStore.waitUntilScreenIsTop(screenId);
+            }
+
             router.setParams(propsToParams(passProps));
-            await new Promise((resolve) => setTimeout(resolve, 250));
         } else {
             // Screen not in stack - reset to root then push target
             await navigateToRoot();
