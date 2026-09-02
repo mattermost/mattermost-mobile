@@ -10,6 +10,7 @@ import errorHandling from './error_handling';
 import * as Log from './log';
 
 jest.mock('expo-modules-core', () => ({
+    ...jest.requireActual('expo-modules-core'),
     reloadAppAsync: jest.fn(),
 }));
 

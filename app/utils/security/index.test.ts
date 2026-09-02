@@ -4,7 +4,7 @@
 import CookieManager from '@preeternal/react-native-cookie-manager';
 import {Platform} from 'react-native';
 
-import {clearCookies, clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from './security';
+import {clearCookies, clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from './index';
 
 // Mock CookieManager
 jest.mock('@preeternal/react-native-cookie-manager', () => ({

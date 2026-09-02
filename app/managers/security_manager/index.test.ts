@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import Emm from '@mattermost/react-native-emm';
+import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
 
 import DatabaseManager from '@database/manager';
@@ -24,6 +24,11 @@ import type {ServerDatabase} from '@typings/database/database';
 import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    AuthenticationOutcome: {
+        Failed: 'E_AUTH_FAILED',
+        Cancelled: 'E_CANCELLED',
+        Indeterminate: 'E_INDETERMINATE',
+    },
     isDeviceSecured: jest.fn(),
     authenticate: jest.fn(),
     openSecuritySettings: jest.fn(),
@@ -76,6 +81,14 @@ describe('SecurityManager', () => {
         SecurityManager.initialized = false;
         SecurityManager.serverConfig = {};
         SecurityManager.activeServer = undefined;
+        SecurityManager.isCheckingBiometrics = false;
+        SecurityManager.backgroundSince = 0;
+
+        // These resolve only when an alert button is pressed, which would hang.
+        jest.spyOn(alerts, 'showNotSecuredAlert').mockResolvedValue(undefined);
+        jest.spyOn(alerts, 'showBiometricFailureAlert').mockResolvedValue(undefined);
+        jest.spyOn(alerts, 'showAuthenticationInterruptedAlert').mockResolvedValue('dismiss');
+        jest.spyOn(alerts, 'showDeviceNotTrustedAlert').mockResolvedValue(undefined);
     });
 
     describe('init', () => {
@@ -487,6 +500,16 @@ describe('SecurityManager', () => {
     });
 
     describe('authenticateWithBiometricsIfNeeded', () => {
+        const rejectWith = (outcome: AuthenticationOutcome) => {
+            const error = new Error(outcome) as Error & {outcome: AuthenticationOutcome};
+            error.outcome = outcome;
+            return error;
+        };
+
+        const notSecuredAlert = () => jest.mocked(alerts.showNotSecuredAlert);
+        const failureAlert = () => jest.mocked(alerts.showBiometricFailureAlert);
+        const interruptedAlert = () => jest.mocked(alerts.showAuthenticationInterruptedAlert);
+
         test('should handle biometric authentication if biometrics enabled and device secured', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
             jest.mocked(Emm.authenticate).mockResolvedValue(true);
@@ -498,11 +521,33 @@ describe('SecurityManager', () => {
 
         test('should not prompt for biometric authentication if biometrics enabled but device is not secured', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(false);
-            const showNotSecuredAlertSpy = jest.spyOn(alerts, 'showNotSecuredAlert');
             await SecurityManager.addServer('server-6', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-6')).resolves.toBe(false);
-            expect(showNotSecuredAlertSpy).toHaveBeenCalled();
+            expect(notSecuredAlert()).toHaveBeenCalled();
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
+            expect(Emm.authenticate).not.toHaveBeenCalled();
+            expect(SecurityManager.getServerConfig('server-6')?.authenticated).toBe(false);
+        });
+
+        test('should retry the device secured check once before reporting it could not be determined', async () => {
+            jest.mocked(Emm.isDeviceSecured).
+                mockRejectedValueOnce(rejectWith(AuthenticationOutcome.Indeterminate)).
+                mockResolvedValueOnce(true);
+            jest.mocked(Emm.authenticate).mockResolvedValue(true);
+            await SecurityManager.addServer('server-6a', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-6a')).resolves.toBe(true);
+            expect(Emm.isDeviceSecured).toHaveBeenCalledTimes(2);
+            expect(notSecuredAlert()).not.toHaveBeenCalled();
+        });
+
+        test('should show the interrupted alert and not report not-secured when the check keeps failing', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockRejectedValue(rejectWith(AuthenticationOutcome.Indeterminate));
+            await SecurityManager.addServer('server-6b', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-6b')).resolves.toBe(false);
+            expect(interruptedAlert()).toHaveBeenCalled();
+            expect(notSecuredAlert()).not.toHaveBeenCalled();
             expect(Emm.authenticate).not.toHaveBeenCalled();
         });
 
@@ -520,62 +565,91 @@ describe('SecurityManager', () => {
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-9')).resolves.toBe(true);
             expect(Emm.isDeviceSecured).toHaveBeenCalled();
             expect(Emm.authenticate).toHaveBeenCalled();
+            expect(SecurityManager.getServerConfig('server-9')?.authenticated).toBe(true);
         });
 
-        test('should log error and resolve with false if biometric authentication fails', async () => {
+        test('should offer logout when authentication genuinely fails', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
-            jest.mocked(Emm.authenticate).mockResolvedValue(false);
+            jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Failed));
             await SecurityManager.addServer('server-10', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-10')).resolves.toBe(false);
-            expect(Emm.isDeviceSecured).toHaveBeenCalled();
-            expect(Emm.authenticate).toHaveBeenCalled();
+            expect(failureAlert()).toHaveBeenCalled();
+            expect(interruptedAlert()).not.toHaveBeenCalled();
             expect(SecurityManager.getServerConfig('server-10')?.authenticated).toBe(false);
-            expect(logError).toHaveBeenCalled();
         });
 
-        test('should log error and resolve with false if biometric authentication throws an error', async () => {
+        test('should offer retry without logout when authentication is cancelled', async () => {
             jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
-            jest.mocked(Emm.authenticate).mockRejectedValue(new Error('Authorization cancelled'));
+            jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Cancelled));
             await SecurityManager.addServer('server-11', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-11')).resolves.toBe(false);
-            expect(Emm.isDeviceSecured).toHaveBeenCalled();
-            expect(Emm.authenticate).toHaveBeenCalled();
-            expect(logError).toHaveBeenCalled();
+            expect(interruptedAlert()).toHaveBeenCalled();
+            expect(failureAlert()).not.toHaveBeenCalled();
+            expect(SecurityManager.getServerConfig('server-11')?.authenticated).toBe(false);
         });
 
-        test('should not attempt biometric authentication if server was previously authenticated within 5 mins', async () => {
-            // Mock toMilliseconds locally to return correct value for this test
-            const originalToMilliseconds = jest.requireActual('@utils/datetime').toMilliseconds;
-            jest.mocked(require('@utils/datetime').toMilliseconds).mockImplementation(originalToMilliseconds);
+        test('should retry the prompt when the interrupted alert returns retry', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).
+                mockRejectedValueOnce(rejectWith(AuthenticationOutcome.Cancelled)).
+                mockResolvedValueOnce(true);
+            interruptedAlert().mockResolvedValueOnce('retry');
+            await SecurityManager.addServer('server-11a', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
 
-            // Use a fixed timestamp instead of Date.now() to eliminate timing races
-            const fixedTime = 1672574400000; // Fixed timestamp: Jan 1, 2023 12:00:00 GMT
-            const oneMinuteAgo = fixedTime - (60 * 1000);
+            await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-11a')).resolves.toBe(true);
+            expect(Emm.authenticate).toHaveBeenCalledTimes(2);
+            expect(SecurityManager.getServerConfig('server-11a')?.authenticated).toBe(true);
+        });
 
-            // Mock Date.now to return our fixed time
+        test('should skip a concurrent request while a check is already in progress', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            await SecurityManager.addServer('server-11b', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
+
+            let releasePrompt: (value: boolean) => void;
+            jest.mocked(Emm.authenticate).mockReturnValue(new Promise((resolve) => {
+                releasePrompt = resolve;
+            }));
+
+            const first = SecurityManager.authenticateWithBiometrics('server-11b');
+            await new Promise((resolve) => setImmediate(resolve));
+
+            await expect(SecurityManager.authenticateWithBiometrics('server-11b')).resolves.toBe(true);
+            expect(Emm.authenticate).toHaveBeenCalledTimes(1);
+
+            releasePrompt!(true);
+            await expect(first).resolves.toBe(true);
+        });
+
+        test('should not attempt biometric authentication if server was previously authenticated within the window', async () => {
+            // PROMPT_AUTH_AFTER is computed at import time from the mocked toMilliseconds
+            const fixedTime = 1672574400000;
+            const withinWindow = fixedTime - 1000;
+
             const originalDateNow = Date.now;
             Date.now = jest.fn(() => fixedTime);
 
             try {
                 await SecurityManager.addServer('server-12', {MobileEnableBiometrics: 'true'} as SecurityClientConfig, true);
-                SecurityManager.serverConfig['server-12'].lastAccessed = oneMinuteAgo;
+                SecurityManager.serverConfig['server-12'].lastAccessed = withinWindow;
                 await expect(SecurityManager.authenticateWithBiometricsIfNeeded('server-12')).resolves.toBe(true);
                 expect(Emm.isDeviceSecured).not.toHaveBeenCalled();
                 expect(Emm.authenticate).not.toHaveBeenCalled();
             } finally {
-                // Restore original implementations
                 Date.now = originalDateNow;
-                jest.mocked(require('@utils/datetime').toMilliseconds).mockReturnValue(25000);
             }
         });
 
-        test('should not attempt biometric authentication if server was previously failed authentication even though lastAccess is less than 5 mins', async () => {
+        test('should re-prompt when the server previously failed authentication even though lastAccess is less than 5 mins', async () => {
+            jest.mocked(Emm.isDeviceSecured).mockResolvedValue(true);
+            jest.mocked(Emm.authenticate).mockRejectedValue(rejectWith(AuthenticationOutcome.Failed));
             await SecurityManager.addServer('server-13', {MobileEnableBiometrics: 'true'} as SecurityClientConfig);
             SecurityManager.serverConfig['server-13'].authenticated = false;
             SecurityManager.serverConfig['server-13'].lastAccessed = Date.now() - toMilliseconds({minutes: 1});
+
             await SecurityManager.authenticateWithBiometricsIfNeeded('server-13');
+
+            expect(Emm.authenticate).toHaveBeenCalled();
             expect(SecurityManager.serverConfig['server-13'].authenticated).toBe(false);
-            await expect(Emm.authenticate).toHaveBeenCalled();
         });
     });
 
