@@ -31,7 +31,7 @@ export default function ThreadRoute() {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const defaultHeight = useDefaultHeaderHeight();
-    const {channelName, rootId, title: routeTitle} = usePropsFromParams<{channelName: string; rootId: string; title?: string}>();
+    const {channelName, rootId, title: routeTitle} = usePropsFromParams<{channelName: string; rootId?: string; title?: string}>();
 
     const title = routeTitle || intl.formatMessage(threadMessages.thread);
     const subtitle = channelName ? intl.formatMessage(threadMessages.threadIn, {channelName}) : undefined;
