@@ -442,7 +442,7 @@ index 2f170e0..bd87f92 100644
      }
  
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
-index 117b2bc..57e4abb 100644
+index 4f13512..7fa03f8 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 @@ -122,6 +122,14 @@ public class WMDatabaseBridge extends ReactContextBaseJavaModule {
@@ -558,18 +558,9 @@ index 0224cc3..085a10c 100644
  @end
  
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
-index 8a4e9b4..dc567c6 100644
+index 8a4e9b4..7715b87 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
 +++ b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
-@@ -20,7 +20,7 @@ Database::Database(jsi::Runtime *runtime, std::string path, bool usesExclusiveLo
-     initSql += "pragma temp_store = memory;";
-     #endif
- 
--    initSql += "pragma journal_mode = WAL;";
-+    // initSql += "pragma journal_mode = WAL;";
- 
-     // set timeout before SQLITE_BUSY error is returned
-     initSql += "pragma busy_timeout = 5000;";
 @@ -102,6 +102,10 @@ void Database::unsafeResetDatabase(jsi::String &schema, int schemaVersion) {
      }
  }
