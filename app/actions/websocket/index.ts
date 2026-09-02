@@ -156,10 +156,24 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
-            markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
-            if (!EphemeralStore.wasNotificationTapped()) {
-                markChannelAsViewed(serverUrl, currentChannelId, true);
+            const {error} = await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
+
+            // Only clear the unread state once we have the posts. Marking the channel as read resets
+            // the membership counters on the server, so doing it after a failed fetch loses the
+            // unread state and the mention badge for messages the user never received.
+            if (error) {
+                logDebug('skipped marking channel as read after reconnect, the posts fetch failed for channel', currentChannelId);
+            } else if ((await getActiveServerUrl()) === serverUrl && (await getCurrentChannelId(database)) === currentChannelId) {
+                markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
+                if (!EphemeralStore.wasNotificationTapped()) {
+                    markChannelAsViewed(serverUrl, currentChannelId, true);
+                }
+            } else {
+                // The user moved to another channel or server while the posts were being fetched.
+                // Both are rechecked because the current channel of this server does not change when
+                // the user switches servers. Going ahead would wipe the unread flag and the mention
+                // badge of a channel the user is no longer looking at.
+                logDebug('skipped marking channel as read after reconnect, the user left channel', currentChannelId);
             }
             EphemeralStore.setNotificationTapped(false);
         }

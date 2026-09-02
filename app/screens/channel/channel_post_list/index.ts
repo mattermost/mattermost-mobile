@@ -38,6 +38,10 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: {channel
                 return queryPostsBetween(database, earliest, latest, Q.desc, '', channelId, isCRTEnabled ? '' : undefined).observe();
             }),
         ),
+        lastPostAt: observeMyChannel(database, channelId).pipe(
+            switchMap((myChannel) => of$(myChannel?.lastPostAt ?? 0)),
+            distinctUntilChanged(),
+        ),
         shouldShowJoinLeaveMessages: queryAdvanceSettingsPreferences(database, Preferences.ADVANCED_FILTER_JOIN_LEAVE).
             observeWithColumns(['value']).pipe(
                 switchMap((preferences) => of$(getAdvanceSettingPreferenceAsBool(preferences, Preferences.ADVANCED_FILTER_JOIN_LEAVE, true))),

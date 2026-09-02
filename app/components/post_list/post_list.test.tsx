@@ -121,6 +121,118 @@ describe('components/post_list/PostList', () => {
         expect(getByTestId('post_list.new_messages_line')).toBeTruthy();
     });
 
+    describe('onNewMessageLineViewed', () => {
+        const unreadProps = {
+            ...baseProps,
+            showNewMessageLine: true,
+            lastViewedAt: 1234567000, // Before mockPost's create_at
+            posts: [mockPostModel({createAt: 1234567890})],
+        };
+
+        const findSeparatorIndex = (data: Array<{type: string}>) => data.findIndex((i) => i.type === 'start-of-new-messages');
+
+        // VirtualizedList keeps the onViewableItemsChanged it was constructed with, so the callback
+        // production runs is the one from the first render. Tests have to hold on to that same
+        // reference; reading the prop again after a re-render would exercise a function the list
+        // never calls.
+        const fireOn = (callback: (info: unknown) => void, index: number, item: unknown) => {
+            act(() => {
+                callback({viewableItems: [{index, item, isViewable: true}]});
+            });
+        };
+
+        it('should report the separator coming into view', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            const index = findSeparatorIndex(flatList.props.data);
+            expect(index).toBeGreaterThanOrEqual(0);
+
+            fireOn(flatList.props.onViewableItemsChanged, index, flatList.props.data[index]);
+
+            expect(onNewMessageLineViewed).toHaveBeenCalledTimes(1);
+        });
+
+        it('should not report while the separator is out of view', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            const separatorIndex = findSeparatorIndex(flatList.props.data);
+            const otherIndex = flatList.props.data.findIndex((i: {type: string}) => i.type === 'post');
+            expect(otherIndex).not.toBe(separatorIndex);
+
+            fireOn(flatList.props.onViewableItemsChanged, otherIndex, flatList.props.data[otherIndex]);
+
+            expect(onNewMessageLineViewed).not.toHaveBeenCalled();
+        });
+
+        it('should not report when there is no separator', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId} = renderWithEverything(
+                <PostList
+                    {...baseProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const flatList = getByTestId('post_list.flat_list');
+            expect(findSeparatorIndex(flatList.props.data)).toBe(-1);
+
+            fireOn(flatList.props.onViewableItemsChanged, 0, flatList.props.data[0]);
+
+            expect(onNewMessageLineViewed).not.toHaveBeenCalled();
+        });
+
+        it('should report later boundaries through the callback the list captured', () => {
+            const onNewMessageLineViewed = jest.fn();
+            const {getByTestId, rerender} = renderWithEverything(
+                <PostList
+                    {...unreadProps}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                />,
+                {database, serverUrl},
+            );
+            const initialFlatList = getByTestId('post_list.flat_list');
+            const initialSeparatorIndex = findSeparatorIndex(initialFlatList.props.data);
+            const captured = initialFlatList.props.onViewableItemsChanged;
+
+            // A message arrives while the user stays in the channel, so the boundary moves.
+            rerender(
+                <PostList
+                    {...unreadProps}
+                    lastViewedAt={1234567900}
+                    onNewMessageLineViewed={onNewMessageLineViewed}
+                    posts={[
+                        mockPostModel({id: 'newest-post', createAt: 1234568100}),
+                        mockPostModel({id: 'newer-post', createAt: 1234568000}),
+                        ...unreadProps.posts,
+                    ]}
+                />,
+            );
+
+            const flatList = getByTestId('post_list.flat_list');
+            const movedIndex = findSeparatorIndex(flatList.props.data);
+            expect(movedIndex).toBeGreaterThanOrEqual(0);
+            expect(movedIndex).not.toBe(initialSeparatorIndex);
+
+            fireOn(captured, movedIndex, flatList.props.data[movedIndex]);
+
+            expect(onNewMessageLineViewed).toHaveBeenCalledTimes(1);
+        });
+    });
+
     it('handles refresh in channel', async () => {
         const {getByTestId} = renderWithEverything(<PostList {...baseProps}/>, {database, serverUrl});
         const flatList = getByTestId('post_list.flat_list');

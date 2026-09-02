@@ -762,7 +762,7 @@ export async function unsetActiveChannelOnServer(serverUrl: string) {
         await client.viewMyChannel('');
         return {};
     } catch (error) {
-        logDebug('error on markChannelAsRead', getFullErrorMessage(error));
+        logDebug('error on unsetActiveChannelOnServer', getFullErrorMessage(error));
         return {error};
     }
 }
@@ -1191,7 +1191,6 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
     fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId, groupLabel);
-    markChannelAsRead(serverUrl, channelId, false, groupLabel);
     fetchChannelStats(serverUrl, channelId, false, groupLabel);
     fetchGroupsForChannelIfConstrained(serverUrl, channelId, false, groupLabel);
 

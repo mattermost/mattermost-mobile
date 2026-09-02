@@ -54,6 +54,7 @@ type Props = {
     lastViewedAt: number;
     location: AvailableScreens;
     onEndReached?: () => void;
+    onNewMessageLineViewed?: () => void;
     posts: PostModel[];
     rootId?: string;
     shouldRenderReplyButton?: boolean;
@@ -105,6 +106,7 @@ const PostList = ({
     lastViewedAt,
     location,
     onEndReached,
+    onNewMessageLineViewed,
     posts,
     rootId,
     shouldRenderReplyButton = true,
@@ -167,6 +169,7 @@ const PostList = ({
 
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent | undefined>(undefined);
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent | undefined>(undefined);
+    const newMessageLine = useRef({channelId, initialIndex: -1, onNewMessageLineViewed});
     const scrolledToHighlighted = useRef(false);
     const initialRenderTracked = useRef(false);
     const viewableItemsDebounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -216,6 +219,8 @@ const PostList = ({
             initialIndex: unreadIndex,
         };
     }, [posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, currentTimezone, location, savedPostIds, showAllPosts]);
+
+    newMessageLine.current = {channelId, initialIndex, onNewMessageLineViewed};
 
     const isNewMessage = lastPostId ? firstIdInPosts !== lastPostId : false;
 
@@ -384,6 +389,19 @@ const PostList = ({
         requestAnimationFrame(() => {
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
         });
+
+        // The separator being on screen is what tells us the user reached the unread boundary; it must
+        // not be inferred from the posts merely having been fetched. Report the fact and let the
+        // caller decide what it means. Values come
+        // from a ref rather than this closure: VirtualizedList captures onViewableItemsChanged in its
+        // constructor, so the callback it calls is the one from the first render no matter how many
+        // times this is recreated. Reading props directly here would pin us to the first render's
+        // channel and unread boundary forever.
+        const current = newMessageLine.current;
+        if (current.onNewMessageLineViewed && current.initialIndex >= 0 &&
+            viewableItems.some(({index, isViewable}) => isViewable && index === current.initialIndex)) {
+            current.onNewMessageLineViewed();
+        }
 
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
