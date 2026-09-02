@@ -15,6 +15,7 @@ import {
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PROPERTY_FIELDS_SEARCH_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -104,15 +105,18 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
 
                 const fieldModels = await operator.handlePropertyFields({groupId, fields: allFields, prepareRecordsOnly: true});
                 const valueModels = await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: true});
-                await operator.batchRecords([...fieldModels, ...valueModels], 'fetchAccessControlAttributeFields');
 
                 // Published for the field observables, which cannot scope
-                // themselves to this group until the id is known. Persisted, so a
-                // cold start with no network still renders from the stored rows.
-                const {error: groupIdError} = await setAccessControlGroupId(serverUrl, groupId);
-                if (groupIdError) {
-                    return {error: groupIdError};
-                }
+                // themselves to this group until the id is known. Persisted in the
+                // same batch so field records never exist without a group ID: a
+                // failed write leaves the DB as it was rather than storing
+                // unscopeable rows.
+                const systemIdModels = await operator.handleSystem({
+                    systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: groupId}],
+                    prepareRecordsOnly: true,
+                });
+                await operator.batchRecords([...fieldModels, ...valueModels, ...systemIdModels], 'fetchAccessControlAttributeFields');
+
                 EphemeralStore.setClassificationBannerFetched(serverUrl);
                 return {};
             }
