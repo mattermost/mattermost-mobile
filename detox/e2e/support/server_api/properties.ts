@@ -71,6 +71,23 @@ export const apiCreatePropertyField = async (baseUrl: string, groupName: string,
 };
 
 /**
+ * Patch a property field. `attrs` is merged into the field's existing attrs
+ * rather than replacing them (server-side PropertyField.Patch with
+ * mergeAttrs=true), so only the given keys change.
+ */
+export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: {attrs?: Record<string, unknown>}) => {
+    try {
+        const response = await client.patch(
+            `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields/${fieldId}`,
+            patch,
+        );
+        return {field: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Delete a property field.
  */
 export const apiDeletePropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string) => {
@@ -463,6 +480,23 @@ export const apiSetupChannelAttributeField = async (
 };
 
 /**
+ * Marks an existing channel attribute field required (or not) after the fact.
+ *
+ * The server enforces required attributes at channel-creation time for whoever
+ * can set them, so a test that wants both "required" and "channel already
+ * exists with no value" has to create the channel first, while the field is
+ * still optional, and only then flip it required — exactly the real-world
+ * sequence an admin making an existing field mandatory would produce.
+ */
+export const apiSetChannelAttributeFieldRequired = async (baseUrl: string, fieldId: string, required: boolean) => {
+    const result = await apiPatchPropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, fieldId, {attrs: {required}});
+    if ('error' in result) {
+        throw new Error(`apiSetChannelAttributeFieldRequired: ${JSON.stringify(result.error)}`);
+    }
+    return result;
+};
+
+/**
  * Set (or replace) a channel attribute value for a specific channel.
  */
 export const apiSetChannelAttributeValue = async (
@@ -549,6 +583,7 @@ export const Properties = {
     CLASSIFICATION_LEVEL_IDS,
     apiGetPropertyFields,
     apiCreatePropertyField,
+    apiPatchPropertyField,
     apiDeletePropertyField,
     apiGetPropertyValues,
     apiPatchPropertyValues,
@@ -557,6 +592,7 @@ export const Properties = {
     apiSetupClassificationWithBanner,
     apiCleanupClassification,
     apiSetupChannelAttributeField,
+    apiSetChannelAttributeFieldRequired,
     apiSetChannelAttributeValue,
     apiGetChannelAttributeValue,
     apiCleanupChannelAttributeFields,

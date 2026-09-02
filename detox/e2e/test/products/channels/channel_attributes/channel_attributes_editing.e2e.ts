@@ -34,7 +34,17 @@ const FIELD_OPTIONS = [
 ];
 
 const FIELD_NAME = 'editable';
-const ALL_FIELD_NAMES = [FIELD_NAME];
+
+// A member-tier, always-editable field with no name of its own worth asserting
+// on. It exists only so a permission-tier denial (MM-T6322_1, MM-T6322_2) has
+// another row on the channel it can be judged against: shouldShowLockReason
+// explains a permission or unsupported-type lock only when some other row is
+// editable, which an ordinary member's own channel would normally be — a
+// channel with nothing else editable is the common member view and the denial
+// would be noise there, so the app does not explain it (see
+// channel_info_attributes.tsx).
+const SIBLING_FIELD_NAME = 'sibling';
+const ALL_FIELD_NAMES = [FIELD_NAME, SIBLING_FIELD_NAME];
 
 // Both display surfaces, so one edit can be asserted in Channel Info and in the header.
 const DISPLAY_ACTIONS = ['display_label_info', 'display_label_header'];
@@ -138,17 +148,42 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         permissionValues?: 'none' | 'sysadmin' | 'admin' | 'member';
         value?: string;
         required?: boolean;
+
+        // Adds a second, always-editable field so a permission-tier denial on the
+        // main field has another row on the channel to be judged against — see the
+        // SIBLING_FIELD_NAME comment above.
+        withEditableSibling?: boolean;
     } = {}) {
         await enableChannelAttributes(siteOneUrl);
 
+        // Created optional even when the test wants it required: the server enforces
+        // required attributes at channel-creation time for whoever can set them, so a
+        // required field created up front would block the plain apiCreateChannel call
+        // below. Flipping it required afterward (once the channel already exists with
+        // no value) is also the realistic sequence for a field that becomes required
+        // after channels already exist.
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: FIELD_NAME,
             options: FIELD_OPTIONS,
             actions: DISPLAY_ACTIONS,
             changePolicy: opts.changePolicy,
             permissionValues: opts.permissionValues ?? 'member',
-            required: opts.required ?? false,
+            required: false,
         });
+
+        let siblingFieldId: string | undefined;
+        if (opts.withEditableSibling) {
+            // required:false at creation time for the same reason as the main field
+            // above: a required field created before the channel exists blocks its
+            // creation for anyone who could set it.
+            ({channelFieldId: siblingFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+                fieldName: SIBLING_FIELD_NAME,
+                options: FIELD_OPTIONS,
+                actions: DISPLAY_ACTIONS,
+                permissionValues: 'member',
+                required: false,
+            }));
+        }
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
         testChannel = channel;
@@ -156,6 +191,14 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
 
         if (opts.value) {
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, opts.value);
+        }
+
+        if (opts.required) {
+            await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, channelFieldId, true);
+        }
+
+        if (siblingFieldId) {
+            await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, siblingFieldId, true);
         }
 
         await device.reloadReactNative();
@@ -188,7 +231,10 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6320_2 - should show the new value on the channel header chip as well as the Channel Info row', async () => {
-        await setupChannelWithAttribute({changePolicy: 'any'});
+        // required: true — an unset, non-required attribute is filtered out of
+        // Channel Info entirely (selectChannelInfoAttributes), so there would be
+        // no row to open the editor from.
+        await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
         // # Set a value.
         await ChannelInfoAttributes.openEditor(FIELD_NAME);
@@ -206,7 +252,9 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6320_3 - should keep the value across a restart, having written it to the database', async () => {
-        const {channel} = await setupChannelWithAttribute({changePolicy: 'any'});
+        // required: true — same reason as MM-T6320_2: an unset, non-required
+        // attribute renders no row for the editor to open.
+        const {channel} = await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
         // # Set a value.
         await ChannelInfoAttributes.openEditor(FIELD_NAME);
@@ -301,7 +349,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
-        await setupChannelWithAttribute({permissionValues: 'sysadmin', value: OPTION_IDS.medium});
+        await setupChannelWithAttribute({permissionValues: 'sysadmin', value: OPTION_IDS.medium, withEditableSibling: true});
 
         // * The value is shown, the row is not editable, and the reason is visible —
         // * the user can edit other attributes on this channel, so the denial is
@@ -314,10 +362,15 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6322_2 - should never offer editing for a none-tier field', async () => {
-        await setupChannelWithAttribute({permissionValues: 'none', value: OPTION_IDS.medium});
+        // A none-tier field's value can never be set through the ordinary API, by
+        // design — the server refuses even a sysadmin session, unconditionally. So
+        // there is no seeded value to show here: required is what keeps the row on
+        // screen at all for an attribute nobody can ever set.
+        await setupChannelWithAttribute({permissionValues: 'none', required: true, withEditableSibling: true});
 
-        await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelInfoAttributes.getNotSet(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(ChannelInfoAttributes.getEditableRow(FIELD_NAME)).not.toExist();
+        await waitFor(ChannelInfoAttributes.getLockReason(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
     });
