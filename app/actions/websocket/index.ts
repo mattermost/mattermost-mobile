@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
+
 import {markChannelAsViewed} from '@actions/local/channel';
 import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
@@ -64,6 +66,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     const {database} = operator;
 
+    // Guards against RUNNINGBOARD 0xdead10cc if the app backgrounds mid-sync.
+    const activityToken = await RNUtils.beginDatabaseActivity(serverUrl, 'doReconnect');
+
     try {
         await SessionAttributesManager.refreshManifest(serverUrl);
 
@@ -119,6 +124,9 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         return undefined;
     } finally {
         setTeamLoading(serverUrl, false);
+        if (activityToken) {
+            RNUtils.endDatabaseActivity(activityToken);
+        }
     }
 }
 
