@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed} from '@actions/local/channel';
@@ -172,6 +173,26 @@ describe('WebSocket Index Actions', () => {
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+            expect(RNUtils.beginDatabaseActivity).toHaveBeenCalledWith(serverUrl, 'doReconnect');
+            expect(RNUtils.endDatabaseActivity).toHaveBeenCalledWith('token-1');
+        });
+
+        it('should still end the database activity when reconnect fails', async () => {
+            jest.mocked(entry).mockResolvedValueOnce({error: new Error('entry failed')});
+
+            await handleReconnect(serverUrl);
+
+            expect(RNUtils.beginDatabaseActivity).toHaveBeenCalledWith(serverUrl, 'doReconnect');
+            expect(RNUtils.endDatabaseActivity).toHaveBeenCalledWith('token-1');
+        });
+
+        it('should not end the database activity when no token was granted', async () => {
+            jest.mocked(RNUtils.beginDatabaseActivity).mockResolvedValueOnce(null);
+            jest.mocked(entry).mockResolvedValueOnce({error: new Error('entry failed')});
+
+            await handleReconnect(serverUrl);
+
+            expect(RNUtils.endDatabaseActivity).not.toHaveBeenCalled();
         });
 
         it('should fetch posts for channel screen', async () => {

@@ -320,6 +320,9 @@ jest.doMock('react-native', () => {
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
 
             deleteDatabaseDirectory: jest.fn(),
+
+            beginDatabaseActivity: jest.fn().mockResolvedValue('token-1'),
+            endDatabaseActivity: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({

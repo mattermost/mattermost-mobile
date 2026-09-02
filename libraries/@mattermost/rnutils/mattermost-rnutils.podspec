@@ -15,6 +15,8 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
+  s.dependency 'Gekidou'
+
   fabric_enabled = ENV["RCT_NEW_ARCH_ENABLED"] == "1"
   other_cpp_flags = fabric_enabled ? "-DRCT_NEW_ARCH_ENABLED=1" : ""
 
