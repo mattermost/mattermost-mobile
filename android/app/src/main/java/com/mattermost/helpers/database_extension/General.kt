@@ -89,7 +89,12 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): W
             if (cursor.count == 1) {
                 cursor.moveToFirst()
                 val databasePath = String.format("file://%s", cursor.getString(0))
-                return WMDatabase.buildDatabase(databasePath, context!!, SQLiteDatabase.CREATE_IF_NECESSARY)
+                // Keep WAL consistent with the JS/JSI connection (#10109).
+                return WMDatabase.buildDatabase(
+                    databasePath,
+                    context!!,
+                    SQLiteDatabase.CREATE_IF_NECESSARY or SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING,
+                )
             }
         }
     } catch (e: Exception) {

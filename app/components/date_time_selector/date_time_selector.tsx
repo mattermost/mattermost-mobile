@@ -162,17 +162,35 @@ const DateTimeSelector = ({
         }
     }, [allowManualTimeEntry, useManualEntry, date, isMilitaryTime, show, mode]);
 
+    // Returns whether the text was a time we could commit.
+    const commitManualTime = useCallback((text: string) => {
+        const parsed = parseTimeString(text);
+        if (!parsed) {
+            return false;
+        }
+
+        const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0);
+        setDate(newDate);
+        handleChange(newDate);
+        return true;
+    }, [date, handleChange]);
+
+    // Commit as soon as the text parses, rather than only on submit/blur. Tapping a
+    // form's Submit button does not reliably blur a focused TextInput on iOS, so a
+    // commit-on-blur-only field could be submitted showing a valid time while the
+    // form still held no value for it — the value the user typed was silently lost.
+    // Partial input ("14:3", "9:00 A") does not parse, so it never commits garbage.
+    const handleManualTimeChange = useCallback((text: string) => {
+        setManualTimeText(text);
+        commitManualTime(text);
+    }, [commitManualTime]);
+
     const handleManualTimeSubmit = useCallback(() => {
-        const parsed = parseTimeString(manualTimeText);
-        if (parsed) {
-            const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0);
-            setDate(newDate);
-            handleChange(newDate);
-        } else if (manualTimeText.trim()) {
+        if (!commitManualTime(manualTimeText) && manualTimeText.trim()) {
             // Invalid input — reset to current date value
             setManualTimeText(date.format(isMilitaryTime ? 'HH:mm' : 'h:mm A'));
         }
-    }, [manualTimeText, date, handleChange, isMilitaryTime]);
+    }, [commitManualTime, manualTimeText, date, isMilitaryTime]);
 
     const timeHint = isMilitaryTime ? '14:30' : '2:30 PM';
 
@@ -203,7 +221,7 @@ const DateTimeSelector = ({
                         testID={testID ? `${testID}.manual_time.input` : 'custom_date_time_picker.manual_time.input'}
                         style={styles.manualTimeInput}
                         value={manualTimeText}
-                        onChangeText={setManualTimeText}
+                        onChangeText={handleManualTimeChange}
                         onSubmitEditing={handleManualTimeSubmit}
                         onBlur={handleManualTimeSubmit}
                         placeholder={timeHint}

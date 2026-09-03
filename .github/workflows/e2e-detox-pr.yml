@@ -479,7 +479,6 @@ jobs:
         with:
           intune-enabled: ${{ env.INTUNE_ENABLED }}
           intune-ssh-private-key: ${{ secrets.MM_MOBILE_INTUNE_DEPLOY_KEY }}
-          bundler-cache: true
 
       - name: Set .env with RUNNING_E2E=true
         if: env.SKIP_BUILD != 'true'
@@ -565,8 +564,6 @@ jobs:
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
-        with:
-          bundler-cache: true
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
           STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
@@ -663,8 +660,6 @@ jobs:
       - name: Prepare Android Build
         if: env.SKIP_BUILD != 'true'
         uses: ./.github/actions/prepare-android-build
-        with:
-          bundler-cache: true
         env:
           STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
           STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
@@ -707,114 +702,34 @@ jobs:
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
     runs-on: ubuntu-24.04
     steps:
-      - name: Validate server URLs
-        run: |
-          validate_url() {
-            local url="$1" label="$2"
-            if [ -z "$url" ]; then return 0; fi
-
-            # Reject any whitespace (space, tab, newline). Without this, an input
-            # like "https://valid.cloud  https://evil.example.com" would pass the
-            # rest of the validators (urlparse only inspects up to the first
-            # space) but then get word-split into two URLs by an unquoted shell
-            # iteration downstream — letting the second, unvalidated URL reach
-            # the provisioning sink. Whitespace is never legal in a URL anyway.
-            if [[ "$url" =~ [[:space:]] ]]; then
-              echo "::error::$label contains whitespace: $url"
-              exit 1
-            fi
-
-            # Must be HTTPS
-            if [[ ! "$url" =~ ^https:// ]]; then
-              echo "::error::$label must use HTTPS: $url"
-              exit 1
-            fi
-
-            # Extract hostname safely using Python URL parser to prevent SSRF bypass via userinfo.
-            # CRITICAL: the URL is passed as argv[1], NOT interpolated into the Python source.
-            # The Python code is single-quoted so bash performs no expansion inside it; "$url"
-            # is a separate argv argument, treated as a literal string by Python. This prevents
-            # injection of Python syntax (e.g. https://a.com')+__import__('os').system(...)+(' )
-            # that would escape the urlparse() call if the URL were interpolated.
-            hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
-
-            # Block private/internal IPs
-            if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
-              echo "::error::$label points to a private/internal address: $hostname"
-              exit 1
-            fi
-
-            # Allowlist: only Mattermost-operated domains
-            if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
-              echo "::error::$label domain not in allowlist: $hostname"
-              exit 1
-            fi
-
-            echo "✓ $label validated: $hostname"
-          }
-
-          validate_url "$ANDROID_SITE_1_URL" "ANDROID_SITE_1_URL"
-          validate_url "$ANDROID_SITE_2_URL" "ANDROID_SITE_2_URL"
-          validate_url "$IOS_SITE_1_URL" "IOS_SITE_1_URL"
-          validate_url "$IOS_SITE_2_URL" "IOS_SITE_2_URL"
-          validate_url "$SITE_3_URL" "SITE_3_URL"
-        env:
-          ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
-          ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
-          IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
-          IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
-          SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
-
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
           persist-credentials: false
 
-      # Download the demo plugin once per workflow (or on cache miss) so
-      # provision can upload from a local fixture instead of install_from_url.
-      # Test runners rely on the server already being provisioned — they do not
-      # download this artifact.
-      - name: Cache demo plugin fixture
-        id: demo-plugin-cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
-          key: mattermost-plugin-demo-linux-amd64-v0.11.1
-
-      - name: Download demo plugin fixture
-        if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p detox/e2e/support/fixtures
-          curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
-            "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
-          ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
-
-      - name: Provision servers (license + plugins)
-        run: |
-          cd detox
-          npm ci --prefer-offline --no-audit --no-fund
-          # Quote every variable in the iteration. Without quotes, bash word-splits
-          # on whitespace and would treat e.g. "https://a https://b" as two URLs,
-          # bypassing the per-variable validation in the previous step (which
-          # validates the value as a single string). The validator above also
-          # rejects whitespace outright, so this is belt-and-suspenders.
-          declare -A provisioned=()
-          for url in "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"; do
-            if [ -n "$url" ] && [ -z "${provisioned[$url]+x}" ]; then
-              echo "--- Provisioning $url ---"
-              npm run provision -- "$url"
-              provisioned["$url"]=1
-            fi
-          done
+      - name: Collect server URLs
+        id: urls
         env:
           ANDROID_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.android-site-1-url }}
           ANDROID_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.android-site-2-url }}
           IOS_SITE_1_URL: ${{ needs.resolve-server-topology.outputs.ios-site-1-url }}
           IOS_SITE_2_URL: ${{ needs.resolve-server-topology.outputs.ios-site-2-url }}
           SITE_3_URL: ${{ needs.resolve-server-topology.outputs.site-3-url }}
+        run: |
+          {
+            echo "list<<EOF"
+            printf '%s\n' "$ANDROID_SITE_1_URL" "$ANDROID_SITE_2_URL" "$IOS_SITE_1_URL" "$IOS_SITE_2_URL" "$SITE_3_URL"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Provision test servers
+        uses: ./.github/actions/provision-e2e-servers
+        env:
           ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+        with:
+          server-urls: ${{ steps.urls.outputs.list }}
 
   # iOS and Android Detox jobs are separate so each platform starts as soon as its
   # own build finishes — Android does not wait for build-ios-simulator.

@@ -169,6 +169,32 @@ describe('SearchScreen', () => {
         expect(searchInput.props.value).toBe('');
     });
 
+    it('should not show results until search history has been persisted', async () => {
+        jest.mocked(addSearchToTeamSearchHistory).mockReturnValue(new Promise(() => {
+            // Persist hangs so we can assert results stay hidden
+        }));
+
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <SearchScreen {...baseProps}/>,
+            {database},
+        );
+
+        const searchInput = getByTestId('navigation.header.search_bar.search.input');
+        await act(async () => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
+        await act(async () => {
+            fireEvent(searchInput, 'submitEditing');
+        });
+
+        await waitFor(() => {
+            expect(addSearchToTeamSearchHistory).toHaveBeenCalled();
+            expect(searchPosts).toHaveBeenCalled();
+        });
+
+        expect(queryByTestId('search_results.post_list.flat_list')).toBeNull();
+    });
+
     it('adds search to team history when searching in a specific team', async () => {
         const {getByTestId} = renderWithEverything(
             <SearchScreen {...baseProps}/>,
