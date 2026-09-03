@@ -400,8 +400,7 @@ index 2f170e0..bd87f92 100644
      public static Map<String, WMDatabase> INSTANCES = new HashMap<>();
  
      public static WMDatabase getInstance(String name, Context context) {
--        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
-+        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY);
+         return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
      }
  
      public static WMDatabase getInstance(String name, Context context, int openFlags) {
@@ -464,17 +463,15 @@ diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/n
 index 1534830..5c5313c 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
-@@ -55,11 +55,9 @@ public class WMDatabaseDriver {
+@@ -55,11 +55,11 @@ public class WMDatabaseDriver {
  
      public WMDatabaseDriver(Context context, String dbName, boolean unsafeNativeReuse) {
          this.database = unsafeNativeReuse ? WMDatabase.getInstance(dbName, context,
--                SQLiteDatabase.CREATE_IF_NECESSARY |
--                        SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING) :
-+                SQLiteDatabase.CREATE_IF_NECESSARY) :
+                 SQLiteDatabase.CREATE_IF_NECESSARY |
+                         SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING) :
                  WMDatabase.buildDatabase(dbName, context,
--                        SQLiteDatabase.CREATE_IF_NECESSARY |
--                                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
-+                        SQLiteDatabase.CREATE_IF_NECESSARY);
+                         SQLiteDatabase.CREATE_IF_NECESSARY |
+                                 SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
          if (BuildConfig.DEBUG) {
              this.log = Logger.getLogger("DB_Driver");
          } else {
