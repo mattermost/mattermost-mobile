@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
+import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
 import ChannelBanner from '@components/channel_banner';
@@ -25,7 +26,7 @@ import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {bottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {isTypeDMorGM} from '@utils/channel';
+import {isDMChannel, isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -130,6 +131,8 @@ const ChannelHeader = ({
     }
 
     const isDMorGM = isTypeDMorGM(channelType);
+    const isDM = isDMChannel(channelType);
+    const navigationHeaderCallButton = useNavigationHeaderCallButtonForDM(channelId, channelType);
     const contextStyle = useMemo(() => ({
         top: defaultHeight,
     }), [defaultHeight]);
@@ -216,29 +219,26 @@ const ChannelHeader = ({
         const buttons: NavigationButtonProps[] = [];
         if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
+                id: 'playbooks',
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
                 count: playbooksActiveRuns || '+',
             });
         }
 
-        // {
-        //     iconName: 'magnify',
-        //     onPress: () => {
-        //         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {screen: 'Search', params: {searchTerm: `in: ${searchTerm}`}});
-        //         if (!isTablet) {
-        //             popTopScreen(componentId);
-        //         }
-        //     },
-        // },
+        if (isDM && callsAvailable && navigationHeaderCallButton) {
+            buttons.push(navigationHeaderCallButton);
+        }
+
         buttons.push({
+            id: 'channel-quick-actions',
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             testID: 'channel_header.channel_quick_actions.button',
         });
 
         return buttons;
-    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
+    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns, isDM, callsAvailable, navigationHeaderCallButton]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
