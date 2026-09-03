@@ -733,7 +733,11 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         if (!post) {
             // If no posts are available for that thread yet
             // Try to fetch the post from the server to ensure it's available locally.
-            await fetchPostThread(serverUrl, rootId);
+            const {error} = await fetchPostThread(serverUrl, rootId);
+            if (error) {
+                logDebug('error on switchToCallThread', getFullErrorMessage(error));
+                return;
+            }
             post = await getPostById(database, rootId);
         }
 
@@ -741,7 +745,7 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         if (post && post.channelId) {
             channel = await getChannelById(database, post.channelId);
         } else {
-            logDebug('switchToCallThread: root post unavailable', rootId);
+            logDebug('error on switchToCallThread: post unavailable');
             return;
         }
 

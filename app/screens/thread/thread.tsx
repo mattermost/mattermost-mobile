@@ -109,10 +109,10 @@ const Thread = ({
             onLayout={onLayout}
         >
             <RoundedHeaderContext/>
-            {rootPost && (
+            {Boolean(rootPost) && (
                 <ThreadContent
                     rootId={rootId}
-                    rootPost={rootPost}
+                    rootPost={rootPost!}
                     scheduledPostCount={scheduledPostCount}
                     containerHeight={containerHeight}
                     enabled={isVisible}

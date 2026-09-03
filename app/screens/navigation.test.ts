@@ -431,7 +431,6 @@ describe('navigation', () => {
     describe('dismissAllRoutesAndPopToScreen', () => {
         it('should navigate to screen when it is in stack', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
-            jest.spyOn(NavigationStore, 'waitUntilScreenIsTop').mockResolvedValue();
             jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CHANNEL);
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
@@ -442,7 +441,6 @@ describe('navigation', () => {
 
         it('should not dismiss a second time once the target is already on top', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
-            jest.spyOn(NavigationStore, 'waitUntilScreenIsTop').mockResolvedValue();
             jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CHANNEL);
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
@@ -453,7 +451,6 @@ describe('navigation', () => {
 
         it('should dismiss a second time when the first call did not reach the target', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
-            jest.spyOn(NavigationStore, 'waitUntilScreenIsTop').mockResolvedValue();
             jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CALL);
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});

@@ -165,15 +165,15 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
 
         if (NavigationStore.isScreenInStack(screenId)) {
             // `router.dismissTo(route)` pops back to the given screen at the highest navigation layer it can reach.
-            // Since our app uses nested navigators (e.g., modals on top of stacks), a single call may not suffice.
-            // Calling it twice ensures we fully dismiss both outer layers (like modals/bottom sheets) and inner stacks,
-            // guaranteeing our target screen is brought to the top.
+            // Since our app uses nested navigators (e.g., modals on top of stacks), a single call may stop short,
+            // so we call it again in that case. Only in that case, though: once the target is already on top, a
+            // second dismissTo pops to the stack root instead of doing nothing, dropping the user on the channel list.
             router.dismissTo(route);
-            await NavigationStore.waitUntilScreenIsTop(screenId);
+            await new Promise((resolve) => setTimeout(resolve, 250));
 
             if (NavigationStore.getVisibleScreen() !== screenId) {
                 router.dismissTo(route);
-                await NavigationStore.waitUntilScreenIsTop(screenId);
+                await new Promise((resolve) => setTimeout(resolve, 250));
             }
 
             router.setParams(propsToParams(passProps));
