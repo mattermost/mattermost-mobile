@@ -56,7 +56,7 @@ const NotificationCall = ({currentUser}: Props) => {
             setCallsMobileNotificationSound(value);
 
             await CallsNative.stopRingtone();
-            await CallsNative.startRingtone(tone, 0);
+            await CallsNative.startRingtone(tone, 0, false);
             setPlayingRingtone(true);
             return;
         }
@@ -65,7 +65,7 @@ const NotificationCall = ({currentUser}: Props) => {
             await CallsNative.stopRingtone();
             setPlayingRingtone(false);
         } else {
-            await CallsNative.startRingtone(tone, 0);
+            await CallsNative.startRingtone(tone, 0, false);
             setPlayingRingtone(true);
         }
     }, [callsMobileNotificationSound, playingRingtone]);

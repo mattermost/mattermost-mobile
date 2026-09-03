@@ -127,8 +127,11 @@ RCT_EXPORT_METHOD(getAudioRoute:(RCTPromiseResolveBlock)resolve
     [self getAudioRouteImpl:resolve reject:reject];
 }
 
+// seconds and isRingback are Android-only: iOS always loops until stopRingtone, never vibrates,
+// and startRingtone already leaves an active call session alone so the tone follows the call route.
 RCT_EXPORT_METHOD(startRingtone:(NSString *)name
                   seconds:(double)seconds
+                  isRingback:(BOOL)isRingback
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     [self startRingtoneImpl:name resolve:resolve reject:reject];
@@ -204,8 +207,10 @@ RCT_EXPORT_METHOD(stopRingtone:(RCTPromiseResolveBlock)resolve
     [self getAudioRouteImpl:resolve reject:reject];
 }
 
+// seconds and isRingback are Android-only — see the old-arch export above.
 - (void)startRingtone:(NSString *)name
               seconds:(double)seconds
+           isRingback:(BOOL)isRingback
               resolve:(RCTPromiseResolveBlock)resolve
                reject:(RCTPromiseRejectBlock)reject {
     [self startRingtoneImpl:name resolve:resolve reject:reject];

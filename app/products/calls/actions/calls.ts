@@ -24,6 +24,8 @@ import {
     reportNativeCallConnected,
 } from '@calls/native_call';
 import {
+    cancelOutgoingCall,
+    clearStartUnmuted,
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
@@ -35,8 +37,10 @@ import {
     setCalls,
     setChannelEnabled,
     setConfig,
+    setJoiningChannelId,
     setPluginEnabled,
     setScreenShareURL,
+    startOutgoingCall,
 } from '@calls/state';
 import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
@@ -51,6 +55,7 @@ import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
@@ -231,6 +236,7 @@ export const joinCall = async (
     intl: IntlShape,
     title?: string,
     rootId?: string,
+    opts?: {startedByMe?: boolean; startUnmuted?: boolean},
 ): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
@@ -243,7 +249,7 @@ export const joinCall = async (
         connection.disconnect();
         connection = null;
     }
-    newCurrentCall(serverUrl, channelId, userId);
+    newCurrentCall(serverUrl, channelId, userId, opts);
 
     // Register with the system call UI so the user gets lock-screen /
     // control-center controls if they background or lock mid-call. Skip
@@ -251,15 +257,26 @@ export const joinCall = async (
     // inbound-push flow and the native layer already reported the call.
     const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
 
+    // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
+    // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
+    // reject long after the user has started or answered a different call. The close callback and
+    // the catch below must act on *this* connection, never on whatever is current by then.
+    let conn: CallsConnection;
     try {
-        connection = await newConnection(serverUrl, channelId, (err?: Error) => {
-            myselfLeftCall();
+        conn = await newConnection(serverUrl, channelId, (err?: Error) => {
+            // Tearing down the call state is only ours to do while we're still the current
+            // connection: an abandoned join closing late would otherwise drop the user out of
+            // the call they moved on to.
+            if (connection === conn) {
+                myselfLeftCall();
+            }
             endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
         }, setScreenShareURL, hasMicPermission, intl, title, rootId);
+        connection = conn;
     } catch (error) {
         endNativeCall(serverUrl, channelId, 'failed');
         await forceLogoutIfNecessary(serverUrl, error);
@@ -267,7 +284,7 @@ export const joinCall = async (
     }
 
     try {
-        const sessionId = await connection.waitForPeerConnection();
+        const sessionId = await conn.waitForPeerConnection();
 
         setCurrentCallConnected(channelId, sessionId);
         reportNativeCallConnected(ownedNativeUUID);
@@ -292,9 +309,30 @@ export const joinCall = async (
 
         return {data: channelId};
     } catch (e) {
-        connection.disconnect();
-        connection = null;
+        conn.disconnect();
+        if (connection === conn) {
+            connection = null;
+        }
         return {error: `unable to connect to the voice call: ${e}`};
+    }
+};
+
+// Opens call screen immediately; shows 'Connecting' until joined.
+export const openOutgoingCallScreen = (serverUrl: string, channelId: string) => {
+    startOutgoingCall(serverUrl, channelId);
+    navigateToScreen(Screens.CALL);
+};
+
+export const joinCallAndOpenCallScreen = async (intl: IntlShape, serverUrl: string, channelId: string) => {
+    setJoiningChannelId(channelId);
+    try {
+        const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        if (joined) {
+            navigateToScreen(Screens.CALL);
+        }
+        return joined;
+    } finally {
+        setJoiningChannelId(null);
     }
 };
 
@@ -313,8 +351,18 @@ export const leaveCallConfirmation = async (
     serverUrl: string,
     channelId: string,
     leaveCb?: () => void) => {
-    const showHostControls = (isHost || isAdmin) && otherParticipants;
-    const ret = await endCallConfirmationAlert(intl, showHostControls) as EndCallReturn;
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const channel = database ? await getChannelById(database, channelId) : undefined;
+    const isNotDMChannel = Boolean(channel) && !isDMChannel(channel?.type);
+
+    const showHostControls = isNotDMChannel && (isHost || isAdmin) && otherParticipants;
+    if (!showHostControls) {
+        leaveCall();
+        leaveCb?.();
+        return;
+    }
+
+    const ret = await endCallConfirmationAlert(intl) as EndCallReturn;
     switch (ret) {
         case EndCallReturn.Cancel:
             return;
@@ -336,9 +384,17 @@ export const muteMyself = () => {
 };
 
 export const unmuteMyself = () => {
-    if (connection) {
-        connection.unmute();
-        mirrorMuteToNativeCall(false);
+    if (!connection) {
+        return;
+    }
+
+    const unmuted = connection.unmute();
+    mirrorMuteToNativeCall(false);
+
+    if (!unmuted) {
+        // Nothing left the device, so the server will never tell us we're live. Stop saying we are.
+        logDebug('calls: unmuteMyself had no voice track to unmute');
+        clearStartUnmuted();
     }
 };
 
@@ -516,7 +572,17 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 };
             }
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+
+            const openImmediatelyForDM = channelType === General.DM_CHANNEL && !getCurrentCall();
+            if (openImmediatelyForDM) {
+                openOutgoingCallScreen(serverUrl, channelId);
+            }
+
+            const started = await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+            if (openImmediatelyForDM && !started) {
+                await cancelOutgoingCall(serverUrl, channelId);
+            }
+
             return {handled: true};
         }
         case 'join': {

@@ -248,9 +248,13 @@ const Header = ({
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
                     <NavigationButton
-                        key={r.iconName}
+                        id={r.id}
+                        key={r.id}
+                        accessibilityLabel={r.accessibilityLabel}
                         borderless={r.borderless}
+                        disabled={r.disabled}
                         iconName={r.iconName}
+                        isLoading={r.isLoading}
                         count={r.count}
                         onPress={r.onPress}
                         rippleRadius={r.rippleRadius}
