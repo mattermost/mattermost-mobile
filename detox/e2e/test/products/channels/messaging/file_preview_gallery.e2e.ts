@@ -48,7 +48,7 @@ describe('Messaging - File Preview Gallery', () => {
         await device.launchApp({
             newInstance: true,
             delete: true,
-            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES', microphone: 'YES'}} : {}),
         });
 
         // # Log in to server

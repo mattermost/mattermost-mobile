@@ -113,24 +113,63 @@ const micPermission = Platform.select({
     default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
 });
 
+// CallScreen and CurrentCallBar both mount usePermissionsChecker simultaneously
+// during an active call. This guard prevents both instances from issuing a
+// concurrent Permissions.request() call to the OS.
+let micPermissionRequestInProgress = false;
+
+export const resetMicPermissionRequestInProgressForTesting = () => {
+    micPermissionRequestInProgress = false;
+};
+
+export const setMicPermissionRequestInProgressForTesting = (value: boolean) => {
+    micPermissionRequestInProgress = value;
+};
+
 export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
     const appState = useAppState();
     const [hasPermission, setHasPermission] = useState(micPermissionsGranted);
 
     useEffect(() => {
+        let isActive = true;
         const asyncFn = async () => {
             if (appState === 'active') {
-                const result = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
-                setHasPermission(result);
-                if (result) {
-                    initializeVoiceTrack();
-                    setMicPermissionsGranted(result);
+                const status = await Permissions.check(micPermission);
+                let granted = status === Permissions.RESULTS.GRANTED;
+                if (!granted && status === Permissions.RESULTS.DENIED && Platform.OS === 'ios') {
+                    // iOS only: permission is undetermined and the app is foregrounded,
+                    // so TCC can now show the dialog. Handles the case where a user
+                    // answered an incoming call from the lock screen before the system
+                    // prompt could be shown. On Android RESULTS.DENIED is re-promptable
+                    // but the join-time hasMicrophonePermission() already covers that path.
+                    //
+                    // isActive: the effect cleanup sets this to false when appState changes
+                    // (app backgrounded while check() was in-flight) so we never call
+                    // Permissions.request() from a backgrounded state.
+                    if (isActive && !micPermissionRequestInProgress) {
+                        micPermissionRequestInProgress = true;
+                        try {
+                            granted = (await Permissions.request(micPermission)) === Permissions.RESULTS.GRANTED;
+                        } finally {
+                            micPermissionRequestInProgress = false;
+                        }
+                    }
+                }
+                if (isActive) {
+                    setHasPermission(granted);
+                    if (granted) {
+                        initializeVoiceTrack();
+                        setMicPermissionsGranted(granted);
+                    }
                 }
             }
         };
         if (!micPermissionsGranted) {
             asyncFn();
         }
+        return () => {
+            isActive = false;
+        };
     }, [appState, micPermissionsGranted]);
 
     return hasPermission;

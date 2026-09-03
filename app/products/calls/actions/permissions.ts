@@ -25,6 +25,14 @@ export const hasBluetoothPermission = async () => {
     }
 };
 
+export const checkMicrophonePermissionStatus = async () => {
+    const microphone = Platform.select({
+        ios: Permissions.PERMISSIONS.IOS.MICROPHONE,
+        default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
+    });
+    return Permissions.check(microphone);
+};
+
 export const hasMicrophonePermission = async () => {
     const microphone = Platform.select({
         ios: Permissions.PERMISSIONS.IOS.MICROPHONE,
