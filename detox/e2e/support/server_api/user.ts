@@ -137,13 +137,14 @@ export const apiGetUserByUsername = async (baseUrl: string, username: string): P
  * @param {string} baseUrl - the base server URL
  * @param {string} user.username - username of a user
  * @param {string} user.password - password of a user
+ * @param {string} user.mfaToken - MFA token (required when MFA is enabled for the user)
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
 export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/users/login`,
-            {login_id: user.username, password: user.password},
+            {login_id: user.username, password: user.password, ...(user.mfaToken ? {token: user.mfaToken} : {})},
         );
 
         const {data, status} = response;
