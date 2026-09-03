@@ -20,7 +20,7 @@ import {
     MfaScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {generateTotp, waitForNextTotpWindow} from '@support/utils/totp';
 import {expect} from 'detox';
 
@@ -90,6 +90,22 @@ describe('Server Login - Login with MFA', () => {
         // from the same 30s window would be rejected as a replay.
         await waitForNextTotpWindow();
         const token = generateTotp(mfaSecret);
+
+        // # Dismiss the iOS "Save Password?" system sheet when shown. It pops
+        // up asynchronously once the password is validated (MFA challenge) and
+        // its backdrop view covers the MFA input, blocking hit-tests. The sheet
+        // is normally suppressed via utils/disable_ios_autofill.js; tap "Not Now"
+        // directly as a fallback — if it is not present Detox throws fast and we
+        // proceed (same pattern as AccountScreen).
+        if (isIos()) {
+            try {
+                await element(by.label('Not Now')).atIndex(0).tap();
+                await wait(timeouts.ONE_SEC);
+            } catch {
+                // Sheet not shown — nothing to dismiss
+            }
+        }
+
         await MfaScreen.submitToken(token);
         await wait(timeouts.TWO_SEC);
 

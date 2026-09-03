@@ -24,31 +24,87 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// `device.setURLBlacklist` only disables Detox's network *synchronization*; it does
-// not block the actual requests (see wix/Detox#1817). To genuinely simulate offline we
-// toggle airplane mode on Android. iOS has no simctl airplane-mode equivalent, so it
-// falls back to the blacklist (which is still a no-op for blocking, but keeps the test
-// from hanging on in-flight requests).
-const setOffline = async (offline: boolean) => {
-    if (device.getPlatform() === 'android') {
-        // Airplane mode drops the app's WebSocket, which keeps reconnecting and would
-        // otherwise keep Detox's synchronization busy forever. Disable sync while offline.
-        if (offline) {
-            await device.disableSynchronization();
-        }
-        execSync(`adb shell cmd connectivity airplane-mode ${offline ? 'enable' : 'disable'}`);
-        // Give the OS a moment to tear down / re-establish the network before proceeding.
-        await wait(timeouts.TWO_SEC);
-        if (!offline) {
-            await device.enableSynchronization();
-        }
-        return;
+// A genuine offline simulation needs the app's requests to actually fail, in a way
+// that is local to the device under test: CI runners are shared (other test workers
+// may run in parallel) and must not have their network touched.
+// - Android: airplane mode via adb is emulator-local and works on CI's Ubuntu runners.
+// - iOS: the simulator shares the host network and has no per-simulator connectivity
+//   control, so the only genuine mechanism is powering off the host's Wi-Fi device —
+//   which is only safe on a dedicated local machine. macOS CI runners have no Wi-Fi,
+//   and toggling the host network would break parallel workers, so the suite skips
+//   on iOS when no Wi-Fi device is available (same platform-skip pattern as
+//   classification_banner_across_screens.e2e.ts).
+//   Detox's `device.setURLBlacklist` is NOT a substitute on iOS: it does not fail
+//   the app's requests (they hang and eventually complete — verified empirically),
+//   so the post is never marked failed.
+const resolveWifiDevice = (): string => {
+    try {
+        const ports = execSync('networksetup -listallhardwareports').toString();
+        const match = ports.match(/Hardware Port: Wi-Fi[\s\S]*?Device: (\S+)/);
+        return match?.[1] ?? '';
+    } catch {
+        return '';
     }
-
-    await device.setURLBlacklist(offline ? ['.*'] : []);
 };
 
-describe('Messaging - Pending Posts Offline', () => {
+// Airplane-mode equivalent for iOS local runs: power off the Mac's Wi-Fi device.
+// Detox<->app sync runs on loopback and is unaffected.
+const setHostWifi = (offline: boolean) => {
+    const wifiDevice = resolveWifiDevice();
+    if (!wifiDevice) {
+        throw new Error('no Wi-Fi device available to simulate offline on iOS');
+    }
+    execSync(`networksetup -setairportpower ${wifiDevice} ${offline ? 'off' : 'on'}`);
+};
+
+const canGoOffline = (): boolean => device.getPlatform() === 'android' || Boolean(resolveWifiDevice());
+
+// Wi-Fi reassociation after powering the device back on can take several seconds,
+// which races the re-send step: the retry request fires while the network is still
+// down, fails, and the post is marked failed again. Poll for genuine connectivity
+// to the server before proceeding.
+const waitForHostConnectivity = async (baseUrl: string, timeoutMs: number) => {
+    const {hostname} = new URL(baseUrl);
+    const deadline = Date.now() + timeoutMs;
+    /* eslint-disable no-await-in-loop -- poll until connectivity or deadline */
+    while (Date.now() < deadline) {
+        try {
+            execSync(`ping -c 1 -t 2 ${hostname}`, {stdio: 'pipe'});
+            return true;
+        } catch {
+            // Still offline — keep polling.
+        }
+        await wait(timeouts.ONE_SEC);
+    }
+    /* eslint-enable no-await-in-loop */
+    return false;
+};
+
+const setOffline = async (offline: boolean) => {
+    // The dropped WebSocket keeps reconnecting and would otherwise keep Detox's
+    // synchronization busy forever. Disable sync while offline on both platforms.
+    if (offline) {
+        await device.disableSynchronization();
+    }
+
+    if (device.getPlatform() === 'android') {
+        execSync(`adb shell cmd connectivity airplane-mode ${offline ? 'enable' : 'disable'}`);
+    } else {
+        setHostWifi(offline);
+    }
+
+    // Give the OS a moment to tear down / re-establish the network before proceeding.
+    await wait(timeouts.TWO_SEC);
+    if (!offline) {
+        if (device.getPlatform() !== 'android') {
+            // Wait for Wi-Fi reassociation; proceeding early races the re-send step.
+            await waitForHostConnectivity(siteOneUrl, timeouts.HALF_MIN);
+        }
+        await device.enableSynchronization();
+    }
+};
+
+(canGoOffline() ? describe : describe.skip)('Messaging - Pending Posts Offline', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -97,6 +153,10 @@ describe('Messaging - Pending Posts Offline', () => {
         const retryOption = element(by.id('post.failed.retry'));
         await waitFor(retryOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await retryOption.tap();
+
+        // # Dismiss the keyboard — on iOS it stays up after re-sending and covers
+        // the bottom of the post list where the re-sent post renders.
+        await ChannelScreen.dismissKeyboard();
 
         // * Verify the post is sent (message appears and failed indicator is gone)
         await waitFor(element(by.text(message))).toBeVisible().withTimeout(timeouts.TEN_SEC);
