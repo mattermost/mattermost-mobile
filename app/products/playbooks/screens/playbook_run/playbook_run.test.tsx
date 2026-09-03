@@ -136,6 +136,7 @@ describe('PlaybookRun', () => {
         ];
 
         return {
+            playbookRunId: mockPlaybookRun.id,
             playbookRun: mockPlaybookRun,
             owner: mockOwner,
             participants: mockParticipants,
