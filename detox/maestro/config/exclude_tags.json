@@ -8,8 +8,11 @@
   "_MM-T5603": "Skip iOS: channel_bookmark_file.yml is genuinely INTERMITTENT — 1 fail / 1 pass locally on 2026-08-11 with identical fixture staging. The failure is a real upload failure the app surfaces as 'Error uploading file. Please try again.' on the Add a bookmark screen, so the flow never reaches channel_bookmark.file.upload_complete. NOT a server or permissions problem: POST /api/v4/files with the same fixture, channel and test user returns 201, and EnableFileAttachments/EnableMobileUpload are true. NOT the fixture staging either: the picker step now passes once the fixture is placed in the AppGroup FileProvider.LocalStorage 'File Provider Storage' dir (the local README omits this step — CI does it), and on the passing run the sandbox extension attached normally. Mechanism UNKNOWN; do not re-enable on a single green run. Likely related to _ROOT_CAUSE_QUIC but unproven.",
   "_DEAD_ENTRIES_REMOVED": "MM-T1411, MM-T4832 and MM-T4833 were removed from the ios list on 2026-08-11. They were dead entries: run_ci_batches.sh already skips every detox/maestro/flows/calls/* flow on iOS unconditionally (CallKit/WebRTC do not work on the simulator), so the tag exclusions never fired. Removing them restores no coverage — it stops this file overstating what is tag-excluded. Getting calls running on an iOS simulator is a separate problem.",
   "_MM-T3260_ANDROID": "Skip Android ONLY: CI run 30331493720 (PR #9893, SHA 9f1496e) — help_url.yml failed with 'Unable to launch app com.mattermost.rnbeta' after ~136s; the Chrome Custom Tab hand-off leaves the driver unable to relaunch the app on API 35. This is a DIFFERENT cause from the iOS exclusion and has NOT been re-tested — the 2026-08-11 verification covered iOS only. Do not un-exclude on the strength of the iOS result.",
+  "_MM-T3261_VARIANTS": "MM-T3261_1 (link mode) and MM-T3261_2 (mail mode) require non-default server config (SupportSettings.ReportAProblemType), so they run in dedicated patch/run/restore CI steps instead of the main batch — same pattern as MM-T67856_4. They are NOT unstable; the exclusion is config-gating only. Device-recipe limits (documented in the flow headers): iOS has no Mail app on the simulator, so MM-T3261_2 is Android-only; the CI emulator's Gmail is account-less, so MM-T3261_2 verifies only the hand-off (its CI step must pm-clear Gmail first) and composer content is unverified on both platforms.",
   "default": [
-    "MM-T67856_4"
+    "MM-T67856_4",
+    "MM-T3261_1",
+    "MM-T3261_2"
   ],
   "ios": [
     "MM-T5603",

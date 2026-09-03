@@ -1,0 +1,121 @@
+# MM-T3261_2: In mail mode, tapping Report a Problem hands off to the OS email app.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#   - Server configured with SupportSettings.ReportAProblemType=email and
+#     ReportAProblemMail=reportaproblem@mattermost.com. Non-default config: the
+#     dedicated CI step patches it around this flow and restores the default
+#     afterwards (see e2e-maestro-template.yml); the flow is exclude-tagged out of
+#     the main batch run.
+#   - ANDROID ONLY — this flow must not be scheduled on iOS (see the iOS note under
+#     ASSERTIONS); the dedicated CI step exists only in the Android job.
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - The app leaves the report screen in favour of the OS email handler
+#   - Settings is reachable again afterwards with Report a Problem listed
+#   - iOS: NOT RUNNABLE on the simulator and deliberately not scheduled there —
+#     the simulator has no Mail app, so the app shows an "Error: mail services are
+#     not available" alert and the report screen never dismisses (verified locally).
+#     Running this flow on iOS fails loudly; it is not silently skipped or made
+#     optional.
+#   - Composer content (recipient/subject) on Android: NOT VERIFIABLE on the CI
+#     device recipe. The google_apis emulator image ships Gmail but with no
+#     account, so the hand-off lands in Gmail's onboarding and composing is
+#     blocked ("Please add at least one email address" — verified locally). Only
+#     the hand-off itself is asserted on the current recipe.
+#   - The Android hand-off requires Gmail in its FRESH (never-onboarded) state:
+#     with fresh Gmail the share intent lands in Gmail's onboarding, which takes
+#     over the foreground. Once Gmail has been onboarded without an account, its
+#     compose activity starts and immediately finishes, the share rejects
+#     ("Error: undefined") and the report screen never dismisses (verified locally
+#     via logcat). The dedicated CI step must clear Gmail's data
+#     (adb shell pm clear com.google.android.gm) before running this flow.
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.report.button
+tags:
+  - MM-T3261_2
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as the test user
+- runFlow: ../../subflows/auth/login.yml
+
+# # Open the Account tab and Settings, then reveal Report a Problem.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
+- runFlow: ../../subflows/navigation/open_account.yml
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000
+- tapOn:
+    id: "account.settings.option"
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# * Verify the report screen opened
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.report.button"
+    timeout: 10000
+
+# # Tap Report a problem — the OS email handler takes over.
+- tapOn:
+    id: "report_problem.report.button"
+
+# * Verify the app left the report screen for the email handler.
+- extendedWaitUntil:
+    notVisible:
+      id: "report_problem.screen"
+    timeout: 10000
+
+# # Dismiss Gmail's first-run onboarding when the emulator's Gmail is fresh.
+# Onboarding-class system UI — intermittently present only on fresh devices; on a
+# device with a configured account the composer opens directly and these no-op.
+- tapOn:
+    text: "SKIP"
+    optional: true
+- tapOn:
+    text: "TAKE ME TO GMAIL"
+    optional: true
+
+# # Return to the app from the email handler and leave the report screen.
+# The app resumes on the report screen it handed off from (not the Home tab),
+# so relaunch-and-re-anchor does not apply — foreground it and Back out to Settings.
+- launchApp:
+    stopApp: false
+    clearState: false
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# * Verify the app is back on the report screen it handed off from
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.report.button"
+    timeout: 15000
+
+# # Leave the report screen back to Settings
+- pressKey: Back
+
+# * Verify Settings is visible again with Report a Problem listed.
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+- takeScreenshot: report-mail-settings-reachable

@@ -1,0 +1,133 @@
+# MM-T3261_1: In link mode, tapping Report a Problem opens the configured report link in the OS browser.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#   - Server configured with SupportSettings.ReportAProblemType=link and
+#     ReportAProblemLink=https://mattermost.com/pl/report_a_problem_licensed.
+#     Non-default config: the dedicated CI step patches it around this flow and
+#     restores the default afterwards (see e2e-maestro-template.yml); the flow is
+#     exclude-tagged out of the main batch run.
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - iOS: the Safari sheet opens (breadcrumb visible), dismisses, and Settings is
+#     reachable again with Report a Problem listed
+#   - Android: the app leaves the report screen for the browser, Back returns, and
+#     Settings is reachable again with Report a Problem listed
+#   - The configured link's page content is NOT asserted on either platform:
+#     iOS renders the Safari domain display but it is not exposed to the
+#     accessibility tree (verified locally); Android's Chrome Custom Tab content is
+#     not reliably queryable and screenshots of that surface return blank on the
+#     API 35 emulator. The OS browser surface itself (breadcrumb on iOS, the app
+#     leaving the report screen on Android) is the assertion.
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.screen
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.report.button
+#   - breadcrumb
+tags:
+  - MM-T3261_1
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as the test user
+- runFlow: ../../subflows/auth/login.yml
+
+# # Open the Account tab and Settings, then reveal Report a Problem.
+# Report a Problem can sit below the fold; also wait for config sync on first login.
+- runFlow: ../../subflows/navigation/open_account.yml
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000
+- tapOn:
+    id: "account.settings.option"
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# * Verify the report screen opened
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.report.button"
+    timeout: 10000
+
+# # Tap Report a problem — the configured link opens in the OS browser.
+- tapOn:
+    id: "report_problem.report.button"
+
+# * iOS: verify the Safari sheet opened, then dismiss it back to the app.
+# Same branches as help_url.yml (MM-T3260).
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "breadcrumb"
+          timeout: 15000
+      - takeScreenshot: report-link-browser-opened
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+      - runFlow:
+          when:
+            visible:
+              text: "Done"
+          commands:
+            - tapOn:
+                text: "Done"
+
+# * Android: verify the app left the report screen for the browser, then dismiss back.
+# Chrome Custom Tab — dismiss ads/FRE overlays before Back (same sequence as help_url.yml).
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "report_problem.screen"
+          timeout: 10000
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      # # Dismiss the Chrome Custom Tab with Back.
+      # No screenshot while the browser is foreground: screenshots of the Chrome
+      # surface return blank on the API 35 emulator (see help_url.yml). Leaving the
+      # report screen (asserted above) already proves the browser opened.
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+
+# # Browser hand-off recovery when Settings is not visible after dismiss.
+- runFlow:
+    when:
+      notVisible:
+        id: "settings.report_problem.option"
+    file: ../../subflows/browser/reopen_settings_screen.yml
+
+# * Verify Settings is visible again with Report a Problem listed.
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+- takeScreenshot: report-link-settings-reachable
