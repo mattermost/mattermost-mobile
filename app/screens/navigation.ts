@@ -8,7 +8,7 @@ import {Events, Navigation, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
-import {logDebug, logError} from '@utils/log';
+import {logError} from '@utils/log';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -164,27 +164,14 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
         }
 
         if (NavigationStore.isScreenInStack(screenId)) {
-            // `router.dismissTo(route)` pops back to the given screen at the highest navigation layer it can reach.
-            // Since our app uses nested navigators (e.g., modals on top of stacks), a single call may stop short,
-            // so we call it again in that case. Only in that case, though: once the target is already on top, a
-            // second dismissTo pops to the stack root instead of doing nothing, dropping the user on the channel list.
+            // dismissTo only resolves divergence at the outermost navigator level
+            // it finds. With our nesting (root Stack -> (authenticated) Stack), one
+            // call only peels outer routes (modals, bottom sheets). A second call
+            // then operates on the inner stack and pops down to the target.
             router.dismissTo(route);
-            await new Promise((resolve) => setTimeout(resolve, 250));
-
-            if (NavigationStore.getVisibleScreen() !== screenId) {
-                router.dismissTo(route);
-                await new Promise((resolve) => setTimeout(resolve, 250));
-            }
-
-            // The dismissTo retries above settle on a fixed delay regardless of whether they
-            // worked, so confirm the target is actually visible before applying params to
-            // whatever screen is on top.
-            if (NavigationStore.getVisibleScreen() !== screenId) {
-                logDebug('dismissAllRoutesAndPopToScreen: target screen never became visible', screenId);
-                return;
-            }
-
+            router.dismissTo(route);
             router.setParams(propsToParams(passProps));
+            await new Promise((resolve) => setTimeout(resolve, 250));
         } else {
             // Screen not in stack - reset to root then push target
             await navigateToRoot();
