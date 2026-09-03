@@ -87,6 +87,30 @@ class Alert {
         } catch { /* not present */ }
     };
 
+    /**
+     * Dismiss the "Logout not complete" alert if it is up.
+     *
+     * The app raises it from logout() whenever the server-side logout request fails, which on
+     * CI happens when the iOS QUIC connection to the test server dies mid-request
+     * (NSURLErrorDomain -1005). It is a native Alert.alert, so dismissKnownModals cannot reach
+     * it: left up it dims the screen, fails every visibility threshold, and survives into the
+     * next test. "Continue Anyway" completes the logout locally, which is what the tests assert.
+     *
+     * Returns whether an alert was actually dismissed, so callers can distinguish a recovered
+     * retry from a genuine failure.
+     */
+    dismissLogoutNotCompleteIfPresent = async (timeout: number = timeouts.TWO_SEC): Promise<boolean> => {
+        try {
+            await waitFor(this.logoutNotCompleteTitle).toBeVisible().withTimeout(timeout);
+        } catch {
+            return false; // Server logout succeeded, or the alert has not been raised.
+        }
+
+        await this.continueAnywayButton.tap();
+        await wait(timeouts.HALF_SEC);
+        return true;
+    };
+
     dismissMessageLengthAlert = async () => {
         try {
             await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);

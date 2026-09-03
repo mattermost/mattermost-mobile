@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Alert} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
@@ -66,16 +67,25 @@ class ServerListScreen {
         if (isIos()) {
             await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
 
-            /* eslint-disable no-await-in-loop -- bounded retry: only re-throw when the tutorial is genuinely blocking */
+            /* eslint-disable no-await-in-loop -- bounded retry: only re-throw when something known is genuinely blocking */
             for (let attempt = 0; attempt < 3; attempt++) {
                 try {
                     await waitForElementToBeVisible(this.serverListTitle, timeouts.FOUR_SEC);
                     return this.serverListScreen;
                 } catch (error) {
-                    // Only retry when a tutorial was actually there and went away. Any
-                    // other reason the sheet is not visible is a real failure and is
-                    // rethrown with its original message.
-                    if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                    // Only retry when something known-blocking was actually there and went
+                    // away: the first-run tutorial, or the native "Logout not complete" alert
+                    // raised when a server-side logout request fails (MM-T4691_6). Any other
+                    // reason the sheet is not visible is a real failure and is rethrown with
+                    // its original message.
+                    //
+                    // Both checks only run once the sheet has already failed to be visible, so
+                    // a passing run pays nothing for them. A short alert poll is enough: the
+                    // four-second visibility wait above has already given a late alert time to
+                    // land, and three attempts give it two more chances.
+                    const recovered = (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.ONE_SEC)) ||
+                        (await this.dismissTutorialIfPresent());
+                    if (attempt === 2 || !recovered) {
                         throw error;
                     }
                 }
@@ -93,7 +103,23 @@ class ServerListScreen {
             await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
             return this.serverListScreen;
         } catch {
-            // Sheet is closed — open it from the channel list header below.
+            // Sheet is closed, or open but covered — both are handled below.
+        }
+
+        // A "Logout not complete" alert left behind by a previous test's failed logout is a
+        // native alert, so dismissKnownModals above cannot touch it. Left up it dims the sheet
+        // below its visibility threshold and blocks every hit-test, including the server icon
+        // tap further down (MM-T4691_7 inherited it from MM-T4691_6). Only reached once the
+        // sheet has already failed to be visible, and the alert is either on screen by now or
+        // not coming, so this costs a passing run nothing and a closed sheet half a second.
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.HALF_SEC)) {
+            try {
+                // The sheet was open behind the alert, as in MM-T4691_7 — nothing left to open.
+                await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
+                return this.serverListScreen;
+            } catch {
+                // The alert was not the only thing missing — open the sheet below.
+            }
         }
 
         const iconTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
