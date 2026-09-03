@@ -19,7 +19,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type EnhanceProps = WithDatabaseArgs & {
     serverUrl: string;
-    rootId: string;
+    rootId?: string;
 }
 
 const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: EnhanceProps) => {
@@ -41,7 +41,7 @@ const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: Enh
 
     const includeChannelBanner = observeChannelBannerIncluded(database, channelType, channelId);
 
-    const scheduledPostCount = observeScheduledPostCountForThread(database, rootId);
+    const scheduledPostCount = observeScheduledPostCountForThread(database, rId);
 
     return {
         isCRTEnabled: observeIsCRTEnabled(database),

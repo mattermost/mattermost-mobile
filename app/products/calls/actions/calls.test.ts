@@ -9,8 +9,9 @@ import {router} from 'expo-router';
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {fetchPostThread} from '@actions/remote/post';
 import * as CallsActions from '@calls/actions';
-import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
+import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation, switchToCallThread} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -40,13 +41,16 @@ import {
     DefaultCallsState,
 } from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
+import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
 import TestHelper from '@test/test_helper';
 
 import type {CallJobState} from '@mattermost/calls/lib/types';
+import type PostModel from '@typings/database/models/servers/post';
 
 const mockClient = {
     getCalls: jest.fn(() => [
@@ -138,6 +142,21 @@ jest.mock('@queries/servers/user', () => ({
 
 jest.mock('@queries/servers/channel', () => ({
     getChannelById: jest.fn(),
+}));
+
+jest.mock('@queries/servers/post', () => ({
+    ...jest.requireActual('@queries/servers/post'),
+    getPostById: jest.fn(),
+}));
+
+jest.mock('@actions/remote/post', () => ({
+    fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    ...jest.requireActual('@screens/navigation'),
+    dismissAllRoutesAndPopToScreen: jest.fn(),
+    navigateToRoot: jest.fn(),
 }));
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
@@ -1576,5 +1595,61 @@ describe('Actions.Calls', () => {
             expect(router.push).not.toHaveBeenCalled();
             assert.equal(State.getGlobalCallsState().joiningChannelId, null);
         });
+    });
+});
+
+describe('switchToCallThread', () => {
+    const serverUrl = 'switch-to-call-thread.test.com';
+    const rootId = 'thread-1';
+    const localPost = {channelId: 'channel-1'} as unknown as PostModel;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+        jest.mocked(getChannelById).mockResolvedValue(undefined);
+
+        // Exercise the same-server branch, which is the path the call screen takes.
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+    });
+
+    afterEach(async () => {
+        jest.restoreAllMocks();
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should navigate without fetching when the root post is already local', async () => {
+        jest.mocked(getPostById).mockResolvedValue(localPost);
+
+        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+
+        expect(fetchPostThread).not.toHaveBeenCalled();
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(
+            Screens.THREAD,
+            expect.objectContaining({rootId}),
+        );
+    });
+
+    it('should fetch the root post when it is missing, then navigate', async () => {
+        jest.mocked(getPostById).
+            mockResolvedValueOnce(undefined).
+            mockResolvedValueOnce(localPost);
+
+        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+
+        expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, rootId);
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(
+            Screens.THREAD,
+            expect.objectContaining({rootId}),
+        );
+    });
+
+    it('should not navigate when the root post is still unavailable after fetching', async () => {
+        jest.mocked(getPostById).mockResolvedValue(undefined);
+
+        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+
+        expect(fetchPostThread).toHaveBeenCalledTimes(1);
+        expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
     });
 });

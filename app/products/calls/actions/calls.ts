@@ -6,6 +6,7 @@
 import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
 
+import {fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -61,6 +62,7 @@ import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
+import type {ChannelModel} from '@database/models/server';
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -792,8 +794,27 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
     try {
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const post = await getPostById(database, rootId);
-        const channel = await getChannelById(database, post?.channelId || '');
+
+        let post = await getPostById(database, rootId);
+        if (!post) {
+            // If no posts are available for that thread yet
+            // Try to fetch the post from the server to ensure it's available locally.
+            const {error} = await fetchPostThread(serverUrl, rootId);
+            if (error) {
+                logDebug('error on switchToCallThread', getFullErrorMessage(error));
+                return;
+            }
+            post = await getPostById(database, rootId);
+        }
+
+        let channel: ChannelModel | undefined;
+        if (post && post.channelId) {
+            channel = await getChannelById(database, post.channelId);
+        } else {
+            logDebug('error on switchToCallThread: post unavailable');
+            return;
+        }
+
         const currentTeamId = await getCurrentTeamId(database);
 
         if (channel?.teamId && currentTeamId !== channel.teamId) {
