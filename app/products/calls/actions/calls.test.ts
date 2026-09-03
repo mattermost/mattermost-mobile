@@ -1403,21 +1403,18 @@ describe('switchToCallThread', () => {
     const rootId = 'thread-1';
     const localPost = {channelId: 'channel-1'} as unknown as PostModel;
 
-    beforeAll(async () => {
-        await DatabaseManager.init([serverUrl]);
-    });
-
-    afterAll(async () => {
-        jest.restoreAllMocks();
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    beforeEach(() => {
+    beforeEach(async () => {
         jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
         jest.mocked(getChannelByIdQuery).mockResolvedValue(undefined);
 
         // Exercise the same-server branch, which is the path the call screen takes.
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+    });
+
+    afterEach(async () => {
+        jest.restoreAllMocks();
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     it('should navigate without fetching when the root post is already local', async () => {

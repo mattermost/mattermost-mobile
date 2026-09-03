@@ -451,12 +451,27 @@ describe('navigation', () => {
 
         it('should dismiss a second time when the first call did not reach the target', async () => {
             jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
-            jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CALL);
+            jest.spyOn(NavigationStore, 'getVisibleScreen').
+                mockReturnValueOnce(Screens.CALL).
+                mockReturnValue(Screens.CHANNEL);
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
             expect(router.dismissTo).toHaveBeenCalledTimes(2);
             expect(router.setParams).toHaveBeenCalledWith({channelId: '"abc"'});
+        });
+
+        it('should not set params when the target never becomes visible', async () => {
+            jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
+
+            // The dismissTo retries settle on a fixed delay regardless of success, so params
+            // must not be applied to whichever screen is still visible.
+            jest.spyOn(NavigationStore, 'getVisibleScreen').mockReturnValue(Screens.CALL);
+
+            await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
+
+            expect(router.dismissTo).toHaveBeenCalledTimes(2);
+            expect(router.setParams).not.toHaveBeenCalled();
         });
 
         it('should reset to root and push when screen is not in stack', async () => {
