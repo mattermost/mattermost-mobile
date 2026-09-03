@@ -141,6 +141,38 @@ describe('WebSocket Post Actions', () => {
             ], 'handleNewPostEvent');
         });
 
+        it.each([
+            {description: 'increment for an urgent mention', isUrgent: true, mentions: ['user1'], expectedMentions: 1, expectedUrgent: 3},
+            {description: 'preserve for an urgent post without a mention', isUrgent: true, mentions: [], expectedMentions: 0, expectedUrgent: 2},
+            {description: 'preserve for a non-urgent mention', isUrgent: false, mentions: ['user1'], expectedMentions: 1, expectedUrgent: 2},
+        ])('should $description', async ({isUrgent, mentions, expectedMentions, expectedUrgent}) => {
+            const incomingPost = TestHelper.fakePost({
+                ...post,
+                user_id: 'user2',
+                metadata: isUrgent ? {priority: {priority: 'urgent'}} : undefined,
+            });
+            jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            jest.spyOn(operator, 'handlePosts').mockResolvedValue(postModels);
+
+            const myChannelWithUrgentMentions = TestHelper.fakeMyChannelModel({
+                ...myChannelModel,
+                urgentMentionCount: 2,
+            });
+            mockedGetMyChannel.mockResolvedValue(myChannelWithUrgentMentions);
+            mockedUpdateLastPostAt.mockResolvedValue({member: myChannelWithUrgentMentions});
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedShouldIgnorePost.mockReturnValue(false);
+            mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
+
+            await handleNewPostEvent(serverUrl, {data: {post: JSON.stringify(incomingPost), mentions}} as WebSocketMessage);
+
+            expect(mockedMarkChannelAsUnread).toHaveBeenCalledTimes(1);
+            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(serverUrl, expect.objectContaining({
+                mentionsCount: expectedMentions,
+                urgentMentionCount: expectedUrgent,
+            }), true);
+        });
+
         it('should handle new post event - without channel membership present', async () => {
             const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
@@ -550,12 +582,18 @@ describe('WebSocket Post Actions', () => {
         it('should handle post unread event', async () => {
             mockedGetMyChannel.mockResolvedValue(myChannelModel);
             mockedGetIsCRTEnabled.mockResolvedValue(false);
-            mockedFetchMyChannel.mockResolvedValue({teamId: 'team1', memberships: [TestHelper.fakeChannelMember({user_id: 'user1', channel_id: 'channel1'})]});
+            mockedFetchMyChannel.mockResolvedValue({teamId: 'team1', memberships: [TestHelper.fakeChannelMember({user_id: 'user1', channel_id: 'channel1', urgent_mention_count: 2})]});
             mockedMarkChannelAsUnread.mockResolvedValue({member: myChannelModel});
 
             await handlePostUnread(serverUrl, msg);
 
-            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(serverUrl, 'channel1', 1, 1, 12345);
+            expect(mockedMarkChannelAsUnread).toHaveBeenCalledWith(serverUrl, {
+                channelId: 'channel1',
+                messageCount: 1,
+                mentionsCount: 1,
+                urgentMentionCount: 2,
+                lastViewed: 12345,
+            });
         });
 
         it('should handle post unread event - CRT enabled, manually marked read', async () => {

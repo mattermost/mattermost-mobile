@@ -149,14 +149,18 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 models.push(viewedAt);
             }
         } else if (!isCRTEnabled || !post.root_id) {
-            const hasMentions = msg.data.mentions?.includes(currentUserId);
+            const hasMentions = Boolean(msg.data.mentions?.includes(currentUserId));
+            const hasUrgentMention = hasMentions && post.metadata?.priority?.priority === 'urgent';
             preparedMyChannelHack(myChannel);
             const {member: unreadAt} = await markChannelAsUnread(
                 serverUrl,
-                post.channel_id,
-                myChannel.messageCount + 1,
-                myChannel.mentionsCount + (hasMentions ? 1 : 0),
-                myChannel.lastViewedAt,
+                {
+                    channelId: post.channel_id,
+                    messageCount: myChannel.messageCount + 1,
+                    mentionsCount: myChannel.mentionsCount + (hasMentions ? 1 : 0),
+                    urgentMentionCount: myChannel.urgentMentionCount + (hasUrgentMention ? 1 : 0),
+                    lastViewed: myChannel.lastViewedAt,
+                },
                 true,
             );
             if (unreadAt) {
@@ -365,12 +369,19 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
     }
 
     if (!myChannel?.manuallyUnread) {
-        const {channels} = await fetchMyChannel(serverUrl, teamId, channelId, true);
+        const {channels, memberships} = await fetchMyChannel(serverUrl, teamId, channelId, true);
         const channel = channels?.[0];
+        const membership = memberships?.[0];
         const postNumber = isCRTEnabled ? channel?.total_msg_count_root : channel?.total_msg_count;
         const delta = postNumber ? postNumber - messages : messages;
 
-        markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
+        markChannelAsUnread(serverUrl, {
+            channelId,
+            messageCount: delta,
+            mentionsCount: mentions,
+            urgentMentionCount: membership?.urgent_mention_count ?? 0,
+            lastViewed: lastViewedAt,
+        });
     }
 }
 

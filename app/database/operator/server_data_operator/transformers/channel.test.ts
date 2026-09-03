@@ -112,8 +112,11 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords!.collection.table).toBe('ChannelInfo');
     });
 
-    it('=> transformMyChannelRecord: should return an array of type MyChannel', async () => {
-        expect.assertions(3);
+    it.each([
+        {description: 'persist the urgent mention count', urgentMentionCount: 2},
+        {description: 'default a missing urgent mention count to zero', urgentMentionCount: undefined},
+    ])('=> transformMyChannelRecord: should $description', async ({urgentMentionCount}) => {
+        expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
         expect(database).toBeTruthy();
@@ -131,6 +134,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     last_update_at: 0,
                     mention_count: 3,
                     msg_count: 10,
+                    urgent_mention_count: urgentMentionCount,
                     roles: 'guest',
                     notify_props: {},
                 },
@@ -139,6 +143,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
 
         expect(preparedRecords).toBeTruthy();
         expect(preparedRecords!.collection.table).toBe('MyChannel');
+        expect(preparedRecords.urgentMentionCount).toBe(urgentMentionCount ?? 0);
     });
 
     it('=> transformChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
