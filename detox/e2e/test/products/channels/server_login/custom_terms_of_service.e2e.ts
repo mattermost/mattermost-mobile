@@ -25,8 +25,8 @@ import {
     ServerScreen,
     TermsOfServiceScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {device, expect} from 'detox';
 
 /**
  * Enabling custom ToS is server-wide and has no per-user scoping, so every login on the
@@ -133,6 +133,20 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         // * Verify user is logged in
         await expect(ChannelListScreen.channelListScreen).toExist();
         await expect(HomeScreen.channelListTab).toExist();
+
+        // # Relaunch the app — the accepted session is restored from disk, not
+        // re-authenticated, so a re-prompt would have to come from the ToS gate
+        // re-evaluating on the restored session.
+        await device.launchApp({
+            newInstance: true,
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+        });
+
+        // * Verify the channel list is back and the ToS modal did not re-appear
+        // for the same terms version the user just accepted.
+        await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC); // ToS mounts on top of the channel list shortly after it — allow that window
+        await expect(TermsOfServiceScreen.termsOfServiceScreen).not.toExist();
 
         // # Clean up session for the next case
         await HomeScreen.logout();
