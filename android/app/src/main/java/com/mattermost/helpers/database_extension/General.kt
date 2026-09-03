@@ -89,7 +89,19 @@ fun DatabaseHelper.getDatabaseForServer(context: Context?, serverUrl: String): W
             if (cursor.count == 1) {
                 cursor.moveToFirst()
                 val databasePath = String.format("file://%s", cursor.getString(0))
-                return WMDatabase.buildDatabase(databasePath, context!!, SQLiteDatabase.CREATE_IF_NECESSARY)
+
+                // WAL must match how the JS side opens this same file. WatermelonDB's JSI
+                // connection runs `pragma journal_mode = WAL` (#10109), and journal mode is a
+                // property of the database file, not of a connection -- so opening it here
+                // without ENABLE_WRITE_AHEAD_LOGGING makes Android's SQLiteConnection issue its
+                // own `PRAGMA journal_mode` on open and drag the file back out of WAL underneath
+                // the live JSI connection. Two connections disagreeing about the journal is what
+                // produced "(11) database disk image is malformed" while adding a server.
+                return WMDatabase.buildDatabase(
+                    databasePath,
+                    context!!,
+                    SQLiteDatabase.CREATE_IF_NECESSARY or SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING,
+                )
             }
         }
     } catch (e: Exception) {
