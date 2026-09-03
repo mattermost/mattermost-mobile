@@ -2,15 +2,21 @@
 #
 # PRE-CONDITIONS:
 #   - Logged-in test user (via subflows/auth/login.yml)
-#   - Any license tier; the report action opens a mail composer (paid) or the
-#     report link in the browser (free edition)
+#   - Server configured with SupportSettings.ReportAProblemType=link (the CI
+#     Maestro workflow patches this around the batch and restores it after).
+#     The link variant is required because the default paid-tier path opens the
+#     native mail composer, which cannot open on iOS simulators (no Mail
+#     accounts) — the app then shows an "Error: mail services are not available"
+#     alert and the report screen never dismisses.
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
 # ASSERTIONS:
 #   - Tapping Report a problem leaves the in-app report screen
-#   - The native mail composer or external browser is presented
+#   - The external report link surface is presented (the OS-owned browser /
+#     share surface content itself is out of scope — only the hand-off is
+#     asserted, since the exact surface depends on license tier and platform)
 #
 # testIDs:
 #   - tab_bar.account.tab

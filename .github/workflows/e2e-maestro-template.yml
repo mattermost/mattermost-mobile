@@ -335,6 +335,25 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+
+          # MM-T3261 (report_problem_action.yml) requires the link variant: the
+          # default paid-tier path opens the native mail composer, which cannot
+          # open on iOS simulators (no Mail accounts) — the app then shows an
+          # error alert and the report screen never dismisses. Patch it to the
+          # link variant (report URL opens in the browser) and always restore.
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
 
@@ -847,6 +866,21 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+
+          # Same link-mode patch as the iOS batch — see the iOS step's comment.
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform android
 
