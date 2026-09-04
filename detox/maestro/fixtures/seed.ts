@@ -34,7 +34,7 @@ function summarizeBody(body: string): string {
 }
 
 function isRetriableSeedError(message: string): boolean {
-    return /cloud\/inactive|Failed to parse|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND|socket|network/i.test(message);
+    return /cloud\/inactive|HTTP 403|status code 403|Failed to parse|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND|socket|network|<!DOCTYPE|<html/i.test(message);
 }
 
 function doRequest(urlStr: string, method: string, payload: string | null, headers: Record<string, string>, redirectCount = 0): Promise<IncomingMessage & {body: string}> {
