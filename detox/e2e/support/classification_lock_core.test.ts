@@ -7,6 +7,7 @@ import {afterEach, describe, it} from 'node:test';
 import {
     acquireLock,
     activeHeartbeatCount,
+    assertLockOwnership,
     DEFAULT_RENEW_MS,
     DEFAULT_TIMEOUT_MS,
     DEFAULT_TTL_MS,
@@ -287,5 +288,49 @@ describe('heartbeat', () => {
 
         assert.equal(ownerOf(store), 'owner-b', 'owner-a must not write itself back in');
         assert.equal(activeHeartbeatCount(), 0);
+    });
+});
+
+describe('assertLockOwnership', () => {
+    it('passes while the owner still holds the lock', async () => {
+        const store = createStore();
+        await acquireLock(store, 'shard-9', FAST);
+
+        await assertLockOwnership(store, 'shard-9');
+
+        await releaseLock(store, 'shard-9');
+    });
+
+    it('throws naming the stealer when another owner took the cell', async () => {
+        const store = createStore();
+        await acquireLock(store, 'shard-9', FAST);
+        await releaseLock(store, 'shard-9');
+
+        // Simulate the lost-update race: a second shard overwrites the cell after the
+        // first owner's acquire already confirmed it, without waiting for release.
+        await store.write(JSON.stringify({owner: 'shard-18', expiresAt: Date.now() + TTL}));
+
+        await assert.rejects(
+            () => assertLockOwnership(store, 'shard-9'),
+            /lost the lock to "shard-18"/,
+        );
+    });
+
+    it('throws when the lock cell was cleared mid-run', async () => {
+        const store = createStore();
+
+        await assert.rejects(
+            () => assertLockOwnership(store, 'shard-9'),
+            /lock cell is empty/,
+        );
+    });
+
+    it('rejects an empty owner', async () => {
+        const store = createStore();
+
+        await assert.rejects(
+            () => assertLockOwnership(store, ''),
+            /owner must not be empty/,
+        );
     });
 });

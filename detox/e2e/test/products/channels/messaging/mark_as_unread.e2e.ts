@@ -27,47 +27,13 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// On Android, long-pressing the post container is unreliable — long-press on the
-// inner text element instead, with a shorter TEN_SEC check timeout so retries
-// happen quickly (mirrors the approach in pin_and_unpin_message.e2e.ts).
+// Prefer ChannelScreen / ThreadScreen.openPostOptionsFor (longPressWithScrollRetry;
+// Android long-presses the inner text target). Local retry loops were less reliable.
 async function openPostOptionsFor(postId: string, message: string, screen: typeof ChannelScreen | typeof ThreadScreen) {
-    if (!isAndroid()) {
-        await screen.openPostOptionsFor(postId, message);
-        return;
-    }
-
-    const prefix = screen === ThreadScreen ? 'thread' : 'channel';
-    const flatList = screen === ThreadScreen ? ThreadScreen.getFlatPostList() : ChannelScreen.getFlatPostList();
-    const target = element(by.text(message).withAncestor(by.id(`${prefix}.post_list.post.${postId}`)));
-
-    await waitFor(target).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await flatList.scroll(100, 'down', 0.5, 0.5);
-        } catch {
-            // Ignore scroll failures at list boundaries.
-        }
-        // eslint-disable-next-line no-await-in-loop
-        await wait(timeouts.THREE_SEC);
-        // eslint-disable-next-line no-await-in-loop
-        await target.longPress(timeouts.FIVE_SEC);
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.TWO_SEC);
-            return;
-        } catch {
-            if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
-            }
-        }
-    }
+    await screen.openPostOptionsFor(postId, message);
 }
 
 describe('Messaging - Mark as Unread', () => {
@@ -127,20 +93,10 @@ describe('Messaging - Mark as Unread', () => {
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
+        // * Verify on channel list screen. ChannelListScreen.toBeVisible handles the app's
+        // "Couldn't load categories" error state (taps the app's Retry) and waits for the
+        // categories FlashList, so the sidebar is actually populated here.
         await ChannelListScreen.toBeVisible();
-
-        const retryButton = element(by.text('Retry'));
-        try {
-            await waitFor(retryButton).toBeVisible().withTimeout(timeouts.THREE_SEC);
-            await retryButton.tap();
-        } catch {
-            // Initial category load did not show the recovery screen.
-        }
-
-        await waitFor(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).
-            toExist().
-            withTimeout(timeouts.HALF_MIN);
     });
 
     afterAll(async () => {
@@ -231,8 +187,7 @@ describe('Messaging - Mark as Unread', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, dmChannel.name)).toBeVisible();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread unread
-    it.skip('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
+    it('MM-T250_1 - should mark a reply as unread in thread view and show unread indicator', async () => {
         // # Create a root message and two replies via API (as admin) so testUser can mark
         // someone else's reply as unread.
         // canMarkAsUnread requires user?.id !== post.userId — own posts cannot be marked as unread.
@@ -270,13 +225,13 @@ describe('Messaging - Mark as Unread', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — GM unread flake
-    it.skip('MM-T1280_1 - should mark a GM post as unread and show the GM channel as unread in channel list', async () => {
+    it('MM-T1280_1 - should mark a GM post as unread and show the GM channel as unread in channel list', async () => {
         // # GM channel and message were created in beforeAll before login so they appear in the sidebar
 
         // # Open the GM channel from the channel list
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name).tap();
+        await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name).tap({x: 1, y: 1});
         await ChannelScreen.toBeVisible();
 
         // * Verify the GM message is visible
@@ -294,7 +249,7 @@ describe('Messaging - Mark as Unread', () => {
         await ChannelScreen.back();
 
         // * Verify the GM channel is still listed in the direct messages category
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible();
+        await ChannelListScreen.ensureCategoryExpanded(directMessagesCategory);
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, gmChannel.name)).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
     });
 });

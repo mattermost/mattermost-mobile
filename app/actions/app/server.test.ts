@@ -13,7 +13,6 @@ import {getPreauthSecret} from '@init/credentials';
 import SecurityManager from '@managers/security_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerByIdentifier} from '@queries/app/servers';
-import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError} from '@utils/server';
@@ -76,8 +75,6 @@ describe('switchToServer', () => {
 
         await Actions.switchToServer('serverUrl');
 
-        // Wait for the async database operation to complete (setActiveServerDatabase is called without await)
-        await TestHelper.wait(10);
         const options = {
             skipJailbreakCheck: true,
             skipBiometricCheck: true,
@@ -163,6 +160,27 @@ describe('switchToServerAndLogin', () => {
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
         expect(callback).toHaveBeenCalledWith({config, license});
+    });
+
+    it('should await an async callback before resolving', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId'} as ClientConfig;
+        const license = {} as ClientLicense;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+
+        let callbackFinished = false;
+        const callback = jest.fn(async () => {
+            await Promise.resolve();
+            callbackFinished = true;
+        });
+
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
+
+        expect(callback).toHaveBeenCalledWith({config, license});
+        expect(callbackFinished).toBe(true);
     });
 
     it('should not proceed if device is jailbroken', async () => {

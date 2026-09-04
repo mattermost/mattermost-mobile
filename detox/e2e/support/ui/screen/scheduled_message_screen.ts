@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {User} from '@support/server_api';
 import {Alert} from '@support/ui/component';
 import {isIos, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
@@ -68,7 +69,46 @@ class ScheduledMessageScreen {
         await this.deleteDraftPost(this.deleteDraft);
     };
 
+    // The spinner is a UIDatePicker on most iOS versions and a UIPickerView on others.
+    private nudgeIosPicker = async (): Promise<boolean> => {
+        try {
+            await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
+            return true;
+        } catch {
+            try {
+                await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    };
+
     selectDateTime = async () => {
+        await this.selectTimeButton.tap();
+        if (isIos()) {
+            const saveButton = element(by.id('reschedule_draft.save.button'));
+            await waitFor(saveButton).toExist().withTimeout(timeouts.FIVE_SEC);
+
+            /* eslint-disable no-await-in-loop -- swipe the spinner until the save commits */
+            for (let attempt = 0; attempt < 4; attempt++) {
+                if (!await this.nudgeIosPicker()) {
+                    throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
+                }
+                await wait(timeouts.HALF_SEC);
+                await saveButton.tap();
+                try {
+                    await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                    return;
+                } catch {
+                    // Still on the picker: the swipe either landed back on the original
+                    // time or canSave was still being recomputed. Swipe again.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+
+            throw new Error('ScheduleMessageScreen.selectDateTime: the picker was still on screen after 4 swipe-and-save attempts, so the new time never committed');
+        }
         await this.selectDateButton.tap();
         await this.selectTimeButton.tap();
         await this.saveButton.tap();
@@ -129,22 +169,11 @@ class ScheduledMessageScreen {
     };
 
     nextMonday = async () => {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
+        const {year, month, day} = this.deviceCalendarDate();
+        const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
         const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
 
-        const nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-        nextMonday.setHours(9, 0, 0, 0); // Hardcoded 9:00 AM
-
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
-
-        const datePart = nextMonday.toLocaleDateString(locale, dateOptions);
-        const timePart = nextMonday.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + daysUntilNextMonday)}, 9:00 AM`);
     };
 
     currentDay = async () => {
@@ -164,19 +193,46 @@ class ScheduledMessageScreen {
         return this.normalize(`Send on ${datePart}, ${timePart}`);
     };
 
+    deviceTimeZone: string | undefined = undefined;
+
+    resolveDeviceTimeZone = async (baseUrl: string, userId: string) => {
+        try {
+            const {user} = await User.apiGetUserById(baseUrl, userId);
+            const zone = user?.timezone?.automaticTimezone || user?.timezone?.manualTimezone;
+            this.deviceTimeZone = zone || undefined;
+        } catch {
+            // Leave undefined and format in the runner's zone.
+            this.deviceTimeZone = undefined;
+        }
+        return this.deviceTimeZone;
+    };
+
+    // Calendar date on the device, as {year, month, day}. Uses en-CA because it formats as
+    // an unambiguous YYYY-MM-DD.
+    private deviceCalendarDate = (at: Date = new Date()) => {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: this.deviceTimeZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(at);
+        const [yearPart = '', monthPart = '', dayPart = ''] = parts.split('-');
+        return {year: Number(yearPart), month: Number(monthPart), day: Number(dayPart)};
+    };
+
+    // Formats a device-local calendar date as "Mon D". Built on a UTC instant so the
+    // formatter cannot shift the day back across a zone boundary.
+    private formatCalendarDate = (year: number, month: number, day: number) => {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'UTC',
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(Date.UTC(year, month - 1, day)));
+    };
+
     tomorrowAtNineAm = () => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(9, 0, 0, 0);
-
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
-
-        const datePart = tomorrow.toLocaleDateString(locale, dateOptions);
-        const timePart = tomorrow.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+        const {year, month, day} = this.deviceCalendarDate();
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + 1)}, 9:00 AM`);
     };
 
     expectedLabelForScheduleOption = async (option: 'tomorrow' | 'next_monday' | 'monday') => {

@@ -32,10 +32,6 @@ import {
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-// Scheduled-message timestamps render as "Invalid Date" on iOS, so these run on Android
-// only. Same root cause as MM-T5720 below (CI run 30000635898).
-const itAndroidOnly = isIos() ? it.skip : it;
-
 describe('Scheduled Draft,', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -65,6 +61,10 @@ describe('Scheduled Draft,', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // The schedule labels are rendered in the device's timezone, which is not the Node
+        // runner's in CI. Resolve it once from the timezone the app itself pushed on login.
+        await ScheduleMessageScreen.resolveDeviceTimeZone(siteOneUrl, testUser.id);
     });
 
     beforeEach(async () => {
@@ -77,7 +77,7 @@ describe('Scheduled Draft,', () => {
         await HomeScreen.logout();
     });
 
-    itAndroidOnly('MM-T5762 should be able to create a scheduled message', async () => {
+    it('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -97,7 +97,7 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
     });
 
-    itAndroidOnly('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
+    it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -143,7 +143,7 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.back();
     });
 
-    itAndroidOnly('MM-T5731 should be able to Delete a scheduled Message', async () => {
+    it('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -164,7 +164,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    itAndroidOnly('MM-T5730 should be able to Send a scheduled Message', async () => {
+    it('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -197,8 +197,8 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    // Skip both: CI run 30000635898 — iOS renders "Invalid Date" and Android cascades during channel setup.
-    it.skip('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
+    // Reschedule UI path is iOS-only below (Android native date picker is not Detox-interactable).
+    it('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);

@@ -263,18 +263,23 @@ const ServerItem = ({
         }
 
         setSwitching(true);
-        if (server.lastActiveAt) {
-            await dismissBottomSheet();
-            await switchToServer(server.url);
-            return;
-        }
-        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
-            setSwitching(false);
-            await dismissBottomSheet();
-            if (data?.config && data.license) {
-                loginToServer(theme, server.url, server.displayName, data.config, data.license);
+        try {
+            if (server.lastActiveAt) {
+                // Switch before dismissing so last_active_at commits while the sheet is
+                // still mounted; dismiss-first left the UI on the prior server.
+                await switchToServer(server.url);
+                await dismissBottomSheet();
+                return;
             }
-        });
+            await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
+                await dismissBottomSheet();
+                if (data?.config && data.license) {
+                    await loginToServer(theme, server.url, server.displayName, data.config, data.license);
+                }
+            });
+        } finally {
+            setSwitching(false);
+        }
     }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);
 
     const onSwipeableWillOpen = useCallback(() => {

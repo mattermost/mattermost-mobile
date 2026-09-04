@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, Pressable, StatusBar, StyleSheet, View, useWindowDimensions} from 'react-native';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
@@ -61,15 +61,25 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                 style={{flex: 1}}
                 onLayout={onRootLayout}
             >
+                {/* Dismiss target. It wraps the scrim rather than overlaying it so the touch
+                    target owns the scrim's pixels; the SVG's own onPress does not fire.
+                    No pressed style on purpose: feedback on a full-screen scrim would flash
+                    the whole screen. */}
                 {itemBounds.endX > 0 &&
-                <HighlightItem
-                    borderRadius={itemBorderRadius}
-                    itemBounds={itemBounds}
-                    height={height}
-                    onDismiss={onDismiss}
-                    width={width}
-                    onLayout={handleShowTutorial}
-                />
+                <Pressable
+                    onPress={onDismiss}
+                    style={StyleSheet.absoluteFill}
+                    testID='tutorial_highlight.backdrop'
+                >
+                    <HighlightItem
+                        borderRadius={itemBorderRadius}
+                        itemBounds={itemBounds}
+                        height={height}
+                        onDismiss={onDismiss}
+                        width={width}
+                        onLayout={handleShowTutorial}
+                    />
+                </Pressable>
                 }
                 {itemBounds.endX > 0 && children}
             </View>

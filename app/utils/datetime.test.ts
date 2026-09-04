@@ -48,6 +48,15 @@ describe('getReadableTimestamp', () => {
         jest.useRealTimers();
     });
 
+    it('should still return a label when the engine rejects the timeZone option', () => {
+        // Hermes returns the literal "Invalid Date" for an option it cannot honour, and
+        // returning '' made the caller drop the whole row. Fall back to the device zone.
+        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
+        const result = getReadableTimestamp(timestamp, 'Not/AZone', false, 'en-US');
+        expect(result).not.toBe('');
+        expect(result).toContain('Jun 15');
+    });
+
     it('should format timestamp correctly in 12-hour format for current year', () => {
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
@@ -85,6 +94,18 @@ describe('getReadableTimestamp', () => {
 
         const deResult = getReadableTimestamp(timestamp, timeZone, false, 'de-DE');
         expect(deResult).toBe('15. Juni, 8:00 AM');
+    });
+
+    it('should return empty string for NaN/undefined timestamps', () => {
+        expect(getReadableTimestamp(Number.NaN, 'America/New_York', false, 'en-US')).toBe('');
+        expect(getReadableTimestamp(undefined as unknown as number, 'America/New_York', false, 'en-US')).toBe('');
+    });
+
+    it('should omit empty timeZone instead of rendering Invalid Date', () => {
+        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
+        const result = getReadableTimestamp(timestamp, '', false, 'en-US');
+        expect(result).not.toBe('Invalid Date');
+        expect(result.length).toBeGreaterThan(0);
     });
 });
 

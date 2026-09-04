@@ -45,7 +45,10 @@ describe('ScheduledPostOptions', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.useFakeTimers();
+
+        // Pin the clock to a Tuesday in America/New_York: the picker's options depend on the
+        // weekday in the user's timezone, so an unpinned clock passes or fails by the day.
+        jest.useFakeTimers({now: 1735693200000});
     });
 
     afterEach(() => {

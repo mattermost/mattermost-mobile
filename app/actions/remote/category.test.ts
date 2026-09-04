@@ -218,6 +218,62 @@ describe('toggleFavoriteChannel', () => {
         expect(NetworkManager.getClient).toHaveBeenCalledWith(serverUrl);
     });
 
+    const offTopicCC: CategoryChannel = {
+        id: 'teamid1_offtopic',
+        category_id: 'default_category_id',
+        channel_id: 'offtopic',
+        sort_order: 2,
+    };
+    const townSquareCC: CategoryChannel = {
+        id: 'teamid1_townsquare',
+        category_id: 'default_category_id',
+        channel_id: 'townsquare',
+        sort_order: 3,
+    };
+
+    // The server always knows all three channels; only the local rows vary.
+    const serverCategories: CategoryWithChannels[] = [
+        {...defaultCategory, channel_ids: [channelId, 'offtopic', 'townsquare']} as CategoryWithChannels,
+        {...favCategory, channel_ids: []} as CategoryWithChannels,
+    ];
+    const favouriteSetup = async (categoryChannelRows: CategoryChannel[]) => {
+        await operator.handleCategoryChannels({categoryChannels: categoryChannelRows, prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        const mockClient = {
+            updateChannelCategories: jest.fn().mockResolvedValue({}),
+            getCategories: jest.fn().mockResolvedValue({categories: serverCategories}),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+        return mockClient;
+    };
+    const sentCategory = (mockClient: {updateChannelCategories: jest.Mock}, type: string) => {
+        const [, , categories] = mockClient.updateChannelCategories.mock.calls[0];
+        return (categories as CategoryWithChannels[]).find((c) => c.type === type);
+    };
+
+    it('should send the remaining channels when favoriting with the sidebar fully synced', async () => {
+        const mockClient = await favouriteSetup([
+            {...categoryChannels, category_id: defaultCategory.id},
+            offTopicCC,
+            townSquareCC,
+        ]);
+
+        await toggleFavoriteChannel(serverUrl, channelId, false);
+
+        expect(sentCategory(mockClient, FAVORITES_CATEGORY)?.channel_ids).toEqual([channelId]);
+        expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).toEqual(['offtopic', 'townsquare']);
+    });
+
+    it('should not tell the server a category is empty just because local rows are missing', async () => {
+        const mockClient = await favouriteSetup([{...categoryChannels, category_id: defaultCategory.id}]);
+
+        await toggleFavoriteChannel(serverUrl, channelId, false);
+
+        expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).not.toEqual([]);
+    });
+
     it('should handle error during toggle favorite channel', async () => {
         await operator.handleCategoryChannels({categoryChannels: [categoryChannels], prepareRecordsOnly: false});
         await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});

@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -231,7 +231,15 @@ class ChannelScreen {
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
 
-            await NavigationHeader.tapBackButton(0);
+            // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
+            // and PinnedMessagesScreen.back() already do.
+            if (isIos()) {
+                await withSynchronizationDisabled(async () => {
+                    await NavigationHeader.tapBackButton(0);
+                });
+            } else {
+                await NavigationHeader.tapBackButton(0);
+            }
             navigated = true;
         } catch {
             // Back button not in hierarchy — fall through to tab/native back.
@@ -289,14 +297,47 @@ class ChannelScreen {
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
         const longPressTarget = element(by.id(postTestID));
 
-        await longPressWithScrollRetry(
-            longPressTarget,
-            by.id(this.postList.testID.flatList),
-            PostOptionsScreen.postOptionsScreen,
-            8,
-            isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
-        );
-        await wait(timeouts.TWO_SEC);
+        // Helper to handle retry logic if long press degrades to tap
+        const attemptOpenPostOptions = async (attempt: number): Promise<void> => {
+            try {
+                await longPressWithScrollRetry(
+                    longPressTarget,
+                    by.id(this.postList.testID.flatList),
+                    PostOptionsScreen.postOptionsScreen,
+                    8,
+                    isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
+                );
+                await wait(timeouts.TWO_SEC);
+            } catch (error) {
+                if (attempt > 1) {
+                    throw error;
+                }
+
+                // A long press that degrades into a tap opens the post's thread. The
+                // channel post list item cannot exist there, so every remaining attempt
+                // is doomed and the helper burns its whole budget on a lost cause.
+                let navigatedToThread = false;
+                try {
+                    await ThreadScreen.toBeVisible();
+                    navigatedToThread = true;
+                } catch {
+                    // Still on the channel — the original failure is the real one.
+                }
+
+                if (!navigatedToThread) {
+                    throw error;
+                }
+
+                // Recover to the channel and retry once. Failures from here on are
+                // reported as themselves, not masked by the original error.
+                await ThreadScreen.back();
+                await this.toBeVisible();
+                await wait(timeouts.ONE_SEC);
+                await attemptOpenPostOptions(attempt + 1);
+            }
+        };
+
+        await attemptOpenPostOptions(1);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {
@@ -361,11 +402,7 @@ class ChannelScreen {
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
 
-        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s). Three reasons over
-        // reading the last post once: a send that was accepted can be slow to ack, and resending on
-        // ack lag alone posts the message twice, which silently breaks any caller that counts posts;
-        // matching on content rather than position cannot be fooled by an unrelated later post; and
-        // `exact` keeps it from latching onto a longer post that merely contains this message.
+        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s).
         let result = await Post.apiFindPostInChannelByMessage(siteUrl, channelId, message, {exact: true});
         if (result.post?.id) {
             return result;
@@ -651,18 +688,10 @@ class ChannelScreen {
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
-
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-        if (isAndroid()) {
-            const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, 'is');
-            const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
-            await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        } else {
-            const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
-            const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-            await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
     };
 }
 

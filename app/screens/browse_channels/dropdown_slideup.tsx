@@ -42,18 +42,20 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    const handlePublicPress = useCallback(() => {
-        dismissBottomSheet();
+    // Await the dismissal first: re-rendering the rows while the sheet's views are still
+    // mounted makes Fabric throw "View already has a parent" and destroys the JS instance.
+    const handlePublicPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(PUBLIC);
     }, [onPress]);
 
-    const handleArchivedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleArchivedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(ARCHIVED);
     }, [onPress]);
 
-    const handleSharedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleSharedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(SHARED);
     }, [onPress]);
 

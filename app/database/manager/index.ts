@@ -470,12 +470,14 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                // Await the write: unawaited, the row deletion can land after a later
+                // createServerDatabase() re-added it, leaving the server unregistered.
+                await database.write(async () => {
                     await server.destroyPermanently();
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
 
                 // Remove pre-auth secret when server is destroyed
                 await removePreauthSecret(serverUrl);

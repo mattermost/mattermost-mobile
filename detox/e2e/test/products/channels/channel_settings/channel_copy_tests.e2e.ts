@@ -79,8 +79,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: Fabric idling-resource deadlock on Android copy bottom-sheet tap (CI 28290273101) — needs Detox/Fabric fix.
-    it.skip('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
+    it('MM-T868_1 - should show Copy option when long-pressing channel purpose text', async () => {
         const purposeText = `Purpose text for copying ${getRandomId()}`;
         const {channel: channelWithPurpose} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
@@ -110,7 +109,7 @@ describe('Channel Settings - Copy Tests', () => {
         // # Long-press the purpose text to open the copy bottom sheet, verify Copy option,
         // and tap Copy — uses ChannelInfoScreen.copyChannelPurpose helper which handles
         // the long-press, waitFor on the bottom sheet, and taps the copy action.
-        await ChannelInfoScreen.copyChannelPurpose(purposeText);
+        await ChannelInfoScreen.copyChannelPurpose();
 
         // * Verify bottom sheet is dismissed and we're still on channel info screen
         await wait(timeouts.ONE_SEC);
@@ -122,8 +121,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skipped: same Fabric idling deadlock as MM-T868_1 (copy_header_text bottom-sheet).
-    it.skip('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
+    it('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
         const headerUrl = 'https://mattermost.com';
         const {channel: channelWithHeaderUrl} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
@@ -156,7 +154,7 @@ describe('Channel Settings - Copy Tests', () => {
         // appears only when onLinkLongPress fires on a URL link within the markdown header.
         // Long-pressing the outer TouchableWithFeedback wrapper shows only copy_header_text.
         // TODO: Trigger onLinkLongPress on the URL text directly and assert copy_url option appears.
-        await ChannelInfoScreen.cancelCopyChannelHeader(headerUrl);
+        await ChannelInfoScreen.cancelCopyChannelHeader();
 
         // * Verify still on channel info screen
         await wait(timeouts.ONE_SEC);
