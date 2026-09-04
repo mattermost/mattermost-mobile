@@ -9,7 +9,7 @@ import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import TestHelper from '@test/test_helper';
 
-import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToEditPlaybookRun, goToCreateQuickChecklist} from './navigation';
+import {goToPlaybookRuns, goToPlaybookRun, goToParticipantPlaybooks, goToPlaybookRunWithChannelSwitch, goToEditCommand, goToSelectUser, goToSelectDate, goToPostUpdate, goToSelectPlaybook, goToStartARun, goToRenameChecklist, goToAddChecklistItem, goToEditChecklistItem, goToEditPlaybookRun, goToCreateQuickChecklist, goToFillRequirements} from './navigation';
 
 jest.mock('@screens/navigation', () => ({
     navigateToScreen: jest.fn(),
@@ -412,6 +412,28 @@ describe('Playbooks Navigation', () => {
                     currentDescription: undefined,
                     subtitle: 'Run 1',
                 },
+            );
+        });
+    });
+
+    describe('goToFillRequirements', () => {
+        it('should navigate to fill requirements screen with correct parameters', async () => {
+            const props = {
+                playbookRunId: 'run-1',
+                itemId: 'item-1',
+                checklistNumber: 0,
+                itemNumber: 1,
+                taskTitle: 'Task title',
+                requirements: [{id: 'req-1', label: 'Ticket URL', value: ''}],
+                currentState: '' as ChecklistItemState,
+                editMode: true,
+            };
+
+            await goToFillRequirements(props);
+
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.PLAYBOOK_FILL_REQUIREMENTS,
+                props,
             );
         });
     });

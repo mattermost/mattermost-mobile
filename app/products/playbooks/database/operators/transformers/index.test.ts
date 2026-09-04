@@ -614,7 +614,7 @@ describe('*** PLAYBOOK_CHECKLIST Prepare Records Test ***', () => {
 
 describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
     it('=> transformPlaybookChecklistItemRecord: should return a record of type PlaybookChecklistItem for CREATE action', async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'playbook_checklist_item_prepare_records', setActive: true});
         expect(database).toBeTruthy();
@@ -638,6 +638,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
                     due_date: 1620000003000,
                     completed_at: 0,
                     task_actions: [],
+                    requirements: [{id: 'req-1', label: 'Ticket URL', value: ''}],
                     condition_action: '',
                     condition_reason: '',
                     update_at: 0,
@@ -647,6 +648,7 @@ describe('*** PLAYBOOK_CHECKLIST_ITEM Prepare Records Test ***', () => {
 
         expect(preparedRecord).toBeTruthy();
         expect(preparedRecord!.collection.table).toBe(PLAYBOOK_TABLES.PLAYBOOK_CHECKLIST_ITEM);
+        expect(preparedRecord!.requirements).toEqual([{id: 'req-1', label: 'Ticket URL', value: ''}]);
     });
 
     it('=> transformPlaybookChecklistItemRecord: should return a record of type PlaybookChecklistItem for UPDATE action', async () => {

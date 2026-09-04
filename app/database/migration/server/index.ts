@@ -32,6 +32,17 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'requirements', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 20,
         steps: [
             createTable({
