@@ -734,7 +734,7 @@ function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
     }
 
     const batchFiles = fse.readdirSync(buildDir).
-        filter((name) => /^maestro-batch-\d+\.xml$/.test(name)).
+        filter((name) => /^maestro-(batch-\d+|report-[A-Za-z0-9_.-]+)\.xml$/.test(name)).
         sort((a, b) => {
             const num = (file) => parseInt(file.match(/maestro-batch-(\d+)\.xml/)[1], 10);
             return num(a) - num(b);
