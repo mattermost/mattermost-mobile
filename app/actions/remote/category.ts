@@ -192,12 +192,26 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
         // idempotent if the server already reflects the toggle.
         const withChannelFirst = (ids: string[]) => [channelId, ...ids.filter((id) => id !== channelId)];
         const withoutChannel = (ids: string[]) => ids.filter((id) => id !== channelId);
+        const copyRemote = (remote: CategoryWithChannels): CategoryWithChannels => ({
+            ...remote,
+            channel_ids: [...remote.channel_ids],
+        });
         const toWithChannels = (category: CategoryModel): CategoryWithChannels | undefined => {
             const remote = remoteById.get(category.id);
             if (!remote) {
                 return undefined;
             }
-            return {...remote, channel_ids: [...remote.channel_ids]};
+            return copyRemote(remote);
+        };
+
+        // Local currentCategory can lag the server (WebSocket miss, another client).
+        // PUT the remote category that actually holds the channel when that differs.
+        const remoteCategoryContainingChannel = remoteCategories.find((c) => c.channel_ids.includes(channelId));
+        const sourceCategoryForRemoval = (destinationId: string): CategoryWithChannels | undefined => {
+            if (remoteCategoryContainingChannel && remoteCategoryContainingChannel.id !== destinationId) {
+                return copyRemote(remoteCategoryContainingChannel);
+            }
+            return toWithChannels(currentCategory);
         };
 
         if (isFavorited) {
@@ -207,7 +221,7 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
                 return {error: 'target category not found'};
             }
             const remoteTarget = toWithChannels(targetCategory);
-            const remoteFavorite = toWithChannels(currentCategory);
+            const remoteFavorite = sourceCategoryForRemoval(remoteTarget?.id ?? '');
             if (!remoteTarget || !remoteFavorite) {
                 return {error: 'remote category membership unavailable'};
             }
@@ -219,7 +233,7 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
                 return {error: 'No favorites category'};
             }
             const remoteFavorite = toWithChannels(favoritesCategory);
-            const remoteTarget = toWithChannels(currentCategory);
+            const remoteTarget = sourceCategoryForRemoval(remoteFavorite?.id ?? '');
             if (!remoteFavorite || !remoteTarget) {
                 return {error: 'remote category membership unavailable'};
             }

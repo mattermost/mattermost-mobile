@@ -365,6 +365,70 @@ describe('toggleFavoriteChannel', () => {
         expect(submitted?.channel_ids).toEqual(expect.arrayContaining(['offtopic', 'townsquare']));
     });
 
+    it('should remove the channel from the remote source category when it differs from local', async () => {
+        const customCategory = {
+            id: 'custom_category_id',
+            team_id: teamId,
+            type: 'custom',
+        } as Category;
+        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: defaultCategory.id}], prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        const mockClient = {
+            updateChannelCategories: jest.fn().mockResolvedValue({}),
+            getCategories: jest.fn().mockResolvedValue({
+                categories: [
+                    {...defaultCategory, channel_ids: ['offtopic']},
+                    {...customCategory, channel_ids: [channelId, 'kept-channel']},
+                    {...favCategory, channel_ids: []},
+                ],
+            }),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+
+        const result = await toggleFavoriteChannel(serverUrl, channelId, false);
+
+        expect(result).toEqual({data: true});
+        const sent = mockClient.updateChannelCategories.mock.calls[0][2] as CategoryWithChannels[];
+        expect(sent.find((c) => c.id === customCategory.id)?.channel_ids).toEqual(['kept-channel']);
+        expect(sent.find((c) => c.id === favCategory.id)?.channel_ids).toEqual([channelId]);
+        expect(sent.find((c) => c.id === defaultCategory.id)).toBeUndefined();
+    });
+
+    it('should unfavorite from the remote category that holds the channel, not the local favorites id', async () => {
+        const customCategory = {
+            id: 'custom_category_id',
+            team_id: teamId,
+            type: 'custom',
+        } as Category;
+        await operator.handleCategoryChannels({categoryChannels: [categoryChannels], prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+
+        const mockClient = {
+            updateChannelCategories: jest.fn().mockResolvedValue({}),
+            getCategories: jest.fn().mockResolvedValue({
+                categories: [
+                    {...favCategory, channel_ids: []},
+                    {...customCategory, channel_ids: [channelId, 'kept-channel']},
+                    {...defaultCategory, channel_ids: []},
+                ],
+            }),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+
+        const result = await toggleFavoriteChannel(serverUrl, channelId, true);
+
+        expect(result).toEqual({data: true});
+        const sent = mockClient.updateChannelCategories.mock.calls[0][2] as CategoryWithChannels[];
+        expect(sent.find((c) => c.id === customCategory.id)?.channel_ids).toEqual(['kept-channel']);
+        expect(sent.find((c) => c.id === defaultCategory.id)?.channel_ids).toEqual([channelId]);
+        expect(sent.find((c) => c.id === favCategory.id)).toBeUndefined();
+    });
+
     it('should not replace membership when the authoritative fetch fails', async () => {
         await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: defaultCategory.id}], prepareRecordsOnly: false});
         await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
