@@ -17,6 +17,7 @@ export function logError(message: string): void {
     console.error(`${LOG_PREFIX} ${message}`);
 }
 
+/** Debug-level provision log for non-PII Detox/Maestro diagnostics. */
 export function logDebug(message: string): void {
     console.debug(`${LOG_PREFIX} ${message}`);
 }

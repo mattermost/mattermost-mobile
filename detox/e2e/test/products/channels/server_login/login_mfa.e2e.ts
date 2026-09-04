@@ -64,10 +64,22 @@ describe('Server Login - Login with MFA', () => {
             await HomeScreen.logout();
         } finally {
             // # Restore the admin session and disable MFA on the server
-            await User.apiLogin(siteOneUrl, {username: adminUsername, password: adminPassword});
-            await System.apiPatchConfig(siteOneUrl, {
+            const loginResult = await User.apiLogin(siteOneUrl, {username: adminUsername, password: adminPassword});
+            const configResult = await System.apiPatchConfig(siteOneUrl, {
                 ServiceSettings: {EnableMultifactorAuthentication: false},
             });
+            if (loginResult.error || configResult.error) {
+                const loginError = loginResult.error ?
+                    (loginResult.error.message || JSON.stringify(loginResult.error)) :
+                    'ok';
+                const configError = configResult.error ?
+                    (configResult.error.message || JSON.stringify(configResult.error)) :
+                    'ok';
+                throw new Error(
+                    `afterAll failed to restore admin session or disable MFA ` +
+                    `(login=${loginError}; config=${configError})`,
+                );
+            }
         }
     });
 

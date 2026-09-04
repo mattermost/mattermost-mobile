@@ -164,7 +164,19 @@ const pollUntil = async (check: () => boolean | Promise<boolean>, timeoutMs: num
  */
 export const isNetworkControlAvailable = (serverUrl: string): boolean => {
     if (device.getPlatform() === 'android') {
-        return tryRun('adb devices');
+        try {
+            // `adb devices` exits 0 even with an empty list. Later airplane-mode
+            // commands need a row whose state is exactly "device".
+            const output = run('adb devices');
+            if (/(?:^|\r?\n)[^\s]+\tdevice(?:\r?\n|$)/.test(output)) {
+                return true;
+            }
+            logDebug('[network] Android offline unavailable: no connected device in `adb devices`');
+            return false;
+        } catch {
+            logDebug('[network] Android offline unavailable: adb devices failed');
+            return false;
+        }
     }
 
     // iOS — pfctl anchor path.
