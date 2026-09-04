@@ -133,8 +133,20 @@ export async function retryWithReload(
                 if (serverUrl && serverDisplayName) {
                     // Lazy require avoids a utils <-> screen circular import.
                     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-                    const {ChannelListScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
+                    const {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
                     /* eslint-disable no-await-in-loop -- sequential recovery after reload */
+
+                    // Reload can restore the last channel (tab bar hidden). connectToServer
+                    // would then wait 30s for server.screen (CI Detox Android hook 300s).
+                    if (await screenExists(ChannelScreen.channelScreen)) {
+                        logDebug('retryWithReload: channel visible after reload, popping to list');
+                        if (isAndroid()) {
+                            await device.pressBack();
+                        } else {
+                            await ChannelScreen.back();
+                        }
+                        await wait(timeouts.TWO_SEC);
+                    }
 
                     // HomeScreen.logout swallows its own errors, so detection and logout
                     // stay separate: a failed logout still leaves the session on the
