@@ -40,6 +40,11 @@ export interface ToolCall {
     arguments: any;
     result?: string;
     status: ToolCallStatus;
+
+    // True for a pending call that passed the auto-execution policy. The call
+    // may be running live or paused in a persisted round, but never needs an
+    // individual approval decision.
+    would_auto_execute?: boolean;
 }
 
 /**
