@@ -148,7 +148,7 @@ export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
             // credential pair would otherwise surface only as a bare 400 in the log and
             // leave the shared client on its previous session. Name the caller's mistake.
             logError(
-                `[apiLogin] refusing to log in with incomplete credentials ` +
+                '[apiLogin] refusing to log in with incomplete credentials ' +
                 `(hasUsername=${Boolean(user?.username)}, hasPassword=${Boolean(user?.password)}). ` +
                 'Pass the user returned by apiCreateUser/apiInit, or its .newUser.',
             );

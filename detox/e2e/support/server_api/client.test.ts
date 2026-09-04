@@ -68,10 +68,17 @@ const withAdapter = async (
 };
 
 const tickRetryDelays = async (t: TestContext, delaysMs: number[]) => {
+    const yieldEventLoop = () => new Promise<void>((resolve) => {
+        setImmediate(resolve);
+    });
+
     for (const delayMs of delaysMs) {
+        // Let the interceptor schedule setTimeout before advancing mocked time.
         // eslint-disable-next-line no-await-in-loop -- retry delays are sequential
-        await t.mock.timers.tickAsync(delayMs);
+        await yieldEventLoop();
+        t.mock.timers.tick(delayMs);
     }
+    await yieldEventLoop();
 };
 
 describe('client HTML interstitial retry', () => {
