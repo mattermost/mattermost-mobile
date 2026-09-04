@@ -64,7 +64,7 @@ describe('MarkdownCodeBlock', () => {
 
         expect(mockSyntaxHighlighter).toHaveBeenCalledWith(expect.objectContaining({
             code: previewCode,
-            language: 'dts',
+            language: 'go',
         }));
 
         await act(async () => {
@@ -74,7 +74,7 @@ describe('MarkdownCodeBlock', () => {
 
         expect(navigateToScreen).toHaveBeenCalledWith(Screens.CODE, expect.objectContaining({
             code: content,
-            language: 'dts',
+            language: 'go',
             textStyle,
         }));
     });
