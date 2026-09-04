@@ -171,7 +171,6 @@ describe('Channels - Browse Channels', () => {
 
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
         try {
             // # Enable archived channel visibility on the server, then refresh the app
             // so the logged-in client re-reads config before Browse Channels renders the archived dropdown item.
@@ -219,7 +218,11 @@ describe('Channels - Browse Channels', () => {
 
             await BrowseChannelsScreen.close();
         } finally {
-            await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: originalArchived}});
+            if (originalConfig) {
+                await System.apiReplaceConfig(siteOneUrl, originalConfig);
+            } else {
+                await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: false}});
+            }
         }
     });
 

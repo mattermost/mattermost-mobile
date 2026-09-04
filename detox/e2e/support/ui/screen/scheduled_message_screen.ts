@@ -207,17 +207,20 @@ class ScheduledMessageScreen {
         return this.deviceTimeZone;
     };
 
-    // Calendar date on the device, as {year, month, day}. Uses en-CA because it formats as
-    // an unambiguous YYYY-MM-DD.
+    // Calendar date on the device, as {year, month, day}. Uses formatToParts so the values
+    // are taken by type rather than by splitting a locale-dependent formatted string.
     private deviceCalendarDate = (at: Date = new Date()) => {
         const parts = new Intl.DateTimeFormat('en-CA', {
             timeZone: this.deviceTimeZone,
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
-        }).format(at);
-        const [yearPart = '', monthPart = '', dayPart = ''] = parts.split('-');
-        return {year: Number(yearPart), month: Number(monthPart), day: Number(dayPart)};
+        }).formatToParts(at);
+        const valueOf = (type: Intl.DateTimeFormatPartTypes) => {
+            const part = parts.find((entry) => entry.type === type);
+            return Number(part?.value ?? '');
+        };
+        return {year: valueOf('year'), month: valueOf('month'), day: valueOf('day')};
     };
 
     // Formats a device-local calendar date as "Mon D". Built on a UTC instant so the

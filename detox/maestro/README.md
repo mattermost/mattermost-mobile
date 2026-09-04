@@ -135,6 +135,10 @@ SIMULATOR_ID=<udid>
 APP_GROUP=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/AppGroup" \
   -name ".com.apple.mobile_container_manager.metadata.plist" \
   -exec grep -l "FileProvider.LocalStorage" {} \; | head -1 | xargs dirname)
+if [ -z "$APP_GROUP" ] || [ ! -d "$APP_GROUP" ]; then
+  echo "error: Mattermost App Group container was not found (APP_GROUP=${APP_GROUP:-empty}). Launch the app once on this simulator, then retry." >&2
+  exit 1
+fi
 mkdir -p "$APP_GROUP/File Provider Storage"
 cp detox/e2e/support/fixtures/image.png "$APP_GROUP/File Provider Storage/test_bookmark.png"
 ```

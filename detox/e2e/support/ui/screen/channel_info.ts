@@ -39,6 +39,7 @@ class ChannelInfoScreen {
         channelSettingsOption: 'channel_info.options.channel_settings.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
         copyHeaderTextAction: 'channel_info.extra.header.bottom_sheet.copy_header_text',
+        copyUrlAction: 'channel_info.extra.header.bottom_sheet.copy_url',
         copyHeaderCancelAction: 'channel_info.extra.header.bottom_sheet.cancel',
         copyPurposeAction: 'channel_info.title.public_private.bottom_sheet.copy_purpose',
         copyPurposeCancelAction: 'channel_info.title.public_private.bottom_sheet.cancel',

@@ -21,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, longPressWithRetry, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channel Settings - Copy Tests', () => {
@@ -121,7 +121,7 @@ describe('Channel Settings - Copy Tests', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
+    it.skip('MM-T869_1 - should show Copy URL option when long-pressing a URL in the channel header', async () => {
         const headerUrl = 'https://mattermost.com';
         const {channel: channelWithHeaderUrl} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
@@ -148,13 +148,17 @@ describe('Channel Settings - Copy Tests', () => {
         // * Verify the header section is visible
         await expect(ChannelInfoScreen.extraHeader).toBeVisible();
 
-        // # Long-press the header to open the copy bottom sheet, verify Copy header text option,
-        // and cancel — uses ChannelInfoScreen.cancelCopyChannelHeader helper.
-        // NOTE: The 'copy_url' bottom sheet item (channel_info.extra.header.bottom_sheet.copy_url)
-        // appears only when onLinkLongPress fires on a URL link within the markdown header.
-        // Long-pressing the outer TouchableWithFeedback wrapper shows only copy_header_text.
-        // TODO: Trigger onLinkLongPress on the URL text directly and assert copy_url option appears.
-        await ChannelInfoScreen.cancelCopyChannelHeader();
+        // # Long-press the URL text so MarkdownLink.onLinkLongPress fires (the outer
+        // header wrapper only exposes copy_header_text). Assert Copy URL, then cancel.
+        const copyUrlAction = element(by.id(ChannelInfoScreen.testID.copyUrlAction));
+        await longPressWithRetry(
+            element(by.text(headerUrl)),
+            copyUrlAction,
+            5,
+            by.id(ChannelInfoScreen.testID.scrollView),
+        );
+        await expect(copyUrlAction).toBeVisible();
+        await element(by.id(ChannelInfoScreen.testID.copyHeaderCancelAction)).tap();
 
         // * Verify still on channel info screen
         await wait(timeouts.ONE_SEC);

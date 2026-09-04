@@ -238,7 +238,7 @@ export const acquireLock = async (
 
                 // eslint-disable-next-line no-await-in-loop -- confirm ownership after the non-atomic write
                 const confirmedLock = parseLock(await store.read());
-                if (confirmedLock?.owner === owner) {
+                if (confirmedLock?.owner === owner && confirmedLock.expiresAt > Date.now()) {
                     startHeartbeat(store, owner, ttlMs, renewMs);
                     return;
                 }

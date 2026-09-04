@@ -279,7 +279,7 @@ jobs:
           # - AllowDownloadLogs must be true for attach_logs.yml; the T67856_4
           #   dedicated step flips it around its own run and restores itself.
           echo "==> Re-applying config baseline on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
@@ -392,7 +392,7 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
@@ -400,7 +400,7 @@ jobs:
 
           # Always restore the default before exiting this step, regardless
           # of whether the maestro run passes.
-          trap 'curl -f -sS --show-error -X PUT \
+          trap 'curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
@@ -437,7 +437,7 @@ jobs:
           # true is a harmless no-op, which keeps this safe when multiple jobs
           # share one server and a concurrent job re-flipped the flag.
           echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
@@ -754,7 +754,7 @@ jobs:
           # requires, so a shared server or a crashed earlier job cannot leak
           # config into this run. See the iOS copy of this step for details.
           echo "==> Re-applying config baseline on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
@@ -928,13 +928,13 @@ jobs:
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
-          trap 'curl -f -sS --show-error -X PUT \
+          trap 'curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
@@ -967,7 +967,7 @@ jobs:
           # # Android copy of the iOS restore step — see that step for the
           # rationale (trap-less hard-kill and skip-path coverage).
           echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \

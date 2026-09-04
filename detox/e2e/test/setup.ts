@@ -161,7 +161,7 @@ function recoverAndroidDevice(): void {
     ];
     for (const command of commands) {
         try {
-            execSync(command, {stdio: 'pipe'});
+            execSync(command, {stdio: 'pipe', timeout: 5_000});
         } catch {
             // Best effort — an unavailable command must not mask the launch error.
         }
@@ -172,7 +172,7 @@ function recoverAndroidDevice(): void {
     try {
         const focus = execSync(
             "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
-            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']},
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 5_000},
         );
         console.warn('[recoverAndroidDevice] window focus:', focus.replace(/\s+/g, ' ').trim().slice(0, 300));
     } catch {

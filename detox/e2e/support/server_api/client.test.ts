@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import assert from 'node:assert/strict';
-import {describe, it} from 'node:test';
+import {describe, it, type TestContext} from 'node:test';
 
 import {client, isHtmlInterstitialError} from './client';
 
@@ -67,12 +67,22 @@ const withAdapter = async (
     }
 };
 
+const tickRetryDelays = async (t: TestContext, delaysMs: number[]) => {
+    for (const delayMs of delaysMs) {
+        // eslint-disable-next-line no-await-in-loop -- retry delays are sequential
+        await t.mock.timers.tickAsync(delayMs);
+    }
+};
+
 describe('client HTML interstitial retry', () => {
-    it('retries a Cloudflare challenge served as 403 and returns the eventual API response', async () => {
+    it('should retry a Cloudflare challenge served as 403 and return the eventual API response', async (t) => {
+        t.mock.timers.enable({apis: ['setTimeout']});
         await withAdapter(
             [{status: 403, data: CHALLENGE_HTML}, {status: 200, data: {status: 'OK'}}],
             async (calls) => {
-                const response = await client.get('http://example.test/api/v4/system/ping');
+                const pending = client.get('http://example.test/api/v4/system/ping');
+                await tickRetryDelays(t, [3000]);
+                const response = await pending;
 
                 assert.deepEqual(response.data, {status: 'OK'});
                 assert.equal(calls(), 2, 'the challenge should have been retried exactly once');
@@ -80,11 +90,33 @@ describe('client HTML interstitial retry', () => {
         );
     });
 
-    it('retries a cold-start page served as 200, which axios resolves rather than rejects', async () => {
+    it('should retry a Cloudflare challenge twice, advancing the 3s then 6s backoff before succeeding', async (t) => {
+        t.mock.timers.enable({apis: ['setTimeout']});
+        await withAdapter(
+            [
+                {status: 403, data: CHALLENGE_HTML},
+                {status: 403, data: CHALLENGE_HTML},
+                {status: 200, data: {status: 'OK'}},
+            ],
+            async (calls) => {
+                const pending = client.get('http://example.test/api/v4/system/ping');
+                await tickRetryDelays(t, [3000, 6000]);
+                const response = await pending;
+
+                assert.deepEqual(response.data, {status: 'OK'});
+                assert.equal(calls(), 3, 'the challenge should have been retried twice');
+            },
+        );
+    });
+
+    it('should retry a cold-start page served as 200, which axios resolves rather than rejects', async (t) => {
+        t.mock.timers.enable({apis: ['setTimeout']});
         await withAdapter(
             [{status: 200, data: COLD_START_HTML}, {status: 200, data: {status: 'OK'}}],
             async (calls) => {
-                const response = await client.get('http://example.test/api/v4/system/ping');
+                const pending = client.get('http://example.test/api/v4/system/ping');
+                await tickRetryDelays(t, [3000]);
+                const response = await pending;
 
                 assert.deepEqual(response.data, {status: 'OK'});
                 assert.equal(calls(), 2);
@@ -92,7 +124,7 @@ describe('client HTML interstitial retry', () => {
         );
     });
 
-    it('leaves an ordinary 403 alone, so a real permission error still fails fast', async () => {
+    it('should leave an ordinary 403 alone, so a real permission error still fails fast', async () => {
         await withAdapter(
             [{status: 403, data: {id: 'api.context.permissions.app_error', status_code: 403}}],
             async (calls) => {
@@ -102,7 +134,7 @@ describe('client HTML interstitial retry', () => {
         );
     });
 
-    it('reports an exhausted interstitial as such, so apiInit can spend its own budget on it', () => {
+    it('should report an exhausted interstitial as such, so apiInit can spend its own budget on it', () => {
         assert.equal(isHtmlInterstitialError(new Error('Server returned "_cf_chl_opt" HTML for /x (retries exhausted or retry budget spent)')), true);
         assert.equal(isHtmlInterstitialError(new Error('Request failed with status code 403')), false);
         assert.equal(isHtmlInterstitialError(undefined), false);

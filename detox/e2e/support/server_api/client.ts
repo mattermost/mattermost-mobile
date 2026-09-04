@@ -9,6 +9,8 @@ import axios, {type InternalAxiosRequestConfig} from 'axios';
 import {wrapper} from 'axios-cookiejar-support';
 import {CookieJar} from 'tough-cookie';
 
+import {logError} from '../../../provision/log';
+
 // Force IPv4 — axios-cookiejar-support v5 uses global agents.
 (http.globalAgent as any).options.family = 4;
 (https.globalAgent as any).options.family = 4;
@@ -134,7 +136,7 @@ baseClient.interceptors.response.use(
         if (timedOut && replayable && hasRetryBudget(config)) {
             config._timeoutRetries = (config._timeoutRetries ?? 0) + 1;
             const delay = config._timeoutRetries * 1000;
-            console.warn(`[client] request timeout — retry ${config._timeoutRetries} for ${config.method} ${config.url} in ${delay}ms`); // eslint-disable-line no-console
+            logError(`[client] request timeout — retry ${config._timeoutRetries} for ${config.method} ${config.url} in ${delay}ms`);
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
         }
@@ -160,7 +162,7 @@ baseClient.interceptors.response.use(
         if (unresolved && config && isReplayableBody(config.data) && hasRetryBudget(config, DNS_RETRY_COST_MS)) {
             config._dnsRetries = (config._dnsRetries ?? 0) + 1;
             const delay = config._dnsRetries * 2000;
-            console.warn(`[client] ${error.code} — retry ${config._dnsRetries} for ${config.method} ${config.url} in ${delay}ms`); // eslint-disable-line no-console
+            logError(`[client] ${error.code} — retry ${config._dnsRetries} for ${config.method} ${config.url} in ${delay}ms`);
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
         }
@@ -210,7 +212,7 @@ baseClient.interceptors.response.use(
                 Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
                 0;
             const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
-            console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
+            logError(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`);
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
         }
@@ -269,7 +271,7 @@ const retryInterstitial = async (config: InterstitialConfig, marker: string) => 
     // A managed challenge clears in seconds once the edge is satisfied, so back off in whole
     // seconds rather than the sub-second steps used for gateway 5xx.
     const delay = attempts * 3000;
-    console.warn(`[client] "${marker}" HTML from server — retry ${attempts}/${MAX_INTERSTITIAL_RETRIES} in ${delay}ms for ${config.url}`); // eslint-disable-line no-console
+    logError(`[client] "${marker}" HTML from server — retry ${attempts}/${MAX_INTERSTITIAL_RETRIES} in ${delay}ms for ${config.url}`);
     await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
     return baseClient(config);
 };

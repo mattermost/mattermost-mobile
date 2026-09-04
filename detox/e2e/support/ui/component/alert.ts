@@ -106,7 +106,11 @@ class Alert {
             return false; // Server logout succeeded, or the alert has not been raised.
         }
 
-        await this.continueAnywayButton.tap();
+        try {
+            await this.continueAnywayButton.tap();
+        } catch {
+            return false;
+        }
         await wait(timeouts.HALF_SEC);
         return true;
     };

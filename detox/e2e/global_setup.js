@@ -120,10 +120,23 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
             const status = err.response?.status;
             const retriable = !status || status >= 500;
             if (attempt === retries || !retriable) {
-                const detail = err.response?.data ? ` body=${JSON.stringify(err.response.data).slice(0, 300)}` : '';
+                const data = err.response?.data;
+                let bodyLength = 0;
+                if (typeof data === 'string') {
+                    bodyLength = data.length;
+                } else if (Buffer.isBuffer(data)) {
+                    bodyLength = data.length;
+                } else if (data != null) {
+                    try {
+                        bodyLength = JSON.stringify(data).length;
+                    } catch {
+                        bodyLength = -1;
+                    }
+                }
                 throw new Error(
                     `[globalSetup] ${label} failed against ${SITE_URL}` +
-                    `${status ? ` with status ${status}` : ''}: ${err.message}${detail}`,
+                    `${status ? ` with status ${status}` : ''}` +
+                    `${err.code ? ` code ${err.code}` : ''}: ${err.message} (body length ${bodyLength})`,
                 );
             }
             const wait = delayMs * attempt;

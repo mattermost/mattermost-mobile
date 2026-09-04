@@ -235,9 +235,9 @@ wait_for_focused_window() {
         sleep 5
         elapsed=$(( elapsed + 5 ))
     done
-    echo "WARNING: no focused window after ${timeout}s — Espresso root matching is expected to fail"
+    echo "ERROR: no focused window after ${timeout}s — Espresso root matching is expected to fail"
     adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -E 'mCurrentFocus|mFocusedApp' || true
-    return 0
+    return 1
 }
 
 push_e2e_fixtures() {

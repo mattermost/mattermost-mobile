@@ -219,11 +219,20 @@ class PostOptionsScreen {
         // The unpin option container is not 100% hittable (lower in the sheet),
         // so tap the label — pin's option tap can succeed where unpin fails.
         await this.toBeVisible();
-        await waitFor(this.unpinPostOptionLabel).toExist().withTimeout(timeouts.TEN_SEC);
         if (isIos()) {
+            await waitFor(this.unpinPostOptionLabel).toExist().withTimeout(timeouts.TEN_SEC);
             await this.tapSheetRowIos(this.unpinPostOptionLabel);
             return;
         }
+        try {
+            await waitFor(this.unpinPostOptionLabel).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // Already visible or the sheet is not scrollable.
+        }
+        await waitFor(this.unpinPostOptionLabel).toExist().withTimeout(timeouts.TEN_SEC);
         await this.unpinPostOptionLabel.tap();
     };
 }

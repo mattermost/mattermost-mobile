@@ -102,7 +102,7 @@ class InteractiveDialogScreen {
 
     submit = async () => {
         try {
-            await this.interactiveDialogScreen.scroll(200, 'down');
+            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
         } catch { /* short dialogs may not scroll */ }
         await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();

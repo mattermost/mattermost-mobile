@@ -87,6 +87,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 
         try {
             try {
+                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
                 await HomeScreen.logout();

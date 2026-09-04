@@ -52,11 +52,15 @@ describe('Classification Banner - Global Classification Banner', () => {
         }
 
         try {
-            // Clean up the classification config (per-suite state) but leave the feature
-            // flag enabled — see the suite invariant above.
-            await Properties.apiCleanupClassification(siteOneUrl);
+            try {
+                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
 
-            await HomeScreen.logout();
+                // Clean up the classification config (per-suite state) but leave the feature
+                // flag enabled — see the suite invariant above.
+                await Properties.apiCleanupClassification(siteOneUrl);
+            } finally {
+                await HomeScreen.logout();
+            }
         } finally {
             await releaseClassificationLock(siteOneUrl, lockOwner);
         }

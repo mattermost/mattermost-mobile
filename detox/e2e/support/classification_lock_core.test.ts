@@ -86,20 +86,20 @@ afterEach(() => {
 });
 
 describe('parseLock', () => {
-    it('returns undefined for an unset, malformed, or incomplete cell', () => {
+    it('should return undefined for an unset, malformed, or incomplete cell', () => {
         assert.equal(parseLock(''), undefined);
         assert.equal(parseLock('not json'), undefined);
         assert.equal(parseLock('{"owner":"a"}'), undefined);
         assert.equal(parseLock('{"expiresAt":1}'), undefined);
     });
 
-    it('reads back a well-formed record', () => {
+    it('should read back a well-formed record', () => {
         assert.deepEqual(parseLock('{"owner":"a","expiresAt":7}'), {owner: 'a', expiresAt: 7});
     });
 });
 
 describe('acquireLock — configuration invariants', () => {
-    it('ships defaults that can recover a leaked lock', () => {
+    it('should ship defaults that can recover a leaked lock', () => {
         // The shipped values are what CI actually uses, so guard them directly rather than
         // only guarding the options path. 20m timeout vs 35m TTL is the bug this replaces.
         assert.ok(
@@ -112,14 +112,14 @@ describe('acquireLock — configuration invariants', () => {
         );
     });
 
-    it('rejects an empty owner', async () => {
+    it('should reject an empty owner', async () => {
         await assert.rejects(
             () => acquireLock(createStore(), '', FAST),
             /owner must not be empty/,
         );
     });
 
-    it('rejects an acquire budget that cannot outlast the lease', async () => {
+    it('should reject an acquire budget that cannot outlast the lease', async () => {
         // This is the shipped 20-minute-timeout / 35-minute-TTL bug, in miniature: a waiter
         // that gives up before the lease expires can never recover a leaked lock.
         await assert.rejects(
@@ -128,7 +128,7 @@ describe('acquireLock — configuration invariants', () => {
         );
     });
 
-    it('rejects a renewal interval that is not shorter than the lease', async () => {
+    it('should reject a renewal interval that is not shorter than the lease', async () => {
         await assert.rejects(
             () => acquireLock(createStore(), 'owner-a', {timeoutMs: TIMEOUT, ttlMs: 50, pollMs: POLL, renewMs: 50}),
             /renewal interval \(50ms\) must be shorter than the lease TTL \(50ms\)/,
@@ -137,7 +137,7 @@ describe('acquireLock — configuration invariants', () => {
 });
 
 describe('acquireLock', () => {
-    it('takes an unheld lock and starts renewing it', async () => {
+    it('should take an unheld lock and start renewing it', async () => {
         const store = createStore();
 
         await acquireLock(store, 'owner-a', FAST);
@@ -146,7 +146,17 @@ describe('acquireLock', () => {
         assert.equal(activeHeartbeatCount(), 1);
     });
 
-    it('recovers a lock leaked by a holder that never released', async () => {
+    it('should treat an expired matching-owner record as available and confirm only a live lease', async () => {
+        const store = createStore(JSON.stringify({owner: 'owner-a', expiresAt: Date.now() - 1}));
+
+        await acquireLock(store, 'owner-a', FAST);
+
+        const lock = parseLock(store.value);
+        assert.equal(lock?.owner, 'owner-a');
+        assert.ok((lock?.expiresAt ?? 0) > Date.now(), 'confirmed acquire must write an unexpired lease');
+    });
+
+    it('should recover a lock leaked by a holder that never released', async () => {
         // The CI failure: shard 8's release threw, so nothing ever cleared the cell. The
         // waiter must outlast the dead lease inside its own budget.
         const store = createStore(heldBy('dead-owner', TTL));
@@ -160,7 +170,7 @@ describe('acquireLock', () => {
         assert.ok(waitedMs < TIMEOUT, `expected recovery inside the ${TIMEOUT}ms budget, waited ${waitedMs}ms`);
     });
 
-    it("keeps a live holder's lease alive past the TTL", async () => {
+    it("should keep a live holder's lease alive past the TTL", async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -174,7 +184,7 @@ describe('acquireLock', () => {
         );
     });
 
-    it('blocks a second owner while the lease is renewed', async () => {
+    it('should block a second owner while the lease is renewed', async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -185,7 +195,7 @@ describe('acquireLock', () => {
         assert.equal(ownerOf(store), 'owner-a');
     });
 
-    it('serialises two contending owners', async () => {
+    it('should serialise two contending owners', async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -199,7 +209,7 @@ describe('acquireLock', () => {
         assert.equal(ownerOf(store), 'owner-b');
     });
 
-    it('gives up quickly when the store is unreachable rather than burning the contention budget', async () => {
+    it('should give up quickly when the store is unreachable rather than burning the contention budget', async () => {
         const store = createStore();
         store.failReads = true;
 
@@ -212,7 +222,7 @@ describe('acquireLock', () => {
 });
 
 describe('releaseLock', () => {
-    it('clears its own lock and stops renewing', async () => {
+    it('should clear its own lock and stop renewing', async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -225,7 +235,7 @@ describe('releaseLock', () => {
         assert.equal(store.writes, writesAfterRelease, 'renewal must stop at release');
     });
 
-    it('leaves a lock held by someone else alone', async () => {
+    it('should leave a lock held by someone else alone', async () => {
         const store = createStore(heldBy('owner-a', TTL * 10));
 
         await releaseLock(store, 'owner-b');
@@ -233,7 +243,7 @@ describe('releaseLock', () => {
         assert.equal(ownerOf(store), 'owner-a');
     });
 
-    it('does not throw when the store is unreachable, and still stops renewing', async () => {
+    it('should not throw when the store is unreachable, and still stop renewing', async () => {
         // Shard 8's afterAll: the release path hit ENOTFOUND. That must not fail an otherwise
         // passing suite, and — with renewal stopped — the lease now expires on its own.
         const store = createStore();
@@ -249,7 +259,7 @@ describe('releaseLock', () => {
         assert.equal(store.writes, writesAfterRelease, 'a failed release must not leave a heartbeat running');
     });
 
-    it('is a no-op for an empty owner', async () => {
+    it('should be a no-op for an empty owner', async () => {
         const store = createStore(heldBy('owner-a', TTL * 10));
 
         await releaseLock(store, '');
@@ -260,7 +270,7 @@ describe('releaseLock', () => {
 });
 
 describe('heartbeat', () => {
-    it('does not resurrect the lock when a renewal tick is in flight at release', async () => {
+    it('should not resurrect the lock when a renewal tick is in flight at release', async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -277,7 +287,7 @@ describe('heartbeat', () => {
         assert.equal(store.value, '', 'a tick in flight at release must not re-take the lock');
     });
 
-    it('stops renewing once another owner has taken the lease over', async () => {
+    it('should stop renewing once another owner has taken the lease over', async () => {
         const store = createStore();
         await acquireLock(store, 'owner-a', FAST);
 
@@ -292,7 +302,7 @@ describe('heartbeat', () => {
 });
 
 describe('assertLockOwnership', () => {
-    it('passes while the owner still holds the lock', async () => {
+    it('should pass while the owner still holds the lock', async () => {
         const store = createStore();
         await acquireLock(store, 'shard-9', FAST);
 
@@ -301,7 +311,7 @@ describe('assertLockOwnership', () => {
         await releaseLock(store, 'shard-9');
     });
 
-    it('throws naming the stealer when another owner took the cell', async () => {
+    it('should throw naming the stealer when another owner took the cell', async () => {
         const store = createStore();
         await acquireLock(store, 'shard-9', FAST);
         await releaseLock(store, 'shard-9');
@@ -316,7 +326,7 @@ describe('assertLockOwnership', () => {
         );
     });
 
-    it('throws when the lock cell was cleared mid-run', async () => {
+    it('should throw when the lock cell was cleared mid-run', async () => {
         const store = createStore();
 
         await assert.rejects(
@@ -325,7 +335,7 @@ describe('assertLockOwnership', () => {
         );
     });
 
-    it('rejects an empty owner', async () => {
+    it('should reject an empty owner', async () => {
         const store = createStore();
 
         await assert.rejects(

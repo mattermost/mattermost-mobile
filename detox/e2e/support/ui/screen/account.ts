@@ -10,6 +10,8 @@ import {HomeScreen} from '@support/ui/screen';
 import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+import {logInfo} from '../../../../provision/log';
+
 class AccountScreen {
     testID = {
         userInfoPrefix: 'account.user_info.',
@@ -112,7 +114,7 @@ class AccountScreen {
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.
         if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TWO_SEC)) {
-            console.log('[debug:2a0143] AccountScreen.open dismissed lingering "Logout not complete" dialog'); // eslint-disable-line no-console
+            logInfo('AccountScreen.open dismissed lingering "Logout not complete" dialog');
         }
 
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
@@ -252,7 +254,7 @@ class AccountScreen {
         // the logout to complete instead of leaving the app in a stuck state.
         // Use TEN_SEC because CI environments can be slow to show this dialog.
         if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TEN_SEC)) {
-            console.log('[debug:2a0143] AccountScreen.logout dismissed "Logout not complete" dialog'); // eslint-disable-line no-console
+            logInfo('AccountScreen.logout dismissed "Logout not complete" dialog');
         }
 
         await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
