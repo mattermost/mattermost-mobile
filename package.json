@@ -74,6 +74,7 @@
     "grapheme-splitter": "1.0.4",
     "html-entities": "2.6.0",
     "js-sha256": "0.11.1",
+    "lowlight": "1.20.0",
     "mime-db": "1.54.0",
     "moment-timezone": "0.6.2",
     "node-html-parser": "7.1.0",
