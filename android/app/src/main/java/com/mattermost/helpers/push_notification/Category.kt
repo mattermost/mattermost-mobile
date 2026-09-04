@@ -13,7 +13,7 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyTeamCategories(db: WMD
     return try {
         val userId = queryCurrentUserId(db)
         val categories = fetch(serverUrl, "/api/v4/users/$userId/teams/$teamId/channels/categories")
-        categories?.getMap("data")
+        categories?.safeGetMap("data")
     } catch (e: Exception) {
         e.printStackTrace()
         null

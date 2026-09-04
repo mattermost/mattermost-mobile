@@ -40,7 +40,7 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
         }
 
         val postsResponse = fetch(serverUrl, endpoint)
-        val postData = postsResponse?.getMap("data")
+        val postData = postsResponse?.safeGetMap("data")
         val results = Arguments.createMap()
 
         if (postData != null) {
