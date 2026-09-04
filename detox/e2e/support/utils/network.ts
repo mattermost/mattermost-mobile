@@ -130,6 +130,29 @@ const hostCanReachServer = (serverUrl: string): boolean => {
     return tryRun(`curl -sS --max-time 2 -o /dev/null ${origin}/api/v4/system/ping`);
 };
 
+/** IP curl actually connected to, or empty when the request failed. */
+const hostReachableServerIp = (serverUrl: string): string => {
+    const {origin} = new URL(serverUrl);
+    try {
+        return run(`curl -sS --max-time 2 -o /dev/null -w '%{remote_ip}' ${origin}/api/v4/system/ping`).trim();
+    } catch {
+        return '';
+    }
+};
+
+const loadOfflinePfAnchor = (ips: string[], port: string): void => {
+    const rulesDir = mkdtempSync(path.join(tmpdir(), 'mm-e2e-pf-'));
+    const rulesFile = path.join(rulesDir, 'offline.conf');
+    const table = ips.join(' ');
+    writeFileSync(rulesFile, [
+        `table <mm_e2e_blocked> persist { ${table} }`,
+        `block return-rst out quick proto tcp to <mm_e2e_blocked> port ${port}`,
+        `block drop out quick proto udp to <mm_e2e_blocked> port ${port}`,
+        '',
+    ].join('\n'));
+    run(`sudo -n pfctl -a ${PFCTL_ANCHOR} -f ${rulesFile}`);
+};
+
 const emulatorCanReachIp = (ip: string): boolean => {
     return tryRun(`adb shell ping -c 1 -W 2 ${ip}`);
 };
@@ -234,42 +257,52 @@ const goOnlineAndroid = async (serverUrl: string) => {
 };
 
 const goOfflineIos = async (serverUrl: string, ips: string[], port: string) => {
-    const rulesDir = mkdtempSync(path.join(tmpdir(), 'mm-e2e-pf-'));
-    const rulesFile = path.join(rulesDir, 'offline.conf');
-    const table = ips.join(' ');
-    writeFileSync(rulesFile, [
-        `table <mm_e2e_blocked> persist { ${table} }`,
+    const {hostname} = new URL(serverUrl);
+    const blocked = new Set(ips);
 
-        // Instant failure for new TCP connections — same fast error airplane mode produces.
-        `block return-rst out quick proto tcp to <mm_e2e_blocked> port ${port}`,
-
-        // HTTP/3 path: the server advertises alt-svc h3 and the app honours it.
-        `block drop out quick proto udp to <mm_e2e_blocked> port ${port}`,
-        '',
-    ].join('\n'));
-
-    // Capture pf's prior state so goOnline() restores it exactly.
     pfWasEnabled = run('sudo -n pfctl -s info').includes('Status: Enabled');
     if (!pfWasEnabled) {
         run('sudo -n pfctl -E');
         pfEnabledByUs = true;
     }
 
-    // Load the anchor directly — never `pfctl -f /etc/pf.conf` (collides with the
-    // system ruleset on live hosts; see file header).
-    run(`sudo -n pfctl -a ${PFCTL_ANCHOR} -f ${rulesFile}`);
-    pfAnchorLoaded = true;
+    const reloadAnchor = () => {
+        loadOfflinePfAnchor([...blocked], port);
+        pfAnchorLoaded = true;
+        for (const ip of blocked) {
+            tryRun(`sudo -n pfctl -k 0.0.0.0/0 -k ${ip}`);
+        }
+    };
 
-    // Best-effort: kill pre-existing pf states to the server so an established
-    // WebSocket dies too. Non-fatal — the unreachable poll below is the real gate.
-    for (const ip of ips) {
-        tryRun(`sudo -n pfctl -k 0.0.0.0/0 -k ${ip}`);
-    }
+    reloadAnchor();
 
     await pollUntil(
-        () => !hostCanReachServer(serverUrl),
+        async () => {
+            if (!hostCanReachServer(serverUrl)) {
+                return true;
+            }
+
+            // Cloudflare can hand curl a different edge IP than the A/AAAA set we
+            // blocked (CI 33877432724 MM-T416). Add that IP and any newly resolved
+            // records, then keep polling within the same 10s budget.
+            const extra = hostReachableServerIp(serverUrl);
+            const fresh = hostname.match(/^[0-9a-fA-F:.]+$/) ? [] : await resolveServerIps(hostname);
+            let added = false;
+            for (const ip of [...fresh, extra]) {
+                if (ip && !blocked.has(ip)) {
+                    blocked.add(ip);
+                    added = true;
+                }
+            }
+            if (added) {
+                resolvedServerIps = [...blocked];
+                reloadAnchor();
+                logDebug(`[network] pfctl table now has ${blocked.size} edge IPs after rotation`);
+            }
+            return false;
+        },
         OFFLINE_VERIFY_TIMEOUT_MS,
-        `pfctl block on ${table}:${port} did not make the server unreachable within ${OFFLINE_VERIFY_TIMEOUT_MS}ms — refusing to continue (a silent block failure would let the post succeed and the test would fail as designed)`,
+        `pfctl block on ${[...blocked].join(' ')}:${port} did not make the server unreachable within ${OFFLINE_VERIFY_TIMEOUT_MS}ms — refusing to continue (a silent block failure would let the post succeed and the test would fail as designed)`,
     );
 };
 
