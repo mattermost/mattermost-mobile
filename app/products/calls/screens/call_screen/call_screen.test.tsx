@@ -81,6 +81,7 @@ describe('CallScreen', () => {
         userId: 'my-id',
         muted: false,
         raisedHand: 0,
+        video: false,
         userModel: TestHelper.fakeUserModel({id: 'my-id', username: 'me'}),
     };
 

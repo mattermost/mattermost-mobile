@@ -22,7 +22,7 @@
     "@formatjs/intl-relativetimeformat": "12.3.5",
     "@gorhom/bottom-sheet": "5.2.13",
     "@gorhom/portal": "1.0.14",
-    "@mattermost/calls": "github:mattermost/calls-common#bf5c7a25d43478b7949a45d4cbbdacac17705b59",
+    "@mattermost/calls": "github:mattermost/calls-common#f1cf4ad0ddc7ca1d6deda15cbcb6c39f1726aa2e",
     "@mattermost/calls-native": "file:./libraries/@mattermost/calls-native",
     "@mattermost/compass-icons": "0.1.53",
     "@mattermost/hardware-keyboard": "file:./libraries/@mattermost/hardware-keyboard",

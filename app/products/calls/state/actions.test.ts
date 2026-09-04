@@ -11,6 +11,7 @@ import {AppState, Platform} from 'react-native';
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
+    getCurrentCall,
     newCurrentCall,
     processIncomingCalls,
     processMeanOpinionScore,
@@ -53,6 +54,7 @@ import {
     setRaisedHand,
     setScreenShareURL,
     setUserMuted,
+    setUserVideoOn,
     setUserVoiceOn,
     userJoinedCall,
     userLeftCall,
@@ -129,8 +131,8 @@ jest.mocked(getUserById).mockResolvedValue(user5);
 const call1: Call = {
     id: 'call1',
     sessions: {
-        session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-        session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+        session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0, video: false},
+        session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false},
     },
     channelId: 'channel-1',
     startTime: 123,
@@ -143,8 +145,8 @@ const call1: Call = {
 const call2: Call = {
     id: 'call2',
     sessions: {
-        session3: {sessionId: 'session3', userId: 'user-3', muted: false, raisedHand: 0},
-        session4: {sessionId: 'session4', userId: 'user-4', muted: true, raisedHand: 0},
+        session3: {sessionId: 'session3', userId: 'user-3', muted: false, raisedHand: 0, video: false},
+        session4: {sessionId: 'session4', userId: 'user-4', muted: true, raisedHand: 0, video: false},
     },
     channelId: 'channel-2',
     startTime: 123,
@@ -157,8 +159,8 @@ const call2: Call = {
 const call3: Call = {
     id: 'call3',
     sessions: {
-        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0},
-        session6: {sessionId: 'session6', userId: 'user-6', muted: true, raisedHand: 0},
+        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0, video: false},
+        session6: {sessionId: 'session6', userId: 'user-6', muted: true, raisedHand: 0, video: false},
     },
     channelId: 'channel-3',
     startTime: 123,
@@ -171,7 +173,7 @@ const call3: Call = {
 const callDM: Call = {
     id: 'callDM',
     sessions: {
-        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0},
+        session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0, video: false},
     },
     channelId: 'channel-private',
     startTime: 123,
@@ -252,9 +254,9 @@ describe('useCallsState', () => {
         const testNewCall1 = {
             ...call1,
             sessions: {
-                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-                session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
-                session3: {sessionId: 'session3', userId: 'user-3', muted: false, raisedHand: 123},
+                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0, video: false},
+                session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false},
+                session3: {sessionId: 'session3', userId: 'user-3', muted: false, raisedHand: 123, video: false},
             },
         };
         const test = {
@@ -325,9 +327,9 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
-                    session3: {sessionId: 'session3', userId: 'user-3', muted: true, raisedHand: 0},
+                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0, video: false},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false},
+                    session3: {sessionId: 'session3', userId: 'user-3', muted: true, raisedHand: 0, video: false},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -404,7 +406,7 @@ describe('useCallsState', () => {
         // Joining a call another user is already in: for the callee, that's the moment it was answered.
         setUpCall({
             ...emptyCall,
-            sessions: {session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0}},
+            sessions: {session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false}},
         });
         act(() => atAnsweredTime(() => userJoinedCall('server1', 'channel-1', 'myUserId', 'mySessionId')));
         assert.equal(result.current?.dmCalleeAnsweredAt, ANSWERED_AT);
@@ -445,7 +447,7 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -511,7 +513,7 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 0, video: false},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -555,7 +557,7 @@ describe('useCallsState', () => {
         const soloCall = {
             ...call1,
             sessions: {
-                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
+                session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0, video: false},
             },
         };
         act(() => {
@@ -580,6 +582,27 @@ describe('useCallsState', () => {
         act(() => userLeftCall('server1', 'channel-1', 'session1'));
 
         expect(endNativeCall).not.toHaveBeenCalled();
+    });
+
+    it('userLeftCall drops the video URL for the departed session', () => {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            videoURLs: {session1: 'url://camera'},
+        };
+
+        act(() => {
+            setCallsState('server1', {...DefaultCallsState, calls: {'channel-1': call1}});
+            setChannelsWithCalls('server1', {'channel-1': true});
+            setCurrentCall(initialCurrentCallState);
+        });
+
+        act(() => userLeftCall('server1', 'channel-1', 'session1'));
+
+        expect(getCurrentCall()?.videoURLs.session1).toBeUndefined();
     });
 
     it('setCalls ends the native overlay for calls that disappeared from the server snapshot', async () => {
@@ -776,8 +799,8 @@ describe('useCallsState', () => {
             'channel-1': {
                 id: 'call1',
                 sessions: {
-                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0},
-                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 345},
+                    session1: {sessionId: 'session1', userId: 'user-1', muted: false, raisedHand: 0, video: false},
+                    session2: {sessionId: 'session2', userId: 'user-2', muted: true, raisedHand: 345, video: false},
                 },
                 channelId: 'channel-1',
                 startTime: 123,
@@ -836,7 +859,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0, video: false},
             },
         };
         const expectedCallsState = {
@@ -963,7 +986,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0, video: false},
             },
         };
         const expectedCallsState = {
@@ -1016,7 +1039,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0, video: false},
             },
         };
         const expectedCallsState: CallsState = {
@@ -1117,7 +1140,7 @@ describe('useCallsState', () => {
             ...call1,
             sessions: {
                 ...call1.sessions,
-                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0},
+                mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0, video: false},
             },
         };
         const expectedCallsState: CallsState = {
@@ -1225,6 +1248,47 @@ describe('useCallsState', () => {
         await act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
         assert.deepEqual(result.current[1], initialCurrentCallState);
         assert.deepEqual(result.current[0], initialCallsState);
+    });
+
+    it('setUserVideoOn sets and clears the session video flag', () => {
+        const channelId = 'channel-1';
+        setCurrentCall({
+            ...DefaultCurrentCall,
+            channelId,
+            sessions: {'session-1': {sessionId: 'session-1', userId: 'user-1', muted: false, raisedHand: 0, video: false}},
+        });
+
+        setUserVideoOn(channelId, 'session-1', true);
+        expect(getCurrentCall()?.sessions['session-1'].video).toBe(true);
+
+        setUserVideoOn(channelId, 'session-1', false);
+        expect(getCurrentCall()?.sessions['session-1'].video).toBe(false);
+    });
+
+    it('setUserVideoOn removes the stale video URL when video goes off', () => {
+        const channelId = 'channel-1';
+        setCurrentCall({
+            ...DefaultCurrentCall,
+            channelId,
+            sessions: {'session-1': {sessionId: 'session-1', userId: 'user-1', muted: false, raisedHand: 0, video: true}},
+            videoURLs: {'session-1': 'url://camera'},
+        });
+
+        setUserVideoOn(channelId, 'session-1', false);
+
+        expect(getCurrentCall()?.videoURLs['session-1']).toBeUndefined();
+    });
+
+    it('setUserVideoOn ignores events for a different channel', () => {
+        setCurrentCall({
+            ...DefaultCurrentCall,
+            channelId: 'channel-1',
+            sessions: {'session-1': {sessionId: 'session-1', userId: 'user-1', muted: false, raisedHand: 0, video: false}},
+        });
+
+        setUserVideoOn('channel-2', 'session-1', true);
+
+        expect(getCurrentCall()?.sessions['session-1'].video).toBe(false);
     });
 
     it('config', () => {
@@ -1483,7 +1547,7 @@ describe('useCallsState', () => {
         const callIStarted: Call = {
             id: 'callIStartedid',
             sessions: {
-                session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0},
+                session5: {sessionId: 'session5', userId: 'user-5', muted: false, raisedHand: 0, video: false},
             },
             channelId: 'channel-private2',
             startTime: 123,
@@ -1927,7 +1991,7 @@ describe('useCallsState', () => {
             callIOwn = {
                 id: 'call-ringback',
                 sessions: {
-                    mySession: {sessionId: 'mySession', userId: 'myUserId', muted: false, raisedHand: 0},
+                    mySession: {sessionId: 'mySession', userId: 'myUserId', muted: false, raisedHand: 0, video: false},
                 },
                 channelId: 'channel-ringback',
                 startTime: Date.now(),
@@ -2088,7 +2152,7 @@ describe('useCallsState', () => {
                 ...callIOwn,
                 sessions: {
                     ...callIOwn.sessions,
-                    theirSession: {sessionId: 'theirSession', userId: 'other-user', muted: false, raisedHand: 0},
+                    theirSession: {sessionId: 'theirSession', userId: 'other-user', muted: false, raisedHand: 0, video: false},
                 },
             };
             await act(async () => {
@@ -2202,7 +2266,7 @@ describe('useCallsState', () => {
             // A full call-state snapshot does carry sessions, with us muted as everyone joins.
             const mutedSnapshot = {
                 ...call,
-                sessions: {mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0}},
+                sessions: {mySessionId: {sessionId: 'mySessionId', userId: 'myUserId', muted: true, raisedHand: 0, video: false}},
             };
             act(() => setCallForChannel('server1', 'channel-1', mutedSnapshot));
             assert.equal(result.current?.sessions.mySessionId.muted, false);

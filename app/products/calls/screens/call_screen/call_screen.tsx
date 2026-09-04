@@ -3,7 +3,7 @@
 /* eslint max-lines: off */
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {
     Keyboard,
     type LayoutChangeEvent,
@@ -20,7 +20,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
-import {muteMyself, unmuteMyself} from '@calls/actions';
+import {muteMyself, startVideo, stopVideo, switchCamera, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation, startCallRecording, stopCallRecording, switchToCallThread} from '@calls/actions/calls';
 import {
     recordingAlert,
@@ -41,6 +41,8 @@ import {useHostMenus, usePermissionsChecker} from '@calls/hooks';
 import {HeaderCenter} from '@calls/screens/call_screen/header_center';
 import {ParticipantCard} from '@calls/screens/call_screen/participant_card';
 import {ParticipantLoadingCard} from '@calls/screens/call_screen/participant_loading_card';
+import SelfView from '@calls/screens/call_screen/self_view';
+import VideoGrid from '@calls/screens/call_screen/video_grid';
 import {
     setCallQualityAlertDismissed,
     setMicPermissionsErrorDismissed,
@@ -56,6 +58,7 @@ import {Calls, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {dismissKeyboard} from '@utils/keyboard';
@@ -71,6 +74,21 @@ export const avatarL = 96;
 export const avatarM = 72;
 export const usernameL = 110;
 export const usernameM = 92;
+
+const messages = defineMessages({
+    startVideo: {
+        id: 'mobile.calls_start_video',
+        defaultMessage: 'Turn on camera',
+    },
+    stopVideo: {
+        id: 'mobile.calls_stop_video',
+        defaultMessage: 'Turn off camera',
+    },
+    switchCamera: {
+        id: 'mobile.calls_switch_camera',
+        defaultMessage: 'Switch camera',
+    },
+});
 
 export type Props = {
     currentCall: CurrentCall | null;
@@ -307,6 +325,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     denimDND: {
         color: Preferences.THEMES.denim.dndIndicator,
     },
+    pressed: {
+        opacity: 0.72,
+    },
 }));
 
 const CallScreen = ({
@@ -330,7 +351,7 @@ const CallScreen = ({
     const theme = useTheme();
     const {width, height} = useWindowDimensions();
     const serverUrl = useServerUrl();
-    const {EnableRecordings, EnableTranscriptions} = useCallsConfig(serverUrl);
+    const {EnableRecordings, EnableTranscriptions, EnableVideo} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const incomingCalls = useIncomingCalls();
     const {hostControlsAvailable, onPress, openProfile} = useHostMenus();
@@ -352,6 +373,7 @@ const CallScreen = ({
         userId: currentCall?.myUserId ?? '',
         muted: !currentCall?.startUnmuted,
         raisedHand: 0,
+        video: false,
         userModel: currentUser,
     }), [currentCall?.mySessionId, currentCall?.myUserId, currentCall?.startUnmuted, currentUser]);
 
@@ -360,6 +382,7 @@ const CallScreen = ({
     const displayMySession = mySession ?? pendingMySession;
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const screenShareOn = Boolean(currentCall?.screenOn);
+    const isVideoAllowed = Boolean(EnableVideo);
     const isLandscape = width > height;
     const smallerAvatar = isLandscape || screenShareOn || showCC || contentOverflow;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
@@ -384,6 +407,16 @@ const CallScreen = ({
             muteMyself();
         }
     }, [displayMySession.muted]);
+
+    const videoToggleHandler = usePreventDoubleTap(useCallback(() => {
+        if (currentCall?.videoOn) {
+            stopVideo();
+        } else {
+            startVideo(intl);
+        }
+    }, [currentCall?.videoOn, intl]));
+
+    const switchCameraHandler = usePreventDoubleTap(switchCamera);
 
     const toggleReactions = useCallback(() => {
         setShowReactions((prev) => !prev);
@@ -615,6 +648,26 @@ const CallScreen = ({
     const cards = mySession ? sessions : [pendingMySession, ...sessions];
     const calleeHaveNotJoinedYet = (isDMCalling || isDMConnecting) && !hasOtherUserJoined(sessionsDict, currentCall.myUserId);
 
+    // Our own session is excluded: the server broadcasts user_video_on back to
+    // the originator, and our own stream URL never lands in videoURLs, so
+    // including it would render a blank tile next to the SelfView overlay.
+    const otherSessions = sessions.filter((sess) => sess.sessionId !== currentCall.mySessionId);
+
+    // The grid only appears once somebody else has their camera on; with no
+    // cameras at all the participant list below is left exactly as it was. But
+    // once it does appear it holds *every* other participant, camera or not —
+    // a camera-less participant gets an avatar tile rather than vanishing from
+    // the call screen entirely.
+    const anyOtherVideo = otherSessions.some((sess) => sess.video);
+    const videoGrid = anyOtherVideo ? (
+        <VideoGrid
+            sessions={otherSessions}
+            videoURLs={currentCall.videoURLs}
+            teammateNameDisplay={teammateNameDisplay}
+            horizontal={screenShareOn}
+        />
+    ) : null;
+
     let usersList = null;
     if (!screenShareOn || !isLandscape) {
         usersList = (
@@ -714,8 +767,9 @@ const CallScreen = ({
             <View style={style.container}>
                 {!isLandscape && header}
                 {!isLandscape && <View style={style.headerPortraitSpacer}/>}
-                {usersList}
+                {!videoGrid && usersList}
                 {screenShareView}
+                {videoGrid}
                 {isLandscape && header}
                 {showCC &&
                     <Captions
@@ -840,6 +894,40 @@ const CallScreen = ({
                                     />
                                 </Pressable>
                             )}
+                            {isVideoAllowed &&
+                                <Pressable
+                                    testID='call_screen.video.toggle'
+                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed]}
+                                    onPress={videoToggleHandler}
+                                >
+                                    <CompassIcon
+                                        name={currentCall.videoOn ? 'video-outline' : 'video-off-outline'}
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, currentCall.videoOn && style.buttonOn]}
+                                    />
+                                    <FormattedText
+                                        {...(currentCall.videoOn ? messages.stopVideo : messages.startVideo)}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            }
+                            {isVideoAllowed && currentCall.videoOn &&
+                                <Pressable
+                                    testID='call_screen.video.switch_camera'
+                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed]}
+                                    onPress={switchCameraHandler}
+                                >
+                                    <CompassIcon
+                                        name='camera-outline'
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <FormattedText
+                                        {...messages.switchCamera}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            }
                             {!isLandscape && (isHost || ccAvailable) &&
                                 <Pressable
                                     style={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
@@ -944,6 +1032,7 @@ const CallScreen = ({
                         </View>
                     </View>
                 </View>
+                {Boolean(currentCall.myVideoURL) && <SelfView url={currentCall.myVideoURL}/>}
             </View>
         </SafeAreaView>
     );

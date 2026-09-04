@@ -26,6 +26,7 @@ import {
     setRaisedHand,
     setRecordingState,
     setUserMuted,
+    setUserVideoOn,
     setUserVoiceOn,
     userJoinedCall,
     userLeftCall,
@@ -53,6 +54,8 @@ import {
     handleCallUserReacted,
     handleCallUserUnmuted,
     handleCallUserUnraiseHand,
+    handleCallUserVideoOff,
+    handleCallUserVideoOn,
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
     handleHostLowerHand,
@@ -75,6 +78,7 @@ import type {
     UserRaiseUnraiseHandData,
     UserReactionData,
     UserScreenOnOffData,
+    UserVideoOnOffData,
     UserVoiceOnOffData,
 } from '@mattermost/calls/lib/types';
 
@@ -211,6 +215,24 @@ describe('websocket event handlers', () => {
                 data: {session_id: sessionId},
             } as WebSocketMessage<UserVoiceOnOffData>);
             expect(setUserVoiceOn).toHaveBeenCalledWith(channelId, sessionId, false);
+        });
+    });
+
+    describe('handleCallUserVideoOn/Off', () => {
+        it('handleCallUserVideoOn sets the session video flag', () => {
+            handleCallUserVideoOn({
+                broadcast: {channel_id: channelId},
+                data: {session_id: sessionId},
+            } as WebSocketMessage<UserVideoOnOffData>);
+            expect(setUserVideoOn).toHaveBeenCalledWith(channelId, sessionId, true);
+        });
+
+        it('handleCallUserVideoOff clears the session video flag', () => {
+            handleCallUserVideoOff({
+                broadcast: {channel_id: channelId},
+                data: {session_id: sessionId},
+            } as WebSocketMessage<UserVideoOnOffData>);
+            expect(setUserVideoOn).toHaveBeenCalledWith(channelId, sessionId, false);
         });
     });
 

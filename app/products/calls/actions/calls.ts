@@ -9,6 +9,7 @@ import {Alert} from 'react-native';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
+import {hasCameraPermission} from '@calls/actions/permissions';
 import {
     endCallConfirmationAlert,
     leaveAndJoinWithAlert,
@@ -166,6 +167,7 @@ export const createCallAndAddToIds = (channelId: string, call: CallState, ids?: 
                 sessionId: cur.session_id,
                 raisedHand: cur.raised_hand || 0,
                 muted: !cur.unmuted,
+                video: Boolean(cur.video),
             };
             return accum;
         }, {} as Dictionary<CallSession>),
@@ -411,6 +413,34 @@ export const raiseHand = () => {
 export const unraiseHand = () => {
     if (connection) {
         connection.unraiseHand();
+    }
+};
+
+export const startVideo = async (intl: IntlShape) => {
+    if (!connection) {
+        return;
+    }
+
+    // Request the camera permission before the first startVideo; on
+    // permanent denial this routes the user to system settings instead of
+    // failing silently (see hasCameraPermission).
+    const granted = await hasCameraPermission(intl);
+    if (!granted) {
+        return;
+    }
+
+    await connection.startVideo();
+};
+
+export const stopVideo = () => {
+    if (connection) {
+        connection.stopVideo();
+    }
+};
+
+export const switchCamera = () => {
+    if (connection) {
+        connection.switchCamera();
     }
 };
 

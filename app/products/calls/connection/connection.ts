@@ -5,12 +5,13 @@ import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {hasDCSignalingLockSupport} from '@mattermost/calls/lib/utils';
 import CallsNative from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
-import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
+import {defineMessages, type IntlShape} from 'react-intl';
+import {Alert, DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
 import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
-import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
+import {processMeanOpinionScore, setAudioDeviceInfo, setMyVideoURL, setVideoURL} from '@calls/state';
 import {AudioDevice, type AudioDeviceType, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
@@ -21,11 +22,26 @@ import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {EmojiData} from '@mattermost/calls/lib/types';
-import type {IntlShape} from 'react-intl';
+import type {EmojiData, TrackInfo} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
+const videoEncodings = [{maxBitrate: 1000 * 1000, maxFramerate: 30, scaleResolutionDownBy: 1.0}];
+
+const messages = defineMessages({
+    startVideoFailedTitle: {
+        id: 'mobile.calls_start_video_failed_title',
+        defaultMessage: 'Unable to turn on your camera',
+    },
+    startVideoFailedDescription: {
+        id: 'mobile.calls_start_video_failed_description',
+        defaultMessage: 'Your camera could not be started. It may be in use by another app.',
+    },
+    startVideoFailedDismiss: {
+        id: 'mobile.calls_start_video_failed_dismiss',
+        defaultMessage: 'OK',
+    },
+});
 
 export async function newConnection(
     serverUrl: string,
@@ -41,6 +57,16 @@ export async function newConnection(
     let stream: MediaStream;
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
+    let videoStream: MediaStream | null = null;
+    let videoTrack: MediaStreamTrack | null = null;
+
+    // ID of the track currently registered with the peer's sender map. This is
+    // NOT the same as videoTrack.id: RTCPeer keys its senders by track ID, and
+    // replaceTrack(id, null) does not re-key, so the sender stays under the
+    // stopped track's ID until a non-null track replaces it. getUserMedia hands
+    // back a brand new track (new ID) on every start, so we must remember the
+    // registered key separately or the second startVideo throws.
+    let videoSenderTrackId: string | null = null;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
     let audioRouteEvent: EmitterSubscription | null = null;
@@ -74,6 +100,131 @@ export async function newConnection(
         } catch (err) {
             logError('calls: unable to get media device:', err);
         }
+    };
+
+    // Fully releases the camera device. Disabling the track is not enough:
+    // the device stays open and the hardware indicator stays lit.
+    const releaseVideoTrack = () => {
+        videoTrack?.stop();
+
+        // stop() closes the capture device; release() frees the native object.
+        // Both are needed, matching how disconnect() tears down `streams`.
+        videoTrack?.release?.();
+        videoTrack = null;
+        videoStream = null;
+        setMyVideoURL('');
+    };
+
+    const startVideo = async () => {
+        if (!peer || videoTrack) {
+            return;
+        }
+
+        try {
+            videoStream = await mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    facingMode: 'user',
+                    width: {ideal: 1280},
+                    height: {ideal: 720},
+                    frameRate: {ideal: 30},
+                },
+            }) as MediaStream;
+        } catch (err) {
+            logError('calls: startVideo, unable to get camera:', getFullErrorMessage(err));
+            Alert.alert(
+                intl.formatMessage(messages.startVideoFailedTitle),
+                intl.formatMessage(messages.startVideoFailedDescription),
+                [{text: intl.formatMessage(messages.startVideoFailedDismiss)}],
+            );
+            return;
+        }
+
+        videoTrack = videoStream.getVideoTracks()[0];
+
+        try {
+            if (videoSenderTrackId) {
+                // RTCPeer re-keys the sender to the new track's ID when the
+                // replacement track is non-null.
+                peer.replaceTrack(videoSenderTrackId, videoTrack);
+            } else {
+                peer.addTrack(videoTrack, videoStream, {encodings: videoEncodings});
+            }
+            videoSenderTrackId = videoTrack.id;
+        } catch (err) {
+            logError('calls: startVideo, error adding track:', getFullErrorMessage(err));
+
+            // Drop the sender key as well. If replaceTrack was what threw, the
+            // sender is not in a state we can trust; keeping the stale ID would
+            // send every later startVideo straight back down this same failing
+            // branch and the camera could never recover for the rest of the
+            // call. Clearing it makes the next attempt fall back to addTrack.
+            videoSenderTrackId = null;
+            releaseVideoTrack();
+            return;
+        }
+
+        setMyVideoURL(videoStream.toURL());
+
+        if (ws) {
+            ws.send('video_on', {
+                data: JSON.stringify({videoStreamID: videoStream.id}),
+            });
+        }
+
+        if (Platform.OS === 'android') {
+            // Restart the foreground service holding the camera FGS type so
+            // Android 14+ doesn't stop the capture when the app backgrounds.
+            foregroundServiceStart(intl, true);
+        }
+
+        // Note: we deliberately do NOT force the audio route to speaker here.
+        // There is no state in this codebase that distinguishes a route the
+        // user picked (via the audio-device picker, which calls
+        // setPreferredAudioRoute) from one that was merely defaulted to, so
+        // switching routes on video start risks yanking a user off a
+        // deliberately chosen Bluetooth or earpiece device. Leaving the
+        // route untouched is the conservative choice here.
+
+        // Note: this client does not manage the proximity sensor at all, so
+        // there is nothing to change here to keep the screen awake while the
+        // camera is on.
+    };
+
+    const stopVideo = () => {
+        if (!peer || !videoTrack) {
+            return;
+        }
+
+        // Keep the sender alive (videoSenderTrackId stays set) so restarting
+        // video does not force a renegotiation. Note that replaceTrack with a
+        // null track does NOT re-key the sender, so videoSenderTrackId keeps
+        // pointing at the now-stopped track's ID -- which is exactly the key
+        // the next startVideo has to use.
+        if (videoSenderTrackId) {
+            peer.replaceTrack(videoSenderTrackId, null);
+        }
+
+        if (ws) {
+            ws.send('video_off');
+        }
+
+        releaseVideoTrack();
+
+        if (Platform.OS === 'android') {
+            // Drop the camera FGS type; keep the microphone one alive since
+            // the call itself is still ongoing.
+            foregroundServiceStart(intl, false);
+        }
+    };
+
+    const switchCamera = () => {
+        if (!videoTrack) {
+            return;
+        }
+
+        // Local device swap only: no signalling, no renegotiation.
+        (videoTrack as any)._switchCamera();
     };
 
     // Registering WebRTC globals (e.g. RTCPeerConnection)
@@ -159,6 +310,8 @@ export async function newConnection(
                 track.release();
             });
         });
+        releaseVideoTrack();
+        videoSenderTrackId = null;
 
         peer?.destroy();
         peer = null;
@@ -436,15 +589,34 @@ export async function newConnection(
             }
         });
 
-        peer.on('stream', (remoteStream: MediaStream) => {
-            logDebug('calls: new remote stream received', remoteStream.id);
-            for (const track of remoteStream.getTracks()) {
-                logDebug('calls: remote track', track.id);
-            }
+        peer.on('stream', (remoteStream: MediaStream, trackInfo?: TrackInfo) => {
+            logDebug('calls: new remote stream received', remoteStream.id, 'type:', trackInfo?.type);
 
             streams.push(remoteStream);
-            if (remoteStream.getVideoTracks().length > 0) {
+
+            if (remoteStream.getVideoTracks().length === 0) {
+                return;
+            }
+
+            if (!trackInfo) {
+                // The media map arrives on the data channel and may be absent
+                // entirely (older servers) or not yet decoded when ontrack
+                // fires. Falling back to the pre-video behaviour keeps screen
+                // share working instead of dropping the track for good.
+                logWarning('calls: stream received with no track info, treating as screen share');
                 setScreenShareURL(remoteStream.toURL());
+                return;
+            }
+
+            switch (trackInfo.type) {
+                case 'screen':
+                    setScreenShareURL(remoteStream.toURL());
+                    break;
+                case 'video':
+                    setVideoURL(trackInfo.sender_id, remoteStream.toURL());
+                    break;
+                default:
+                    logDebug('calls: ignoring video track with unknown type', trackInfo.type);
             }
         });
 
@@ -497,6 +669,9 @@ export async function newConnection(
         sendReaction,
         initializeVoiceTrack,
         setUserSelectedAudioRoute,
+        startVideo,
+        stopVideo,
+        switchCamera,
     };
 
     return connection;

@@ -25,6 +25,7 @@ import {
     setRaisedHand,
     setRecordingState,
     setUserMuted,
+    setUserVideoOn,
     setUserVoiceOn,
     userJoinedCall,
     userLeftCall,
@@ -51,6 +52,7 @@ import type {
     UserRaiseUnraiseHandData,
     UserReactionData,
     UserScreenOnOffData,
+    UserVideoOnOffData,
     UserVoiceOnOffData,
 } from '@mattermost/calls/lib/types';
 
@@ -139,6 +141,14 @@ export const handleCallScreenOn = (serverUrl: string, msg: WebSocketMessage<User
 
 export const handleCallScreenOff = (serverUrl: string, msg: WebSocketMessage<UserScreenOnOffData>) => {
     setCallScreenOff(serverUrl, msg.broadcast.channel_id, msg.data.session_id);
+};
+
+export const handleCallUserVideoOn = (msg: WebSocketMessage<UserVideoOnOffData>) => {
+    setUserVideoOn(msg.broadcast.channel_id, msg.data.session_id, true);
+};
+
+export const handleCallUserVideoOff = (msg: WebSocketMessage<UserVideoOnOffData>) => {
+    setUserVideoOn(msg.broadcast.channel_id, msg.data.session_id, false);
 };
 
 export const handleCallUserRaiseHand = (serverUrl: string, msg: WebSocketMessage<UserRaiseUnraiseHandData>) => {

@@ -247,6 +247,7 @@ describe('Calls Hooks', () => {
             sessionId: 'session1',
             muted: false,
             raisedHand: 0,
+            video: false,
         };
 
         beforeEach(() => {
