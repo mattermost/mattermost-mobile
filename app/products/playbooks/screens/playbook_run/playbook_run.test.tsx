@@ -91,6 +91,19 @@ jest.mock('@screens/navigation');
 jest.mock('@utils/navigation');
 jest.mock('@hooks/android_back_handler');
 
+const timelineEvent: TimelineEvent = {
+    id: 'event-1',
+    playbook_run_id: 'run-1',
+    create_at: 1000,
+    event_at: 1000,
+    event_type: 'task_state_modified',
+    summary: '',
+    details: '{"action":"check"}',
+    post_id: '',
+    subject_user_id: 'user-1',
+    creator_user_id: 'user-1',
+};
+
 describe('PlaybookRun', () => {
     let database: Database;
 
@@ -110,6 +123,7 @@ describe('PlaybookRun', () => {
             summary: 'Test summary',
             endAt: 0, // Not finished
             lastSyncAt: 12345,
+            timelineEvents: [timelineEvent],
         });
 
         const mockOwner = TestHelper.fakeUserModel({
@@ -310,6 +324,7 @@ describe('PlaybookRun', () => {
 
         const checklistList = getByTestId('checklist-list');
         expect(checklistList.props.checklists).toBe(props.checklists);
+        expect(checklistList.props.timelineEvents).toBeUndefined();
         expect(checklistList.props.channelId).toBe((props.playbookRun as PlaybookRunModel).channelId);
         expect(checklistList.props.playbookRunId).toBe(props.playbookRun!.id);
         expect(checklistList.props.isFinished).toBe(false);
@@ -495,6 +510,25 @@ describe('PlaybookRun', () => {
 
         const checklistList = getByTestId('checklist-list');
         expect(checklistList.props.channelId).toBe('channel-id-123');
+    });
+
+    // The rows of a persisted run observe the run for its timeline events, so passing them down as well
+    // would only churn a withObservables trigger and blank the checklist on every task change. A run
+    // that never reached the database has no such source, so there the events must be handed over.
+    it('should pass timeline events down only for a run absent from the database', () => {
+        const props = getBaseProps();
+
+        const {getByTestId, rerender} = renderWithEverything(<PlaybookRun {...props}/>, {database});
+        expect(getByTestId('checklist-list').props.timelineEvents).toBeUndefined();
+
+        props.playbookRun = TestHelper.fakePlaybookRun({
+            id: 'run-1',
+            name: 'Test Playbook Run',
+            timeline_events: [timelineEvent],
+        });
+        rerender(<PlaybookRun {...props}/>);
+
+        expect(getByTestId('checklist-list').props.timelineEvents).toEqual([timelineEvent]);
     });
 
     it('handles channel_id from API type', () => {
