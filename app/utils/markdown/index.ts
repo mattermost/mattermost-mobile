@@ -161,7 +161,7 @@ const highlightedLanguages: LanguageObject = {
     fortran: {name: 'Fortran', extensions: ['f90', 'f95']},
     fsharp: {name: 'F#', extensions: ['fsharp', 'fs']},
     gcode: {name: 'G-Code', extensions: ['gcode', 'nc']},
-    go: {name: 'Go', extensions: ['go'], aliases: new Set('golang')},
+    go: {name: 'Go', extensions: ['go'], aliases: new Set(['golang'])},
     groovy: {name: 'Groovy', extensions: ['groovy']},
     handlebars: {name: 'Handlebars', extensions: ['handlebars', 'hbs', 'html.hbs', 'html.handlebars'], aliases: new Set(['hbs', 'mustache'])},
     haskell: {name: 'Haskell', extensions: ['hs'], aliases: new Set('hs')},

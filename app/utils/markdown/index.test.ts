@@ -71,6 +71,10 @@ describe('Utility functions', () => {
             expect(getHighlightLanguageFromNameOrAlias('js')).toBe('javascript');
             expect(getHighlightLanguageFromNameOrAlias('unknown')).toBe('');
         });
+
+        it('should resolve the golang alias to Go', () => {
+            expect(getHighlightLanguageFromNameOrAlias('golang')).toBe('go');
+        });
     });
 
     describe('getHighlightLanguageName', () => {
