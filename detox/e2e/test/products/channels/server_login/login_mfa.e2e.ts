@@ -76,7 +76,7 @@ describe('Server Login - Login with MFA', () => {
                     (configResult.error.message || JSON.stringify(configResult.error)) :
                     'ok';
                 throw new Error(
-                    `afterAll failed to restore admin session or disable MFA ` +
+                    'afterAll failed to restore admin session or disable MFA ' +
                     `(login=${loginError}; config=${configError})`,
                 );
             }
