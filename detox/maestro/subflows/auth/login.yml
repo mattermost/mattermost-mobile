@@ -315,6 +315,17 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
+      # # Android: login can restore the last channel (tab bar hidden). CI 33877432724
+      # failed 10/10 waiting for tab_bar.home.tab after sign-in (~4m45s). iOS login
+      # on that run reached the home tab. Same header-back as the pre-login cleanup.
+      - runFlow:
+          when:
+            platform: Android
+            visible:
+              id: "channel.post_draft.post.input"
+          commands:
+            - tapOn:
+                id: "navigation.header.back"
       # * Verify login succeeded by waiting for the home tab.
       - runFlow:
           when:
