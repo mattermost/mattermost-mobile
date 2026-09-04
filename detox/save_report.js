@@ -34,6 +34,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const zlib = require('zlib');
 
 const fse = require('fs-extra');
 const {mergeFiles} = require('junit-report-merger');
@@ -50,6 +51,7 @@ const {
     generateShortSummary,
     generateTestReport,
     getAllTests,
+    getAllTestsFromJestResults,
     removeOldGeneratedReports,
     sendReport,
     readJsonFromFile,
@@ -58,6 +60,24 @@ const {
 const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
+
+const COMPRESSIBLE_ARTIFACT = /(\.log|\.trace\.json)$/;
+
+function gzipDeviceLogs(dir) {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+        const target = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            gzipDeviceLogs(target);
+        } else if (entry.isFile() && COMPRESSIBLE_ARTIFACT.test(entry.name)) {
+            try {
+                fs.writeFileSync(`${target}.gz`, zlib.gzipSync(fs.readFileSync(target)));
+                fs.rmSync(target);
+            } catch (error) {
+                console.log(`Failed to gzip ${target}:`, error.message);
+            }
+        }
+    }
+}
 
 const saveReport = async () => {
     const {
@@ -115,7 +135,11 @@ const saveReport = async () => {
 
     // Generate short summary, write to file and then send report via webhook
     const allTests = getAllTests(testsuites);
-    const summary = generateShortSummary(allTests);
+    const mergedJestResultsPath = path.join(__dirname, ARTIFACTS_DIR, 'jest-results-merged.json');
+    const summaryTests = fs.existsSync(mergedJestResultsPath) ?
+        getAllTestsFromJestResults(readJsonFromFile(mergedJestResultsPath)) :
+        allTests;
+    const summary = generateShortSummary(summaryTests);
     console.log(summary);
     writeJsonToFile(summary, 'summary.json', ARTIFACTS_DIR);
 
@@ -134,12 +158,21 @@ const saveReport = async () => {
     await generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath, platform);
 
     if (process.env.CI) {
-        // Delete folders starting with "ios-results-" or "android-results-" only in CI environment
+        // Prune the per-shard {platform}-results-* folders before the S3 upload, but
+        // keep what is actually needed to debug a failure.
+        const MERGED_INTO_TOP_LEVEL = /^(jest-stare|jest-results\.json|.*-junit.*\.xml)$/;
         const entries = fs.readdirSync(ARTIFACTS_DIR, {withFileTypes: true});
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name.startsWith(`${platform}-results-`)) {
-                fs.rmSync(path.join(ARTIFACTS_DIR, entry.name), {recursive: true});
+            if (!entry.isDirectory() || !entry.name.startsWith(`${platform}-results-`)) {
+                continue;
             }
+            const shardDir = path.join(ARTIFACTS_DIR, entry.name);
+            for (const shardEntry of fs.readdirSync(shardDir)) {
+                if (MERGED_INTO_TOP_LEVEL.test(shardEntry)) {
+                    fs.rmSync(path.join(shardDir, shardEntry), {recursive: true, force: true});
+                }
+            }
+            gzipDeviceLogs(shardDir);
         }
     }
     const result = await saveArtifacts(platform);

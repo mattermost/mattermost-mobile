@@ -266,6 +266,25 @@ jobs:
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
+      - name: Re-apply server config baseline (self-healing)
+        if: hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Idempotent and non-destructive: re-asserts only the state the batch
+          # requires, so a shared server or a crashed earlier job cannot leak
+          # config into this run.
+          # - AllowDownloadLogs must be true for attach_logs.yml; the T67856_4
+          #   dedicated step flips it around its own run and restores itself.
+          echo "==> Re-applying config baseline on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
       - name: Push test fixture into iOS simulator
         continue-on-error: true
         run: |
@@ -402,6 +421,28 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Standalone restore independent of the dedicated T67856_4 step:
+          # its in-step EXIT trap does not fire on runner hard-kills and is
+          # skipped entirely when the step is skipped, while transient restore
+          # failures are masked by continue-on-error. Setting true when already
+          # true is a harmless no-op, which keeps this safe when multiple jobs
+          # share one server and a concurrent job re-flipped the flag.
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -702,6 +743,23 @@ jobs:
           ADMIN_USERNAME: ${{ env.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
+      - name: Re-apply server config baseline (self-healing)
+        if: hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Idempotent and non-destructive: re-asserts only the state the batch
+          # requires, so a shared server or a crashed earlier job cannot leak
+          # config into this run. See the iOS copy of this step for details.
+          echo "==> Re-applying config baseline on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -897,6 +955,24 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Android copy of the iOS restore step — see that step for the
+          # rationale (trap-less hard-kill and skip-path coverage).
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()
