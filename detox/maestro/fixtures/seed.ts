@@ -33,8 +33,10 @@ function summarizeBody(body: string): string {
     return body.length > 500 ? `${body.slice(0, 500)}…` : body;
 }
 
+const REQUEST_TIMEOUT_MS = 30000;
+
 function isRetriableSeedError(message: string): boolean {
-    return /cloud\/inactive|Failed to parse|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND|socket|network/i.test(message);
+    return /cloud\/inactive|Failed to parse|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND|socket|network|timed out/i.test(message);
 }
 
 function doRequest(urlStr: string, method: string, payload: string | null, headers: Record<string, string>, redirectCount = 0): Promise<IncomingMessage & {body: string}> {
@@ -81,6 +83,10 @@ function doRequest(urlStr: string, method: string, payload: string | null, heade
         });
 
         req.on('error', reject);
+        req.setTimeout(REQUEST_TIMEOUT_MS, () => {
+            req.destroy();
+            reject(new Error(`[seed] Request timed out after ${REQUEST_TIMEOUT_MS}ms for ${method} ${urlStr}`));
+        });
         if (payload) {
             req.write(payload);
         }

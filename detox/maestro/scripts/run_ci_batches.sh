@@ -283,7 +283,18 @@ run_maestro_batch() {
   cmd+=("${maestro_env_args[@]}")
   cmd+=("${flows[@]}")
 
-  "${cmd[@]}"
+  # Tee so the batch output is still in the CI log verbatim while also being greppable for
+  # driver-startup failures (see the retry in the batch loop). PIPESTATUS keeps maestro's
+  # exit code rather than tee's.
+  local batch_log="${batch_xml%.xml}.log"
+  "${cmd[@]}" 2>&1 | tee "$batch_log"
+  return "${PIPESTATUS[0]}"
+}
+
+driver_startup_failed() {
+  local batch_log=$1
+  [[ -f "$batch_log" ]] || return 1
+  grep -q "IOSDriverTimeoutException\|iOS driver not ready in time" "$batch_log"
 }
 
 BATCH_XMLS=()
@@ -377,6 +388,20 @@ for batch_paths in "${BATCHES[@]}"; do
   batch_end_epoch=$(date +%s)
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
+
+  # Retry once when the driver never started. Restricted to that one signature, and to the
+  # case where no JUnit XML was produced, so a genuine flow failure is never re-run and
+  # never masked -- a flow that ran and failed writes its XML and is reported as-is.
+  if [[ $rc -ne 0 && "$PLATFORM" == "ios" && ! -s "$batch_xml" ]] && driver_startup_failed "${batch_xml%.xml}.log"; then
+    echo "==> Batch ${batch_idx}: Maestro's iOS driver never started (no flow ran). Restarting the simulator and retrying this batch once."
+    ensure_ios_simulator_healthy
+    rm -f "$batch_xml"
+    batch_start_epoch=$(date +%s)
+    run_maestro_batch "$batch_xml" "${path_arr[@]}"
+    rc=$?
+    batch_end_epoch=$(date +%s)
+    echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+  fi
 
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"

@@ -210,7 +210,10 @@ appId: ${MAESTRO_APP_ID}
           maxRetries: 4
           commands:
             - tapOn:
-                text: "Email, Username or AD/LDAP Username"
+                # # Full-string regex: the placeholder is assembled from server
+                # auth config (Email / Username / AD-LDAP segments), so match the
+                # stable ends rather than one server's exact composition.
+                text: "Email.*Username"
             - eraseText: 80
             - inputText: ${TEST_USER_EMAIL}
             - tapOn:
