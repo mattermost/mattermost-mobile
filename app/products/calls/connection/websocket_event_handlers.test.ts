@@ -316,6 +316,16 @@ describe('websocket event handlers', () => {
                 },
             });
 
+            // Simulate callEnded() clearing the call from state. If handleCallEnded
+            // reads callId after this runs instead of before, getCallsState returns
+            // no call and endNativeCall receives undefined — failing the assertion below.
+            jest.mocked(callEnded).mockImplementationOnce(() => {
+                jest.mocked(getCallsState).mockReturnValue({
+                    ...DefaultCallsState,
+                    myUserId: userId,
+                });
+            });
+
             handleCallEnded(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {},
