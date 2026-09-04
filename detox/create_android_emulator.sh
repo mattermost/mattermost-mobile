@@ -311,6 +311,9 @@ reset_app_for_retry() {
 }
 
 run_tests_only() {
+    # Detox's AVDValidator lists AVDs via ANDROID_AVD_HOME. Skipping this
+    # made attempt-2 fail with "Cannot boot ... detox_pixel_8_api_35".
+    setup_avd_home
     if ! emulator_is_ready; then
         echo "TESTS_ONLY: emulator is not ready"
         exit 2
