@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Modal, Platform, StatusBar, View, useWindowDimensions} from 'react-native';
+import {Modal, Platform, Pressable, StatusBar, StyleSheet, View, useWindowDimensions} from 'react-native';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {useTutorial} from '@context/tutorial';
@@ -61,15 +61,29 @@ const TutorialHighlight = ({children, itemRef, itemBorderRadius, inModal, onDism
                 style={{flex: 1}}
                 onLayout={onRootLayout}
             >
+                {/* Dismiss target. HighlightItem's dismiss lives on react-native-svg's root
+                    <Svg onPress>, which is an unreliable touch target -- so tapping the scrim
+                    to dismiss the tutorial can silently do nothing for a real user. Wrap it in
+                    a real Pressable so the touch target owns the scrim's pixels. The Svg keeps
+                    its own onPress as a fallback; RN delivers the touch to one responder, so
+                    this does not double-fire.
+                    No pressed style on purpose: feedback on a full-screen scrim would flash
+                    the whole screen. */}
                 {itemBounds.endX > 0 &&
-                <HighlightItem
-                    borderRadius={itemBorderRadius}
-                    itemBounds={itemBounds}
-                    height={height}
-                    onDismiss={onDismiss}
-                    width={width}
-                    onLayout={handleShowTutorial}
-                />
+                <Pressable
+                    onPress={onDismiss}
+                    style={StyleSheet.absoluteFill}
+                    testID='tutorial_highlight.backdrop'
+                >
+                    <HighlightItem
+                        borderRadius={itemBorderRadius}
+                        itemBounds={itemBounds}
+                        height={height}
+                        onDismiss={onDismiss}
+                        width={width}
+                        onLayout={handleShowTutorial}
+                    />
+                </Pressable>
                 }
                 {itemBounds.endX > 0 && children}
             </View>
