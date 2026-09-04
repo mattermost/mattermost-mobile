@@ -99,17 +99,27 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: !isMilitaryTime,
-        timeZone: timeZone as string,
-        ...(isCurrentYear ? {} : {year: 'numeric'}),
+    const format = (zone?: string) => {
+        try {
+            const formatted = date.toLocaleString(currentUserLocale, {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: !isMilitaryTime,
+                ...(zone ? {timeZone: zone} : {}),
+                ...(isCurrentYear ? {} : {year: 'numeric'}),
+            });
+            return formatted === 'Invalid Date' ? '' : formatted;
+        } catch {
+            return '';
+        }
     };
 
-    return date.toLocaleString(currentUserLocale, options);
+    // Hermes returns the literal "Invalid Date" (iOS) or throws when it cannot honour an
+    // option, and timeZone is the usual culprit — empty or unknown. Losing the label is
+    // worse than showing the time in the device zone, so retry without it.
+    return format(timeZone) || format();
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {

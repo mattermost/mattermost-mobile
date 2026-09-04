@@ -142,6 +142,7 @@ export default function SearchHandler(props: Props) {
     const loadedChannels = useRef<(data: Channel[] | undefined, typeOfChannels: string) => Promise<void>>(async () => {/* Do nothing */});
 
     const searchTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+    const searchRequestId = useRef(0);
     const [searchResults, setSearchResults] = useState<Channel[]>(defaultSearchResults);
 
     const isSearch = Boolean(term);
@@ -202,31 +203,43 @@ export default function SearchHandler(props: Props) {
             activeChannels = channels;
     }
 
+    const invalidatePendingSearch = useCallback(() => {
+        searchRequestId.current += 1;
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+            searchTimeout.current = undefined;
+        }
+    }, []);
+
     const stopSearch = useCallback(() => {
+        invalidatePendingSearch();
         setSearchResults(defaultSearchResults);
         setTerm('');
-    }, []);
+        dispatch(StopAction);
+    }, [invalidatePendingSearch]);
 
     const doSearchChannels = useCallback((text: string) => {
         if (text) {
             setSearchResults(defaultSearchResults);
-            if (searchTimeout.current) {
-                clearTimeout(searchTimeout.current);
-            }
+            invalidatePendingSearch();
+            const requestId = searchRequestId.current;
             searchTimeout.current = setTimeout(async () => {
                 const results = await searchChannels(serverUrl, text, currentTeamId);
+                if (requestId !== searchRequestId.current) {
+                    return;
+                }
                 if (results.channels) {
                     setSearchResults(results.channels);
                 }
                 dispatch(StopAction);
             }, 500);
             setTerm(text);
-            setVisibleChannels(searchResults);
+            setVisibleChannels(defaultSearchResults);
             dispatch(LoadAction);
         } else {
             stopSearch();
         }
-    }, [searchResults, serverUrl, currentTeamId, stopSearch]);
+    }, [invalidatePendingSearch, serverUrl, currentTeamId, stopSearch]);
 
     const changeChannelType = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
@@ -279,9 +292,10 @@ export default function SearchHandler(props: Props) {
 
     useEffect(() => {
         if (!isSearch) {
+            invalidatePendingSearch();
             doGetChannels(typeOfChannels);
         }
-    }, [typeOfChannels, isSearch, doGetChannels]);
+    }, [typeOfChannels, isSearch, doGetChannels, invalidatePendingSearch]);
 
     useDidUpdate(() => {
         if (isSearch) {

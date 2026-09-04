@@ -339,12 +339,12 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await this.getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                await database.write(async () => {
                     await server.destroyPermanently();
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, fireEvent, screen} from '@testing-library/react-native';
+import {act, fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {dismissBottomSheet} from '@screens/navigation';
@@ -45,7 +45,10 @@ describe('ScheduledPostOptions', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.useFakeTimers();
+
+        // Pin the clock to a Tuesday in America/New_York: the picker's options depend on the
+        // weekday in the user's timezone, so an unpinned clock passes or fails by the day.
+        jest.useFakeTimers({now: 1735693200000, doNotFake: ['nextTick']});
     });
 
     afterEach(() => {
@@ -85,7 +88,7 @@ describe('ScheduledPostOptions', () => {
         expect(dismissBottomSheet).not.toHaveBeenCalled();
     });
 
-    it('handles successful scheduling flow', () => {
+    it('handles successful scheduling flow', async () => {
         const onSchedule = jest.fn().mockResolvedValue({data: true});
         jest.spyOn(Date, 'now').mockImplementation(() => 1735693200000); //1st Jan 2025, Wednesday 12:00 AM (New year!!!)
 
@@ -104,18 +107,15 @@ describe('ScheduledPostOptions', () => {
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
         fireEvent.press(scheduleButton);
 
-        act(() => {
-            jest.runAllTimers();
+        await waitFor(() => {
+            expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
+                scheduled_at: expect.any(Number),
+            }));
         });
-
-        // Verify scheduling flow
-        expect(onSchedule).toHaveBeenCalledWith(expect.objectContaining({
-            scheduled_at: expect.any(Number),
-        }));
         expect(dismissBottomSheet).toHaveBeenCalled();
     });
 
-    it('handles scheduling errors correctly', () => {
+    it('handles scheduling errors correctly', async () => {
         const error = 'Network error';
         const onSchedule = jest.fn().mockResolvedValue({error});
         CallbackStore.setCallback(onSchedule);
@@ -133,17 +133,14 @@ describe('ScheduledPostOptions', () => {
         const scheduleButton = screen.getByTestId('scheduled_post_create_button');
         fireEvent.press(scheduleButton);
 
-        act(() => {
-            jest.runAllTimers();
+        await waitFor(() => {
+            expect(showScheduledPostCreationErrorSnackbar).toHaveBeenCalledWith(error);
         });
-
-        // Verify error handling
         expect(onSchedule).toHaveBeenCalled();
-        expect(showScheduledPostCreationErrorSnackbar).toHaveBeenCalledWith(error);
         expect(dismissBottomSheet).not.toHaveBeenCalled();
     });
 
-    it('updates UI state during scheduling', () => {
+    it('updates UI state during scheduling', async () => {
         const slowSchedule = jest.fn().mockImplementation(() => {
             return new Promise((resolve) => {
                 setTimeout(() => {
@@ -169,9 +166,9 @@ describe('ScheduledPostOptions', () => {
         // Verify loading state
         expect(screen.getByTestId('scheduled_post_create_button')).toBeDisabled();
 
-        // Fast-forward timers and verify completion
-        act(() => {
+        await act(async () => {
             jest.runAllTimers();
+            await Promise.resolve();
         });
 
         expect(dismissBottomSheet).toHaveBeenCalled();
