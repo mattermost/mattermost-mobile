@@ -10,6 +10,7 @@ import {
     getMarkdownTextStyles,
     getMarkdownBlockStyles,
     getHighlightLanguageFromNameOrAlias,
+    getHighlightLanguageForCode,
     getHighlightLanguageName,
     escapeRegex,
     getMarkdownImageSize,
@@ -69,13 +70,37 @@ describe('Utility functions', () => {
         it('should return correct language name or alias', () => {
             expect(getHighlightLanguageFromNameOrAlias('javascript')).toBe('javascript');
             expect(getHighlightLanguageFromNameOrAlias('js')).toBe('javascript');
+            expect(getHighlightLanguageFromNameOrAlias('golang')).toBe('go');
             expect(getHighlightLanguageFromNameOrAlias('unknown')).toBe('');
+        });
+    });
+
+    describe('getHighlightLanguageForCode', () => {
+        it('should use a supported fenced language', () => {
+            expect(getHighlightLanguageForCode('javascript', 'plain text')).toBe('javascript');
+            expect(getHighlightLanguageForCode('golang', 'plain text')).toBe('go');
+        });
+
+        it('should detect a language from the displayed code when the fenced language is unavailable', () => {
+            const code = [
+                'groupConstrainedChannel := &model.Channel{',
+                '    DisplayName: "Test API Name",',
+                '    Name: GenerateTestChannelName(),',
+                '    Type: model.ChannelTypeOpen,',
+            ].join('\n');
+
+            expect(getHighlightLanguageForCode('notalanguage', code)).toBe('dts');
+        });
+
+        it('should use text when the displayed code has no detectable language', () => {
+            expect(getHighlightLanguageForCode('', '\n\n\n')).toBe('text');
         });
     });
 
     describe('getHighlightLanguageName', () => {
         it('should return correct language name', () => {
             expect(getHighlightLanguageName('javascript')).toBe('JavaScript');
+            expect(getHighlightLanguageName('golang')).toBe('Go');
             expect(getHighlightLanguageName('unknown')).toBe('');
         });
     });
