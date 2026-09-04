@@ -13,9 +13,15 @@ npm run lint
 npm run tsc
 npm run check                 # lint + tsc
 ./scripts/precommit/i18n.sh
-npm run test:ci
+npm run test:ci               # local analog of the PR `test` job (that job uses test:ci:coverage)
 cd detox && npm run tsc
+bash detox/maestro/scripts/validate-flow-headers.sh
+cd detox && npm run test:unit # detox JS unit tests, not device E2E
 ```
+
+`./scripts/precommit/i18n.sh` may rewrite non-`en.json` locale files as a side effect. Discard those diffs — Weblate owns every language file except `assets/base/i18n/en.json`.
+
+Or: `bash .cursor/scripts/cloud-agent-smoke.sh` (add `--with-jest` to include `npm run test:ci`).
 
 Before pushing a CI fix, run the narrowest command that failed, then `npm run check` if you touched JS/TS.
 
@@ -33,6 +39,8 @@ NODE_OPTIONS=--max_old_space_size=4096 npx jest --verbose=false --forceExit --wo
 - `npm run build:ios`, `npm run build:android`
 - Detox / Maestro device tests (`npm run e2e:*`)
 - Xcode, CocoaPods, Android SDK, simulators, emulators
+- `actionlint` / `shellcheck` (diagnose workflow YAML from GitHub Actions logs)
+- Coverage comparison against `main` artifacts (`npm run test:ci:coverage` needs GHA cache)
 
 Deps were installed during boot with `npm ci --ignore-scripts` plus the same follow-up steps as `.github/actions/prepare-node-deps`. Do not reinstall with a full `npm install`.
 
@@ -42,7 +50,9 @@ Deps were installed during boot with `npm ci --ignore-scripts` plus the same fol
 2. Inspect checks: `gh pr checks --json name,bucket,state,workflow,link`
 3. If checks are pending: `gh pr checks --watch --fail-fast`
 4. On failure, read the job log (`gh run view <id> --log-failed` for GitHub Actions) before changing code
-5. Fix only in-scope failures; verify locally with the commands above; push without `--force`
+5. Fix only in-scope failures; verify locally with the commands above; `git push` without `--force`
+
+`gh pr checks` without `--json` exits `8` while any check is pending — that is not an environment failure. Prefer `--json` and read `state`. Cursor's `gh` token is read-only (no merge/comment writes); push fixes with `git`.
 
 For iOS compile or E2E failures, diagnose from CI logs and push a targeted source fix. Do not attempt to reproduce native builds on this VM. Let GitHub's `macos-*` / E2E runners be the proof.
 
