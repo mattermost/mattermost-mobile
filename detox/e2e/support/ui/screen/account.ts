@@ -27,12 +27,14 @@ class AccountScreen {
         offlineUserStatusOption: 'user_status.offline.option',
         customStatusFailureMessage: 'account.custom_status.failure_message',
         customStatusClearButton: 'account.custom_status.clear.button',
+        customStatusText: 'account.custom_status.custom_status_text',
     };
 
     accountScreen = element(by.id(this.testID.accountScreen));
     accountScrollView = element(by.id(this.testID.accountScrollView));
     userPresenceOption = element(by.id(this.testID.userPresenceOption));
     setStatusOption = element(by.id(this.testID.setStatusOption));
+    customStatusText = element(by.id(this.testID.customStatusText));
     yourProfileOption = element(by.id(this.testID.yourProfileOption));
     settingsOption = element(by.id(this.testID.settingsOption));
     logoutOption = element(by.id(this.testID.logoutOption));
@@ -92,16 +94,6 @@ class AccountScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitFor(this.accountScreen).toExist().withTimeout(timeout);
-
-        // Detox's `toExist()` only confirms the account drawer view is in the
-        // hierarchy — on iOS 26 the slide-up animation can still be in progress
-        // at that moment, so immediately-following child visibility assertions
-        // can fail the 75% threshold because the
-        // child's bounds are still being transformed. Wait for a known
-        // always-rendered row (the Log out option) to pass the visibility
-        // threshold instead of sleeping a fixed duration: this is the actual
-        // condition callers depend on, completes as soon as the modal lands,
-        // and fails fast if the drawer never settles.
         await waitFor(this.logoutOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
 
         return this.accountScreen;
@@ -119,12 +111,9 @@ class AccountScreen {
         // Dismiss any lingering "Logout not complete" dialog left over from a
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.
-        try {
-            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TWO_SEC)) {
             console.log('[debug:2a0143] AccountScreen.open dismissed lingering "Logout not complete" dialog'); // eslint-disable-line no-console
-            await Alert.continueAnywayButton.tap();
-            await wait(timeouts.HALF_SEC);
-        } catch { /* not present */ }
+        }
 
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
@@ -216,6 +205,41 @@ class AccountScreen {
         await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
     };
 
+    // Wait for the account row to show its unset state.
+    waitForCustomStatusCleared = async (timeout: number = timeouts.TWENTY_SEC) => {
+        // Android: toHaveText requires visibility and the row can exist before it passes the
+        // visibility threshold -- match id and text with toExist, as waitForCustomStatus does.
+        if (isAndroid()) {
+            const clearedMatcher = by.id(this.testID.customStatusText).and(by.text('Set a custom status'));
+            await waitFor(element(clearedMatcher)).toExist().withTimeout(timeout);
+            return;
+        }
+
+        await waitFor(this.customStatusText).toHaveText('Set a custom status').withTimeout(timeout);
+    };
+
+    // Clear the custom status from the account row and wait for the row to show its unset
+    // state.
+    clearCustomStatus = async () => {
+        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.customStatusClearButton.tap();
+
+        try {
+            await this.waitForCustomStatusCleared(timeouts.TEN_SEC);
+            return;
+        } catch {
+            // First tap did not take; retry on the control's centre.
+        }
+
+        try {
+            await this.customStatusClearButton.tap({x: 20, y: 20});
+        } catch {
+            // The clear button is only rendered while a status is set, so it is gone if the
+            // first tap landed just after the wait above expired. Fall through to the wait.
+        }
+        await this.waitForCustomStatusCleared(timeouts.TWENTY_SEC);
+    };
+
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {
@@ -227,12 +251,8 @@ class AccountScreen {
         // unreachable (offline, slow network). Tap "Continue Anyway" to force
         // the logout to complete instead of leaving the app in a stuck state.
         // Use TEN_SEC because CI environments can be slow to show this dialog.
-        try {
-            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TEN_SEC)) {
             console.log('[debug:2a0143] AccountScreen.logout dismissed "Logout not complete" dialog'); // eslint-disable-line no-console
-            await Alert.continueAnywayButton.tap();
-        } catch {
-            // Dialog didn't appear — normal logout completed successfully
         }
 
         await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

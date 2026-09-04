@@ -90,8 +90,7 @@ describe('Messaging - Image Attachment Post Options', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — BACK_INDEX / thread image options
-    it.skip('MM-T1750 - should not show Copy Text option when long pressing an image-only post in thread view', async () => {
+    it('MM-T1750 - should not show Copy Text option when long pressing an image-only post in thread view', async () => {
         // # Upload an image and create a post with only that image (no message text) via API
         const {post} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 

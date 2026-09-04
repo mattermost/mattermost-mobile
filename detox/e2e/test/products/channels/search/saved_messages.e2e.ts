@@ -85,6 +85,20 @@ describe('Search - Saved Messages', () => {
         await HomeScreen.logout();
     });
 
+    it('MM-T4910_1 - should match elements on saved messages screen', async () => {
+        // # Open saved messages screen
+        await SavedMessagesScreen.open();
+
+        // * Verify basic elements on saved messages screen
+        await expect(SavedMessagesScreen.largeHeaderTitle).toHaveText('Saved Messages');
+        await expect(SavedMessagesScreen.largeHeaderSubtitle).toHaveText('All messages you\'ve saved for follow up');
+        await expect(SavedMessagesScreen.emptyTitle).toHaveText('No saved messages yet');
+        await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
+
+        // # Go back to channel list screen
+        await SavedMessagesScreen.close();
+    });
+
     it('MM-T4910_2 - should be able to display a saved message in saved messages screen and navigate to message channel', async () => {
         // # Open a channel screen, post a message, open post options for message, and tap on save option
         const message = `Message ${getRandomId()}`;
@@ -197,7 +211,7 @@ describe('Search - Saved Messages', () => {
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated saved message is deleted
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await SavedMessagesScreen.close();
@@ -213,8 +227,10 @@ describe('Search - Saved Messages', () => {
         await waitForElementToBeVisible(channelPostListPostItem);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // * Verify on saved messages screen
         await SavedMessagesScreen.toBeVisible();
@@ -243,10 +259,16 @@ describe('Search - Saved Messages', () => {
         const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostListPostItem} = ChannelScreen.getPostListPostItem(savedPost.id, message);
         await waitForElementToBeVisible(channelPostListPostItem);
+
+        // Screen guard: ensure we're still on channel screen before attempting post options
+        // (protects against accidental thread navigation from tap-degradation)
+        await ChannelScreen.toBeVisible();
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.savePostOption.tap();
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, savedPost.id);
         await ChannelScreen.back();
         await SavedMessagesScreen.open();
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // * Verify on saved messages screen
         await SavedMessagesScreen.toBeVisible();

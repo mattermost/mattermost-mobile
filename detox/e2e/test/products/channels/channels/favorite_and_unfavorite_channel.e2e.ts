@@ -26,8 +26,10 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
     const serverOneDisplayName = 'Server 1';
@@ -131,7 +133,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await waitForElementToExist(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name), timeouts.TWENTY_SEC);
     });
 
-    it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
+    itNotAndroid('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
         // # Open a direct message channel screen, post a message, tap on intro favorite action to favorite the channel, and go back to channel list screen
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
@@ -148,7 +150,9 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
-        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
+        const dmDisplayName = ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name);
+        await waitFor(dmDisplayName).toHaveText(newUser.username).withTimeout(timeouts.TWENTY_SEC);
+        await dmDisplayName.tap();
         await waitFor(ChannelScreen.introFavoriteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();

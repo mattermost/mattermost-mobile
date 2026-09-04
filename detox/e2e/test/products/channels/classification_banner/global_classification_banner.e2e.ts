@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
@@ -16,9 +16,6 @@ import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, Login
 import {timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
-// here: up to 45m of queuing behind the other two classification suites (they share one
-// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
 describe('Classification Banner - Global Classification Banner', () => {
@@ -66,12 +63,11 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterEach(async () => {
-        // Same ownership guard as afterAll: jest-circus still runs afterEach for each
-        // test it marks failed after a beforeAll failure, so a shard that never acquired
-        // the lock would delete the classification config of the shard that did.
         if (!lockAcquired) {
             return;
         }
+
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
 
         await Properties.apiCleanupClassification(siteOneUrl);
     });

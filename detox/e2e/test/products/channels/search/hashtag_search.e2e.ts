@@ -27,7 +27,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
@@ -102,8 +102,7 @@ describe('Search - Hashtag Search', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip Android: R1 product — reply thread / hashtag link not visible from search results
-    (isAndroid() ? it.skip : it)('MM-T357_1 - should be able to open a reply thread from hashtag search results and see hashtag links', async () => {
+    it('MM-T357_1 - should be able to open a reply thread from hashtag search results and see hashtag links', async () => {
         // # Create a unique hashtag and post a message containing it
         const hashtagTerm = `tag${getRandomId()}`;
         const message = `Thread message with #${hashtagTerm}`;
@@ -128,12 +127,14 @@ describe('Search - Hashtag Search', () => {
 
         // # Type the hashtag into the search input and tap search
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify the root post appears in search results
-        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify the reply count indicator appears
         await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);

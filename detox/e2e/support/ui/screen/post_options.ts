@@ -216,7 +216,15 @@ class PostOptionsScreen {
     };
 
     tapUnpinPost = async () => {
-        await this.tapPinOption(this.unpinPostOption);
+        // The unpin option container is not 100% hittable (lower in the sheet),
+        // so tap the label — pin's option tap can succeed where unpin fails.
+        await this.toBeVisible();
+        await waitFor(this.unpinPostOptionLabel).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await this.tapSheetRowIos(this.unpinPostOptionLabel);
+            return;
+        }
+        await this.unpinPostOptionLabel.tap();
     };
 }
 

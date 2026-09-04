@@ -4,7 +4,7 @@
 import {ProfilePicture} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, isIos, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -53,16 +53,41 @@ class CreateDirectMessageScreen {
         return element(by.id(`${this.testID.selectedUserPrefix}${userId}.remove.button`));
     };
 
+    // App builds user_item.{id}.{userId} (UserListRow + UserItem). Prefer display_name —
+    // the row container can fail Detox visibility/hittest while the text child is unique.
     getUserItem = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };
 
     getUserItemProfilePicture = (userId: string) => {
-        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, userId));
+        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, `${userId}.${userId}`));
     };
 
     getUserItemDisplayName = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}.display_name`));
+    };
+
+    // Wait for search spinner to settle on the per-userId display_name, then tap it.
+    selectUser = async (userId: string) => {
+        const displayName = this.getUserItemDisplayName(userId);
+        await waitFor(displayName).toBeVisible(isAndroid() ? 40 : 75).withTimeout(timeouts.HALF_MIN);
+
+        // Corner-tap on Android: row center can sit under keyboard/insets.
+        if (isAndroid()) {
+            await displayName.tap({x: 1, y: 1});
+        } else {
+            await displayName.tap();
+        }
+    };
+
+    searchAndSelectUser = async (username: string, userId: string) => {
+        await this.searchInput.replaceText(username);
+        try {
+            await this.searchInput.tapReturnKey();
+        } catch {
+            // Keyboard may already be dismissed.
+        }
+        await this.selectUser(userId);
     };
 
     longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
@@ -80,13 +105,6 @@ class CreateDirectMessageScreen {
     };
 
     toBeVisible = async () => {
-        // On iOS wait for the screen root and then the search input.
-        // A RNSVGGroup (part of the plus-menu icon animation) sits on top of the
-        // input immediately after navigation and intercepts taps even though the element
-        // is in the hierarchy. Waiting for the input to be visible gives the SVG layer
-        // time to finish its animation.
-        // On Android edge-to-edge, the tutorial Modal can cover the screen while the root
-        // view still exists — dismiss the long-press tooltip before visibility checks.
         if (isAndroid()) {
             await this.dismissLongPressProfileTutorial();
             await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.ONE_MIN);
@@ -123,13 +141,14 @@ class CreateDirectMessageScreen {
 
         await dismissKnownModals(2);
         await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
+        await wait(timeouts.HALF_SEC);
 
         const disableSyncForOpen = isAndroid();
         if (disableSyncForOpen) {
             await device.disableSynchronization();
         }
         try {
-            await waitForElementToExist(ChannelListScreen.openDirectMessageItem, timeouts.TEN_SEC);
 
             /* eslint-disable no-await-in-loop -- retry menu item tap while plus-menu animation settles */
             for (let i = 0; i < 3; i++) {

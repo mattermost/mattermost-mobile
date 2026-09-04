@@ -48,7 +48,7 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
             newUser,
         );
 
-        return {user: {...response.data, newUser}};
+        return {user: {...response.data, password: newUser.password, newUser}};
     } catch (err) {
         return getResponseFromError(err);
     }
@@ -141,6 +141,18 @@ export const apiGetUserByUsername = async (baseUrl: string, username: string): P
  */
 export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
+        if (!user?.username || !user?.password) {
+            // Every call site awaits this without checking the result, so a malformed
+            // credential pair would otherwise surface only as a bare 400 in the log and
+            // leave the shared client on its previous session. Name the caller's mistake.
+            // eslint-disable-next-line no-console
+            console.warn(
+                `[apiLogin] refusing to log in with incomplete credentials for "${user?.username ?? '<no username>'}" ` +
+                `(hasPassword=${Boolean(user?.password)}). Pass the user returned by apiCreateUser/apiInit, or its .newUser.`,
+            );
+            return {error: {message: 'apiLogin called with incomplete credentials'}, status: 0};
+        }
+
         const response = await client.post(
             `${baseUrl}/api/v4/users/login`,
             {login_id: user.username, password: user.password},
