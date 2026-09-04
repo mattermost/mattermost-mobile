@@ -5,16 +5,18 @@ import React, {useCallback} from 'react';
 import {Pressable} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import type {StyleProp, ViewStyle} from 'react-native';
+import type {AccessibilityRole, StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     children: React.ReactNode;
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
     testID?: string;
+    accessibilityLabel?: string;
+    accessibilityRole?: AccessibilityRole;
 }
 
-export default function PressableOpacity({children, onPress, style, testID}: Props) {
+export default function PressableOpacity({children, onPress, style, testID, accessibilityLabel, accessibilityRole}: Props) {
     const cancelOpacity = useSharedValue(1);
 
     const cancelAnimatedStyle = useAnimatedStyle(() => {
@@ -38,6 +40,8 @@ export default function PressableOpacity({children, onPress, style, testID}: Pro
             onPress={onPress}
             style={[style]}
             testID={testID}
+            accessibilityLabel={accessibilityLabel}
+            accessibilityRole={accessibilityRole}
         >
             <Animated.View style={cancelAnimatedStyle}>
                 {children}
