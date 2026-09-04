@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getHighlightLanguageFromNameOrAlias, getHighlightLanguageName} from '@utils/markdown';
+import {getHighlightLanguageForCode, getHighlightLanguageName} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {SyntaxHiglightProps} from '@typings/components/syntax_highlight';
@@ -28,6 +28,23 @@ type MarkdownCodeBlockProps = {
 const MAX_LINES = 4;
 
 let syntaxHighlighter: (props: SyntaxHiglightProps) => React.JSX.Element;
+
+const trimContent = (text: string) => {
+    const lines = text.split('\n');
+    const numberOfLines = lines.length;
+
+    if (numberOfLines > MAX_LINES) {
+        return {
+            content: lines.slice(0, MAX_LINES).join('\n'),
+            numberOfLines,
+        };
+    }
+
+    return {
+        content: text,
+        numberOfLines,
+    };
+};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -77,6 +94,10 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
 
         return syntaxHighlighter;
     }, []);
+    const {content: codeContent, numberOfLines} = trimContent(content);
+    const highlightLanguage = useMemo(() => {
+        return getHighlightLanguageForCode(language, codeContent);
+    }, [codeContent, language]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const languageDisplayName = getHighlightLanguageName(language);
@@ -100,7 +121,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
 
         const passProps = {
             code: content,
-            language: getHighlightLanguageFromNameOrAlias(language),
+            language: highlightLanguage,
             textStyle,
             title,
         };
@@ -109,7 +130,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
         requestAnimationFrame(() => {
             navigateToScreen(Screens.CODE, passProps);
         });
-    }, [content, intl, language, textStyle]));
+    }, [content, highlightLanguage, intl, language, textStyle]));
 
     const handleLongPress = useCallback(() => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
@@ -145,23 +166,6 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
         }
     }, [managedConfig?.copyAndPasteProtection, intl, style.bottomSheet, content]);
 
-    const trimContent = (text: string) => {
-        const lines = text.split('\n');
-        const numberOfLines = lines.length;
-
-        if (numberOfLines > MAX_LINES) {
-            return {
-                content: lines.slice(0, MAX_LINES).join('\n'),
-                numberOfLines,
-            };
-        }
-
-        return {
-            content: text,
-            numberOfLines,
-        };
-    };
-
     const renderLanguageBlock = () => {
         if (language) {
             const languageDisplayName = getHighlightLanguageName(language);
@@ -178,8 +182,6 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
         }
         return null;
     };
-
-    const {content: codeContent, numberOfLines} = trimContent(content);
 
     const renderPlusMoreLines = () => {
         if (numberOfLines > MAX_LINES) {
@@ -212,7 +214,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
                         <View style={style.code}>
                             <SyntaxHighlighter
                                 code={codeContent}
-                                language={getHighlightLanguageFromNameOrAlias(language)}
+                                language={highlightLanguage}
                                 textStyle={textStyle}
                             />
                         </View>
