@@ -315,17 +315,46 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
-      # # Android: login can restore the last channel (tab bar hidden). CI 33877432724
-      # failed 10/10 waiting for tab_bar.home.tab after sign-in (~4m45s). iOS login
-      # on that run reached the home tab. Same header-back as the pre-login cleanup.
+      # # Android: login often restores the last channel (tab bar hidden). Waiting
+      # 180s for tab_bar.home.tab inside this retry (CI 33902065028, ~4m50s per
+      # flow) never retries. navigation.header.back is not the Android channel
+      # chevron — ChannelScreen.back falls through to pressBack. Pop with Back
+      # when the composer is showing; keep the home wait short so retries fire.
       - runFlow:
           when:
             platform: Android
-            visible:
-              id: "channel.post_draft.post.input"
           commands:
-            - tapOn:
-                id: "navigation.header.back"
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 20000
+                optional: true
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - extendedWaitUntil:
+                      visible:
+                        id: "channel.post_draft.post.input"
+                      timeout: 20000
+                      optional: true
+                  - runFlow:
+                      when:
+                        visible:
+                          id: "channel.post_draft.post.input"
+                      commands:
+                        - tapOn:
+                            id: "navigation.header.back"
+                            optional: true
+                        - runFlow:
+                            when:
+                              visible:
+                                id: "channel.post_draft.post.input"
+                            commands:
+                              - pressKey: Back
+                              - waitForAnimationToEnd:
+                                  timeout: 3000
       # * Verify login succeeded by waiting for the home tab.
       - runFlow:
           when:
@@ -342,4 +371,4 @@ appId: ${MAESTRO_APP_ID}
             - extendedWaitUntil:
                 visible:
                   id: "tab_bar.home.tab"
-                timeout: 180000
+                timeout: 20000
