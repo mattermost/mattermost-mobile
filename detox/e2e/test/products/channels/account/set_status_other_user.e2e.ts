@@ -7,16 +7,18 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, Status, Team, User} from '@support/server_api';
+import {Channel, Post, Setup, Team, User} from '@support/server_api';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
 import {
+    AccountScreen,
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
@@ -41,8 +43,25 @@ describe('Account - Set User Status (Other User)', () => {
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, testOtherUser.id, testChannel.id);
 
-        // # Set the first user's status to Away (admin session)
-        await Status.apiUpdateUserStatus(siteOneUrl, testUser.id, 'away');
+        // # Log in as the first user and set the status to Away through the account
+        // UI — the manual release-test step this suite exists to cover (the
+        // self-view of the status is covered by set_status.e2e.ts; the assertion
+        // here is only what the OTHER user sees).
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(testUser);
+        await AccountScreen.open();
+        await AccountScreen.toBeVisible();
+        await AccountScreen.selectUserStatus(AccountScreen.awayUserStatusOption);
+
+        // # Log out as the first user. After logout the app may land on the server
+        // list (iOS) or straight on the login form — tap the server item if needed.
+        await HomeScreen.logout();
+        try {
+            await waitFor(ServerListScreen.serverListScreen).toExist().withTimeout(timeouts.TWO_SEC);
+            await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
+        } catch {
+            // Already on the login form — nothing to tap.
+        }
 
         // # Log in as the first user via API so the post is authored by them
         await User.apiLogin(siteOneUrl, {
@@ -55,7 +74,6 @@ describe('Account - Set User Status (Other User)', () => {
         await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
 
         // # Log in as the second user
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testOtherUser);
         await ChannelListScreen.toBeVisible();
     });
