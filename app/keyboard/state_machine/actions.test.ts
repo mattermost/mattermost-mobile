@@ -23,7 +23,6 @@ import {
 
 import type {StateSnapshot} from '@keyboard/state_machine/types';
 
-jest.mock('@constants/device', () => ({isEdgeToEdge: false}));
 jest.mock('react-native-reanimated', () => ({
     ...jest.requireActual('react-native-reanimated'),
     runOnJS: (fn: (...args: unknown[]) => void) => fn,
@@ -67,7 +66,8 @@ describe('enterEmojiPickerOpen', () => {
         const result = enterEmojiPickerOpen(snapshot, undefined, InputContainerStateType.IDLE);
         expect(result.targetHeight).toEqual({value: 300, animated: false});
         expect(result.inputAccessoryHeight).toEqual({value: 300, animated: true});
-        expect(result.postInputTranslateY).toBeUndefined();
+        expect(result.postInputTranslateY).toEqual({value: 300, animated: true});
+        expect(result.scrollOffset).toBeUndefined();
     });
 
     it('should use DEFAULT_INPUT_ACCESSORY_HEIGHT when fromState=IDLE and lastKeyboardHeight=0', () => {
@@ -78,24 +78,12 @@ describe('enterEmojiPickerOpen', () => {
         expect(result.inputAccessoryHeight).toEqual({value: DEFAULT_INPUT_ACCESSORY_HEIGHT, animated: true});
     });
 
-    it('should set postInputTranslateY and scrollOffset on iOS with isEdgeToEdge=true when fromState=IDLE', () => {
-        jest.resetModules();
-        jest.doMock('@constants/device', () => ({isEdgeToEdge: true}));
-        jest.doMock('react-native-reanimated', () => ({
-            ...jest.requireActual('react-native-reanimated'),
-            runOnJS: (fn: (...args: unknown[]) => void) => fn,
-        }));
-        jest.doMock('@constants/events', () => ({
-            default: {EMOJI_PICKER_SEARCH_FOCUSED: 'EMOJI_PICKER_SEARCH_FOCUSED'},
-        }));
+    it('should also set scrollOffset on iOS when fromState=IDLE', () => {
         (Platform as {OS: string}).OS = 'ios';
-
-        const {enterEmojiPickerOpen: eep} = require('./actions');
         const snapshot = makeSnapshot({lastKeyboardHeight: 300});
-        const result = eep(snapshot, undefined, InputContainerStateType.IDLE);
+        const result = enterEmojiPickerOpen(snapshot, undefined, InputContainerStateType.IDLE);
         expect(result.postInputTranslateY).toEqual({value: 300, animated: true});
         expect(result.scrollOffset).toEqual({value: 300, animated: true});
-        jest.resetModules();
     });
 
     it('should return only targetHeight when fromState=EMOJI_SEARCH_ACTIVE', () => {

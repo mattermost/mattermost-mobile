@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isEdgeToEdge} from '@constants/device';
-
-import {emojiPickerOpenTransitions, emojiPickerOpenTransitionsNonEdgeToEdge} from './emoji_picker_open';
-import {emojiSearchActiveTransitions, emojiSearchActiveTransitionsNonEdgeToEdge} from './emoji_search_active';
+import {emojiPickerOpenTransitions} from './emoji_picker_open';
+import {emojiSearchActiveTransitions} from './emoji_search_active';
 import {emojiToKeyboardTransitions} from './emoji_to_keyboard';
-import {idleTransitions, idleTransitionsNonEdgeToEdge} from './idle';
+import {idleTransitions} from './idle';
 import {keyboardOpenTransitions} from './keyboard_open';
 import {keyboardOpeningTransitions} from './keyboard_opening';
 import {keyboardToEmojiTransitions} from './keyboard_to_emoji';
@@ -22,11 +20,8 @@ import type {StateTransition, StateSnapshot, StateEvent} from '@keyboard/state_m
  * - to: The next state
  * - guard: Optional condition that must be true for the transition
  * - action: Optional action to execute during the transition
- *
- * On non-edge-to-edge Android (API < 30), the OS handles keyboard avoidance via adjustResize
- * and no KEYBOARD_EVENT_* fire. Only emoji picker transitions are needed.
  */
-export const stateTransitions: StateTransition[] = isEdgeToEdge ? [
+export const stateTransitions: StateTransition[] = [
     ...idleTransitions,
     ...keyboardOpeningTransitions,
     ...keyboardOpenTransitions,
@@ -34,10 +29,6 @@ export const stateTransitions: StateTransition[] = isEdgeToEdge ? [
     ...emojiPickerOpenTransitions,
     ...emojiSearchActiveTransitions,
     ...emojiToKeyboardTransitions,
-] : [
-    ...idleTransitionsNonEdgeToEdge,
-    ...emojiPickerOpenTransitionsNonEdgeToEdge,
-    ...emojiSearchActiveTransitionsNonEdgeToEdge,
 ];
 
 /**

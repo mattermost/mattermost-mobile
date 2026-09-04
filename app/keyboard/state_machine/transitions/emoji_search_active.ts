@@ -13,47 +13,6 @@ import {
     type StateEvent,
 } from '@keyboard/state_machine/types';
 
-/**
- * Transitions for non-edge-to-edge devices (Android API < 30).
- * No KEYBOARD_EVENT_* transitions — library is disabled, keyboard managed by OS via adjustResize.
- * No isZeroHeight guard on USER_BLUR_EMOJI_SEARCH since hasZeroKeyboardHeight is never set.
- */
-export const emojiSearchActiveTransitionsNonEdgeToEdge: StateTransition[] = [
-    {
-        from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
-        event: StateMachineEventType.USER_BLUR_EMOJI_SEARCH,
-        to: InputContainerStateType.EMOJI_PICKER_OPEN,
-        action: (snapshot: StateSnapshot): ActionUpdates => {
-            'worklet';
-
-            const normalHeight = snapshot.preSearchHeight;
-            return {
-                inputAccessoryHeight: {value: normalHeight, animated: true},
-                targetHeight: {value: normalHeight, animated: false},
-                preSearchHeight: {value: 0, animated: false},
-            };
-        },
-    },
-    {
-        from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
-        event: StateMachineEventType.USER_CLOSE_EMOJI,
-        to: InputContainerStateType.IDLE,
-    },
-    {
-        from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
-        event: StateMachineEventType.USER_FOCUS_INPUT,
-        to: InputContainerStateType.IDLE,
-        action: (): ActionUpdates => {
-            'worklet';
-
-            return {
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            };
-        },
-    },
-];
-
 export const emojiSearchActiveTransitions: StateTransition[] = [
     {
         from: InputContainerStateType.EMOJI_SEARCH_ACTIVE,
@@ -72,11 +31,19 @@ export const emojiSearchActiveTransitions: StateTransition[] = [
                     snapshot.safeAreaBottom,
                 );
 
-                return {
+                const updates: ActionUpdates = {
                     targetHeight: {value: searchHeight, animated: false},
-                    lastKeyboardHeight: {value: event.height, animated: false},
                     keyboardEventHeight: {value: event.rawHeight, animated: false},
                 };
+
+                // Only record a real software keyboard height. With a hardware keyboard the
+                // OS input strip reports ~48px, and storing that as lastKeyboardHeight makes
+                // every later emoji picker open at strip height instead of a full keyboard.
+                if (!isZeroHeight(snapshot, event)) {
+                    updates.lastKeyboardHeight = {value: event.height, animated: false};
+                }
+
+                return updates;
             }
             return undefined;
         },

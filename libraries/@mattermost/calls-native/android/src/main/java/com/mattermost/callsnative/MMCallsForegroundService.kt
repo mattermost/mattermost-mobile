@@ -54,9 +54,6 @@ class MMCallsForegroundService : Service() {
     }
 
     private fun ensureChannel(channelId: String, channelName: String, description: String) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return
-        }
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val existing = manager.getNotificationChannel(channelId)
         if (existing == null) {

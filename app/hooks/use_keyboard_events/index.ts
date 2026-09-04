@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Platform} from 'react-native';
 import {useKeyboardHandler, useReanimatedFocusedInput} from 'react-native-keyboard-controller';
 import {useSharedValue} from 'react-native-reanimated';
 
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {StateMachineEventType, InputContainerStateType} from '@keyboard';
 
 import type {KeyboardStateContextReturn} from '@hooks/use_keyboard_state_context';
+
+const isAndroid = Platform.OS === 'android';
 
 export function useKeyboardEvents(context: KeyboardStateContextReturn, inputTag: number | null) {
     const isRotating = useSharedValue(false);
@@ -28,7 +30,7 @@ export function useKeyboardEvents(context: KeyboardStateContextReturn, inputTag:
 
             isDraggingKeyboard.value = false;
             isReconcilerPaused.value = false;
-            const focusedInputTag = isAndroidEdgeToEdge ? input.value?.target : e.target;
+            const focusedInputTag = isAndroid ? input.value?.target : e.target;
 
             // During KEYBOARD_TO_EMOJI, the keyboard dismiss fires onStart with height=0.
             // Suppress both USER_FOCUS_INPUT and KEYBOARD_EVENT_START to avoid reverting the
@@ -77,7 +79,7 @@ export function useKeyboardEvents(context: KeyboardStateContextReturn, inputTag:
 
             // If progress is 1, the keyboard animation is complete
             // Synthesize an END event instead of MOVE
-            if (!isAndroidEdgeToEdge && e.progress === 1) {
+            if (!isAndroid && e.progress === 1) {
                 processEvent({
                     type: StateMachineEventType.KEYBOARD_EVENT_END,
                     rawHeight: e.height,

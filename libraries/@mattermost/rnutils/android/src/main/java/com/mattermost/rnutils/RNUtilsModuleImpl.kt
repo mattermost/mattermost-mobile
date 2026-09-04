@@ -2,8 +2,6 @@ package com.mattermost.rnutils
 
 import android.app.Activity
 import android.graphics.Color
-import android.os.Build
-import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsControllerCompat
@@ -227,19 +225,8 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         promise?.resolve(null)
     }
 
-    fun setSoftKeyboardToAdjustNothing() {
-        val currentActivity: Activity = reactContext.currentActivity ?: return
-        currentActivity.runOnUiThread {
-            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
-        }
-    }
-
     fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
         val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return
-        }
-
         lastHex = colorHex
         lastLightIcons = lightIcons
 

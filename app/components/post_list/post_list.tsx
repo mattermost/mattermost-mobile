@@ -4,7 +4,7 @@
 import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, type ListRenderItemInfo, Platform, type StyleProp, StyleSheet, type ViewStyle, type NativeSyntheticEvent, type NativeScrollEvent, type ViewToken} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {KeyboardState, useAnimatedKeyboard, useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
+import {KeyboardState, useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle, type AnimatedStyle} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
@@ -17,7 +17,6 @@ import NewMessagesLine from '@components/post_list/new_message_line';
 import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
-import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
 import {PostTypes} from '@constants/post';
 import {useKeyboardState} from '@context/keyboard_state';
 import {PostConfigProvider} from '@context/post_config';
@@ -25,7 +24,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
-import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@keyboard';
 import PostListPerformance from '@utils/performance/post_list_performance';
 import {getDateForDateLine, preparePostList} from '@utils/post_list';
 import {getTimezone} from '@utils/user';
@@ -78,6 +76,8 @@ type ScrollIndexFailed = {
 
 const CONTENT_OFFSET_THRESHOLD = 160;
 
+const isAndroid = Platform.OS === 'android';
+
 export const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
 
 const styles = StyleSheet.create({
@@ -126,13 +126,12 @@ const PostList = ({
     const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
 
     // CRITICAL: Destructure to avoid passing entire context (which contains refs) to worklets
-    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, stateMachine, listRef, isEmojiSearchFocused} = useKeyboardState();
+    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, listRef, isEmojiSearchFocused} = useKeyboardState();
     const {
         scrollOffset: scrollOffsetShared,
         scrollPosition: scrollPositionShared,
         postInputTranslateY,
         postInputContainerHeight: postInputContainerHeightShared,
-        inputAccessoryHeight,
     } = stateContext;
 
     useAnimatedReaction(
@@ -175,10 +174,8 @@ const PostList = ({
     const [lastPostId, setLastPostId] = useState<string | undefined>(firstIdInPosts);
 
     const [progressViewOffset, setProgressViewOffset] = useState(postInputContainerHeight);
-    const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const {isVisible: isKeyboardVisible} = useControllerKeyboardState();
     const {state} = useAnimatedKeyboard();
 
     useAnimatedReaction(
@@ -188,7 +185,7 @@ const PostList = ({
             };
         },
         ({state: kbState}) => {
-            if (!isAndroidEdgeToEdge && (kbState === KeyboardState.CLOSED || kbState === KeyboardState.OPEN)) {
+            if (!isAndroid && (kbState === KeyboardState.CLOSED || kbState === KeyboardState.OPEN)) {
                 const translateY = postInputTranslateY.value;
                 const containerHeight = postInputContainerHeightShared.value;
                 const offset = containerHeight + translateY;
@@ -511,21 +508,9 @@ const PostList = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderedPosts, highlightedId]);
 
-    useAnimatedReaction(
-        () => {
-            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isAndroidEdgeToEdge && !isKeyboardVisible && stateMachine.isEmojiPickerActive();
-            const emojiPickerHeight = shouldAddEmojiPickerPadding ? (inputAccessoryHeight.value || DEFAULT_INPUT_ACCESSORY_HEIGHT) : 0;
-            return emojiPickerHeight;
-        },
-        (emojiPickerHeight) => {
-            scheduleOnRN(setEmojiPickerPadding, emojiPickerHeight);
-        },
-        [isKeyboardVisible],
-    );
-
     const contentContainerStyleWithMargin = useMemo(() => ({
-        marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
-    }), [location, emojiPickerPadding, postInputContainerHeight]);
+        marginTop: location === Screens.PERMALINK ? 0 : postInputContainerHeight,
+    }), [location, postInputContainerHeight]);
 
     const animatedProps = useAnimatedProps(
         () => {
@@ -539,7 +524,7 @@ const PostList = ({
     );
 
     const androidExtra = useAnimatedStyle(() => {
-        if (isAndroidEdgeToEdge) {
+        if (isAndroid) {
             return {
                 marginBottom: Math.max(postInputTranslateY.value, 0),
             };

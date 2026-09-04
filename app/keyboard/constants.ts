@@ -22,3 +22,12 @@ export const KEYBOARD_TRANSITION_DURATION = 250;
  * Default height for the input accessory view when keyboard height is unknown
  */
 export const DEFAULT_INPUT_ACCESSORY_HEIGHT = 336;
+
+/**
+ * Smallest height that counts as a real software keyboard.
+ *
+ * With a hardware keyboard attached the OS still reports its input strip (~48px on
+ * Android, holding the dismiss/switch-keyboard controls), so anything at or below
+ * this is a strip rather than a keyboard.
+ */
+export const MIN_SOFTWARE_KEYBOARD_HEIGHT = 75;

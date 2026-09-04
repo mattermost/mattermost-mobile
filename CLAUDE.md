@@ -361,7 +361,7 @@ When adding custom post types (e.g., for new products):
 
 ### Platform-Specific
 - iOS: Opt out of iOS 18+ features (liquid glass) until UI is properly addressed
-- Android: Test on multiple API levels (34, 35, 36) to verify behavior with edge-to-edge changes
+- Android: minSdk is 30 (Android 11), so every supported version lays out edge-to-edge. Still test across API levels (30, 34, 35, 36) to verify inset behavior.
 - Use `Set` instead of `Array` for exception lists (faster, ensures uniqueness)
 
 ### testID Convention

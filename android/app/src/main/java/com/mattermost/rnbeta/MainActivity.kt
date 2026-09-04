@@ -1,7 +1,6 @@
 package com.mattermost.rnbeta
 
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.OnBackPressedCallback
@@ -42,7 +41,7 @@ class MainActivity : ReactActivity() {
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
         foldableObserver.onCreate()
-        WindowCompat.setDecorFitsSystemWindows(window, Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     override fun onStart() {

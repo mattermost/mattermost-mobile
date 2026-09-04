@@ -90,11 +90,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             putExtra(MMCallsForegroundService.EXTRA_TITLE, config.getString("title"))
             putExtra(MMCallsForegroundService.EXTRA_TEXT, config.getString("text"))
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent)
-        } else {
-            context.startService(intent)
-        }
+        context.startForegroundService(intent)
     }
 
     fun foregroundServiceStop() {
@@ -124,31 +120,21 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             origSpeakerOn = audio.isSpeakerphoneOn
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
-                )
-                .build()
-            val result = audio.requestAudioFocus(req)
-            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                audioManager = null
-                promise?.reject("start_audio_session_failed", "requestAudioFocus denied (result=$result)")
-                return
-            }
-            audioFocusRequest = req
-        } else {
-            @Suppress("DEPRECATION")
-            val result = audio.requestAudioFocus(null, AudioManager.STREAM_VOICE_CALL, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                audioManager = null
-                promise?.reject("start_audio_session_failed", "requestAudioFocus denied (result=$result)")
-                return
-            }
+        val req = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
+            .build()
+        val result = audio.requestAudioFocus(req)
+        if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            audioManager = null
+            promise?.reject("start_audio_session_failed", "requestAudioFocus denied (result=$result)")
+            return
         }
+        audioFocusRequest = req
 
         audio.mode = AudioManager.MODE_IN_COMMUNICATION
         routeToEarpiece(audio)
@@ -164,13 +150,8 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
         audio.mode = origAudioMode
         btActive = false
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            audioFocusRequest?.let { audio.abandonAudioFocusRequest(it) }
-            audioFocusRequest = null
-        } else {
-            @Suppress("DEPRECATION")
-            audio.abandonAudioFocus(null)
-        }
+        audioFocusRequest?.let { audio.abandonAudioFocusRequest(it) }
+        audioFocusRequest = null
 
         unregisterAudioReceivers()
         audioManager = null
@@ -245,12 +226,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             }
             player.start()
             ringtonePlayer = player
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createWaveform(ringtoneVibratePattern, 0))
-            } else {
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(ringtoneVibratePattern, 0)
-            }
+            vibrator.vibrate(VibrationEffect.createWaveform(ringtoneVibratePattern, 0))
             promise?.resolve(null)
         } catch (e: Exception) {
             promise?.reject("ringtone_error", e.message ?: "Unknown error")

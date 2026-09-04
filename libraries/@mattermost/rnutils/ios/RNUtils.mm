@@ -136,10 +136,6 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
     [self saveFile:filePath resolve:resolve reject:reject];
 }
 
-RCT_REMAP_METHOD(setSoftKeyboardToAdjustNothing, setAdjustNothing) {
-    [self setSoftKeyboardToAdjustNothing];
-}
-
 RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject) {
@@ -261,10 +257,6 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
     } else {
         reject(@"create_zip_error", [result objectForKey:@"error"], nil);
     }
-}
-
--(void)setSoftKeyboardToAdjustNothing {
-    // Do nothing as it does not apply to iOS
 }
 
 #pragma helpers

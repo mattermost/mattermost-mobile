@@ -112,16 +112,6 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun setSoftKeyboardToAdjustResize() {
-        implementation.setSoftKeyboardToAdjustResize()
-    }
-
-    @ReactMethod
-    fun setSoftKeyboardToAdjustNothing() {
-        implementation.setSoftKeyboardToAdjustNothing()
-    }
-
-    @ReactMethod
     fun createZipFile(paths: ReadableArray, promise: Promise?) {
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)

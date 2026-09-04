@@ -75,9 +75,6 @@ export interface Spec extends TurboModule {
     beginDatabaseActivity(serverUrl: string, task: string): Promise<string | null>;
     endDatabaseActivity(token: string): Promise<void>;
 
-    setSoftKeyboardToAdjustResize(): void;
-    setSoftKeyboardToAdjustNothing(): void;
-
     createZipFile: (paths: string[]) => Promise<string>;
 
     // Android only
