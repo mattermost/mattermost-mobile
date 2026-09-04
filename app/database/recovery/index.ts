@@ -76,7 +76,7 @@ export async function attemptServerDatabaseRecovery(
 
     recoveryInProgress.add(serverUrl);
 
-    // All attemps should be recorded to avoid entering a loop if the database
+    // All attempts should be recorded to avoid entering a loop if the database
     // gets corrupted when getting recreated.
     recordRecoveryAttempt(serverUrl);
 
@@ -116,5 +116,49 @@ export async function attemptServerDatabaseRecovery(
         return false;
     } finally {
         recoveryInProgress.delete(serverUrl);
+    }
+}
+
+const APP_DATABASE_RECOVERY_KEY = '@app';
+
+export async function attemptAppDatabaseRecovery(
+    error: unknown,
+    source: string,
+): Promise<boolean> {
+    if (!isDatabaseCorruptionError(error)) {
+        return false;
+    }
+
+    if (recoveryInProgress.has(APP_DATABASE_RECOVERY_KEY)) {
+        logWarning('attemptAppDatabaseRecovery: recovery already in progress', source);
+        return false;
+    }
+
+    if (!canAttemptRecovery(APP_DATABASE_RECOVERY_KEY)) {
+        logError(
+            'attemptAppDatabaseRecovery: recovery loop detected, giving up',
+            source,
+            getFullErrorMessage(error),
+        );
+        return false;
+    }
+
+    recoveryInProgress.add(APP_DATABASE_RECOVERY_KEY);
+    recordRecoveryAttempt(APP_DATABASE_RECOVERY_KEY);
+
+    try {
+        logError('attemptAppDatabaseRecovery: corruption detected', source, getFullErrorMessage(error));
+        await DatabaseManager.wipeAppDatabase();
+        logInfo('attemptAppDatabaseRecovery: app database wiped and recreated', source);
+        return true;
+    } catch (recoveryError) {
+        logError(
+            'attemptAppDatabaseRecovery: recovery failed',
+            source,
+            getFullErrorMessage(recoveryError),
+        );
+        return false;
+    } finally {
+        recoveryInProgress.delete(APP_DATABASE_RECOVERY_KEY);
     }
 }

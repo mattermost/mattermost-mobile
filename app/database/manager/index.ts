@@ -23,13 +23,14 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import {attemptServerDatabaseRecovery} from '@database/recovery';
+import {attemptAppDatabaseRecovery, attemptServerDatabaseRecovery} from '@database/recovery';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {beforeUpgrade} from '@helpers/database/upgrade';
 import {removePreauthSecret} from '@init/credentials';
 import {PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel} from '@playbooks/database/models';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
+import {isDatabaseCorruptionError} from '@utils/database_errors';
 import {deleteFile} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
@@ -222,35 +223,53 @@ class DatabaseManagerSingleton {
     * @param {string} identifier
     * @returns {Promise<void>}
     */
-    private addServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl, identifier = ''}: RegisterServerDatabaseArgs): Promise<void> => {
+    private addServerToAppDatabase = async (args: RegisterServerDatabaseArgs): Promise<void> => {
         try {
-            const appDatabase = this.appDatabase?.database;
-            if (appDatabase) {
-                const serverModel = await getServer(serverUrl);
-
-                if (!serverModel) {
-                    await appDatabase.write(async () => {
-                        const serversCollection = appDatabase.collections.get(SERVERS);
-                        await serversCollection.create((server: ServersModel) => {
-                            server.dbPath = databaseFilePath;
-                            server.displayName = displayName;
-                            server.url = serverUrl;
-                            server.identifier = identifier;
-                            server.lastActiveAt = 0;
-                        });
-                    });
-                } else if (serverModel.dbPath !== databaseFilePath) {
-                    await appDatabase.write(async () => {
-                        await serverModel.update((s) => {
-                            s.dbPath = databaseFilePath;
-                        });
-                    });
-                } else if (identifier) {
-                    await this.updateServerIdentifier(serverUrl, identifier, displayName);
+            await this.writeServerToAppDatabase(args);
+        } catch (e) {
+            if (isDatabaseCorruptionError(e)) {
+                const recovered = await attemptAppDatabaseRecovery(e, 'addServerToAppDatabase');
+                if (recovered) {
+                    try {
+                        await this.writeServerToAppDatabase(args);
+                        return;
+                    } catch (retryError) {
+                        logError('Error adding server to App database after recovery', retryError);
+                        return;
+                    }
                 }
             }
-        } catch (e) {
             logError('Error adding server to App database', e);
+        }
+    };
+
+    private writeServerToAppDatabase = async ({databaseFilePath, displayName, serverUrl, identifier = ''}: RegisterServerDatabaseArgs): Promise<void> => {
+        const appDatabase = this.appDatabase?.database;
+        if (!appDatabase) {
+            return;
+        }
+
+        const serverModel = await getServer(serverUrl);
+
+        if (!serverModel) {
+            await appDatabase.write(async () => {
+                const serversCollection = appDatabase.collections.get(SERVERS);
+                await serversCollection.create((server: ServersModel) => {
+                    server.dbPath = databaseFilePath;
+                    server.displayName = displayName;
+                    server.url = serverUrl;
+                    server.identifier = identifier;
+                    server.lastActiveAt = 0;
+                });
+            });
+        } else if (serverModel.dbPath !== databaseFilePath) {
+            await appDatabase.write(async () => {
+                await serverModel.update((s) => {
+                    s.dbPath = databaseFilePath;
+                });
+            });
+        } else if (identifier) {
+            await this.updateServerIdentifier(serverUrl, identifier, displayName);
         }
     };
 
@@ -387,6 +406,19 @@ class DatabaseManagerSingleton {
         })?.[0];
     };
 
+    public isAppDatabase = (database: Database): boolean => {
+        const app = this.appDatabase?.database;
+        if (!app) {
+            return false;
+        }
+        if (app === database) {
+            return true;
+        }
+        const appName = (app.adapter as {dbName?: string} | undefined)?.dbName;
+        const incomingName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+        return Boolean(appName && incomingName && appName === incomingName);
+    };
+
     /**
     * setActiveServerDatabase: Set the new active server database.
     * This method should be called when switching to another server.
@@ -415,6 +447,19 @@ class DatabaseManagerSingleton {
     * @param  {string} serverUrl
     * @returns {Promise<void>}
     */
+    /**
+     * wipeAppDatabase: Deletes the app SQLite files and recreates an empty app database.
+     * Used when SQLITE_CORRUPT is detected on the servers/global store (CI 33912536937).
+     */
+    public wipeAppDatabase = async (): Promise<void> => {
+        this.appDatabase = undefined;
+        await this.deleteServerDatabaseFilesByName(APP_DATABASE);
+        const recreated = await this.createAppDatabase();
+        if (!recreated) {
+            throw new Error('wipeAppDatabase: failed to re-create app database');
+        }
+    };
+
     public wipeServerData = async (serverUrl: string): Promise<void> => {
         const server = await getServer(serverUrl);
         if (!server) {
