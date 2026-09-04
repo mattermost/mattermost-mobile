@@ -7,6 +7,7 @@ import {v4 as uuidv4} from 'uuid';
 
 export * from './email';
 export * from './detoxhelpers';
+export * from './network';
 
 export const wait = async (ms: number): Promise<any> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
