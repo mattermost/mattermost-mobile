@@ -8,7 +8,7 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
-import {General} from '@constants';
+import {General, Preferences} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -37,6 +37,7 @@ type Props = {
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
+    urgentMentionCount?: number;
 }
 
 export const ROW_HEIGHT = 40;
@@ -80,6 +81,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         borderColor: theme.centerChannelBg,
     },
+    urgentBadge: {
+        color: Preferences.THEMES.denim.buttonColor,
+        backgroundColor: theme.dndIndicator,
+    },
     mutedBadge: {
         opacity: 0.32,
     },
@@ -120,6 +125,7 @@ const ChannelItem = ({
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
+    urgentMentionCount = 0,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -202,9 +208,15 @@ const ChannelItem = ({
                 />
                 <View style={styles.filler}/>
                 <Badge
+                    testID={`${channelItemTestId}.badge`}
                     visible={mentionsCount > 0}
                     value={mentionsCount}
-                    style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
+                    style={[
+                        styles.badge,
+                        isMuted && styles.mutedBadge,
+                        isOnCenterBg && styles.badgeOnCenterBg,
+                        urgentMentionCount > 0 && styles.urgentBadge,
+                    ]}
                 />
                 {hasCall &&
                 <CompassIcon
