@@ -341,18 +341,18 @@ jobs:
           # open on iOS simulators (no Mail accounts) — the app then shows an
           # error alert and the report screen never dismisses. Patch it to the
           # link variant (report URL opens in the browser) and always restore.
-          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
           trap 'curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
@@ -387,13 +387,6 @@ jobs:
           # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
           # Always restore the default before exiting this step, regardless
           # of whether the maestro run passes.
           trap 'curl -f -sS --show-error -X PUT \
@@ -402,6 +395,13 @@ jobs:
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored AllowDownloadLogs=true"' EXIT
+
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
@@ -868,18 +868,18 @@ jobs:
           set +a
 
           # Same link-mode patch as the iOS batch — see the iOS step's comment.
-          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
           trap 'curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform android
@@ -899,19 +899,19 @@ jobs:
           # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
           # in the Mattermost server config — verified during local maestro
           # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
           trap 'curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored AllowDownloadLogs=true"' EXIT
+
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
 
           ~/.maestro/bin/maestro test \
             --format junit \
@@ -927,6 +927,49 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Run MM-T3261_2 with ReportAProblemType=email (Android)
+        # Isolated step: clear Gmail, patch ReportAProblemType=email, run the
+        # mail-mode flow, restore on exit. Android-only — iOS simulators have no
+        # Mail app. continue-on-error so the main report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          echo "==> Clearing Gmail so MM-T3261_2 hits first-run onboarding"
+          adb shell pm clear com.google.android.gm || true
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          echo "==> Patching SupportSettings.ReportAProblemType=email on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"email"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T3261_2.xml \
+            --test-output-dir build/maestro-artifacts-T3261_2 \
+            --flatten-debug-output \
+            --platform android \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_mail_mode.yml
 
       - name: Upload Maestro Artifacts
         if: always()

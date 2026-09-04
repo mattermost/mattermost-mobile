@@ -16,6 +16,7 @@ import {
 } from '@support/test_config';
 import {
     ChannelListScreen,
+    HomeScreen,
     LoginScreen,
     MfaScreen,
     ServerScreen,
@@ -59,11 +60,15 @@ describe('Server Login - Login with MFA', () => {
     });
 
     afterAll(async () => {
-        // # Restore the admin session and disable MFA on the server
-        await User.apiLogin(siteOneUrl, {username: adminUsername, password: adminPassword});
-        await System.apiPatchConfig(siteOneUrl, {
-            ServiceSettings: {EnableMultifactorAuthentication: false},
-        });
+        try {
+            await HomeScreen.logout();
+        } finally {
+            // # Restore the admin session and disable MFA on the server
+            await User.apiLogin(siteOneUrl, {username: adminUsername, password: adminPassword});
+            await System.apiPatchConfig(siteOneUrl, {
+                ServiceSettings: {EnableMultifactorAuthentication: false},
+            });
+        }
     });
 
     beforeEach(async () => {

@@ -70,7 +70,8 @@ appId: ${MAESTRO_APP_ID}
     id: "report_problem.report.button"
 
 # * iOS: verify the Safari sheet opened, then dismiss it back to the app.
-# Same branches as help_url.yml (MM-T3260).
+# Breadcrumb is the id-backed dismiss; if Settings is still hidden afterwards,
+# reopen_settings_screen.yml resumes the app via launchApp (no OS text selectors).
 - runFlow:
     when:
       platform: iOS
@@ -87,13 +88,6 @@ appId: ${MAESTRO_APP_ID}
           commands:
             - tapOn:
                 id: "breadcrumb"
-      - runFlow:
-          when:
-            visible:
-              text: "Done"
-          commands:
-            - tapOn:
-                text: "Done"
 
 # * Android: verify the app left the report screen for the browser, then dismiss back.
 # Chrome Custom Tab — dismiss ads/FRE overlays before Back (same sequence as help_url.yml).

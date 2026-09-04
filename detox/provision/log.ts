@@ -16,3 +16,7 @@ export function logWarn(message: string): void {
 export function logError(message: string): void {
     console.error(`${LOG_PREFIX} ${message}`);
 }
+
+export function logDebug(message: string): void {
+    console.debug(`${LOG_PREFIX} ${message}`);
+}

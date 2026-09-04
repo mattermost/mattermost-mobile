@@ -63,6 +63,8 @@ import * as path from 'path';
 
 import {device} from 'detox';
 
+import {logDebug} from '../../../provision/log';
+
 // Local constants instead of importing from ./index (the barrel re-exports this
 // module — importing back would create a load-order-sensitive cycle).
 const POLL_INTERVAL_MS = 1000;
@@ -118,8 +120,7 @@ const resolveServerIps = async (hostname: string): Promise<string[]> => {
         dnsPromises.resolve6(hostname).catch(() => [] as string[]),
     ]);
     if (!v6.length) {
-        // eslint-disable-next-line no-console -- an IPv6 gap must be visible, not silent
-        console.info(`[network] no AAAA record for ${hostname} — blocking IPv4 only`);
+        logDebug(`[network] no AAAA record for ${hostname} — blocking IPv4 only`);
     }
     return [...v4, ...v6];
 };
@@ -168,16 +169,14 @@ export const isNetworkControlAvailable = (serverUrl: string): boolean => {
 
     // iOS — pfctl anchor path.
     if (!tryRun('which pfctl')) {
-        // eslint-disable-next-line no-console -- the skip reason must be printed at runtime
-        console.info('[network] iOS offline unavailable: pfctl not found');
+        logDebug('[network] iOS offline unavailable: pfctl not found');
         return false;
     }
 
     // Non-interactive sudo: CI macOS runners have passwordless sudo; local Macs
     // without it cannot load pf rules and must not hang on a password prompt.
     if (!tryRun('sudo -n true')) {
-        // eslint-disable-next-line no-console -- the skip reason must be printed at runtime
-        console.info('[network] iOS offline unavailable: passwordless sudo not available (required for pfctl)');
+        logDebug('[network] iOS offline unavailable: passwordless sudo not available (required for pfctl)');
         return false;
     }
     let hostname = '';
@@ -187,8 +186,7 @@ export const isNetworkControlAvailable = (serverUrl: string): boolean => {
         hostname = '';
     }
     if (!hostname || isLoopbackHost(hostname)) {
-        // eslint-disable-next-line no-console -- the skip reason must be printed at runtime
-        console.info(`[network] iOS offline unavailable: server URL (${serverUrl}) is not a remotely routed host (loopback targets are refused: blocking lo0 would also kill the app<->Detox sync channel)`);
+        logDebug(`[network] iOS offline unavailable: server hostname (${hostname || '<unparseable>'}) is not a remotely routed host (loopback targets are refused: blocking lo0 would also kill the app<->Detox sync channel)`);
         return false;
     }
     return true;
@@ -316,16 +314,18 @@ export const goOffline = async (serverUrl: string): Promise<void> => {
  * reachable again and throws otherwise. Safe to call even if goOffline never ran.
  */
 export const goOnline = async (serverUrl: string): Promise<void> => {
-    if (device.getPlatform() === 'android') {
-        if (resolvedServerIps.length) {
-            await goOnlineAndroid(serverUrl);
+    try {
+        if (device.getPlatform() === 'android') {
+            if (resolvedServerIps.length) {
+                await goOnlineAndroid(serverUrl);
+            }
+        } else {
+            await goOnlineIos(serverUrl);
         }
-    } else {
-        await goOnlineIos(serverUrl);
-    }
-
-    if (detoxSyncDisabled) {
-        await device.enableSynchronization();
-        detoxSyncDisabled = false;
+    } finally {
+        if (detoxSyncDisabled) {
+            await device.enableSynchronization();
+            detoxSyncDisabled = false;
+        }
     }
 };

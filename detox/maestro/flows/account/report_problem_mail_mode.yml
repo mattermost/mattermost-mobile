@@ -41,14 +41,6 @@
 #   - settings.report_problem.option
 #   - report_problem.screen
 #   - report_problem.report.button
-#
-# DECLARED EXCEPTIONS (ratified by QA lead 2026-09-04):
-#   - text: "SKIP" and text: "TAKE ME TO GMAIL" — Gmail first-run onboarding buttons.
-#     GUIDELINES §3 permits text: only for iOS FloatingTextInput fields and system
-#     alert buttons; these extend that clause to system-app onboarding UI, the same
-#     class already tapped by subflows/browser/dismiss_chrome_interstitial.yml
-#     ("Use without an account", "No thanks", "Got it" — Chrome app UI). Both are
-#     optional: true as onboarding-class intermittent system UI.
 tags:
   - MM-T3261_2
 appId: ${MAESTRO_APP_ID}
@@ -93,19 +85,9 @@ appId: ${MAESTRO_APP_ID}
       id: "report_problem.screen"
     timeout: 10000
 
-# # Dismiss Gmail's first-run onboarding when the emulator's Gmail is fresh.
-# Onboarding-class system UI — intermittently present only on fresh devices; on a
-# device with a configured account the composer opens directly and these no-op.
-- tapOn:
-    text: "SKIP"
-    optional: true
-- tapOn:
-    text: "TAKE ME TO GMAIL"
-    optional: true
-
 # # Return to the app from the email handler and leave the report screen.
-# The app resumes on the report screen it handed off from (not the Home tab),
-# so relaunch-and-re-anchor does not apply — foreground it and Back out to Settings.
+# Gmail onboarding has no app testID. Resume the host app rather than tapping
+# OS-owned Gmail copy, then Back out to Settings from the report screen.
 - launchApp:
     stopApp: false
     clearState: false

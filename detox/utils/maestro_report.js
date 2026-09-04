@@ -721,6 +721,29 @@ function writeMaestroJestJsonForTsio(xmlPath, outputPath) {
 }
 
 /**
+ * Order maestro-batch-N.xml numerically, then maestro-report-*.xml by name.
+ * Mixed names must not index a null batch match.
+ */
+function compareMaestroJunitFilenames(a, b) {
+    const batchNumber = (file) => {
+        const match = /^maestro-batch-(\d+)\.xml$/.exec(file);
+        return match ? Number(match[1]) : null;
+    };
+    const aBatch = batchNumber(a);
+    const bBatch = batchNumber(b);
+    if (aBatch !== null && bBatch !== null) {
+        return aBatch - bBatch;
+    }
+    if (aBatch !== null) {
+        return -1;
+    }
+    if (bBatch !== null) {
+        return 1;
+    }
+    return a.localeCompare(b);
+}
+
+/**
  * When the batch runner exits before merging (e.g. set -e abort), reconstruct
  * maestro-report.xml from maestro-batch-*.xml so PR status reflects real counts.
  */
@@ -735,10 +758,7 @@ function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
 
     const batchFiles = fse.readdirSync(buildDir).
         filter((name) => /^maestro-(batch-\d+|report-[A-Za-z0-9_.-]+)\.xml$/.test(name)).
-        sort((a, b) => {
-            const num = (file) => parseInt(file.match(/maestro-batch-(\d+)\.xml/)[1], 10);
-            return num(a) - num(b);
-        }).
+        sort(compareMaestroJunitFilenames).
         map((name) => path.join(buildDir, name));
 
     if (!batchFiles.length) {
@@ -860,6 +880,7 @@ module.exports = {
     generateMaestroHtmlReport,
     mergeMaestroJunitReports,
     mergeMaestroBatchReportsFromDir,
+    compareMaestroJunitFilenames,
     writeMaestroJestJsonForTsio,
     buildScreenshotMapFromCommandLogs,
     buildScreenshotMapFromFlowYamls,
