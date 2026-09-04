@@ -8,11 +8,11 @@
 // *******************************************************************
 
 import {Mfa, Setup, System, User} from '@support/server_api';
+import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
-    adminPassword,
-    adminUsername,
-    serverOneUrl,
-    siteOneUrl,
+    hasThreeDistinctServers,
+    serverThreeUrl,
+    siteThreeUrl,
 } from '@support/test_config';
 import {
     ChannelListScreen,
@@ -25,60 +25,102 @@ import {isIos, timeouts, wait} from '@support/utils';
 import {generateTotp, waitForNextTotpWindow} from '@support/utils/totp';
 import {expect} from 'detox';
 
-describe('Server Login - Login with MFA', () => {
+/**
+ * Enabling MFA is server-wide, so it must not run against SITE_1 (shared with Maestro
+ * and the other Detox shards). Same SITE_3 + lock + hasThreeDistinctServers gate as
+ * custom_terms_of_service: siteThreeUrl falls back to siteOneUrl on 2-server topologies.
+ */
+jest.setTimeout(timeouts.ONE_MIN * 25);
+
+const describeApiError = (error: any, status?: number): string => {
+    return `status ${status ?? 'unknown'}: ${error?.message ?? error?.id ?? 'unknown error'}`;
+};
+
+const describeOrSkip = hasThreeDistinctServers ? describe : describe.skip;
+
+describeOrSkip('Server Login - Login with MFA', () => {
     const {
         loginFormInfoText,
         passwordInput,
         signinButton,
         usernameInput,
     } = LoginScreen;
-    const serverOneDisplayName = 'Server 1';
+    const serverDisplayName = 'Server 1';
+    let lockOwner = '';
+    let lockAcquired = false;
     let testUser: any;
     let mfaSecret = '';
 
     beforeAll(async () => {
-        // # Enable MFA on the server (admin session) so the user can be enrolled
-        await System.apiPatchConfig(siteOneUrl, {
+        lockOwner = siteThreeLock.createOwner();
+        await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
+        lockAcquired = true;
+
+        await User.apiAdminLogin(siteThreeUrl);
+
+        // A cancelled job leaves EnableMultifactorAuthentication on; clear it first.
+        const healResult = await System.apiPatchConfig(siteThreeUrl, {
+            ServiceSettings: {EnableMultifactorAuthentication: false},
+        });
+        if (healResult.error) {
+            throw new Error(`Failed to heal-disable MFA: ${describeApiError(healResult.error, healResult.status)}`);
+        }
+        await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'false');
+
+        const enableResult = await System.apiPatchConfig(siteThreeUrl, {
             ServiceSettings: {EnableMultifactorAuthentication: true},
         });
+        if (enableResult.error) {
+            throw new Error(`Failed to enable MFA: ${describeApiError(enableResult.error, enableResult.status)}`);
+        }
+        const mfaEnabled = await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'true');
+        if (!mfaEnabled) {
+            throw new Error('EnableMultifactorAuthentication never became "true" on SITE_3');
+        }
 
-        // # Create a user and enable MFA for it via the API
-        const {user} = await Setup.apiInit(siteOneUrl);
+        const {user} = await Setup.apiInit(siteThreeUrl);
         testUser = user;
 
-        const mfaResult = await Mfa.apiEnableMfaForUser(siteOneUrl, {
+        const mfaResult = await Mfa.apiEnableMfaForUser(siteThreeUrl, {
             username: user.newUser.username,
             password: user.newUser.password,
         });
         if (mfaResult.error) {
-            throw new Error(`Failed to enable MFA for user: ${JSON.stringify(mfaResult.error)}`);
+            throw new Error(`Failed to enable MFA for user: ${describeApiError(mfaResult.error, mfaResult.status)}`);
         }
         mfaSecret = mfaResult.secret;
 
-        // # Connect to server
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-    });
+        await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
+    }, timeouts.ONE_MIN * 22);
 
     afterAll(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
         try {
             await HomeScreen.logout();
+        } catch {
+            // Suite may have failed before a session existed.
         } finally {
-            // # Restore the admin session and disable MFA on the server
-            const loginResult = await User.apiLogin(siteOneUrl, {username: adminUsername, password: adminPassword});
-            const configResult = await System.apiPatchConfig(siteOneUrl, {
-                ServiceSettings: {EnableMultifactorAuthentication: false},
-            });
-            if (loginResult.error || configResult.error) {
-                const loginError = loginResult.error ?
-                    (loginResult.error.message || JSON.stringify(loginResult.error)) :
-                    'ok';
-                const configError = configResult.error ?
-                    (configResult.error.message || JSON.stringify(configResult.error)) :
-                    'ok';
-                throw new Error(
-                    'afterAll failed to restore admin session or disable MFA ' +
-                    `(login=${loginError}; config=${configError})`,
-                );
+            try {
+                const loginResult = await User.apiAdminLogin(siteThreeUrl);
+                const configResult = await System.apiPatchConfig(siteThreeUrl, {
+                    ServiceSettings: {EnableMultifactorAuthentication: false},
+                });
+                if (loginResult.error || configResult.error) {
+                    throw new Error(
+                        'afterAll failed to restore admin session or disable MFA ' +
+                        `(login=${describeApiError(loginResult.error, loginResult.status)}; ` +
+                        `config=${describeApiError(configResult.error, configResult.status)})`,
+                    );
+                }
+                const mfaDisabled = await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'false');
+                if (!mfaDisabled) {
+                    throw new Error('EnableMultifactorAuthentication never became "false" on SITE_3 after teardown');
+                }
+            } finally {
+                await siteThreeLock.release(siteThreeUrl, lockOwner);
             }
         }
     });
@@ -128,6 +170,6 @@ describe('Server Login - Login with MFA', () => {
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverDisplayName);
     });
 });
