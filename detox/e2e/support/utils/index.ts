@@ -5,6 +5,8 @@ import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
+import {logDebug} from '../../../provision/log';
+
 export * from './email';
 export * from './detoxhelpers';
 export * from './network';
@@ -123,19 +125,28 @@ export async function retryWithReload(
                     // A prior suite may have left the session authenticated, so log out before connectToServer
                     // can show the server form again. Lazy require avoids a utils <-> screen circular import.
                     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-                    const {ChannelListScreen, HomeScreen} = require('@support/ui/screen');
+                    const {ChannelListScreen, HomeScreen, LoginScreen} = require('@support/ui/screen');
                     try {
+                        // Poll: waitFor after reloadReactNative can stall on Android BridgeIdlingResource.
                         // eslint-disable-next-line no-await-in-loop
-                        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.THREE_SEC);
+                        await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.THREE_SEC);
                         // eslint-disable-next-line no-await-in-loop
                         await HomeScreen.logout();
                         // eslint-disable-next-line no-await-in-loop
                         await wait(timeouts.TWO_SEC);
                     } catch {
-                        // Not on channel list — proceed to connect.
+                        // Not on channel list — proceed to login or connect.
                     }
-                    // eslint-disable-next-line no-await-in-loop
-                    await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        await waitForElementToExist(LoginScreen.loginScreen, timeouts.THREE_SEC);
+                        logDebug('retryWithReload: login screen already visible after reload, skipping connectToServer');
+                    } catch {
+                        // Reload landed on the server form (no saved server), not the login form.
+                        logDebug('retryWithReload: login screen not visible after reload, connecting to server');
+                        // eslint-disable-next-line no-await-in-loop
+                        await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                    }
                 }
             } else {
                 throw err;

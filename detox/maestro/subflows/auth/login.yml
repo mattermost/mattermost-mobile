@@ -242,16 +242,40 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: Android
     commands:
-      - tapOn:
-          id: "login_form.username.input"
-      - inputText: ${TEST_USER_EMAIL}
-      - tapOn:
-          id: "login_form.password.input"
-      - inputText: ${TEST_USER_PASSWORD}
-      - extendedWaitUntil:
-          visible:
-            id: "login_form.signin.button"
-          timeout: 10000
+      # # Same empty-password / dropped-keystroke failure as iOS: enabled
+      # login_form.signin.button never appears (CI 33867825384, 10/10 Android
+      # flows, ~270s). Keyboard can also cover Log In — connect_server.yml
+      # already hideKeyboard on Android; Detox taps enter_credentials first.
+      - retry:
+          maxRetries: 4
+          commands:
+            - tapOn:
+                id: "login_form.username.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_EMAIL}
+            - tapOn:
+                id: "login_form.password.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_PASSWORD}
+            - hideKeyboard
+            - tapOn:
+                id: "login_options.description.enter_credentials"
+                optional: true
+            # * Empty password keeps login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      id: "login_form.password.input"
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
+                  - hideKeyboard
+            - extendedWaitUntil:
+                visible:
+                  id: "login_form.signin.button"
+                timeout: 10000
 
 - retry:
     maxRetries: 3
@@ -273,6 +297,8 @@ appId: ${MAESTRO_APP_ID}
                 when:
                   notVisible:
                     id: "tab_bar.home.tab"
+                  visible:
+                    id: "login_form.signin.button"
                 commands:
                   - tapOn:
                       id: "login_form.signin.button"
