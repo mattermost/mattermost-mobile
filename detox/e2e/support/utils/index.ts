@@ -102,6 +102,15 @@ export async function withSynchronizationDisabled<T>(fn: () => Promise<T>): Prom
     }
 }
 
+async function screenExists(detoxElement: Detox.NativeElement, timeout: number = timeouts.THREE_SEC): Promise<boolean> {
+    try {
+        await waitForElementToExist(detoxElement, timeout);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export async function retryWithReload(
     func: () => Promise<void>,
     retries: number = 2,
@@ -122,31 +131,30 @@ export async function retryWithReload(
                 await new Promise((res) => setTimeout(res, 10000));
 
                 if (serverUrl && serverDisplayName) {
-                    // A prior suite may have left the session authenticated, so log out before connectToServer
-                    // can show the server form again. Lazy require avoids a utils <-> screen circular import.
+                    // Lazy require avoids a utils <-> screen circular import.
                     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-                    const {ChannelListScreen, HomeScreen, LoginScreen} = require('@support/ui/screen');
-                    try {
-                        // Poll: waitFor after reloadReactNative can stall on Android BridgeIdlingResource.
-                        // eslint-disable-next-line no-await-in-loop
-                        await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.THREE_SEC);
-                        // eslint-disable-next-line no-await-in-loop
+                    const {ChannelListScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
+                    /* eslint-disable no-await-in-loop -- sequential recovery after reload */
+
+                    // HomeScreen.logout swallows its own errors, so detection and logout
+                    // stay separate: a failed logout still leaves the session on the
+                    // channel list, and connectToServer would then hunt server.screen.
+                    if (await screenExists(ChannelListScreen.channelListScreen)) {
                         await HomeScreen.logout();
-                        // eslint-disable-next-line no-await-in-loop
                         await wait(timeouts.TWO_SEC);
-                    } catch {
-                        // Not on channel list — proceed to login or connect.
                     }
-                    try {
-                        // eslint-disable-next-line no-await-in-loop
-                        await waitForElementToExist(LoginScreen.loginScreen, timeouts.THREE_SEC);
-                        logDebug('retryWithReload: login screen already visible after reload, skipping connectToServer');
-                    } catch {
-                        // Reload landed on the server form (no saved server), not the login form.
-                        logDebug('retryWithReload: login screen not visible after reload, connecting to server');
-                        // eslint-disable-next-line no-await-in-loop
+
+                    if (await screenExists(LoginScreen.loginScreen)) {
+                        logDebug('retryWithReload: login screen visible after reload, skipping connectToServer');
+                    } else if (await screenExists(MfaScreen.mfaScreen)) {
+                        logDebug('retryWithReload: MFA screen visible after reload, skipping connectToServer');
+                    } else if (await screenExists(ChannelListScreen.channelListScreen)) {
+                        logDebug('retryWithReload: still on channel list after logout, skipping connectToServer');
+                    } else {
+                        logDebug('retryWithReload: connecting to server after reload');
                         await ServerScreen.connectToServer(serverUrl, serverDisplayName);
                     }
+                    /* eslint-enable no-await-in-loop */
                 }
             } else {
                 throw err;
