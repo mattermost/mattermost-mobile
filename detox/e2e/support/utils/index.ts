@@ -164,7 +164,13 @@ export async function retryWithReload(
                         logDebug('retryWithReload: still on channel list after logout, skipping connectToServer');
                     } else {
                         logDebug('retryWithReload: connecting to server after reload');
-                        await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                        try {
+                            await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                        } catch {
+                            // White/loading screens have no server.screen; keep retrying func()
+                            // instead of aborting the loop (CI 33912536937 MM-T6230 beforeAll).
+                            logDebug('retryWithReload: connectToServer failed after reload, will retry login');
+                        }
                     }
                     /* eslint-enable no-await-in-loop */
                 }

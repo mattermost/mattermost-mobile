@@ -92,7 +92,8 @@ class LoginScreen {
      */
     waitUntilOnChannelList = async () => {
         const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
-        const deadline = Date.now() + timeout;
+        const started = Date.now();
+        const deadline = started + timeout;
 
         // Lazy require: ChannelScreen → HomeScreen → LoginScreen.
         // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
@@ -116,8 +117,21 @@ class LoginScreen {
                 await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
                 return;
             } catch {
-                await wait(timeouts.ONE_SEC);
+                // Not on a channel either.
             }
+
+            try {
+                await waitForElementToExist(this.loginScreen, timeouts.ONE_SEC);
+                if (Date.now() - started >= timeouts.TWENTY_SEC) {
+                    throw new Error('LoginScreen.waitUntilOnChannelList: still on login.screen 20s after sign-in');
+                }
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('still on login.screen')) {
+                    throw error;
+                }
+            }
+
+            await wait(timeouts.ONE_SEC);
         }
         /* eslint-enable no-await-in-loop */
         throw new Error('LoginScreen.waitUntilOnChannelList: neither channel list nor channel appeared');
