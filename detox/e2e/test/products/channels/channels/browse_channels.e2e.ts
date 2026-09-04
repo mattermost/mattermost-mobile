@@ -218,11 +218,10 @@ describe('Channels - Browse Channels', () => {
 
             await BrowseChannelsScreen.close();
         } finally {
-            if (originalConfig) {
-                await System.apiReplaceConfig(siteOneUrl, originalConfig);
-            } else {
-                await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: false}});
-            }
+            const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
+            await System.apiUpdateConfig(siteOneUrl, {
+                TeamSettings: {ExperimentalViewArchivedChannels: originalArchived ?? false},
+            });
         }
     });
 

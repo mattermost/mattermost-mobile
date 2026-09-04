@@ -28,6 +28,8 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
+import {logError} from '../../../../../provision/log';
+
 // Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
 // here: up to 45m of queuing behind the other two classification suites (they share one
 // server), plus headroom for enable/setup after acquire.
@@ -71,8 +73,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await assertClassificationLockOwnership(siteOneUrl, lockOwner);
         const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
         if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
-            // eslint-disable-next-line no-console
-            console.warn(
+            logError(
                 '[beforeEach] FeatureFlagClassificationMarkings flipped off mid-suite ' +
                 `(client=${String(clientConfig?.FeatureFlagClassificationMarkings)}) — re-enabling`,
             );

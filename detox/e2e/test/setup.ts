@@ -10,6 +10,8 @@ import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 import {safeEnableSynchronization} from '@support/utils';
 
+import {logError, logWarn} from '../../provision/log';
+
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
 function getSimulatorId(): string {
@@ -174,9 +176,9 @@ function recoverAndroidDevice(): void {
             "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
             {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 5_000},
         );
-        console.warn('[recoverAndroidDevice] window focus:', focus.replace(/\s+/g, ' ').trim().slice(0, 300));
+        logWarn(`[recoverAndroidDevice] window focus: ${focus.replace(/\s+/g, ' ').trim().slice(0, 300)}`);
     } catch {
-        console.warn('[recoverAndroidDevice] could not read window focus from dumpsys');
+        logError('[recoverAndroidDevice] could not read window focus from dumpsys');
     }
 }
 

@@ -326,4 +326,11 @@ export const assertLockOwnership = async (store: LockStore, owner: string): Prom
             'run\'s banner assertions cannot be trusted. Re-run the shard — do not widen timeouts.',
         );
     }
+
+    if (lock.expiresAt <= Date.now()) {
+        throw new Error(
+            `classification lock: "${owner}" lost the lock — the lease expired at ${lock.expiresAt}. ` +
+            'Re-acquire before mutating shared config.',
+        );
+    }
 };

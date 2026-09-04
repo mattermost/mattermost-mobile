@@ -343,4 +343,13 @@ describe('assertLockOwnership', () => {
             /owner must not be empty/,
         );
     });
+
+    it('should throw when the matching owner\'s lease has expired', async () => {
+        const store = createStore(JSON.stringify({owner: 'shard-9', expiresAt: Date.now() - 1}));
+
+        await assert.rejects(
+            () => assertLockOwnership(store, 'shard-9'),
+            /lease expired/,
+        );
+    });
 });
