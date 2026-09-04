@@ -187,13 +187,19 @@ describe('switchToServerAndLogin', () => {
         });
 
         const loginPromise = Actions.switchToServerAndLogin('serverUrl', intl, callback);
+        let loginResolved = false;
+        const trackedLogin = loginPromise.then(() => {
+            loginResolved = true;
+        });
         await callbackStarted;
+        await Promise.resolve();
 
         expect(callback).toHaveBeenCalledWith({config, license});
         expect(callbackFinished).toBe(false);
+        expect(loginResolved).toBe(false);
 
         resolveCallback();
-        await loginPromise;
+        await trackedLogin;
         expect(callbackFinished).toBe(true);
     });
 
