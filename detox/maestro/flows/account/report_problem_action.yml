@@ -13,10 +13,12 @@
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
 # ASSERTIONS:
-#   - Tapping Report a problem leaves the in-app report screen
-#   - The external report link surface is presented (the OS-owned browser /
-#     share surface content itself is out of scope — only the hand-off is
-#     asserted, since the exact surface depends on license tier and platform)
+#   - Tapping Report a problem hands off to the OS browser (Safari sheet on
+#     iOS, Chrome Custom Tab on Android). The in-app screen is not dismissed
+#     by the product (`tryOpenURL` only) — CI 33877432724 iOS failed waiting
+#     for report_problem.screen to disappear.
+#   - Settings with Report a Problem is reachable again after dismissing the
+#     OS surface
 #
 # testIDs:
 #   - tab_bar.account.tab
@@ -24,6 +26,7 @@
 #   - settings.report_problem.option
 #   - report_problem.screen
 #   - report_problem.report.button
+#   - breadcrumb
 tags:
   - MM-T3261
 appId: ${MAESTRO_APP_ID}
@@ -65,12 +68,47 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "report_problem.report.button"
 
-# * Verify the in-app report screen is dismissed in favor of the native
-# mail composer or external browser. The exact surface depends on the server
-# license tier, so assert the app screen is gone rather than a specific
-# native element.
+# * iOS: Safari sheet (breadcrumb). Product does not pop the report screen.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "breadcrumb"
+          timeout: 15000
+      - takeScreenshot: report-problem-action-opened
+      - runFlow:
+          when:
+            visible:
+              id: "breadcrumb"
+          commands:
+            - tapOn:
+                id: "breadcrumb"
+# * Android: Chrome Custom Tab covers the report screen.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "report_problem.screen"
+          timeout: 10000
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+- runFlow:
+    when:
+      notVisible:
+        id: "settings.report_problem.option"
+    file: ../../subflows/browser/reopen_settings_screen.yml
 - extendedWaitUntil:
-    notVisible:
-      id: "report_problem.screen"
+    visible:
+      id: "settings.report_problem.option"
     timeout: 30000
-- takeScreenshot: report-problem-action-opened
+- takeScreenshot: report-problem-action-settings-reachable
