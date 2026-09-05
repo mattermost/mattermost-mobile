@@ -154,65 +154,39 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
 
         const categories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
         const isFavorited = currentCategory.type === FAVORITES_CATEGORY;
-        let targetWithChannels: CategoryWithChannels;
-        let favoriteWithChannels: CategoryWithChannels;
 
-        // updateChannelCategories is a PUT that REPLACES a category's membership with exactly
-        // the channel_ids we send, so the payload must be built from authoritative state.
-        // toCategoryWithChannels() reads local CategoryChannel rows, and those can legitimately
-        // be an incomplete view of the server: a partial initial sync, a team the user has not
-        // fully loaded, or a missed WebSocket frame all leave rows absent. Sending that
-        // truncated list re-files the user's other channels ON THE SERVER.
+        // updateChannelCategories is a PUT that REPLACES membership with exactly the
+        // channel_ids we send. Default Channels/DMs/Favorites are self-healing or cheap
+        // to correct, so those lists come from local rows — a getCategories round-trip
+        // on every star tap is too expensive.
         //
-        // Verified against a live server: the default Channels category is self-healing --
-        // omit ids and the server puts still-joined channels back -- so that case is benign.
-        // A custom category is not. Sending a truncated custom category ejects the missing
-        // channels into Channels and leaves the category empty, and nothing puts them back:
+        // A custom category is not self-healing. Sending a truncated "My Project" list
+        // ejects the missing channels into Channels and leaves the category empty:
         //   before: "My Project" [chan-a, chan-b]   (favorite chan-a, local knew only chan-a)
         //   after:  "My Project" []  /  Channels gains chan-b
-        // The user's own grouping is what gets destroyed, and only a manual redo restores it.
-        //
-        // Fetch-only (no prune, no write) so this stays a read of server truth and does not
-        // race the store below.
-        const {categories: remoteCategories, error: fetchError} = await fetchCategories(serverUrl, teamId, false, true);
-        if (fetchError || !remoteCategories) {
-            // Deliberately fail closed. Falling back to the local list here would reintroduce
-            // the exact truncation this guards against, and a failed favourite toggle is
-            // recoverable where silently unfiling the user's channels is not.
-            logDebug('toggleFavoriteChannel: no authoritative categories, skipping update', serverUrl, teamId);
-            return {error: fetchError ?? 'failed to fetch categories'};
-        }
-        const remoteById = new Map(remoteCategories.map((c) => [c.id, c]));
-
-        // isFavorited is derived from the LOCAL category while the id lists now come from the
-        // server, so the two can legitimately disagree -- that divergence is the whole reason
-        // this function reads remote state. Index arithmetic is not safe across it:
-        // indexOf() returns -1 when the server disagrees and splice(-1, 1) removes the LAST
-        // channel, silently unfiling an unrelated one. Work by identity instead, which is also
-        // idempotent if the server already reflects the toggle.
+        // Fetch only that one category, and fail closed if the fetch fails.
         const withChannelFirst = (ids: string[]) => [channelId, ...ids.filter((id) => id !== channelId)];
         const withoutChannel = (ids: string[]) => ids.filter((id) => id !== channelId);
-        const copyRemote = (remote: CategoryWithChannels): CategoryWithChannels => ({
-            ...remote,
-            channel_ids: [...remote.channel_ids],
-        });
-        const toWithChannels = (category: CategoryModel): CategoryWithChannels | undefined => {
-            const remote = remoteById.get(category.id);
-            if (!remote) {
-                return undefined;
+        const membershipForPut = async (category: CategoryModel): Promise<{data?: CategoryWithChannels; error?: unknown}> => {
+            const local = await category.toCategoryWithChannels();
+            if (category.type !== 'custom' || category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+                return {data: local};
             }
-            return copyRemote(remote);
+
+            try {
+                const remote = await client.getCategory('me', teamId, category.id);
+                if (!remote.channel_ids) {
+                    return {error: 'remote category membership unavailable'};
+                }
+                return {data: {...remote, channel_ids: [...remote.channel_ids]}};
+            } catch (error) {
+                logDebug('toggleFavoriteChannel: no authoritative custom category, skipping update', category.id);
+                return {error};
+            }
         };
 
-        // Local currentCategory can lag the server (WebSocket miss, another client).
-        // PUT the remote category that actually holds the channel when that differs.
-        const remoteCategoryContainingChannel = remoteCategories.find((c) => c.channel_ids.includes(channelId));
-        const sourceCategoryForRemoval = (destinationId: string): CategoryWithChannels | undefined => {
-            if (remoteCategoryContainingChannel && remoteCategoryContainingChannel.id !== destinationId) {
-                return copyRemote(remoteCategoryContainingChannel);
-            }
-            return toWithChannels(currentCategory);
-        };
+        let targetWithChannels: CategoryWithChannels;
+        let favoriteWithChannels: CategoryWithChannels;
 
         if (isFavorited) {
             const categoryType = (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) ? DMS_CATEGORY : CHANNELS_CATEGORY;
@@ -220,25 +194,29 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
             if (!targetCategory) {
                 return {error: 'target category not found'};
             }
-            const remoteTarget = toWithChannels(targetCategory);
-            const remoteFavorite = sourceCategoryForRemoval(remoteTarget?.id ?? '');
-            if (!remoteTarget || !remoteFavorite) {
-                return {error: 'remote category membership unavailable'};
+            const [targetMembership, favoriteMembership] = await Promise.all([
+                membershipForPut(targetCategory),
+                membershipForPut(currentCategory),
+            ]);
+            if (targetMembership.error || !targetMembership.data || favoriteMembership.error || !favoriteMembership.data) {
+                return {error: targetMembership.error ?? favoriteMembership.error ?? 'remote category membership unavailable'};
             }
-            targetWithChannels = {...remoteTarget, channel_ids: withChannelFirst(remoteTarget.channel_ids)};
-            favoriteWithChannels = {...remoteFavorite, channel_ids: withoutChannel(remoteFavorite.channel_ids)};
+            targetWithChannels = {...targetMembership.data, channel_ids: withChannelFirst(targetMembership.data.channel_ids)};
+            favoriteWithChannels = {...favoriteMembership.data, channel_ids: withoutChannel(favoriteMembership.data.channel_ids)};
         } else {
             const favoritesCategory = categories.find((c) => c.type === FAVORITES_CATEGORY);
             if (!favoritesCategory) {
                 return {error: 'No favorites category'};
             }
-            const remoteFavorite = toWithChannels(favoritesCategory);
-            const remoteTarget = sourceCategoryForRemoval(remoteFavorite?.id ?? '');
-            if (!remoteFavorite || !remoteTarget) {
-                return {error: 'remote category membership unavailable'};
+            const [favoriteMembership, targetMembership] = await Promise.all([
+                membershipForPut(favoritesCategory),
+                membershipForPut(currentCategory),
+            ]);
+            if (favoriteMembership.error || !favoriteMembership.data || targetMembership.error || !targetMembership.data) {
+                return {error: favoriteMembership.error ?? targetMembership.error ?? 'remote category membership unavailable'};
             }
-            favoriteWithChannels = {...remoteFavorite, channel_ids: withChannelFirst(remoteFavorite.channel_ids)};
-            targetWithChannels = {...remoteTarget, channel_ids: withoutChannel(remoteTarget.channel_ids)};
+            favoriteWithChannels = {...favoriteMembership.data, channel_ids: withChannelFirst(favoriteMembership.data.channel_ids)};
+            targetWithChannels = {...targetMembership.data, channel_ids: withoutChannel(targetMembership.data.channel_ids)};
         }
 
         await client.updateChannelCategories('me', teamId, [targetWithChannels, favoriteWithChannels]);

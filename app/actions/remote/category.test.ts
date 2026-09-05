@@ -158,38 +158,34 @@ describe('toggleFavoriteChannel', () => {
         expect(mockClient.updateChannelCategories).toHaveBeenCalled();
     });
 
-    it('should not unfile an unrelated channel when the server disagrees about membership', async () => {
-        // Local rows say this channel is favorited; the server's favorites list does not list
-        // it and holds a different channel instead. That divergence is exactly why the payload
-        // is built from server state -- but index arithmetic across it is unsafe: indexOf()
-        // returns -1 and splice(-1, 1) would drop the LAST id, unfiling an unrelated channel
-        // and PUTting that as the new membership.
-        await operator.handleCategoryChannels({categoryChannels: [categoryChannels], prepareRecordsOnly: false});
+    it('should keep sibling favorites when unfavoriting one channel', async () => {
+        const otherChannelId = 'someone-elses-channel';
+        await operator.handleCategoryChannels({
+            categoryChannels: [
+                categoryChannels,
+                {id: 'teamid1_other', category_id: favCategory.id, channel_id: otherChannelId, sort_order: 0},
+            ],
+            prepareRecordsOnly: false,
+        });
         await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
-        const otherChannelId = 'someone-elses-channel';
         const mockClient = {
             updateChannelCategories: jest.fn().mockResolvedValue({}),
-            getCategories: jest.fn().mockResolvedValue({
-                categories: [
-                    {...favCategory, channel_ids: [otherChannelId]},
-                    {...defaultCategory, channel_ids: []},
-                ],
-            }),
+            getCategories: jest.fn().mockResolvedValue({categories: []}),
+            getCategory: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
 
         const result = await toggleFavoriteChannel(serverUrl, channelId, true);
 
         expect(result).toEqual({data: true});
+        expect(mockClient.getCategory).not.toHaveBeenCalled();
 
         const sent = mockClient.updateChannelCategories.mock.calls[0][2] as CategoryWithChannels[];
         const favorites = sent.find((c) => c.id === favCategory.id);
         const target = sent.find((c) => c.id === defaultCategory.id);
-
-        // The unrelated channel survives, and the toggled one lands in the target category.
         expect(favorites?.channel_ids).toEqual([otherChannelId]);
         expect(target?.channel_ids).toEqual([channelId]);
     });
@@ -333,6 +329,7 @@ describe('toggleFavoriteChannel', () => {
         const mockClient = {
             updateChannelCategories: jest.fn().mockResolvedValue({}),
             getCategories: jest.fn().mockResolvedValue({categories: serverCategories}),
+            getCategory: jest.fn(),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
         return mockClient;
@@ -351,39 +348,28 @@ describe('toggleFavoriteChannel', () => {
 
         await toggleFavoriteChannel(serverUrl, channelId, false);
 
+        expect(mockClient.getCategory).not.toHaveBeenCalled();
         expect(sentCategory(mockClient, FAVORITES_CATEGORY)?.channel_ids).toEqual([channelId]);
         expect(sentCategory(mockClient, CHANNELS_CATEGORY)?.channel_ids).toEqual(['offtopic', 'townsquare']);
     });
 
-    it('should not tell the server a category is empty just because local rows are missing', async () => {
-        const mockClient = await favouriteSetup([{...categoryChannels, category_id: defaultCategory.id}]);
-
-        await toggleFavoriteChannel(serverUrl, channelId, false);
-
-        const submitted = sentCategory(mockClient, CHANNELS_CATEGORY);
-        expect(submitted?.channel_ids).toHaveLength(2);
-        expect(submitted?.channel_ids).toEqual(expect.arrayContaining(['offtopic', 'townsquare']));
-    });
-
-    it('should remove the channel from the remote source category when it differs from local', async () => {
+    it('should fetch only the custom source category when local rows are truncated', async () => {
         const customCategory = {
             id: 'custom_category_id',
             team_id: teamId,
             type: 'custom',
         } as Category;
-        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: defaultCategory.id}], prepareRecordsOnly: false});
-        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: customCategory.id}], prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory, customCategory], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 
         const mockClient = {
             updateChannelCategories: jest.fn().mockResolvedValue({}),
-            getCategories: jest.fn().mockResolvedValue({
-                categories: [
-                    {...defaultCategory, channel_ids: ['offtopic']},
-                    {...customCategory, channel_ids: [channelId, 'kept-channel']},
-                    {...favCategory, channel_ids: []},
-                ],
+            getCategories: jest.fn().mockResolvedValue({categories: []}),
+            getCategory: jest.fn().mockResolvedValue({
+                ...customCategory,
+                channel_ids: [channelId, 'kept-channel'],
             }),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
@@ -391,56 +377,30 @@ describe('toggleFavoriteChannel', () => {
         const result = await toggleFavoriteChannel(serverUrl, channelId, false);
 
         expect(result).toEqual({data: true});
+        expect(mockClient.getCategory).toHaveBeenCalledWith('me', teamId, customCategory.id);
+        expect(mockClient.getCategory).toHaveBeenCalledTimes(1);
         const sent = mockClient.updateChannelCategories.mock.calls[0][2] as CategoryWithChannels[];
         expect(sent.find((c) => c.id === customCategory.id)?.channel_ids).toEqual(['kept-channel']);
         expect(sent.find((c) => c.id === favCategory.id)?.channel_ids).toEqual([channelId]);
-        expect(sent.find((c) => c.id === defaultCategory.id)).toBeUndefined();
     });
 
-    it('should unfavorite from the remote category that holds the channel, not the local favorites id', async () => {
+    it('should not replace a custom category when its membership fetch fails', async () => {
         const customCategory = {
             id: 'custom_category_id',
             team_id: teamId,
             type: 'custom',
         } as Category;
-        await operator.handleCategoryChannels({categoryChannels: [categoryChannels], prepareRecordsOnly: false});
-        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
+        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: customCategory.id}], prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory, customCategory], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-
+        const fetchError = new Error('category unavailable');
         const mockClient = {
             updateChannelCategories: jest.fn().mockResolvedValue({}),
-            getCategories: jest.fn().mockResolvedValue({
-                categories: [
-                    {...favCategory, channel_ids: []},
-                    {...customCategory, channel_ids: [channelId, 'kept-channel']},
-                    {...defaultCategory, channel_ids: []},
-                ],
-            }),
+            getCategories: jest.fn().mockResolvedValue({categories: []}),
+            getCategory: jest.fn().mockRejectedValue(fetchError),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-
-        const result = await toggleFavoriteChannel(serverUrl, channelId, true);
-
-        expect(result).toEqual({data: true});
-        const sent = mockClient.updateChannelCategories.mock.calls[0][2] as CategoryWithChannels[];
-        expect(sent.find((c) => c.id === customCategory.id)?.channel_ids).toEqual(['kept-channel']);
-        expect(sent.find((c) => c.id === defaultCategory.id)?.channel_ids).toEqual([channelId]);
-        expect(sent.find((c) => c.id === favCategory.id)).toBeUndefined();
-    });
-
-    it('should not replace membership when the authoritative fetch fails', async () => {
-        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: defaultCategory.id}], prepareRecordsOnly: false});
-        await operator.handleCategories({categories: [favCategory, defaultCategory], prepareRecordsOnly: false});
-        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
-        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
-        const fetchError = new Error('categories unavailable');
-        const mockClient = {
-            updateChannelCategories: jest.fn().mockResolvedValue({}),
-            getCategories: jest.fn().mockRejectedValue(fetchError),
-        };
-        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
-        (getFullErrorMessage as jest.Mock).mockReturnValue('Full error message');
 
         const result = await toggleFavoriteChannel(serverUrl, channelId, false);
 
@@ -448,9 +408,22 @@ describe('toggleFavoriteChannel', () => {
         expect(result).toEqual({error: fetchError});
     });
 
-    it('should not fall back to local rows when a remote category is missing', async () => {
-        const mockClient = await favouriteSetup([{...categoryChannels, category_id: defaultCategory.id}]);
-        mockClient.getCategories.mockResolvedValue({categories: [{...favCategory, channel_ids: []}]});
+    it('should not fall back to local rows when a custom category has no channel_ids', async () => {
+        const customCategory = {
+            id: 'custom_category_id',
+            team_id: teamId,
+            type: 'custom',
+        } as Category;
+        await operator.handleCategoryChannels({categoryChannels: [{...categoryChannels, category_id: customCategory.id}], prepareRecordsOnly: false});
+        await operator.handleCategories({categories: [favCategory, defaultCategory, customCategory], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+        const mockClient = {
+            updateChannelCategories: jest.fn().mockResolvedValue({}),
+            getCategories: jest.fn().mockResolvedValue({categories: []}),
+            getCategory: jest.fn().mockResolvedValue({...customCategory}),
+        };
+        (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
 
         const result = await toggleFavoriteChannel(serverUrl, channelId, false);
 
