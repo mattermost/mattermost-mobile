@@ -238,7 +238,7 @@ export const acquireLock = async (
 
                 // eslint-disable-next-line no-await-in-loop -- confirm ownership after the non-atomic write
                 const confirmedLock = parseLock(await store.read());
-                if (confirmedLock?.owner === owner) {
+                if (confirmedLock?.owner === owner && confirmedLock.expiresAt > Date.now()) {
                     startHeartbeat(store, owner, ttlMs, renewMs);
                     return;
                 }
@@ -302,6 +302,35 @@ export const releaseLock = async (store: LockStore, owner: string): Promise<void
         warn(
             `best-effort release failed for "${owner}"; the lease expires on its own. ` +
             formatError(error),
+        );
+    }
+};
+
+export const assertLockOwnership = async (store: LockStore, owner: string): Promise<void> => {
+    if (!owner) {
+        throw new Error('classification lock: owner must not be empty');
+    }
+
+    const lock = parseLock(await store.read());
+    if (!lock) {
+        throw new Error(
+            `classification lock: ownership check failed — the lock cell is empty but "${owner}" ` +
+            'expected to hold it. Another suite may have released it mid-run; re-acquire before mutating shared config.',
+        );
+    }
+
+    if (lock.owner !== owner) {
+        throw new Error(
+            `classification lock: "${owner}" lost the lock to "${lock.owner}" (expiresAt=${lock.expiresAt}). ` +
+            'Concurrent classification suites are mutating the shared classification config; this ' +
+            'run\'s banner assertions cannot be trusted. Re-run the shard — do not widen timeouts.',
+        );
+    }
+
+    if (lock.expiresAt <= Date.now()) {
+        throw new Error(
+            `classification lock: "${owner}" lost the lock — the lease expired at ${lock.expiresAt}. ` +
+            'Re-acquire before mutating shared config.',
         );
     }
 };

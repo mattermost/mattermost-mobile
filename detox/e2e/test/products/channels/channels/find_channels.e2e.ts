@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -47,9 +47,6 @@ describe('Channels - Find Channels', () => {
     });
 
     beforeEach(async () => {
-        // Dismiss any lingering "Removed from channel" or "Archived channel"
-        // dialogs that may appear asynchronously via WebSocket events from
-        // the previous test's channel archival (e.g. MM-T4907_5).
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         // * Verify on channel list screen
@@ -106,8 +103,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.close();
     });
 
-    // Skip iOS: R1+R3 product — filtered_list user_item not found for DM/GM search
-    (isIos() ? it.skip : it)('MM-T4907_4 - should be able to find direct and group message channels', async () => {
+    it('MM-T4907_4 - should be able to find direct and group message channels', async () => {
         // # Create direct and group message channels, open find channels screen, and search for the direct message channel
         const {user: testOtherUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, testOtherUser1.id, testTeam.id);
@@ -116,9 +112,6 @@ describe('Channels - Find Channels', () => {
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, testOtherUser1.id]);
         const {channel: groupMessageChannel} = await Channel.apiCreateGroupChannel(siteOneUrl, [testUser.id, testOtherUser1.id, testOtherUser2.id]);
 
-        // Reload so API-created DM/GM land in the local DB before Find Channels search
-        // (CI 29935363789 iOS: GM visible by display name but channel_item name matcher
-        // raced a 2s wait, then bare user_item tap failed).
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
 
@@ -126,8 +119,6 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
         // * Verify search returns a result for the target direct message channel.
-        // When the DM is synced via WS it shows as channel_item; if not yet synced
-        // searchProfiles stores the user profile and it shows as user_item.
         await wait(timeouts.TWO_SEC);
         try {
             await waitFor(FindChannelsScreen.getFilteredChannelItem(directMessageChannel.name)).
@@ -139,24 +130,15 @@ describe('Channels - Find Channels', () => {
                 withTimeout(timeouts.HALF_MIN);
         }
 
-        // # Search for the group message channel
+        // # Search for the group message channel.
+        await FindChannelsScreen.searchInput.clearText();
+        await wait(timeouts.ONE_SEC);
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
-
-        // * Verify search returns the target group message channel item and tap it
-        // The GM appears as a channel_item when synced via WS; if not yet synced,
-        // fall back to the user_item which still opens a channel screen.
         await wait(timeouts.TWO_SEC);
-        try {
-            await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
-                toExist().
-                withTimeout(timeouts.TWENTY_SEC);
-            await FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name).tap();
-        } catch {
-            await waitFor(element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`))).
-                toExist().
-                withTimeout(timeouts.HALF_MIN);
-            await element(by.id(`find_channels.filtered_list.user_item.${testOtherUser2.id}`)).tap();
-        }
+        await waitFor(FindChannelsScreen.getFilteredChannelItem(groupMessageChannel.name)).
+            toExist().
+            withTimeout(timeouts.TWENTY_SEC);
+        await FindChannelsScreen.tapFilteredChannelItem(groupMessageChannel.name);
         await wait(timeouts.FOUR_SEC);
 
         // * Verify on target GM screen

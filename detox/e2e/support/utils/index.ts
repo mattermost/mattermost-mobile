@@ -62,9 +62,13 @@ export const timeouts = {
 
 let syncDisableDepth = 0;
 
-// Retry enableSynchronization after Android Fabric ReactContext null races.
 export async function safeEnableSynchronization(): Promise<void> {
+    if (syncDisableDepth > 0) {
+        return;
+    }
+
     const delays = [timeouts.HALF_SEC, timeouts.ONE_SEC, timeouts.TWO_SEC];
+    let relaunched = false;
     /* eslint-disable no-await-in-loop */
     for (let i = 0; i <= delays.length; i++) {
         try {
@@ -76,7 +80,19 @@ export async function safeEnableSynchronization(): Promise<void> {
                 throw error;
             }
             if (i === delays.length) {
-                throw error;
+                if (relaunched) {
+                    throw error;
+                }
+                relaunched = true;
+
+                // Instance destroyed, not starting: relaunch so the worker's later tests
+                // run against a live app instead of a dead one Detox keeps reusing. One
+                // relaunch, then the remaining retries give the fresh instance its own
+                // bounded window; if it still fails, surface the error.
+                i = -1;
+                // eslint-disable-next-line no-await-in-loop -- recovery launch, not a poll
+                await device.launchApp({newInstance: true, launchArgs: {detoxEnableSynchronization: 0}});
+                continue;
             }
             await wait(delays[i] ?? delays[delays.length - 1] ?? timeouts.ONE_SEC);
         }
@@ -373,6 +389,40 @@ export async function waitForElementToBeVisible(
     await detoxExpect(detoxElement).toBeVisible(visibilityThreshold);
 }
 
+export async function tapUntilGone(
+    target: Detox.NativeElement,
+    goneElement?: Detox.NativeElement,
+    maxAttempts = 3,
+    timeout: number = timeouts.FIVE_SEC,
+): Promise<void> {
+    const toVanish = goneElement ?? target;
+    let lastError: Error | undefined;
+
+    /* eslint-disable no-await-in-loop -- sequential retries by design */
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            await target.tap();
+        } catch (error) {
+            lastError = error as Error;
+            if (attempt === maxAttempts) {
+                throw error;
+            }
+            await wait(timeouts.ONE_SEC);
+            continue;
+        }
+
+        try {
+            await waitForElementToNotExist(toVanish, timeout);
+            return;
+        } catch (error) {
+            lastError = error as Error;
+            await wait(timeouts.ONE_SEC);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+    throw lastError;
+}
+
 // Poll for non-existence without Detox bridge-idle synchronization.
 export async function waitForElementToNotExist(
     detoxElement: Detox.NativeElement,
@@ -405,9 +455,6 @@ export async function waitForElementToNotExist(
     }
 }
 
-// Poll for existence without Detox bridge-idle synchronization.
-// Hierarchy existence check on all platforms so callers probing off-screen items before
-// scrolling do not time out. For visibility, use waitForElementToBeVisible instead.
 export async function waitForElementToExist(
     detoxElement: Detox.NativeElement,
     timeout: number = timeouts.HALF_MIN,

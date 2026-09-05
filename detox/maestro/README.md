@@ -120,6 +120,29 @@ DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
   bash detox/scripts/preboot_ios_simulator.sh
 ```
 
+#### Stage the channel-bookmark fixture (required for `channel_bookmark_file.yml`)
+
+The iOS document picker in `channel_bookmark_file.yml` browses the AppGroup
+`FileProvider.LocalStorage` "File Provider Storage" directory — the same place CI stages
+the fixture (step "Push test fixture into iOS simulator" in
+`.github/workflows/e2e-maestro-template.yml`). If the fixture is missing there the picker
+step cannot select the file and the flow fails. Run this once per booted simulator,
+**after the app has been launched at least once** (the AppGroup container is created on
+first launch), before concluding an upload failure is an app bug:
+
+```bash
+SIMULATOR_ID=<udid>
+APP_GROUP=$(find "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Containers/Shared/AppGroup" \
+  -name ".com.apple.mobile_container_manager.metadata.plist" \
+  -exec grep -l "FileProvider.LocalStorage" {} \; | head -1 | xargs dirname)
+if [ -z "$APP_GROUP" ] || [ ! -d "$APP_GROUP" ]; then
+  echo "error: Mattermost App Group container was not found (APP_GROUP=${APP_GROUP:-empty}). Launch the app once on this simulator, then retry." >&2
+  exit 1
+fi
+mkdir -p "$APP_GROUP/File Provider Storage"
+cp detox/e2e/support/fixtures/image.png "$APP_GROUP/File Provider Storage/test_bookmark.png"
+```
+
 Additional local tweaks (optional):
 
 ```bash
@@ -172,6 +195,9 @@ cd fastlane && bundle exec fastlane ios simulator --env ios.simulator && cd ..
 unzip -o Mattermost-simulator-*.app.zip -d mobile-artifacts/
 DEVICE_NAME="iPhone 17 Pro" DEVICE_OS_VERSION="iOS 26.2" \
   bash detox/scripts/preboot_ios_simulator.sh
+
+# 2b. Stage the channel-bookmark fixture into the File Provider Storage dir
+#     (required by flows/channels/channel_bookmark_file.yml — see Setup step 5)
 
 # 3. Run flows
 ~/.maestro/bin/maestro test --platform ios detox/maestro/flows/
@@ -461,6 +487,19 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
   - **iOS only:** entire `flows/calls/` directory (CallKit/WebRTC unreliable on simulator)
 - `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
+
+#### Known flake: QUIC transport on the iOS Simulator
+
+Intermittent connect/login failures on the iOS Simulator are HTTP/3 (QUIC) transport teardown — **not** certificate trust, and not a defect in whatever flow happened to be running. The tell is `-1005 NSURLErrorNetworkConnectionLost` on a request to the server, surfacing in-app as “The network connection was lost”. Trust evaluation succeeds every time it completes; `-1202`/`-1203` strings and “Cancelled during verify block” lines in the device log are benign noise, not evidence of a TLS problem.
+
+If you hit it: re-run. Do not exclude the tag, and do not work around it in the flow. A potential app-side fix (disabling or falling back from HTTP/3, `RUNNING_E2E`-gated) is tracked separately as a Product Engineering decision.
+
+#### Dedicated MM-T67856_4 step
+
+Intentional topology, not a flake to “fix” by returning the tag to the default PR batch.
+
+- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs patches `SupportSettings.AllowDownloadLogs=false`, runs `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml`, and restores `true` on the way out. `continue-on-error: true`; the main batch report is the source of truth. The restore is a standalone `always()` step rather than only an in-step `trap`, because a trap does not fire if the runner is hard-killed or the step is skipped — and a job that dies mid-flip leaves the flag `false` for every later `attach_logs` run on a shared server.
+- **Local:** same curl as `detox/maestro/GUIDELINES.md` (AllowDownloadLogs is under `SupportSettings`, not `ServiceSettings`), then `maestro test` that flow, then restore.
 
 ### Reports
 
