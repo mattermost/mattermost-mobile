@@ -95,6 +95,9 @@ jest.mock('@calls/connection/connection', () => ({
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),
         setUserSelectedAudioRoute: jest.fn(),
+        startVideo: jest.fn(),
+        stopVideo: jest.fn(),
+        switchCamera: jest.fn(),
     })),
 }));
 
@@ -1414,6 +1417,60 @@ describe('Actions.Calls', () => {
         const emoji = {name: 'smile', unified: '1f604'};
         CallsActions.sendReaction(emoji);
         expect(getConnectionForTesting()?.sendReaction).toHaveBeenCalledWith(emoji);
+    });
+
+    it('should start the camera once the permission is granted', async () => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        jest.spyOn(Permissions, 'hasCameraPermission').mockReturnValueOnce(Promise.resolve(true));
+
+        const connection = getConnectionForTesting()!;
+        await CallsActions.startVideo(createIntl({locale: 'en', messages: {}}));
+
+        expect(connection.startVideo).toHaveBeenCalled();
+    });
+
+    it('should not start the camera on a connection that was replaced while the permission prompt was open', async () => {
+        renderHook(() => useCurrentCall());
+        addFakeCall('server1', 'channel-id');
+
+        await act(async () => {
+            await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
+                locale: 'en',
+                messages: {},
+            }));
+            newCurrentCall('server1', 'channel-id', 'myUserId');
+        });
+
+        const connection = getConnectionForTesting()!;
+
+        // Hold the permission prompt open so the user can leave the call
+        // underneath it. Starting the camera on the torn-down connection
+        // would open a capture device nothing is left to stop.
+        let grantPermission: (granted: boolean) => void = () => {};
+        jest.spyOn(Permissions, 'hasCameraPermission').mockReturnValueOnce(new Promise((resolve) => {
+            grantPermission = resolve;
+        }));
+
+        const starting = CallsActions.startVideo(createIntl({locale: 'en', messages: {}}));
+
+        await act(async () => {
+            CallsActions.leaveCall();
+        });
+
+        grantPermission(true);
+        await starting;
+
+        expect(connection.startVideo).not.toHaveBeenCalled();
     });
 
     it('userLeftChannelErr', async () => {

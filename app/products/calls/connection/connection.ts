@@ -67,6 +67,13 @@ export async function newConnection(
     // back a brand new track (new ID) on every start, so we must remember the
     // registered key separately or the second startVideo throws.
     let videoSenderTrackId: string | null = null;
+
+    // Guards against a second startVideo landing while the first is still
+    // awaiting getUserMedia. Without it two capture devices get opened and
+    // only the second one is ever tracked, so the first leaks for the rest
+    // of the call. The videoTrack check alone cannot cover this: videoTrack
+    // is only assigned after the await resolves.
+    let videoStarting = false;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
     let audioRouteEvent: EmitterSubscription | null = null;
@@ -116,10 +123,19 @@ export async function newConnection(
     };
 
     const startVideo = async () => {
-        if (!peer || videoTrack) {
+        if (!peer || videoTrack || videoStarting) {
             return;
         }
 
+        videoStarting = true;
+        try {
+            await doStartVideo(peer);
+        } finally {
+            videoStarting = false;
+        }
+    };
+
+    const doStartVideo = async (activePeer: RTCPeer) => {
         try {
             videoStream = await mediaDevices.getUserMedia({
                 audio: false,
@@ -146,9 +162,9 @@ export async function newConnection(
             if (videoSenderTrackId) {
                 // RTCPeer re-keys the sender to the new track's ID when the
                 // replacement track is non-null.
-                peer.replaceTrack(videoSenderTrackId, videoTrack);
+                activePeer.replaceTrack(videoSenderTrackId, videoTrack);
             } else {
-                peer.addTrack(videoTrack, videoStream, {encodings: videoEncodings});
+                activePeer.addTrack(videoTrack, videoStream, {encodings: videoEncodings});
             }
             videoSenderTrackId = videoTrack.id;
         } catch (err) {
@@ -164,18 +180,39 @@ export async function newConnection(
             return;
         }
 
+        if (Platform.OS === 'android') {
+            // Restart the foreground service holding the camera FGS type so
+            // Android 14+ doesn't stop the capture when the app backgrounds.
+            // This runs *before* the signalling on purpose: if the service
+            // cannot take the camera type the capture is not survivable, and
+            // rolling back is far simpler when nobody has been told the
+            // camera is on yet.
+            try {
+                foregroundServiceStart(intl, true);
+            } catch (err) {
+                logError('calls: startVideo, unable to start camera foreground service:', getFullErrorMessage(err));
+
+                // Detach the track but keep videoSenderTrackId: unlike the
+                // addTrack failure above, the sender itself is healthy, so
+                // the next startVideo can reuse it without renegotiating --
+                // exactly what stopVideo relies on.
+                activePeer.replaceTrack(videoTrack.id, null);
+                releaseVideoTrack();
+                Alert.alert(
+                    intl.formatMessage(messages.startVideoFailedTitle),
+                    intl.formatMessage(messages.startVideoFailedDescription),
+                    [{text: intl.formatMessage(messages.startVideoFailedDismiss)}],
+                );
+                return;
+            }
+        }
+
         setMyVideoURL(videoStream.toURL());
 
         if (ws) {
             ws.send('video_on', {
                 data: JSON.stringify({videoStreamID: videoStream.id}),
             });
-        }
-
-        if (Platform.OS === 'android') {
-            // Restart the foreground service holding the camera FGS type so
-            // Android 14+ doesn't stop the capture when the app backgrounds.
-            foregroundServiceStart(intl, true);
         }
 
         // Note: we deliberately do NOT force the audio route to speaker here.

@@ -561,6 +561,15 @@ const CallScreen = ({
 
     useAndroidHardwareBackHandler(Screens.CALL, navigateBack);
 
+    // EnableVideo can be turned off server-side while a call is running. The
+    // config change reaches this screen but nothing tells the connection, so
+    // the capture device would keep running with no UI left to stop it.
+    useEffect(() => {
+        if (!isVideoAllowed && currentCall?.videoOn) {
+            stopVideo();
+        }
+    }, [isVideoAllowed, currentCall?.videoOn]);
+
     useEffect(() => {
         if (!layout || !layout.height || !layout.width) {
             return;
@@ -658,7 +667,7 @@ const CallScreen = ({
     // once it does appear it holds *every* other participant, camera or not —
     // a camera-less participant gets an avatar tile rather than vanishing from
     // the call screen entirely.
-    const anyOtherVideo = otherSessions.some((sess) => sess.video);
+    const anyOtherVideo = isVideoAllowed && otherSessions.some((sess) => sess.video);
     const videoGrid = anyOtherVideo ? (
         <VideoGrid
             sessions={otherSessions}
@@ -897,8 +906,9 @@ const CallScreen = ({
                             {isVideoAllowed &&
                                 <Pressable
                                     testID='call_screen.video.toggle'
-                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed]}
+                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed, controlsDisabled && style.buttonDisabled]}
                                     onPress={videoToggleHandler}
+                                    disabled={controlsDisabled}
                                 >
                                     <CompassIcon
                                         name={currentCall.videoOn ? 'video-outline' : 'video-off-outline'}
@@ -914,8 +924,9 @@ const CallScreen = ({
                             {isVideoAllowed && currentCall.videoOn &&
                                 <Pressable
                                     testID='call_screen.video.switch_camera'
-                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed]}
+                                    style={({pressed}) => [style.button, isLandscape && style.buttonLandscape, pressed && style.pressed, controlsDisabled && style.buttonDisabled]}
                                     onPress={switchCameraHandler}
+                                    disabled={controlsDisabled}
                                 >
                                     <CompassIcon
                                         name='camera-outline'
@@ -1032,7 +1043,7 @@ const CallScreen = ({
                         </View>
                     </View>
                 </View>
-                {Boolean(currentCall.myVideoURL) && <SelfView url={currentCall.myVideoURL}/>}
+                {isVideoAllowed && Boolean(currentCall.myVideoURL) && <SelfView url={currentCall.myVideoURL}/>}
             </View>
         </SafeAreaView>
     );

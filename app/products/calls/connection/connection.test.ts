@@ -6,6 +6,7 @@ import {zlibSync, strToU8} from 'fflate';
 import {Platform} from 'react-native';
 import {mediaDevices} from 'react-native-webrtc';
 
+import {foregroundServiceStart} from '@calls/connection/foreground_service';
 import {setMyVideoURL, setVideoURL} from '@calls/state';
 import NetworkManager from '@managers/network_manager';
 import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
@@ -747,11 +748,10 @@ describe('newConnection', () => {
         });
     });
 
-    it('routes inbound tracks by track type', async () => {
+    it('should route inbound tracks by track type', async () => {
         const setScreenShareURL = jest.fn();
         let streamHandler: any;
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             on: (event: string, handler: any) => {
@@ -764,7 +764,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -800,11 +799,10 @@ describe('newConnection', () => {
         expect(setScreenShareURL).toHaveBeenCalledWith('url://screen');
     });
 
-    it('treats a stream with no track info as a screen share', async () => {
+    it('should treat a stream with no track info as a screen share', async () => {
         const setScreenShareURL = jest.fn();
         let streamHandler: any;
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             on: (event: string, handler: any) => {
@@ -817,7 +815,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -845,11 +842,10 @@ describe('newConnection', () => {
         expect(setVideoURL).not.toHaveBeenCalled();
     });
 
-    it('ignores video tracks with an unknown track info type', async () => {
+    it('should ignore video tracks with an unknown track info type', async () => {
         const setScreenShareURL = jest.fn();
         let streamHandler: any;
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             on: (event: string, handler: any) => {
@@ -862,7 +858,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -887,13 +882,13 @@ describe('newConnection', () => {
         expect(setVideoURL).not.toHaveBeenCalled();
     });
 
-    it('startVideo publishes the camera and signals video_on', async () => {
+    it('should publish the camera and signal video_on on startVideo', async () => {
         const mockAddTrack = jest.fn();
         const wsSend = jest.fn();
         const mockStop = jest.fn();
 
         const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: mockStop, _switchCamera: jest.fn()};
-        // eslint-disable-next-line
+
         // @ts-ignore
         mediaDevices.getUserMedia.mockResolvedValueOnce({
             id: 'localVideoStream',
@@ -902,7 +897,6 @@ describe('newConnection', () => {
             getTracks: () => [videoTrack],
         });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: mockAddTrack,
@@ -913,7 +907,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -936,13 +929,13 @@ describe('newConnection', () => {
         expect(setMyVideoURL).toHaveBeenCalledWith('url://self');
     });
 
-    it('stopVideo detaches, signals video_off and releases the camera', async () => {
+    it('should detach, signal video_off and release the camera on stopVideo', async () => {
         const mockReplaceTrack = jest.fn();
         const wsSend = jest.fn();
         const mockStop = jest.fn();
 
         const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: mockStop, _switchCamera: jest.fn()};
-        // eslint-disable-next-line
+
         // @ts-ignore
         mediaDevices.getUserMedia.mockResolvedValueOnce({
             id: 'localVideoStream',
@@ -951,7 +944,6 @@ describe('newConnection', () => {
             getTracks: () => [videoTrack],
         });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: jest.fn(),
@@ -962,7 +954,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -985,7 +976,7 @@ describe('newConnection', () => {
         expect(setMyVideoURL).toHaveBeenCalledWith('');
     });
 
-    it('restarts the camera after it was stopped, reusing the existing sender', async () => {
+    it('should restart the camera after it was stopped, reusing the existing sender', async () => {
         const mockAddTrack = jest.fn();
         const mockReplaceTrack = jest.fn();
 
@@ -1008,7 +999,6 @@ describe('newConnection', () => {
                 getTracks: () => [secondTrack],
             });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: mockAddTrack,
@@ -1019,7 +1009,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -1051,12 +1040,12 @@ describe('newConnection', () => {
         expect(setMyVideoURL).toHaveBeenCalledWith('url://self2');
     });
 
-    it('disconnect stops and releases an active camera track', async () => {
+    it('should stop and release an active camera track on disconnect', async () => {
         const mockStop = jest.fn();
         const mockRelease = jest.fn();
 
         const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: mockStop, release: mockRelease, _switchCamera: jest.fn()};
-        // eslint-disable-next-line
+
         // @ts-ignore
         mediaDevices.getUserMedia.mockResolvedValueOnce({
             id: 'localVideoStream',
@@ -1065,7 +1054,6 @@ describe('newConnection', () => {
             getTracks: () => [videoTrack],
         });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: jest.fn(),
@@ -1077,7 +1065,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -1101,7 +1088,7 @@ describe('newConnection', () => {
         expect(mockRelease).toHaveBeenCalled();
         expect(setMyVideoURL).toHaveBeenCalledWith('');
     });
-    it('switchCamera switches the active camera track', async () => {
+    it('should switch the active camera track on switchCamera', async () => {
         const mockSwitchCamera = jest.fn();
 
         const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: jest.fn(), release: jest.fn(), _switchCamera: mockSwitchCamera};
@@ -1112,7 +1099,6 @@ describe('newConnection', () => {
             getTracks: () => [videoTrack],
         });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: jest.fn(),
@@ -1123,7 +1109,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -1144,7 +1129,7 @@ describe('newConnection', () => {
         expect(mockSwitchCamera).toHaveBeenCalledTimes(1);
     });
 
-    it('switchCamera is a no-op when no camera track is active', async () => {
+    it('should do nothing on switchCamera when no camera track is active', async () => {
         const mockSwitchCamera = jest.fn();
 
         const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: jest.fn(), release: jest.fn(), _switchCamera: mockSwitchCamera};
@@ -1155,7 +1140,6 @@ describe('newConnection', () => {
             getTracks: () => [videoTrack],
         });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: jest.fn(),
@@ -1166,7 +1150,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -1186,7 +1169,7 @@ describe('newConnection', () => {
         expect(mockSwitchCamera).not.toHaveBeenCalled();
     });
 
-    it('clears the sender key when replaceTrack throws so the camera can recover', async () => {
+    it('should clear the sender key when replaceTrack throws so the camera can recover', async () => {
         const mockAddTrack = jest.fn();
 
         // Detaching (a null replacement) still works; re-attaching is what fails.
@@ -1222,7 +1205,6 @@ describe('newConnection', () => {
                 getTracks: () => [{id: 'audioTrackId', enabled: true, stop: jest.fn(), release: jest.fn()}],
             });
 
-        // eslint-disable-next-line
         // @ts-ignore
         RTCPeer.mockImplementation(() => ({
             addTrack: mockAddTrack,
@@ -1233,7 +1215,6 @@ describe('newConnection', () => {
             getStats: jest.fn(),
         }));
 
-        // eslint-disable-next-line
         // @ts-ignore
         WebSocketClient.mockImplementation(() => ({
             initialize: jest.fn(),
@@ -1265,5 +1246,126 @@ describe('newConnection', () => {
             encodings: [{maxBitrate: 1000 * 1000, maxFramerate: 30, scaleResolutionDownBy: 1.0}],
         });
         expect(setMyVideoURL).toHaveBeenCalledWith('url://stream3');
+    });
+
+    it('should not open a second camera when startVideo is called again while the first is still acquiring', async () => {
+        const mockAddTrack = jest.fn();
+        const wsSend = jest.fn();
+
+        const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: jest.fn(), release: jest.fn(), _switchCamera: jest.fn()};
+
+        const getUserMedia = mediaDevices.getUserMedia as unknown as jest.Mock;
+        getUserMedia.mockReset();
+        getUserMedia.mockResolvedValue({
+            getAudioTracks: () => [{id: 'audioTrackId', enabled: true}],
+            getTracks: () => [{id: 'audioTrackId', enabled: true, stop: jest.fn(), release: jest.fn()}],
+        });
+
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => ({
+            addTrack: mockAddTrack,
+            replaceTrack: jest.fn(),
+            on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
+            getStats: jest.fn(),
+        }));
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: wsSend,
+        }));
+
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
+
+        // Hold getUserMedia open so the second startVideo lands while the
+        // first is still awaiting it -- the exact window the videoTrack check
+        // cannot cover, since videoTrack is only assigned once it resolves.
+        let releaseCamera: (stream: unknown) => void = () => {};
+        getUserMedia.mockReturnValueOnce(new Promise((resolve) => {
+            releaseCamera = resolve;
+        }));
+
+        const first = connection.startVideo();
+        const second = connection.startVideo();
+
+        releaseCamera({
+            id: 'localVideoStream',
+            toURL: () => 'url://self',
+            getVideoTracks: () => [videoTrack],
+            getTracks: () => [videoTrack],
+        });
+
+        await Promise.all([first, second]);
+
+        expect(mockAddTrack).toHaveBeenCalledTimes(1);
+        expect(wsSend).toHaveBeenCalledWith('video_on', {data: JSON.stringify({videoStreamID: 'localVideoStream'})});
+        expect(wsSend.mock.calls.filter((c) => c[0] === 'video_on')).toHaveLength(1);
+    });
+
+    it('should release the camera and stay silent when the camera foreground service fails to start', async () => {
+        const mockAddTrack = jest.fn();
+        const mockReplaceTrack = jest.fn();
+        const wsSend = jest.fn();
+
+        const videoTrack = {id: 'videoTrackId', kind: 'video', enabled: true, stop: jest.fn(), release: jest.fn(), _switchCamera: jest.fn()};
+
+        (mediaDevices.getUserMedia as unknown as jest.Mock).mockResolvedValueOnce({
+            id: 'localVideoStream',
+            toURL: () => 'url://self',
+            getVideoTracks: () => [videoTrack],
+            getTracks: () => [videoTrack],
+        });
+
+        // @ts-ignore
+        RTCPeer.mockImplementation(() => ({
+            addTrack: mockAddTrack,
+            replaceTrack: mockReplaceTrack,
+            on: jest.fn(),
+            once: jest.fn(),
+            off: jest.fn(),
+            getStats: jest.fn(),
+        }));
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: any) => {
+                if (event === 'join') {
+                    handler();
+                }
+            },
+            send: wsSend,
+        }));
+
+        const connection = await newConnection('http://localhost:8065', 'channelID', () => {}, () => {}, false, mockIntl);
+
+        // An earlier test leaves Platform.OS as 'web'; the camera foreground
+        // service only exists on Android. Both this and the throwing
+        // implementation are set after the connection is up so that joining
+        // (which starts the microphone foreground service) is unaffected.
+        const originalOS = Platform.OS;
+        Platform.OS = 'android';
+        (foregroundServiceStart as jest.Mock).mockImplementationOnce(() => {
+            throw new Error('missing FOREGROUND_SERVICE_CAMERA');
+        });
+
+        await connection.startVideo();
+
+        // Android would kill the capture anyway, so the camera must not be
+        // left running and the far side must never be told it is on.
+        expect(mockReplaceTrack).toHaveBeenCalledWith('videoTrackId', null);
+        expect(videoTrack.stop).toHaveBeenCalled();
+        expect(videoTrack.release).toHaveBeenCalled();
+        expect(wsSend).not.toHaveBeenCalledWith('video_on', expect.anything());
+        expect(setMyVideoURL).not.toHaveBeenCalledWith('url://self');
+
+        Platform.OS = originalOS;
     });
 });

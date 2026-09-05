@@ -219,7 +219,7 @@ describe('websocket event handlers', () => {
     });
 
     describe('handleCallUserVideoOn/Off', () => {
-        it('handleCallUserVideoOn sets the session video flag', () => {
+        it('should set the session video flag on handleCallUserVideoOn', () => {
             handleCallUserVideoOn({
                 broadcast: {channel_id: channelId},
                 data: {session_id: sessionId},
@@ -227,7 +227,7 @@ describe('websocket event handlers', () => {
             expect(setUserVideoOn).toHaveBeenCalledWith(channelId, sessionId, true);
         });
 
-        it('handleCallUserVideoOff clears the session video flag', () => {
+        it('should clear the session video flag on handleCallUserVideoOff', () => {
             handleCallUserVideoOff({
                 broadcast: {channel_id: channelId},
                 data: {session_id: sessionId},

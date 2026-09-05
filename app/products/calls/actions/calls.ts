@@ -417,7 +417,8 @@ export const unraiseHand = () => {
 };
 
 export const startVideo = async (intl: IntlShape) => {
-    if (!connection) {
+    const conn = connection;
+    if (!conn) {
         return;
     }
 
@@ -429,7 +430,16 @@ export const startVideo = async (intl: IntlShape) => {
         return;
     }
 
-    await connection.startVideo();
+    // The permission prompt can stay open long enough for the user to leave
+    // the call or join a different one, which swaps the module-level
+    // connection out from under us. Starting the camera on a torn-down
+    // connection would open a capture device that nothing is left to stop.
+    if (connection !== conn) {
+        logDebug('calls: startVideo, connection changed while requesting camera permission');
+        return;
+    }
+
+    await conn.startVideo();
 };
 
 export const stopVideo = () => {

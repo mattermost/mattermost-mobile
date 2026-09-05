@@ -584,7 +584,7 @@ describe('useCallsState', () => {
         expect(endNativeCall).not.toHaveBeenCalled();
     });
 
-    it('userLeftCall drops the video URL for the departed session', () => {
+    it('should drop the video URL for the departed session on userLeftCall', () => {
         const initialCurrentCallState: CurrentCall = {
             ...DefaultCurrentCall,
             connected: true,
@@ -1250,7 +1250,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[0], initialCallsState);
     });
 
-    it('setUserVideoOn sets and clears the session video flag', () => {
+    it('should set and clear the session video flag on setUserVideoOn', () => {
         const channelId = 'channel-1';
         setCurrentCall({
             ...DefaultCurrentCall,
@@ -1265,7 +1265,7 @@ describe('useCallsState', () => {
         expect(getCurrentCall()?.sessions['session-1'].video).toBe(false);
     });
 
-    it('setUserVideoOn removes the stale video URL when video goes off', () => {
+    it('should remove the stale video URL when video goes off', () => {
         const channelId = 'channel-1';
         setCurrentCall({
             ...DefaultCurrentCall,
@@ -1279,7 +1279,7 @@ describe('useCallsState', () => {
         expect(getCurrentCall()?.videoURLs['session-1']).toBeUndefined();
     });
 
-    it('setUserVideoOn ignores events for a different channel', () => {
+    it('should ignore setUserVideoOn events for a different channel', () => {
         setCurrentCall({
             ...DefaultCurrentCall,
             channelId: 'channel-1',

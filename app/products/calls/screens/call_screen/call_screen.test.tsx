@@ -4,7 +4,7 @@
 import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import {muteMyself, unmuteMyself} from '@calls/actions';
+import {muteMyself, startVideo, stopVideo, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation} from '@calls/actions/calls';
 import CallAvatar from '@calls/components/call_avatar';
 import {useCurrentCall} from '@calls/state';
@@ -19,7 +19,13 @@ import CallScreen from './call_screen';
 jest.mock('@calls/actions', () => ({
     muteMyself: jest.fn(),
     unmuteMyself: jest.fn(),
+    startVideo: jest.fn(),
+    stopVideo: jest.fn(),
+    switchCamera: jest.fn(),
 }));
+
+// Mutable so a test can flip EnableVideo the way a server-side config change would.
+const mockCallsConfig = {EnableRecordings: false, EnableTranscriptions: false, EnableVideo: false};
 
 jest.mock('@calls/actions/calls', () => ({
     leaveCallConfirmation: jest.fn(),
@@ -38,7 +44,7 @@ jest.mock('@calls/alerts', () => ({
 jest.mock('@calls/state', () => ({
     setCallQualityAlertDismissed: jest.fn(),
     setMicPermissionsErrorDismissed: jest.fn(),
-    useCallsConfig: () => ({EnableRecordings: false, EnableTranscriptions: false}),
+    useCallsConfig: () => mockCallsConfig,
     useIncomingCalls: () => ({incomingCalls: []}),
     useCurrentCall: jest.fn(),
 }));
@@ -92,6 +98,7 @@ describe('CallScreen', () => {
 
     afterEach(() => {
         jest.useRealTimers();
+        mockCallsConfig.EnableVideo = false;
     });
 
     // ParticipantCard reads the call from the store rather than from props.
@@ -270,5 +277,46 @@ describe('CallScreen', () => {
         fireEvent.press(getByText('People'));
 
         expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL_PARTICIPANTS);
+    });
+
+    it('should hide the camera controls and the self view when the server has video disabled', () => {
+        const props = getBaseProps();
+        props.currentCall = {...props.currentCall!, videoOn: true, myVideoURL: 'url://self'};
+
+        const {queryByTestId} = renderScreen(props);
+
+        expect(queryByTestId('call_screen.video.toggle')).toBeNull();
+        expect(queryByTestId('call_screen.video.switch_camera')).toBeNull();
+        expect(queryByTestId('call_screen.video.self_view')).toBeNull();
+    });
+
+    it('should stop the local camera when the server disables video mid-call', () => {
+        mockCallsConfig.EnableVideo = true;
+
+        const props = getBaseProps();
+        props.currentCall = {...props.currentCall!, videoOn: true, myVideoURL: 'url://self'};
+
+        const {rerender} = renderScreen(props);
+        expect(stopVideo).not.toHaveBeenCalled();
+
+        // Nothing pushes an EnableVideo change into the connection, so without
+        // this the capture device keeps running with no UI left to stop it.
+        mockCallsConfig.EnableVideo = false;
+        rerender(<CallScreen {...props}/>);
+
+        expect(stopVideo).toHaveBeenCalled();
+    });
+
+    it('should not act on the camera controls before the call is connected', () => {
+        mockCallsConfig.EnableVideo = true;
+
+        const props = getBaseProps();
+        props.currentCall = {...props.currentCall!, connected: false};
+
+        const {getByTestId} = renderScreen(props);
+
+        fireEvent.press(getByTestId('call_screen.video.toggle'));
+
+        expect(startVideo).not.toHaveBeenCalled();
     });
 });
