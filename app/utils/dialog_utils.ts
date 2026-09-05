@@ -30,6 +30,8 @@ export const DialogElementTypes = {
     BOOL: 'bool' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
+    CHECKBOX_GROUP: 'checkbox_group' as const,
+    CHECKBOX_MATRIX: 'checkbox_matrix' as const,
 } as const;
 
 /**
@@ -71,6 +73,10 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'date';
         case DialogElementTypes.DATETIME:
             return 'datetime';
+        case DialogElementTypes.CHECKBOX_GROUP:
+            return 'checkbox_group';
+        case DialogElementTypes.CHECKBOX_MATRIX:
+            return 'checkbox_matrix';
         default:
             return 'text';
     }
@@ -96,6 +102,10 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.DATE;
         case 'datetime':
             return DialogElementTypes.DATETIME;
+        case 'checkbox_group':
+            return DialogElementTypes.CHECKBOX_GROUP;
+        case 'checkbox_matrix':
+            return DialogElementTypes.CHECKBOX_MATRIX;
         default:
             return DialogElementTypes.TEXT;
     }
@@ -159,11 +169,13 @@ export function supportsOptions(fieldType: InteractiveDialogElementType | AppFie
     const supportedTypes = [
         DialogElementTypes.SELECT,
         DialogElementTypes.RADIO,
+        DialogElementTypes.CHECKBOX_GROUP,
         'static_select',
         'dynamic_select',
         'radio',
         'user',
         'channel',
+        'checkbox_group',
     ];
     return supportedTypes.includes(fieldType as any);
 }
@@ -173,4 +185,47 @@ export function supportsOptions(fieldType: InteractiveDialogElementType | AppFie
  */
 export function supportsDataSource(fieldType: InteractiveDialogElementType): boolean {
     return fieldType === DialogElementTypes.SELECT;
+}
+
+/**
+ * Parses matrix submission/default entries (`"rowValue:col1,col2"`) into a
+ * map of row value to the set of selected column values.
+ *
+ * The delimiters are deliberately unescaped: the server rejects any
+ * matrix_config row/column value containing `:`, `,` or `;` (and any duplicate
+ * values) in validateDialogElementMatrixConfig, so a dialog whose values would
+ * be ambiguous here never opens. Do not relax that server validation without
+ * adding escaping to this parser and to encodeMatrixValue.
+ */
+export function parseMatrixValue(entries: string[]): Map<string, Set<string>> {
+    const selection = new Map<string, Set<string>>();
+    for (const entry of entries) {
+        const colonIndex = entry.indexOf(':');
+        if (colonIndex <= 0) {
+            continue;
+        }
+        const rowValue = entry.slice(0, colonIndex);
+        const columns = entry.slice(colonIndex + 1).
+            split(',').
+            map((col) => col.trim()).
+            filter(Boolean);
+        if (columns.length > 0) {
+            selection.set(rowValue, new Set(columns));
+        }
+    }
+    return selection;
+}
+
+/**
+ * Encodes a row-value-to-selected-columns map back into matrix
+ * submission/default entries (`"rowValue:col1,col2"`).
+ */
+export function encodeMatrixValue(selection: Map<string, Set<string>>): string[] {
+    const entries: string[] = [];
+    selection.forEach((columns, rowValue) => {
+        if (columns.size > 0) {
+            entries.push(`${rowValue}:${Array.from(columns).join(',')}`);
+        }
+    });
+    return entries;
 }

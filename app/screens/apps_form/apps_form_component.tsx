@@ -81,6 +81,22 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
                 value: option.value || '',
             })),
             multiselect: f.multiselect,
+
+            // checkbox_matrix validation in checkDialogElementForError is guarded on
+            // matrix_config, so omitting it here made that whole block unreachable:
+            // malformed row:col entries were submitted verbatim instead of showing
+            // "Invalid matrix selection format".
+            matrix_config: f.matrix_config && {
+                rows: f.matrix_config.rows.map((row) => ({
+                    text: row.label || '',
+                    value: row.value || '',
+                })),
+                columns: f.matrix_config.columns.map((column) => ({
+                    text: column.label || '',
+                    value: column.value || '',
+                })),
+                row_selection: f.matrix_config.row_selection,
+            },
         } as DialogElement;
     }) || [];
 }
@@ -159,6 +175,14 @@ export function initValues(fields?: AppField[]) {
         } else if (field.value !== undefined && field.value !== null) {
             // Use provided value for non-boolean fields
             values[field.name] = field.value;
+        } else if (field.type === AppFieldTypes.CHECKBOX_GROUP || field.type === AppFieldTypes.CHECKBOX_MATRIX) {
+            // Native Apps forms may send a checkbox_group/checkbox_matrix field
+            // with no value at all (unlike converted dialogs, which always
+            // populate field.value with an array via
+            // convertDialogElementToAppField). Default to an empty array rather
+            // than '' so CheckboxGroupSetting/CheckboxMatrixSetting always
+            // receive an array.
+            values[field.name] = [];
         } else {
             // Initialize empty fields with empty string
             values[field.name] = '';
@@ -489,13 +513,14 @@ function AppsFormComponent({
                         return null;
                     }
                     const value = secureGetFromRecord(values, field.name);
+                    const fieldValue = field.type === AppFieldTypes.BOOL ? (value ?? false) : (value || '');
                     return (
                         <AppsFormField
                             field={field}
                             key={field.name}
                             name={field.name}
                             errorText={secureGetFromRecord(errors, field.name)}
-                            value={value || ''}
+                            value={fieldValue}
                             performLookup={performLookup}
                             onChange={onChange}
                         />
