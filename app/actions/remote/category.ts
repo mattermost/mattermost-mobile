@@ -180,7 +180,7 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
                 }
                 return {data: {...remote, channel_ids: [...remote.channel_ids]}};
             } catch (error) {
-                logDebug('toggleFavoriteChannel: no authoritative custom category, skipping update', category.id);
+                logDebug('toggleFavoriteChannel: no authoritative custom category, skipping update', category.id, getFullErrorMessage(error));
                 return {error};
             }
         };

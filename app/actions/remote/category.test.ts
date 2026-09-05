@@ -401,10 +401,16 @@ describe('toggleFavoriteChannel', () => {
             getCategory: jest.fn().mockRejectedValue(fetchError),
         };
         (NetworkManager.getClient as jest.Mock).mockReturnValue(mockClient);
+        (getFullErrorMessage as jest.Mock).mockReturnValue('Full error message');
 
         const result = await toggleFavoriteChannel(serverUrl, channelId, false);
 
         expect(mockClient.updateChannelCategories).not.toHaveBeenCalled();
+        expect(logDebug).toHaveBeenCalledWith(
+            'toggleFavoriteChannel: no authoritative custom category, skipping update',
+            customCategory.id,
+            'Full error message',
+        );
         expect(result).toEqual({error: fetchError});
     });
 
