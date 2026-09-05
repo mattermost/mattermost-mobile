@@ -156,15 +156,25 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
         const isFavorited = currentCategory.type === FAVORITES_CATEGORY;
 
         // updateChannelCategories is a PUT that REPLACES membership with exactly the
-        // channel_ids we send. Default Channels/DMs/Favorites are self-healing or cheap
-        // to correct, so those lists come from local rows — a getCategories round-trip
-        // on every star tap is too expensive.
+        // channel_ids we send, so a truncated local list re-files channels server-side.
+        // Which categories that actually harms was measured against a live server:
         //
-        // A custom category is not self-healing. Sending a truncated "My Project" list
-        // ejects the missing channels into Channels and leaves the category empty:
+        //   Channels  self-healing. PUT it an empty list and the server puts every
+        //             still-joined channel back. Local rows are safe here.
+        //   Favorites NOT self-healing. Dropped ids are ejected into Channels and stay
+        //             there -- i.e. the user's other favourites silently un-star. This
+        //             is a knowingly accepted risk: local Favorites rows are only
+        //             incomplete when the sidebar itself is unsynced, and the damage is
+        //             visible and re-doable. Fetching it would cost a round-trip on
+        //             every star tap.
+        //   custom    NOT self-healing, and the loss is neither visible nor easy to
+        //             undo -- the user's own grouping is destroyed. Worth the fetch.
+        //
         //   before: "My Project" [chan-a, chan-b]   (favorite chan-a, local knew only chan-a)
         //   after:  "My Project" []  /  Channels gains chan-b
-        // Fetch only that one category, and fail closed if the fetch fails.
+        //
+        // So: fetch the one custom category, fail closed if that fetch fails, and take
+        // local rows for everything else.
         const withChannelFirst = (ids: string[]) => [channelId, ...ids.filter((id) => id !== channelId)];
         const withoutChannel = (ids: string[]) => ids.filter((id) => id !== channelId);
         const membershipForPut = async (category: CategoryModel): Promise<{data?: CategoryWithChannels; error?: unknown}> => {
