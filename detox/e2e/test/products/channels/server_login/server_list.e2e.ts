@@ -10,6 +10,7 @@
 import {
     User,
     Setup,
+    TermsOfService,
 } from '@support/server_api';
 import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
@@ -57,6 +58,17 @@ describe('Server Login - Server List', () => {
             lockOwner = siteThreeLock.createOwner();
             await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
             lockAcquired = true;
+
+            // custom_terms_of_service heals ToS on acquire, but a stolen lease can
+            // re-enable it after this hook (CI 33941148759 iOS MM-T4691_* screenshots:
+            // E2E Custom Terms modal covering server-list taps). Clear it while we hold
+            // the lock so SITE_3 login is not sitting under that overlay.
+            await User.apiAdminLogin(siteThreeUrl);
+            const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
+            if (error) {
+                throw new Error(`Failed to disable custom ToS after SITE_3 lock acquire: status ${status ?? 'unknown'}`);
+            }
+            await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
         }
 
         // # Log in to the first server
@@ -142,6 +154,11 @@ describe('Server Login - Server List', () => {
 
         // # Add a third server and log in to the third server
         await User.apiAdminLogin(siteThreeUrl);
+        const {error: tosError, status: tosStatus} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
+        if (tosError) {
+            throw new Error(`Failed to disable custom ToS before SITE_3 login: status ${tosStatus ?? 'unknown'}`);
+        }
+        await TermsOfService.apiAssertCustomTermsOfServiceInactive(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.addServerButton.tap();
