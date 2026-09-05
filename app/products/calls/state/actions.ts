@@ -486,6 +486,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         sessionId,
         muted: true,
         raisedHand: 0,
+        video: false,
     };
     const nextCalls = {...callsState.calls, [channelId]: nextCall};
 
@@ -583,10 +584,15 @@ export const userLeftCall = (serverUrl: string, channelId: string, sessionId: st
     const voiceOn = {...currentCall.voiceOn};
     delete voiceOn[sessionId];
 
+    // Clear their video URL so no stale tile is rendered.
+    const videoURLs = {...currentCall.videoURLs};
+    delete videoURLs[sessionId];
+
     const nextCurrentCall = {
         ...currentCall,
         sessions: {...currentCall.sessions},
         voiceOn,
+        videoURLs,
     };
     delete nextCurrentCall.sessions[sessionId];
 
@@ -834,6 +840,28 @@ export const setUserVoiceOn = (channelId: string, sessionId: string, voiceOn: bo
         voiceOn: nextVoiceOn,
     };
     setCurrentCall(nextCurrentCall);
+};
+
+export const setUserVideoOn = (channelId: string, sessionId: string, videoOn: boolean) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId || !currentCall.sessions[sessionId]) {
+        return;
+    }
+
+    const nextVideoURLs = {...currentCall.videoURLs};
+    if (!videoOn) {
+        // The track is gone; drop the URL so no stale tile is rendered.
+        delete nextVideoURLs[sessionId];
+    }
+
+    setCurrentCall({
+        ...currentCall,
+        sessions: {
+            ...currentCall.sessions,
+            [sessionId]: {...currentCall.sessions[sessionId], video: videoOn},
+        },
+        videoURLs: nextVideoURLs,
+    });
 };
 
 export const setRaisedHand = (serverUrl: string, channelId: string, sessionId: string, timestamp: number) => {
@@ -1234,4 +1262,18 @@ const receivedCaptionTimeout = (serverUrl: string, channelId: string, caption: L
         captions: nextCaptions,
     };
     setCurrentCall(nextCurrentCall);
+};
+
+export const setVideoURL = (sessionId: string, url: string) => {
+    const call = getCurrentCall();
+    if (call) {
+        setCurrentCall({...call, videoURLs: {...call.videoURLs, [sessionId]: url}});
+    }
+};
+
+export const setMyVideoURL = (url: string) => {
+    const call = getCurrentCall();
+    if (call) {
+        setCurrentCall({...call, myVideoURL: url, videoOn: Boolean(url)});
+    }
 };

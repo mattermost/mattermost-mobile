@@ -11,6 +11,9 @@ export {
     unmuteMyself,
     raiseHand,
     unraiseHand,
+    startVideo,
+    stopVideo,
+    switchCamera,
     handleCallsSlashCommand,
     startCallRecording,
     stopCallRecording,
@@ -32,4 +35,4 @@ export {
     getEndCallMessage,
 } from './calls';
 
-export {hasMicrophonePermission} from './permissions';
+export {hasMicrophonePermission, hasCameraPermission} from './permissions';
