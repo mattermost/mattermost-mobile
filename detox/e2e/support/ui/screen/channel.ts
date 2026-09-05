@@ -304,6 +304,11 @@ class ChannelScreen {
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
         const longPressTarget = element(by.id(postTestID));
 
+        // One iOS budget for the first long-press and the thread-recovery retry.
+        // Recreating Date.now() + ONE_MIN inside attemptOpenPostOptions would let a
+        // failed recovery spend a second minute.
+        const deadline = isIos() ? Date.now() + timeouts.ONE_MIN : undefined;
+
         // Helper to handle retry logic if long press degrades to tap
         const attemptOpenPostOptions = async (attempt: number): Promise<void> => {
             try {
@@ -312,7 +317,7 @@ class ChannelScreen {
                     by.id(this.postList.testID.flatList),
                     PostOptionsScreen.postOptionsScreen,
                     8,
-                    isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
+                    deadline,
                 );
                 await wait(timeouts.TWO_SEC);
             } catch (error) {
