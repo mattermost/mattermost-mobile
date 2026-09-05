@@ -5,7 +5,7 @@ import {field, json} from '@nozbe/watermelondb/decorators';
 import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {identity, safeParseJSON} from '@utils/helpers';
+import {identity, safeParseJSON, safeParseJSONStringArray} from '@utils/helpers';
 
 import type DraftModelInterface from '@typings/database/models/servers/draft';
 
@@ -42,9 +42,18 @@ export default class DraftModel extends Model implements DraftModelInterface {
 
     @json('metadata', identity) metadata?: PostMetadata;
 
-    /** update_at : The timestamp to when this post was last updated on the server */
+    /** update_at : The local modification / UI ordering time (not a server revision) */
     @field('update_at') updateAt!: number;
 
     /** type : The type of post  */
     @field('type') type!: PostTypesUserCreatable | null;
+
+    /** server_update_at : Last server-stamped update_at observed for this draft. Null/0 means the draft has never been acknowledged as existing on the server. This is an ancestry/diagnostic hint, not a revision. */
+    @field('server_update_at') serverUpdateAt!: number | null;
+
+    /** props : Server draft props preserved and round-tripped even when mobile does not interpret them */
+    @json('props', safeParseJSON) props!: DraftProps | null;
+
+    /** file_ids : Authoritative portable server attachment IDs, including IDs whose metadata could not be hydrated */
+    @json('file_ids', safeParseJSONStringArray) fileIds!: string[];
 }

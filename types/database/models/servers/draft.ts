@@ -28,11 +28,20 @@ declare class DraftModel extends Model {
 
     metadata?: PostMetadata;
 
-    /** update_at : The timestamp to when this post was last updated on the server */
+    /** update_at : The local modification / UI ordering time (not a server revision) */
     updateAt: number;
 
     /** type : The post type of draft */
     type: string | null;
+
+    /** server_update_at : Last server-stamped update_at observed for this draft; null/0 means never acknowledged on the server. Ancestry hint, not a revision */
+    serverUpdateAt: number | null;
+
+    /** props : Server draft props preserved and round-tripped even when mobile does not interpret them */
+    props: DraftProps | null;
+
+    /** file_ids : Authoritative portable server attachment IDs, including IDs whose metadata could not be hydrated */
+    fileIds: string[];
 }
 
 export default DraftModel;
