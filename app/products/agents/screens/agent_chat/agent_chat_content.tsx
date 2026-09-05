@@ -19,6 +19,9 @@ import AgentChatIntro from './agent_chat_intro';
 type Props = {
     loading: boolean;
     error: string | null;
+    channelId: string | null;
+    botUsername?: string;
+    onPostCreated: (postId: string) => void;
 }
 
 const emptyList: string[] = [];
@@ -30,7 +33,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const AgentChatContent = ({error, loading}: Props) => {
+const AgentChatContent = ({error, loading, channelId, botUsername, onPostCreated}: Props) => {
     const {isVisible: isKeyboardVisible} = useControllerKeyboardState();
     const {stateContext, onScroll: onScrollProp, postInputContainerHeight, stateMachine, isEmojiSearchFocused, listRef} = useKeyboardState();
     const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
@@ -151,6 +154,9 @@ const AgentChatContent = ({error, loading}: Props) => {
                     <AgentChatIntro
                         loading={loading}
                         error={error}
+                        channelId={channelId}
+                        botUsername={botUsername}
+                        onPostCreated={onPostCreated}
                     />
                 }
                 onScroll={onScrollProp}

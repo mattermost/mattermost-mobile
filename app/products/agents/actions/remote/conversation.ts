@@ -51,6 +51,12 @@ export async function fetchConversation(
 function runFetch(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
     const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
+        // Identity-check the inflight promise so a fetch evicted mid-flight
+        // by refetchConversation/invalidateConversation can't overwrite the
+        // newer fetch's result with stale pre-stream-end data.
+        if (inflight.get(key) !== promise) {
+            return;
+        }
         inflight.delete(key);
         const prev = conversationStore.getState(serverUrl, conversationId);
         if (error) {

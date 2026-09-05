@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, buildCustomPromptMessage, isAgentAvailableInChannel, isAgentDMChannel, mergeToolCalls, resolveAgentSelection, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -335,7 +335,7 @@ describe('mergeToolCalls', () => {
 
 describe('resolveSelectedAgent', () => {
     const a1 = {id: 'a1'};
-    const a2 = {id: 'a2', is_default: true};
+    const a2 = {id: 'a2', isDefault: true};
     const a3 = {id: 'a3'};
     const agents = [a1, a2, a3];
 
@@ -365,5 +365,74 @@ describe('resolveSelectedAgent', () => {
 
     it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
+    });
+});
+
+describe('isAgentAvailableInChannel', () => {
+    it('should allow agents with the All level anywhere, and treat a missing level as All', () => {
+        expect(isAgentAvailableInChannel({channelAccessLevel: 0, channelIDs: []}, 'ch1')).toBe(true);
+        expect(isAgentAvailableInChannel({}, 'ch1')).toBe(true);
+    });
+
+    it('should honor allow-lists and block-lists', () => {
+        const allowed = {channelAccessLevel: 1, channelIDs: ['ch1']};
+        expect(isAgentAvailableInChannel(allowed, 'ch1')).toBe(true);
+        expect(isAgentAvailableInChannel(allowed, 'ch2')).toBe(false);
+
+        const blocked = {channelAccessLevel: 2, channelIDs: ['ch1']};
+        expect(isAgentAvailableInChannel(blocked, 'ch1')).toBe(false);
+        expect(isAgentAvailableInChannel(blocked, 'ch2')).toBe(true);
+    });
+
+    it('should always filter agents with the None level', () => {
+        expect(isAgentAvailableInChannel({channelAccessLevel: 3, channelIDs: []}, 'ch1')).toBe(false);
+    });
+});
+
+describe('resolveAgentSelection', () => {
+    const a1 = {id: 'a1'};
+    const a2 = {id: 'a2', isDefault: true};
+
+    it('should return no agent and no picker for an empty list', () => {
+        expect(resolveAgentSelection([], 'a1')).toEqual({agent: null, showPicker: false});
+    });
+
+    it('should silently use a single agent without a picker, even when the preference points elsewhere', () => {
+        expect(resolveAgentSelection([a1], 'a2')).toEqual({agent: a1, showPicker: false});
+    });
+
+    it('should request the picker with a resolved preselection when multiple agents are available', () => {
+        expect(resolveAgentSelection([a1, a2], null)).toEqual({agent: a2, showPicker: true});
+        expect(resolveAgentSelection([a1, a2], 'a1')).toEqual({agent: a1, showPicker: true});
+    });
+});
+
+describe('isAgentDMChannel', () => {
+    const agents = [
+        {dmChannelID: 'dm1'},
+        {dmChannelID: 'dm2'},
+    ];
+
+    it('should detect a channel that is some agent DM', () => {
+        expect(isAgentDMChannel(agents, 'dm2')).toBe(true);
+    });
+
+    it('should reject a regular channel, including when agents lack dmChannelID', () => {
+        expect(isAgentDMChannel(agents, 'town-square')).toBe(false);
+        expect(isAgentDMChannel([{}], 'dm1')).toBe(false);
+    });
+});
+
+describe('buildCustomPromptMessage', () => {
+    it('should prepend the agent @mention outside an agent DM', () => {
+        expect(buildCustomPromptMessage('Do the thing', 'matty', false)).toBe('@matty Do the thing');
+    });
+
+    it('should not prepend inside an agent DM', () => {
+        expect(buildCustomPromptMessage('Do the thing', 'matty', true)).toBe('Do the thing');
+    });
+
+    it('should not prepend when no agent username is available', () => {
+        expect(buildCustomPromptMessage('Do the thing', undefined, false)).toBe('Do the thing');
     });
 });

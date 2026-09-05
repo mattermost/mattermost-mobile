@@ -420,6 +420,11 @@ const PostList = ({
                         key={item.value}
                         theme={theme}
                         testID={`${testID}.new_messages_line`}
+
+                        // The unreads-summary button covers the channel's
+                        // unread window; thread view has no such window.
+                        channelId={location === Screens.CHANNEL ? channelId : undefined}
+                        lastViewedAt={location === Screens.CHANNEL ? lastViewedAt : undefined}
                     />
                 );
             case 'date':
@@ -488,7 +493,7 @@ const PostList = ({
                 );
             }
         }
-    }, [appsEnabled, mmBlocksEnabled, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
+    }, [appsEnabled, mmBlocksEnabled, channelId, currentTimezone, currentUser, currentUsername, customEmojiNames, highlightPinnedOrSaved, highlightedId, isCRTEnabled, isChannelAutotranslated, isPostAcknowledgementEnabled, lastViewedAt, location, rootId, shouldRenderReplyButton, shouldShowJoinLeaveMessages, testID, theme]);
 
     useEffect(() => {
         const t = setTimeout(() => {
