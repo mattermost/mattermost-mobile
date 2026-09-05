@@ -42,6 +42,11 @@ export function convertAppFormValuesToDialogSubmission(
             return;
         }
 
+        // Action buttons have no value to submit - skip them entirely
+        if (element.type === DialogElementTypes.ACTION_BUTTON) {
+            return;
+        }
+
         // Convert based on field type
         switch (element.type) {
             case DialogElementTypes.TEXT:
@@ -142,6 +147,14 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     // Field refresh should be controlled by the server-side dialog configuration
     // The server should specify which fields trigger form refresh
     appField.refresh = element.refresh;
+
+    // Preserve action button configuration
+    if (element.type === DialogElementTypes.ACTION_BUTTON && element.action_button) {
+        appField.action_button_url = element.action_button.url;
+        if (element.action_button.context) {
+            appField.action_button_context = element.action_button.context;
+        }
+    }
 
     return appField;
 }
