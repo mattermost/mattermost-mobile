@@ -276,6 +276,18 @@ class DatabaseManagerSingleton {
         })?.[0];
     };
 
+    public isAppDatabase = (database: Database): boolean => {
+        return this.appDatabase?.database === database;
+    };
+
+    public wipeAppDatabase = async (): Promise<void> => {
+        this.appDatabase = undefined;
+        const recreated = await this.createAppDatabase();
+        if (!recreated) {
+            throw new Error('wipeAppDatabase: failed to re-create app database');
+        }
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const server = await this.getActiveServer();
         if (server?.url) {

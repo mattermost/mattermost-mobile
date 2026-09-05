@@ -27,6 +27,15 @@ write_missing_results_stub() {
     if [ -f "$RESULTS" ]; then
         return
     fi
+    # Jest --outputFile can miss the shutdown flush while jest-stare still
+    # wrote android-data.json (CI 33915931136 machine-2). Prefer that over a
+    # one-line infra stub so TSIO reports the tests that actually ran.
+    local stare="${DETOX_DIR}/artifacts/jest-stare/android-data.json"
+    if [ -f "$stare" ]; then
+        echo "==> Detox left no jest-results.json — promoting jest-stare/android-data.json"
+        cp "$stare" "$RESULTS"
+        return
+    fi
     echo "==> Detox left no jest-results.json — writing shard stub"
     node "${DETOX_DIR}/utils/write-tsio-failure-stub.mjs" \
         --format jest \

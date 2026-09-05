@@ -715,12 +715,17 @@ jobs:
           fi
           DETOX_EXIT_CODE=$?
           if [ ! -f artifacts/jest-results.json ]; then
-            echo "⚠️ Detox left no artifacts/jest-results.json (exit ${DETOX_EXIT_CODE}) — writing shard stub"
-            node utils/write-tsio-failure-stub.mjs \
-              --format jest \
-              --output artifacts/jest-results.json \
-              --job-name "machine-${{ matrix.runId }}" \
-              --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
+            if [ -f artifacts/jest-stare/ios-data.json ]; then
+              echo "⚠️ Detox left no jest-results.json — promoting jest-stare/ios-data.json"
+              cp artifacts/jest-stare/ios-data.json artifacts/jest-results.json
+            else
+              echo "⚠️ Detox left no artifacts/jest-results.json (exit ${DETOX_EXIT_CODE}) — writing shard stub"
+              node utils/write-tsio-failure-stub.mjs \
+                --format jest \
+                --output artifacts/jest-results.json \
+                --job-name "machine-${{ matrix.runId }}" \
+                --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
+            fi
           fi
           exit "${DETOX_EXIT_CODE:-1}"
         env:

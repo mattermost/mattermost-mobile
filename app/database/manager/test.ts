@@ -138,4 +138,13 @@ describe('*** Database Manager tests ***', () => {
 
         expect(DatabaseManager.getServerUrlForDatabase({adapter: {dbName}} as Database)).toBe(serverUrl);
     });
+
+    it('=> isAppDatabase identifies the app database', () => {
+        const app = DatabaseManager.appDatabase!.database;
+        const remainingUrl = Object.keys(DatabaseManager.serverDatabases)[0];
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(remainingUrl);
+
+        expect(DatabaseManager.isAppDatabase(app)).toBe(true);
+        expect(DatabaseManager.isAppDatabase(database)).toBe(false);
+    });
 });

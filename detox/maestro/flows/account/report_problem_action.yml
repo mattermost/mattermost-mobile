@@ -1,0 +1,115 @@
+# MM-T3261: Tapping Report a problem opens the native mail composer or browser.
+#
+# PRE-CONDITIONS:
+#   - Logged-in test user (via subflows/auth/login.yml)
+#   - Server configured with SupportSettings.ReportAProblemType=link (the CI
+#     Maestro workflow patches this around the batch and restores it after).
+#     The link variant is required because the default paid-tier path opens the
+#     native mail composer, which cannot open on iOS simulators (no Mail
+#     accounts) — the app then shows an "Error: mail services are not available"
+#     alert and the report screen never dismisses.
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
+#
+# ASSERTIONS:
+#   - Tapping Report a problem hands off to the OS browser (Safari sheet on
+#     iOS, Chrome Custom Tab on Android). The in-app screen is not dismissed
+#     by the product (`tryOpenURL` only) — CI 33877432724 iOS failed waiting
+#     for report_problem.screen to disappear; CI 33924565190 failed waiting
+#     only for id:breadcrumb on iOS 26.
+#   - Settings with Report a Problem is reachable again after dismissing the
+#     OS surface
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.report.button
+#   - breadcrumb (iOS Safari; may be absent on tryOpenURL / iOS 26)
+tags:
+  - MM-T3261
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as the test user
+- runFlow: ../../subflows/auth/login.yml
+
+# # Open the Account tab and Settings, then reveal Report a Problem.
+- runFlow: ../../subflows/navigation/open_account.yml
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000
+- tapOn:
+    id: "account.settings.option"
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+- tapOn:
+    id: "settings.report_problem.option"
+
+# * Verify the report screen opened.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+
+# # Tap the Report a problem button (always visible at the bottom of the screen).
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.report.button"
+    timeout: 10000
+- tapOn:
+    id: "report_problem.report.button"
+
+# * iOS: Safari sheet. tryOpenURL on iOS 26 does not always expose
+# id:breadcrumb (CI 33924565190); wait for the same OS chrome help_url.yml
+# dismisses, then dismiss it. Product does not pop the report screen.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - retry:
+          maxRetries: 5
+          commands:
+            - waitForAnimationToEnd:
+                timeout: 3000
+            - runFlow:
+                file: ../../subflows/browser/_ios_safari_opened.yml
+      - takeScreenshot: report-problem-action-opened
+      - runFlow:
+          file: ../../subflows/browser/dismiss_ios_safari.yml
+# * Android: Chrome Custom Tab covers the report screen.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          notVisible:
+            id: "report_problem.screen"
+          timeout: 10000
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+      - pressKey: Back
+      - runFlow:
+          file: ../../subflows/browser/dismiss_chrome_interstitial.yml
+- runFlow:
+    when:
+      notVisible:
+        id: "settings.report_problem.option"
+    file: ../../subflows/browser/reopen_settings_screen.yml
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000
+- takeScreenshot: report-problem-action-settings-reachable

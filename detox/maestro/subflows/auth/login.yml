@@ -242,16 +242,40 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: Android
     commands:
-      - tapOn:
-          id: "login_form.username.input"
-      - inputText: ${TEST_USER_EMAIL}
-      - tapOn:
-          id: "login_form.password.input"
-      - inputText: ${TEST_USER_PASSWORD}
-      - extendedWaitUntil:
-          visible:
-            id: "login_form.signin.button"
-          timeout: 10000
+      # # Same empty-password / dropped-keystroke failure as iOS: enabled
+      # login_form.signin.button never appears (CI 33867825384, 10/10 Android
+      # flows, ~270s). Keyboard can also cover Log In — connect_server.yml
+      # already hideKeyboard on Android; Detox taps enter_credentials first.
+      - retry:
+          maxRetries: 4
+          commands:
+            - tapOn:
+                id: "login_form.username.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_EMAIL}
+            - tapOn:
+                id: "login_form.password.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_PASSWORD}
+            - hideKeyboard
+            - tapOn:
+                id: "login_options.description.enter_credentials"
+                optional: true
+            # * Empty password keeps login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      id: "login_form.password.input"
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
+                  - hideKeyboard
+            - extendedWaitUntil:
+                visible:
+                  id: "login_form.signin.button"
+                timeout: 10000
 
 - retry:
     maxRetries: 3
@@ -273,6 +297,8 @@ appId: ${MAESTRO_APP_ID}
                 when:
                   notVisible:
                     id: "tab_bar.home.tab"
+                  visible:
+                    id: "login_form.signin.button"
                 commands:
                   - tapOn:
                       id: "login_form.signin.button"
@@ -289,6 +315,46 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
+      # # Android: login often restores the last channel (tab bar hidden). Waiting
+      # 180s for tab_bar.home.tab inside this retry (CI 33902065028, ~4m50s per
+      # flow) never retries. navigation.header.back is not the Android channel
+      # chevron — ChannelScreen.back falls through to pressBack. Pop with Back
+      # when the composer is showing; keep the home wait short so retries fire.
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 20000
+                optional: true
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - extendedWaitUntil:
+                      visible:
+                        id: "channel.post_draft.post.input"
+                      timeout: 20000
+                      optional: true
+                  - runFlow:
+                      when:
+                        visible:
+                          id: "channel.post_draft.post.input"
+                      commands:
+                        - tapOn:
+                            id: "navigation.header.back"
+                            optional: true
+                        - runFlow:
+                            when:
+                              visible:
+                                id: "channel.post_draft.post.input"
+                            commands:
+                              - pressKey: Back
+                              - waitForAnimationToEnd:
+                                  timeout: 3000
       # * Verify login succeeded by waiting for the home tab.
       - runFlow:
           when:
@@ -305,4 +371,4 @@ appId: ${MAESTRO_APP_ID}
             - extendedWaitUntil:
                 visible:
                   id: "tab_bar.home.tab"
-                timeout: 180000
+                timeout: 20000

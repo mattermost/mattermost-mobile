@@ -21,6 +21,10 @@ import {
 } from '@support/utils';
 import {waitFor} from 'detox';
 
+// Last sidebar rows sit under the Home tab. A center tap hits the tab bar;
+// the exposed top-left of the label is what remains hittable.
+const SIDEBAR_CHANNEL_TAP_POINT = {x: 20, y: 2};
+
 class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
@@ -164,14 +168,14 @@ class ChannelListScreen {
             const label = this.getChannelItemDisplayName(cat, channelName);
             try {
                 await waitForElementToExist(container, timeouts.TWO_SEC);
-                await container.tap();
+                await container.tap(SIDEBAR_CHANNEL_TAP_POINT);
                 return;
             } catch {
                 // Container not hittable — try the label as a fallback
             }
             try {
                 await waitForElementToExist(label, timeouts.TWO_SEC);
-                await label.tap();
+                await label.tap(SIDEBAR_CHANNEL_TAP_POINT);
                 return;
             } catch {
                 // Try next category

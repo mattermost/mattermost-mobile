@@ -25,8 +25,8 @@ import {
     ServerScreen,
     TermsOfServiceScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {timeouts, wait} from '@support/utils';
+import {device, expect} from 'detox';
 
 /**
  * Enabling custom ToS is server-wide and has no per-user scoping, so every login on the
@@ -118,6 +118,28 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         }
     });
 
+    // Decline first: MM-T1194 relaunches the accepted session, and Android logout
+    // after that relaunch can leave a blank account tab (CI 33941148759
+    // MM-T1193_1 testFnFailure.png) so the decline case never reaches the server
+    // form. Running decline before the relaunch keeps it on a clean login.
+    it('MM-T1193_1 - should return to server screen after declining custom terms of service', async () => {
+        // Fresh user so ToS is required (the beforeAll user is reserved for accept)
+        const {user: declineUser} = await Setup.apiInit(siteThreeUrl);
+
+        // # Connect and log in until custom ToS is shown
+        await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
+        await TermsOfServiceScreen.loginUntilVisible(declineUser);
+
+        // # Decline and confirm the logout alert
+        await TermsOfServiceScreen.declineAndConfirmLogout();
+
+        // * Verify back on server address page with no app home chrome
+        await expect(ServerScreen.serverScreen).toExist();
+        await expect(ServerScreen.serverUrlInput).toExist();
+        await expect(HomeScreen.channelListTab).not.toExist();
+        await expect(ChannelListScreen.channelListScreen).not.toExist();
+    });
+
     it('MM-T1194_1 - should log in after accepting custom terms of service', async () => {
         // # Connect and log in until custom ToS is shown
         await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
@@ -134,25 +156,21 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         await expect(ChannelListScreen.channelListScreen).toExist();
         await expect(HomeScreen.channelListTab).toExist();
 
-        // # Clean up session for the next case
+        // # Relaunch the app — the accepted session is restored from disk, not
+        // re-authenticated, so a re-prompt would have to come from the ToS gate
+        // re-evaluating on the restored session.
+        await device.launchApp({
+            newInstance: true,
+            ...(device.getPlatform() === 'ios' ? {permissions: {notifications: 'YES'}} : {}),
+        });
+
+        // * Verify the channel list is back and the ToS modal did not re-appear
+        // for the same terms version the user just accepted.
+        await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC); // ToS mounts on top of the channel list shortly after it — allow that window
+        await expect(TermsOfServiceScreen.termsOfServiceScreen).not.toExist();
+
+        // # Log out of the restored session (last case in the suite)
         await HomeScreen.logout();
-    });
-
-    it('MM-T1193_1 - should return to server screen after declining custom terms of service', async () => {
-        // Fresh user so ToS is required again (accepted user would skip the modal)
-        const {user: declineUser} = await Setup.apiInit(siteThreeUrl);
-
-        // # Connect and log in until custom ToS is shown
-        await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
-        await TermsOfServiceScreen.loginUntilVisible(declineUser);
-
-        // # Decline and confirm the logout alert
-        await TermsOfServiceScreen.declineAndConfirmLogout();
-
-        // * Verify back on server address page with no app home chrome
-        await expect(ServerScreen.serverScreen).toExist();
-        await expect(ServerScreen.serverUrlInput).toExist();
-        await expect(HomeScreen.channelListTab).not.toExist();
-        await expect(ChannelListScreen.channelListScreen).not.toExist();
     });
 });

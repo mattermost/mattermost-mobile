@@ -4,7 +4,7 @@
 import {restoreServerAfterDatabaseWipe} from '@actions/remote/restore_server';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {attemptServerDatabaseRecovery, resetDatabaseRecoveryStateForTests} from '@database/recovery';
+import {attemptAppDatabaseRecovery, attemptServerDatabaseRecovery, resetDatabaseRecoveryStateForTests} from '@database/recovery';
 import TestHelper from '@test/test_helper';
 
 jest.mock('@react-native-community/netinfo');
@@ -97,5 +97,39 @@ describe('database recovery', () => {
 
         expect(result).toBe(false);
         expect(await getUserCount(loopServerUrl)).toBeGreaterThan(0);
+    });
+
+    test('attemptAppDatabaseRecovery wipes and recreates the app database', async () => {
+        await DatabaseManager.initAppDatabase();
+        const before = DatabaseManager.appDatabase?.database;
+        expect(before).toBeDefined();
+        expect(DatabaseManager.isAppDatabase(before!)).toBe(true);
+
+        const result = await attemptAppDatabaseRecovery(corruptionError, 'addServerToAppDatabase');
+
+        expect(result).toBe(true);
+        expect(DatabaseManager.appDatabase?.database).toBeDefined();
+        expect(DatabaseManager.appDatabase?.database).not.toBe(before);
+        expect(DatabaseManager.isAppDatabase(before!)).toBe(false);
+    });
+
+    test('attemptAppDatabaseRecovery ignores non-corruption errors', async () => {
+        await DatabaseManager.initAppDatabase();
+        const before = DatabaseManager.appDatabase?.database;
+
+        const result = await attemptAppDatabaseRecovery(new Error('database is locked'), 'addServerToAppDatabase');
+
+        expect(result).toBe(false);
+        expect(DatabaseManager.appDatabase?.database).toBe(before);
+    });
+
+    test('attemptAppDatabaseRecovery stops after the recovery limit is reached', async () => {
+        await DatabaseManager.initAppDatabase();
+
+        expect(await attemptAppDatabaseRecovery(corruptionError, 'first')).toBe(true);
+        const afterFirst = DatabaseManager.appDatabase?.database;
+
+        expect(await attemptAppDatabaseRecovery(corruptionError, 'second')).toBe(false);
+        expect(DatabaseManager.appDatabase?.database).toBe(afterFirst);
     });
 });

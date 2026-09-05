@@ -153,3 +153,7 @@ detox/maestro/.maestro-test-env*.sh
 detox/maestro/.maestro-test-env*.bak
 
 .e2e-debug/
+detox/maestro/report-problem-action-opened.png
+detox/maestro/report-link-browser-opened.png
+detox/maestro/report-link-settings-reachable.png
+detox/maestro/report-mail-settings-reachable.png
