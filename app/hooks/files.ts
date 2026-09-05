@@ -167,12 +167,12 @@ export const useDownloadFileAndPreview = (enableSecureFilePreview: boolean) => {
             }).then(() => {
                 setDownloading(false);
                 setProgress(0);
-            }).catch(() => {
+                       }).catch(() => {
                 alertFailedToOpenDocument(file, intl);
 
-                if (path) {
-                    deleteFile(path);
-                }
+                // Do not delete downloaded files if opening fails.
+                // Unsupported MIME types may not be previewable,
+                // but the downloaded file should still remain available.
             }).finally(() => {
                 onDonePreviewingFile();
             });
