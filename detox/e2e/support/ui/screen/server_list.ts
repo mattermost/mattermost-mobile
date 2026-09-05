@@ -17,7 +17,7 @@ class ServerListScreen {
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
-        tutorialBackdrop: 'tutorial_highlight.backdrop',
+        tutorialScrim: 'tutorial_highlight.scrim',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
@@ -29,7 +29,7 @@ class ServerListScreen {
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
-    tutorialBackdrop = element(by.id(this.testID.tutorialBackdrop));
+    tutorialScrim = element(by.id(this.testID.tutorialScrim));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -170,9 +170,14 @@ class ServerListScreen {
             return false;
         }
 
+        // The scrim is HighlightItem's root <Svg>, which owns the overlay's onPress and is
+        // the view that wins the hit-test at those pixels. Tapping the Modal
+        // ('tutorial_highlight') is the historical target and fails its hittability
+        // precondition on iOS, so it is kept only as a last resort for a build that predates
+        // the scrim testID.
         const attempts: Array<() => Promise<void>> = [
-            () => this.tutorialBackdrop.tap(TUTORIAL_DISMISS_POINT),
-            () => this.tutorialBackdrop.tap(),
+            () => this.tutorialScrim.tap(TUTORIAL_DISMISS_POINT),
+            () => this.tutorialScrim.tap(),
             () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialHighlight.tap(),
         ];
