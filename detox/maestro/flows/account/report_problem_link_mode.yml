@@ -12,8 +12,8 @@
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD
 #
 # ASSERTIONS:
-#   - iOS: the Safari sheet opens (breadcrumb visible), dismisses, and Settings is
-#     reachable again with Report a Problem listed
+#   - iOS: the Safari sheet opens (breadcrumb, Done, or Mattermost back-to-app),
+#     dismisses, and Settings is reachable again with Report a Problem listed
 #   - Android: the app leaves the report screen for the browser, Back returns, and
 #     Settings is reachable again with Report a Problem listed
 #   - The configured link's page content is NOT asserted on either platform:
@@ -70,24 +70,23 @@ appId: ${MAESTRO_APP_ID}
     id: "report_problem.report.button"
 
 # * iOS: verify the Safari sheet opened, then dismiss it back to the app.
-# Breadcrumb is the id-backed dismiss; if Settings is still hidden afterwards,
-# reopen_settings_screen.yml resumes the app via launchApp (no OS text selectors).
+# tryOpenURL on iOS 26 does not always expose id:breadcrumb (CI 33924565190).
+# If Settings is still hidden afterwards, reopen_settings_screen.yml resumes
+# the app via launchApp.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - extendedWaitUntil:
-          visible:
-            id: "breadcrumb"
-          timeout: 15000
+      - retry:
+          maxRetries: 5
+          commands:
+            - waitForAnimationToEnd:
+                timeout: 3000
+            - runFlow:
+                file: ../../subflows/browser/_ios_safari_opened.yml
       - takeScreenshot: report-link-browser-opened
       - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - tapOn:
-                id: "breadcrumb"
+          file: ../../subflows/browser/dismiss_ios_safari.yml
 
 # * Android: verify the app left the report screen for the browser, then dismiss back.
 # Chrome Custom Tab — dismiss ads/FRE overlays before Back (same sequence as help_url.yml).

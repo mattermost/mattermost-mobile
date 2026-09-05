@@ -16,7 +16,8 @@
 #   - Tapping Report a problem hands off to the OS browser (Safari sheet on
 #     iOS, Chrome Custom Tab on Android). The in-app screen is not dismissed
 #     by the product (`tryOpenURL` only) — CI 33877432724 iOS failed waiting
-#     for report_problem.screen to disappear.
+#     for report_problem.screen to disappear; CI 33924565190 failed waiting
+#     only for id:breadcrumb on iOS 26.
 #   - Settings with Report a Problem is reachable again after dismissing the
 #     OS surface
 #
@@ -26,7 +27,7 @@
 #   - settings.report_problem.option
 #   - report_problem.screen
 #   - report_problem.report.button
-#   - breadcrumb
+#   - breadcrumb (iOS Safari; may be absent on tryOpenURL / iOS 26)
 tags:
   - MM-T3261
 appId: ${MAESTRO_APP_ID}
@@ -68,23 +69,23 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "report_problem.report.button"
 
-# * iOS: Safari sheet (breadcrumb). Product does not pop the report screen.
+# * iOS: Safari sheet. tryOpenURL on iOS 26 does not always expose
+# id:breadcrumb (CI 33924565190); wait for the same OS chrome help_url.yml
+# dismisses, then dismiss it. Product does not pop the report screen.
 - runFlow:
     when:
       platform: iOS
     commands:
-      - extendedWaitUntil:
-          visible:
-            id: "breadcrumb"
-          timeout: 15000
+      - retry:
+          maxRetries: 5
+          commands:
+            - waitForAnimationToEnd:
+                timeout: 3000
+            - runFlow:
+                file: ../../subflows/browser/_ios_safari_opened.yml
       - takeScreenshot: report-problem-action-opened
       - runFlow:
-          when:
-            visible:
-              id: "breadcrumb"
-          commands:
-            - tapOn:
-                id: "breadcrumb"
+          file: ../../subflows/browser/dismiss_ios_safari.yml
 # * Android: Chrome Custom Tab covers the report screen.
 - runFlow:
     when:
