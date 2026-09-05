@@ -88,7 +88,9 @@ appId: ${MAESTRO_APP_ID}
 # iOS 26.3: Maestro `back` does not dismiss modal-presented screens, so relaunch
 # (stopApp + clearState:false) until Home is visible. Android restores the report
 # screen across a kill/relaunch, so Home never appears (CI 33924565190). Pop with
-# Back like attach_logs.yml / attach_logs_toggle_visible.yml, then tap Home.
+# Back like attach_logs.yml. Settings hides the tab bar (CI 33933642709:
+# `tapOn tab_bar.home.tab` after one Back → "Element not found"), so Back again
+# to Account before tapping Home.
 - runFlow:
     when:
       platform: iOS
@@ -113,6 +115,17 @@ appId: ${MAESTRO_APP_ID}
       - extendedWaitUntil:
           visible:
             id: "settings.report_problem.option"
+          timeout: 10000
+      - pressKey: Back
+      - runFlow:
+          when:
+            notVisible:
+              id: "tab_bar.home.tab"
+          commands:
+            - pressKey: Back
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
           timeout: 10000
       - tapOn:
           id: "tab_bar.home.tab"
