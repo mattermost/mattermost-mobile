@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, render, screen, waitFor} from '@testing-library/react-native';
+import {fireEvent, screen, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {BackHandler} from 'react-native';
 
@@ -22,6 +22,7 @@ jest.mock('@context/theme', () => ({
     getDefaultThemeByAppearance: jest.fn(),
 }));
 jest.mock('@actions/remote/preference');
+jest.mock('@hooks/navigate_back');
 jest.mock('@store/navigation_store');
 
 jest.mocked(useTheme).mockReturnValue(Preferences.THEMES.denim);
@@ -30,6 +31,7 @@ jest.mocked(getDefaultThemeByAppearance).mockReturnValue(Preferences.THEMES.deni
 const displayThemeOtherProps = {
     currentTeamId: '1',
     currentUserId: '1',
+    themeAutoSwitch: false,
 };
 
 describe('DisplayTheme', () => {
@@ -38,7 +40,7 @@ describe('DisplayTheme', () => {
     });
 
     it('should render with a few themes, denim selected', () => {
-        render(
+        renderWithIntl(
             <DisplayTheme
                 allowedThemeKeys={['denim', 'sapphire']}
                 {...displayThemeOtherProps}
@@ -253,6 +255,187 @@ describe('DisplayTheme', () => {
         expect(savePreference).toHaveBeenCalledTimes(numOfSavePreferenceCalls);
 
         jest.useRealTimers();
+    });
+
+    it('should render light and dark theme sections when auto-switch is enabled', () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />);
+
+        expect(screen.getByTestId('theme_display_settings.auto_switch.toggle')).toBeTruthy();
+        expect(screen.getByText('Light Theme')).toBeTruthy();
+        expect(screen.getByText('Dark Theme')).toBeTruthy();
+    });
+
+    it('should hide light and dark sections and save preference when auto-switch is toggled off', async () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />);
+
+        expect(screen.getByText('Light Theme')).toBeTruthy();
+        expect(screen.getByText('Dark Theme')).toBeTruthy();
+
+        const toggle = screen.getByTestId('theme_display_settings.auto_switch.toggle.toggled.true.button');
+        fireEvent(toggle, 'valueChange', false);
+
+        expect(screen.queryByText('Light Theme')).toBeNull();
+        expect(screen.queryByText('Dark Theme')).toBeNull();
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
+                        name: Preferences.THEME_AUTO_SWITCH,
+                        value: 'false',
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should save light theme immediately when tapping a tile in auto-switch mode', async () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // In auto-switch mode, each theme tile appears in both the Light and Dark sections
+        const [lightSapphire] = screen.getAllByTestId('theme_display_settings.sapphire.option');
+        fireEvent.press(lightSapphire);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME,
+                        value: expect.stringContaining('"type":"Sapphire"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should save dark theme immediately when tapping a tile in auto-switch mode', async () => {
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire', 'onyx']}
+                {...displayThemeOtherProps}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // In auto-switch mode, each theme tile appears in both the Light and Dark sections
+        const [, darkOnyx] = screen.getAllByTestId('theme_display_settings.onyx.option');
+        fireEvent.press(darkOnyx);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME_DARK,
+                        value: expect.stringContaining('"type":"Onyx"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should not seed the light custom theme from the active dark theme when auto-switch is on', () => {
+        const customDark: Theme = {...Preferences.THEMES.onyx, type: 'custom', sidebarBg: '#ff0000'};
+        jest.mocked(useTheme).mockReturnValue(customDark);
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                lightTheme={Preferences.THEMES.denim}
+                darkTheme={customDark}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // Custom should only appear in the dark section, not leaked into light
+        expect(screen.getAllByTestId('theme_display_settings.custom.option')).toHaveLength(1);
+        expect(screen.getByTestId('theme_display_settings.denim.option.selected')).toBeTruthy();
+    });
+
+    it('should save the updated custom light theme after stored custom colors change', async () => {
+        const customLight: Theme = {...Preferences.THEMES.denim, type: 'custom', sidebarBg: '#00ff00'};
+        const updatedCustomLight: Theme = {...Preferences.THEMES.denim, type: 'custom', sidebarBg: '#0000ff'};
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim']}
+                {...displayThemeOtherProps}
+                lightTheme={customLight}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        screen.rerender(
+            <DisplayTheme
+                allowedThemeKeys={['denim']}
+                {...displayThemeOtherProps}
+                lightTheme={updatedCustomLight}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        fireEvent.press(screen.getByTestId('theme_display_settings.custom.option'));
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME,
+                        value: expect.stringContaining('"sidebarBg":"#0000ff"'),
+                    }),
+                ]),
+            );
+        });
+    });
+
+    it('should save custom dark theme immediately when tapping custom tile in auto-switch mode', async () => {
+        const customDark: Theme = {...Preferences.THEMES.onyx, type: 'custom', sidebarBg: '#ff0000'};
+
+        renderWithIntl(
+            <DisplayTheme
+                allowedThemeKeys={['denim', 'sapphire']}
+                {...displayThemeOtherProps}
+                darkTheme={customDark}
+                themeAutoSwitch={true}
+            />,
+        );
+
+        // The custom dark tile is in the dark section
+        const customTile = screen.getByTestId('theme_display_settings.custom.option');
+        fireEvent.press(customTile);
+
+        await waitFor(() => {
+            expect(savePreference).toHaveBeenCalledWith(
+                expect.any(String),
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        category: Preferences.CATEGORIES.THEME_DARK,
+                        value: expect.stringContaining('"sidebarBg":"#ff0000"'),
+                    }),
+                ]),
+            );
+        });
     });
 
     it('should not allow user to select a theme rapidly', async () => {
