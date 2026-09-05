@@ -23,6 +23,18 @@ import {
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
+/**
+ * Both tests assert that a markdown image *renders*, so the URL has to serve an
+ * image. When the fetch fails, MarkdownImage sets `failed` and returns a bare
+ * broken-image CompassIcon that never reaches testID='markdown_image'
+ * (app/components/markdown/markdown_image/index.tsx).
+ *
+ * docs.mattermost.com/_images/icon-76x76.png 404s (CI 33936010053 MM-T4896
+ * testFnFailure.png: username row with empty body, no markdown_image). This
+ * mattermost.com upload is the same asset file_preview_gallery.e2e.ts uses.
+ */
+const MARKDOWN_IMAGE_URL = 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png';
+
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -49,7 +61,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_1 - should be able to display markdown image', async () => {
         // # Open a channel screen and post a markdown image
-        const markdownImage = '![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)';
+        const markdownImage = `![Mattermost](${MARKDOWN_IMAGE_URL})`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify markdown image is displayed
@@ -68,7 +80,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_2 - should be able to display markdown image with link', async () => {
         // # Open a channel screen and post a markdown image with link
-        const markdownImage = '[![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)](https://github.com/mattermost/mattermost-server)';
+        const markdownImage = `[![Mattermost](${MARKDOWN_IMAGE_URL})](https://github.com/mattermost/mattermost-server)`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify markdown image with link is displayed
