@@ -229,6 +229,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                     type='opacity'
                     activeOpacity={0.8}
                     onLongPress={touchableHandleLongPress}
+                    testID={`${headerTestId}.content`}
                 >
                     <Markdown
                         channelId={channelId}

@@ -196,6 +196,13 @@ class ChannelScreen {
         await this.introChannelInfoAction.tap();
     };
 
+    // Same intro-footer race as tapIntroChannelInfoAction (CI 33936010053 MM-T4884
+    // beforeAllFailure.png: spinner still up, set_header.action not in the tree).
+    tapIntroSetHeaderAction = async () => {
+        await waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN);
+        await this.introSetHeaderAction.tap();
+    };
+
     open = async (category: string, channelName: any) => {
         // # Open channel screen
         await wait(timeouts.FOUR_SEC);

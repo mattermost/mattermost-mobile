@@ -321,6 +321,10 @@ jobs:
           exit 1
 
       - name: Run Maestro Flows (iOS)
+        # CI 33936010053: this step ran 64m then the runner died (completed_at
+        # null, logs BlobNotFound). always() TSIO stub/upload never ran, so
+        # e2e-test/maestro-ios stayed pending. Cap the step so those steps run.
+        timeout-minutes: 50
         continue-on-error: true
         env:
           FLOW_PATH: ${{ inputs.flow-path }}

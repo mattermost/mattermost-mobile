@@ -169,7 +169,7 @@ const DateTimeSelector = ({
             return false;
         }
 
-        const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0);
+        const newDate = date.clone().hour(parsed.hours).minute(parsed.minutes).second(0).millisecond(0);
         setDate(newDate);
         handleChange(newDate);
         return true;
