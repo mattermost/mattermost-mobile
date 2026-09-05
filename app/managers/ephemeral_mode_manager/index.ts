@@ -27,9 +27,16 @@ function parseNonNegativeConfigNumber(value: string | undefined): number {
     return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 }
 
+// Poll interval to await a settled connection attempt on cold-start resume.
+export const OFFLINE_CONNECTION_RECHECK_MS = 5000;
+
+// Hard cap on total recheck polling before deciding offline anyway.
+export const OFFLINE_CONNECTION_RECHECK_MAX_WAIT_MS = 60000;
+
 class EphemeralModeManagerSingleton {
     private offlineSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
     private disconnectionTimers: Record<string, NodeJS.Timeout> = {};
+    private recheckTimers: Record<string, {timeout: NodeJS.Timeout; startedAt: number}> = {};
     private purgeTimers: Record<string, NodeJS.Timeout> = {};
     private wsSubscriptions: Record<string, Subscription> = {};
     private configSubscriptions: Record<string, Subscription> = {};
@@ -207,6 +214,7 @@ class EphemeralModeManagerSingleton {
         this.wsSubscriptions[serverUrl]?.unsubscribe();
         delete this.wsSubscriptions[serverUrl];
         this.clearDisconnectionTimer(serverUrl);
+        this.clearRecheckTimer(serverUrl);
         this.clearPurgeTimer(serverUrl);
         if (!silent) {
             // Server is still alive (feature disabled at runtime); flush offline state.
@@ -264,6 +272,7 @@ class EphemeralModeManagerSingleton {
 
         if (WebsocketManager.isConnected(serverUrl)) {
             this.clearDisconnectionTimer(serverUrl);
+            this.clearRecheckTimer(serverUrl);
             await this.flagOffline(serverUrl, false);
             await setDisconnectedSince(serverUrl, null);
             return;
@@ -294,7 +303,14 @@ class EphemeralModeManagerSingleton {
         const elapsed = Date.now() - currentDisconnectedSince;
         const threshold = entry.thresholdMs;
         if (elapsed >= threshold) {
+            const recheckStartedAt = this.recheckTimers[serverUrl]?.startedAt ?? Date.now();
+            if (!WebsocketManager.hasFailedToConnect(serverUrl) && Date.now() - recheckStartedAt < OFFLINE_CONNECTION_RECHECK_MAX_WAIT_MS) {
+                // Stale persisted timestamp: no attempt has failed yet. Re-check until it settles.
+                this.scheduleRecheck(serverUrl, OFFLINE_CONNECTION_RECHECK_MS);
+                return;
+            }
             this.clearDisconnectionTimer(serverUrl);
+            this.clearRecheckTimer(serverUrl);
             await this.flagOffline(serverUrl, true);
             return;
         }
@@ -305,12 +321,12 @@ class EphemeralModeManagerSingleton {
     private startDisconnectionTimer = (serverUrl: string, remainingMs: number) => {
         this.clearDisconnectionTimer(serverUrl);
         if (remainingMs <= 0) {
-            this.enqueueEval(serverUrl, () => this.flagOffline(serverUrl, true));
+            this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl));
             return;
         }
         this.disconnectionTimers[serverUrl] = setTimeout(() => {
             delete this.disconnectionTimers[serverUrl];
-            this.enqueueEval(serverUrl, () => this.flagOffline(serverUrl, true));
+            this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl));
         }, remainingMs);
     };
 
@@ -319,6 +335,24 @@ class EphemeralModeManagerSingleton {
         if (handle) {
             clearTimeout(handle);
             delete this.disconnectionTimers[serverUrl];
+        }
+    };
+
+    private scheduleRecheck = (serverUrl: string, delayMs: number) => {
+        // Preserve the start time across reschedules so the wait cap accumulates.
+        const startedAt = this.recheckTimers[serverUrl]?.startedAt ?? Date.now();
+        this.clearRecheckTimer(serverUrl);
+        const timeout = setTimeout(() => {
+            this.enqueueEval(serverUrl, () => this.evaluateServer(serverUrl));
+        }, delayMs);
+        this.recheckTimers[serverUrl] = {timeout, startedAt};
+    };
+
+    private clearRecheckTimer = (serverUrl: string) => {
+        const entry = this.recheckTimers[serverUrl];
+        if (entry) {
+            clearTimeout(entry.timeout);
+            delete this.recheckTimers[serverUrl];
         }
     };
 
