@@ -263,18 +263,26 @@ const ServerItem = ({
         }
 
         setSwitching(true);
-        if (server.lastActiveAt) {
-            await dismissBottomSheet();
-            await switchToServer(server.url);
-            return;
-        }
-        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
-            setSwitching(false);
-            await dismissBottomSheet();
-            if (data?.config && data.license) {
-                loginToServer(theme, server.url, server.displayName, data.config, data.license);
+        try {
+            if (server.lastActiveAt) {
+                // Deliberate UX change: switch first, dismiss after. Dismissing first raced the
+                // switch -- last_active_at had not committed by the time the sheet unmounted, and
+                // the user was left looking at the previous server. The sheet now stays up for the
+                // duration of the switch, which the existing `switching` spinner on this row
+                // already accounts for, so the cost is a visible wait instead of a wrong landing.
+                await switchToServer(server.url);
+                await dismissBottomSheet();
+                return;
             }
-        });
+            await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
+                await dismissBottomSheet();
+                if (data?.config && data.license) {
+                    await loginToServer(theme, server.url, server.displayName, data.config, data.license);
+                }
+            });
+        } finally {
+            setSwitching(false);
+        }
     }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);
 
     const onSwipeableWillOpen = useCallback(() => {

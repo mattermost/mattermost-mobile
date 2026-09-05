@@ -17,6 +17,7 @@ import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
 import {forceLogoutIfNecessary} from './session';
 
+import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type CategoriesRequest = {
@@ -153,6 +154,47 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
 
         const categories = await queryCategoriesByTeamIds(database, [teamId]).fetch();
         const isFavorited = currentCategory.type === FAVORITES_CATEGORY;
+
+        // updateChannelCategories is a PUT that REPLACES membership with exactly the
+        // channel_ids we send, so a truncated local list re-files channels server-side.
+        // Which categories that actually harms was measured against a live server:
+        //
+        //   Channels  self-healing. PUT it an empty list and the server puts every
+        //             still-joined channel back. Local rows are safe here.
+        //   Favorites NOT self-healing. Dropped ids are ejected into Channels and stay
+        //             there -- i.e. the user's other favourites silently un-star. This
+        //             is a knowingly accepted risk: local Favorites rows are only
+        //             incomplete when the sidebar itself is unsynced, and the damage is
+        //             visible and re-doable. Fetching it would cost a round-trip on
+        //             every star tap.
+        //   custom    NOT self-healing, and the loss is neither visible nor easy to
+        //             undo -- the user's own grouping is destroyed. Worth the fetch.
+        //
+        //   before: "My Project" [chan-a, chan-b]   (favorite chan-a, local knew only chan-a)
+        //   after:  "My Project" []  /  Channels gains chan-b
+        //
+        // So: fetch the one custom category, fail closed if that fetch fails, and take
+        // local rows for everything else.
+        const withChannelFirst = (ids: string[]) => [channelId, ...ids.filter((id) => id !== channelId)];
+        const withoutChannel = (ids: string[]) => ids.filter((id) => id !== channelId);
+        const membershipForPut = async (category: CategoryModel): Promise<{data?: CategoryWithChannels; error?: unknown}> => {
+            const local = await category.toCategoryWithChannels();
+            if (category.type !== 'custom' || category.id.startsWith(MANAGED_LOCAL_CATEGORY_PREFIX)) {
+                return {data: local};
+            }
+
+            try {
+                const remote = await client.getCategory('me', teamId, category.id);
+                if (!remote.channel_ids) {
+                    return {error: 'remote category membership unavailable'};
+                }
+                return {data: {...remote, channel_ids: [...remote.channel_ids]}};
+            } catch (error) {
+                logDebug('toggleFavoriteChannel: no authoritative custom category, skipping update', category.id, getFullErrorMessage(error));
+                return {error};
+            }
+        };
+
         let targetWithChannels: CategoryWithChannels;
         let favoriteWithChannels: CategoryWithChannels;
 
@@ -162,23 +204,29 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
             if (!targetCategory) {
                 return {error: 'target category not found'};
             }
-            targetWithChannels = await targetCategory.toCategoryWithChannels();
-            targetWithChannels.channel_ids.unshift(channelId);
-
-            favoriteWithChannels = await currentCategory.toCategoryWithChannels();
-            const channelIndex = favoriteWithChannels.channel_ids.indexOf(channelId);
-            favoriteWithChannels.channel_ids.splice(channelIndex, 1);
+            const [targetMembership, favoriteMembership] = await Promise.all([
+                membershipForPut(targetCategory),
+                membershipForPut(currentCategory),
+            ]);
+            if (targetMembership.error || !targetMembership.data || favoriteMembership.error || !favoriteMembership.data) {
+                return {error: targetMembership.error ?? favoriteMembership.error ?? 'remote category membership unavailable'};
+            }
+            targetWithChannels = {...targetMembership.data, channel_ids: withChannelFirst(targetMembership.data.channel_ids)};
+            favoriteWithChannels = {...favoriteMembership.data, channel_ids: withoutChannel(favoriteMembership.data.channel_ids)};
         } else {
             const favoritesCategory = categories.find((c) => c.type === FAVORITES_CATEGORY);
             if (!favoritesCategory) {
                 return {error: 'No favorites category'};
             }
-            favoriteWithChannels = await favoritesCategory.toCategoryWithChannels();
-            favoriteWithChannels.channel_ids.unshift(channelId);
-
-            targetWithChannels = await currentCategory.toCategoryWithChannels();
-            const channelIndex = targetWithChannels.channel_ids.indexOf(channelId);
-            targetWithChannels.channel_ids.splice(channelIndex, 1);
+            const [favoriteMembership, targetMembership] = await Promise.all([
+                membershipForPut(favoritesCategory),
+                membershipForPut(currentCategory),
+            ]);
+            if (favoriteMembership.error || !favoriteMembership.data || targetMembership.error || !targetMembership.data) {
+                return {error: favoriteMembership.error ?? targetMembership.error ?? 'remote category membership unavailable'};
+            }
+            favoriteWithChannels = {...favoriteMembership.data, channel_ids: withChannelFirst(favoriteMembership.data.channel_ids)};
+            targetWithChannels = {...targetMembership.data, channel_ids: withoutChannel(targetMembership.data.channel_ids)};
         }
 
         await client.updateChannelCategories('me', teamId, [targetWithChannels, favoriteWithChannels]);

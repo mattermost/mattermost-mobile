@@ -42,18 +42,18 @@ export default function DropdownSlideup({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
 
-    const handlePublicPress = useCallback(() => {
-        dismissBottomSheet();
+    const handlePublicPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(PUBLIC);
     }, [onPress]);
 
-    const handleArchivedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleArchivedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(ARCHIVED);
     }, [onPress]);
 
-    const handleSharedPress = useCallback(() => {
-        dismissBottomSheet();
+    const handleSharedPress = useCallback(async () => {
+        await dismissBottomSheet();
         onPress(SHARED);
     }, [onPress]);
 
