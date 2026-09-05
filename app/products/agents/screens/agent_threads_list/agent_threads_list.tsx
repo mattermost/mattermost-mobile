@@ -4,7 +4,7 @@
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Platform, Pressable, RefreshControl} from 'react-native';
+import {View, Text, DeviceEventEmitter, Platform, Pressable, RefreshControl} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -14,10 +14,11 @@ import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -189,6 +190,14 @@ const AgentThreadsList = ({
 
     useAndroidHardwareBackHandler(Screens.AGENT_THREADS_LIST, exit);
 
+    // Start a new empty conversation: tell the still-mounted AgentChat screen
+    // underneath to clear its conversation root, then pop back to it. The
+    // selected agent is kept — only the conversation resets.
+    const handleNewChat = usePreventDoubleTap(useCallback(() => {
+        DeviceEventEmitter.emit(Events.AGENT_NEW_CHAT);
+        navigateBack();
+    }, []));
+
     const handleRefresh = useCallback(() => {
         refreshData(true);
     }, [refreshData]);
@@ -296,7 +305,7 @@ const AgentThreadsList = ({
                     {/* Right - New chat button */}
                     <View style={styles.headerRight}>
                         <Pressable
-                            onPress={exit}
+                            onPress={handleNewChat}
                             style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_threads_list.new_chat_button'
                         >

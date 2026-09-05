@@ -5,6 +5,8 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import {observeHasAvailableAgents} from '@agents/queries/agents';
+import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
@@ -21,7 +23,7 @@ import {observeCurrentUser} from '@queries/servers/user';
 import {isBoRPost, isOwnBoRPost, isUnrevealedBoRPost} from '@utils/bor';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {getPostTranslation, isFromWebhook, isSystemMessage} from '@utils/post';
+import {getPostTranslation, isFromWebhook, isPostEphemeral, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import PostOptions from './post_options';
@@ -174,6 +176,17 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
     );
 
+    // Thread analysis entry point: needs at least one agent and the
+    // enterprise-tier license the plugin's analyze endpoints require; never
+    // shown for system/ephemeral/deleted or burn-on-read posts.
+    const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post)) ? of$(false) : combineLatest([
+        observeHasAvailableAgents(database),
+        observeIsAgentsAnalysisLicensed(database),
+    ]).pipe(
+        switchMap(([hasAgents, isAnalysisLicensed]) => of$(hasAgents && isAnalysisLicensed)),
+        distinctUntilChanged(),
+    );
+
     const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
         combineLatestWith(currentUser),
         switchMap(([isAutotranslated, user]) => {
@@ -204,6 +217,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     return {
         canMarkAsUnread,
         canAddReaction,
+        canAskAgents,
         canDelete,
         canReply,
         canPin,

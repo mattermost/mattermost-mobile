@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {Pressable, Text, View} from 'react-native';
 
-import {type Agent} from '@agents/client/rest';
+import {type SelectableAgent} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
 import {ExpoImageAnimated} from '@components/expo_image';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
@@ -40,10 +40,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type AgentItemProps = {
-    agent: Agent;
+    agent: SelectableAgent;
     profileImageUrl?: string;
     currentAgentUsername: string;
-    onSelect: (agent: Agent) => void;
+    onSelect: (agent: SelectableAgent) => void;
 };
 
 const AgentItem = React.memo(({agent, profileImageUrl, currentAgentUsername, onSelect}: AgentItemProps) => {

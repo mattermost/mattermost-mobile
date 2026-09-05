@@ -31,10 +31,17 @@ export const transformAiBotRecord = ({action, database, value}: TransformerArgs<
         bot.lastIconUpdate = raw.lastIconUpdate ?? record?.lastIconUpdate ?? 0;
         bot.dmChannelId = raw.dmChannelID ?? record?.dmChannelId ?? '';
         bot.channelAccessLevel = raw.channelAccessLevel ?? record?.channelAccessLevel ?? 0;
-        bot.channelIds = raw.channelIDs ?? record?.channelIds ?? [];
+
+        // Raws are always full /ai_bots responses, and Go marshals nil slices
+        // as null: treat absent/null arrays as authoritative empties rather
+        // than falling back to stale record values.
+        bot.channelIds = raw.channelIDs ?? [];
         bot.userAccessLevel = raw.userAccessLevel ?? record?.userAccessLevel ?? 0;
-        bot.userIds = raw.userIDs ?? record?.userIds ?? [];
-        bot.teamIds = raw.teamIDs ?? record?.teamIds ?? [];
+        bot.userIds = raw.userIDs ?? [];
+        bot.teamIds = raw.teamIDs ?? [];
+
+        // The wire omits isDefault when false, so absence means false.
+        bot.isDefault = raw.isDefault ?? false;
     };
 
     return prepareBaseRecord({
@@ -60,10 +67,9 @@ export const transformAiThreadRecord = ({action, database, value}: TransformerAr
 
     const fieldsMapper = (thread: AiThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : thread.id;
-        thread.message = raw.message ?? record?.message ?? '';
         thread.title = raw.title ?? record?.title ?? '';
         thread.channelId = raw.channel_id ?? record?.channelId ?? '';
-        thread.replyCount = raw.reply_count ?? record?.replyCount ?? 0;
+        thread.turnCount = raw.turn_count ?? record?.turnCount ?? 0;
         thread.updateAt = raw.update_at ?? record?.updateAt ?? 0;
     };
 

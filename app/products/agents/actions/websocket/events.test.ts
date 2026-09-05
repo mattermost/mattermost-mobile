@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchAIBots} from '@agents/actions/remote/bots';
 import {AGENTS_PLUGIN_ID} from '@agents/constants/plugin';
 import {WebsocketEvents} from '@constants';
 
@@ -10,6 +11,7 @@ import {handleAgentsPluginEnabled, handleAgentsPluginDisabled} from './version';
 const serverUrl = 'test-server.com';
 
 jest.mock('./version');
+jest.mock('@agents/actions/remote/bots');
 
 describe('handleAgentsEvents', () => {
     beforeEach(() => {
@@ -72,6 +74,27 @@ describe('handleAgentsEvents', () => {
         expect(handleAgentsPluginEnabled).not.toHaveBeenCalled();
     });
 
+    it('should refetch the agent list when AGENTS_BOTS_INVALIDATE event is received', async () => {
+        const msg: WebSocketMessage = {
+            event: WebsocketEvents.AGENTS_BOTS_INVALIDATE,
+            data: {},
+            broadcast: {
+                channel_id: '',
+                team_id: '',
+                user_id: '',
+                omit_users: {},
+            },
+            seq: 1,
+        };
+
+        await handleAgentsEvents(serverUrl, msg);
+
+        expect(fetchAIBots).toHaveBeenCalledWith(serverUrl);
+        expect(fetchAIBots).toHaveBeenCalledTimes(1);
+        expect(handleAgentsPluginEnabled).not.toHaveBeenCalled();
+        expect(handleAgentsPluginDisabled).not.toHaveBeenCalled();
+    });
+
     it('should not call any handler for unrelated events', async () => {
         const msg: WebSocketMessage = {
             event: 'some_other_event',
@@ -89,5 +112,6 @@ describe('handleAgentsEvents', () => {
 
         expect(handleAgentsPluginEnabled).not.toHaveBeenCalled();
         expect(handleAgentsPluginDisabled).not.toHaveBeenCalled();
+        expect(fetchAIBots).not.toHaveBeenCalled();
     });
 });

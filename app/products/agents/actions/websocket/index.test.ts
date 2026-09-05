@@ -2,7 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
+import conversationStore from '@agents/store/conversation_store';
 import streamingStore from '@agents/store/streaming_store';
+import {getPostById} from '@queries/servers/post';
+import {logDebug} from '@utils/log';
 
 import {handleAgentConversationUpdated, handleAgentPostUpdate} from './index';
 
@@ -20,6 +23,27 @@ jest.mock('@agents/store/streaming_store', () => ({
 jest.mock('@agents/actions/remote/conversation', () => ({
     refetchConversation: jest.fn(),
 }));
+
+jest.mock('@agents/store/conversation_store', () => ({
+    __esModule: true,
+    default: {
+        getState: jest.fn(() => ({loading: false})),
+    },
+}));
+
+jest.mock('@database/manager', () => ({
+    __esModule: true,
+    default: {
+        getServerDatabaseAndOperator: jest.fn(() => ({database: {}})),
+    },
+}));
+
+jest.mock('@queries/servers/post', () => ({
+    getPostById: jest.fn(),
+}));
+
+// The end/cancel refetch resolves the post and cache state asynchronously.
+const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('handleAgentPostUpdate', () => {
     beforeEach(() => {
@@ -85,6 +109,85 @@ describe('handleAgentPostUpdate', () => {
         handleAgentPostUpdate(SERVER_URL, msg as unknown as WebSocketMessage<PostUpdateWebsocketMessage>);
 
         expect(streamingStore.handleWebSocketMessage).not.toHaveBeenCalled();
+    });
+});
+
+describe('handleAgentPostUpdate stream-settle refetch', () => {
+    const makeMsg = (control: string): WebSocketMessage<PostUpdateWebsocketMessage> => ({
+        event: 'custom_mattermost-ai_postupdate',
+        data: {post_id: 'post123', control},
+        broadcast: {
+            omit_users: {},
+            user_id: 'user123',
+            channel_id: 'channel123',
+            team_id: 'team123',
+        },
+        seq: 1,
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        jest.mocked(getPostById).mockResolvedValue({
+            props: {conversation_id: 'conv123'},
+        } as unknown as Awaited<ReturnType<typeof getPostById>>);
+        jest.mocked(conversationStore.getState).mockReturnValue({
+            conversation: {id: 'conv123'} as never,
+            loading: false,
+        });
+    });
+
+    it('should refetch the cached conversation when the stream ends', async () => {
+        handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
+        await flushAsync();
+
+        expect(refetchConversation).toHaveBeenCalledTimes(1);
+        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123');
+    });
+
+    it('should refetch the cached conversation when the stream is cancelled', async () => {
+        handleAgentPostUpdate(SERVER_URL, makeMsg('cancel'));
+        await flushAsync();
+
+        expect(refetchConversation).toHaveBeenCalledTimes(1);
+        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123');
+    });
+
+    it('should not refetch on non-settling control events', async () => {
+        handleAgentPostUpdate(SERVER_URL, makeMsg('start'));
+        handleAgentPostUpdate(SERVER_URL, makeMsg('tool_call'));
+        await flushAsync();
+
+        expect(refetchConversation).not.toHaveBeenCalled();
+    });
+
+    it('should not refetch when the conversation was never viewed (nothing cached)', async () => {
+        jest.mocked(conversationStore.getState).mockReturnValue({loading: false});
+
+        handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
+        await flushAsync();
+
+        expect(refetchConversation).not.toHaveBeenCalled();
+    });
+
+    it('should not refetch when the post carries no conversation_id', async () => {
+        jest.mocked(getPostById).mockResolvedValue({
+            props: {},
+        } as unknown as Awaited<ReturnType<typeof getPostById>>);
+
+        handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
+        await flushAsync();
+
+        expect(refetchConversation).not.toHaveBeenCalled();
+    });
+
+    it('should catch refetch rejections instead of leaving them unhandled', async () => {
+        jest.mocked(refetchConversation).mockRejectedValueOnce(new Error('normalization failed'));
+
+        handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
+        await flushAsync();
+
+        expect(refetchConversation).toHaveBeenCalledTimes(1);
+        expect(logDebug).toHaveBeenCalledWith('error on refetchConversationForPost', expect.anything());
     });
 });
 

@@ -2,16 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 
 /**
  * Resolve which agent/bot should be selected when a selector opens.
  * Precedence: saved preference (if still available) -> system default -> first.
- * `is_default` is tolerated when absent (older servers / DB-backed lists).
+ * `isDefault` is tolerated when absent (the plugin omits it when false).
  */
-export function resolveSelectedAgent<T extends {id: string; is_default?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
+export function resolveSelectedAgent<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
     if (agents.length === 0) {
         return null;
     }
@@ -23,7 +23,56 @@ export function resolveSelectedAgent<T extends {id: string; is_default?: boolean
         }
     }
 
-    return agents.find((a) => a.is_default) ?? agents[0];
+    return agents.find((a) => a.isDefault) ?? agents[0];
+}
+
+/**
+ * Filter agents to those usable in a given channel, mirroring the plugin
+ * webapp's useBotlistForChannel predicate: All always passes; Allow requires
+ * the channel to be listed in channelIds; Block requires it not to be. Agents
+ * disallowed here would be rejected (403) by the server on use.
+ */
+export function filterAgentsForChannel<T extends {channelAccessLevel: ChannelAccessLevel; channelIds?: string[] | null}>(agents: T[], channelId: string): T[] {
+    return agents.filter((agent) => {
+        const channelIds = agent.channelIds ?? [];
+        return agent.channelAccessLevel === ChannelAccessLevel.All ||
+            (agent.channelAccessLevel === ChannelAccessLevel.Allow && channelIds.includes(channelId)) ||
+            (agent.channelAccessLevel === ChannelAccessLevel.Block && !channelIds.includes(channelId));
+    });
+}
+
+/**
+ * Resolve the agent an entry point should use and whether an agent picker is
+ * warranted. Pickers only appear when more than one agent is available; with
+ * exactly one agent, it is used silently.
+ */
+export function resolveAgentSelection<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): {agent: T | null; showPicker: boolean} {
+    return {
+        agent: resolveSelectedAgent(agents, savedPrefId),
+        showPicker: agents.length > 1,
+    };
+}
+
+/**
+ * Build the composer draft for a rendered custom prompt. Outside a bot DM the
+ * agent's @mention is prepended so the agent actually answers when the message
+ * is posted (webapp parity: custom_prompts_dropdown.tsx); inside a bot DM the
+ * rendered text is used as-is.
+ */
+export function buildCustomPromptDraft(rendered: string, botUsername: string | undefined, isBotDMChannel: boolean): string {
+    if (!isBotDMChannel && botUsername) {
+        return `@${botUsername} ${rendered}`;
+    }
+    return rendered;
+}
+
+/**
+ * Whether a channel is a specific agent's DM. Matching against ANY bot's DM
+ * would wrongly skip the @mention in buildCustomPromptDraft when the selected
+ * agent differs from the DM's bot, sending the prompt to the wrong agent.
+ */
+export function isAgentDMChannel<T extends {id: string; dmChannelId: string}>(bots: T[], agentId: string | undefined, channelId: string | undefined): boolean {
+    return Boolean(channelId && agentId && bots.some((bot) => bot.id === agentId && bot.dmChannelId === channelId));
 }
 
 /**
@@ -41,6 +90,23 @@ export function isAgentPost(post: PostModel | Post): boolean {
  */
 export function isAgentMentionReminderPost(post: PostModel | Post): boolean {
     return post.type === AGENT_POST_TYPES.AGENT_MENTION_REMINDER;
+}
+
+/**
+ * Whether an agent post's markdown must be rendered with links/hashtags/LaTeX
+ * disabled. The plugin tags every bot post with unsafe_links=true because the
+ * content may be prompt-injected; the admin-controlled AllowUnsafeLinks server
+ * config re-enables rendering (webapp parity: `unsafeLinks: !allowUnsafeLinks`).
+ * @param post The agent post
+ * @param allowUnsafeLinks The server's global allowUnsafeLinks config
+ * @returns true when the post carries the unsafe_links prop and the config does not allow rendering
+ */
+export function isUnsafeLinksPost(post: PostModel | Post, allowUnsafeLinks: boolean): boolean {
+    if (allowUnsafeLinks) {
+        return false;
+    }
+    const props = post.props as Record<string, unknown> | undefined;
+    return Boolean(props?.unsafe_links && props.unsafe_links !== '');
 }
 
 /**
@@ -95,6 +161,24 @@ export function getToolApprovalStage(post: PostModel | Post, toolCalls: ToolCall
         return ToolApprovalStage.Call;
     }
     return ToolApprovalStage.Done;
+}
+
+/**
+ * Heuristic strip of the MCP namespace prefix (`<ns>__`) from a tool's wire
+ * name for call sites without server context (e.g. persisted conversation
+ * payloads that carry no mcp_bare_name). Ported from the plugin webapp's
+ * stripWirePrefix (webapp/src/utils/tool_names.ts) — keep the two in sync.
+ */
+export function stripWirePrefix(toolName: string): string {
+    const idx = toolName.indexOf('__');
+    if (idx <= 0) {
+        return toolName;
+    }
+    const prefix = toolName.slice(0, idx);
+    if (!(/^[a-zA-Z0-9_-]+$/).test(prefix)) {
+        return toolName;
+    }
+    return toolName.slice(idx + 2);
 }
 
 /**

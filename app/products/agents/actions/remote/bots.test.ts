@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {getAgentsConfig} from '@agents/store/agents_config';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -56,6 +57,19 @@ describe('fetchAIBots', () => {
         expect(result.searchEnabled).toBe(true);
         expect(result.allowUnsafeLinks).toBe(false);
         expect(result.error).toBeUndefined();
+        expect(getAgentsConfig(serverUrl).allowUnsafeLinks).toBe(false);
+    });
+
+    it('should persist allowUnsafeLinks into the agents config store', async () => {
+        mockClient.getAIBots.mockResolvedValue({
+            bots: [],
+            searchEnabled: false,
+            allowUnsafeLinks: true,
+        });
+
+        await fetchAIBots(serverUrl);
+
+        expect(getAgentsConfig(serverUrl).allowUnsafeLinks).toBe(true);
     });
 
     it('should refresh missing bot user profiles on success', async () => {

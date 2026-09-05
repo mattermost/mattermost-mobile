@@ -2,16 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {defineMessages, useIntl, type MessageDescriptor} from 'react-intl';
 import {Alert, Pressable, Text, View} from 'react-native';
 
-import {fetchAgents} from '@agents/actions/remote/agents';
-import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
+import {fetchAIBots} from '@agents/actions/remote/bots';
+import {requestChannelSummary, type ChannelSummaryRequestOptions} from '@agents/actions/remote/channel_summary';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {type Agent} from '@agents/client/rest';
 import {AGENT_ANALYSIS_SUMMARY} from '@agents/constants';
-import {resolveSelectedAgent} from '@agents/utils';
+import {useAgentSelection} from '@agents/hooks';
+import {filterAgentsForChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -28,6 +28,9 @@ import {typography} from '@utils/typography';
 
 import AgentSelectorPanel from './agent_selector_panel';
 import DateRangePicker from './date_range_picker';
+
+import type {SelectableAgent} from '@agents/types';
+import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 type SummaryOptionId = 'unreads' | '7d' | '14d' | 'custom';
 
@@ -54,7 +57,13 @@ const SUMMARY_OPTIONS: SummaryOption[] = [
 
 type Props = {
     channelId: string;
+    bots: AiBotModel[];
     selectedAgentId: string;
+
+    // The channel member's viewedAt — the pre-entry timestamp that drives the
+    // New Messages line. lastViewedAt is useless here: opening the channel
+    // already advanced it to "now", which would make the unread window empty.
+    viewedAt: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -107,9 +116,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    emptyContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 32,
+        paddingHorizontal: 16,
+        gap: 12,
+    },
+    emptyText: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        textAlign: 'center',
+        ...typography('Body', 200, 'Regular'),
+    },
+    privacyFooter: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
+        paddingTop: 8,
+        ...typography('Body', 75, 'Regular'),
+    },
 }));
 
-const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
+const ChannelSummarySheet = ({channelId, bots, selectedAgentId, viewedAt}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -119,29 +145,27 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const [submitting, setSubmitting] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showAgentSelector, setShowAgentSelector] = useState(false);
-    const [agents, setAgents] = useState<Agent[]>([]);
-    const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-    const [loadingAgents, setLoadingAgents] = useState(true);
 
-    // Fetch agents on mount.
+    // Only offer agents the server will accept for this channel; picking a
+    // channel-disallowed agent would 403 on submit.
+    const channelBots = useMemo(
+        () => filterAgentsForChannel(bots, channelId),
+        [bots, channelId],
+    );
+
+    const {agent: autoResolvedAgent, showPicker} = useMemo(
+        () => resolveAgentSelection(channelBots, selectedAgentId),
+        [channelBots, selectedAgentId],
+    );
+
+    // Follows auto-resolution (saved pref -> default -> first) until the user
+    // picks an agent; re-resolves if the pick leaves the eligible list.
+    const {selectedAgent, selectAgent} = useAgentSelection(channelBots, autoResolvedAgent);
+
+    // Refresh the DB-backed bot list on open.
     useEffect(() => {
-        const loadAgents = async () => {
-            setLoadingAgents(true);
-            const result = await fetchAgents(serverUrl);
-            if (result.data && result.data.length > 0) {
-                setAgents(result.data);
-            }
-            setLoadingAgents(false);
-        };
-        loadAgents();
+        fetchAIBots(serverUrl);
     }, [serverUrl]);
-
-    // Auto-resolve the selected agent (saved pref -> default -> first) without persisting.
-    useEffect(() => {
-        if (agents.length > 0) {
-            setSelectedAgent((current) => current ?? resolveSelectedAgent(agents, selectedAgentId));
-        }
-    }, [agents, selectedAgentId]);
 
     const handleOptionPress = useCallback(async (optionId: string | boolean) => {
         if (submitting) {
@@ -164,14 +188,15 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         }
 
         setSubmitting(true);
-        const options: Record<string, string | number | boolean | undefined> = {};
+        const options: ChannelSummaryRequestOptions = {};
 
         if (option.days) {
             options.days = option.days;
         }
 
         if (option.id === 'unreads') {
-            options.unreads_only = true;
+            options.sinceLastViewed = true;
+            options.viewedAt = viewedAt;
         }
 
         if (customPrompt.trim()) {
@@ -196,7 +221,7 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         }
 
         dismissBottomSheet();
-    }, [serverUrl, channelId, selectedAgent, customPrompt, intl, submitting]);
+    }, [serverUrl, channelId, selectedAgent, customPrompt, intl, submitting, viewedAt]);
 
     const handleAgentSelectorOpen = useCallback(() => {
         setShowAgentSelector(true);
@@ -206,14 +231,14 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         setShowAgentSelector(false);
     }, []);
 
-    const handleAgentSelect = useCallback(async (agent: Agent) => {
-        setSelectedAgent(agent);
+    const handleAgentSelect = useCallback(async (agent: SelectableAgent) => {
+        selectAgent(agent);
         setShowAgentSelector(false);
         const {error} = await saveSelectedAgent(serverUrl, agent.id);
         if (error) {
             logError('Failed to persist agent selection', getFullErrorMessage(error));
         }
-    }, [serverUrl]);
+    }, [serverUrl, selectAgent]);
 
     const handleCustomPromptSubmit = useCallback(async () => {
         if (!customPrompt.trim() || !selectedAgent) {
@@ -221,7 +246,7 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         }
 
         setSubmitting(true);
-        const options: Record<string, string | number | undefined> = {
+        const options: ChannelSummaryRequestOptions = {
             prompt: customPrompt.trim(),
         };
 
@@ -257,7 +282,7 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         const sinceUtc = new Date(Date.UTC(since.getFullYear(), since.getMonth(), since.getDate(), 0, 0, 0));
         const untilUtc = new Date(Date.UTC(until.getFullYear(), until.getMonth(), until.getDate(), 23, 59, 59));
 
-        const options: Record<string, string | number | undefined> = {
+        const options: ChannelSummaryRequestOptions = {
             since: sinceUtc.toISOString(),
             until: untilUtc.toISOString(),
         };
@@ -289,10 +314,30 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
     const handleCustomPromptSubmitDebounced = usePreventDoubleTap(handleCustomPromptSubmit);
     const handleDateRangeSubmitDebounced = usePreventDoubleTap(handleDateRangeSubmit);
 
+    if (channelBots.length === 0) {
+        return (
+            <BottomSheetScrollView>
+                <View style={styles.emptyContainer}>
+                    <CompassIcon
+                        name='creation-outline'
+                        size={48}
+                        color={changeOpacity(theme.centerChannelColor, 0.48)}
+                    />
+                    <FormattedText
+                        id='agents.channel_summary.no_agents'
+                        defaultMessage='No agents are available for this channel.'
+                        style={styles.emptyText}
+                        testID='agents.channel_summary.no_agents'
+                    />
+                </View>
+            </BottomSheetScrollView>
+        );
+    }
+
     if (showAgentSelector) {
         return (
             <AgentSelectorPanel
-                agents={agents}
+                agents={channelBots}
                 currentAgentUsername={selectedAgent?.username ?? ''}
                 onSelectAgent={handleAgentSelect}
                 onBack={handleAgentSelectorBack}
@@ -315,32 +360,28 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
         <BottomSheetScrollView>
             {/* Header Section - Agent selector + Prompt input */}
             <View style={styles.headerSection}>
-                <Pressable
-                    onPress={handleAgentSelectorOpen}
-                    style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
-                    testID='agents.channel_summary.agent_selector'
-                    disabled={submitting || loadingAgents}
-                >
-                    <FormattedText
-                        id='agents.channel_summary.selected_agent'
-                        defaultMessage='Selected Agent'
-                        style={styles.agentLabel}
-                    />
-                    <View style={styles.agentSelector}>
-                        {loadingAgents ? (
-                            <Loading size='small'/>
-                        ) : (
-                            <>
-                                <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
-                                <CompassIcon
-                                    name='chevron-right'
-                                    size={20}
-                                    color={changeOpacity(theme.centerChannelColor, 0.32)}
-                                />
-                            </>
-                        )}
-                    </View>
-                </Pressable>
+                {showPicker && (
+                    <Pressable
+                        onPress={handleAgentSelectorOpen}
+                        style={({pressed}) => [styles.agentRow, pressed && {opacity: 0.72}]}
+                        testID='agents.channel_summary.agent_selector'
+                        disabled={submitting}
+                    >
+                        <FormattedText
+                            id='agents.channel_summary.selected_agent'
+                            defaultMessage='Selected Agent'
+                            style={styles.agentLabel}
+                        />
+                        <View style={styles.agentSelector}>
+                            <Text style={styles.agentName}>{selectedAgentDisplayName}</Text>
+                            <CompassIcon
+                                name='chevron-right'
+                                size={20}
+                                color={changeOpacity(theme.centerChannelColor, 0.32)}
+                            />
+                        </View>
+                    </Pressable>
+                )}
 
                 <View style={styles.promptWrapper}>
                     <FloatingTextInput
@@ -387,6 +428,13 @@ const ChannelSummarySheet = ({channelId, selectedAgentId}: Props) => {
                     />
                 ))}
             </View>
+
+            <FormattedText
+                id='agents.channel_summary.only_visible_to_you'
+                defaultMessage='Agents post responses in a direct message which will only be visible to you.'
+                style={styles.privacyFooter}
+                testID='agents.channel_summary.only_visible_to_you'
+            />
 
             {submitting && (
                 <View style={styles.loadingOverlay}>

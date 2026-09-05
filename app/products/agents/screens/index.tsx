@@ -14,6 +14,8 @@ export function loadAgentsScreen(screenName: string | number) {
             return withServerDatabase(require('@agents/screens/agent_selector').default);
         case Screens.AGENTS_REWRITE_OPTIONS:
             return withServerDatabase(require('@agents/screens/rewrite_options').default);
+        case Screens.AGENTS_CUSTOM_PROMPTS:
+            return withServerDatabase(require('@agents/screens/custom_prompt_list').default);
         default:
             return undefined;
     }

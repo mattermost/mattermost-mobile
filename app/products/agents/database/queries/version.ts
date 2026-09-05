@@ -17,7 +17,7 @@ function queryAgentsVersion(database: Database) {
     );
 }
 
-function isAgentsEnabledFromSystemModel(systems: SystemModel[]) {
+function isVersionSupportedFromSystemModel(systems: SystemModel[]) {
     const version = systems[0]?.value;
     if (!version) {
         return false;
@@ -26,9 +26,9 @@ function isAgentsEnabledFromSystemModel(systems: SystemModel[]) {
     return isMinimumServerVersion(version, MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION);
 }
 
-export async function fetchIsAgentsEnabled(database: Database) {
+export async function fetchIsAgentsVersionSupported(database: Database) {
     const systems = await queryAgentsVersion(database).fetch();
-    return isAgentsEnabledFromSystemModel(systems);
+    return isVersionSupportedFromSystemModel(systems);
 }
 
 export async function fetchAgentsVersion(database: Database): Promise<string> {
@@ -36,12 +36,12 @@ export async function fetchAgentsVersion(database: Database): Promise<string> {
     return systems[0]?.value || '';
 }
 
-export function observeIsAgentsEnabled(database: Database) {
+export function observeIsAgentsVersionSupported(database: Database) {
     return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
         Q.where('id', SYSTEM_IDENTIFIERS.AGENTS_VERSION),
     ).observeWithColumns(['value']).pipe(
         switchMap((systems) => {
-            return of$(isAgentsEnabledFromSystemModel(systems));
+            return of$(isVersionSupportedFromSystemModel(systems));
         }),
     );
 }
