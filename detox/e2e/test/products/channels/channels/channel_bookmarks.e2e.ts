@@ -99,10 +99,9 @@ describe('Channels - Channel Bookmarks', () => {
 
         // Default scroll start is the bottom of the list, which sits under the
         // tab bar (T5612: "View is not scrollable at the given start
-        // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
-        // 75% toBeVisible fails on iOS 26 when the row is clipped by the tab bar
-        // (CI 33933642709 MM-T5606_1, 33924565190 MM-T5609_1). Same 50% as
-        // browse_channels.e2e.ts for that clip.
+        // point" {201, 701}). CI 33933642709 MM-T5606_1 testFnFailure.png:
+        // last sidebar row (channel-f3fb39) is clipped by the Home tab; Detox
+        // 75% visibility fails. Same 50% as browse_channels.e2e.ts for that clip.
         await waitFor(displayNameEl).
             toBeVisible(50).
             whileElement(by.id('channel_list.flat_list')).
