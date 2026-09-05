@@ -80,13 +80,10 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    const channelsCategory = 'channels';
-
     // Last sidebar rows sit under the tab bar with no extra scroll unless the list
     // has bottom padding. Scroll the target into view and fail if it never is.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
-        const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
         await waitFor(element(by.id('channel_list.flat_list'))).
             toExist().
             withTimeout(timeouts.TWENTY_SEC);
@@ -97,16 +94,11 @@ describe('Channels - Channel Bookmarks', () => {
             // List too short to scroll
         }
 
-        // Default scroll start is the bottom of the list, which sits under the
-        // tab bar (T5612: "View is not scrollable at the given start
-        // point" {201, 701}). CI 33933642709 MM-T5606_1 testFnFailure.png:
-        // last sidebar row (channel-f3fb39) is clipped by the Home tab; Detox
-        // 75% visibility fails. Same 50% as browse_channels.e2e.ts for that clip.
-        await waitFor(displayNameEl).
-            toBeVisible(50).
-            whileElement(by.id('channel_list.flat_list')).
-            scroll(100, 'down', 0.5, 0.5);
-
+        // Do not waitFor(toBeVisible(50)) here. CI 33941148759 MM-T5602_1
+        // testFnFailure.png: last sidebar row (channel-eb7eca) is clipped to
+        // ~25% by the Home tab, so 50% never succeeds and the tap below never
+        // runs. tapSidebarPublicChannelDisplayName scrolls on toExist and taps
+        // the exposed top edge.
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
