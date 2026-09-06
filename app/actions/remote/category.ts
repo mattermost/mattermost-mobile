@@ -17,7 +17,6 @@ import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type CategoriesRequest = {
@@ -157,32 +156,16 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
         let targetWithChannels: CategoryWithChannels;
         let favoriteWithChannels: CategoryWithChannels;
 
-        // updateChannelCategories REPLACES a category's membership with what we send, so the
-        // list has to come from authoritative state. Local CategoryChannel rows can be
-        // mid-sync -- this function itself fires fetchCategories(prune=true) unawaited on
-        // every toggle -- and building the payload from a truncated local list silently
-        // deletes the user's other channels from that category ON THE SERVER, emptying the
-        // sidebar for good
-        const {categories: remoteCategories} = await fetchCategories(serverUrl, teamId, false, true);
-        const remoteById = new Map((remoteCategories ?? []).map((c) => [c.id, c]));
-        const toWithChannels = async (category: CategoryModel): Promise<CategoryWithChannels> => {
-            const remote = remoteById.get(category.id);
-            if (remote) {
-                return {...remote, channel_ids: [...remote.channel_ids]};
-            }
-            return category.toCategoryWithChannels();
-        };
-
         if (isFavorited) {
             const categoryType = (channel.type === General.DM_CHANNEL || channel.type === General.GM_CHANNEL) ? DMS_CATEGORY : CHANNELS_CATEGORY;
             const targetCategory = categories.find((c) => c.type === categoryType);
             if (!targetCategory) {
                 return {error: 'target category not found'};
             }
-            targetWithChannels = await toWithChannels(targetCategory);
+            targetWithChannels = await targetCategory.toCategoryWithChannels();
             targetWithChannels.channel_ids.unshift(channelId);
 
-            favoriteWithChannels = await toWithChannels(currentCategory);
+            favoriteWithChannels = await currentCategory.toCategoryWithChannels();
             const channelIndex = favoriteWithChannels.channel_ids.indexOf(channelId);
             favoriteWithChannels.channel_ids.splice(channelIndex, 1);
         } else {
@@ -190,10 +173,10 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
             if (!favoritesCategory) {
                 return {error: 'No favorites category'};
             }
-            favoriteWithChannels = await toWithChannels(favoritesCategory);
+            favoriteWithChannels = await favoritesCategory.toCategoryWithChannels();
             favoriteWithChannels.channel_ids.unshift(channelId);
 
-            targetWithChannels = await toWithChannels(currentCategory);
+            targetWithChannels = await currentCategory.toCategoryWithChannels();
             const channelIndex = targetWithChannels.channel_ids.indexOf(channelId);
             targetWithChannels.channel_ids.splice(channelIndex, 1);
         }

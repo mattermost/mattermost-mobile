@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, waitFor} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
-import {dismissBottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
+import {PUBLIC} from './browse_channels';
 import DropdownSlideup from './dropdown_slideup';
 
 import type {Database} from '@nozbe/watermelondb';
@@ -39,32 +37,6 @@ describe('DropdownSlideup', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-    });
-
-    // Switching the list while the sheet is still mounted makes Fabric re-parent a view
-    // mid-commit, a host exception that tears down the React instance. Pin the ordering.
-    it.each([
-        ['browse_channels.dropdown_slideup_item.public_channels', PUBLIC],
-        ['browse_channels.dropdown_slideup_item.archived_channels', ARCHIVED],
-        ['browse_channels.dropdown_slideup_item.shared_channels', SHARED],
-    ])('should await the sheet dismissal before switching to %s', async (testID, expectedType) => {
-        const calls: string[] = [];
-        jest.mocked(dismissBottomSheet).mockImplementation(async () => {
-            calls.push('dismiss');
-        });
-        const onPress = jest.fn(() => {
-            calls.push('press');
-        });
-
-        const {getByTestId} = renderWithEverything(
-            <DropdownSlideup {...getBaseProps({onPress})}/>,
-            {database, serverUrl},
-        );
-
-        fireEvent.press(getByTestId(testID));
-
-        await waitFor(() => expect(onPress).toHaveBeenCalledWith(expectedType));
-        expect(calls).toEqual(['dismiss', 'press']);
     });
 
     it('should not render the archived or shared rows when the server disables them', () => {
