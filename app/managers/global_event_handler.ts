@@ -11,7 +11,7 @@ import {batchTeamThreadSync} from '@actions/remote/thread';
 import {Device, Events} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
-import {attemptAppDatabaseRecovery, attemptServerDatabaseRecovery} from '@database/recovery';
+import {attemptServerDatabaseRecovery} from '@database/recovery';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getActiveServerUrl} from '@queries/app/servers';
@@ -69,21 +69,14 @@ class GlobalEventHandlerSingleton {
 
     onDatabaseCorruptionDetected = ({database, error, source}: {database: Database; error: unknown; source: string}) => {
         const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
-        if (serverUrl) {
-            attemptServerDatabaseRecovery(serverUrl, error, source).catch((recoveryError) => {
-                logError('onDatabaseCorruptionDetected: unhandled recovery error', getFullErrorMessage(recoveryError));
-            });
+        if (!serverUrl) {
+            logDebug('onDatabaseCorruptionDetected: skipping recovery, server URL not found', source);
             return;
         }
 
-        if (DatabaseManager.isAppDatabase(database)) {
-            attemptAppDatabaseRecovery(error, source).catch((recoveryError) => {
-                logError('onDatabaseCorruptionDetected: unhandled app recovery error', getFullErrorMessage(recoveryError));
-            });
-            return;
-        }
-
-        logDebug('onDatabaseCorruptionDetected: skipping recovery, database not recognized', source);
+        attemptServerDatabaseRecovery(serverUrl, error, source).catch((recoveryError) => {
+            logError('onDatabaseCorruptionDetected: unhandled recovery error', getFullErrorMessage(recoveryError));
+        });
     };
 
     onServerVersionChanged = async ({serverUrl, serverVersion}: {serverUrl: string; serverVersion?: string}) => {

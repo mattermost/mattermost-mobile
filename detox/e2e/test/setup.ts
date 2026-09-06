@@ -161,20 +161,87 @@ async function grantAndroidNotificationPermission(): Promise<void> {
     }
 }
 
+// `pm clear` deletes the package's data directory. If the app process is still alive when it
+// lands, SQLite files are removed out from under open handles and WatermelonDB comes back with
+// "database disk image is malformed" -- observed on Android CI, 14 seconds after a freshly
+// cleared launch, poisoning every later spec on that shard (13-15 device logs per shard on run
+// 33947684168). SQLite is crash-safe against a clean kill; it is not safe against its files
+// being deleted mid-run. So confirm the process is actually gone before clearing, rather than
+// assuming force-stop was synchronous.
+function androidPidOf(): string {
+    try {
+        return execSync(`adb shell pidof ${BUNDLE_ID}`, {encoding: 'utf8', stdio: 'pipe'}).trim();
+    } catch {
+        return ''; // pidof exits non-zero when nothing matches.
+    }
+}
+
+function waitForAndroidProcessGone(timeoutMs = 10_000): boolean {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+        if (!androidPidOf()) {
+            return true;
+        }
+        execSync('sleep 0.25', {stdio: 'pipe'});
+    }
+    return false;
+}
+
+// Clear, then prove it. A `pm clear` that silently did not take effect leaves the previous
+// spec's state -- including a corrupt store -- in place, which is how one bad shard turns into
+// a dozen unrelated-looking failures.
+function clearAndroidAppData(label: string): void {
+    try {
+        execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
+    } catch { /* app may not be running */ }
+
+    if (!waitForAndroidProcessGone()) {
+        console.warn(`[${label}] app process still alive after force-stop; killing before pm clear`);
+        try {
+            execSync(`adb shell am kill ${BUNDLE_ID}`, {stdio: 'pipe'});
+        } catch { /* best effort */ }
+        waitForAndroidProcessGone(5_000);
+    }
+
+    try {
+        const out = execSync(`adb shell pm clear ${BUNDLE_ID}`, {encoding: 'utf8', stdio: 'pipe'}).trim();
+        if (!out.includes('Success')) {
+            console.warn(`[${label}] pm clear did not report Success: ${out.slice(0, 120)}`);
+        }
+    } catch (e) {
+        console.warn(`[${label}] pm clear failed:`, String(e).slice(0, 200));
+    }
+}
+
+// A corrupt app store does not fail the spec that caused it -- it fails every spec after it,
+// as "channel_list.screen was null" with a blank white app, which reads as a dozen unrelated
+// flakes. Surface it once, where it happens, with the sqlite error attached.
+function assertAndroidStoreNotCorrupt(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+    let logcat = '';
+    try {
+        logcat = execSync('adb logcat -d -t 400 -s watermelondb.sqlite watermelondb.jsi', {encoding: 'utf8', stdio: 'pipe'});
+    } catch {
+        return; // logcat unavailable; do not mask the real test outcome with a harness error.
+    }
+    const corrupt = logcat.split('\n').find((l) => l.includes('malformed') || l.includes('database corruption at line'));
+    if (corrupt) {
+        throw new Error(
+            '[launchAndVerify] app database is corrupt after a cleared launch, so every spec on ' +
+            `this shard would fail downstream: ${corrupt.trim().slice(0, 200)}`,
+        );
+    }
+}
+
 // ─── Global beforeAll ────────────────────────────────────────────────────────
 // Runs before each test file.
 // Responsibilities: launch app with clean state, admin login, plugin cleanup.
 
 beforeAll(async () => {
     if (device.getPlatform() === 'android') {
-        try {
-            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
-        } catch { /* app may not be running */ }
-        try {
-            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
-        } catch {
-            // Package might not be installed yet on first run
-        }
+        clearAndroidAppData('beforeAll');
 
         try {
             execSync('adb shell settings put secure show_ime_with_hard_keyboard 0', {stdio: 'pipe'});
@@ -194,16 +261,7 @@ beforeAll(async () => {
         if (device.getPlatform() !== 'android') {
             return;
         }
-        try {
-            // Stop the app process first so pm clear can safely wipe its data dir.
-            execSync(`adb shell am force-stop ${BUNDLE_ID}`, {stdio: 'pipe'});
-        } catch { /* app may not be running */ }
-        try {
-            execSync(`adb shell pm clear ${BUNDLE_ID}`, {stdio: 'pipe'});
-            console.info('[forceAndroidDataClear] pm clear succeeded');
-        } catch (e) {
-            console.warn('[forceAndroidDataClear] pm clear failed:', String(e).slice(0, 200));
-        }
+        clearAndroidAppData('forceAndroidDataClear');
     }
 
     async function ensureAndroidMetroReverse(): Promise<void> {
@@ -232,6 +290,8 @@ beforeAll(async () => {
         });
 
         await device.disableSynchronization();
+
+        assertAndroidStoreNotCorrupt();
 
         const serverScreenEl = element(by.id('server.screen'));
 
