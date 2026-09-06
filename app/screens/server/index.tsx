@@ -8,6 +8,7 @@ import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import Animated from 'react-native-reanimated';
+import urlParse from 'url-parse';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -295,6 +296,16 @@ const Server = ({
         return true;
     };
 
+    // If the URL has a path (e.g. a pasted channel URL), retry with the last path
+    // segment stripped so we fall back to the server's base URL.
+    const retryWithBaseUrl = (currentUrl: string) => {
+        if (urlParse(currentUrl).pathname === '/') {
+            return false;
+        }
+        pingServer(currentUrl.substring(0, currentUrl.lastIndexOf('/')));
+        return true;
+    };
+
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
         setConnecting(true);
@@ -355,7 +366,14 @@ const Server = ({
         const pushProxyVerification = result.canReceiveNotifications as string;
 
         const data = await fetchConfigAndLicense(headRequest.url, true);
+        if (canceled) {
+            return;
+        }
+
         if (data.error) {
+            if (retryWithBaseUrl(headRequest.url)) {
+                return;
+            }
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error, intl));
             setConnecting(false);
@@ -363,6 +381,9 @@ const Server = ({
         }
 
         if (!data.config?.DiagnosticId) {
+            if (retryWithBaseUrl(headRequest.url)) {
+                return;
+            }
             setUrlError(formatMessage({
                 id: 'mobile.diagnostic_id.empty',
                 defaultMessage: 'A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.',
