@@ -66,7 +66,7 @@ describe('Channels - Channel Bookmarks', () => {
 
     const waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
-        options?: {textFallback?: string; bookmarkId?: string},
+        options?: {textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>},
     ) => {
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
@@ -814,15 +814,20 @@ describe('Channels - Channel Bookmarks', () => {
         // Authoritative sync: both bookmarks must exist in channel info before
         // trusting the virtualized header FlatList (file chip can appear first).
         await ChannelInfoScreen.open();
+
+        // onResync re-enters the channel between attempts. Bookmarks arrive via
+        // fetchChannelBookmarks, which only runs on channel switch, so a bookmark that never
+        // synced cannot be recovered by reopening this sheet alone.
+        const resyncChannel = () => openChannel(channelT69455);
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark'},
+            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${linkT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark'},
+            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.close();
 
