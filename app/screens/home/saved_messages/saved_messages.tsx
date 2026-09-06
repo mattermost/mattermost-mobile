@@ -124,11 +124,6 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
         translateX.value = isFocused ? 0 : translateSide;
     }, [isFocused, opacity, translateSide, translateX]);
 
-    // This tab mounts once and stays mounted, so the subscription is rebuilt on focus rather
-    // than only at mount: focus is also when fetchSavedPosts() below refreshes from the server,
-    // and re-reading here guarantees the list reflects that write. Observed symptom was an
-    // empty list after saving a post; the precise reason the mount-time subscription missed it
-    // is not yet pinned down, so this is written as a guarantee rather than a claimed fix.
     useEffect(() => {
         if (!isFocused) {
             return undefined;
