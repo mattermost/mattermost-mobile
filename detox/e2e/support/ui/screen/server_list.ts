@@ -170,11 +170,11 @@ class ServerListScreen {
             return false;
         }
 
+        // The scrim is HighlightItem's root <Svg>, which owns the overlay's onPress and is the
+        // view that wins the hit-test at those pixels. Tapping the Modal
+        // ('tutorial_highlight') is the historical target and fails its hittability
+        // precondition on iOS, so it is kept only as a last resort.
         const attempts: Array<() => Promise<void>> = [
-            // The scrim is HighlightItem's root <Svg>, which owns the overlay's onPress and is
-            // the view that wins the hit-test at those pixels. Tapping the Modal
-            // ('tutorial_highlight') is the historical target and fails its hittability
-            // precondition on iOS, so it is kept only as a last resort.
             () => this.tutorialScrim.tap(TUTORIAL_DISMISS_POINT),
             () => this.tutorialScrim.tap(),
             () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),

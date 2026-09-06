@@ -285,6 +285,15 @@ describe('Server Login - Server List', () => {
         // # Tap on logout button
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
+
+        // The server may not be reachable when the logout request goes out, in which case the
+        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
+        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
+        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
+        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
+        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
+        // bypassed it.
+        await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
         await wait(timeouts.TWO_SEC);
 
         // * Verify third server is logged out. swipeRevealOption is the assertion: it only
@@ -359,6 +368,15 @@ describe('Server Login - Server List', () => {
         await wait(timeouts.FOUR_SEC);
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
         await Alert.logoutButton.tap();
+
+        // The server may not be reachable when the logout request goes out, in which case the
+        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
+        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
+        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
+        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
+        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
+        // bypassed it.
+        await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
