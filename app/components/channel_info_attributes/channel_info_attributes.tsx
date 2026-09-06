@@ -119,6 +119,13 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
     const saveSequence = useRef<Map<string, number>>(new Map());
     const isMounted = useRef(true);
 
+    // Chained per field so two submits to the same field always reach the server
+    // in the order they were made. Without this, the guard above still shows the
+    // right outcome on screen, but the two requests race on the network and the
+    // one sent first can still be the one the server applies last, leaving the
+    // stored value out of sync with the row.
+    const pendingWrites = useRef<Map<string, Promise<unknown>>>(new Map());
+
     useDidMount(() => {
         isMounted.current = true;
         return () => {
@@ -129,6 +136,7 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
     useEffect(() => {
         visitToken.current += 1;
         saveSequence.current = new Map();
+        pendingWrites.current = new Map();
         setFailedFieldIds(new Set());
     }, [channelId]);
 
@@ -179,7 +187,11 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
             return;
         }
 
-        const {error} = await setChannelAttributeValue(serverUrl, channelId, fieldId, value);
+        const previousWrite = pendingWrites.current.get(fieldId) ?? Promise.resolve();
+        const thisWrite = previousWrite.then(() => setChannelAttributeValue(serverUrl, channelId, fieldId, value));
+        pendingWrites.current.set(fieldId, thisWrite);
+
+        const {error} = await thisWrite;
 
         // A result from a previous channel, or from a save a later one has already
         // superseded, is not this row's outcome.
