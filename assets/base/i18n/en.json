@@ -177,6 +177,8 @@
   "calls.join_call_avatars.bottom_sheet_title": "Call participants",
   "center_panel.archived.closeChannel": "Close Channel",
   "channel_add_members.add_members.button": "Add Members",
+  "channel_attributes.create.missing_required": "This channel is missing a required attribute. Check the channel attributes above and try again.",
+  "channel_attributes.create.unsupported_required": "A required channel attribute cannot be set from this device yet. Ask an administrator to create this channel from a computer.",
   "channel_attributes.editor.clear": "Clear value",
   "channel_attributes.editor.save": "Save",
   "channel_attributes.editor.selected_aria": "Selected",

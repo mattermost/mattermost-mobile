@@ -69,6 +69,10 @@ const EDITABLE: AttributeEditability = {editable: true};
 // multiuser read-only.
 const EDITABLE_FIELD_TYPES = new Set<string>(['text', 'select', 'multiselect', 'rank']);
 
+// The field types whose stored value is an option id rather than free text — the
+// only ones a removed or renamed option can strand a draft against.
+const OPTION_BACKED_FIELD_TYPES = new Set<string>(['select', 'multiselect', 'rank']);
+
 // Ranks a field for display. Absent sort_order sorts last rather than first, so
 // an unconfigured field never jumps ahead of a configured one.
 const NO_SORT_ORDER = Number.MAX_SAFE_INTEGER;
@@ -86,6 +90,62 @@ export function isPropertyValueSet(raw: unknown): boolean {
         return false;
     }
     return !(Array.isArray(raw) && raw.length === 0);
+}
+
+/**
+ * Drops draft values a live field-list update has stranded: a field that no
+ * longer appears at all, or a selected option id an administrator has since
+ * removed from the field.
+ *
+ * Only the channel-creation form needs this. It holds its draft as local
+ * component state rather than a persisted value, and the field list it draws
+ * from is a live subscription — unlike Channel Info, where every write goes
+ * straight to the server and is judged against the live field there instead.
+ * Without this, a draft option id that stopped existing between the pick and
+ * the tap on Create would still be sent, for the server to reject with no
+ * option even reachable in the sheet's own picker to explain why.
+ *
+ * Returns the same object when nothing changed, so a caller storing this in
+ * React state does not re-render on every unrelated field-list emission.
+ */
+export function pruneStaleAttributeValues(
+    fields: ChannelAttributeField[],
+    values: Record<string, string | string[]>,
+): Record<string, string | string[]> {
+    const fieldById = new Map(fields.map((field) => [field.id, field]));
+    let changed = false;
+    const next: Record<string, string | string[]> = {};
+
+    for (const [fieldId, value] of Object.entries(values)) {
+        const field = fieldById.get(fieldId);
+        if (!field || !OPTION_BACKED_FIELD_TYPES.has(field.type)) {
+            if (field) {
+                next[fieldId] = value;
+            } else {
+                changed = true;
+            }
+            continue;
+        }
+
+        const validIds = new Set(getFieldOptions(field).map((option) => option.id));
+        let kept: string | string[] | undefined;
+        if (Array.isArray(value)) {
+            kept = value.filter((id) => validIds.has(id));
+        } else if (validIds.has(value)) {
+            kept = value;
+        }
+
+        if (kept === undefined || (Array.isArray(kept) && kept.length === 0)) {
+            changed = true;
+            continue;
+        }
+        if (Array.isArray(kept) && kept.length !== value.length) {
+            changed = true;
+        }
+        next[fieldId] = kept;
+    }
+
+    return changed ? next : values;
 }
 
 /**
@@ -224,6 +284,28 @@ export function attributeTierGate(field: ChannelAttributeField): AttributeTierGa
             return 'channel_only';
         default:
             return 'never';
+    }
+}
+
+/**
+ * Whether the caller may set this field while creating a channel, mirroring the
+ * server's canSetChannelAttributeOnCreate (api4/channel.go).
+ *
+ * The channel does not exist yet, so there is no channel-level gate to check —
+ * only the field's own tier, answered from what creation itself guarantees: the
+ * creator is saved as a channel admin, which satisfies both `member` and `admin`.
+ * Only `sysadmin` needs anything beyond that. Anything absent or unrecognised
+ * fails closed, matching the server's switch having no default branch.
+ */
+export function canSetChannelAttributeOnCreate(field: ChannelAttributeField, canManageSystem: boolean): boolean {
+    switch (field.permissionValues) {
+        case 'member':
+        case 'admin':
+            return true;
+        case 'sysadmin':
+            return canManageSystem;
+        default:
+            return false;
     }
 }
 
@@ -392,23 +474,37 @@ export function selectAttributesForAction(
 }
 
 /**
- * The attributes listed in Channel Info: designated for the info surface, and
- * either set or required.
+ * The attributes listed in Channel Info, filtered by role not by display configuration.
  *
- * Wider than selectAttributesForAction on purpose — a required attribute is
- * listed even when unset, because that empty row is the only thing telling an
- * administrator the channel is incomplete. Optional unset attributes are
- * reachable through Add attribute instead, which is a later story.
+ * Display configuration (attrs.actions / display_label_info) controls only the
+ * chip/banner surfaces. Channel Info is the editing surface, so it must show every
+ * attribute the viewer can act on — hiding a value because an admin did not tick
+ * "show in info panel" would leave a channel admin with no way to correct it.
+ *
+ * Channel admin (canManageChannelRoles) or sysadmin: every attribute with a stored
+ * value, plus every required attribute even when unset — the required-but-unset row
+ * is the signal that the channel is incomplete, and Channel Info is the only editing
+ * surface, so hiding it would strand the channel with no way to correct it.
+ *
+ * Regular member: every attribute with a stored value, read-only. Required-unset rows
+ * are admin-only because a member cannot act on them.
+ *
+ * Optional unset attributes are reached through Add Attribute (a later story).
+ *
+ * "Has a stored value" is tested against rawValue (server semantics: null / '' / []
+ * all count as unset) rather than displayValue, so a stored id that no longer
+ * resolves to an option is still counted as set and the row is the only way to reach
+ * it.
  */
 export function selectChannelInfoAttributes(
     attributes: ResolvedChannelAttribute[],
-    action: PropertyFieldAction,
+    isChannelAdmin: boolean,
 ): ResolvedChannelAttribute[] {
     const listed = attributes.filter((attribute) => {
-        if (!hasAction(attribute.field, action)) {
-            return false;
+        if (isPropertyValueSet(attribute.rawValue)) {
+            return true;
         }
-        return Boolean(attribute.displayValue) || isPropertyFieldRequired(attribute.field);
+        return isChannelAdmin && isPropertyFieldRequired(attribute.field);
     });
     return listed.length === 0 ? EMPTY_RESOLVED : listed;
 }
@@ -502,9 +598,7 @@ export function deriveChannelAttributeBanner(
     // keeps an existing classification banner byte-identical. The nullish check
     // is deliberate: an empty authored string stays empty rather than falling
     // back to the option name, matching the behaviour being replaced.
-    const text = nativeBannerText === undefined || nativeBannerText === null ?
-        `**${option.name}**` :
-        stripUnresolvedTokens(nativeBannerText);
+    const text = nativeBannerText === undefined || nativeBannerText === null ?`**${option.name}**` :stripUnresolvedTokens(nativeBannerText);
 
     // Option colour is the canonical visual identity of the level (e.g. red for
     // SECRET). It always wins when present. The channel's authored background_color

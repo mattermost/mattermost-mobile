@@ -113,8 +113,8 @@ const AttributeChip = ({label, value, color, announceLabel = true, variant = 'in
         >
             <Text
                 style={textStyle}
-                numberOfLines={1}
-                ellipsizeMode='tail'
+                numberOfLines={variant === 'option' ? undefined : 1}
+                ellipsizeMode={variant === 'option' ? undefined : 'tail'}
                 accessibilityLabel={announceLabel ? `${label}: ${value}` : value}
                 testID={testID ? `${testID}.value` : undefined}
             >

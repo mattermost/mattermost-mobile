@@ -286,6 +286,25 @@ describe('observeResolvedChannelAttributes re-emission', () => {
         expect(emissions[emissions.length - 1][0].field.attrs?.options).toHaveLength(1);
     });
 
+    it('should re-emit when the stored option id changes to another with the same rendered name and colour', async () => {
+        // Two options that render identically: same name, same colour, different
+        // id. Without rawValue in the signature, moving the stored value from one
+        // to the other produced an emission this treated as unchanged, since
+        // displayValue and option.color came out the same either way.
+        await seedFields([channelField({options: [
+            {id: 'a', name: 'Dup', color: '#123456', rank: 1},
+            {id: 'b', name: 'Dup', color: '#123456', rank: 2},
+        ]})]);
+        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'a'})]);
+
+        const emissions = await emissionsWhile(async () => {
+            await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'b'})]);
+        });
+
+        expect(emissions.length).toBeGreaterThan(1);
+        expect(emissions[emissions.length - 1][0].rawValue).toBe('b');
+    });
+
     it('should not re-emit when nothing the surfaces read has changed', async () => {
         await seedFields([channelField({options})]);
         await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);

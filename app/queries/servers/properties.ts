@@ -30,7 +30,7 @@ const {SERVER: {PROPERTY_FIELD, PROPERTY_VALUE, SYSTEM}} = MM_TABLES;
 // ASCII unit separator. Joins per-attribute signatures with a byte no option name,
 // field name or colour can contain, so no value can forge a record boundary and
 // make two different configurations hash alike.
-const SIGNATURE_SEPARATOR = '\u001f';
+export const SIGNATURE_SEPARATOR = '\u001f';
 
 export const getPropertyFieldsByNames = (database: Database, names: string[]) => {
     return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('name', Q.oneOf(names))).fetch();
@@ -257,6 +257,12 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
         attribute.field.name,
         attribute.field.type,
         attribute.displayValue,
+
+        // The raw stored value, not just the rendered display string: two options
+        // that happen to share a name and colour render identical display values,
+        // and without this, picking one over the other produced an emission this
+        // treated as unchanged.
+        JSON.stringify(attribute.rawValue ?? null),
         attribute.option?.color ?? '',
         actions,
         attrs?.required === true ? '1' : '0',

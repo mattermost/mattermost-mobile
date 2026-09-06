@@ -265,7 +265,10 @@ describe('ChannelInfoAttributes', () => {
             ]);
 
             fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
-            const firstSubmit = sheetPropsAt(0).onSubmit('cf-1', 'level-public');
+            let firstSubmit: void;
+            act(() => {
+                firstSubmit = sheetPropsAt(0).onSubmit('cf-1', 'level-public');
+            });
 
             fireEvent.press(getByTestId('channel_info.attributes.program.edit'));
             await act(async () => {
@@ -279,6 +282,48 @@ describe('ChannelInfoAttributes', () => {
 
             expect(getByTestId('channel_info.attributes.classification.error')).toBeTruthy();
             expect(queryByTestId('channel_info.attributes.program.error')).toBeNull();
+        });
+
+        it('should serialize two submits to the same field, so the server sees them in submission order', async () => {
+            let resolveFirst: (result: {error?: string}) => void = () => {};
+            const firstSave = new Promise<{error?: string}>((resolve) => {
+                resolveFirst = resolve;
+            });
+            mockedSetValue.mockImplementationOnce(() => firstSave);
+            mockedSetValue.mockResolvedValueOnce({});
+
+            const {getByTestId} = render([attribute()]);
+
+            fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
+            let firstSubmit: void;
+            await act(async () => {
+                firstSubmit = sheetPropsAt(0).onSubmit('cf-1', 'level-public');
+
+                // The write itself is chained through a microtask (see pendingWrites
+                // in channel_info_attributes.tsx), so it has not reached the mock yet
+                // when this synchronous call returns. Flush it before asserting.
+                await Promise.resolve();
+            });
+
+            fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
+            let secondSubmit: void;
+            act(() => {
+                secondSubmit = sheetPropsAt(1).onSubmit('cf-1', 'level-secret');
+            });
+
+            // The second write is chained behind the still-pending first one: it
+            // must not have reached the server yet. Without the queue, both would
+            // fire immediately and could arrive at the server in either order.
+            expect(mockedSetValue).toHaveBeenCalledTimes(1);
+
+            await act(async () => {
+                resolveFirst({});
+                await firstSubmit;
+                await secondSubmit;
+            });
+
+            expect(mockedSetValue).toHaveBeenCalledTimes(2);
+            expect(mockedSetValue).toHaveBeenLastCalledWith(serverUrl, channelId, 'cf-1', 'level-secret');
         });
 
         it('should not offer a clear under a directional policy, which the server would refuse', () => {

@@ -48,27 +48,38 @@ describe('AttributeChip', () => {
     });
 
     it('should truncate a long value in the header, where the row budget is fixed', () => {
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <AttributeChip
                 label='classification'
                 value={LONG_VALUE}
                 variant='header'
+                testID='chip'
             />,
         );
 
         expect(getByText('UNCLASSIFIED//F…')).toBeTruthy();
+        expect(getByTestId('chip.value').props.numberOfLines).toBe(1);
+        expect(getByTestId('chip.value').props.ellipsizeMode).toBe('tail');
     });
 
     it('should render a long value in full in a picker, where two markings can share a prefix', () => {
-        const {getByText} = renderWithIntlAndTheme(
+        const {getByText, getByTestId} = renderWithIntlAndTheme(
             <AttributeChip
                 label='classification'
                 value={LONG_VALUE}
                 variant='option'
+                testID='chip'
             />,
         );
 
         expect(getByText(LONG_VALUE)).toBeTruthy();
+
+        // getByText alone would still pass under native single-line truncation:
+        // RTL renders the full text content regardless of numberOfLines, which
+        // only clips on a real device. The props themselves are what has to be
+        // absent for the option variant to actually render untruncated.
+        expect(getByTestId('chip.value').props.numberOfLines).toBeUndefined();
+        expect(getByTestId('chip.value').props.ellipsizeMode).toBeUndefined();
     });
 
     it('should announce the untruncated value even when the text is truncated', () => {

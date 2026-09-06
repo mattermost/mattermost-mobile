@@ -97,6 +97,23 @@ describe('ChannelAttributeEditor', () => {
         expect(queryByTestId('channel_attribute_editor.classification.option.level-top-secret')).toBeNull();
     });
 
+    it('should ignore the change policy but still pre-select the draft when unlockOptions is set', () => {
+        const raiseOnly = field({attrs: {options: OPTIONS, change_policy: 'raise_only'}});
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ChannelAttributeEditor
+                attribute={attribute({field: raiseOnly, rawValue: 'level-secret', displayValue: 'Secret'})}
+                clearable={true}
+                unlockOptions={true}
+                onSubmit={jest.fn()}
+            />,
+        );
+
+        // raise_only would normally drop level-public (lower than the current
+        // value), but there is no channel yet for the policy to protect.
+        expect(getByTestId('channel_attribute_editor.classification.option.level-public')).toBeTruthy();
+        expect(getByTestId('channel_attribute_editor.classification.option.level-secret').props.accessibilityState).toEqual({selected: true});
+    });
+
     it('should mark the current value as selected', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <ChannelAttributeEditor

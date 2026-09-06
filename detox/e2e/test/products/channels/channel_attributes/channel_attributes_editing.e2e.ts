@@ -189,6 +189,11 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
+        // Channel Info lists by role: required-unset rows only show to a channel
+        // admin. The channel was created by the admin API (not testUser), so testUser
+        // starts as a plain member. Promote them so the tests exercise the admin path.
+        await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
+
         if (opts.value) {
             await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, opts.value);
         }
@@ -231,9 +236,8 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6320_2 - should show the new value on the channel header chip as well as the Channel Info row', async () => {
-        // required: true — an unset, non-required attribute is filtered out of
-        // Channel Info entirely (selectChannelInfoAttributes), so there would be
-        // no row to open the editor from.
+        // required: true so the unset row is visible before the edit; an optional
+        // unset attribute only appears via Add Attribute (a later story).
         await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
         // # Set a value.
@@ -252,8 +256,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     });
 
     it('MM-T6320_3 - should keep the value across a restart, having written it to the database', async () => {
-        // required: true — same reason as MM-T6320_2: an unset, non-required
-        // attribute renders no row for the editor to open.
+        // required: true — same reason as MM-T6320_2.
         const {channel} = await setupChannelWithAttribute({changePolicy: 'any', required: true});
 
         // # Set a value.
@@ -288,9 +291,9 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getEditorClear(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoAttributes.getEditorClear(FIELD_NAME).tap();
 
-        // * An unset, non-required attribute is dropped from Channel Info
-        // entirely (selectChannelInfoAttributes), so the whole section goes
-        // away rather than leaving a "Not set" row behind.
+        // * An optional unset attribute does not appear in Channel Info (only
+        // required-unset rows do, for admins), so the whole section disappears
+        // rather than leaving a "Not set" row.
         await ChannelInfoAttributes.toNotBeVisible();
 
         // * The server holds nothing for the field.
@@ -414,6 +417,46 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await ChannelInfoScreen.close();
     });
 
+    it('MM-T6325_1 - should show a valued attribute in Channel Info even when it has no display_label_info action', async () => {
+        // The old design filtered Channel Info on display_label_info. The new design
+        // filters by role so an attribute the admin did not designate for the info
+        // panel still has an editing affordance — hiding it would leave no way to
+        // correct the value.
+        await enableChannelAttributes(siteOneUrl);
+
+        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+            fieldName: FIELD_NAME,
+            options: FIELD_OPTIONS,
+
+            // header only — no display_label_info
+            actions: ['display_label_header'],
+            permissionValues: 'member',
+            required: false,
+        });
+
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
+
+        // Pre-set a value: a valued attribute appears for everyone (member and admin),
+        // regardless of display configuration.
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
+
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await openChannel(channel.name);
+        await ChannelInfoScreen.open();
+
+        // * The row appears in Channel Info despite the attribute having no
+        // display_label_info action — role, not display config, decides the list.
+        await ChannelInfoAttributes.toBeVisible();
+        await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelInfoAttributes.getEditableRow(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        await ChannelInfoScreen.close();
+    });
+
     it('MM-T6324_1 - should not offer editing when the ChannelAttributes flag is off', async () => {
         if (!canControlFlag) {
             // The server controls FeatureFlagChannelAttributes via an env var, so
@@ -443,5 +486,148 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
 
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+    });
+});
+
+describe('Channel Attributes - Member view (read-only)', () => {
+    const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
+    let lockAcquired = false;
+    let canControlFlag = false;
+    let adminUser: any;
+    let memberUser: any;
+    let testTeam: any;
+    let testChannel: any = null;
+
+    const MEMBER_FIELD_NAME = 'memberfield';
+
+    beforeAll(async () => {
+        lockOwner = createChannelAttributesLockOwner();
+        await acquireChannelAttributesLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
+
+        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+        canControlFlag = await disableChannelAttributes(siteOneUrl);
+
+        const {team} = await Team.apiCreateTeam(siteOneUrl, {prefix: 'mteam'});
+        testTeam = team;
+
+        // adminUser is the channel admin who sets values; memberUser has no special role.
+        const {user: admin} = await User.apiCreateUser(siteOneUrl, {prefix: 'admin'});
+        adminUser = admin;
+        const {user: member} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
+        memberUser = member;
+
+        await Team.apiAddUserToTeam(siteOneUrl, adminUser.id, testTeam.id);
+        await Team.apiAddUserToTeam(siteOneUrl, memberUser.id, testTeam.id);
+
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(memberUser);
+    });
+
+    afterAll(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+            if (canControlFlag) {
+                await disableChannelAttributes(siteOneUrl);
+            }
+            await HomeScreen.logout();
+        } finally {
+            await releaseChannelAttributesLock(siteOneUrl, lockOwner);
+        }
+    });
+
+    beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+    });
+
+    afterEach(async () => {
+        if (!lockAcquired) {
+            return;
+        }
+
+        if (testChannel) {
+            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            testChannel = null;
+        }
+        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+        if (canControlFlag) {
+            await disableChannelAttributes(siteOneUrl);
+        }
+    });
+
+    it('MM-T6326_1 - should show a valued attribute to a regular member but without an edit affordance', async () => {
+        await enableChannelAttributes(siteOneUrl);
+
+        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+            fieldName: MEMBER_FIELD_NAME,
+            options: FIELD_OPTIONS,
+            actions: DISPLAY_ACTIONS,
+            permissionValues: 'member',
+            required: false,
+        });
+
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+
+        // adminUser creates the channel via API; promote to admin so they can set values.
+        await Channel.apiAddUserToChannel(siteOneUrl, adminUser.id, channel.id);
+        await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, adminUser.id, channel.id, true);
+        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
+
+        // Admin sets a value out-of-band.
+        await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
+
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await openChannel(channel.name);
+        await ChannelInfoScreen.open();
+
+        // * The row is visible — members see valued attributes.
+        await ChannelInfoAttributes.toBeVisible();
+        await waitFor(ChannelInfoAttributes.getChipValue(MEMBER_FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+
+        // * No edit affordance — members cannot edit channel attributes.
+        await expect(ChannelInfoAttributes.getEditableRow(MEMBER_FIELD_NAME)).not.toExist();
+
+        await ChannelInfoScreen.close();
+    });
+
+    it('MM-T6326_2 - should hide a required-unset attribute from a regular member', async () => {
+        // A required-unset row is the signal that the channel is incomplete. Only
+        // admins see it because only they can act on it; showing it to a member
+        // who cannot edit would be noise.
+        await enableChannelAttributes(siteOneUrl);
+
+        await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+            fieldName: MEMBER_FIELD_NAME,
+            options: FIELD_OPTIONS,
+            actions: DISPLAY_ACTIONS,
+            permissionValues: 'member',
+
+            // Required from creation: no channel to block here, because no channel
+            // exists yet when the field is created.
+            required: true,
+        });
+
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        testChannel = channel;
+        await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
+
+        // No value is set — the attribute is required-and-unset.
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await openChannel(channel.name);
+        await ChannelInfoScreen.open();
+
+        // * The whole section is absent — a member sees no row for an attribute
+        // they cannot fill.
+        await ChannelInfoAttributes.toNotBeVisible();
+
+        await ChannelInfoScreen.close();
     });
 });

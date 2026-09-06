@@ -47,7 +47,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 12,
-        height: OPTION_ROW_HEIGHT,
+
+        // minHeight, not height: the option chip renders its full name without
+        // truncation, so a long one can wrap to more than one line and a fixed
+        // height would clip it.
+        minHeight: OPTION_ROW_HEIGHT,
     },
     pressed: {
         opacity: 0.72,
@@ -127,6 +131,12 @@ type Props = {
     // it.
     clearable: boolean;
 
+    // True only for the channel-creation form: nothing has been written yet, so a
+    // locally chosen draft value must not narrow the option list the way an
+    // already-persisted value would. The draft is still what pre-selects the
+    // sheet when it is reopened — only the option-list narrowing is bypassed.
+    unlockOptions?: boolean;
+
     onSubmit: (fieldId: string, value: ChannelAttributeValueInput) => void;
 };
 
@@ -145,7 +155,7 @@ type Props = {
  * This component owns no error surface. A failed save is reported by the row that
  * asked for it, which is still on screen after the sheet closes.
  */
-const ChannelAttributeEditor = ({attribute, clearable, onSubmit}: Props) => {
+const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, onSubmit}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -155,7 +165,10 @@ const ChannelAttributeEditor = ({attribute, clearable, onSubmit}: Props) => {
     const isMultiselect = field.type === 'multiselect';
     const isText = field.type === 'text';
 
-    const options = useMemo(() => reachableOptions(field, rawValue), [field, rawValue]);
+    const options = useMemo(
+        () => reachableOptions(field, unlockOptions ? undefined : rawValue),
+        [field, rawValue, unlockOptions],
+    );
 
     const initialSelection = useMemo(() => {
         if (Array.isArray(rawValue)) {

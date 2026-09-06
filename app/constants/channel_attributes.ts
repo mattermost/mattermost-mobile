@@ -35,6 +35,12 @@ export const MAX_PROPERTY_VALUE_PATCH_ITEMS = 50;
 // Longer input is refused with a 400 rather than trimmed.
 export const PROPERTY_TEXT_VALUE_MAX_LENGTH = 64;
 
+// Returned by POST /channels when a required attribute the caller may set was
+// left empty. Carries no params and names no attribute — which attributes a
+// server defines is itself sensitive — so the create screen maps this one id to
+// a legible string instead of showing the raw error.
+export const MISSING_REQUIRED_ATTRIBUTES_ERROR_ID = 'api.channel.create_channel.missing_required_attributes.app_error';
+
 // Values of a field's attrs.actions, deciding where its value displays. The
 // server allow-lists exactly these four, so an unknown value here means the
 // contract moved.
