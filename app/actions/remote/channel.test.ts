@@ -304,6 +304,25 @@ describe('app/actions/remote/channel', () => {
             expect(channel).toBeDefined();
         });
 
+        it('createChannel - forwards propertyValues to the client unchanged, whatever the caller passed', async () => {
+            // The action does no branching on this value — it is a straight
+            // pass-through to the client — so undefined and an empty list are one
+            // behavior, not two: the client-layer test already covers what each
+            // produces in the request body.
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            await createChannel(serverUrl, 'channeldisplayname', 'purpose', 'header', 'O');
+            expect(mockClient.createChannel).toHaveBeenLastCalledWith(expect.any(Object), undefined);
+        });
+
+        it('createChannel - forwards property_values to the client when supplied', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            const propertyValues = [{field_id: 'field1', value: 'value1'}];
+            const {channel, error} = await createChannel(serverUrl, 'channeldisplayname', 'purpose', 'header', 'O', propertyValues);
+            expect(error).toBeUndefined();
+            expect(channel).toBeDefined();
+            expect(mockClient.createChannel).toHaveBeenCalledWith(expect.any(Object), propertyValues);
+        });
+
         it('patchChannel - handle not found database', async () => {
             const {channel, error} = await patchChannel('foo', '', {});
             expect(channel).toBeUndefined();

@@ -38,11 +38,21 @@ describe('ClientChannels', () => {
     test('createChannel', async () => {
         const channel = {id: 'channel1', name: 'testchannel'} as Channel;
         const expectedUrl = client.getChannelsRoute();
-        const expectedOptions = {method: 'post', body: channel};
 
+        // Backward compatibility: no property_values key at all when the caller
+        // supplies none, or an empty list. Asserted with toHaveBeenLastCalledWith,
+        // not toHaveBeenCalledWith: the latter matches any prior call, so it would
+        // still pass even if a later call wrongly carried an empty property_values
+        // key, as long as an earlier call in this same test happened not to.
         await client.createChannel(channel);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: channel});
 
-        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+        await client.createChannel(channel, []);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: channel});
+
+        const propertyValues = [{field_id: 'field1', value: 'value1'}];
+        await client.createChannel(channel, propertyValues);
+        expect(client.doFetch).toHaveBeenLastCalledWith(expectedUrl, {method: 'post', body: {...channel, property_values: propertyValues}});
     });
 
     test('createDirectChannel', async () => {
