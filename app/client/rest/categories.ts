@@ -6,7 +6,7 @@ import type ClientBase from './base';
 export interface ClientCategoriesMix {
     getCategories: (userId: string, teamId: string, groupLabel?: RequestGroupLabel) => Promise<CategoriesWithOrder>;
     getCategoriesOrder: (userId: string, teamId: string) => Promise<string[]>;
-    getCategory: (userId: string, teamId: string, categoryId: string) => Promise<CategoryWithChannels>;
+    getCategory: (userId: string, teamId: string, categoryId: string) => Promise<Category>;
     updateChannelCategories: (userId: string, teamId: string, categories: CategoryWithChannels[]) => Promise<CategoriesWithOrder>;
 }
 
