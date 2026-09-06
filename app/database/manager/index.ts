@@ -470,8 +470,11 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                // Await the write: unawaited, the row deletion can land after a later
-                // createServerDatabase() re-added it, leaving the server unregistered.
+                // Awaited to match the rest of the file: deleteServerDatabase above awaits
+                // both its write and deleteServerDatabaseFiles, and createServerDatabase
+                // awaits deleteServerDatabaseFiles when it clears stale files. This method
+                // was the only one of the three that did neither, despite
+                // deleteServerDatabaseFiles performing a real filesystem delete.
                 await database.write(async () => {
                     await server.destroyPermanently();
                 });
