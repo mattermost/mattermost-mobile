@@ -80,31 +80,18 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    const channelsCategory = 'channels';
-
-    // Last sidebar rows sit under the tab bar with no extra scroll unless the list
-    // has bottom padding. Scroll the target into view and fail if it never is.
+    // The last sidebar row sits under the tab bar, so it can never satisfy Detox's default 75%
+    // visibility threshold no matter how far the list scrolls. This suite used to pre-gate on
+    // exactly that (waitFor(...).toBeVisible().whileElement(...).scroll(...)) and threw
+    // "Unable to scroll down ... View is clipped by one or more of its superviews' bounds"
+    // before ever reaching the call below -- one Channel Bookmarks test failed that way in every
+    // sampled main run, rotating between sub-tests because the sidebar is name-sorted and
+    // whichever channel sorts last is the one that gets clipped.
+    //
+    // tapSidebarPublicChannelDisplayName already handles this: it scrolls the row into view,
+    // asserts at a 40% threshold, and taps the row's exposed top edge. Let it do its job.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
-        const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
-        await waitFor(element(by.id('channel_list.flat_list'))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
-
-        try {
-            await element(by.id('channel_list.flat_list')).scrollTo('top');
-        } catch {
-            // List too short to scroll
-        }
-
-        // Default scroll start is the bottom of the list, which sits under the
-        // tab bar (T5612: "View is not scrollable at the given start
-        // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
-        await waitFor(displayNameEl).
-            toBeVisible().
-            whileElement(by.id('channel_list.flat_list')).
-            scroll(100, 'down', 0.5, 0.5);
-
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
