@@ -213,6 +213,23 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
+    // Skipped: product defect, not test flake. Clearing a custom status leaves the account row
+    // showing the old status -- isStatusSet stays truthy, so the row never falls back to
+    // "Set a custom status":
+    //
+    //   Test Failed: Timed out while waiting for expectation:
+    //     TOHAVETEXT(text == "Set a custom status")
+    //     WITH MATCHER(id == "account.custom_status.custom_status_text") TIMEOUT(20s)
+    //   at AccountScreen.waitForCustomStatusCleared (support/ui/screen/account.ts)
+    //
+    // Reproduced on two iOS Release builds that differ only in the user-transformer change
+    // once proposed as the fix -- byte-identical failure with and without it, so that change
+    // was reverted rather than shipped unproven. Two candidate causes are open and neither is
+    // confirmed: presence payloads older than the local record can still rewrite props
+    // (shouldUpdateUserRecord admits them when only `status` differs), and
+    // updateLocalCustomStatus() is called fire-and-forget in the clear handler
+    // (app/screens/home/account/components/options/custom_status/index.tsx).
+    // Un-skip once the defect is fixed; do not "fix" these tests to make them pass.
     it.skip('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 
@@ -294,7 +311,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // Skipped with MM-T4990_4 above -- same clear-path failure, same four runs. See MM-XXXXX.
+    // Skipped with MM-T4990_4 above -- same clear-path defect, same evidence.
     it.skip('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customEmojiName = 'fire';
@@ -370,7 +387,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusCleared();
     });
 
-    // Skipped with MM-T4990_4 above -- same clear-path failure, same four runs. See MM-T4990_4.
+    // Skipped with MM-T4990_4 above -- same clear-path defect, same evidence.
     it.skip('MM-T3892 - should manage recent custom statuses correctly', async () => {
         const customEmojiName = 'clown_face';
         const customStatusText = `Custom Status ${getRandomId()}`;
@@ -430,6 +447,12 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
+    // Measured at 238.2s against the 240s local default -- 99.3% of budget, so it fails on
+    // duration alone whenever a run is slightly slow (observed: same build, one pass at
+    // 238242ms and one "Exceeded timeout of 240000 ms"). This case walks the whole
+    // set-status-with-expiry flow across the account, channel and channel-info screens, so
+    // the runtime is inherent rather than a hang. Given its own budget, matching the
+    // convention used by channel_join_leave and search_message_post_actions.
     it('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
         const status = STATUSES.OUT_FOR_LUNCH;
         const messageText = `Message ${getRandomId()}`;
@@ -491,7 +514,7 @@ describe('Account - Custom Status', () => {
         await ChannelInfoScreen.toBeVisible();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
-    });
+    }, 360000);
 });
 
 // ==================== Helper Functions ====================
