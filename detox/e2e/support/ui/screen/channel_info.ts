@@ -338,7 +338,8 @@ class ChannelInfoScreen {
             timeout = timeouts.TWENTY_SEC,
             textFallback,
             bookmarkId,
-        }: {timeout?: number; textFallback?: string; bookmarkId?: string} = {},
+            onResync,
+        }: {timeout?: number; textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>} = {},
     ) => {
         const MAX_RETRIES = 3;
         const perAttemptTimeout = Math.ceil(timeout / MAX_RETRIES);
@@ -384,8 +385,18 @@ class ChannelInfoScreen {
                     throw error;
                 }
 
+                // Closing and reopening this sheet only re-renders local state -- bookmarks are
+                // fetched by fetchChannelBookmarks, which runs on channel switch
+                // (switchToChannelById, app/actions/remote/channel.ts). So when a bookmark
+                // never synced, reopening the sheet can never recover it: MM-T69455_1 failed
+                // in CI with channel info showing only "Tap File Bookmark" and the link
+                // bookmark absent from the device entirely. onResync lets the caller re-enter
+                // the channel, which is what actually triggers a refetch.
                 await this.close();
                 await wait(timeouts.ONE_SEC);
+                if (onResync) {
+                    await onResync();
+                }
                 await this.open();
             }
         }

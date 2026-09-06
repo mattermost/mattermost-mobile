@@ -13,15 +13,11 @@ appId: ${MAESTRO_APP_ID}
           notVisible:
             id: "scheduled_post_tutorial_tooltip"
           timeout: 5000
-# # Fall back to matching the tooltip body text when only the label is exposed
-- runFlow:
-    when:
-      visible:
-        text: "Type a message and long press the send button"
-    commands:
-      - tapOn:
-          id: "scheduled_post.tooltip.close.button"
-          optional: true
-      - tapOn:
-          id: "scheduled_post_tutorial_tooltip.close"
-          optional: true
+# # Fall back: dismiss by pressing the close button if it's still visible
+# (the tooltip text visibility detection above should catch most cases)
+- tapOn:
+    id: "scheduled_post.tooltip.close.button"
+    optional: true
+- tapOn:
+    id: "scheduled_post_tutorial_tooltip.close"
+    optional: true
