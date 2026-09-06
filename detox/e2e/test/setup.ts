@@ -213,6 +213,18 @@ function clearAndroidAppData(label: string): void {
     }
 }
 
+// logcat is a ring buffer, so reading its tail would pick up corruption logged by an EARLIER
+// spec and fail this one for someone else's problem. Clear the buffer immediately before the
+// launch so the assertion below only ever sees this launch's output.
+function clearAndroidLogcat(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+    try {
+        execSync('adb logcat -c', {stdio: 'pipe'});
+    } catch { /* best effort; the assertion below tolerates an unavailable logcat */ }
+}
+
 // A corrupt app store does not fail the spec that caused it -- it fails every spec after it,
 // as "channel_list.screen was null" with a blank white app, which reads as a dozen unrelated
 // flakes. Surface it once, where it happens, with the sqlite error attached.
@@ -222,7 +234,7 @@ function assertAndroidStoreNotCorrupt(): void {
     }
     let logcat = '';
     try {
-        logcat = execSync('adb logcat -d -t 400 -s watermelondb.sqlite watermelondb.jsi', {encoding: 'utf8', stdio: 'pipe'});
+        logcat = execSync('adb logcat -d -s watermelondb.sqlite watermelondb.jsi', {encoding: 'utf8', stdio: 'pipe'});
     } catch {
         return; // logcat unavailable; do not mask the real test outcome with a harness error.
     }
@@ -282,6 +294,7 @@ beforeAll(async () => {
     async function launchAndVerify(): Promise<void> {
         await grantAndroidNotificationPermission();
         await ensureAndroidMetroReverse();
+        clearAndroidLogcat();
 
         await device.launchApp({
             newInstance: true,
