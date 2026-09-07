@@ -120,7 +120,14 @@ describe('Server Login - Server List', () => {
         if (isIos()) {
             await ServerListScreen.serverListScreen.swipe('up');
         } else if (isAndroid()) {
-            await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
+            // Swipe the sheet title, not server_list.screen. The content container swipe
+            // scrolls the inner FlatList (its bottom padding makes a one-row list scrollable)
+            // and flings the only row — plus its push-proxy alert text — above the header, so
+            // the .active item is gone: CI 33947684168 android-15 MM-T4691_2 testFnFailure.png
+            // shows only the alert's second line under "Your servers". The title swipe used by
+            // MM-T4691_3..7 leaves the list untouched and passed with the same alert present.
+            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
+            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
 
         // * Verify first server is active
