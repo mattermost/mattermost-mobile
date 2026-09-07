@@ -36,7 +36,10 @@ export async function removeStoredFields(serverUrl: string) {
         });
     }
 
-    await setAccessControlGroupId(serverUrl, '');
+    const {error} = await setAccessControlGroupId(serverUrl, '');
+    if (error) {
+        throw error;
+    }
 }
 
 export async function setAccessControlGroupId(serverUrl: string, groupId: string) {
