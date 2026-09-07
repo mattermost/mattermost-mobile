@@ -239,7 +239,16 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let testChannel: any;
     let testUser: any;
 
-    beforeAll(async () => {
+    // Jest still runs afterEach for every test in a block whose beforeAll threw
+    // (verified in CI 34099282816 machine-2). With no session to recover, each of
+    // this suite's ~26 tests then spent 3.5-5 min in the afterEach channel-list
+    // recovery relaunch — ~90 min of retries that could not succeed — and the
+    // shard was killed by its 60-minute `timeout` before Jest wrote any results.
+    // The suite still fails loudly; it just stops taking the rest of the shard
+    // (channel_summary and settings, both already green) down with it.
+    let setupFailed = false;
+
+    const setUpSuite = async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
@@ -279,6 +288,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await wait(timeouts.TWO_SEC);
             await ChannelScreen.postInput.clearText();
         } catch { /* best-effort */ }
+    };
+
+    beforeAll(async () => {
+        try {
+            await setUpSuite();
+        } catch (error) {
+            setupFailed = true;
+            throw error;
+        }
     });
 
     afterAll(async () => {
@@ -290,6 +308,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterEach(async () => {
+        if (setupFailed) {
+            return;
+        }
         await dismissErrorAlert();
 
         // Close an integration selector modal if one is stuck open (e.g.,
