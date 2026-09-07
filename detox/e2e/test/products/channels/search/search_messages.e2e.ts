@@ -146,7 +146,7 @@ describe('Search - Search Messages', () => {
 
         // * Verify search results contain messages from user
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -180,9 +180,11 @@ describe('Search - Search Messages', () => {
         await channelMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
 
-        // * Verify search results contain messages in channel
+        // * Verify search results contain messages in channel. A one-shot expect races the
+        // search request: on Android CI the results loader was still up 1.25s after the
+        // return key (run 34084253311, failing on every attempt), so poll instead.
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -293,7 +295,7 @@ describe('Search - Search Messages', () => {
 
         // * Verify search results only contain messages from user in channel
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchClearButton.tap();
@@ -321,14 +323,14 @@ describe('Search - Search Messages', () => {
 
         // * Verify search results contain searched message
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input and tap on recent search item
         await SearchMessagesScreen.searchClearButton.tap();
         await SearchMessagesScreen.getRecentSearchItem(searchTerm).tap();
 
         // * Verify search results contain searched message
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Clear search input, remove recent search item, and go back to channel list screen
         await SearchMessagesScreen.searchInput.tap();
@@ -376,7 +378,7 @@ describe('Search - Search Messages', () => {
 
         // * Verify search results contain searched message
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
 
         // # Tap on team picker button and tap on first team option
         await SearchMessagesScreen.teamPickerButton.tap();
