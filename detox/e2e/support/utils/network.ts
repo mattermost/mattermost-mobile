@@ -139,30 +139,37 @@ const tryRun = (cmd: string): boolean => {
 // the caller gates a `describe` at module load and cannot await. A missing `dig`, or
 // any lookup failure, is treated as "cannot pin" -- refusing costs a skipped test,
 // while a wrong "available" silently runs the suite against a live server.
-const hasPinnableIpv6 = (hostname: string): boolean => {
-    const lookupAaaa = (): string | null => {
-        try {
-            return run(`dig +short AAAA ${hostname}`).
-                split('\n').
-                map((line) => line.trim()).
-                filter(Boolean).
-                sort().
-                join(',');
-        } catch {
-            return null;
-        }
-    };
+// Cloudflare's IPv6 space. Every rotating address observed for the E2E hosts has
+// fallen inside it, and the A records that sit alongside them (104.18.x) are
+// Cloudflare too, so an AAAA in this range means the edge is anycast and the
+// address the app dials cannot be enumerated ahead of time.
+const CLOUDFLARE_IPV6_PREFIX = '2606:4700:';
 
-    const first = lookupAaaa();
-    if (first === null) {
+const hasPinnableIpv6 = (hostname: string): boolean => {
+    let records: string[];
+    try {
+        records = run(`dig +short AAAA ${hostname}`).
+            split('\n').
+            map((line) => line.trim().toLowerCase()).
+            filter(Boolean);
+    } catch {
+        // No dig, or the lookup failed. Refusing costs a skipped test; guessing
+        // "available" runs the suite against a server we never disconnected.
         return false;
     }
 
     // No AAAA at all: the app can only use IPv4, which the A-record block covers.
-    if (first === '') {
+    if (!records.length) {
         return true;
     }
-    return first === lookupAaaa();
+
+    // Deterministic on purpose. The first version of this sampled two lookups and
+    // called the host pinnable when they matched — but rotation is probabilistic,
+    // and repeated lookups of the same host return duplicates often enough that
+    // the check passed on CI while failing locally (run 34146969443: MM-T416 ran
+    // instead of skipping, then failed exactly as it had before). Whether an
+    // address is inside Cloudflare's range does not depend on which sample we drew.
+    return !records.some((record) => record.startsWith(CLOUDFLARE_IPV6_PREFIX));
 };
 
 const isLoopbackHost = (hostname: string): boolean => {
@@ -316,7 +323,7 @@ export const isNetworkControlAvailable = (serverUrl: string): boolean => {
         return false;
     }
     if (!hasPinnableIpv6(hostname)) {
-        logDebug(`[network] iOS offline unavailable: ${hostname} returns a different AAAA on each lookup (Cloudflare rotation), so a pf table of resolved IPs cannot cover the address the app dials — it reaches the server over IPv6 while the block only holds the addresses we happened to resolve. Android keeps this coverage: airplane mode is a genuine offline and does not depend on enumerating IPs.`);
+        logDebug(`[network] iOS offline unavailable: ${hostname} is served from Cloudflare's anycast IPv6 range, which hands out a different AAAA per lookup, so a pf table of resolved IPs cannot cover the address the app dials — it reaches the server over IPv6 while the block only holds the addresses we happened to resolve. Android keeps this coverage: airplane mode is a genuine offline and does not depend on enumerating IPs.`);
         return false;
     }
     return true;
