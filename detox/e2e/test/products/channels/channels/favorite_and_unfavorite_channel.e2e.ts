@@ -137,7 +137,13 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         // # Open a direct message channel screen, post a message, tap on intro favorite action to favorite the channel, and go back to channel list screen
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
-        const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
+        const {channel: directMessageChannel, error: dmError} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
+        if (!directMessageChannel?.name) {
+            // Fail at the cause. Without this the undefined channel is only noticed 13 lines
+            // later as "Cannot read properties of undefined (reading 'name')", which reads
+            // like a sidebar defect instead of a failed fixture.
+            throw new Error(`apiCreateDirectChannel did not return a channel: ${JSON.stringify(dmError)}`);
+        }
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.searchInput.replaceText(newUser.username);

@@ -470,12 +470,24 @@ jobs:
           detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
         continue-on-error: true # We want to run all the tests
 
+      # Second attempt for the same reason as the iOS template: losing this upload to a
+      # transient ETIMEDOUT reports the shard as having produced no results at all.
       - name: Upload Android Test Report
+        id: upload-android-report
         if: always() && hashFiles('detox/artifacts/**') != ''
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
+
+      - name: Upload Android Test Report (retry)
+        if: always() && steps.upload-android-report.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+          overwrite: true
 
   generate-report:
     # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.

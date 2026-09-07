@@ -195,15 +195,39 @@ class ScheduledMessageScreen {
 
     deviceTimeZone: string | undefined = undefined;
 
-    resolveDeviceTimeZone = async (baseUrl: string, userId: string) => {
-        try {
-            const {user} = await User.apiGetUserById(baseUrl, userId);
-            const zone = user?.timezone?.automaticTimezone || user?.timezone?.manualTimezone;
-            this.deviceTimeZone = zone || undefined;
-        } catch {
-            // Leave undefined and format in the runner's zone.
-            this.deviceTimeZone = undefined;
+    /**
+     * Wait for the app to publish the device timezone onto the user record, then adopt it.
+     *
+     * The app pushes it with autoUpdateTimezone(), which is fire-and-forget on ws-connect and
+     * home-mount, so immediately after login the record still holds an empty zone. Reading it
+     * once raced that write, with two consequences: this screen formatted its expected labels
+     * in the Node runner's zone instead of the device's, and the app rendered the scheduled
+     * post header from the same empty zone -- which iOS Hermes turns into the literal string
+     * "Invalid Date" (MM-T5720), while Android's ICU formats anyway. Polling until the write
+     * lands removes both, and keeps the real device zone rather than forcing one.
+     */
+    resolveDeviceTimeZone = async (baseUrl: string, userId: string, timeout = timeouts.HALF_MIN) => {
+        const deadline = Date.now() + timeout;
+
+        /* eslint-disable no-await-in-loop -- poll until the app's timezone write lands */
+        while (Date.now() < deadline) {
+            try {
+                const {user} = await User.apiGetUserById(baseUrl, userId);
+                const zone = user?.timezone?.automaticTimezone || user?.timezone?.manualTimezone;
+                if (zone) {
+                    this.deviceTimeZone = zone;
+                    return this.deviceTimeZone;
+                }
+            } catch {
+                // Transient read failure — keep polling until the deadline.
+            }
+            await wait(timeouts.ONE_SEC);
         }
+        /* eslint-enable no-await-in-loop */
+
+        // eslint-disable-next-line no-console
+        console.warn(`[ScheduledMessageScreen] user ${userId} still has no timezone after ${timeout}ms; formatting in the runner's zone`);
+        this.deviceTimeZone = undefined;
         return this.deviceTimeZone;
     };
 

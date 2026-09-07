@@ -783,12 +783,28 @@ jobs:
             /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
             /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
 
+      # A failed upload here loses the shard's jest-results.json, so generate-report counts
+      # the shard as "uploaded no jest-results.json" and the whole job goes red even though
+      # the tests ran and reported. Seen as `Failed to CreateArtifact: Unable to make request:
+      # ETIMEDOUT` on machine-19. The payload is large on a failing shard (screenshots + device
+      # logs), which is exactly when the upload is slowest and the results matter most, so give
+      # it a second attempt rather than losing the run's results to one timed-out request.
       - name: Upload iOS Test Report
+        id: upload-ios-report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
+
+      - name: Upload iOS Test Report (retry)
+        if: always() && steps.upload-ios-report.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+          overwrite: true
 
   generate-report:
     # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
