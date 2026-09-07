@@ -17,6 +17,8 @@
 #   MAESTRO_APP_ID       — default com.mattermost.rnbeta
 #   FLOW_PATH            — optional; space-separated flow dirs (default: detox/maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
+#   ADMIN_TOKEN           — re-applies the server config baseline at startup and enables
+#                           Calls in the test channel; passed through to maestro --env
 #   MAESTRO_DRIVER_STARTUP_TIMEOUT — default 180000 (Maestro CI recommendation)
 
 set -euo pipefail
@@ -226,6 +228,27 @@ grant_android_calls_permissions() {
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
 }
 
+# Idempotent and non-destructive: re-asserts only the state a run requires, so a shared
+# server or a crashed earlier job cannot leak config into this one. Called once before any
+# batch runs. AllowDownloadLogs is intentionally NOT included here: MM-T67856_4 flips it in
+# its own onFlowStart/onFlowComplete hooks (fixtures/set_allow_download_logs.js) so that flow
+# is self-contained whether it runs in CI or locally.
+apply_config_baseline() {
+  [[ -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
+    echo "Warning: missing ADMIN_TOKEN/SITE_1_URL; skipping config baseline" >&2
+    return 0
+  }
+
+  echo "==> Re-applying config baseline on ${SITE_1_URL}"
+  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
+    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  fi
+}
+
 ensure_calls_channel_enabled() {
   [[ -n "${TEST_CHANNEL_ID:-}" && -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
     echo "Warning: missing TEST_CHANNEL_ID/ADMIN_TOKEN/SITE_1_URL; skipping calls channel enable" >&2
@@ -361,6 +384,8 @@ log_resource_snapshot() {
     echo "[RES ${label}] load=${load} ${mem}"
   fi
 }
+
+apply_config_baseline
 
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
