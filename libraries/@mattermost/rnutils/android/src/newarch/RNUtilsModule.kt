@@ -69,6 +69,14 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         implementation.removeServerNotifications(serverUrl)
     }
 
+    override fun beginDatabaseActivity(serverUrl: String?, task: String?, promise: Promise?) {
+        implementation.beginDatabaseActivity(serverUrl, task, promise)
+    }
+
+    override fun endDatabaseActivity(token: String?, promise: Promise?) {
+        implementation.endDatabaseActivity(token, promise)
+    }
+
     override fun setSoftKeyboardToAdjustResize() {
         implementation.setSoftKeyboardToAdjustResize()
     }
