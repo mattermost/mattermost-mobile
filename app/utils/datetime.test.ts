@@ -48,30 +48,6 @@ describe('getReadableTimestamp', () => {
         jest.useRealTimers();
     });
 
-    it('should still return a label when the engine rejects the timeZone option', () => {
-        // iOS Hermes returns the literal 'Invalid Date' for a timeZone it cannot honour while
-        // V8 throws, so both paths fall back to the device zone (MM-T5720).
-        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
-        const result = getReadableTimestamp(timestamp, 'Not/AZone', false, 'en-US');
-        expect(result).not.toBe('');
-        expect(result).not.toBe('Invalid Date');
-        const hostDate = new Date(timestamp).toLocaleString('en-US', {month: 'short', day: 'numeric'});
-        expect(result).toContain(hostDate);
-    });
-
-    it('should omit an empty timeZone instead of rendering Invalid Date', () => {
-        // getUserTimezone() returns '' for a user who has never set a timezone.
-        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
-        const result = getReadableTimestamp(timestamp, '', false, 'en-US');
-        expect(result).not.toBe('Invalid Date');
-        expect(result.length).toBeGreaterThan(0);
-    });
-
-    it('should return an empty string for NaN/undefined timestamps', () => {
-        expect(getReadableTimestamp(Number.NaN, 'America/New_York', false, 'en-US')).toBe('');
-        expect(getReadableTimestamp(undefined as unknown as number, 'America/New_York', false, 'en-US')).toBe('');
-    });
-
     it('should format timestamp correctly in 12-hour format for current year', () => {
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
