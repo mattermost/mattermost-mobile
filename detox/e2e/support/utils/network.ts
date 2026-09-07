@@ -51,7 +51,9 @@
  *   consulted on iOS. The check is hostname-based curl rather than a per-IP connect:
  *   if Cloudflare rotation hands the app a different edge IP than the ones blocked,
  *   a per-IP check would pass while the app's request still succeeds — the hostname
- *   check catches that bypass and fails the run.
+ *   check catches that bypass and fails the run. It must query BOTH address
+ *   families: a bare curl picks IPv4, and an IPv4-only view of reachability once
+ *   reported "offline" while the app posted successfully over IPv6 (status 201).
  * - Both platforms online: the server itself (Android: TCP connect from the emulator
  *   via nc; iOS: curl from the host), never the canary.
  */
@@ -124,6 +126,45 @@ const tryRun = (cmd: string): boolean => {
     }
 };
 
+// The pf block is a table of resolved addresses, so it can only work if the set the
+// app dials is stable and enumerable. Cloudflare hands the E2E hostnames a different
+// AAAA on nearly every lookup (measured: five lookups, four distinct addresses, e.g.
+// 2606:4700:83b2:7ab5:879e:0:94bb:d53c then 2606:4700:90d2:7ab5:87c5:0:94bb:d53c),
+// while the A records stay put. The app therefore resolves an IPv6 address that was
+// never in our table and connects straight past the block. Covering that would mean
+// blocking 2606:4700::/32 -- all of Cloudflare -- which the scoping rules above
+// forbid outright, since registry.npmjs.org sits behind the same range.
+//
+// So detect it and skip loudly instead of pretending to be offline. Sync on purpose:
+// the caller gates a `describe` at module load and cannot await. A missing `dig`, or
+// any lookup failure, is treated as "cannot pin" -- refusing costs a skipped test,
+// while a wrong "available" silently runs the suite against a live server.
+const hasPinnableIpv6 = (hostname: string): boolean => {
+    const lookupAaaa = (): string | null => {
+        try {
+            return run(`dig +short AAAA ${hostname}`).
+                split('\n').
+                map((line) => line.trim()).
+                filter(Boolean).
+                sort().
+                join(',');
+        } catch {
+            return null;
+        }
+    };
+
+    const first = lookupAaaa();
+    if (first === null) {
+        return false;
+    }
+
+    // No AAAA at all: the app can only use IPv4, which the A-record block covers.
+    if (first === '') {
+        return true;
+    }
+    return first === lookupAaaa();
+};
+
 const isLoopbackHost = (hostname: string): boolean => {
     return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '10.0.2.2';
 };
@@ -145,9 +186,18 @@ const resolveServerIps = async (hostname: string): Promise<string[]> => {
     return [...v4, ...v6];
 };
 
+// Both address families, because the app and a bare curl do not agree on which to
+// use. curl picks IPv4; the app dialled native IPv6 + QUIC. With only the A records
+// blocked, the IPv4 probe failed, this returned false, goOffline reported success --
+// and the "offline" post came back 201 (local repro of CI MM-T416). Reachable means
+// reachable by ANY path, so both probes must fail before we call the device offline.
+//
+// Caveat: the system curl has no HTTP/3 support, so this cannot exercise the app's
+// QUIC path directly. It catches the family difference, which was the actual leak.
 const hostCanReachServer = (serverUrl: string): boolean => {
     const {origin} = new URL(serverUrl);
-    return tryRun(`curl -sS --max-time 2 -o /dev/null ${origin}/api/v4/system/ping`);
+    const ping = (family: string) => tryRun(`curl ${family} -sS --max-time 2 -o /dev/null ${origin}/api/v4/system/ping`);
+    return ping('-4') || ping('-6');
 };
 
 /** IP curl actually connected to, or empty when the request failed. */
@@ -263,6 +313,10 @@ export const isNetworkControlAvailable = (serverUrl: string): boolean => {
     }
     if (!hostname || isLoopbackHost(hostname)) {
         logDebug(`[network] iOS offline unavailable: server hostname (${hostname || '<unparseable>'}) is not a remotely routed host (loopback targets are refused: blocking lo0 would also kill the app<->Detox sync channel)`);
+        return false;
+    }
+    if (!hasPinnableIpv6(hostname)) {
+        logDebug(`[network] iOS offline unavailable: ${hostname} returns a different AAAA on each lookup (Cloudflare rotation), so a pf table of resolved IPs cannot cover the address the app dials — it reaches the server over IPv6 while the block only holds the addresses we happened to resolve. Android keeps this coverage: airplane mode is a genuine offline and does not depend on enumerating IPs.`);
         return false;
     }
     return true;
