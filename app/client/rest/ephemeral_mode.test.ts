@@ -38,14 +38,14 @@ describe('ClientEphemeralMode', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
-    it('should POST posts_deleted and cleanup_at to the cleanup route', async () => {
+    it('should POST posts_deleted, playbook_runs_deleted, and cleanup_at to the cleanup route', async () => {
         const expectedUrl = `${client.urlVersion}/ephemeral_mode/cleanup`;
         const expectedOptions = {
             method: 'post',
-            body: {posts_deleted: 3, cleanup_at: 2000},
+            body: {posts_deleted: 3, playbook_runs_deleted: 1, cleanup_at: 2000},
         };
 
-        await client.logCleanup(3, 2000);
+        await client.logCleanup(3, 1, 2000);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -54,10 +54,10 @@ describe('ClientEphemeralMode', () => {
         const expectedUrl = `${client.urlVersion}/ephemeral_mode/cleanup`;
         const expectedOptions = {
             method: 'post',
-            body: {posts_deleted: 3, cleanup_at: 2000, error_reason: 'cleanup failed before completion'},
+            body: {posts_deleted: 3, playbook_runs_deleted: 1, cleanup_at: 2000, error_reason: 'cleanup failed before completion'},
         };
 
-        await client.logCleanup(3, 2000, 'cleanup failed before completion');
+        await client.logCleanup(3, 1, 2000, 'cleanup failed before completion');
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });

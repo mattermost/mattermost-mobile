@@ -5,7 +5,7 @@ import type ClientBase from './base';
 
 export interface ClientEphemeralModeMix {
     logOfflinePurge: (offlineTimeMinutes: number, purgeAt: number, errorReason?: string) => Promise<{status: string}>;
-    logCleanup: (postsDeleted: number, cleanupAt: number, errorReason?: string) => Promise<{status: string}>;
+    logCleanup: (postsDeleted: number, playbookRunsDeleted: number, cleanupAt: number, errorReason?: string) => Promise<{status: string}>;
     logSessionWipe: (userId: string, wipeAt: number, errorReason?: string) => Promise<{status: string}>;
 }
 
@@ -17,10 +17,10 @@ const ClientEphemeralMode = <TBase extends Constructor<ClientBase>>(superclass: 
         );
     };
 
-    logCleanup = async (postsDeleted: number, cleanupAt: number, errorReason?: string) => {
+    logCleanup = async (postsDeleted: number, playbookRunsDeleted: number, cleanupAt: number, errorReason?: string) => {
         return this.doFetch(
             `${this.urlVersion}/ephemeral_mode/cleanup`,
-            {method: 'post', body: {posts_deleted: postsDeleted, cleanup_at: cleanupAt, error_reason: errorReason}},
+            {method: 'post', body: {posts_deleted: postsDeleted, playbook_runs_deleted: playbookRunsDeleted, cleanup_at: cleanupAt, error_reason: errorReason}},
         );
     };
 

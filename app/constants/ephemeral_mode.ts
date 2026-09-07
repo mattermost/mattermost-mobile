@@ -29,6 +29,7 @@ export type EphemeralModeOfflinePurgeAuditEvent = EphemeralModeAuditEventBase & 
 export type EphemeralModeCleanupAuditEvent = EphemeralModeAuditEventBase & {
     kind: typeof EphemeralModeAuditEventKind.Cleanup;
     postsDeleted: number;
+    playbookRunsDeleted: number;
 };
 
 export type EphemeralModeSessionWipeAuditEvent = EphemeralModeAuditEventBase & {

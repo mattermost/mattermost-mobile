@@ -44,6 +44,7 @@ describe('flushAuditQueue', () => {
     });
 
     afterEach(async () => {
+        await replaceEphemeralModeAuditEvents(serverUrl, []);
         await DatabaseManager.destroyServerDatabase(serverUrl);
         jest.clearAllMocks();
     });
@@ -56,7 +57,7 @@ describe('flushAuditQueue', () => {
 
     it('should send one event of each kind to its matching client method, oldest-first, then clear the queue', async () => {
         await seed({kind: EphemeralModeAuditEventKind.OfflinePurge, offlineTimeMinutes: 30, occurredAt: 1000});
-        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 2, occurredAt: 2000});
+        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 2, playbookRunsDeleted: 0, occurredAt: 2000});
         await seed({kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 3000});
 
         const client = makeClient();
@@ -65,7 +66,7 @@ describe('flushAuditQueue', () => {
         await flushAuditQueue(serverUrl);
 
         expect(client.logOfflinePurge).toHaveBeenCalledWith(30, 1000, undefined);
-        expect(client.logCleanup).toHaveBeenCalledWith(2, 2000, undefined);
+        expect(client.logCleanup).toHaveBeenCalledWith(2, 0, 2000, undefined);
         expect(client.logSessionWipe).toHaveBeenCalledWith('user1', 3000, undefined);
 
         const purgeOrder = client.logOfflinePurge.mock.invocationCallOrder[0];
@@ -78,7 +79,7 @@ describe('flushAuditQueue', () => {
     });
 
     it('should requeue an event whose request failed without a status code', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
         const client = makeClient();
         client.logCleanup.mockRejectedValue(new Error('network down'));
@@ -93,7 +94,7 @@ describe('flushAuditQueue', () => {
     it.each([408, 429, 500, 502, 503, 504])(
         'should requeue an event rejected with status code %d',
         async (statusCode) => {
-            await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+            await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
             const client = makeClient();
             client.logCleanup.mockRejectedValue(Object.assign(new Error('rejected'), {status_code: statusCode}));
@@ -109,7 +110,7 @@ describe('flushAuditQueue', () => {
     it.each([400, 401, 403, 404, 501, 409])(
         'should drop an event rejected with unlisted status code %d',
         async (statusCode) => {
-            await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+            await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
             const client = makeClient();
             client.logCleanup.mockRejectedValue(Object.assign(new Error('rejected'), {status_code: statusCode}));
@@ -137,7 +138,7 @@ describe('flushAuditQueue', () => {
 
     it('should forward a queued cleanup event\'s errorReason to logCleanup as its third argument', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: 0, errorReason: 'cleanup failed before completion'},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0, errorReason: 'cleanup failed before completion'},
         ]);
 
         const client = makeClient();
@@ -145,7 +146,7 @@ describe('flushAuditQueue', () => {
 
         await flushAuditQueue(serverUrl);
 
-        expect(client.logCleanup).toHaveBeenCalledWith(1, 1000, 'cleanup failed before completion');
+        expect(client.logCleanup).toHaveBeenCalledWith(1, 0, 1000, 'cleanup failed before completion');
     });
 
     it('should forward a queued sessionWipe event\'s errorReason to logSessionWipe as its third argument', async () => {
@@ -162,7 +163,7 @@ describe('flushAuditQueue', () => {
     });
 
     it('should send nothing and leave the queue unchanged when the device is offline', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
         jest.mocked(NetInfo.fetch).mockResolvedValue({isConnected: false} as NetInfoState);
 
         await flushAuditQueue(serverUrl);
@@ -175,7 +176,7 @@ describe('flushAuditQueue', () => {
 
     it('should increment attempts on an event whose request failed', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: 3},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 3},
         ]);
 
         const client = makeClient();
@@ -191,7 +192,7 @@ describe('flushAuditQueue', () => {
 
     it('should discard an event on its final allowed attempt', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: MAX_AUDIT_SEND_ATTEMPTS - 1},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: MAX_AUDIT_SEND_ATTEMPTS - 1},
         ]);
 
         const client = makeClient();
@@ -206,7 +207,7 @@ describe('flushAuditQueue', () => {
 
     it('should keep session events queued when getClient throws, while still sending a queued sessionWipe', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: 0},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0},
             {id: 'evt2', kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 2000, attempts: 0},
         ]);
 
@@ -228,7 +229,7 @@ describe('flushAuditQueue', () => {
 
     it('should keep an event enqueued while the requests were in flight', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: 0},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0},
         ]);
 
         const client = makeClient();
@@ -255,13 +256,13 @@ describe('flushAuditQueue', () => {
         // and evtC (session-less) succeeds. A write-back computed from the stale
         // pre-flush snapshot would resurrect evtA; one that re-reads storage must not.
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evtA', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000, attempts: 0},
-            {id: 'evtB', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 2000, attempts: 0},
+            {id: 'evtA', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0},
+            {id: 'evtB', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 2000, attempts: 0},
             {id: 'evtC', kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 3000, attempts: 0},
         ]);
 
         const client = makeClient();
-        client.logCleanup.mockImplementation(async (_postsDeleted, occurredAt) => {
+        client.logCleanup.mockImplementation(async (_postsDeleted, _playbookRunsDeleted, occurredAt) => {
             if (occurredAt === 1000) {
                 throw new Error('still failing');
             }
@@ -280,7 +281,7 @@ describe('flushAuditQueue', () => {
     });
 
     it('should not send anything on a second flush for a server already flushing', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
         const client = makeClient();
         jest.mocked(NetworkManager.getClient).mockReturnValue(client as any);
@@ -323,7 +324,7 @@ describe('flushAuditQueue', () => {
     });
 
     it('should create no client and not touch the Global key when getClient throws and nothing queued is a sessionWipe', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
         jest.mocked(NetworkManager.getClient).mockImplementation(() => {
             throw new Error(`${serverUrl} client not found`);
@@ -349,11 +350,13 @@ describe('flushOrphanedAuditQueues', () => {
         await enqueueAuditEvent(credentialedUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
         await enqueueAuditEvent(orphanedUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
     });

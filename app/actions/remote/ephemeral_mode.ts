@@ -26,7 +26,7 @@ const sendAuditEvent = (client: Client, event: EphemeralModeAuditEvent) => {
         case EphemeralModeAuditEventKind.OfflinePurge:
             return client.logOfflinePurge(event.offlineTimeMinutes, event.occurredAt, event.errorReason);
         case EphemeralModeAuditEventKind.Cleanup:
-            return client.logCleanup(event.postsDeleted, event.occurredAt, event.errorReason);
+            return client.logCleanup(event.postsDeleted, event.playbookRunsDeleted, event.occurredAt, event.errorReason);
         case EphemeralModeAuditEventKind.SessionWipe:
             return client.logSessionWipe(event.userId, event.occurredAt, event.errorReason);
         default:

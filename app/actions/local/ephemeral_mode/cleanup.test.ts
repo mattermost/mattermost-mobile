@@ -112,6 +112,21 @@ async function writePost(id: string, channelId: string, createAt: number): Promi
     });
 }
 
+async function writePlaybookRun(id: string, createAt: number): Promise<void> {
+    await database.write(async () => {
+        const run = await database.get(PLAYBOOK_RUN).create((r: any) => {
+            r._raw.id = id;
+            r.createAt = createAt;
+        });
+        const checklist = await database.get(PLAYBOOK_CHECKLIST).create((r: any) => {
+            r.runId = run.id;
+        });
+        await database.get(PLAYBOOK_CHECKLIST_ITEM).create((r: any) => {
+            r.checklistId = checklist.id;
+        });
+    });
+}
+
 describe('autoCacheCleanup', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -399,8 +414,8 @@ describe('autoCacheCleanup', () => {
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
-        await writePiC(viewedChannelId, OLD, RECENT);
-        await writePiC(unprotectedChannelId, OLD, RECENT);
+        await writePiC(viewedChannelId);
+        await writePiC(unprotectedChannelId);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).
             mockResolvedValueOnce({error: undefined, deletedCount: 3}).
             mockResolvedValueOnce({error: undefined, deletedCount: 2});
@@ -410,6 +425,7 @@ describe('autoCacheCleanup', () => {
         expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 5,
+            playbookRunsDeleted: 0,
             occurredAt: NOW,
         });
         expect(flushAuditQueue).toHaveBeenCalledWith(SERVER_URL);
@@ -421,6 +437,27 @@ describe('autoCacheCleanup', () => {
         expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 0,
+            playbookRunsDeleted: 0,
+            occurredAt: NOW,
+        });
+    });
+
+    it('enqueues a cleanup event with the playbookRunsDeleted count of runs removed, not their cascaded checklist rows', async () => {
+        await operator.handlePlaybookRun({
+            runs: [
+                TestHelper.fakePlaybookRun({id: 'run-old-1', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('run-old-1', {})]}),
+                TestHelper.fakePlaybookRun({id: 'run-old-2', create_at: OLD, checklists: [TestHelper.fakePlaybookChecklist('run-old-2', {})]}),
+                TestHelper.fakePlaybookRun({id: 'run-recent', create_at: RECENT, checklists: [TestHelper.fakePlaybookChecklist('run-recent', {})]}),
+            ],
+            ...PLAYBOOK_SEED,
+        });
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 0,
+            playbookRunsDeleted: 2,
             occurredAt: NOW,
         });
     });
@@ -446,6 +483,7 @@ describe('autoCacheCleanup', () => {
         expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 0,
+            playbookRunsDeleted: 0,
             occurredAt: NOW,
             errorReason: 'cleanup failed before completion',
         });
@@ -585,9 +623,9 @@ describe('autoCacheCleanup', () => {
         expect(items.length).toBe(0);
     });
 
-    it('reports the postsDeleted count already collected when playbook-run cleanup fails afterward', async () => {
+    it('reports the postsDeleted count already collected, and playbookRunsDeleted: 0, when playbook-run cleanup fails afterward', async () => {
         const unprotectedChannelId = 'ch-unprotected-partial';
-        await writePiC(unprotectedChannelId, OLD, RECENT);
+        await writePiC(unprotectedChannelId);
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 4});
         await writePlaybookRun('run-partial-fail', OLD);
 
@@ -597,12 +635,14 @@ describe('autoCacheCleanup', () => {
             }
         });
 
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'playbook batch failed');
+        expect(result).toEqual({error: new Error('playbook batch failed')});
         expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 4,
+            playbookRunsDeleted: 0,
             occurredAt: NOW,
             errorReason: 'cleanup failed before completion',
         });

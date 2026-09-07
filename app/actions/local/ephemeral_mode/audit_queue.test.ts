@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {replaceEphemeralModeAuditEvents} from '@actions/app/global';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
 import {getEphemeralModeAuditEvents} from '@queries/app/global';
@@ -15,6 +16,7 @@ describe('enqueueAuditEvent', () => {
     });
 
     afterEach(async () => {
+        await replaceEphemeralModeAuditEvents(serverUrl, []);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -22,11 +24,13 @@ describe('enqueueAuditEvent', () => {
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 2,
+            playbookRunsDeleted: 0,
             occurredAt: 2000,
         });
 
@@ -40,11 +44,13 @@ describe('enqueueAuditEvent', () => {
         const first = enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
         const second = enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 2,
+            playbookRunsDeleted: 0,
             occurredAt: 2000,
         });
 
@@ -59,6 +65,7 @@ describe('enqueueAuditEvent', () => {
         const id = await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
 
@@ -74,6 +81,7 @@ describe('attachAuditEventErrorReason', () => {
     });
 
     afterEach(async () => {
+        await replaceEphemeralModeAuditEvents(serverUrl, []);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -86,6 +94,7 @@ describe('attachAuditEventErrorReason', () => {
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 2000,
         });
 
@@ -103,6 +112,7 @@ describe('attachAuditEventErrorReason', () => {
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 1000,
         });
 
@@ -125,6 +135,7 @@ describe('pruneAuditQueueOnSessionEnd', () => {
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.Cleanup,
             postsDeleted: 1,
+            playbookRunsDeleted: 0,
             occurredAt: 2000,
         });
         await enqueueAuditEvent(serverUrl, {
@@ -135,6 +146,7 @@ describe('pruneAuditQueueOnSessionEnd', () => {
     });
 
     afterEach(async () => {
+        await replaceEphemeralModeAuditEvents(serverUrl, []);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
