@@ -253,9 +253,9 @@ Allowed **only** on toggle taps (idempotent state) and genuinely intermittent sy
 
 ### Server config beyond defaults
 
-1. Tag the flow uniquely (e.g. `MM-T67856_4`).
-2. Add `--exclude-tags=<tag>` to the main CI `maestro test` invocation.
-3. Add a dedicated patch → run step in `e2e-maestro-template.yml`, plus a **standalone `always()` restore step**. An in-step `trap` alone is not enough: it does not fire on a runner hard-kill and is skipped with the step, leaving the setting flipped for every later job on a shared server.
+1. Tag the flow uniquely (e.g. `MM-T67856_4`) and add the tag to `config/exclude_tags.json` so the default batch does not run it with the setting flipped.
+2. Flip the setting inside the flow, not in the workflow: an `onFlowStart` hook that runs a `runScript` fixture (Maestro's built-in `http` client; `--env` values are globals) and an `onFlowComplete` hook that restores it. `fixtures/set_allow_download_logs.js` is the reference. This keeps a local `maestro test` of the file identical to CI.
+3. Give it a dedicated run step in `e2e-maestro-template.yml` plus a **standalone `always()` restore step**. The hook covers every normal exit, including failures; the workflow step covers a runner hard-kill, which never reaches `onFlowComplete` and would leave the setting flipped for every later job on a shared server.
 
 `AllowDownloadLogs` is under `SupportSettings`, not `ServiceSettings`:
 

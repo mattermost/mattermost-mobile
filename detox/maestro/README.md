@@ -485,7 +485,7 @@ PR vs nightly vs manual coverage is summarized below (and in `config/exclude_tag
   - `file_type_preview.yml` — needs `seed_file_preview.ts`
   - `start_call.yml` — needs `calls_seed.ts`
   - **iOS only:** entire `flows/calls/` directory (CallKit/WebRTC unreliable on simulator)
-- `MM-T67856_4` runs in a dedicated CI step with `AllowDownloadLogs=false` patched on the server. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not duplicate it.
+- `MM-T67856_4` needs `AllowDownloadLogs=false`; the flow patches it in `onFlowStart` and restores it in `onFlowComplete` (`fixtures/set_allow_download_logs.js`), so `maestro test` of that file is self-contained locally and in CI. Tag `MM-T67856_4` is listed in `detox/maestro/config/exclude_tags.json` (`default` key) so the default batch does not run it.
 - Multi-device sync (`MM-T3055`/`MM-T3056`) requires two physical devices via `run_two_device.sh`.
 
 #### Known flake: QUIC transport on the iOS Simulator
@@ -498,8 +498,9 @@ If you hit it: re-run. Do not exclude the tag, and do not work around it in the 
 
 Intentional topology, not a flake to “fix” by returning the tag to the default PR batch.
 
-- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs patches `SupportSettings.AllowDownloadLogs=false`, runs `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml`, and restores `true` on the way out. `continue-on-error: true`; the main batch report is the source of truth. The restore is a standalone `always()` step rather than only an in-step `trap`, because a trap does not fire if the runner is hard-killed or the step is skipped — and a job that dies mid-flip leaves the flag `false` for every later `attach_logs` run on a shared server.
-- **Local:** same curl as `detox/maestro/GUIDELINES.md` (AllowDownloadLogs is under `SupportSettings`, not `ServiceSettings`), then `maestro test` that flow, then restore.
+- **Flow:** `detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml` sets `SupportSettings.AllowDownloadLogs=false` in `onFlowStart` and restores `true` in `onFlowComplete` through `fixtures/set_allow_download_logs.js` (Maestro `runScript`, using its built-in `http` client and the `SITE_1_URL` / `ADMIN_TOKEN` env). Same behaviour whether the file is run by CI or by hand.
+- **CI:** `.github/workflows/e2e-maestro-template.yml` — each of the iOS and Android Maestro jobs runs that flow in a dedicated step (`continue-on-error: true`; the main batch report is the source of truth) and keeps a standalone `always()` step that restores `true`. That step exists for runner hard-kills, which never reach `onFlowComplete`; a job that dies mid-flip would otherwise leave the flag `false` for every later `attach_logs` run on a shared server.
+- **Local:** `source detox/maestro/.maestro-test-env.sh`, then `maestro test` that flow. No manual curl.
 
 ### Reports
 
