@@ -145,28 +145,49 @@ baseClient.interceptors.response.use(
 );
 
 /**
- * Name resolution failures for a freshly provisioned test server. Unlike a timeout, these
- * are provably side-effect-free — the request never left the machine — so a POST is as safe
- * to replay as a GET, and the idempotency rule above does not apply.
+ * Failures raised before any byte of the request left the process: the hostname did not
+ * resolve, or the TCP connection was refused / unroutable. Unlike a timeout, these leave no
+ * doubt about server-side state — nothing was sent, so nothing can have been committed —
+ * which is why a replay is safe for every method, POST included. The one exception is a
+ * single-use body (see isReplayableBody), which the failed attempt may already have consumed.
+ *
+ * Seen on GitHub macOS runners as `getaddrinfo ENOTFOUND <site>.test.mattermost.cloud`
+ * mid-spec, between requests to the same host that succeeded (MM-T4876_2 on PR #10122).
+ * Without this the error reaches getResponseFromError as `{status: 0}` and the spec
+ * dereferences the missing fixture.
  */
-const DNS_ERROR_CODES: ReadonlySet<string> = new Set(['ENOTFOUND', 'EAI_AGAIN']);
+const PRE_CONNECTION_ERROR_CODES: ReadonlySet<string> = new Set([
+    'ENOTFOUND',
+    'EAI_AGAIN',
+    'ECONNREFUSED',
+    'EHOSTUNREACH',
+    'ENETUNREACH',
+]);
 
-const DNS_RETRY_COST_MS = 5_000;
+export const PRE_CONNECTION_MAX_RETRIES = 3;
+export const PRE_CONNECTION_RETRY_DELAY_MS = 1000;
+
+export const isPreConnectionFailure = (error: {response?: unknown; code?: unknown}): boolean =>
+    !error.response && typeof error.code === 'string' && PRE_CONNECTION_ERROR_CODES.has(error.code);
 
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config as typeof error.config & {_dnsRetries?: number; _retryDeadlineAt?: number};
-        const unresolved = !error.response && DNS_ERROR_CODES.has(String(error.code ?? ''));
-
-        if (unresolved && config && isReplayableBody(config.data) && hasRetryBudget(config, DNS_RETRY_COST_MS)) {
-            config._dnsRetries = (config._dnsRetries ?? 0) + 1;
-            const delay = config._dnsRetries * 2000;
-            logError(`[client] ${error.code} — retry ${config._dnsRetries} for ${config.method} ${config.url} in ${delay}ms`);
-            await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
-            return baseClient(config);
+        const config = error.config as (typeof error.config & {_preConnectionRetries?: number; _retryDeadlineAt?: number}) | undefined;
+        if (!config || !isPreConnectionFailure(error) || !isReplayableBody(config.data)) {
+            return Promise.reject(error);
         }
-        return Promise.reject(error);
+
+        const retries = config._preConnectionRetries ?? 0;
+        if (retries >= PRE_CONNECTION_MAX_RETRIES || !hasRetryBudget(config, 0)) {
+            return Promise.reject(error);
+        }
+
+        config._preConnectionRetries = retries + 1;
+        const delay = config._preConnectionRetries * PRE_CONNECTION_RETRY_DELAY_MS;
+        logError(`[client] ${error.code} before the request was sent — retry ${config._preConnectionRetries}/${PRE_CONNECTION_MAX_RETRIES} for ${config.method} ${config.url} in ${delay}ms`);
+        await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+        return baseClient(config);
     },
 );
 

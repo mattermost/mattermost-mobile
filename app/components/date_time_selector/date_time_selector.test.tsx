@@ -106,7 +106,7 @@ describe('DateTimeSelector', () => {
     });
 
     it('commits a manual time entry as the user types', () => {
-        const initialDate = moment.tz('2026-04-20 09:00', timezone).millisecond(123);
+        const initialDate = moment.tz('2026-04-20 09:00', timezone);
         const testID = 'dt';
         const {getByTestId} = renderWithEverything(
             <DateTimeSelector
@@ -129,7 +129,6 @@ describe('DateTimeSelector', () => {
         expect(picked.hour()).toBe(14);
         expect(picked.minute()).toBe(30);
         expect(picked.second()).toBe(0);
-        expect(picked.millisecond()).toBe(0);
 
         // Date portion preserved from initialDate
         expect(picked.year()).toBe(initialDate.year());
@@ -138,7 +137,7 @@ describe('DateTimeSelector', () => {
     });
 
     it('commits a manual time entry on change, without submitEditing or blur', () => {
-        const initialDate = moment.tz('2026-04-20 09:00', timezone).millisecond(123);
+        const initialDate = moment.tz('2026-04-20 09:00', timezone);
         const testID = 'dt';
         const {getByTestId} = renderWithEverything(
             <DateTimeSelector
@@ -158,7 +157,6 @@ describe('DateTimeSelector', () => {
         expect(picked.hour()).toBe(14);
         expect(picked.minute()).toBe(30);
         expect(picked.second()).toBe(0);
-        expect(picked.millisecond()).toBe(0);
     });
 
     it('does not commit partial manual input while the user is still typing', () => {

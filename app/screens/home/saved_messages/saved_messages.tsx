@@ -9,7 +9,7 @@ import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'rea
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
-import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -58,33 +58,15 @@ const styles = StyleSheet.create({
     },
 });
 
-function sameIds(previous: string[], next: string[]) {
-    return previous.length === next.length && previous.every((id, index) => id === next[index]);
-}
-
-// observeSavedPostsByIds emits a fresh Set on every emission of either of its two sources,
-// so without the distinctUntilChanged guards the switchMaps tear down and rebuild the posts
-// query on changes that leave the saved-post ids identical. That churn made the list flicker.
 function observeSavedPosts(database: Database) {
     return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
-        map((rows) => rows.map((preference) => preference.name)),
-        distinctUntilChanged(sameIds),
-        switchMap((ids) => {
-            if (!ids.length) {
-                return of$(new Set<string>());
-            }
-            return observeSavedPostsByIds(database, ids);
+        switchMap((rows) => {
+            const ids = rows.map((preference) => preference.name);
+            return ids.length ? observeSavedPostsByIds(database, ids) : of$(new Set<string>());
         }),
-
-        // Sorted so the comparison is order-insensitive; queryPostsById applies the
-        // real ordering.
-        map((savedPostIds) => [...savedPostIds].sort()),
-        distinctUntilChanged(sameIds),
-        switchMap((ids) => {
-            if (!ids.length) {
-                return of$([]);
-            }
-            return queryPostsById(database, ids, Q.asc).observe();
+        switchMap((savedPostIds) => {
+            const ids = [...savedPostIds];
+            return ids.length ? queryPostsById(database, ids, Q.asc).observe() : of$([]);
         }),
     );
 }

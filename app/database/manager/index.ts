@@ -470,17 +470,12 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await getServer(serverUrl);
             if (server) {
-                // Awaited to match the rest of the file: deleteServerDatabase above awaits
-                // both its write and deleteServerDatabaseFiles, and createServerDatabase
-                // awaits deleteServerDatabaseFiles when it clears stale files. This method
-                // was the only one of the three that did neither, despite
-                // deleteServerDatabaseFiles performing a real filesystem delete.
-                await database.write(async () => {
+                database.write(async () => {
                     await server.destroyPermanently();
                 });
 
                 delete this.serverDatabases[serverUrl];
-                await this.deleteServerDatabaseFiles(serverUrl);
+                this.deleteServerDatabaseFiles(serverUrl);
 
                 // Remove pre-auth secret when server is destroyed
                 await removePreauthSecret(serverUrl);
