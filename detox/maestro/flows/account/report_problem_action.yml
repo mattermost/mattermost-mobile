@@ -37,21 +37,7 @@ appId: ${MAESTRO_APP_ID}
 
 # # Open the Account tab and Settings, then reveal Report a Problem.
 - runFlow: ../../subflows/navigation/open_account.yml
-- extendedWaitUntil:
-    visible:
-      id: "account.settings.option"
-    timeout: 15000
-- tapOn:
-    id: "account.settings.option"
-- scrollUntilVisible:
-    element:
-      id: "settings.report_problem.option"
-    direction: DOWN
-    timeout: 30000
-- extendedWaitUntil:
-    visible:
-      id: "settings.report_problem.option"
-    timeout: 30000
+- runFlow: ../../subflows/navigation/open_settings_report_problem.yml
 - tapOn:
     id: "settings.report_problem.option"
 

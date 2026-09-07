@@ -1,0 +1,65 @@
+# Sub-flow: from the Account screen, open Settings and reveal "Report a Problem".
+#
+# Why the tap is retried and the screen is asserted:
+# open_account.yml already retries the account-tab tap because this runner
+# swallows taps under load. The Settings tap needs the same protection and did
+# not have it. When that tap was swallowed, the Account screen stayed up and the
+# scrollUntilVisible below scrolled *Account* for its entire timeout hunting a
+# Settings row that had never rendered — reported as the bare
+# "No visible element found: id: settings.report_problem.option", with no
+# screenshot, which reads like a missing element rather than a missed tap.
+#
+# That is how attach_logs_toggle_visible failed on CI 34146969443 (runner at load
+# average 260, 0.4GB free, ~33k swapouts) while attach_logs_toggle_on_surfaces_option
+# ran the identical navigation in the previous batch and won the race. Seven flows
+# shared the unprotected block, so any of them could have drawn the short straw.
+#
+# Asserting settings.screen between the tap and the scroll turns a swallowed tap
+# into a retry instead of a 15-second scroll on the wrong screen.
+#
+# PRE-CONDITIONS:
+#   - Account screen is open (see open_account.yml)
+#   - SupportSettings.ReportAProblemType is not "hidden" — when it is, the app
+#     renders settings.download_logs.option instead and this subflow will not
+#     find its element (app/screens/settings/report_problem/report_problem.tsx)
+#
+# LEAVES: Settings screen open with settings.report_problem.option visible.
+# Callers tap it themselves — attach_logs_disabled_when_download_logs_off.yml
+# asserts on the row before opening it.
+#
+# testIDs:
+#   - account.settings.option
+#   - settings.screen
+#   - settings.report_problem.option
+appId: ${MAESTRO_APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "account.settings.option"
+      - extendedWaitUntil:
+          visible:
+            id: "settings.screen"
+          timeout: 15000
+
+# # Report a Problem is the last row and sits below the fold on small viewports
+# (CI 59ec6ae). assertVisible does not auto-scroll, so scroll it into view.
+#
+# 30s, not the 15s/10s most callers used: the row is config-gated, so on a first
+# login it cannot render until the server config has synced. attach_logs.yml had
+# already raised both waits to 30s for exactly that reason, and this subflow must
+# not hand its callers a shorter fuse than the one they were written with.
+- scrollUntilVisible:
+    element:
+      id: "settings.report_problem.option"
+    direction: DOWN
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "settings.report_problem.option"
+    timeout: 30000

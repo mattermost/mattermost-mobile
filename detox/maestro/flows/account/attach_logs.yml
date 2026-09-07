@@ -36,24 +36,7 @@ appId: ${MAESTRO_APP_ID}
 # # Open the Account tab (retry + overlay dismiss; a raw tab tap is swallowed
 # by Save Password / notification sheets after login).
 - runFlow: ../../subflows/navigation/open_account.yml
-- extendedWaitUntil:
-    visible:
-      id: "account.settings.option"
-    timeout: 15000
-
-# # Open Settings and reveal Report a Problem.
-# Report a Problem can sit below the fold; also wait for config sync on first login.
-- tapOn:
-    id: "account.settings.option"
-- scrollUntilVisible:
-    element:
-      id: "settings.report_problem.option"
-    direction: DOWN
-    timeout: 30000
-- extendedWaitUntil:
-    visible:
-      id: "settings.report_problem.option"
-    timeout: 30000
+- runFlow: ../../subflows/navigation/open_settings_report_problem.yml
 
 # # Tap Report a Problem
 - tapOn:
