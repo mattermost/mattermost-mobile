@@ -48,6 +48,17 @@ describe('getReadableTimestamp', () => {
         jest.useRealTimers();
     });
 
+    it('should omit an empty timeZone instead of rendering Invalid Date', () => {
+        // getUserTimezone() yields '' until the device zone syncs. Passing that through as the
+        // `timeZone` option throws on V8 and returns the literal 'Invalid Date' on iOS Hermes
+        // (MM-T5720); getFormattedTime() already drops a falsy zone the same way.
+        const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
+        const result = getReadableTimestamp(timestamp, '', false, 'en-US');
+        expect(result).not.toBe('');
+        expect(result).not.toBe('Invalid Date');
+        expect(result).toContain('Jun 15');
+    });
+
     it('should format timestamp correctly in 12-hour format for current year', () => {
         const timestamp = new Date('2025-06-15T12:00:00Z').getTime();
         const timeZone = 'America/New_York';
