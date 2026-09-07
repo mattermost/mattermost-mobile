@@ -14,9 +14,31 @@ import {CookieJar} from 'tough-cookie';
 (https.globalAgent as any).options.family = 4;
 
 const jar = new CookieJar();
+
+// Bound hung TCP / silent Cloudflare stalls. Without a client timeout, apiCreatePost
+// can sit in test_fn until Jest's 300s cap with zero Detox UI actions.
+const REQUEST_TIMEOUT_MS = 45_000;
+
+export const RETRY_BUDGET_MS = 90_000;
+
+type RetryBudgetConfig = {_retryDeadlineAt?: number};
+
+/**
+ * True when there is room for another whole attempt. Stamps the deadline on first
+ * use so the budget covers the retry sequence, not each retry in isolation.
+ */
+const hasRetryBudget = (config: RetryBudgetConfig, attemptCostMs = REQUEST_TIMEOUT_MS): boolean => {
+    const now = Date.now();
+    if (config._retryDeadlineAt === undefined) {
+        config._retryDeadlineAt = now + RETRY_BUDGET_MS;
+    }
+    return config._retryDeadlineAt - now >= attemptCostMs;
+};
+
 const baseClient = wrapper(axios.create({
     headers: {'X-Requested-With': 'XMLHttpRequest'},
     jar,
+    timeout: REQUEST_TIMEOUT_MS,
 }));
 
 // Add request interceptor to handle CSRF tokens
@@ -70,6 +92,56 @@ baseClient.interceptors.response.use(
     },
 );
 
+/**
+ * A timed-out request produced no response, so we cannot tell whether the server
+ * committed it. Replaying is only safe for idempotent methods; a POST that timed
+ * out may well have created the team/channel/post already, and replaying it
+ * duplicates the record. Non-idempotent callers that want a retry ask for one
+ * explicitly (see withTransportRetry's allowNonIdempotent).
+ *
+ * A non-replayable body (a stream or FormData) is single-use: it has already been
+ * consumed by the failed attempt, so a replay would send an empty or truncated
+ * request. Those are never retried regardless of method.
+ */
+const isReplayableBody = (data: unknown): boolean => {
+    if (data === undefined || data === null) {
+        return true;
+    }
+    if (typeof data === 'string' || typeof data === 'object') {
+        const ctor = (data as {constructor?: {name?: string}}).constructor?.name ?? '';
+        if (ctor === 'FormData' || ctor === 'ReadStream' || ctor === 'Readable') {
+            return false;
+        }
+        return typeof (data as {pipe?: unknown}).pipe !== 'function';
+    }
+    return true;
+};
+
+// Retry client-side timeouts (no HTTP response). A 30–45s hang is a dropped
+// TCP/Cloudflare stall, not a committed write we can observe.
+baseClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config as typeof error.config & {_timeoutRetries?: number; _retryDeadlineAt?: number};
+        const timedOut = !error.response && (
+            error.code === 'ECONNABORTED' ||
+            String(error.message || '').includes('timeout')
+        );
+        const replayable = Boolean(config) &&
+            IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) &&
+            isReplayableBody(config.data);
+
+        if (timedOut && replayable && hasRetryBudget(config)) {
+            config._timeoutRetries = (config._timeoutRetries ?? 0) + 1;
+            const delay = config._timeoutRetries * 1000;
+            console.warn(`[client] request timeout — retry ${config._timeoutRetries} for ${config.method} ${config.url} in ${delay}ms`); // eslint-disable-line no-console
+            await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+            return baseClient(config);
+        }
+        return Promise.reject(error);
+    },
+);
+
 /** Cloudflare edge failures — 520–524 stay retryable alongside the gateway 5xx below. */
 const CLOUDFLARE_EDGE_STATUSES: ReadonlySet<number> = new Set([520, 521, 522, 523, 524]);
 
@@ -97,7 +169,7 @@ export const MAX_RETRY_AFTER_SEC = 3;
 baseClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const config = error.config as typeof error.config & {_5xxRetries?: number};
+        const config = error.config as typeof error.config & {_5xxRetries?: number; _retryDeadlineAt?: number};
         const status = error.response?.status;
 
         // A write may already have reached the origin behind 502/503/504 and CF 520/522/524, so
@@ -105,7 +177,7 @@ baseClient.interceptors.response.use(
         const isSafeToRetry = isTransientHttpStatus(status) &&
             (IDEMPOTENT_METHODS.has((config.method ?? 'get').toLowerCase()) || PRE_ORIGIN_STATUSES.has(status));
 
-        if (isSafeToRetry && (config._5xxRetries ?? 0) < 3) {
+        if (isSafeToRetry && hasRetryBudget(config, 0) && (config._5xxRetries ?? 0) < 3) {
             config._5xxRetries = (config._5xxRetries ?? 0) + 1;
             const retryAfterSec = Number(error.response?.data?.retry_after);
             const cappedRetryAfterMs = Number.isFinite(retryAfterSec) && retryAfterSec > 0 ?
@@ -130,11 +202,11 @@ baseClient.interceptors.response.use(
             return response;
         }
 
-        const config = response.config as typeof response.config & {_cloudInaccessibleRetries?: number};
+        const config = response.config as typeof response.config & {_cloudInaccessibleRetries?: number; _retryDeadlineAt?: number};
         const attempts = (config._cloudInaccessibleRetries ?? 0) + 1;
 
-        if (attempts > 3) {
-            return Promise.reject(new Error(`Server returned cloud/inaccessible HTML after 3 retries for ${config.url}`));
+        if (attempts > 3 || !hasRetryBudget(config, 0)) {
+            return Promise.reject(new Error(`Server returned cloud/inaccessible HTML for ${config.url} (retries exhausted or retry budget spent)`));
         }
 
         config._cloudInaccessibleRetries = attempts;

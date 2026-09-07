@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {DEFAULT_TASK_FILTERS} from '@playbooks/utils/task_filters';
 import {renderWithIntl} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -26,7 +28,7 @@ describe('ChecklistList', () => {
         }),
     ];
 
-    function getBaseProps() {
+    function getBaseProps(): ComponentProps<typeof ChecklistList> {
         return {
             checklists: mockChecklists,
             channelId: 'channel-id-1',
@@ -34,6 +36,11 @@ describe('ChecklistList', () => {
             playbookRunName: 'Test Run',
             isFinished: false,
             isParticipant: true,
+            filters: DEFAULT_TASK_FILTERS,
+            currentUserId: 'current-user-id',
+            expandedById: {},
+            onToggleChecklistExpanded: jest.fn(),
+            onClearFilters: jest.fn(),
         };
     }
 
@@ -49,6 +56,8 @@ describe('ChecklistList', () => {
         expect(checklistComponents[0].props.checklistNumber).toEqual(0);
         expect(checklistComponents[0].props.isFinished).toEqual(props.isFinished);
         expect(checklistComponents[0].props.isParticipant).toEqual(props.isParticipant);
+        expect(checklistComponents[0].props.expanded).toBe(true);
+        expect(checklistComponents[0].props.onToggleExpanded).toEqual(expect.any(Function));
 
         expect(checklistComponents[1].props.checklist).toEqual(mockChecklists[1]);
         expect(checklistComponents[1].props.channelId).toEqual(props.channelId);
@@ -56,6 +65,32 @@ describe('ChecklistList', () => {
         expect(checklistComponents[1].props.checklistNumber).toEqual(1);
         expect(checklistComponents[1].props.isFinished).toEqual(props.isFinished);
         expect(checklistComponents[1].props.isParticipant).toEqual(props.isParticipant);
+        expect(checklistComponents[1].props.expanded).toBe(true);
+        expect(checklistComponents[1].props.onToggleExpanded).toEqual(expect.any(Function));
+    });
+
+    it('passes collapsed expanded state from expandedById', () => {
+        const props = getBaseProps();
+        props.expandedById = {
+            'checklist-1': false,
+            'checklist-2': true,
+        };
+        const {getAllByTestId} = renderWithIntl(<ChecklistList {...props}/>);
+
+        const checklistComponents = getAllByTestId('checklist-component');
+        expect(checklistComponents[0].props.expanded).toBe(false);
+        expect(checklistComponents[1].props.expanded).toBe(true);
+    });
+
+    it('notifies parent when a checklist is toggled', () => {
+        const props = getBaseProps();
+        const {getAllByTestId} = renderWithIntl(<ChecklistList {...props}/>);
+
+        act(() => {
+            getAllByTestId('checklist-component')[0].props.onToggleExpanded();
+        });
+
+        expect(props.onToggleChecklistExpanded).toHaveBeenCalledWith('checklist-1');
     });
 
     it('applies opacity change when finished or not participant', () => {

@@ -205,13 +205,12 @@ describe('Search - Hashtag Search', () => {
         // # Dismiss scheduled post tooltip if it appears on channel open
         await ChannelScreen.dismissScheduledPostTooltip();
 
-        await ChannelScreen.postMessage(message);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // # Dismiss scheduled post tooltip if it appears after sending the message
         await ChannelScreen.dismissScheduledPostTooltip();
 
         // # Get the post ID and save the post via post options
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
         await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
@@ -224,8 +223,7 @@ describe('Search - Hashtag Search', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // * Verify the saved post with the hashtag is displayed
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
         // Inline hashtag links render as text spans inside a single paragraph Text node on both
         // platforms, so verify hashtag search through the search screen instead.

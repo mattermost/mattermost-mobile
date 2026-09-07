@@ -3,7 +3,7 @@ import UserNotifications
 import Intents
 import os.log
 import TurboLogIOSNative
-import react_native_network_client
+import react_native_network_client_session_attributes
 
 class NotificationService: UNNotificationServiceExtension {
 

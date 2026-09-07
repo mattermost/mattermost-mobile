@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     AccountScreen,
@@ -161,10 +161,9 @@ describe.skip('Account - User Attributes', () => {
 
     it('MM-T5781_2 - should display user attribute values in profile pop-over when tapping on post username', async () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage('Checking user attributes');
         await wait(timeouts.ONE_SEC);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify('Checking user attributes', testChannel.id, siteOneUrl);
         const {postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, 'Checking user attributes');
         await postListPostItemHeaderDisplayName.tap();
         await wait(timeouts.ONE_SEC);

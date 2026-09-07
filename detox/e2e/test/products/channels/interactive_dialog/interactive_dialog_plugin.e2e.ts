@@ -931,11 +931,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const match = post.message.match(/local_manual:\s*(\S+)/);
-        if (!match || !match[1]) {
-            throw new Error(`Expected local_manual to have a value but got: ${post.message}`);
+
+        // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
+        // list, so \s* would cross the newline and capture the next item's "-" bullet.
+        // That is how an empty field previously reported itself as "got: -".
+        const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
+        const submitted = match?.[1]?.trim() ?? '';
+        if (!submitted) {
+            throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        const submitted = match[1];
         if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }

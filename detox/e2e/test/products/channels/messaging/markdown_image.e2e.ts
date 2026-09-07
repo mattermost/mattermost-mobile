@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -52,10 +51,9 @@ describe('Messaging - Markdown Image', () => {
         // # Open a channel screen and post a markdown image
         const markdownImage = '![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownImage, testChannel.id, siteOneUrl);
         const {postListPostItem, postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
 
         // Scroll to the post first to ensure it's in view
@@ -72,10 +70,9 @@ describe('Messaging - Markdown Image', () => {
         // # Open a channel screen and post a markdown image with link
         const markdownImage = '[![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)](https://github.com/mattermost/mattermost-server)';
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image with link is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownImage, testChannel.id, siteOneUrl);
         const {postListPostItem, postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
 
         // Scroll to the post first to ensure it's in view

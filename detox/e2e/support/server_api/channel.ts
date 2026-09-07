@@ -50,13 +50,19 @@ export const apiAddUserToChannel = async (baseUrl: string, userId: string, chann
  * @return {Object} returns {channel} on success or {error, status} on error
  */
 export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = 'O', prefix = 'channel', channel = null}: any = {}): Promise<any> => {
+    // No retry loop here. Creating a channel is not idempotent, and apiInit's
+    // retryTransient is the single retry owner for this call — a local loop on top of
+    // it multiplied one stalled request into more than a whole beforeAll budget. The
+    // empty-body check stays: a 200 with no id is a real failure, not a transport one.
     try {
         const response = await client.post(
             `${baseUrl}/api/v4/channels`,
             channel || generateRandomChannel(teamId, type, prefix),
         );
-
-        return {channel: response.data};
+        if (response.data?.id) {
+            return {channel: response.data};
+        }
+        return {error: {message: 'empty channel in create response'}, status: response.status ?? 0};
     } catch (err) {
         return getResponseFromError(err);
     }

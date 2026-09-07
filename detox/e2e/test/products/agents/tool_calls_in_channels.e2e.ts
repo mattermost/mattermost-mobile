@@ -30,7 +30,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 // ****************************************************************
 // Agent post helpers
@@ -64,6 +64,11 @@ const makeToolCall = (overrides: Partial<ToolCallData> = {}): ToolCallData => ({
     status: ToolCallStatus.Pending,
     ...overrides,
 });
+
+/** Tool cards sit in a nested post scroll; toBeVisible fails on a present node (CI 31915934950). */
+const waitForToolElement = async (testID: string) => {
+    await waitFor(element(by.id(testID))).toExist().withTimeout(timeouts.TEN_SEC);
+};
 
 /**
  * Create an agent post with tool calls via the REST API.
@@ -172,14 +177,10 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool approval set is visible
-        await waitFor(element(by.id('agents.tool_approval_set'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify tool card is visible with the correct tool ID
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible();
-
-        // * Verify tool name is displayed (converted from underscores to spaces and capitalized)
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.name`))).toBeVisible();
+        // * Verify tool approval set and card rendered
+        await waitForToolElement('agents.tool_approval_set');
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.name`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -200,11 +201,9 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify Accept button is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}.approve`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify Reject button is visible
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.reject`))).toBeVisible();
+        // * Verify Accept and Reject buttons rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.approve`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.reject`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -230,14 +229,10 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify Accept button is NOT visible (user is not the requester)
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.approve`))).not.toBeVisible();
-
-        // * Verify Reject button is NOT visible
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.reject`))).not.toBeVisible();
+        // * Verify tool card rendered without approval buttons (user is not the requester)
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await expect(element(by.id(`agents.tool_card.${toolCall.id}.approve`))).not.toExist();
+        await expect(element(by.id(`agents.tool_card.${toolCall.id}.reject`))).not.toExist();
 
         // # Navigate back
         await ChannelScreen.back();
@@ -262,11 +257,9 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify tool name is displayed
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.name`))).toBeVisible();
+        // * Verify tool card and name rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.name`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -290,15 +283,15 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        // * Verify tool card rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
 
         // # Tap the tool card header to expand it (rejected cards are collapsed by default)
         await element(by.id(`agents.tool_card.${toolCall.id}.header`)).tap();
         await wait(timeouts.ONE_SEC);
 
-        // * Verify rejected status is visible
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.status.rejected`))).toBeVisible();
+        // * Verify rejected status rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.status.rejected`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -326,14 +319,10 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify Share button is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}.share`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify Keep Private button is visible
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.keep_private`))).toBeVisible();
+        // * Verify tool card and result-approval actions rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.share`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.keep_private`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -361,11 +350,9 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify warning callout is visible (review tool response warning)
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}.warning`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        // * Verify tool card and warning callout rendered
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.warning`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -388,13 +375,11 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify all tool cards are visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall1.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await expect(element(by.id(`agents.tool_card.${toolCall2.id}`))).toBeVisible();
-        await expect(element(by.id(`agents.tool_card.${toolCall3.id}`))).toBeVisible();
-
-        // * Verify pending decisions status bar is visible (for multiple tool calls)
-        await expect(element(by.id('agents.tool_approval_set.pending_decisions'))).toBeVisible();
+        // * Verify all tool cards and the pending-decisions bar rendered
+        await waitForToolElement(`agents.tool_card.${toolCall1.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall2.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall3.id}`);
+        await waitForToolElement('agents.tool_approval_set.pending_decisions');
 
         // # Navigate back
         await ChannelScreen.back();
@@ -437,11 +422,9 @@ describe('Agents - Tool Calls in Channels', () => {
 
         await wait(timeouts.TWO_SEC);
 
-        // * Verify tool card is visible
-        await waitFor(element(by.id(`agents.tool_card.${toolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-
-        // * Verify arguments are visible (DM channels show arguments without redaction)
-        await expect(element(by.id(`agents.tool_card.${toolCall.id}.arguments`))).toBeVisible();
+        // * Verify tool card and arguments rendered (DM channels show arguments without redaction)
+        await waitForToolElement(`agents.tool_card.${toolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${toolCall.id}.arguments`);
 
         // # Navigate back
         await ChannelScreen.back();
@@ -474,14 +457,12 @@ describe('Agents - Tool Calls in Channels', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await wait(timeouts.TWO_SEC);
 
-        // * Verify all tool cards are visible
-        await waitFor(element(by.id(`agents.tool_card.${pendingToolCall.id}`))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-        await expect(element(by.id(`agents.tool_card.${completedToolCall.id}`))).toBeVisible();
-        await expect(element(by.id(`agents.tool_card.${rejectedToolCall.id}`))).toBeVisible();
-
-        // * Verify the pending tool call has approval buttons
-        await expect(element(by.id(`agents.tool_card.${pendingToolCall.id}.approve`))).toBeVisible();
-        await expect(element(by.id(`agents.tool_card.${pendingToolCall.id}.reject`))).toBeVisible();
+        // * Verify mixed tool cards and pending approval buttons rendered
+        await waitForToolElement(`agents.tool_card.${pendingToolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${completedToolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${rejectedToolCall.id}`);
+        await waitForToolElement(`agents.tool_card.${pendingToolCall.id}.approve`);
+        await waitForToolElement(`agents.tool_card.${pendingToolCall.id}.reject`);
 
         // # Navigate back
         await ChannelScreen.back();

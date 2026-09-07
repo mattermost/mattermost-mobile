@@ -102,17 +102,24 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    const HEALTH_MAX_ATTEMPTS = 5;
+    // 8 attempts with 3s*n backoff is 84s of sleeping on its own, and each attempt can
+    // additionally spend the API client's whole retry budget. That overruns the 360s
+    // beforeAll before the attempts are even used up, which reports as a bare Jest hook
+    // timeout instead of "the server is not healthy". Bound the total instead.
+    const HEALTH_MAX_ATTEMPTS = 8;
+    const HEALTH_DEADLINE_MS = 150_000;
+    const healthDeadlineAt = Date.now() + HEALTH_DEADLINE_MS;
     for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
         try {
             await System.apiCheckSystemHealth(siteOneUrl);
             break;
         } catch (error) {
-            if (healthAttempt === HEALTH_MAX_ATTEMPTS) {
+            const backoffMs = 3000 * healthAttempt;
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS || Date.now() + backoffMs >= healthDeadlineAt) {
                 throw error;
             }
             console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
-            await new Promise((resolve) => setTimeout(resolve, 3000 * healthAttempt));
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
         }
     }
 

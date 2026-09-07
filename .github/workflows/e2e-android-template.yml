@@ -170,6 +170,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       specs: ${{ steps.generate-specs.outputs.specs }}
+      shard_count: ${{ steps.generate-specs.outputs.shard_count }}
       build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
       mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
       mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
@@ -223,7 +224,7 @@ jobs:
     name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
-    timeout-minutes: 240
+    timeout-minutes: 150
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -238,13 +239,6 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
-      # does most of its setup, so pinning every shard to the same server would put
-      # all parallel shards on one instance while the second sits mostly idle —
-      # concurrent setup on one server is what drives API rate limiting and
-      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
-      # that load evenly while still giving each shard two distinct sites for the
-      # multi-server specs.
       - name: Rotate logical test sites by shard
         env:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
@@ -269,11 +263,18 @@ jobs:
             echo "SITE_3_URL=$SERVER_SHARED"
           } >> "$GITHUB_ENV"
 
+      # Only libpulse0 is a real dependency here — the Android emulator needs it for
+      # audio. xvfb is already in the runner image (apt reports "already the newest
+      # version"), and it is listed only so a future image change fails loudly.
       - name: Install Dependencies
+        timeout-minutes: 6
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libpulse0
-          sudo apt-get install -y scrot ffmpeg xvfb
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}"
+          }
 
       - name: Enable KVM
         run: |
@@ -440,8 +441,6 @@ jobs:
             android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
             android-emulator-${{ runner.os }}-${{ runner.arch }}-
 
-      # mm_blocks specs are sharded alone (split-tests.js). Script bounds curls and
-      # exits 0 on tunnel failure; prefer WEBHOOK_PUBLIC_BASE_URL over trycloudflare.
       - name: Start mm_blocks webhook sidecar
         if: contains(matrix.specs, 'mm_blocks_')
         continue-on-error: true
@@ -460,34 +459,15 @@ jobs:
           MAX_ATTEMPTS: "2"
           ATTEMPT_TIMEOUT_MIN: "60"
         shell: bash
+        # Attempt 2 retries failed/unrun files only. Cold-boots only if the emulator is dead.
         run: |
-          set +e
-          attempt=1
-          while (( attempt <= MAX_ATTEMPTS )); do
-            echo "==> Attempt ${attempt}/${MAX_ATTEMPTS} (timeout ${ATTEMPT_TIMEOUT_MIN}m)"
-            timeout "${ATTEMPT_TIMEOUT_MIN}m" bash -c '
-              cd detox
-              chmod +x ./create_android_emulator.sh
-              CI=true ./create_android_emulator.sh "$SDK_VERSION" "$AVD_NAME" $MATRIX_SPECS
-            '
-            rc=$?
-            if (( rc == 0 )); then
-              echo "==> Attempt ${attempt} succeeded"
-              exit 0
-            fi
-            echo "==> Attempt ${attempt} failed with exit ${rc}"
-            if (( attempt < MAX_ATTEMPTS )); then
-              echo "==> Cleaning up before retry"
-              adb -s emulator-5554 emu kill 2>/dev/null || true
-              pkill -9 -f qemu-system 2>/dev/null || true
-              pkill -9 -f emulator 2>/dev/null || true
-              rm -rf detox/artifacts/* 2>/dev/null || true
-              sleep 5
-            fi
-            attempt=$(( attempt + 1 ))
-          done
-          echo "==> All ${MAX_ATTEMPTS} attempts failed"
-          exit 1
+          chmod +x detox/scripts/run_android_ci_shard.sh detox/create_android_emulator.sh
+          # Split on whitespace into an array, then expand quoted: an unquoted
+          # $MATRIX_SPECS is also subject to pathname expansion, so a spec path
+          # containing a glob character would silently become a different argument
+          # list (or vanish). Matches the iOS template's read -ra handling.
+          read -ra specs <<< "$MATRIX_SPECS"
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
         continue-on-error: true # We want to run all the tests
 
       - name: Upload Android Test Report
@@ -583,13 +563,6 @@ jobs:
             --key "$DURATIONS_KEY" \
             --repo-root "$GITHUB_WORKSPACE"
 
-      # spec-durations.js merges the restored manifest into the new one, so the
-      # freshly built manifest already carries every valid entry of the previously
-      # published one — there is nothing to fall back to. (Entries the restored
-      # manifest had that were malformed or non-positive are dropped on purpose.)
-      # An empty/zero manifest is rejected by
-      # the action's `validate` guard rather than published (publishing one would
-      # poison duration packing for every branch until main rewrote it).
       - name: Publish spec-duration manifest
         if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
         continue-on-error: true
@@ -603,12 +576,6 @@ jobs:
           manifest-path: detox/artifacts/spec-durations.next.json
           mode: save
 
-      # ── TSIO report upload (before e2e:save-report) ────────────────────────
-      # save-report deletes android-results-* dirs (where Detox PNGs live). Upload
-      # while those artifact trees are still on disk.
-      # Each matrix leg wrote Jest CLI --json (name + assertionResults). TSIO's
-      # extractDetox expects testFilePath + nested testResults — convert while
-      # merging. gh-job-name must match this job's rendered `name:` (tsio-shard-name).
       - name: Merge per-shard Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
@@ -619,6 +586,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
+            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed — skipping TSIO upload."

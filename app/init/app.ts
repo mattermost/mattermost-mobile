@@ -14,6 +14,7 @@ import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -39,16 +40,24 @@ Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => 
 export async function initialize() {
     if (!baseAppInitialized) {
         baseAppInitialized = true;
-        serverCredentials = await getAllServerCredentials();
-        const serverUrls = serverCredentials.map((credential) => credential.serverUrl);
+        try {
+            await DatabaseManager.initAppDatabase();
 
-        await DatabaseManager.init(serverUrls);
-        await NetworkManager.init(serverCredentials);
+            // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
+            const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
+            serverCredentials = await getAllServerCredentials(activeUrls);
 
-        // EphemeralModeManager init runs before WS init so any pending wipes
-        // complete before WebSocket clients start populating server databases.
-        await EphemeralModeManager.init(serverCredentials);
-        await WebsocketManager.init(serverCredentials);
+            await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
+            await NetworkManager.init(serverCredentials);
+
+            // EphemeralModeManager init runs before WS init so any pending wipes
+            // complete before WebSocket clients start populating server databases.
+            await EphemeralModeManager.init(serverCredentials);
+            await WebsocketManager.init(serverCredentials);
+        } catch (error) {
+            baseAppInitialized = false;
+            throw error;
+        }
     }
 
     NavigationStore.reset();

@@ -54,6 +54,7 @@ type Props = {
     lastViewedAt: number;
     location: AvailableScreens;
     onEndReached?: () => void;
+    onViewableItemsChanged?: (viewableItems: ViewToken[]) => void;
     posts: PostModel[];
     rootId?: string;
     shouldRenderReplyButton?: boolean;
@@ -105,6 +106,7 @@ const PostList = ({
     lastViewedAt,
     location,
     onEndReached,
+    onViewableItemsChanged: onViewableItemsChangedProp,
     posts,
     rootId,
     shouldRenderReplyButton = true,
@@ -385,10 +387,12 @@ const PostList = ({
             DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItemsMap);
         });
 
+        onViewableItemsChangedProp?.(viewableItems);
+
         if (onViewableItemsChangedListener.current) {
             onViewableItemsChangedListener.current(viewableItems);
         }
-    }, [location, trackInitialRenderMetrics]);
+    }, [location, onViewableItemsChangedProp, trackInitialRenderMetrics]);
 
     const registerScrollEndIndexListener = useCallback((listener: onScrollEndIndexListenerEvent) => {
         onScrollEndIndexListener.current = listener;

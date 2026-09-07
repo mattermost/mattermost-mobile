@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
+import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
@@ -28,6 +30,7 @@ import TestHelper from '@test/test_helper';
 import {handleFirstConnect, handleReconnect} from './index';
 
 jest.mock('@actions/local/channel');
+jest.mock('@actions/local/ephemeral_mode/cleanup');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/entry/common');
@@ -70,6 +73,8 @@ describe('WebSocket Index Actions', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
         jest.spyOn(DeviceEventEmitter, 'emit');
+        jest.mocked(dataRetentionCleanup).mockResolvedValue({skipped: true});
+        jest.mocked(autoCacheCleanup).mockResolvedValue({skipped: true});
         await DatabaseManager.init([serverUrl]);
         DatabaseManager.serverDatabases[serverUrl] = {
             operator: {
@@ -159,6 +164,7 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
 
             const error = await handleReconnect(serverUrl);
+            await TestHelper.tick();
 
             expect(error).toBeUndefined();
             expect(entry).toHaveBeenCalled();
@@ -172,6 +178,26 @@ describe('WebSocket Index Actions', () => {
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+            expect(RNUtils.beginDatabaseActivity).toHaveBeenCalledWith(serverUrl, 'doReconnect');
+            expect(RNUtils.endDatabaseActivity).toHaveBeenCalledWith('token-1');
+        });
+
+        it('should still end the database activity when reconnect fails', async () => {
+            jest.mocked(entry).mockResolvedValueOnce({error: new Error('entry failed')});
+
+            await handleReconnect(serverUrl);
+
+            expect(RNUtils.beginDatabaseActivity).toHaveBeenCalledWith(serverUrl, 'doReconnect');
+            expect(RNUtils.endDatabaseActivity).toHaveBeenCalledWith('token-1');
+        });
+
+        it('should not end the database activity when no token was granted', async () => {
+            jest.mocked(RNUtils.beginDatabaseActivity).mockResolvedValueOnce(null);
+            jest.mocked(entry).mockResolvedValueOnce({error: new Error('entry failed')});
+
+            await handleReconnect(serverUrl);
+
+            expect(RNUtils.endDatabaseActivity).not.toHaveBeenCalled();
         });
 
         it('should fetch posts for channel screen', async () => {
@@ -226,6 +252,52 @@ describe('WebSocket Index Actions', () => {
 
             expect(result).toBeInstanceOf(Error);
             expect((result as Error).message).toBe('entry error');
+        });
+
+        describe('cleanup', () => {
+            beforeEach(() => {
+                jest.mocked(entry).mockResolvedValue({
+                    models: [],
+                    initialTeamId: currentTeamId,
+                    initialChannelId: currentChannelId,
+                    prefData: {preferences: []},
+                    teamData: {memberships: [], teams: []},
+                    chData: {memberships: [], channels: []},
+                    gmConverted: false,
+                });
+                jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId, locale: 'en'}));
+            });
+
+            // doCleanup is intentionally not awaited by doReconnect, so let its chain settle.
+            const reconnectAndSettleCleanup = async () => {
+                await handleReconnect(serverUrl);
+                await TestHelper.tick();
+            };
+
+            it('should skip the vacuum when one cleanup failed and the other was skipped', async () => {
+                jest.mocked(dataRetentionCleanup).mockResolvedValue({error: new Error('data retention error')});
+
+                await reconnectAndSettleCleanup();
+
+                expect(performVacuum).not.toHaveBeenCalled();
+            });
+
+            it('should vacuum when the data retention cleanup ran without error', async () => {
+                jest.mocked(dataRetentionCleanup).mockResolvedValue({error: undefined});
+
+                await reconnectAndSettleCleanup();
+
+                expect(performVacuum).toHaveBeenCalledWith(serverUrl);
+            });
+
+            it('should vacuum when the auto cache cleanup ran without error even if the data retention cleanup failed', async () => {
+                jest.mocked(dataRetentionCleanup).mockResolvedValue({error: new Error('data retention error')});
+                jest.mocked(autoCacheCleanup).mockResolvedValue({error: undefined});
+
+                await reconnectAndSettleCleanup();
+
+                expect(performVacuum).toHaveBeenCalledWith(serverUrl);
+            });
         });
     });
 });

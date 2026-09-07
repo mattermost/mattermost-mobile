@@ -72,8 +72,8 @@ class MMCallsNativeModule(context: ReactApplicationContext) : ReactContextBaseJa
     }
 
     @ReactMethod
-    fun startRingtone(name: String?, seconds: Double, promise: Promise?) {
-        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), promise)
+    fun startRingtone(name: String?, seconds: Double, isRingback: Boolean, promise: Promise?) {
+        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), isRingback, promise)
     }
 
     @ReactMethod

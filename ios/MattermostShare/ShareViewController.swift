@@ -11,7 +11,7 @@ import SwiftUI
 import UIKit
 import os.log
 import Sentry
-import react_native_network_client
+import react_native_network_client_session_attributes
 
 class ShareViewController: UIViewController {
   private var fileManager: LocalFileManager?

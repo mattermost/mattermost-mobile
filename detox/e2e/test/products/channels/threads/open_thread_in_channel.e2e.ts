@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
     System,
 } from '@support/server_api';
@@ -71,9 +70,8 @@ describe('Threads - Open Thread in Channel', () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.dismissScheduledPostTooltip();
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
@@ -112,8 +110,7 @@ describe('Threads - Open Thread in Channel', () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 

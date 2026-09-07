@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -115,11 +115,6 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // * Verify the fixture mention is displayed with channel + team info.
-        // Wait on the specific post (by id) — the generic
-        // `recentMentionPostListToBeVisible()` helper matches the bare
-        // `recent_mentions.post_list.post` tag, which is ambiguous when
-        // multiple fixtures live in the feed.
         const {
             postListPostItem: recentMentionsPostListPostItem,
             postListPostItemChannelInfoChannelDisplayName,
@@ -148,8 +143,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
+    it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
@@ -162,8 +156,7 @@ describe('Search - Recent Mentions', () => {
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(mentionPost.id, mentionPost.messageText);
 
         // # Unsave: back to recent mentions, open post options, tap Unsave
         await RecentMentionsScreen.open();
@@ -187,43 +180,48 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // # Open post options for the fixture mention and tap Pin to Channel
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.pinPostOption.tap();
-
-        // # Navigate to the channel's Pinned Messages screen
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-
-        // * Verify mention is displayed on pinned messages screen
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
 
-        // # Unpin and verify removal
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-        await RecentMentionsScreen.open();
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+        // Keep sync off from long-press through pin/unpin asserts. Do not
+        // re-enable on iOS: setSyncSettings({enabled:true}) hangs on leftover
+        // sheet/nav animation (CI 300s). Next file's launchApp resets sync.
+        await withSynchronizationDisabled(async () => {
+            // # Open post options for the fixture mention and tap Pin to Channel
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+            await PostOptionsScreen.tapPinPost();
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
 
-        // Tap an explicit point: the unpin option is not always 100% visible in the bottom sheet,
-        // which fails iOS hittability checks.
-        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
+            // # Navigate to the channel's Pinned Messages screen
+            await ChannelListScreen.open();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
 
-        // * Verify mention is no longer pinned
-        await ChannelListScreen.open();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelInfoScreen.open();
-        await PinnedMessagesScreen.open();
-        await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
+            // * Verify mention is displayed on pinned messages screen
+            await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
-        // # Go back to channel list screen
-        await PinnedMessagesScreen.back();
-        await ChannelInfoScreen.close();
-        await ChannelScreen.back();
-        await ChannelListScreen.open();
+            // # Unpin and verify removal
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+            await RecentMentionsScreen.open();
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+            await PostOptionsScreen.tapUnpinPost();
+            await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
+
+            // * Verify mention is no longer pinned
+            await ChannelListScreen.open();
+            await ChannelScreen.open(channelsCategory, testChannel.name);
+            await ChannelInfoScreen.open();
+            await PinnedMessagesScreen.open();
+            await waitForElementToNotExist(postListPostItem, timeouts.TWENTY_SEC);
+
+            // # Go back to channel list screen
+            await PinnedMessagesScreen.back();
+            await ChannelInfoScreen.close();
+            await ChannelScreen.back();
+            await ChannelListScreen.open();
+        });
     });
 
     // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never
@@ -252,8 +250,8 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
-        // Force a mentions refetch so the list shows the edited body (CI 59ec6ae
-        // matched /edit$/ against a stale row that never updated).
+        // Force a mentions refetch so the list shows the edited body
+        // (matched /edit$/ against a stale row that never updated).
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 

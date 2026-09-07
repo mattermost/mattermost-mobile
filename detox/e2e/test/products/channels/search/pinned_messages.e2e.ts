@@ -101,9 +101,8 @@ describe('Search - Pinned Messages', () => {
         // # Open a channel screen, post a message, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(channelPostItem).toBeVisible();
 
@@ -140,13 +139,12 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — was android-only run; android also failed
+    // Skip: edit/reply/delete from pinned messages flake
     it.skip('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: pinnedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
         await expect(channelPostItem).toBeVisible();
 
@@ -225,7 +223,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: failed CI run 29954156963 (both) — unpin from pinned messages flake
+    // Skip: unpin from pinned messages flake
     it.skip('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
@@ -261,14 +259,12 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
+    it('MM-T4918_5 - should be able to save/unsave a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post: pinnedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: pinnedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(pinnedPost.id, message);
         await expect(channelPostItem).toBeVisible();
 
@@ -291,8 +287,7 @@ describe('Search - Pinned Messages', () => {
         await SavedMessagesScreen.open();
 
         // * Verify pinned message is displayed on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(pinnedPost.id, message);
 
         // # Go back to pinned messages screen, open post options for pinned message, tap on unsave option, go back to channel list screen, and open saved messages screen
         await ChannelListScreen.open();

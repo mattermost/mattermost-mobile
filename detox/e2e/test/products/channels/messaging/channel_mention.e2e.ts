@@ -9,7 +9,6 @@
 
 import {
     Channel,
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -64,11 +63,10 @@ describe('Messaging - Channel Mention', () => {
         const {channel: targetChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, targetChannel.id);
         const channelNameMention = `~${targetChannel.name}`;
-        await ChannelScreen.postMessage(channelNameMention);
 
         // * Verify post shows channel display name mention
         const channelDisplayNameMention = `~${targetChannel.display_name}`;
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(channelNameMention, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(post.id, channelDisplayNameMention);
 
         // # Go back to channel list screen

@@ -66,10 +66,9 @@ describe('Search - Search Cycle', () => {
         const searchTerm = getRandomId();
         const message = `Search test ${searchTerm}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).toBeVisible();
 
@@ -114,10 +113,9 @@ describe('Search - Search Cycle', () => {
         const uniqueSuffix = getRandomId();
         const searchTerm = `asparagus${uniqueSuffix}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(searchTerm);
 
         // * Verify message is posted
-        const {post: originalPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: originalPost} = await ChannelScreen.postMessageAndVerify(searchTerm, testChannel.id, siteOneUrl);
         const {postListPostItem: channelPostItem} = ChannelScreen.getPostListPostItem(originalPost.id, searchTerm);
         await expect(channelPostItem).toBeVisible();
 

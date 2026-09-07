@@ -19,6 +19,23 @@ function randomPrefix(): string {
 }
 
 const MAX_REDIRECTS = 5;
+const LOGIN_RETRY_ATTEMPTS = 8;
+const LOGIN_RETRY_DELAY_MS = 15000;
+
+/** Keep CI logs readable when the cloud portal returns HTML instead of JSON. */
+function summarizeBody(body: string): string {
+    if (/cloud\/inactive/i.test(body) || /Mattermost captcha challenge/i.test(body)) {
+        return '(HTML from inactive/captcha portal — test server is not serving the API)';
+    }
+    if (/<!DOCTYPE|<html/i.test(body)) {
+        return `(HTML response, ${body.length} bytes)`;
+    }
+    return body.length > 500 ? `${body.slice(0, 500)}…` : body;
+}
+
+function isRetriableSeedError(message: string): boolean {
+    return /cloud\/inactive|Failed to parse|ECONNRESET|ETIMEDOUT|ECONNREFUSED|ENOTFOUND|socket|network/i.test(message);
+}
 
 function doRequest(urlStr: string, method: string, payload: string | null, headers: Record<string, string>, redirectCount = 0): Promise<IncomingMessage & {body: string}> {
     return new Promise((resolve, reject) => {
@@ -42,6 +59,13 @@ function doRequest(urlStr: string, method: string, payload: string | null, heade
                     return;
                 }
                 const redirectUrl = new URL(res.headers.location, urlStr).toString();
+
+                // Matterwick tear-down races redirect the API to the inactive portal.
+                // Do not follow — the HTML body is useless and floods CI logs.
+                if (redirectUrl.includes('/cloud/inactive')) {
+                    reject(new Error(`[seed] Test server redirected to cloud/inactive (${redirectUrl})`));
+                    return;
+                }
                 console.log(`[seed] Following ${res.statusCode} redirect to ${redirectUrl}`);
                 doRequest(redirectUrl, method, payload, headers, redirectCount + 1).then(resolve, reject);
                 return;
@@ -83,12 +107,12 @@ function request(method: string, urlPath: string, body: object | null, token?: s
             if (e instanceof Error && e.message.startsWith('[seed]')) {
                 throw e;
             }
-            throw new Error(`[seed] Failed to parse response from ${method} ${urlPath}: ${res.body}`);
+            throw new Error(`[seed] Failed to parse response from ${method} ${urlPath}: ${summarizeBody(res.body)}`);
         }
     });
 }
 
-function loginAndGetToken(): Promise<{user: any; token: string}> {
+function loginAndGetTokenOnce(): Promise<{user: any; token: string}> {
     const urlStr = SITE_1_URL + '/api/v4/users/login';
     const payload = JSON.stringify({login_id: ADMIN_USERNAME, password: ADMIN_PASSWORD});
     const headers: Record<string, string> = {'Content-Type': 'application/json'};
@@ -97,7 +121,7 @@ function loginAndGetToken(): Promise<{user: any; token: string}> {
         try {
             const parsed = JSON.parse(res.body);
             if ((res.statusCode ?? 0) >= 400) {
-                throw new Error(`[seed] Login failed (HTTP ${res.statusCode}): ${parsed.message || res.body}`);
+                throw new Error(`[seed] Login failed (HTTP ${res.statusCode}): ${parsed.message || summarizeBody(res.body)}`);
             }
             const sessionToken = res.headers.token as string;
             if (!sessionToken) {
@@ -108,9 +132,33 @@ function loginAndGetToken(): Promise<{user: any; token: string}> {
             if (e instanceof Error && e.message.startsWith('[seed]')) {
                 throw e;
             }
-            throw new Error(`[seed] Failed to parse login response: ${res.body}`);
+            throw new Error(`[seed] Failed to parse login response: ${summarizeBody(res.body)}`);
         }
     });
+}
+
+async function loginAndGetToken(): Promise<{user: any; token: string}> {
+    let lastErr: Error | undefined;
+    for (let attempt = 1; attempt <= LOGIN_RETRY_ATTEMPTS; attempt++) {
+        try {
+            // Sequential retries with backoff — parallel login would not help.
+            // eslint-disable-next-line no-await-in-loop
+            return await loginAndGetTokenOnce();
+        } catch (err) {
+            lastErr = err instanceof Error ? err : new Error(String(err));
+            if (attempt === LOGIN_RETRY_ATTEMPTS || !isRetriableSeedError(lastErr.message)) {
+                throw lastErr;
+            }
+            console.warn(
+                `[seed] Login attempt ${attempt}/${LOGIN_RETRY_ATTEMPTS} failed (${lastErr.message}); ` +
+                `retrying in ${LOGIN_RETRY_DELAY_MS}ms…`,
+            );
+
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((r) => setTimeout(r, LOGIN_RETRY_DELAY_MS));
+        }
+    }
+    throw lastErr ?? new Error('[seed] Login failed');
 }
 
 async function createUser(adminToken: string, prefix: string, index: string | number = ''): Promise<any> {

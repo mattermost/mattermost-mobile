@@ -104,13 +104,14 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
 
-        // Assert the left and centre cells before scrolling right — on Android the scroll pushes
-        // the left column off-screen.
+        // Assert the left and centre cells before scrolling right — on Android the scroll
+        // can push the left column off-screen. Wrap coverage is these cells.
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Android pushes the right-side columns beyond the viewport, so scroll the table
-        // horizontally until the right header and row become visible.
+        // Right-side columns can sit past the expanded viewport. waitFor succeeds
+        // immediately when they are already on-screen (typical iOS) and scrolls
+        // when they are not (typical Android).
         await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
@@ -286,9 +287,11 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right last'))).not.toBeVisible();
         const expectedElement = element(by.text('Right last'));
         if (isIos()) {
-            await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
-            await expect(element(by.text('Header last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible(50);
+            // Full-view tables render every row, so waitFor(toExist) returns before any
+            // scroll. Drive the scroller until the header leaves the viewport, then until
+            // the last cell is actually visible.
+            await waitFor(element(by.text('Header last'))).not.toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
+            await waitFor(expectedElement).toBeVisible(25).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
         } else {
             await expect(expectedElement).toExist();
         }

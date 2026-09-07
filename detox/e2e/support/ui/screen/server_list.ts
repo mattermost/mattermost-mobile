@@ -3,7 +3,7 @@
 
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ServerListScreen {
@@ -17,6 +17,9 @@ class ServerListScreen {
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
     serverListTitle = element(by.id(this.testID.serverListTitle));
+
+    // Footer label is what CI actually finds. The footer testID is not
+    // visible on Android (MM-T4691_7 / MM-T4675_2 on 21ea481).
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
@@ -99,11 +102,55 @@ class ServerListScreen {
             await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
             await this.tutorialSwipeLeft.tap();
             await expect(this.tutorialHighlight).not.toExist();
-        } else {
-            await wait(timeouts.ONE_SEC);
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
+            return;
         }
+        await wait(timeouts.ONE_SEC);
+        await device.pressBack();
+        await wait(timeouts.ONE_SEC);
+    };
+
+    scrollServerListIntoView = async () => {
+        if (isIos()) {
+            await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+            return;
+        }
+        if (isAndroid()) {
+            await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
+            await this.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        }
+    };
+
+    swipeRevealOption = async (
+        row: {atIndex: (index: number) => Detox.NativeElement},
+        option: {atIndex: (index: number) => Detox.NativeElement},
+    ) => {
+        await row.atIndex(0).swipe('left', 'slow');
+        const revealed = option.atIndex(0);
+        await waitForElementToExist(revealed, timeouts.TEN_SEC);
+        return revealed;
+    };
+
+    swipeRevealAndTapOption = async (
+        row: {atIndex: (index: number) => Detox.NativeElement},
+        option: {atIndex: (index: number) => Detox.NativeElement},
+    ) => {
+        const revealed = await this.swipeRevealOption(row, option);
+        await revealed.tap({x: 1, y: 1});
+    };
+
+    switchToServer = async (serverDisplayName: string) => {
+        const inactive = this.getServerItemInactive(serverDisplayName);
+        const active = this.getServerItemActive(serverDisplayName);
+        try {
+            await waitForElementToExist(inactive, timeouts.FOUR_SEC);
+            await inactive.atIndex(0).tap();
+        } catch {
+            await waitForElementToExist(active, timeouts.FOUR_SEC);
+            await active.atIndex(0).tap();
+        }
+        await waitFor(ChannelListScreen.headerServerDisplayName).
+            toHaveText(serverDisplayName).
+            withTimeout(timeouts.HALF_MIN);
     };
 }
 

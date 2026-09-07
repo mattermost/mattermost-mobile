@@ -9,7 +9,7 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
@@ -76,7 +76,24 @@ class RecentMentionsScreen {
 
     open = async () => {
         // # Open recent mentions screen
+        if (isIos()) {
+            await wait(timeouts.TWO_SEC);
+            await HomeScreen.mentionsTab.tap();
+            try {
+                return await this.toBeVisible();
+            } catch {
+                // Tab tap can miss under sync-off — retry once.
+                await HomeScreen.mentionsTab.tap();
+                return this.toBeVisible();
+            }
+        }
+
         await HomeScreen.mentionsTab.tap();
+        try {
+            await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            await HomeScreen.mentionsTab.tap({x: 1, y: 1});
+        }
 
         return this.toBeVisible();
     };

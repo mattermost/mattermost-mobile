@@ -21,7 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
@@ -206,7 +206,7 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelScreen.back();
     });
 
-    (isIos() ? it.skip : it)('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
+    it('MM-T3458_1 - should show gallery footer actions and copy public link when enabled', async () => {
         // # Upload an image and create a post via API
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 

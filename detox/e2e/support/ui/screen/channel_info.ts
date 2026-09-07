@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ChannelInfoScreen {
@@ -92,25 +92,50 @@ class ChannelInfoScreen {
     };
 
     toBeVisible = async () => {
-        // Use HALF_MIN for iOS (up from TEN_SEC): after unarchiving/converting a channel,
-        // the navigation stack settles slowly on iOS 26.x, and the channel info screen
-        // can take >10 s to appear. Use polling waitForElementToExist to avoid bridge-idle
-        // sync stalls on both platforms.
+        // HALF_MIN on iOS: after unarchiving/converting a channel the stack settles
+        // slowly on iOS 26.x. Poll so a busy idle timer cannot swallow withTimeout.
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.HALF_MIN;
-        await waitFor(this.channelInfoScreen).toExist().withTimeout(timeout);
+
+        // Existence is not enough for callers: the screen is in the hierarchy while the
+        // push animation is still running, so a caller that immediately asserts a child
+        // toBeVisible() fails the visibility threshold on a view that is mid-transition.
+        // Wait for the container itself to pass that threshold first.
+        await waitForElementToExist(this.channelInfoScreen, timeout);
+        await waitForElementToBeVisible(this.channelInfoScreen, timeout);
 
         return this.channelInfoScreen;
     };
 
     open = async () => {
         // # Open channel info screen
-        await waitFor(ChannelScreen.headerTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            // Keyboard + leftover sheet animations keep Detox idle busy, so
+            // waitFor(headerTitle).toBeVisible() can sit until Jest's 300s cap.
+            await withSynchronizationDisabled(async () => {
+                await ChannelScreen.dismissKeyboard();
+                await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
+                await ChannelScreen.headerTitle.tap();
+                await waitForElementToExist(this.channelInfoScreen, timeouts.HALF_MIN);
+            });
+            return this.channelInfoScreen;
+        }
+
+        await waitForElementToExist(ChannelScreen.headerTitle, timeouts.TEN_SEC);
         await ChannelScreen.headerTitle.tap();
 
         return this.toBeVisible();
     };
 
     close = async () => {
+        if (isIos()) {
+            await withSynchronizationDisabled(async () => {
+                await waitForElementToExist(this.closeButton, timeouts.TEN_SEC);
+                await this.closeButton.tap();
+                await waitForElementToNotExist(this.channelInfoScreen, timeouts.TEN_SEC);
+            });
+            return;
+        }
+
         await waitFor(this.closeButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.closeButton.tap();
         await waitFor(this.channelInfoScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -165,14 +190,8 @@ class ChannelInfoScreen {
     };
 
     copyChannelHeader = async (headerText: string) => {
-        // Long press on header text
-        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyHeaderTextAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
+        await longPressWithRetry(element(by.text(headerText)), copyAction);
 
         // Tap copy — disable sync on Android to avoid Fabric idling-resource deadlock (MM-T868/T869).
         if (isAndroid()) {
@@ -189,27 +208,16 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelHeader = async (headerText: string) => {
-        // Long press on header text
-        await element(by.text(headerText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
-        await waitFor(element(by.id(this.testID.copyHeaderTextAction))).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
-
-        // Cancel
+        await longPressWithRetry(
+            element(by.text(headerText)),
+            element(by.id(this.testID.copyHeaderTextAction)),
+        );
         await element(by.id(this.testID.copyHeaderCancelAction)).tap();
     };
 
     copyChannelPurpose = async (purposeText: string) => {
-        // Long press on purpose text
-        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
         const copyAction = element(by.id(this.testID.copyPurposeAction));
-        await waitFor(copyAction).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
+        await longPressWithRetry(element(by.text(purposeText)), copyAction);
 
         if (isAndroid()) {
             await device.disableSynchronization();
@@ -225,15 +233,10 @@ class ChannelInfoScreen {
     };
 
     cancelCopyChannelPurpose = async (purposeText: string) => {
-        // Long press on purpose text
-        await element(by.text(purposeText)).longPress(timeouts.TWO_SEC);
-
-        // Wait for bottom sheet
-        await waitFor(element(by.id(this.testID.copyPurposeAction))).
-            toBeVisible().
-            withTimeout(timeouts.TWO_SEC);
-
-        // Cancel
+        await longPressWithRetry(
+            element(by.text(purposeText)),
+            element(by.id(this.testID.copyPurposeAction)),
+        );
         await element(by.id(this.testID.copyPurposeCancelAction)).tap();
     };
 
@@ -311,6 +314,18 @@ class ChannelInfoScreen {
             } catch { /* at scroll edge — tap may still work */ }
         }
         await addBookmark.tap({x: 1, y: 1});
+
+        // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
+        // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
+        const addLinkOption = element(by.id('channel_bookmark.type.link'));
+        await withSynchronizationDisabled(async () => {
+            try {
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            } catch {
+                await addBookmark.tap({x: 1, y: 1});
+                await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
+            }
+        });
     };
 
     // Close/reopen channel info to re-trigger bookmark fetch when API-created
@@ -334,6 +349,16 @@ class ChannelInfoScreen {
                 await waitFor(element(bookmarkMatcher)).toExist().withTimeout(perAttemptTimeout);
                 return;
             } catch (error) {
+                for (let swipe = 0; swipe < 3; swipe++) {
+                    try {
+                        await element(by.id(this.testID.bookmarksList)).swipe('left', 'fast', 0.8, 0.5, 0.5);
+                        await waitFor(element(bookmarkMatcher)).toExist().withTimeout(timeouts.TWO_SEC);
+                        return;
+                    } catch {
+                        // Continue through the virtualized horizontal list.
+                    }
+                }
+
                 if (attempt === MAX_RETRIES) {
                     if (textFallback) {
                         const headerMatcher = by.text(textFallback).

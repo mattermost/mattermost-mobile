@@ -37,22 +37,8 @@ appId: ${MAESTRO_APP_ID}
           id: "server_form.server_url.input"
       - eraseText: 50
       - inputText: ${SITE_1_URL}
-      # # Avoid hideKeyboard here — on headless API 35 it can leave the next
-      # TextInput undiscoverable (CI 30216081940). IME next focuses display name
-      # (returnKeyType=next); scroll/wait/tap as fallback.
-      - pressKey: Enter
-      - scrollUntilVisible:
-          element:
-            id: "server_form.server_display_name.input"
-          direction: DOWN
-          timeout: 10000
-          optional: true
-      - extendedWaitUntil:
-          visible:
-            id: "server_form.server_display_name.input"
-          timeout: 15000
       - tapOn:
-          id: "server_form.server_display_name.input"
+          text: "Display Name"
       - eraseText: 50
       - inputText: "Server 1"
       - hideKeyboard

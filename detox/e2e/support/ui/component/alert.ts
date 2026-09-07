@@ -36,9 +36,13 @@ class Alert {
         return isAndroid() ? element(by.text(title)) : element(by.label(title)).atIndex(0);
     };
     logoutNotCompleteTitle = isAndroid() ? element(by.text('Logout not complete')) : element(by.label('Logout not complete')).atIndex(0);
+    termsDeclinedTitle = isAndroid() ? element(by.text('You must accept the terms of service')) : element(by.label('You must accept the terms of service')).atIndex(0);
     removedFromTeamTitle = isAndroid() ? element(by.text('Removed from team')) : element(by.label('Removed from team')).atIndex(0);
     unarchivePrivateChannelTitle = isAndroid() ? element(by.text('Unarchive Private Channel')) : element(by.label('Unarchive Private Channel')).atIndex(0);
     unarchivePublicChannelTitle = isAndroid() ? element(by.text('Unarchive Public Channel')) : element(by.label('Unarchive Public Channel')).atIndex(0);
+
+    // Alert.alert('', msg) from alertErrorWithFallback — empty title, message only.
+    invalidServerResponse = element(by.text('Received invalid response from the server.'));
 
     // alert buttons
     cancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(1);

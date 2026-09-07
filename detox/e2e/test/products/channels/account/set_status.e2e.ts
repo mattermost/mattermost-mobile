@@ -19,8 +19,6 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
 
 describe('Account - Set User Status', () => {
     const serverOneDisplayName = 'Server 1';
@@ -49,33 +47,21 @@ describe('Account - Set User Status', () => {
 
     it('MM-T3251 - should set user status to Away, DND, and Online', async () => {
         // # Tap user presence and select Away
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.awayUserStatusOption.tap();
+        await AccountScreen.selectUserStatus(AccountScreen.awayUserStatusOption);
 
         // * Verify Away status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('away')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('away')).toHaveText('Away');
+        await AccountScreen.waitForUserPresence('away', 'Away');
 
         // # Tap user presence and select Do Not Disturb
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.dndUserStatusOption.tap();
+        await AccountScreen.selectUserStatus(AccountScreen.dndUserStatusOption);
 
         // * Verify DND status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('dnd')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('dnd')).toHaveText('Do Not Disturb');
+        await AccountScreen.waitForUserPresence('dnd', 'Do Not Disturb');
 
         // # Tap user presence and select Online
-        await AccountScreen.userPresenceOption.tap();
-        await wait(timeouts.ONE_SEC);
-        await AccountScreen.onlineUserStatusOption.tap();
+        await AccountScreen.selectUserStatus(AccountScreen.onlineUserStatusOption);
 
         // * Verify Online status is reflected in the account menu
-        await AccountScreen.toBeVisible();
-        await expect(AccountScreen.getUserPresenceIndicator('online')).toBeVisible();
-        await expect(AccountScreen.getUserPresenceLabel('online')).toHaveText('Online');
+        await AccountScreen.waitForUserPresence('online', 'Online');
     });
 });

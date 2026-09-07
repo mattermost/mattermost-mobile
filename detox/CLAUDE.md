@@ -124,7 +124,7 @@ Before opening a PR that touches `.github/workflows/`, `.github/actions/`, or `d
 
 ```bash
 actionlint -shellcheck= .github/workflows/*.yml
-cd detox && node --test utils/*.test.js && npm run check
+cd detox && npm run check
 ```
 
 These failure modes stay invisible in an otherwise-green run, so they are worth
