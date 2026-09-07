@@ -33,7 +33,8 @@
  *   live) and the app honours HTTP/3, so a TCP-only block would leave the QUIC path open.
  * - The anchor is loaded directly (`pfctl -a <anchor> -f <file>`), never by reloading
  *   /etc/pf.conf — that collides with the system-managed ruleset on live hosts
- *   (tuist/tuist#11425: "cannot define table … Resource busy").
+ *   (tuist/tuist#11425: "cannot define table … Resource busy"). The attachment
+ *   point matters as much as the rules: see PFCTL_ANCHOR below.
  *
  * Design property — never green-because-broken: goOffline() polls until the server is
  * genuinely unreachable and throws otherwise, and goOnline() polls until connectivity
@@ -81,7 +82,26 @@ const wait = async (ms: number): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const PFCTL_ANCHOR = 'com.mattermost.e2e.offline';
+// pf evaluates an anchor only when a loaded ruleset contains an anchor rule that
+// reaches it (pf.conf(5): "When evaluation of the main ruleset reaches an anchor
+// rule, packet filter will proceed to evaluate all rules specified in that
+// anchor"). macOS's stock /etc/pf.conf main ruleset carries exactly one filter
+// anchor rule — `anchor "com.apple/*"` — and the trailing `/*` "will only
+// evaluate anchors that are directly attached to the [com.apple] anchor, and
+// will not descend to evaluate anchors recursively".
+//
+// An anchor attached to the main ruleset instead (the old
+// 'com.mattermost.e2e.offline') is therefore never reached: pfctl loads the
+// rules, `pfctl -a <anchor> -s rules` prints them, and the kernel never
+// evaluates a single one. That — not Cloudflare rotation — is why MM-T416
+// failed on every iOS run with the same four edge IPs and the rotation branch
+// in goOfflineIos never fired: curl kept connecting to IPs we had "blocked".
+//
+// Attaching directly under com.apple/ puts the ruleset on the one evaluated
+// path. The 000. prefix sorts it ahead of Apple's own 200.AirDrop and
+// 250.ApplicationFirewall (children are evaluated in alphabetical order), so
+// our `block ... quick` is reached before any of their rules can match first.
+const PFCTL_ANCHOR = 'com.apple/000.mattermostE2E';
 
 // Harness state so goOnline() can restore exactly what goOffline() changed, and so
 // goOnline() is a safe no-op when the suite never went offline (e.g. beforeAll failed).
@@ -151,6 +171,27 @@ const loadOfflinePfAnchor = (ips: string[], port: string): void => {
         '',
     ].join('\n'));
     run(`sudo -n pfctl -a ${PFCTL_ANCHOR} -f ${rulesFile}`);
+};
+
+// An ineffective block is indistinguishable from a rotating edge IP in the error
+// message alone — MM-T416 burned three CI runs on that ambiguity. Dump the state
+// that tells them apart: whether pf is enabled, whether the main ruleset still
+// carries the `anchor "com.apple/*"` rule our anchor hangs off, and whether our
+// rules and table actually made it into the kernel.
+const pfDiagnostics = (): string => {
+    const dump = (label: string, cmd: string): string => {
+        try {
+            return `--- ${label}\n${run(cmd).trim()}`;
+        } catch (error) {
+            return `--- ${label}\n<failed: ${(error as Error).message}>`;
+        }
+    };
+    return [
+        dump('pfctl -s info', 'sudo -n pfctl -s info'),
+        dump('main ruleset (must contain an anchor rule reaching com.apple)', 'sudo -n pfctl -s rules'),
+        dump(`anchor ${PFCTL_ANCHOR} rules`, `sudo -n pfctl -a ${PFCTL_ANCHOR} -s rules`),
+        dump(`anchor ${PFCTL_ANCHOR} table <mm_e2e_blocked>`, `sudo -n pfctl -a ${PFCTL_ANCHOR} -t mm_e2e_blocked -T show`),
+    ].join('\n');
 };
 
 const emulatorCanReachIp = (ip: string): boolean => {
@@ -276,34 +317,53 @@ const goOfflineIos = async (serverUrl: string, ips: string[], port: string) => {
 
     reloadAnchor();
 
-    await pollUntil(
-        async () => {
-            if (!hostCanReachServer(serverUrl)) {
-                return true;
-            }
-
-            // Cloudflare can hand curl a different edge IP than the A/AAAA set we
-            // blocked (CI 33877432724 MM-T416). Add that IP and any newly resolved
-            // records, then keep polling within the same 10s budget.
-            const extra = hostReachableServerIp(serverUrl);
-            const fresh = hostname.match(/^[0-9a-fA-F:.]+$/) ? [] : await resolveServerIps(hostname);
-            let added = false;
-            for (const ip of [...fresh, extra]) {
-                if (ip && !blocked.has(ip)) {
-                    blocked.add(ip);
-                    added = true;
+    // The message is built after the poll, not passed into it: the argument to
+    // pollUntil is evaluated before polling starts, so the old message always
+    // printed the pre-rotation IP set and hid whether the set had grown.
+    let lastReachableIp = '';
+    try {
+        await pollUntil(
+            async () => {
+                if (!hostCanReachServer(serverUrl)) {
+                    return true;
                 }
-            }
-            if (added) {
-                resolvedServerIps = [...blocked];
-                reloadAnchor();
-                logDebug(`[network] pfctl table now has ${blocked.size} edge IPs after rotation`);
-            }
-            return false;
-        },
-        OFFLINE_VERIFY_TIMEOUT_MS,
-        `pfctl block on ${[...blocked].join(' ')}:${port} did not make the server unreachable within ${OFFLINE_VERIFY_TIMEOUT_MS}ms — refusing to continue (a silent block failure would let the post succeed and the test would fail as designed)`,
-    );
+
+                // Cloudflare can hand curl a different edge IP than the A/AAAA set we
+                // blocked (CI 33877432724 MM-T416). Add that IP and any newly resolved
+                // records, then keep polling within the same 10s budget.
+                const extra = hostReachableServerIp(serverUrl);
+                lastReachableIp = extra || lastReachableIp;
+                const fresh = hostname.match(/^[0-9a-fA-F:.]+$/) ? [] : await resolveServerIps(hostname);
+                let added = false;
+                for (const ip of [...fresh, extra]) {
+                    if (ip && !blocked.has(ip)) {
+                        blocked.add(ip);
+                        added = true;
+                    }
+                }
+                if (added) {
+                    resolvedServerIps = [...blocked];
+                    reloadAnchor();
+                    logDebug(`[network] pfctl table now has ${blocked.size} edge IPs after rotation`);
+                }
+                return false;
+            },
+            OFFLINE_VERIFY_TIMEOUT_MS,
+            'offline block ineffective',
+        );
+    } catch {
+        // An already-blocked reachable IP means the ruleset is not being evaluated;
+        // a new IP each poll means the edge is rotating faster than we can block it.
+        // The diagnostics below say which, so this never costs another CI round trip.
+        const stillBlocked = lastReachableIp && blocked.has(lastReachableIp);
+        throw new Error(
+            `pfctl block on [${[...blocked].join(', ')}] port ${port} did not make the server unreachable ` +
+            `within ${OFFLINE_VERIFY_TIMEOUT_MS}ms — refusing to continue (a silent block failure would let ` +
+            'the post succeed and the test would fail as designed). curl last reached ' +
+            `${lastReachableIp || '<unknown>'}, which is ${stillBlocked ? 'IN' : 'NOT in'} the blocked set.\n` +
+            `pf state at failure:\n${pfDiagnostics()}`,
+        );
+    }
 };
 
 const goOnlineIos = async (serverUrl: string) => {
