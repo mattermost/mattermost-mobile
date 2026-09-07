@@ -99,17 +99,30 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: !isMilitaryTime,
-        timeZone: timeZone as string,
-        ...(isCurrentYear ? {} : {year: 'numeric'}),
+    const format = (zone?: string) => {
+        try {
+            const formatted = date.toLocaleString(currentUserLocale, {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: !isMilitaryTime,
+                ...(zone ? {timeZone: zone} : {}),
+                ...(isCurrentYear ? {} : {year: 'numeric'}),
+            });
+            return formatted === 'Invalid Date' ? '' : formatted;
+        } catch {
+            return '';
+        }
     };
 
-    return date.toLocaleString(currentUserLocale, options);
+    // The two Hermes builds disagree on an empty or unknown timeZone: Android (ICU) formats
+    // anyway, while iOS (Foundation) returns the literal string 'Invalid Date' rather than
+    // throwing -- which is how "Send on Invalid Date" reached the Drafts > Scheduled tab on
+    // iOS only (MM-T5720). getUserTimezone() legitimately yields '' for a user who has never
+    // set one, so this is reachable in normal use. Showing the time in the device zone beats
+    // losing the label, so retry without the option.
+    return format(timeZone) || format();
 }
 
 export function formatTime(seconds: number, textTime: boolean = false, intl?: IntlShape) {
