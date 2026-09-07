@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchAccessControlAttributeFields} from '@actions/remote/classification';
-import {CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
-import {CLASSIFICATIONS_SYSTEM_OBJECT_TYPE} from '@constants/classification';
+import {OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
 import DatabaseManager from '@database/manager';
 import {getAccessControlGroupId, getAccessControlValuesForTarget, getPropertyValuesByFieldId} from '@queries/servers/properties';
 import {safeParseJSON} from '@utils/helpers';
@@ -11,10 +10,6 @@ import {logDebug, logError} from '@utils/log';
 
 import type {PropertyValueModel} from '@database/models/server';
 import type ServerDataOperator from '@database/operator/server_data_operator';
-
-// The object types the channel-attributes feature owns inside the shared
-// access_control group.
-const OWNED_OBJECT_TYPES = new Set<PropertyFieldObjectType>([CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CHANNEL_ATTRIBUTE_OBJECT_TYPE]);
 
 export async function handlePropertyFieldCreatedOrUpdated(serverUrl: string, msg: WebSocketMessage) {
     const data = msg.data as {property_field?: string; object_type?: string};

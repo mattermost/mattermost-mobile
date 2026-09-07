@@ -384,5 +384,16 @@ describe('handlePropertyValuesUpdated', () => {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
+
+        it('should no-op when the target has no access_control values to destroy', async () => {
+            // A different target has no access_control values, so destroyValues
+            // receives an empty stale list and the write should be skipped entirely.
+            const otherTarget = 'channel-no-attributes';
+            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: otherTarget}));
+
+            // The original channel's values must be completely untouched.
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+        });
     });
 });

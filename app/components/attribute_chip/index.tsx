@@ -81,32 +81,35 @@ const AttributeChip = ({label, value, color, announceLabel = true, variant = 'in
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const custom = useMemo(() => {
-        if (!color) {
-            return undefined;
+    const {containerStyle, textStyle} = useMemo(() => {
+        if (color) {
+            const foreground = getContrastingSimpleColor(color);
+            if (foreground) {
+                return {
+                    containerStyle: [styles.container, {backgroundColor: color}],
+                    textStyle: [styles.text, {color: foreground}],
+                };
+            }
         }
 
-        const foreground = getContrastingSimpleColor(color);
-        if (!foreground) {
-            // Malformed hex: neutral beats unknown text on an unknown background.
-            return undefined;
-        }
-
-        return {container: {backgroundColor: color}, text: {color: foreground}};
-    }, [color]);
-
-    const neutralBg = variant === 'header' ? styles.neutralContainerHeader : styles.neutralContainer;
-    const neutralFg = variant === 'header' ? styles.neutralTextHeader : styles.neutralText;
+        // Malformed hex or no color: use the neutral fallback for this variant.
+        const neutralBg = variant === 'header' ? styles.neutralContainerHeader : styles.neutralContainer;
+        const neutralFg = variant === 'header' ? styles.neutralTextHeader : styles.neutralText;
+        return {
+            containerStyle: [styles.container, neutralBg],
+            textStyle: [styles.text, neutralFg],
+        };
+    }, [color, variant, styles]);
 
     const displayValue = value.length > MAX_CHARS ? `${value.slice(0, MAX_CHARS)}…` : value;
 
     return (
         <View
-            style={[styles.container, custom ? custom.container : neutralBg]}
+            style={containerStyle}
             testID={testID}
         >
             <Text
-                style={[styles.text, custom ? custom.text : neutralFg]}
+                style={textStyle}
                 numberOfLines={1}
                 ellipsizeMode='tail'
                 accessibilityLabel={announceLabel ? `${label}: ${value}` : value}

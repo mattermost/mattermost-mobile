@@ -6,10 +6,11 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {License} from '@constants';
-import {CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
+    FEATURE_FLAG_CLASSIFICATION_MARKINGS,
 } from '@constants/classification';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {
@@ -20,7 +21,7 @@ import {
 } from '@utils/channel_attributes';
 import {deriveClassificationBannerState} from '@utils/classification';
 
-import {observeConfigBooleanValue, observeIsMinimumLicenseTier} from './system';
+import {getConfigValue, observeConfigBooleanValue, observeIsMinimumLicenseTier} from './system';
 
 import type {PropertyFieldModel, PropertyValueModel, SystemModel} from '@database/models/server';
 
@@ -60,6 +61,21 @@ export const getAccessControlValuesForTarget = async (database: Database, target
         Q.where('target_id', targetId),
         Q.where('group_id', groupId),
     ).fetch();
+};
+
+/**
+ * Returns true when at least one of the two access_control features is on.
+ *
+ * A pure DB read — no remote I/O — so it belongs in the query layer rather than
+ * in the remote action file that imports it.
+ */
+export const isAccessControlPropertiesEnabled = async (database: Database) => {
+    const [classification, channelAttributes] = await Promise.all([
+        getConfigValue(database, FEATURE_FLAG_CLASSIFICATION_MARKINGS),
+        getConfigValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES),
+    ]);
+
+    return classification === 'true' || channelAttributes === 'true';
 };
 
 export const observeClassificationFields = (database: Database) => {

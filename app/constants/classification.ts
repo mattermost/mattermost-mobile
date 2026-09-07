@@ -49,3 +49,6 @@ export const CLASSIFICATIONS_CHANNEL_OBJECT_TYPE = 'channel';
 // How long a successful classification-field fetch stays fresh in the in-memory
 // cache before the global banner mount effect will request it again (1 hour).
 export const CLASSIFICATION_BANNER_CACHE_TTL = 60 * 60 * 1000;
+
+// Feature flag config key for the classification markings system.
+export const FEATURE_FLAG_CLASSIFICATION_MARKINGS = 'FeatureFlagClassificationMarkings';

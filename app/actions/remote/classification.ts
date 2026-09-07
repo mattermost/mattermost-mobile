@@ -6,12 +6,11 @@
 // channel fields alongside every other channel attribute, and the requests here
 // were already scoped by group rather than by field name.
 
-import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {removeStoredFields} from '@actions/local/channel_attributes';
+import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
-    CLASSIFICATIONS_FIELD_NAME,
     CLASSIFICATIONS_SYSTEM_OBJECT_TYPE,
     CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
 } from '@constants/classification';
@@ -19,7 +18,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PROPERTY_FIELDS_SEARCH_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getAccessControlGroupId, getAccessControlValuesForTarget, getPropertyFieldsByGroupId, getPropertyFieldsByIds, getPropertyFieldsByNames} from '@queries/servers/properties';
+import {getAccessControlValuesForTarget, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -28,29 +27,12 @@ import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type {PropertyFieldModel} from '@database/models/server';
-import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
 // Only these types resolve a stored value against the field's option list. A text
 // attribute stores its display string directly, so treating an unmatched value as
 // a stale option would force a field refetch on every text value ever set.
 const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect', 'rank']);
-
-// The object types this feature owns inside the shared access_control group: the
-// system field behind the global classification banner, and the channel fields
-// behind every channel attribute. User and session fields in the same group
-// belong to other features.
-const OWNED_OBJECT_TYPES = new Set<PropertyFieldObjectType>([CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CHANNEL_ATTRIBUTE_OBJECT_TYPE]);
-
-async function isAccessControlPropertiesEnabled(database: Database) {
-    const [classification, channelAttributes] = await Promise.all([
-        getConfigValue(database, 'FeatureFlagClassificationMarkings'),
-        getConfigValue(database, 'FeatureFlagChannelAttributes'),
-    ]);
-
-    return classification === 'true' || channelAttributes === 'true';
-}
 
 /**
  * Fetches every field definition in the access_control group, plus the system
@@ -128,7 +110,7 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
         // stored definitions. The stored fields are re-submitted stamped with a
         // non-zero delete_at, which handlePropertyFields treats as a deletion and
         // cascades to each field's values in a single batch.
-        await removeStoredFields(serverUrl, database, operator);
+        await removeStoredFields(serverUrl);
 
         EphemeralStore.setClassificationBannerFetched(serverUrl);
         return {};
@@ -137,35 +119,6 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
-}
-
-/**
- * Clears the local definitions for this group.
- *
- * Scoped by group id where it is known, so turning the feature off removes every
- * attribute rather than only classification's. The name-based lookup is the
- * fallback for the case where nothing has fetched yet and the group id was never
- * learned — websocket field events write rows without it.
- */
-async function removeStoredFields(serverUrl: string, database: Database, operator: ServerDataOperator) {
-    const groupId = await getAccessControlGroupId(database);
-    const inGroup: PropertyFieldModel[] = groupId ?
-        await getPropertyFieldsByGroupId(database, groupId) :
-        await getPropertyFieldsByNames(database, [CLASSIFICATIONS_FIELD_NAME]);
-
-    // Narrowed to the object types this feature owns. The group is shared — user
-    // and session fields live in it too — and those belong to other features that
-    // are not being turned off here.
-    const stale = inGroup.filter((f) => OWNED_OBJECT_TYPES.has(f.objectType as PropertyFieldObjectType));
-
-    if (stale.length) {
-        await operator.handlePropertyFields({
-            fields: stale.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),
-            prepareRecordsOnly: false,
-        });
-    }
-
-    await setAccessControlGroupId(serverUrl, '');
 }
 
 /**
@@ -186,7 +139,7 @@ export async function fetchChannelAttributeValues(serverUrl: string, channelId: 
         // system-level values fetched by fetchAccessControlAttributeFields, not
         // per-channel values, so the OR gate would cause a wasted network call
         // on every channel switch when only classification is enabled.
-        if ((await getConfigValue(database, 'FeatureFlagChannelAttributes')) !== 'true') {
+        if ((await getConfigValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES)) !== 'true') {
             return {};
         }
 

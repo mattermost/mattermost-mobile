@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {CLASSIFICATIONS_SYSTEM_OBJECT_TYPE} from '@constants/classification';
+
 // ---------------------------------------------------------------------------
 // Channel attributes
 //
@@ -36,7 +38,17 @@ export const DISPLAY_BANNER_BOTTOM = 'display_banner_bottom';
 export const DISPLAY_LABEL_HEADER = 'display_label_header';
 export const DISPLAY_LABEL_INFO = 'display_label_info';
 
+// Feature flag config keys — stored as constants so callers don't spread bare
+// strings and grep can find all references.
+export const FEATURE_FLAG_CHANNEL_ATTRIBUTES = 'FeatureFlagChannelAttributes';
+
 // Neutral chip colours for the dark channel header. Shared between AttributeChip
 // and the +N overflow pill in ChannelAttributeLabels so both stay in sync.
 export const NEUTRAL_CHIP_HEADER_BG = '#DADCE0';
 export const NEUTRAL_CHIP_HEADER_TEXT = '#1D2433';
+
+// The PropertyField object_types this feature owns inside the shared
+// access_control group. Used to scope deletions and field-event fanout to only
+// the rows that belong here — the group is shared with user/session fields that
+// belong to other features.
+export const OWNED_OBJECT_TYPES = new Set<PropertyFieldObjectType>([CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CHANNEL_ATTRIBUTE_OBJECT_TYPE]);

@@ -36,6 +36,10 @@ const TEST_FIELD_OPTIONS = [
 
 // Second field for multi-chip tests (2 fields = MAX_VISIBLE_CHIPS boundary; no overflow).
 const SECOND_FIELD_NAME = 'classification2';
+
+// All test field names in one place so cleanup calls stay consistent if a new
+// field is ever added to the suite.
+const ALL_TEST_FIELD_NAMES = [TEST_FIELD_NAME, SECOND_FIELD_NAME] as const;
 const SECOND_FIELD_OPTIONS = [
     {id: 'attropt2high00000000000000', name: 'HIGH2', color: '#CC0000', rank: 1}, // 12+14=26
 ];
@@ -80,7 +84,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
 
         // Defensive cleanup — a prior interrupted run may have left required attribute fields that
         // would block channel creation. Do this before any channel is created.
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
+        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
         canControlFlag = await disableChannelAttributes(siteOneUrl);
 
         // Create a shared team and user. Channels are created per-test so that each test can
@@ -101,7 +105,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         }
 
         try {
-            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
             if (canControlFlag) {
                 await disableChannelAttributes(siteOneUrl);
             }
@@ -128,7 +132,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
             await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [TEST_FIELD_NAME, SECOND_FIELD_NAME]);
+        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
 
         // Unconditional: T6311 enables ClassificationMarkings; ensure it is always off.
         await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
