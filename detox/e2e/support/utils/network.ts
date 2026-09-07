@@ -11,12 +11,15 @@
  * parallel workers is allowed.
  *
  * - Android: airplane mode via adb — emulator-local, works on CI's Ubuntu runners.
- * - iOS: the simulator shares the host's network with no per-simulator control, so the
- *   host blocks the test server itself through a pfctl anchor scoped to the server's
- *   resolved IPs and port. GitHub-hosted macOS runners have passwordless sudo (per
- *   GitHub's runner docs) and each Detox iOS shard runs on its own runner VM, so the
- *   block cannot reach other shards. Requires root: probed non-interactively with
- *   `sudo -n`; unavailable hosts skip loudly with the reason printed at runtime.
+ *   This is the only supported platform, and it is a genuine offline: airplane mode
+ *   kills routing outright and never has to enumerate the server's addresses.
+ * - iOS: NOT SUPPORTED. isNetworkControlAvailable() always returns false, so suites
+ *   gated on it skip loudly with the reason. The pfctl machinery below is retained
+ *   and is correct — the anchor attachment point was device-verified on macOS — but
+ *   it blocks a table of resolved IPs, and the Cloudflare-fronted E2E servers answer
+ *   AAAA from anycast space with a different address per lookup. The app dials one
+ *   that was never in the table. See IOS_OFFLINE_UNSUPPORTED_REASON for the full
+ *   account, including the two detection attempts that were not reliable.
  *
  * Scoping rules (load-bearing):
  * - ONLY the resolved IPs of the test server host are blocked — never CDN ranges
@@ -46,14 +49,14 @@
  * - Android offline: an internet ICMP canary (8.8.8.8) — airplane mode kills all
  *   routing, and the server's Cloudflare edge does not answer ICMP (verified), so
  *   the canary is the only honest "everything is down" signal from the emulator.
- * - iOS offline: the server itself over TCP — the pf block is scoped to the server's
- *   IPs only, so an internet canary stays reachable BY DESIGN and must never be
- *   consulted on iOS. The check is hostname-based curl rather than a per-IP connect:
- *   if Cloudflare rotation hands the app a different edge IP than the ones blocked,
- *   a per-IP check would pass while the app's request still succeeds — the hostname
- *   check catches that bypass and fails the run. It must query BOTH address
- *   families: a bare curl picks IPv4, and an IPv4-only view of reachability once
- *   reported "offline" while the app posted successfully over IPv6 (status 201).
+ * - iOS offline (unreachable today — kept correct for if the servers leave the CDN):
+ *   the server itself over TCP. The pf block is scoped to the server's IPs only, so
+ *   an internet canary stays reachable BY DESIGN and must never be consulted on iOS.
+ *   The check is hostname-based curl rather than a per-IP connect, and must query
+ *   BOTH address families: a bare curl picks IPv4, and an IPv4-only view of
+ *   reachability once reported "offline" while the app posted successfully over
+ *   IPv6 (status 201). Note this still cannot exercise HTTP/3 — the system curl has
+ *   no h3 support — which is part of why iOS is refused outright rather than probed.
  * - Both platforms online: the server itself (Android: TCP connect from the emulator
  *   via nc; iOS: curl from the host), never the canary.
  */
@@ -126,55 +129,40 @@ const tryRun = (cmd: string): boolean => {
     }
 };
 
-// The pf block is a table of resolved addresses, so it can only work if the set the
-// app dials is stable and enumerable. Cloudflare hands the E2E hostnames a different
-// AAAA on nearly every lookup (measured: five lookups, four distinct addresses, e.g.
-// 2606:4700:83b2:7ab5:879e:0:94bb:d53c then 2606:4700:90d2:7ab5:87c5:0:94bb:d53c),
-// while the A records stay put. The app therefore resolves an IPv6 address that was
-// never in our table and connects straight past the block. Covering that would mean
-// blocking 2606:4700::/32 -- all of Cloudflare -- which the scoping rules above
-// forbid outright, since registry.npmjs.org sits behind the same range.
+// iOS offline is not supported, and this is a hard refusal rather than a probe.
 //
-// So detect it and skip loudly instead of pretending to be offline. Sync on purpose:
-// the caller gates a `describe` at module load and cannot await. A missing `dig`, or
-// any lookup failure, is treated as "cannot pin" -- refusing costs a skipped test,
-// while a wrong "available" silently runs the suite against a live server.
-// Cloudflare's IPv6 space. Every rotating address observed for the E2E hosts has
-// fallen inside it, and the A records that sit alongside them (104.18.x) are
-// Cloudflare too, so an AAAA in this range means the edge is anycast and the
-// address the app dials cannot be enumerated ahead of time.
-const CLOUDFLARE_IPV6_PREFIX = '2606:4700:';
-
-const hasPinnableIpv6 = (hostname: string): boolean => {
-    let records: string[];
-    try {
-        records = run(`dig +short AAAA ${hostname}`).
-            split('\n').
-            map((line) => line.trim().toLowerCase()).
-            filter(Boolean);
-    } catch {
-        // No dig, or the lookup failed. Refusing costs a skipped test; guessing
-        // "available" runs the suite against a server we never disconnected.
-        return false;
-    }
-
-    // No AAAA at all: the app can only use IPv4, which the A-record block covers.
-    if (!records.length) {
-        return true;
-    }
-
-    // Deterministic on purpose. The first version of this sampled two lookups and
-    // called the host pinnable when they matched — but rotation is probabilistic,
-    // and repeated lookups of the same host return duplicates often enough that
-    // the check passed on CI while failing locally (run 34146969443: MM-T416 ran
-    // instead of skipping, then failed exactly as it had before). Whether an
-    // address is inside Cloudflare's range does not depend on which sample we drew.
-    return !records.some((record) => record.startsWith(CLOUDFLARE_IPV6_PREFIX));
-};
-
-const isLoopbackHost = (hostname: string): boolean => {
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '10.0.2.2';
-};
+// The mechanism blocks a table of resolved addresses, so it can only work when the
+// set the app dials is enumerable. Every Mattermost E2E server is Cloudflare-fronted
+// and answers AAAA from anycast space with a different address on nearly every
+// lookup (measured on the CI host: twelve lookups, four distinct addresses):
+//
+//   2606:4700:83b2:7ab5:879e:0:94bb:d53c
+//   2606:4700:90d2:7ab5:87c5:0:94bb:d53c
+//   2606:4700:9762:7ab5:8743:0:94bb:d53c
+//
+// while the A records stay put. The app resolves an address that was never in our
+// table and connects straight past the block: on run 34146969443 the "offline" post
+// came back 201. Covering it would mean blocking 2606:4700::/32 -- all of Cloudflare
+// -- which the scoping rules above forbid, since registry.npmjs.org is behind it too.
+//
+// Two earlier attempts tried to detect the condition instead of stating it, and both
+// were wrong in the same way: they could return "available" on the runner while
+// returning "unavailable" here. Comparing two AAAA lookups fails because rotation is
+// probabilistic and duplicates are common. Checking for a Cloudflare prefix fails
+// when the runner's resolver returns no AAAA at all, which reads as "IPv4 only" and
+// lets the suite run. Neither has evidence from inside the runner to stand on, and a
+// wrong "available" costs a red test while a wrong "unavailable" costs a skip.
+//
+// So there is nothing to detect. Android keeps this coverage -- airplane mode is a
+// genuine offline and never enumerates IPs -- and MM-T416 passes there. Revisit only
+// if the E2E servers stop sitting behind a CDN; the pf machinery below is correct and
+// device-verified (anchor evaluation confirmed on macOS), it just cannot pin an
+// anycast edge.
+const IOS_OFFLINE_UNSUPPORTED_REASON =
+    'the E2E servers are Cloudflare-fronted and answer AAAA from anycast space with a ' +
+    'different address per lookup, so a pf table of resolved IPs cannot cover the address ' +
+    'the app dials (run 34146969443: the "offline" post returned 201). Android keeps this ' +
+    'coverage via airplane mode, which does not depend on enumerating IPs.';
 
 const resolveHost = async (serverUrl: string): Promise<{hostname: string; port: string}> => {
     const parsed = new URL(serverUrl);
@@ -300,33 +288,19 @@ export const isNetworkControlAvailable = (serverUrl: string): boolean => {
         }
     }
 
-    // iOS — pfctl anchor path.
-    if (!tryRun('which pfctl')) {
-        logDebug('[network] iOS offline unavailable: pfctl not found');
-        return false;
-    }
-
-    // Non-interactive sudo: CI macOS runners have passwordless sudo; local Macs
-    // without it cannot load pf rules and must not hang on a password prompt.
-    if (!tryRun('sudo -n true')) {
-        logDebug('[network] iOS offline unavailable: passwordless sudo not available (required for pfctl)');
-        return false;
-    }
-    let hostname = '';
+    // iOS — always unavailable. The pfctl / sudo / loopback probes that used to
+    // gate this are gone on purpose: every one of them could pass while the block
+    // still failed to cover the address the app dialled, and a partial probe that
+    // sometimes says "available" is how MM-T416 ran on CI after being made to skip
+    // locally. See IOS_OFFLINE_UNSUPPORTED_REASON.
+    let hostname = serverUrl;
     try {
         ({hostname} = new URL(serverUrl));
     } catch {
-        hostname = '';
+        // Keep the raw value for the log line; it is only used for the message.
     }
-    if (!hostname || isLoopbackHost(hostname)) {
-        logDebug(`[network] iOS offline unavailable: server hostname (${hostname || '<unparseable>'}) is not a remotely routed host (loopback targets are refused: blocking lo0 would also kill the app<->Detox sync channel)`);
-        return false;
-    }
-    if (!hasPinnableIpv6(hostname)) {
-        logDebug(`[network] iOS offline unavailable: ${hostname} is served from Cloudflare's anycast IPv6 range, which hands out a different AAAA per lookup, so a pf table of resolved IPs cannot cover the address the app dials — it reaches the server over IPv6 while the block only holds the addresses we happened to resolve. Android keeps this coverage: airplane mode is a genuine offline and does not depend on enumerating IPs.`);
-        return false;
-    }
-    return true;
+    logDebug(`[network] iOS offline unavailable for ${hostname}: ${IOS_OFFLINE_UNSUPPORTED_REASON}`);
+    return false;
 };
 
 // ICMP canary for emulator reachability. The E2E servers are Cloudflare-fronted and
