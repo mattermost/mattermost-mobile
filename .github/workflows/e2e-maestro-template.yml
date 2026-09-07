@@ -369,24 +369,12 @@ jobs:
           source detox/maestro/.maestro-test-env.sh
           set +a
 
-          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
-          # in the Mattermost server config — verified during local maestro
-          # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          # Always restore the default before exiting this step, regardless
-          # of whether the maestro run passes.
-          trap 'curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
-            echo "==> Restored AllowDownloadLogs=true"' EXIT
+          # The flow flips SupportSettings.AllowDownloadLogs=false in its own
+          # onFlowStart hook and restores true in onFlowComplete
+          # (detox/maestro/fixtures/set_allow_download_logs.js), so this step
+          # only runs it; a local `maestro test` of the same file does the same.
+          # The always() restore step below stays as the safety net for runner
+          # hard-kills, which never reach onFlowComplete.
 
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
@@ -402,6 +390,28 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Standalone restore independent of the dedicated T67856_4 step:
+          # its in-step EXIT trap does not fire on runner hard-kills and is
+          # skipped entirely when the step is skipped, while transient restore
+          # failures are masked by continue-on-error. Setting true when already
+          # true is a harmless no-op, which keeps this safe when multiple jobs
+          # share one server and a concurrent job re-flipped the flag.
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -855,9 +865,9 @@ jobs:
           detox/maestro/scripts/run_ci_batches.sh --platform android
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
-        # Isolated step: patch server config to AllowDownloadLogs=false, run
-        # the single flow, restore on exit. continue-on-error so the main
-        # report stays authoritative.
+        # Isolated step: the flow patches AllowDownloadLogs=false in onFlowStart and
+        # restores it in onFlowComplete, so it must not share a batch with attach_logs.yml.
+        # continue-on-error keeps the main batch report authoritative.
         # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
         if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
@@ -866,22 +876,12 @@ jobs:
           source detox/maestro/.maestro-test-env.sh
           set +a
 
-          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
-          # in the Mattermost server config — verified during local maestro
-          # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          trap 'curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
-            echo "==> Restored AllowDownloadLogs=true"' EXIT
+          # The flow flips SupportSettings.AllowDownloadLogs=false in its own
+          # onFlowStart hook and restores true in onFlowComplete
+          # (detox/maestro/fixtures/set_allow_download_logs.js), so this step
+          # only runs it; a local `maestro test` of the same file does the same.
+          # The always() restore step below stays as the safety net for runner
+          # hard-kills, which never reach onFlowComplete.
 
           ~/.maestro/bin/maestro test \
             --format junit \
@@ -897,6 +897,24 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Android copy of the iOS restore step — see that step for the
+          # rationale (trap-less hard-kill and skip-path coverage).
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()

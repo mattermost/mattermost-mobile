@@ -19,7 +19,9 @@ import {
     waitForElementToNotExist,
     withSynchronizationDisabled,
 } from '@support/utils';
-import {waitFor} from 'detox';
+import {expect, waitFor} from 'detox';
+
+const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
 class ChannelListScreen {
     testID = {
@@ -92,6 +94,11 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
+        try {
+            await this.channelList.scrollTo('top');
+        } catch {
+            // The list may already be at its boundary.
+        }
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -114,7 +121,7 @@ class ChannelListScreen {
                         this.getChannelItemDisplayName(cat, channelName),
                         Math.min(timeouts.THREE_SEC, remaining),
                     );
-                    return;
+                    return cat;
                 } catch {
                     // Not in this category yet — try the next
                 }
@@ -155,30 +162,62 @@ class ChannelListScreen {
     };
 
     tapSidebarPublicChannelDisplayName = async (channelName: string, timeout = timeouts.ONE_MIN) => {
-        await this.waitForSidebarPublicChannelDisplayNameVisible(channelName, timeout);
-        const categories = ['channels', 'unreads', 'favorites'] as const;
+        const category = await this.waitForSidebarPublicChannelDisplayNameVisible(channelName, timeout);
+        const container = this.getChannelItem(category, channelName);
+        const label = this.getChannelItemDisplayName(category, channelName);
 
-        /* eslint-disable no-await-in-loop -- sequential fallback: each probe must complete */
-        for (const cat of categories) {
-            const container = this.getChannelItem(cat, channelName);
-            const label = this.getChannelItemDisplayName(cat, channelName);
-            try {
-                await waitForElementToExist(container, timeouts.TWO_SEC);
-                await container.tap();
-                return;
-            } catch {
-                // Container not hittable — try the label as a fallback
+        if (isIos()) {
+            /* eslint-disable no-await-in-loop -- bounded visibility scan */
+            for (let attempt = 0; attempt < MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS; attempt++) {
+                try {
+                    await expect(label).toBeVisible(40);
+                    break;
+                } catch {
+                    try {
+                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    } catch {
+                        // The final assertion reports if the list edge still clips the row.
+                    }
+                }
             }
+            /* eslint-enable no-await-in-loop */
+            await expect(label).toBeVisible(40);
+
+            // The last row can remain clipped by the tab bar, so tap its exposed top edge.
+            await container.tap({x: 20, y: 2});
+            return;
+        }
+
+        /* eslint-disable no-await-in-loop -- bounded retry: scroll until the clipped row is visible */
+        for (let attempt = 0; attempt < MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS; attempt++) {
             try {
-                await waitForElementToExist(label, timeouts.TWO_SEC);
-                await label.tap();
-                return;
+                await expect(label).toBeVisible(15);
+                break;
             } catch {
-                // Try next category
+                try {
+                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                } catch {
+                    // List edge reached — the taps below still report if it stays clipped.
+                }
             }
         }
         /* eslint-enable no-await-in-loop */
-        throw new Error(`Sidebar channel item not found for channel: ${channelName}; searched categories: [${categories.join(', ')}]`);
+
+        try {
+            await waitForElementToExist(container, timeouts.TWO_SEC);
+            await container.tap();
+            return;
+        } catch {
+            // Container not hittable — try the label as a fallback
+        }
+        try {
+            await waitForElementToExist(label, timeouts.TWO_SEC);
+            await label.tap();
+            return;
+        } catch {
+            // Report the resolved category below.
+        }
+        throw new Error(`Sidebar channel item not hittable for channel: ${channelName}; category: ${category}`);
     };
 
     getTeamItemSelected = (teamId: string) => {
@@ -197,8 +236,6 @@ class ChannelListScreen {
         await dismissKnownModals(5);
     };
 
-    // Leftover gorhom post-options keep Detox idle busy, so beforeEach
-    // waitFor() never times out (MM-T4911_4 hook 300s after MM-T4911_3).
     private dismissPostOptionsIfOpen = async (): Promise<void> => {
         const sheet = element(by.id('post_options.screen'));
         try {
@@ -273,6 +310,24 @@ class ChannelListScreen {
         /* eslint-enable no-await-in-loop */
     };
 
+    recoverFromCategoriesLoadError = async () => {
+        try {
+            const retryButton = element(by.text('Retry')).atIndex(0);
+            await waitForElementToExist(retryButton, timeouts.TWO_SEC);
+            // eslint-disable-next-line no-console
+            console.warn('[ChannelListScreen] Categories failed to load — tapping the app\'s Retry');
+            await retryButton.tap();
+        } catch {
+            // Not the categories error state (list may just be loading).
+            return;
+        }
+        try {
+            await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
+        } catch {
+            // Loading indicator already gone or never shown.
+        }
+    };
+
     toBeVisible = async (timeout = timeouts.HALF_MIN) => {
         const recoverAndWait = async () => {
             try {
@@ -289,6 +344,12 @@ class ChannelListScreen {
                 await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
             } catch {
                 // Loading indicator already gone or never shown.
+            }
+
+            try {
+                await waitForElementToExist(this.channelList, timeouts.THREE_SEC);
+            } catch {
+                await this.recoverFromCategoriesLoadError();
             }
 
             // FlashList unmounts while categories are loading — waiting only for
@@ -337,6 +398,7 @@ class ChannelListScreen {
                 } catch {
                     // Loading indicator already gone or never shown.
                 }
+                await this.recoverFromCategoriesLoadError();
                 await waitForElementToExist(this.channelList, timeouts.TWO_MIN);
             } catch (recoveryError) {
                 // eslint-disable-next-line no-console
@@ -353,13 +415,23 @@ class ChannelListScreen {
         if (isIos()) {
             return withSynchronizationDisabled(async () => {
                 await this.dismissPostOptionsIfOpen();
-                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                try {
+                    await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                } catch {
+                    await this.popBackUntilChannelList();
+                    await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+                }
                 await HomeScreen.channelListTab.tap();
                 return this.toBeVisible();
             });
         }
 
-        await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        try {
+            await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        } catch {
+            await this.popBackUntilChannelList();
+            await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
+        }
         await HomeScreen.channelListTab.tap();
 
         return this.toBeVisible();

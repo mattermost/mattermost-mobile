@@ -16,6 +16,7 @@
 
 import {
     acquireLock,
+    assertLockOwnership,
     formatError,
     releaseLock,
     type AcquireLockOptions,
@@ -31,6 +32,13 @@ export type ServerLock = {
     createOwner: () => string;
     acquire: (baseUrl: string, owner: string, options?: AcquireLockOptions) => Promise<void>;
     release: (baseUrl: string, owner: string) => Promise<void>;
+
+    /**
+     * Throw unless `owner` still holds the lock. Cheap (one admin-preference read): call it
+     * before config mutations and in beforeEach so a stolen lock fails the test immediately
+     * with the stealer's identity instead of as downstream banner timeouts.
+     */
+    assertOwnership: (baseUrl: string, owner: string) => Promise<void>;
 };
 
 const loginAsAdmin = async (baseUrl: string, lockName: string) => {
@@ -110,5 +118,8 @@ export const createServerLock = (lockName: string): ServerLock => {
 
         release: (baseUrl: string, owner: string) =>
             releaseLock(createPreferenceLockStore(baseUrl, lockName), owner),
+
+        assertOwnership: (baseUrl: string, owner: string) =>
+            assertLockOwnership(createPreferenceLockStore(baseUrl, lockName), owner),
     };
 };

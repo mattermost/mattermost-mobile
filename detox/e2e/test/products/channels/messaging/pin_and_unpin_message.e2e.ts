@@ -26,47 +26,11 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
-    if (!isAndroid()) {
-        await ChannelScreen.openPostOptionsFor(postId, message);
-        return;
-    }
-
-    const flatList = ChannelScreen.getFlatPostList();
-    const target = element(
-        by.text(message).withAncestor(by.id(`channel.post_list.post.${postId}`)),
-    );
-
-    await waitFor(target).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await flatList.scroll(100, 'down', 0.5, 0.5);
-        } catch {
-            // Ignore scroll failures at list boundaries.
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await wait(timeouts.THREE_SEC);
-        // eslint-disable-next-line no-await-in-loop
-        await target.longPress(timeouts.FIVE_SEC);
-
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.TWO_SEC);
-            return;
-        } catch {
-            if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
-            }
-        }
-    }
+    await ChannelScreen.openPostOptionsFor(postId, message);
 }
 
 async function expectPinnedPostAbove(upperPostId: string, upperMessage: string, lowerPostId: string, lowerMessage: string) {
@@ -150,8 +114,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: BACK_INDEX / pin on thread
-    it.skip('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
+    it('MM-T4865_2 - should be able to pin/unpin a message via post options on thread screen', async () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
