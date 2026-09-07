@@ -37,8 +37,6 @@ import {expect} from 'detox';
 
 const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
 
-const itThreeServersNotIos = isIos() ? it.skip : itWithThreeServers;
-
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
@@ -179,7 +177,7 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    itThreeServersNotIos('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
+    itWithThreeServers('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 

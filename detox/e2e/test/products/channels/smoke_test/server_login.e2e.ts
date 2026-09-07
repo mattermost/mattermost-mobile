@@ -26,11 +26,10 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 const itWithSecondServer = hasSecondServer ? it : it.skip;
-const itSecondServerNotIos = isIos() ? it.skip : itWithSecondServer;
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -61,7 +60,7 @@ describe('Smoke Test - Server Login', () => {
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
     });
 
-    itSecondServerNotIos('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
+    itWithSecondServer('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();
