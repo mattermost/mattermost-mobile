@@ -34,7 +34,7 @@ export type EphemeralModeCleanupAuditEvent = EphemeralModeAuditEventBase & {
 
 export type EphemeralModeSessionWipeAuditEvent = EphemeralModeAuditEventBase & {
     kind: typeof EphemeralModeAuditEventKind.SessionWipe;
-    userId: string;
+    signature: string;
 };
 
 export type EphemeralModeAuditEvent =

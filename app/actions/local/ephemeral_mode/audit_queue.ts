@@ -37,7 +37,7 @@ export const settleAuditEvents = (serverUrl: string, consumed: Set<string>, fail
         map((event) => (failed.has(event.id) ? {...event, attempts: event.attempts + 1} : event)));
 };
 
-// /purge and /cleanup are attributed to the sending session, so keep only /wipe (has its own user_id); drop everything if the server itself is removed.
+// /purge and /cleanup are attributed to the sending session, so keep only /wipe (uses signature as a proof of ownership); drop everything if the server itself is removed.
 export const pruneAuditQueueOnSessionEnd = (serverUrl: string, serverRemoved: boolean) => {
     return updateAuditQueue(serverUrl, (events) => {
         const keep = serverRemoved ? [] : events.filter(({kind}) => kind === EphemeralModeAuditEventKind.SessionWipe);

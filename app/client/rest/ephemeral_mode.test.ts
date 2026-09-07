@@ -62,14 +62,14 @@ describe('ClientEphemeralMode', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
-    it('should POST user_id and wipe_at to the wipe route', async () => {
+    it('should POST signature and wipe_at to the wipe route', async () => {
         const expectedUrl = `${client.urlVersion}/ephemeral_mode/wipe`;
         const expectedOptions = {
             method: 'post',
-            body: {user_id: 'user123', wipe_at: 3000},
+            body: {signature: 'signature123', wipe_at: 3000},
         };
 
-        await client.logSessionWipe('user123', 3000);
+        await client.logSessionWipe('signature123', 3000);
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
@@ -78,10 +78,10 @@ describe('ClientEphemeralMode', () => {
         const expectedUrl = `${client.urlVersion}/ephemeral_mode/wipe`;
         const expectedOptions = {
             method: 'post',
-            body: {user_id: 'user123', wipe_at: 3000, error_reason: 'terminateSession failed: databaseOperation'},
+            body: {signature: 'signature123', wipe_at: 3000, error_reason: 'terminateSession failed: databaseOperation'},
         };
 
-        await client.logSessionWipe('user123', 3000, 'terminateSession failed: databaseOperation');
+        await client.logSessionWipe('signature123', 3000, 'terminateSession failed: databaseOperation');
 
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });

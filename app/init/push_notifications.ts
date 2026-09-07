@@ -27,7 +27,6 @@ import {Device, Events, PushNotification, Screens} from '@constants';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
-import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
@@ -215,28 +214,27 @@ class PushNotificationsSingleton {
             if (notification.userInteraction) {
                 DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
             } else {
-                const auditEventId = await this.enqueueSessionWipeAuditEvent(serverUrl);
+                const auditEventId = await this.enqueueSessionWipeAuditEvent(serverUrl, notification.payload?.signature);
                 DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, auditEventId});
             }
         }
     };
 
-    enqueueSessionWipeAuditEvent = async (serverUrl: string): Promise<string | undefined> => {
+    enqueueSessionWipeAuditEvent = async (serverUrl: string, signature?: string): Promise<string | undefined> => {
         if (!EphemeralModeManager.isEphemeralModeEnabled(serverUrl)) {
             logDebug('enqueueSessionWipeAuditEvent: ephemeral mode not enabled for', serverUrl);
             return undefined;
         }
 
-        try {
-            const credentials = await getServerCredentials(serverUrl);
-            if (!credentials) {
-                logDebug('enqueueSessionWipeAuditEvent: no credentials for', serverUrl);
-                return undefined;
-            }
+        if (!signature) {
+            logDebug('enqueueSessionWipeAuditEvent: no signature for', serverUrl);
+            return undefined;
+        }
 
+        try {
             return await enqueueAuditEvent(serverUrl, {
                 kind: EphemeralModeAuditEventKind.SessionWipe,
-                userId: credentials.userId,
+                signature,
                 occurredAt: Date.now(),
             });
         } catch (error) {

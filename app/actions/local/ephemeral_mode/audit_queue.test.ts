@@ -140,7 +140,7 @@ describe('pruneAuditQueueOnSessionEnd', () => {
         });
         await enqueueAuditEvent(serverUrl, {
             kind: EphemeralModeAuditEventKind.SessionWipe,
-            userId: 'user1',
+            signature: 'sig1',
             occurredAt: 3000,
         });
     });

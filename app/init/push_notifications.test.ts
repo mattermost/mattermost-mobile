@@ -11,7 +11,6 @@ import {openNotification} from '@actions/remote/notifications';
 import {Device, Events, PushNotification, Screens} from '@constants';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
@@ -97,10 +96,6 @@ jest.mock('@managers/ephemeral_mode_manager', () => ({
 jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
     enqueueAuditEvent: jest.fn(),
 }));
-jest.mock('@init/credentials', () => ({
-    getServerCredentials: jest.fn(),
-}));
-
 describe('PushNotifications', () => {
     let pushNotifications: typeof PushNotifications;
 
@@ -496,7 +491,6 @@ describe('PushNotifications', () => {
             jest.spyOn(DeviceEventEmitter, 'emit');
             jest.spyOn(Date, 'now').mockReturnValue(NOW);
             jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(false);
-            jest.mocked(getServerCredentials).mockResolvedValue(null);
             jest.mocked(enqueueAuditEvent).mockResolvedValue('audit-evt-1');
         });
 
@@ -506,10 +500,10 @@ describe('PushNotifications', () => {
 
         it('should emit session expired event on user interaction without enqueueing an audit event', async () => {
             jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
-            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
             const notification = {
                 payload: {
                     server_url: SERVER_URL,
+                    signature: 'sig1',
                 },
                 userInteraction: true,
             };
@@ -522,10 +516,10 @@ describe('PushNotifications', () => {
 
         it('should enqueue a sessionWipe audit event and emit server logout event on an ephemeral-mode server without user interaction', async () => {
             jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
-            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
             const notification = {
                 payload: {
                     server_url: SERVER_URL,
+                    signature: 'sig1',
                 },
                 userInteraction: false,
             };
@@ -534,7 +528,7 @@ describe('PushNotifications', () => {
 
             expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
                 kind: EphemeralModeAuditEventKind.SessionWipe,
-                userId: 'user1',
+                signature: 'sig1',
                 occurredAt: NOW,
             });
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: 'audit-evt-1'});
@@ -545,6 +539,7 @@ describe('PushNotifications', () => {
             const notification = {
                 payload: {
                     server_url: SERVER_URL,
+                    signature: 'sig1',
                 },
                 userInteraction: false,
             };
@@ -555,9 +550,8 @@ describe('PushNotifications', () => {
             expect(DeviceEventEmitter.emit).toHaveBeenCalledWith(Events.SERVER_LOGOUT, {serverUrl: SERVER_URL, auditEventId: undefined});
         });
 
-        it('should emit server logout event without enqueueing when there are no keychain credentials', async () => {
+        it('should emit server logout event without enqueueing when the notification payload has no signature', async () => {
             jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
-            jest.mocked(getServerCredentials).mockResolvedValue(null);
             const notification = {
                 payload: {
                     server_url: SERVER_URL,
@@ -573,11 +567,11 @@ describe('PushNotifications', () => {
 
         it('should still emit server logout event when enqueueing the audit event rejects', async () => {
             jest.mocked(EphemeralModeManager.isEphemeralModeEnabled).mockReturnValue(true);
-            jest.mocked(getServerCredentials).mockResolvedValue({serverUrl: SERVER_URL, userId: 'user1', token: 'token'});
             jest.mocked(enqueueAuditEvent).mockRejectedValue(new Error('queue write failed'));
             const notification = {
                 payload: {
                     server_url: SERVER_URL,
+                    signature: 'sig1',
                 },
                 userInteraction: false,
             };

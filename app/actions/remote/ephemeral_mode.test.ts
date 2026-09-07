@@ -58,7 +58,7 @@ describe('flushAuditQueue', () => {
     it('should send one event of each kind to its matching client method, oldest-first, then clear the queue', async () => {
         await seed({kind: EphemeralModeAuditEventKind.OfflinePurge, offlineTimeMinutes: 30, occurredAt: 1000});
         await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 2, playbookRunsDeleted: 0, occurredAt: 2000});
-        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 3000});
+        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 3000});
 
         const client = makeClient();
         jest.mocked(NetworkManager.getClient).mockReturnValue(client as any);
@@ -67,7 +67,7 @@ describe('flushAuditQueue', () => {
 
         expect(client.logOfflinePurge).toHaveBeenCalledWith(30, 1000, undefined);
         expect(client.logCleanup).toHaveBeenCalledWith(2, 0, 2000, undefined);
-        expect(client.logSessionWipe).toHaveBeenCalledWith('user1', 3000, undefined);
+        expect(client.logSessionWipe).toHaveBeenCalledWith('sig1', 3000, undefined);
 
         const purgeOrder = client.logOfflinePurge.mock.invocationCallOrder[0];
         const cleanupOrder = client.logCleanup.mock.invocationCallOrder[0];
@@ -151,7 +151,7 @@ describe('flushAuditQueue', () => {
 
     it('should forward a queued sessionWipe event\'s errorReason to logSessionWipe as its third argument', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
-            {id: 'evt1', kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 1000, attempts: 0, errorReason: 'terminateSession failed: databaseOperation'},
+            {id: 'evt1', kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 1000, attempts: 0, errorReason: 'terminateSession failed: databaseOperation'},
         ]);
 
         const client = makeClient();
@@ -159,7 +159,7 @@ describe('flushAuditQueue', () => {
 
         await flushAuditQueue(serverUrl);
 
-        expect(client.logSessionWipe).toHaveBeenCalledWith('user1', 1000, 'terminateSession failed: databaseOperation');
+        expect(client.logSessionWipe).toHaveBeenCalledWith('sig1', 1000, 'terminateSession failed: databaseOperation');
     });
 
     it('should send nothing and leave the queue unchanged when the device is offline', async () => {
@@ -208,7 +208,7 @@ describe('flushAuditQueue', () => {
     it('should keep session events queued when getClient throws, while still sending a queued sessionWipe', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
             {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0},
-            {id: 'evt2', kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 2000, attempts: 0},
+            {id: 'evt2', kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 2000, attempts: 0},
         ]);
 
         jest.mocked(NetworkManager.getClient).mockImplementation(() => {
@@ -220,7 +220,7 @@ describe('flushAuditQueue', () => {
 
         await flushAuditQueue(serverUrl);
 
-        expect(tokenlessClient.logSessionWipe).toHaveBeenCalledWith('user1', 2000, undefined);
+        expect(tokenlessClient.logSessionWipe).toHaveBeenCalledWith('sig1', 2000, undefined);
 
         const events = await getEphemeralModeAuditEvents(serverUrl);
         expect(events).toHaveLength(1);
@@ -236,7 +236,7 @@ describe('flushAuditQueue', () => {
         client.logCleanup.mockImplementation(async () => {
             await enqueueAuditEvent(serverUrl, {
                 kind: EphemeralModeAuditEventKind.SessionWipe,
-                userId: 'user2',
+                signature: 'sig2',
                 occurredAt: 5000,
             });
             return {status: 'OK'};
@@ -258,7 +258,7 @@ describe('flushAuditQueue', () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
             {id: 'evtA', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 0},
             {id: 'evtB', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 2000, attempts: 0},
-            {id: 'evtC', kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 3000, attempts: 0},
+            {id: 'evtC', kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 3000, attempts: 0},
         ]);
 
         const client = makeClient();
@@ -294,7 +294,7 @@ describe('flushAuditQueue', () => {
     });
 
     it('should create and then invalidate a tokenless client for a sessionWipe when getClient throws', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 1000});
 
         jest.mocked(NetworkManager.getClient).mockImplementation(() => {
             throw new Error(`${serverUrl} client not found`);
@@ -306,12 +306,12 @@ describe('flushAuditQueue', () => {
         await flushAuditQueue(serverUrl);
 
         expect(NetworkManager.createClient).toHaveBeenCalledWith(serverUrl, undefined, 'preauth-secret');
-        expect(tokenlessClient.logSessionWipe).toHaveBeenCalledWith('user1', 1000, undefined);
+        expect(tokenlessClient.logSessionWipe).toHaveBeenCalledWith('sig1', 1000, undefined);
         expect(NetworkManager.invalidateClient).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should reuse the existing client for a sessionWipe without invalidating it', async () => {
-        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, userId: 'user1', occurredAt: 1000});
+        await seed({kind: EphemeralModeAuditEventKind.SessionWipe, signature: 'sig1', occurredAt: 1000});
 
         const client = makeClient();
         jest.mocked(NetworkManager.getClient).mockReturnValue(client as any);
@@ -319,7 +319,7 @@ describe('flushAuditQueue', () => {
         await flushAuditQueue(serverUrl);
 
         expect(NetworkManager.createClient).not.toHaveBeenCalled();
-        expect(client.logSessionWipe).toHaveBeenCalledWith('user1', 1000, undefined);
+        expect(client.logSessionWipe).toHaveBeenCalledWith('sig1', 1000, undefined);
         expect(NetworkManager.invalidateClient).not.toHaveBeenCalled();
     });
 
