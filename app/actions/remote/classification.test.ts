@@ -2,8 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Q, type Database} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
+import {Events} from '@constants';
 import {CLASSIFICATIONS_GROUP_NAME, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -119,6 +121,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+    jest.restoreAllMocks();
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
@@ -318,6 +321,66 @@ describe('fetchAccessControlAttributeFields', () => {
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
     });
 
+    it('should return error and not cache when batch write fails', async () => {
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const dbError = new Error('disk full');
+        jest.spyOn(operator.database, 'write').mockRejectedValueOnce(dbError);
+
+        const result = await fetchAccessControlAttributeFields(serverUrl);
+
+        expect(result).toEqual({error: dbError});
+        expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
+    });
+
+    it('should retry on a subsequent unforced call after a batch write failure', async () => {
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.
+            mockResolvedValueOnce([systemField]).
+            mockResolvedValueOnce([channelField]).
+            mockResolvedValueOnce([systemField]).
+            mockResolvedValueOnce([channelField]);
+        mockClient.getSystemPropertyValues.
+            mockResolvedValueOnce([systemValue]).
+            mockResolvedValueOnce([systemValue]);
+
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        jest.spyOn(operator.database, 'write').mockRejectedValueOnce(new Error('disk full'));
+
+        const firstResult = await fetchAccessControlAttributeFields(serverUrl);
+        expect(firstResult.error).toBeInstanceOf(Error);
+
+        const retryResult = await fetchAccessControlAttributeFields(serverUrl);
+
+        expect(retryResult).toEqual({});
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(4);
+    });
+
+    it('should emit database corruption event and propagate when propagateError is true', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const corruptionError = new Error('database disk image is malformed');
+
+        // Force the underlying DB write to throw a corruption error.
+        jest.spyOn(operator.database, 'write').mockRejectedValueOnce(corruptionError);
+
+        const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+
+        // Use a non-empty model list so batchRecords actually calls write().
+        // A plain object satisfies the call — we only care about the error path.
+        await expect(
+            operator.batchRecords([{} as never], 'corruption-test', true),
+        ).rejects.toThrow('database disk image is malformed');
+
+        expect(emitSpy).toHaveBeenCalledWith(
+            Events.DATABASE_CORRUPTION_DETECTED,
+            expect.objectContaining({source: 'corruption-test'}),
+        );
+    });
+
     it('should cache on success so a subsequent unforced call is skipped', async () => {
         setConfig({FeatureFlagClassificationMarkings: 'true'});
         mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
@@ -392,6 +455,17 @@ describe('fetchAccessControlAttributeFields', () => {
             expect(await getStoredFields(database)).toHaveLength(0);
             expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
         });
+    });
+});
+
+describe('batchRecords default behavior (non-throwing)', () => {
+    it('should not throw when propagateError is not set, even if the write fails', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const writeSpy = jest.spyOn(operator.database, 'write').mockRejectedValueOnce(new Error('write error'));
+
+        await expect(operator.batchRecords([{} as never], 'test-description')).resolves.toBeUndefined();
+        expect(writeSpy).toHaveBeenCalledTimes(1);
     });
 });
 

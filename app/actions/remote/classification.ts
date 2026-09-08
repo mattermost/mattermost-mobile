@@ -97,7 +97,7 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
                     systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: groupId}],
                     prepareRecordsOnly: true,
                 });
-                await operator.batchRecords([...fieldModels, ...valueModels, ...systemIdModels], 'fetchAccessControlAttributeFields');
+                await operator.batchRecords([...fieldModels, ...valueModels, ...systemIdModels], 'fetchAccessControlAttributeFields', true);
 
                 EphemeralStore.setClassificationBannerFetched(serverUrl);
                 return {};
