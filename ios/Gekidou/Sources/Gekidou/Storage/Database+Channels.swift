@@ -219,26 +219,38 @@ extension Database {
         try db.run(channelInfoTable.insert(or: .replace, channelInfo))
     }
     
+    internal func hasMyChannelUrgentMentionCountColumn(_ db: Connection) -> Bool {
+        let stmtString = "SELECT COUNT(*) FROM pragma_table_info('MyChannel') WHERE name = 'urgent_mention_count'"
+        let count = (try? db.scalar(stmtString) as? Int64) ?? 0
+        return count > 0
+    }
+
     public func insertOrUpdateMyChannel(_ db: Connection, _ myChannel: ChannelMember, _ isCRTEnabled: Bool, _ lastFetchedAt: Double, _ lastPostAt: Double) throws {
         let idCol = Expression<String>("id")
         let messageCountCol = Expression<Int>("message_count")
         let mentionsCol = Expression<Int>("mentions_count")
+        let urgentMentionsCol = Expression<Int>("urgent_mention_count")
         let isUnreadCol = Expression<Bool>("is_unread")
         let lastFetchedAtCol = Expression<Double>("last_fetched_at")
         let lastPostAtCol = Expression<Double>("last_post_at")
         let mentionsCount = isCRTEnabled ? myChannel.mentionCountRoot : myChannel.mentionCount
         let messageCount = isCRTEnabled ? myChannel.internalMsgCountRoot : myChannel.internalMsgCount
         let isUnread = messageCount > 0
+        let hasUrgentColumn = hasMyChannelUrgentMentionCountColumn(db)
         
         if hasThread(db, threadId: myChannel.id) {
+            var updateSetters: [Setter] = [
+                messageCountCol <- messageCount,
+                mentionsCol <- mentionsCount,
+                isUnreadCol <- isUnreadCol,
+                lastPostAtCol <- lastPostAt,
+                lastFetchedAtCol <- lastFetchedAt,
+            ]
+            if hasUrgentColumn {
+                updateSetters.append(urgentMentionsCol <- myChannel.urgentMentionCount)
+            }
             let updateQuery = myChannelTable.where(idCol == myChannel.id)
-                .update(
-                    messageCountCol <- messageCount,
-                    mentionsCol <- mentionsCount,
-                    isUnreadCol <- isUnreadCol,
-                    lastPostAtCol <- lastPostAt,
-                    lastFetchedAtCol <- lastFetchedAt
-                )
+                .update(updateSetters)
             let _ = try db.run(updateQuery)
         } else {
             let rolesCol = Expression<String>("roles")
@@ -246,7 +258,7 @@ extension Database {
             let lastViewedAtCol = Expression<Double>("last_viewed_at")
             let viewedAtCol = Expression<Double>("viewed_at")
             
-            let setter: [Setter] = [
+            var setter: [Setter] = [
                 idCol <- myChannel.id,
                 mentionsCol <- mentionsCount,
                 messageCountCol <- messageCount,
@@ -258,6 +270,9 @@ extension Database {
                 manuallyUnreadCol <- false,
                 rolesCol <- myChannel.roles,
             ]
+            if hasUrgentColumn {
+                setter.append(urgentMentionsCol <- myChannel.urgentMentionCount)
+            }
             let _ = try db.run(myChannelTable.insert(or: .replace, setter))
             try insertMyChannelSettings(db, myChannel)
             try insertChannelMember(db, myChannel)
