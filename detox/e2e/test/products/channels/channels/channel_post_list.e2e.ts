@@ -78,7 +78,10 @@ describe('Channels - Channel Post List', () => {
                 await safeEnableSynchronization();
             }
         }
-        await waitForElementToHaveText(ChannelScreen.introDisplayName, testChannel.display_name, timeouts.HALF_MIN);
+        await ChannelScreen.waitForIntro(
+            () => waitForElementToHaveText(ChannelScreen.introDisplayName, testChannel.display_name, timeouts.HALF_MIN),
+            {category: 'channels', channelName: testChannel.name},
+        );
         await expect(ChannelScreen.introSetHeaderAction).toExist();
         await expect(ChannelScreen.introChannelInfoAction).toExist();
         await expect(ChannelScreen.postList.getFlatList()).toExist();

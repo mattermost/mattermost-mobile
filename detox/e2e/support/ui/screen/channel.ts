@@ -191,8 +191,32 @@ class ChannelScreen {
     // initial post batch has rendered. open() resolves as soon as channel.screen exists,
     // which on a loaded CI simulator happens while the post list is still loading — tapping
     // the intro action straight after open() then fails with "No elements found".
-    tapIntroChannelInfoAction = async () => {
-        await waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN);
+    // The initial post fetch can stall with the spinner still up, so the footer never
+    // mounts and every intro id reads as "no elements found". Both of the last two iOS
+    // failures were this: CI 34170835045 MM-T4773_1 on intro.display_name, and CI
+    // 34236391685 MM-T4928_2 on intro_options.channel_info.action, whose screenshot shows
+    // the spinner with only the join system message rendered. Waiting longer cannot help a
+    // fetch that never settles; re-entering the channel re-issues fetchPostsForChannel
+    // (switchToChannelById, app/actions/remote/channel.ts:1190), which is the only thing
+    // that restarts it. Recover once, then let the original failure through.
+    waitForIntro = async (waitFn: () => Promise<void>, reopen?: {category: string; channelName: string}) => {
+        try {
+            await waitFn();
+        } catch (error) {
+            if (!reopen) {
+                throw error;
+            }
+            await this.back();
+            await this.open(reopen.category, reopen.channelName);
+            await waitFn();
+        }
+    };
+
+    tapIntroChannelInfoAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introChannelInfoAction.tap();
     };
 

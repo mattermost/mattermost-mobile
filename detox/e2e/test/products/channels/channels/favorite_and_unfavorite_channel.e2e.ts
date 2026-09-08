@@ -149,7 +149,11 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
-        await waitFor(ChannelScreen.introFavoriteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // Same footer, same mount delay as the channel-info intro action, so use the same
+        // ceiling. Ten seconds was the odd one out across the three intro call sites and is
+        // the one that has been seen losing the race to the post list (1 in 12 locally).
+        await waitFor(ChannelScreen.introFavoriteAction).toBeVisible().withTimeout(timeouts.HALF_MIN);
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();
 
