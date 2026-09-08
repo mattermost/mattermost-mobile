@@ -81,15 +81,19 @@ describe('Channels - Mute and Unmute Channel', () => {
         await ChannelInfoScreen.open();
         await ChannelInfoScreen.muteAction.tap();
 
-        // * Verify channel is muted
-        await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        // * Verify channel is muted.
+        // Poll rather than assert once: tapping mute swaps the Mute row for the Unmute
+        // row on a later render, and Detox's expect() evaluates a single time with no
+        // retry, so it can land on the frame before the swap. CI 34170835045 failed here
+        // on the 50%-visibility matcher for exactly that reason.
+        await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.FOUR_SEC);
 
         // # Tap on muted action to unmute the channel
         await ChannelInfoScreen.unmuteAction.tap();
 
-        // * Verify channel is unmuted
-        await expect(ChannelInfoScreen.muteAction).toBeVisible();
+        // * Verify channel is unmuted (same swap in the other direction)
+        await waitFor(ChannelInfoScreen.muteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelInfoScreen.close();
