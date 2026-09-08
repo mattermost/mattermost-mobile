@@ -332,17 +332,29 @@ class ChannelInfoScreen {
         });
     };
 
+    /**
+     * `totalBudget` bounds the whole call, not just the per-attempt waits. Each retry closes
+     * the sheet and calls onResync(), which re-enters the channel -- unbounded work that is not
+     * covered by `timeout`. Two calls to this helper could therefore outlive the 300s jest test
+     * timeout, and when they did the failure surfaced as
+     * `Exceeded timeout of 300000 ms for a test` pointing at the `it(...)` line, hiding which
+     * bookmark was actually missing (MM-T69455_1). Failing fast with a named assertion keeps
+     * the diagnosis in the error instead of the artifacts.
+     */
     waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
         {
             timeout = timeouts.TWENTY_SEC,
+            totalBudget = timeouts.ONE_MIN + timeouts.HALF_MIN,
             textFallback,
             bookmarkId,
             onResync,
-        }: {timeout?: number; textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>} = {},
+        }: {timeout?: number; totalBudget?: number; textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>} = {},
     ) => {
         const MAX_RETRIES = 3;
         const perAttemptTimeout = Math.ceil(timeout / MAX_RETRIES);
+        const label = textFallback ?? bookmarkId ?? 'bookmark';
+        const deadline = Date.now() + totalBudget;
 
         /* eslint-disable no-await-in-loop -- close/reopen channel info to trigger bookmark sync */
         for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -382,7 +394,10 @@ class ChannelInfoScreen {
                             // Fall through to original error.
                         }
                     }
-                    throw error;
+                    throw new Error(
+                        `"${label}" never appeared in channel info after ${MAX_RETRIES} attempts ` +
+                        `with resync. Original matcher failure: ${(error as Error)?.message ?? error}`,
+                    );
                 }
 
                 // Closing and reopening this sheet only re-renders local state -- bookmarks are
@@ -392,6 +407,16 @@ class ChannelInfoScreen {
                 // in CI with channel info showing only "Tap File Bookmark" and the link
                 // bookmark absent from the device entirely. onResync lets the caller re-enter
                 // the channel, which is what actually triggers a refetch.
+                // A resync re-enters the channel and is the expensive part of this loop, so
+                // only start one that can still finish inside the budget.
+                if (Date.now() >= deadline) {
+                    throw new Error(
+                        `"${label}" never appeared in channel info within ${totalBudget}ms ` +
+                        `(${attempt} of ${MAX_RETRIES} attempts). It is absent from the device, ` +
+                        'not merely off-screen: the horizontal list was swiped on every attempt.',
+                    );
+                }
+
                 await this.close();
                 await wait(timeouts.ONE_SEC);
                 if (onResync) {
