@@ -1602,6 +1602,7 @@ describe('switchToCallThread', () => {
     const serverUrl = 'switch-to-call-thread.test.com';
     const rootId = 'thread-1';
     const localPost = {channelId: 'channel-1'} as unknown as PostModel;
+    const intl = createIntl({locale: 'en', messages: {}});
 
     beforeEach(async () => {
         jest.clearAllMocks();
@@ -1620,13 +1621,14 @@ describe('switchToCallThread', () => {
     it('should navigate without fetching when the root post is already local', async () => {
         jest.mocked(getPostById).mockResolvedValue(localPost);
 
-        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+        await switchToCallThread(serverUrl, rootId, 'Call Thread', intl);
 
         expect(fetchPostThread).not.toHaveBeenCalled();
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(
             Screens.THREAD,
             expect.objectContaining({rootId}),
         );
+        expect(errorAlert).not.toHaveBeenCalled();
     });
 
     it('should fetch the root post when it is missing, then navigate', async () => {
@@ -1634,22 +1636,36 @@ describe('switchToCallThread', () => {
             mockResolvedValueOnce(undefined).
             mockResolvedValueOnce(localPost);
 
-        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+        await switchToCallThread(serverUrl, rootId, 'Call Thread', intl);
 
         expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, rootId);
         expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(
             Screens.THREAD,
             expect.objectContaining({rootId}),
         );
+        expect(errorAlert).not.toHaveBeenCalled();
     });
 
-    it('should not navigate when the root post is still unavailable after fetching', async () => {
+    it('should alert the user when the root post is still unavailable after fetching', async () => {
         jest.mocked(getPostById).mockResolvedValue(undefined);
 
-        await switchToCallThread(serverUrl, rootId, 'Call Thread');
+        await switchToCallThread(serverUrl, rootId, 'Call Thread', intl);
 
         expect(fetchPostThread).toHaveBeenCalledTimes(1);
         expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
         expect(router.push).not.toHaveBeenCalled();
+        expect(errorAlert).toHaveBeenCalledWith('See server logs', intl);
+    });
+
+    it('should alert the user when fetching the root post fails', async () => {
+        jest.mocked(getPostById).mockResolvedValue(undefined);
+        jest.mocked(fetchPostThread).mockResolvedValueOnce({error: new Error('fetch failed')});
+
+        await switchToCallThread(serverUrl, rootId, 'Call Thread', intl);
+
+        expect(getPostById).toHaveBeenCalledTimes(1);
+        expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
+        expect(errorAlert).toHaveBeenCalledWith(expect.stringContaining('fetch failed'), intl);
     });
 });

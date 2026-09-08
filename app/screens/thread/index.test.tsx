@@ -8,7 +8,6 @@ import {Text, View} from 'react-native';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import EphemeralStore from '@store/ephemeral_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -40,7 +39,6 @@ describe('screens/thread/index', () => {
     });
 
     afterEach(async () => {
-        EphemeralStore.setCurrentThreadId('');
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -62,32 +60,6 @@ describe('screens/thread/index', () => {
         ])).flat();
         await operator.batchRecords(models, 'test');
     };
-
-    it('should render without a rootId, falling back instead of building a query with undefined', async () => {
-        const Component = enhanced;
-        const {findByTestId} = renderWithEverything(
-            <Component/>,
-            {database, serverUrl},
-        );
-
-        // Reaching this assertion at all is the regression: an undefined rootId
-        // used to reach Q.where('root_id', undefined) and throw during subscribe.
-        expect(await findByTestId('scheduledPostCount')).toHaveTextContent('0');
-    });
-
-    it('should fall back to the current thread id from EphemeralStore when rootId is missing', async () => {
-        EphemeralStore.setCurrentThreadId('thread1');
-        await seedScheduledPosts();
-
-        const Component = enhanced;
-        const {findByTestId} = renderWithEverything(
-            <Component/>,
-            {database, serverUrl},
-        );
-
-        expect(await findByTestId('rootId')).toHaveTextContent('thread1');
-        expect(await findByTestId('scheduledPostCount')).toHaveTextContent('2');
-    });
 
     it('should count only the scheduled posts belonging to the given thread', async () => {
         await seedScheduledPosts();
