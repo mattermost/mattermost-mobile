@@ -313,7 +313,15 @@ class ChannelInfoScreen {
                 await waitFor(addBookmark).toBeVisible(75).whileElement(scrollViewMatcher).scroll(100, 'up');
             } catch { /* at scroll edge — tap may still work */ }
         }
-        await addBookmark.tap({x: 1, y: 1});
+
+        // Tap the centre, never a corner. The 75% gate above leaves up to a quarter of the
+        // pill clipped, and when the clipped strip is the TOP edge (scroll landed with the
+        // pill tucked under the Channel info header) the {x: 1, y: 1} pixel is under the
+        // header, so the tap hit the header and the "Add a link" sheet never opened
+        // (CI 34185558418 machine-4: MM-T5608_1 + MM-T5604_1, testFnFailure.png shows the
+        // pill's top edge cut off by the header). The centre of a rectangle is inside its
+        // visible part whenever more than half of it is visible, which the 75% gate ensures.
+        await addBookmark.tap();
 
         // Opening the gorhom "Add a bookmark" sheet under Detox sync yields
         // "'not null' doesn't match the selected view" (MM-T5608_1 / MM-T5604_1).
@@ -322,7 +330,7 @@ class ChannelInfoScreen {
             try {
                 await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
             } catch {
-                await addBookmark.tap({x: 1, y: 1});
+                await addBookmark.tap();
                 await waitForElementToExist(addLinkOption, timeouts.TEN_SEC);
             }
         });

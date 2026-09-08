@@ -269,10 +269,23 @@ run_maestro_batch() {
     cmd+=("${platform_args[@]}")
   fi
 
+  # Keep Maestro's debug output (maestro.log, per-command timings, the failure screenshot
+  # and hierarchy dump, and the XCUITest runner's console via `simctl launch --console`)
+  # inside the uploaded build/ tree. With --flatten-debug-output and no --debug-output,
+  # Maestro 2.6.1 writes all of it to $HOME (TestDebugReporter.getDebugOutputPath), which
+  # CI never collects. That is why run 34185558418 reported attach_logs_toggle_visible as
+  # "Unknown error": the runner process (the app's XPC peer) exited mid-flow and the only
+  # record of why was in /Users/runner. One directory per batch, so the flattened files of
+  # one batch never overwrite another's.
+  local debug_dir
+  debug_dir="$ARTIFACTS_DIR/debug/$(basename "${batch_xml%.xml}")"
+  mkdir -p "$debug_dir"
+
   cmd+=(
     --format junit
     --output "$batch_xml"
     --test-output-dir "$ARTIFACTS_DIR"
+    --debug-output "$debug_dir"
     --flatten-debug-output
   )
   local exclude_tags

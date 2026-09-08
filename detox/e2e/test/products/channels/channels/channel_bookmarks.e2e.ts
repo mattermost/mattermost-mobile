@@ -768,7 +768,21 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
-        const channelT69455 = await createChannel();
+        // # Create the channel and BOTH bookmarks before the test user joins it.
+        // Adding the user first races the app: on `user_added` the client fetches the
+        // channel over the network before it persists the membership, and a
+        // `channel_bookmark_created` event that lands inside that window is dropped by
+        // handleBookmarks (app/actions/local/channel_bookmark.ts: no MyChannel row yet).
+        // The file bookmark, created a request later, then IS stored, and every later
+        // fetchChannelBookmarks asks the server for `bookmarks_since` that newer
+        // bookmark, so the dropped link bookmark can never be recovered — CI 34185558418
+        // machine-4 testFnFailure.png shows channel info with only "Tap File Bookmark".
+        // With the user joining last there are no bookmark events to drop, and the first
+        // channel switch fetches with since=0, returning both.
+        const {channel: channelT69455} = await Channel.apiCreateChannel(siteOneUrl, {
+            type: 'O',
+            teamId: testTeam.id,
+        });
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT69455.id, 'Tap Link Bookmark', 'https://mattermost.com',
@@ -792,6 +806,8 @@ describe('Channels - Channel Bookmarks', () => {
         if (fileBookmarkError || !bookmarkFileT69455?.id) {
             throw new Error(`[MM-T69455_1] Failed to create bookmarkFileT69455: ${JSON.stringify(fileBookmarkError)}`);
         }
+
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelT69455.id);
 
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
