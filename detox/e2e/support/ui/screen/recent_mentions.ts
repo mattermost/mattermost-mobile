@@ -6,6 +6,7 @@ import {
     PostList,
 } from '@support/ui/component';
 import {
+    ChannelScreen,
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
@@ -98,8 +99,8 @@ class RecentMentionsScreen {
         return this.toBeVisible();
     };
 
-    openPostOptionsFor = async (postId: string, text: string) => {
-        const {postListPostItem} = this.getPostListPostItem(postId, text);
+    openPostOptionsFor = async (postId: string) => {
+        const {postListPostItem} = this.getPostListPostItem(postId);
         const flatList = this.postList.getFlatList();
 
         try {
@@ -132,6 +133,11 @@ class RecentMentionsScreen {
         await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
         await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
+        // On Android, ensure the element is visible and not just existent
+        if (isAndroid()) {
+            await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        }
+
         const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
         await waitForElementToExist(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
@@ -152,66 +158,18 @@ class RecentMentionsScreen {
         ).toHaveText(postMessage);
     };
 
-    // Wait for an edited post to appear in recent mentions. Mentions are search-backed, so
-    // callers should await Post.waitForPostMessageInSearch before calling this.
-    verifyPostEdited = async (postId: string, updatedMessage?: string) => {
-        const postContainer = by.id(`${this.testID.recentMentionPostList}.${postId}`);
-        const MAX_REFETCHES = 6;
-
-        const waitForEditedState = async () => {
-            const editedIndicator = element(by.id('edited_indicator').withAncestor(postContainer));
-            try {
-                await waitFor(editedIndicator).toExist().withTimeout(timeouts.FIVE_SEC);
-                return;
-            } catch {
-                // Fall through to message / "Edited" text.
-            }
-
-            try {
-                await waitFor(
-                    element(by.text('Edited').withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.THREE_SEC);
-                return;
-            } catch {
-                // Fall through to updated message text.
-            }
-
-            if (!updatedMessage) {
-                throw new Error(`Could not match edited indicator for post ${postId}`);
-            }
-
-            // The message is split across Text nodes by the @mention highlight, so match the trailing
-            // token — never by.text(RegExp), which iOS matches literally.
-            const editSuffix = updatedMessage.trim().split(/\s+/).pop();
-            if (editSuffix) {
-                await waitFor(
-                    element(by.text(editSuffix).withAncestor(postContainer)),
-                ).toExist().withTimeout(timeouts.FIVE_SEC);
-                return;
-            }
-
-            throw new Error(
-                `Could not match edited message for post ${postId} (expected text "${updatedMessage}")`,
-            );
-        };
-
-        /* eslint-disable no-await-in-loop -- poll before each tab refresh */
-        for (let attempt = 1; attempt <= MAX_REFETCHES; attempt++) {
-            try {
-                await waitForEditedState();
-                return;
-            } catch (e) {
-                if (attempt === MAX_REFETCHES) {
-                    throw e;
-                }
-
-                await HomeScreen.channelListTab.tap();
-                await wait(timeouts.ONE_SEC);
-                await HomeScreen.mentionsTab.tap();
-                await this.toBeVisible();
-            }
+    verifyPostEdited = async (postId: string, updatedMessage: string) => {
+        try {
+            await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+        } catch {
+            // Leave + re-enter the tab to force a fresh fetchRecentMentions, the same recovery
+            // recentMentionPostListToBeVisible uses, then re-check.
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.TWO_SEC);
+            await HomeScreen.mentionsTab.tap();
+            await this.toBeVisible();
+            await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
         }
-        /* eslint-enable no-await-in-loop */
     };
 }
 

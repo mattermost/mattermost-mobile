@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, timeouts, waitForElementToNotExist} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, tapUntilGone, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {waitFor} from 'detox';
 
 class Alert {
@@ -87,6 +87,34 @@ class Alert {
         } catch { /* not present */ }
     };
 
+    /**
+     * Dismiss the "Logout not complete" alert if it is up.
+     *
+     * The app raises it from logout() whenever the server-side logout request fails, which on
+     * CI happens when the iOS QUIC connection to the test server dies mid-request
+     * (NSURLErrorDomain -1005). It is a native Alert.alert, so dismissKnownModals cannot reach
+     * it: left up it dims the screen, fails every visibility threshold, and survives into the
+     * next test. "Continue Anyway" completes the logout locally, which is what the tests assert.
+     *
+     * Returns whether an alert was actually dismissed, so callers can distinguish a recovered
+     * retry from a genuine failure.
+     */
+    dismissLogoutNotCompleteIfPresent = async (timeout: number = timeouts.TWO_SEC): Promise<boolean> => {
+        try {
+            await waitFor(this.logoutNotCompleteTitle).toBeVisible().withTimeout(timeout);
+        } catch {
+            return false; // Server logout succeeded, or the alert has not been raised.
+        }
+
+        try {
+            await this.continueAnywayButton.tap();
+        } catch {
+            return false;
+        }
+        await wait(timeouts.HALF_SEC);
+        return true;
+    };
+
     dismissMessageLengthAlert = async () => {
         try {
             await waitFor(this.messageLengthTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -94,9 +122,76 @@ class Alert {
             return; // Alert not shown — nothing to dismiss.
         }
 
-        // Once the alert is up, a failure to dismiss it must surface: a lingering
-        // alert blocks every later interaction in the spec.
-        await this.okButton.tap();
+        // Android AlertDialog: by.text('OK') is the proven green path (same as Alert.okButton).
+        // iOS UIAlertController: app-hierarchy label taps often no-op (Maestro logout.yml uses
+        // coordinate taps for the same reason).
+        const titleGone = async (ms: number = timeouts.TWO_SEC) => {
+            try {
+                await waitFor(this.messageLengthTitle).not.toExist().withTimeout(ms);
+                return true;
+            } catch {
+                return false;
+            }
+        };
+
+        if (isAndroid()) {
+            try {
+                await tapUntilGone(element(by.text('OK')), this.messageLengthTitle);
+            } catch {
+                // Fall back to the accessibility-layer button id, re-tapping until the
+                // title is gone or the last attempt rethrows.
+                await tapUntilGone(this.okButton, this.messageLengthTitle);
+            }
+            return;
+        }
+
+        await device.disableSynchronization();
+        try {
+            let dismissed = false;
+
+            try {
+                await system.element(by.system.label('OK')).tap();
+                dismissed = await titleGone();
+            } catch { /* system API miss */ }
+
+            if (!dismissed) {
+                const candidates = [
+                    () => element(by.label('OK').and(by.traits(['button']))).tap(),
+                    () => element(by.text('OK')).tap(),
+                    () => element(by.label('OK')).atIndex(0).tap(),
+                    () => element(by.label('OK')).atIndex(1).tap(),
+                    () => this.okButton.tap(),
+
+                    // Relative tap below title into the action row (Maestro: index unreliable).
+                    () => this.messageLengthTitle.tap({x: 120, y: 160}),
+
+                    // Absolute taps: single OK centered on iPhone 17 Pro (402x874); same Y band as logout.yml.
+                    () => device.tap({x: 201, y: 502}),
+                    () => device.tap({x: 201, y: 470}),
+                ];
+                /* eslint-disable no-await-in-loop -- try matchers until title clears */
+                for (const tapOk of candidates) {
+                    try {
+                        await tapOk();
+                        await wait(timeouts.HALF_SEC);
+                        if (await titleGone(timeouts.TWO_SEC)) {
+                            dismissed = true;
+                            break;
+                        }
+                    } catch {
+                        // try next candidate
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
+            }
+
+            if (!dismissed) {
+                await this.okButton.tap();
+            }
+        } finally {
+            await safeEnableSynchronization();
+        }
+
         await waitForElementToNotExist(this.messageLengthTitle, timeouts.TEN_SEC);
     };
 }

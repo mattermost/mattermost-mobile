@@ -5,9 +5,11 @@ import http from 'http';
 import https from 'https';
 
 import {adminPassword, adminUsername} from '@support/test_config';
-import axios from 'axios';
+import axios, {type InternalAxiosRequestConfig} from 'axios';
 import {wrapper} from 'axios-cookiejar-support';
 import {CookieJar} from 'tough-cookie';
+
+import {logError} from '../../../provision/log';
 
 // Force IPv4 — axios-cookiejar-support v5 uses global agents.
 (http.globalAgent as any).options.family = 4;
@@ -134,11 +136,58 @@ baseClient.interceptors.response.use(
         if (timedOut && replayable && hasRetryBudget(config)) {
             config._timeoutRetries = (config._timeoutRetries ?? 0) + 1;
             const delay = config._timeoutRetries * 1000;
-            console.warn(`[client] request timeout — retry ${config._timeoutRetries} for ${config.method} ${config.url} in ${delay}ms`); // eslint-disable-line no-console
+            logError(`[client] request timeout — retry ${config._timeoutRetries} for ${config.method} ${config.url} in ${delay}ms`);
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
         }
         return Promise.reject(error);
+    },
+);
+
+/**
+ * Failures raised before any byte of the request left the process: the hostname did not
+ * resolve, or the TCP connection was refused / unroutable. Unlike a timeout, these leave no
+ * doubt about server-side state — nothing was sent, so nothing can have been committed —
+ * which is why a replay is safe for every method, POST included. The one exception is a
+ * single-use body (see isReplayableBody), which the failed attempt may already have consumed.
+ *
+ * Seen on GitHub macOS runners as `getaddrinfo ENOTFOUND <site>.test.mattermost.cloud`
+ * mid-spec, between requests to the same host that succeeded (MM-T4876_2 on PR #10122).
+ * Without this the error reaches getResponseFromError as `{status: 0}` and the spec
+ * dereferences the missing fixture.
+ */
+const PRE_CONNECTION_ERROR_CODES: ReadonlySet<string> = new Set([
+    'ENOTFOUND',
+    'EAI_AGAIN',
+    'ECONNREFUSED',
+    'EHOSTUNREACH',
+    'ENETUNREACH',
+]);
+
+export const PRE_CONNECTION_MAX_RETRIES = 3;
+export const PRE_CONNECTION_RETRY_DELAY_MS = 1000;
+
+export const isPreConnectionFailure = (error: {response?: unknown; code?: unknown}): boolean =>
+    !error.response && typeof error.code === 'string' && PRE_CONNECTION_ERROR_CODES.has(error.code);
+
+baseClient.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const config = error.config as (typeof error.config & {_preConnectionRetries?: number; _retryDeadlineAt?: number}) | undefined;
+        if (!config || !isPreConnectionFailure(error) || !isReplayableBody(config.data)) {
+            return Promise.reject(error);
+        }
+
+        const retries = config._preConnectionRetries ?? 0;
+        if (retries >= PRE_CONNECTION_MAX_RETRIES || !hasRetryBudget(config, 0)) {
+            return Promise.reject(error);
+        }
+
+        config._preConnectionRetries = retries + 1;
+        const delay = config._preConnectionRetries * PRE_CONNECTION_RETRY_DELAY_MS;
+        logError(`[client] ${error.code} before the request was sent — retry ${config._preConnectionRetries}/${PRE_CONNECTION_MAX_RETRIES} for ${config.method} ${config.url} in ${delay}ms`);
+        await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+        return baseClient(config);
     },
 );
 
@@ -184,7 +233,7 @@ baseClient.interceptors.response.use(
                 Math.min(retryAfterSec, MAX_RETRY_AFTER_SEC) * 1000 :
                 0;
             const delay = cappedRetryAfterMs || (config._5xxRetries * 1000);
-            console.warn(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`); // eslint-disable-line no-console
+            logError(`[client] ${status} from server — retry ${config._5xxRetries}/3 in ${delay}ms`);
             await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
             return baseClient(config);
         }
@@ -192,30 +241,79 @@ baseClient.interceptors.response.use(
     },
 );
 
-// Retry cloud/inaccessible HTML responses during workspace cold starts.
+/**
+ * HTML the edge returns *in place of* the API. Two kinds appear against the ephemeral test
+ * servers: the cloud cold-start page, and Cloudflare's bot check ("Just a moment…"). Like the
+ * DNS block above — and unlike a timeout — both are provably side-effect-free: the request was
+ * answered at the edge and never reached Mattermost, so replaying a POST is as safe as a GET.
+ *
+ * Matched on the body, not the status. The cold-start page can arrive with a 2xx while a
+ * challenge is usually 403 or 503, so no status set covers both; 403 in particular is not, and
+ * should not become, a globally retryable status. Only `cloud/inaccessible` used to be matched
+ * here, which is how a challenge reached callers as though it were a response body — surfacing
+ * downstream as "server is not healthy", "Failed to create team", and TypeErrors dereferencing
+ * fixtures the API had never created.
+ */
+const HTML_INTERSTITIAL_MARKERS: readonly string[] = [
+    'cloud/inaccessible',
+    '_cf_chl_opt',
+    'cf-browser-verification',
+    'captcha challenge',
+    'Just a moment',
+];
+
+const MAX_INTERSTITIAL_RETRIES = 3;
+
+type InterstitialConfig = InternalAxiosRequestConfig & {_htmlInterstitialRetries?: number; _retryDeadlineAt?: number};
+
+const interstitialMarkerIn = (data: unknown): string | undefined => (
+    typeof data === 'string' ? HTML_INTERSTITIAL_MARKERS.find((marker) => data.includes(marker)) : undefined
+);
+
+/**
+ * True for the error `retryInterstitial` throws once its own attempts are spent. Exported so
+ * the apiInit retry layer in setup.ts can treat an edge interstitial as transient and spend
+ * its own budget on it — a challenge can outlast this interceptor's ~18s of backoff.
+ */
+export const isHtmlInterstitialError = (error: unknown): boolean => {
+    const message = typeof error === 'string' ? error : String((error as {message?: unknown})?.message ?? '');
+    return message.startsWith('Server returned "') && message.includes('HTML for ');
+};
+
+const retryInterstitial = async (config: InterstitialConfig, marker: string) => {
+    const attempts = (config._htmlInterstitialRetries ?? 0) + 1;
+
+    if (attempts > MAX_INTERSTITIAL_RETRIES || !hasRetryBudget(config, 0)) {
+        throw new Error(`Server returned "${marker}" HTML for ${config.url} (retries exhausted or retry budget spent)`);
+    }
+
+    config._htmlInterstitialRetries = attempts;
+
+    // A managed challenge clears in seconds once the edge is satisfied, so back off in whole
+    // seconds rather than the sub-second steps used for gateway 5xx.
+    const delay = attempts * 3000;
+    logError(`[client] "${marker}" HTML from server — retry ${attempts}/${MAX_INTERSTITIAL_RETRIES} in ${delay}ms for ${config.url}`);
+    await new Promise((r) => setTimeout(r, delay)); // eslint-disable-line no-promise-executor-return
+    return baseClient(config);
+};
+
+// Both axios paths are covered: a 2xx interstitial resolves and lands on the success handler,
+// while a 403/503 challenge rejects and lands on the error handler.
 baseClient.interceptors.response.use(
     async (response) => {
-        const data = response.data;
-        const isInaccessible = typeof data === 'string' && data.includes('cloud/inaccessible');
-
-        if (!isInaccessible) {
+        const marker = interstitialMarkerIn(response.data);
+        if (!marker) {
             return response;
         }
-
-        const config = response.config as typeof response.config & {_cloudInaccessibleRetries?: number; _retryDeadlineAt?: number};
-        const attempts = (config._cloudInaccessibleRetries ?? 0) + 1;
-
-        if (attempts > 3 || !hasRetryBudget(config, 0)) {
-            return Promise.reject(new Error(`Server returned cloud/inaccessible HTML for ${config.url} (retries exhausted or retry budget spent)`));
-        }
-
-        config._cloudInaccessibleRetries = attempts;
-        const delay = attempts * 3000;
-        console.warn(`[client] cloud/inaccessible HTML from server — retry ${attempts}/3 in ${delay}ms for ${config.url}`); // eslint-disable-line no-console
-        await new Promise((r) => setTimeout(r, delay));
-        return baseClient(config);
+        return retryInterstitial(response.config as InterstitialConfig, marker);
     },
-    (error) => Promise.reject(error),
+    async (error) => {
+        const marker = interstitialMarkerIn(error.response?.data);
+        if (!marker || !error.config) {
+            return Promise.reject(error);
+        }
+        return retryInterstitial(error.config as InterstitialConfig, marker);
+    },
 );
 
 export const clearCookies = async (): Promise<void> => {

@@ -25,8 +25,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Global Threads', () => {
     const serverOneDisplayName = 'Server 1';
@@ -55,6 +55,8 @@ describe('Threads - Global Threads', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+        await ChannelListScreen.toBeVisible();
+        await waitForElementToExist(ChannelListScreen.threadsButton, timeouts.HALF_MIN);
     });
 
     beforeEach(async () => {
@@ -104,7 +106,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread started by the current user is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await GlobalThreadsScreen.waitForThreadItem(parentPost.id);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
         try {
@@ -179,7 +181,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await GlobalThreadsScreen.waitForThreadItem(parentPost.id);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('admin');
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
 

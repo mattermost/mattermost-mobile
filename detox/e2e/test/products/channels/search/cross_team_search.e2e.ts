@@ -27,7 +27,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToHaveText, isIos} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Search - Cross Team Search', () => {
@@ -91,8 +91,7 @@ describe('Search - Cross Team Search', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: failed CI run 29954156963 (ios) — cross-team search navigate flake
-    (isIos() ? it.skip : it)('MM-T5827 - should be able to search messages across multiple teams and navigate to results', async () => {
+    it('MM-T5827 - should be able to search messages across multiple teams and navigate to results', async () => {
         // # a) Click on Off-Topic channel and dismiss tutorial if present
         await ChannelScreen.open(channelsCategory, offTopicChannel.name);
 

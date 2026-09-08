@@ -3,7 +3,7 @@
 
 import {Alert, ProfilePicture} from '@support/ui/component';
 import {ChannelInfoScreen} from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ManageChannelMembersScreen {
@@ -37,7 +37,7 @@ class ManageChannelMembersScreen {
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
     backButton = element(by.id(this.testID.backButton));
 
-    // Same {id}.{userId} nesting as CreateDirectMessageScreen — prefer display_name (SEC-11049).
+    // Same {id}.{userId} nesting as CreateDirectMessageScreen — prefer display_name.
     getUserItem = (userId: string) => {
         return element(by.id(`${this.testID.userItemPrefix}${userId}.${userId}`));
     };
@@ -72,6 +72,13 @@ class ManageChannelMembersScreen {
         await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelInfoScreen.membersOption.tap();
 
+        // On Android the first-run onboarding tutorial (a React Native Modal)
+        // opens over ManageChannelMembersScreen and steals Espresso's window focus, so
+        // `manage_members.screen` is not matchable until the tutorial is dismissed.
+        if (isAndroid()) {
+            await this.closeTutorial();
+        }
+
         return this.toBeVisible();
     };
 
@@ -98,27 +105,20 @@ class ManageChannelMembersScreen {
         await wait(timeouts.ONE_SEC);
     };
 
-    longPressProfileTutorialText = element(by.text("Long-press on an item to view a user's profile"));
-
     dismissLongPressProfileTutorial = async () => {
         try {
-            await waitFor(this.longPressProfileTutorialText).toBeVisible().withTimeout(timeouts.THREE_SEC);
-            await device.pressBack();
-            await waitFor(this.longPressProfileTutorialText).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            await waitFor(this.tutorialSwipeLeft).toExist().withTimeout(timeouts.THREE_SEC);
         } catch {
-            // Tutorial not shown or already dismissed.
+            // Tutorial not shown or already dismissed on this app install.
+            return;
         }
+        await this.tutorialSwipeLeft.tap();
+        await waitForElementToNotExist(this.tutorialSwipeLeft, timeouts.TEN_SEC);
     };
 
     closeTutorial = async () => {
         try {
-            if (isIos()) {
-                await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.HALF_MIN);
-                await this.tutorialSwipeLeft.tap();
-                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.TEN_SEC);
-            } else {
-                await this.dismissLongPressProfileTutorial();
-            }
+            await this.dismissLongPressProfileTutorial();
         } catch {
             // Tutorial may not appear if already dismissed in a previous run
         }
@@ -162,4 +162,3 @@ class ManageChannelMembersScreen {
 
 const manageChannelMembersScreen = new ManageChannelMembersScreen();
 export default manageChannelMembersScreen;
-

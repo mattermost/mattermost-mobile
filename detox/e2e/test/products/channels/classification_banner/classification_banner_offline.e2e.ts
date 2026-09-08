@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
@@ -93,6 +93,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
         // setURLBlacklist is local to this device, so it runs either way; the shared
         // classification config is guarded like afterAll (see global_classification_banner).
         if (lockAcquired) {
+            await assertClassificationLockOwnership(siteOneUrl, lockOwner);
             await Properties.apiCleanupClassification(siteOneUrl);
         }
         await device.setURLBlacklist([]);

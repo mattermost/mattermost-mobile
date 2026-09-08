@@ -10,6 +10,8 @@ import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 import {safeEnableSynchronization} from '@support/utils';
 
+import {logError, logWarn} from '../../provision/log';
+
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
 function getSimulatorId(): string {
@@ -145,6 +147,38 @@ async function loginAdmin(): Promise<void> {
         }
         console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+}
+
+function recoverAndroidDevice(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+
+    const commands = [
+        'adb shell input keyevent KEYCODE_WAKEUP',
+        'adb shell wm dismiss-keyguard',
+        'adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS',
+        'adb shell svc power stayon true',
+    ];
+    for (const command of commands) {
+        try {
+            execSync(command, {stdio: 'pipe', timeout: 5_000});
+        } catch {
+            // Best effort — an unavailable command must not mask the launch error.
+        }
+    }
+
+    // Record what actually holds focus, so a repeat failure is diagnosable from the
+    // job log instead of only from the Espresso view dump.
+    try {
+        const focus = execSync(
+            "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 5_000},
+        );
+        logWarn(`[recoverAndroidDevice] window focus: ${focus.replace(/\s+/g, ' ').trim().slice(0, 300)}`);
+    } catch {
+        logError('[recoverAndroidDevice] could not read window focus from dumpsys');
     }
 }
 
@@ -310,6 +344,7 @@ beforeAll(async () => {
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
+                recoverAndroidDevice();
                 await forceAndroidDataClear();
                 await ensureAndroidMetroReverse();
             }
