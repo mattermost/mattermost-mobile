@@ -90,7 +90,9 @@ const EMPTY_CREATABLE_FIELDS: ChannelAttributeField[] = [];
 // with SIGNATURE_SEPARATOR rather than a plain delimiter because option.name is
 // admin-authored free text that can legally contain one.
 function fieldSignature(field: ChannelAttributeField): string {
-    const options = Array.isArray(field.attrs?.options) ?field.attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) :'';
+    const options = Array.isArray(field.attrs?.options) ?
+        field.attrs.options.map((option) => [option.id, option.rank ?? '', option.color ?? '', option.name].join(SIGNATURE_SEPARATOR)).join(SIGNATURE_SEPARATOR) :
+        '';
 
     return [
         field.id,

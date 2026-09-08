@@ -175,7 +175,9 @@ const CreateOrEditChannel = ({
             return;
         }
 
-        const propertyValues = attributeFields.map((field) => ({field_id: field.id, value: attributeValues[field.id]}));
+        const propertyValues = attributeFields.
+            filter((field) => isPropertyValueSet(attributeValues[field.id])).
+            map((field) => ({field_id: field.id, value: attributeValues[field.id]}));
         const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type, propertyValues);
         if (createdChannel.error) {
             const isMissingRequiredAttributes = getServerError(createdChannel.error) === MISSING_REQUIRED_ATTRIBUTES_ERROR_ID;
