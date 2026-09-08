@@ -140,7 +140,7 @@ async function cleanupPosts(
     serverUrl: string,
     cutoff: number,
     protections: CleanupProtections,
-): Promise<number> {
+): Promise<{postsDeleted: number; error?: unknown}> {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
     const postsInChannelItems = await database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query().fetch();
     const channelsWithPostRanges = new Set(postsInChannelItems.map((row) => row.channelId));
@@ -161,9 +161,9 @@ async function cleanupPosts(
     // delete posts in channels not currently being viewed using a single query.
     // PostsInChannel/PostsInThread/MyChannel bookkeeping is applied atomically inside this call.
     if (unprotectedChannels.size > 0) {
-        const {error: deleteError, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
-        if (deleteError) {
-            throw deleteError;
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, Array.from(unprotectedChannels), cutoff, excludedPostIds);
+        if (error) {
+            return {postsDeleted, error};
         }
         postsDeleted += deletedCount;
     }
@@ -171,9 +171,9 @@ async function cleanupPosts(
     // delete posts in viewed channel if any
     if (protections.viewedChannelId && channelsWithPostRanges.has(protections.viewedChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.viewedChannelId, protections));
-        const {error: deleteError, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
-        if (deleteError) {
-            throw deleteError;
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [protections.viewedChannelId], computedChannelCutoff, excludedPostIds);
+        if (error) {
+            return {postsDeleted, error};
         }
         postsDeleted += deletedCount;
     }
@@ -181,14 +181,14 @@ async function cleanupPosts(
     // delete posts in thread parent channel if any
     if (protections.threadParentChannelId && protections.threadParentChannelId !== protections.viewedChannelId && channelsWithPostRanges.has(protections.threadParentChannelId)) {
         const computedChannelCutoff = Math.min(cutoff, channelProtectionLimit(protections.threadParentChannelId, protections));
-        const {error: deleteError, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
-        if (deleteError) {
-            throw deleteError;
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [protections.threadParentChannelId], computedChannelCutoff, excludedPostIds);
+        if (error) {
+            return {postsDeleted, error};
         }
         postsDeleted += deletedCount;
     }
 
-    return postsDeleted;
+    return {postsDeleted};
 }
 
 // AI threads self-heal on next open (re-fetched from the server), so the only
@@ -310,7 +310,12 @@ export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unkn
                 '— currentPlaybookRunId:', limits.viewedPlaybookRunId,
             );
 
-            postsDeleted = await cleanupPosts(serverUrl, cutoff, limits);
+            const postsResult = await cleanupPosts(serverUrl, cutoff, limits);
+            postsDeleted = postsResult.postsDeleted;
+            if (postsResult.error) {
+                throw postsResult.error;
+            }
+
             await cleanupAiThreads(database, operator, cutoff, limits.viewedThreadId);
             playbookRunsDeleted = await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 

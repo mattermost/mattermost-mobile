@@ -16,8 +16,8 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
-import {getFullErrorMessage} from '@utils/errors';
 import {toMilliseconds} from '@utils/datetime';
+import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 
@@ -68,6 +68,17 @@ class EphemeralModeManagerSingleton {
                     const [databaseResult, filesResult] = await this.wipeServerArtifacts(serverUrl);
                     if (!databaseResult.success || !filesResult.success) {
                         logError('EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data', serverUrl);
+                        try {
+                            // Add a failure as a new entry in the audit log and keep the original attempt entry untouched.
+                            await enqueueAuditEvent(serverUrl, {
+                                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                                offlineTimeMinutes: 0,
+                                occurredAt: Date.now(),
+                                errorReason: 'resumed wipe failed after retries, server re-added with stale data',
+                            });
+                        } catch (auditError) {
+                            logError('EphemeralModeManager.init: failed to enqueue resumed-wipe-failure audit event', getFullErrorMessage(auditError));
+                        }
                     }
                 }
                 await this.addServer(serverUrl);
@@ -492,7 +503,7 @@ class EphemeralModeManagerSingleton {
                 throw new Error('wipe artifacts failed after retries');
             }
         } catch (error) {
-            logError('EphemeralModeManager.runWipe', error);
+            logError('EphemeralModeManager.runWipe', getFullErrorMessage(error));
             if (auditEventId) {
                 try {
                     await attachAuditEventErrorReason(serverUrl, auditEventId, 'unexpected error during wipe');
@@ -504,7 +515,7 @@ class EphemeralModeManagerSingleton {
             try {
                 await this.addServer(serverUrl);
             } catch (error) {
-                logError('EphemeralModeManager.runWipe: addServer failed', error);
+                logError('EphemeralModeManager.runWipe: addServer failed', getFullErrorMessage(error));
             }
 
             this.wipeInProgress.delete(serverUrl);

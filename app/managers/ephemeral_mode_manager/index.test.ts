@@ -791,7 +791,7 @@ describe('EphemeralModeManager', () => {
 
                 await triggerWipeForServerA();
 
-                expect(logError).toHaveBeenCalledWith('EphemeralModeManager.runWipe', expect.any(Error));
+                expect(logError).toHaveBeenCalledWith('EphemeralModeManager.runWipe', 'wipe artifacts failed after retries');
                 expect(attachAuditEventErrorReason).toHaveBeenCalledWith(serverA, 'audit-evt-1', 'unexpected error during wipe');
             });
 
@@ -877,6 +877,39 @@ describe('EphemeralModeManager', () => {
                 'EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data',
                 serverA,
             );
+        });
+
+        it('enqueues an offlinePurge audit event with an error reason when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).toHaveBeenCalledWith(serverA, {
+                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                occurredAt: expect.any(Number),
+                offlineTimeMinutes: 0,
+                errorReason: 'resumed wipe failed after retries, server re-added with stale data',
+            });
+        });
+
+        it('does not enqueue an audit event when a resumed wipe succeeds', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
+        });
+
+        it('still re-adds the server when enqueueing the resumed-wipe-failure audit event rejects', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+            jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
         });
     });
 

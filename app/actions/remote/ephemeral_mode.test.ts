@@ -78,7 +78,7 @@ describe('flushAuditQueue', () => {
         expect(await getEphemeralModeAuditEvents(serverUrl)).toHaveLength(0);
     });
 
-    it('should requeue an event whose request failed without a status code', async () => {
+    it('should requeue an event whose request failed without a status code, without charging an attempt', async () => {
         await seed({kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000});
 
         const client = makeClient();
@@ -89,6 +89,7 @@ describe('flushAuditQueue', () => {
 
         const events = await getEphemeralModeAuditEvents(serverUrl);
         expect(events).toHaveLength(1);
+        expect(events[0].attempts).toBe(0);
     });
 
     it.each([408, 429, 500, 502, 503, 504])(
@@ -174,13 +175,13 @@ describe('flushAuditQueue', () => {
         expect(events[0].attempts).toBe(0);
     });
 
-    it('should increment attempts on an event whose request failed', async () => {
+    it('should increment attempts on an event rejected by a reachable server', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
             {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: 3},
         ]);
 
         const client = makeClient();
-        client.logCleanup.mockRejectedValue(new Error('still failing'));
+        client.logCleanup.mockRejectedValue(Object.assign(new Error('still failing'), {status_code: 500}));
         jest.mocked(NetworkManager.getClient).mockReturnValue(client as any);
 
         await flushAuditQueue(serverUrl);
@@ -190,13 +191,13 @@ describe('flushAuditQueue', () => {
         expect(events[0].attempts).toBe(4);
     });
 
-    it('should discard an event on its final allowed attempt', async () => {
+    it('should discard an event on its final allowed attempt against a reachable server', async () => {
         await replaceEphemeralModeAuditEvents(serverUrl, [
             {id: 'evt1', kind: EphemeralModeAuditEventKind.Cleanup, postsDeleted: 1, playbookRunsDeleted: 0, occurredAt: 1000, attempts: MAX_AUDIT_SEND_ATTEMPTS - 1},
         ]);
 
         const client = makeClient();
-        client.logCleanup.mockRejectedValue(new Error('still failing'));
+        client.logCleanup.mockRejectedValue(Object.assign(new Error('still failing'), {status_code: 500}));
         jest.mocked(NetworkManager.getClient).mockReturnValue(client as any);
 
         await flushAuditQueue(serverUrl);

@@ -490,33 +490,57 @@ describe('autoCacheCleanup', () => {
         expect(flushAuditQueue).toHaveBeenCalledWith(SERVER_URL);
     });
 
-    it('should log the error when the viewed-channel delete call returns an error', async () => {
+    it('reports the postsDeleted count already collected from the unprotected-channels block when the viewed-channel delete call fails afterward', async () => {
         const viewedChannelId = 'ch-viewed-err';
+        const unprotectedChannelId = 'ch-unprotected-viewed-err';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(NavigationStore.getScreensInStack).mockReturnValue([Screens.CHANNEL]);
         jest.mocked(getCurrentChannelId).mockResolvedValue(viewedChannelId);
 
+        await writePiC(unprotectedChannelId);
         await writePiC(viewedChannelId);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('viewed channel delete failed'), deletedCount: 0});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).
+            mockResolvedValueOnce({error: undefined, deletedCount: 3}).
+            mockResolvedValueOnce({error: new Error('viewed channel delete failed'), deletedCount: 0});
 
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'viewed channel delete failed');
+        expect(result).toEqual({error: new Error('viewed channel delete failed')});
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 3,
+            playbookRunsDeleted: 0,
+            occurredAt: NOW,
+            errorReason: 'cleanup failed before completion',
+        });
     });
 
-    it('should log the error when the thread-parent-channel delete call returns an error', async () => {
+    it('reports the postsDeleted count already collected from the unprotected-channels block when the thread-parent-channel delete call fails afterward', async () => {
         const rootId = 'root-err';
         const threadParentChannelId = 'ch-thread-parent-err';
+        const unprotectedChannelId = 'ch-unprotected-thread-err';
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue(rootId);
         await writePost(rootId, threadParentChannelId, OLD);
 
+        await writePiC(unprotectedChannelId);
         await writePiC(threadParentChannelId);
-        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: new Error('thread parent channel delete failed'), deletedCount: 0});
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).
+            mockResolvedValueOnce({error: undefined, deletedCount: 2}).
+            mockResolvedValueOnce({error: new Error('thread parent channel delete failed'), deletedCount: 0});
 
-        await autoCacheCleanup(SERVER_URL);
+        const result = await autoCacheCleanup(SERVER_URL);
 
         expect(logError).toHaveBeenCalledWith('autoCacheCleanup', 'thread parent channel delete failed');
+        expect(result).toEqual({error: new Error('thread parent channel delete failed')});
+        expect(enqueueAuditEvent).toHaveBeenCalledWith(SERVER_URL, {
+            kind: EphemeralModeAuditEventKind.Cleanup,
+            postsDeleted: 2,
+            playbookRunsDeleted: 0,
+            occurredAt: NOW,
+            errorReason: 'cleanup failed before completion',
+        });
     });
 
     it('should delete AI threads older than the cutoff and keeps newer ones', async () => {

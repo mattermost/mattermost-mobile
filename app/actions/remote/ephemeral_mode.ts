@@ -84,8 +84,14 @@ export const flushAuditQueue = async (serverUrl: string): Promise<void> => {
                 await sendAuditEvent(client, event);
                 consumed.add(event.id);
             } catch (error) {
+                if (!isErrorWithStatusCode(error)) {
+                    // The request never reached a server to be judged, so don't charge an attempt.
+                    logDebug('flushAuditQueue: connectivity error sending event, keeping without charging an attempt', serverUrl, event.kind, getFullErrorMessage(error));
+                    continue;
+                }
+
                 // A definite answer we cannot retry — the request itself is rejected.
-                if (isErrorWithStatusCode(error) && !RETRYABLE_AUDIT_STATUS_CODES.has(error.status_code)) {
+                if (!RETRYABLE_AUDIT_STATUS_CODES.has(error.status_code)) {
                     logDebug('flushAuditQueue: server rejected event, dropping', serverUrl, event.kind, error.status_code);
                     consumed.add(event.id);
                     continue;
