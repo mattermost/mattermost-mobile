@@ -598,7 +598,9 @@ export function deriveChannelAttributeBanner(
     // keeps an existing classification banner byte-identical. The nullish check
     // is deliberate: an empty authored string stays empty rather than falling
     // back to the option name, matching the behaviour being replaced.
-    const text = nativeBannerText === undefined || nativeBannerText === null ?`**${option.name}**` :stripUnresolvedTokens(nativeBannerText);
+    const text = nativeBannerText === undefined || nativeBannerText === null ?
+        `**${option.name}**` :
+        stripUnresolvedTokens(nativeBannerText);
 
     // Option colour is the canonical visual identity of the level (e.g. red for
     // SECRET). It always wins when present. The channel's authored background_color
