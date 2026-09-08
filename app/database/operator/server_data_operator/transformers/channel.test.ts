@@ -115,7 +115,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
     it.each([
         {description: 'persist the urgent mention count', urgentMentionCount: 2},
         {description: 'default a missing urgent mention count to zero', urgentMentionCount: undefined},
-    ])('=> transformMyChannelRecord: should $description', async ({urgentMentionCount}) => {
+    ])('should $description', async ({urgentMentionCount}) => {
         expect.assertions(4);
 
         const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
@@ -146,7 +146,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords.urgentMentionCount).toBe(urgentMentionCount ?? 0);
     });
 
-    it('=> transformMyChannelRecord: should preserve the existing urgent mention count on update when omitted', async () => {
+    it('should preserve the existing urgent mention count on update when omitted', async () => {
         expect.assertions(5);
 
         const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
