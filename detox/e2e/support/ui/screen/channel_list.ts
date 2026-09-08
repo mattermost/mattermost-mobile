@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {
+    Alert,
     NavigationHeader,
     PlusMenu,
     TeamSidebar,
@@ -456,6 +457,17 @@ class ChannelListScreen {
                     break;
                 } catch (err) {
                     plusTapError = err;
+
+                    // A native Alert.alert dims the whole screen and swallows this tap --
+                    // "Removed from channel" is raised asynchronously by a WebSocket
+                    // user_removed event, so it can land between dismissKnownModals() above and
+                    // this tap. dismissKnownModals only reaches testID-based RN modals, never a
+                    // UIAlertController, so the alert never clears on its own and retrying the
+                    // tap by itself can only fail again (MM-T5725_1 failed with
+                    // "Hit: <UIView ... _alertControllerDimmingViewColor>"). Clear the blocker,
+                    // then let the loop retry. Only on the failure path, so the happy path pays
+                    // nothing.
+                    await Alert.dismissChannelRemoveOrArchiveAlert();
                     await wait(timeouts.ONE_SEC);
                 }
             }
