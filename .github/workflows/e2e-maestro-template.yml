@@ -417,6 +417,47 @@ jobs:
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
 
+      - name: Run MM-T3261_1 with ReportAProblemType=link (iOS)
+        # Isolated step: patch ReportAProblemType=link plus the report link, run the
+        # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
+        # of its own, so the patch and the trap restore live here. continue-on-error so
+        # the main batch report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
+          ~/.maestro/bin/maestro test \
+            --device "$SIMULATOR_ID" \
+            --format junit \
+            --output build/maestro-report-T3261_1.xml \
+            --test-output-dir build/maestro-artifacts-T3261_1 \
+            --flatten-debug-output \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_link_mode.yml
+
       - name: Restore AllowDownloadLogs baseline (self-healing)
         if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
@@ -1006,6 +1047,47 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/report_problem_mail_mode.yml
+
+      - name: Run MM-T3261_1 with ReportAProblemType=link (Android)
+        # Isolated step: patch ReportAProblemType=link plus the report link, run the
+        # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
+        # of its own, so the patch and the trap restore live here. continue-on-error so
+        # the main batch report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T3261_1.xml \
+            --test-output-dir build/maestro-artifacts-T3261_1 \
+            --flatten-debug-output \
+            --platform android \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_link_mode.yml
 
       - name: Upload Maestro Artifacts
         if: always()
