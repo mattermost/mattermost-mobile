@@ -30,7 +30,7 @@ import {
     ThemeDisplaySettingsScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 describe('Smoke Test - Account', () => {
     const serverOneDisplayName = 'Server 1';
@@ -152,7 +152,23 @@ describe('Smoke Test - Account', () => {
         await MentionNotificationSettingsScreen.back();
         await PushNotificationSettingsScreen.open();
         await PushNotificationSettingsScreen.mentionsOnlyOption.tap();
+
+        // Wait for the first selection to land before making the second. Selecting a "Notify me
+        // about..." option re-renders the list, and a tap fired into that re-render is dropped:
+        // MM-T5114_3 failed in CI with "Only for mentions..." correctly checked after
+        // save-and-reopen while "Trigger push notifications when..." still showed its untouched
+        // default, i.e. only the second tap was lost. Asserting the intermediate state is also
+        // what makes a future failure name the tap that went missing instead of surfacing six
+        // lines later on the final expectation.
+        await waitFor(PushNotificationSettingsScreen.mentionsOnlyOptionSelected).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
+
         await PushNotificationSettingsScreen.mobileAwayOption.tap();
+        await waitFor(PushNotificationSettingsScreen.mobileAwayOptionSelected).
+            toBeVisible().
+            withTimeout(timeouts.TEN_SEC);
+
         await PushNotificationSettingsScreen.back();
         await PushNotificationSettingsScreen.open();
 
