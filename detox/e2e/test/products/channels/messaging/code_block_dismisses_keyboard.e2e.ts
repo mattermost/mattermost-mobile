@@ -23,7 +23,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {waitFor} from 'detox';
 
 describe('Messaging - Code Block Dismisses Keyboard', () => {
@@ -49,8 +49,7 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         await HomeScreen.logout();
     });
 
-    // Skip iOS: R1 product — Code preview back (NavigationHeader) not visible; Android uses pressBack
-    (isIos() ? it.skip : it)('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
+    it('MM-T1433_1 - should dismiss keyboard when tapping a code block', async () => {
         // # Open channel and post a code block via the app UI.
         // Post.apiCreatePost can hang for the full Jest budget with no
         // response / no [client] log (silent TCP stall). UI send uses the app network stack
@@ -74,6 +73,12 @@ describe('Messaging - Code Block Dismisses Keyboard', () => {
         try {
             await ChannelScreen.getFlatPostList().scroll(300, 'up', 0.5, 0.5);
         } catch { /* already at top — non-fatal */ }
+
+        try {
+            await scrollElementIntoView(postListPostItemCodeBlock, by.id('channel.post_list.flat_list'));
+        } catch { /* fell back to plain scroll above; the wait below still gates the tap */ }
+
+        await waitForElementToBeVisible(postListPostItemCodeBlock, timeouts.TEN_SEC, timeouts.HALF_SEC, 25);
 
         // # Tap the code block — navigates to Code preview screen and dismisses the keyboard
         await postListPostItemCodeBlock.tap();

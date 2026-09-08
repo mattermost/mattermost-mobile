@@ -17,6 +17,8 @@
 #   MAESTRO_APP_ID       — default com.mattermost.rnbeta
 #   FLOW_PATH            — optional; space-separated flow dirs (default: detox/maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
+#   ADMIN_TOKEN           — re-applies the server config baseline at startup and enables
+#                           Calls in the test channel; passed through to maestro --env
 #   MAESTRO_DRIVER_STARTUP_TIMEOUT — default 180000 (Maestro CI recommendation)
 
 set -euo pipefail
@@ -226,6 +228,27 @@ grant_android_calls_permissions() {
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
 }
 
+# Idempotent and non-destructive: re-asserts only the state a run requires, so a shared
+# server or a crashed earlier job cannot leak config into this one. Called once before any
+# batch runs. AllowDownloadLogs is intentionally NOT included here: MM-T67856_4 flips it in
+# its own onFlowStart/onFlowComplete hooks (fixtures/set_allow_download_logs.js) so that flow
+# is self-contained whether it runs in CI or locally.
+apply_config_baseline() {
+  [[ -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
+    echo "Warning: missing ADMIN_TOKEN/SITE_1_URL; skipping config baseline" >&2
+    return 0
+  }
+
+  echo "==> Re-applying config baseline on ${SITE_1_URL}"
+  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
+    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  fi
+}
+
 ensure_calls_channel_enabled() {
   [[ -n "${TEST_CHANNEL_ID:-}" && -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
     echo "Warning: missing TEST_CHANNEL_ID/ADMIN_TOKEN/SITE_1_URL; skipping calls channel enable" >&2
@@ -296,7 +319,18 @@ run_maestro_batch() {
   cmd+=("${maestro_env_args[@]}")
   cmd+=("${flows[@]}")
 
-  "${cmd[@]}"
+  # Tee so the batch output is still in the CI log verbatim while also being greppable for
+  # driver-startup failures (see the retry in the batch loop). PIPESTATUS keeps maestro's
+  # exit code rather than tee's.
+  local batch_log="${batch_xml%.xml}.log"
+  "${cmd[@]}" 2>&1 | tee "$batch_log"
+  return "${PIPESTATUS[0]}"
+}
+
+driver_startup_failed() {
+  local batch_log=$1
+  [[ -f "$batch_log" ]] || return 1
+  grep -q "IOSDriverTimeoutException\|iOS driver not ready in time" "$batch_log"
 }
 
 BATCH_XMLS=()
@@ -364,6 +398,8 @@ log_resource_snapshot() {
   fi
 }
 
+apply_config_baseline
+
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
   read -r -a path_arr <<< "$batch_paths"
@@ -390,6 +426,20 @@ for batch_paths in "${BATCHES[@]}"; do
   batch_end_epoch=$(date +%s)
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
+
+  # Retry once when the driver never started. Restricted to that one signature, and to the
+  # case where no JUnit XML was produced, so a genuine flow failure is never re-run and
+  # never masked -- a flow that ran and failed writes its XML and is reported as-is.
+  if [[ $rc -ne 0 && "$PLATFORM" == "ios" && ! -s "$batch_xml" ]] && driver_startup_failed "${batch_xml%.xml}.log"; then
+    echo "==> Batch ${batch_idx}: Maestro's iOS driver never started (no flow ran). Restarting the simulator and retrying this batch once."
+    ensure_ios_simulator_healthy
+    rm -f "$batch_xml"
+    batch_start_epoch=$(date +%s)
+    run_maestro_batch "$batch_xml" "${path_arr[@]}"
+    rc=$?
+    batch_end_epoch=$(date +%s)
+    echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+  fi
 
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"

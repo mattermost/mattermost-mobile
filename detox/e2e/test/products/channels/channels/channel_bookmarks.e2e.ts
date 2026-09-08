@@ -66,7 +66,7 @@ describe('Channels - Channel Bookmarks', () => {
 
     const waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
-        options?: {textFallback?: string; bookmarkId?: string},
+        options?: {textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>},
     ) => {
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
@@ -80,23 +80,18 @@ describe('Channels - Channel Bookmarks', () => {
         return channel;
     };
 
-    // Last sidebar rows sit under the tab bar with no extra scroll unless the list
-    // has bottom padding. Scroll the target into view and fail if it never is.
+    // The last sidebar row sits under the tab bar, so it can never satisfy Detox's default 75%
+    // visibility threshold no matter how far the list scrolls. This suite used to pre-gate on
+    // exactly that (waitFor(...).toBeVisible().whileElement(...).scroll(...)) and threw
+    // "Unable to scroll down ... View is clipped by one or more of its superviews' bounds"
+    // before ever reaching the call below -- one Channel Bookmarks test failed that way in every
+    // sampled main run, rotating between sub-tests because the sidebar is name-sorted and
+    // whichever channel sorts last is the one that gets clipped.
+    //
+    // tapSidebarPublicChannelDisplayName already handles this: it scrolls the row into view,
+    // asserts at a 40% threshold, and taps the row's exposed top edge. Let it do its job.
     const openChannel = async (channel: any) => {
         await ChannelListScreen.toBeVisible();
-        await waitFor(element(by.id('channel_list.flat_list'))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
-
-        try {
-            await element(by.id('channel_list.flat_list')).scrollTo('top');
-        } catch {
-            // List too short to scroll
-        }
-
-        // Do not gate on toBeVisible(50): the last sidebar row is clipped to ~25% by the Home
-        // tab (CI 33941148759), so 50% never holds. The helper below scrolls on toExist and
-        // taps the exposed top edge.
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
@@ -829,15 +824,20 @@ describe('Channels - Channel Bookmarks', () => {
         // Authoritative sync: both bookmarks must exist in channel info before
         // trusting the virtualized header FlatList (file chip can appear first).
         await ChannelInfoScreen.open();
+
+        // onResync re-enters the channel between attempts. Bookmarks arrive via
+        // fetchChannelBookmarks, which only runs on channel switch, so a bookmark that never
+        // synced cannot be recovered by reopening this sheet alone.
+        const resyncChannel = () => openChannel(channelT69455);
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark'},
+            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${linkT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark'},
+            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.close();
 

@@ -209,6 +209,15 @@ class ServerScreen {
     };
 
     tapConnectButton = async () => {
+        // The connect button swaps its testID rather than staying put and going grey:
+        // server/form.tsx renders 'server_form.connect.button.disabled' while the form is
+        // invalid and 'server_form.connect.button' once it is not. buttonDisabled starts
+        // true (server/index.tsx) and flips in a state update after the URL is entered, so
+        // tapping straight after replaceText races that update and Detox reports
+        // "No elements found for MATCHER(id == server_form.connect.button)" -- which reads
+        // like a missing screen but only means the button is still disabled.
+        // Wait for the enabled id before tapping. (MM-T4691_5, and _6/_7 which cascade off it.)
+        await waitFor(this.connectButton).toExist().withTimeout(timeouts.TEN_SEC);
         await this.connectButton.tap();
         await wait(timeouts.ONE_SEC);
     };

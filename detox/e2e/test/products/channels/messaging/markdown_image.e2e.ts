@@ -30,12 +30,12 @@ import {timeouts} from '@support/utils';
  * (app/components/markdown/markdown_image/index.tsx) -- so a dead URL surfaces as
  * "10.0sec timeout expired without matching of given matcher", not as an image error.
  *
- * The previous URL, docs.mattermost.com/_images/icon-76x76.png, started returning 404 and took
- * MM-T4896_1 and _2 down with it on b89ed6b. Sphinx rewrites `_images/` paths whenever the docs
- * rebuild, so that host is not a safe place to pin an asset. This one is a stable
- * mattermost.com upload already exercised by file_preview_gallery.e2e.ts, and at 701x701 it
- * stays under the 4096 ANDROID_MAX_WIDTH/HEIGHT cap, which is a second early return that would
- * likewise drop the testID.
+ * docs.mattermost.com/_images/icon-76x76.png 404s (CI 33936010053 MM-T4896
+ * testFnFailure.png: username row with empty body, no markdown_image). Sphinx rewrites
+ * `_images/` paths whenever the docs rebuild, so that host is not a safe place to pin an
+ * asset. This mattermost.com upload is the same asset file_preview_gallery.e2e.ts uses,
+ * and at 701x701 it stays under the 4096 ANDROID_MAX_WIDTH/HEIGHT cap, which is a second
+ * early return that would likewise drop the testID.
  */
 const MARKDOWN_IMAGE_URL = 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png';
 

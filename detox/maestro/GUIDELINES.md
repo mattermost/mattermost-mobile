@@ -148,6 +148,7 @@ These align with [Maestro docs](https://docs.maestro.dev/) and lessons from Matt
   1. **iOS `FloatingTextInput` fields.** The component passes its testID to the container, not to the inner `TextInput`, so on iOS neither the field nor its value is queryable by `id:` — only the rendered label is. Hence `text: "Enter Server URL"` / `text: "Display Name"` in `subflows/server/` **on iOS only**. Android exposes these fields normally and **must** use `id:` (`server_form.server_url.input`, `server_form.server_display_name.input`). CI 33915931136: Android `tapOn: text: Display Name` failed 10/10 flows. The inline validation error *is* addressable: `<testID>.error` (see `app/components/floating_input/floating_input_container.tsx`).
   2. **System (SpringBoard / Android framework) alert buttons** — `Allow`, `Okay`, `Not now`, `No thanks`. These are OS-owned views with no app testID and cannot be given one. Keep them `optional: true`; do not substitute `point:`, which is more brittle than the label.
 - Verify hierarchy before authoring: `maestro --device <id> hierarchy`
+- `text:` is a **full-string regex**, so a prefix or fragment matches nothing — silently under `optional: true`. `text: "mattermost.com"` does not match the title "Mattermost | Collaboration Platform…". Match the whole string or use a regex that spans it, and beware labels assembled from server config (the login placeholder gains an "AD/LDAP Username" segment only when LDAP is enabled).
 
 testIDs follow `component.subcomponent.element`:
 
@@ -252,9 +253,9 @@ Allowed **only** on toggle taps (idempotent state) and genuinely intermittent sy
 
 ### Server config beyond defaults
 
-1. Tag the flow uniquely (e.g. `MM-T67856_4`).
-2. Add `--exclude-tags=<tag>` to the main CI `maestro test` invocation.
-3. Add a dedicated patch → run → restore step in `e2e-maestro-template.yml` with `trap` restore.
+1. Tag the flow uniquely (e.g. `MM-T67856_4`) and add the tag to `config/exclude_tags.json` so the default batch does not run it with the setting flipped.
+2. Flip the setting inside the flow, not in the workflow: an `onFlowStart` hook that runs a `runScript` fixture (Maestro's built-in `http` client; `--env` values are globals) and an `onFlowComplete` hook that restores it. `fixtures/set_allow_download_logs.js` is the reference. This keeps a local `maestro test` of the file identical to CI.
+3. Give it a dedicated run step in `e2e-maestro-template.yml` plus a **standalone `always()` restore step**. The hook covers every normal exit, including failures; the workflow step covers a runner hard-kill, which never reaches `onFlowComplete` and would leave the setting flipped for every later job on a shared server.
 
 `AllowDownloadLogs` is under `SupportSettings`, not `ServiceSettings`:
 
