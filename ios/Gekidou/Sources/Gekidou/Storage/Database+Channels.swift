@@ -242,7 +242,7 @@ extension Database {
             var updateSetters: [Setter] = [
                 messageCountCol <- messageCount,
                 mentionsCol <- mentionsCount,
-                isUnreadCol <- isUnreadCol,
+                isUnreadCol <- isUnread,
                 lastPostAtCol <- lastPostAt,
                 lastFetchedAtCol <- lastFetchedAt,
             ]
