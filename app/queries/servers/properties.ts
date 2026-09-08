@@ -43,14 +43,6 @@ export const getPropertyValuesByFieldId = (database: Database, fieldId: string) 
     return database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', fieldId)).fetch();
 };
 
-export const getPropertyValuesByFieldIds = (database: Database, fieldIds: string[]) => {
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('field_id', Q.oneOf(fieldIds))).fetch();
-};
-
-export const getPropertyFieldsByObjectTypes = (database: Database, objectTypes: string[]) => {
-    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(Q.where('object_type', Q.oneOf(objectTypes))).fetch();
-};
-
 /**
  * The values stored against one target that belong to the access_control group.
  *

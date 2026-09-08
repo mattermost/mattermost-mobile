@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {CLASSIFICATIONS_FIELD_NAME, CLASSIFICATIONS_SYSTEM_OBJECT_TYPE} from '@constants/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -52,22 +53,63 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+    jest.restoreAllMocks();
     await DatabaseManager.destroyServerDatabase(serverUrl);
 });
 
 describe('removeStoredFields', () => {
-    it('should clean non-classification access-control fields when group ID is not stored', async () => {
+    it('should recover the group ID from classification and clean all owned fields', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        // Seed a channel-attribute field (not classification) without setting the System group ID.
-        await operator.handlePropertyFields({fields: [makeField('ca-field')], prepareRecordsOnly: false});
+        await operator.handlePropertyFields({
+            fields: [
+                makeField('cls-field', {name: CLASSIFICATIONS_FIELD_NAME, object_type: CLASSIFICATIONS_SYSTEM_OBJECT_TYPE}),
+                makeField('ca-field', {name: 'region', object_type: CHANNEL_ATTRIBUTE_OBJECT_TYPE}),
+                makeField('foreign', {group_id: otherGroupId, object_type: CHANNEL_ATTRIBUTE_OBJECT_TYPE}),
+            ],
+            prepareRecordsOnly: false,
+        });
 
-        // System table has no ACCESS_CONTROL_GROUP_ID stored.
         await removeStoredFields(serverUrl);
 
-        // Operator permanently destroys the record, so it must no longer appear in queries.
         const fields = await getFields(database);
-        expect(fields.find((f) => f.id === 'ca-field')).toBeUndefined();
+        expect(fields).toHaveLength(1);
+        expect(fields[0].id).toBe('foreign');
+    });
+
+    it('should leave fields untouched when the group ID cannot be identified safely', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handlePropertyFields({
+            fields: [
+                makeField('ca-field'),
+                makeField('foreign', {group_id: otherGroupId}),
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        await removeStoredFields(serverUrl);
+
+        const fields = await getFields(database);
+        expect(fields).toHaveLength(2);
+        expect(fields.map((field) => field.id).sort()).toEqual(['ca-field', 'foreign']);
+    });
+
+    it('should clean all owned fields by group when group ID is stored', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        await operator.handlePropertyFields({
+            fields: [
+                makeField('cls-field', {name: CLASSIFICATIONS_FIELD_NAME, object_type: CLASSIFICATIONS_SYSTEM_OBJECT_TYPE}),
+                makeField('ca-field', {name: 'region', object_type: CHANNEL_ATTRIBUTE_OBJECT_TYPE}),
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        await setAccessControlGroupId(serverUrl, accessControlGroupId);
+        await removeStoredFields(serverUrl);
+
+        const fields = await getFields(database);
+        expect(fields).toHaveLength(0);
     });
 
     it('should clean associated values for stale fields', async () => {
@@ -79,9 +121,8 @@ describe('removeStoredFields', () => {
         await setAccessControlGroupId(serverUrl, accessControlGroupId);
         await removeStoredFields(serverUrl);
 
-        // The operator cascades value deletion when fields are destroyed.
         const values = await getValues(database);
-        expect(values.find((v) => v.id === 'v1')).toBeUndefined();
+        expect(values).toHaveLength(0);
     });
 
     it('should not touch fields from another group', async () => {
@@ -99,12 +140,8 @@ describe('removeStoredFields', () => {
         await removeStoredFields(serverUrl);
 
         const fields = await getFields(database);
-
-        // Foreign-group field must survive.
-        expect(fields.find((f) => f.id === 'foreign')).toBeDefined();
-
-        // Owned field must be gone.
-        expect(fields.find((f) => f.id === 'owned')).toBeUndefined();
+        expect(fields).toHaveLength(1);
+        expect(fields[0].id).toBe('foreign');
     });
 
     it('should propagate error when clearing group ID fails', async () => {
@@ -113,8 +150,6 @@ describe('removeStoredFields', () => {
         await operator.handlePropertyFields({fields: [makeField('f1')], prepareRecordsOnly: false});
         await setAccessControlGroupId(serverUrl, accessControlGroupId);
 
-        // The second DatabaseManager call is inside setAccessControlGroupId.
-        // Make it throw so removeStoredFields receives {error} and re-throws.
         const real = DatabaseManager.getServerDatabaseAndOperator.bind(DatabaseManager);
         let callCount = 0;
         jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockImplementation((url) => {
@@ -126,7 +161,5 @@ describe('removeStoredFields', () => {
         });
 
         await expect(removeStoredFields(serverUrl)).rejects.toThrow('db write error');
-
-        jest.restoreAllMocks();
     });
 });
