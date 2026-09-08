@@ -615,6 +615,19 @@ describe('WebSocket Post Actions', () => {
             expect(mockedGetMyChannel).not.toHaveBeenCalled();
             expect(batchRecordsSpy).not.toHaveBeenCalled();
         });
+
+        it.each([
+            {description: 'fetchMyChannel fails', fetchResult: {error: new Error('network error')}},
+            {description: 'membership is absent', fetchResult: {teamId: 'team1', memberships: []}},
+        ])('should not mark channel as unread when $description', async ({fetchResult}) => {
+            mockedGetMyChannel.mockResolvedValue(myChannelModel);
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedFetchMyChannel.mockResolvedValue(fetchResult);
+
+            await handlePostUnread(serverUrl, msg);
+
+            expect(mockedMarkChannelAsUnread).not.toHaveBeenCalled();
+        });
     });
 
     describe('handlePostAcknowledgementAdded', () => {

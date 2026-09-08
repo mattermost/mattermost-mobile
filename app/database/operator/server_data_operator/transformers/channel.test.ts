@@ -146,6 +146,66 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         expect(preparedRecords.urgentMentionCount).toBe(urgentMentionCount ?? 0);
     });
 
+    it('=> transformMyChannelRecord: should preserve the existing urgent mention count on update when omitted', async () => {
+        expect.assertions(5);
+
+        const database = await createTestConnection({databaseName: 'channel_prepare_records', setActive: true});
+        expect(database).toBeTruthy();
+
+        const createdRecord = await transformMyChannelRecord({
+            action: OperationType.CREATE,
+            database: database!,
+            value: {
+                record: undefined,
+                raw: {
+                    channel_id: 'cd',
+                    user_id: 'guest',
+                    last_post_at: 1617311494451,
+                    last_viewed_at: 1617311494451,
+                    last_update_at: 0,
+                    mention_count: 3,
+                    msg_count: 10,
+                    urgent_mention_count: 2,
+                    roles: 'guest',
+                    notify_props: {},
+                },
+            },
+        });
+
+        await database!.write(async () => {
+            await database!.batch(createdRecord);
+        });
+
+        expect(createdRecord.urgentMentionCount).toBe(2);
+
+        const updatedRecord = await transformMyChannelRecord({
+            action: OperationType.UPDATE,
+            database: database!,
+            value: {
+                record: createdRecord,
+                raw: {
+                    channel_id: 'cd',
+                    user_id: 'guest',
+                    last_post_at: 1617311494451,
+                    last_viewed_at: 1617311494451,
+                    last_update_at: 0,
+                    mention_count: 3,
+                    msg_count: 10,
+                    roles: 'guest',
+                    notify_props: {},
+                },
+            },
+        });
+
+        await database!.write(async () => {
+            await database!.batch(updatedRecord);
+        });
+
+        expect(updatedRecord).toBeTruthy();
+        expect(updatedRecord.collection.table).toBe('MyChannel');
+        expect(updatedRecord.urgentMentionCount).toBe(2);
+    });
+
     it('=> transformChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
         expect.assertions(3);
 

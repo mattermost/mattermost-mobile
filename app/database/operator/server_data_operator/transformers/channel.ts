@@ -158,7 +158,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.lastFetchedAt = record?.lastFetchedAt || 0;
         myChannel.lastPlaybookRunsFetchAt = record?.lastPlaybookRunsFetchAt || 0;
         myChannel.autotranslationDisabled = Boolean(raw.autotranslation_disabled);
-        myChannel.urgentMentionCount = raw.urgent_mention_count ?? 0;
+        myChannel.urgentMentionCount = raw.urgent_mention_count ?? myChannel.urgentMentionCount ?? 0;
     };
 
     return prepareBaseRecord({
