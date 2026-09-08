@@ -99,23 +99,13 @@ export function getReadableTimestamp(timestamp: number, timeZone: string, isMili
     const now = new Date();
     const isCurrentYear = date.getFullYear() === now.getFullYear();
 
-    // Omit an empty timeZone rather than passing it through. '' is not a valid `timeZone`
-    // option, and the engines disagree about it: iOS Hermes (Foundation) returns the literal
-    // string 'Invalid Date', while Android (ICU) formats anyway. That is why "Send on Invalid
-    // Date" on Drafts > Scheduled was iOS-only (MM-T5720).
-    //
-    // getUserTimezone() yields '' whenever its user is undefined, which is what callers see
-    // while the currentUser observable is still resolving. getFormattedTime() already handles
-    // exactly that (`timezone ? mtz.tz(...) : mtz(...)` in @utils/time) -- which is why the
-    // FormattedTime in the same row renders its time correctly while this label does not.
-    // Match it and fall back to the device zone.
     const options: Intl.DateTimeFormatOptions = {
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
         hour12: !isMilitaryTime,
-        ...(timeZone ? {timeZone} : {}),
+        timeZone: timeZone as string,
         ...(isCurrentYear ? {} : {year: 'numeric'}),
     };
 
