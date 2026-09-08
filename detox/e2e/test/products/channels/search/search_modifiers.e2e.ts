@@ -26,10 +26,8 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
-
-const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Modifiers', () => {
     const serverOneDisplayName = 'Server 1';
@@ -133,7 +131,7 @@ describe('Search - Modifiers', () => {
         await ChannelListScreen.open();
     });
 
-    itNotIos('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
+    it('MM-T585_1 - unfiltered search is not affected by previous modifier searches', async () => {
         // # Post a message for plain text search
         const plainTerm = `plain${getRandomId()}`;
         const message = `Message ${plainTerm}`;

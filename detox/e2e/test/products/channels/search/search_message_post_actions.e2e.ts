@@ -26,10 +26,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
-
-const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -185,7 +183,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    itNotIos('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
+    it('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
