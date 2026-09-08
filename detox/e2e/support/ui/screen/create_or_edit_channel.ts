@@ -156,13 +156,10 @@ class CreateOrEditChannelScreen {
         }
     };
 
-    // The first channel screen after a fresh install shows the scheduled-post tooltip, which
-    // send_button.tsx opens from requestIdleCallback as soon as the screen mounts. On Android the
-    // tooltip is a Modal, i.e. its own window, and Espresso then resolves every matcher against
-    // that window only: `channel.screen` reads as "was null" for as long as the tooltip is open,
-    // even though the channel is rendered underneath it (CI run 34084253311, MM-T4731_2 and
-    // MM-T4944_1, failing on every attempt). So look for the tooltip and the channel screen
-    // together, and close the tooltip before asserting on anything underneath it.
+    // The first channel screen after a fresh install shows the scheduled-post tooltip. On
+    // Android it is a Modal with its own window, and Espresso resolves matchers against that
+    // window only, so channel.screen reads "was null" while it is open (CI 34084253311). Look
+    // for both, and close the tooltip before asserting on anything underneath.
     private waitForChannelScreenClosingTooltip = async (timeout: number): Promise<boolean> => {
         const deadline = Date.now() + timeout;
         /* eslint-disable no-await-in-loop */

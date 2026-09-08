@@ -19,33 +19,16 @@ import {
 import {goOffline, goOnline, timeouts} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
-// A genuine offline simulation needs the app's requests to actually fail, in a way
-// that is local to the device under test — see support/utils/offline_simulation.ts for the
-// mechanism (Android: emulator airplane mode; iOS: a pfctl anchor scoped to the
-// test server's resolved IPs). isNetworkControlAvailable() gates on that and prints
-// its reason at runtime; iOS now always refuses, because the Cloudflare-fronted E2E
-// servers answer AAAA from anycast space and the block can never cover the address
-// the app dials.
+// Offline has to make the app's requests genuinely fail, locally to the device under
+// test; see support/utils/offline_simulation.ts. Android uses emulator airplane mode.
+// iOS is refused by isNetworkControlAvailable(), because the Cloudflare-fronted servers
+// answer AAAA from anycast and a pf block of resolved IPs cannot cover the address the
+// app actually dials.
 //
-// SKIPPED ON BOTH PLATFORMS. Android's mechanism is sound — airplane mode is a real
-// offline and this passed at 41455ms on 8ddfd50af — but the app hits a React Native
-// Fabric mounting crash partway through, roughly half the time:
-//
-//   addViewAt: failed to insert view [1388] into parent [1400] at index 0
-//   The specified child already has a parent. You must call removeView() on the
-//   child's parent first.
-//     at SurfaceMountingManager.addViewAt (SurfaceMountingManager.java:426)
-//     at FabricUIManager.doFrameGuarded (FabricUIManager.java:1499)
-//
-// The redbox blocks the UI and the test burns its full 300s timeout (run
-// 34160726648). The app code is byte-identical to the head where this passed — only
-// detox/ changed between them — so this is pre-existing intermittency, not a
-// regression from the harness. It reproduced twice locally and once in CI.
-//
-// This is an app bug, not a test bug, and the right fix is in the mounting path, not
-// here. Until then a coin-flip test is worse than none: it burns a 5-minute shard
-// slot and erodes trust in the suite. Re-enable by restoring the
-// isNetworkControlAvailable() gate below once the Fabric crash is fixed.
+// SKIPPED. The Android mechanism is sound (passed in 41s on 8ddfd50af), but the app
+// red-boxed on a Fabric addViewAt reparent about half the time and burned the full 300s
+// timeout (run 34160726648). That crash is fixed on this branch; re-enable by restoring
+// the isNetworkControlAvailable() gate once CI shows the Android suite clean.
 describe.skip('Messaging - Pending Posts Offline', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';

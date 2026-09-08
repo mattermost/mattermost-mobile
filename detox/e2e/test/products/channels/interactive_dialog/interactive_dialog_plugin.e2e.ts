@@ -186,12 +186,9 @@ async function ensureDialogClosed() {
         } catch {}
     }
 
-    // iOS 26+ may leave the keyboard rendered after dialog close even when no
-    // input is focused, obscuring the post list and failing later visibility
-    // checks. Tap empty space at the top of the post list scroll view to
-    // defocus the input and retract the keyboard. Coordinates target an area
-    // above any rendered post or the channel intro to avoid triggering
-    // actions like "Edit Header".
+    // iOS 26+ can leave the keyboard rendered after the dialog closes, obscuring the
+    // post list. Tap empty space high in the scroll view to retract it; the coordinates
+    // sit above any post or the channel intro so nothing else fires.
     try {
         await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
         await wait(500);
@@ -203,9 +200,8 @@ async function ensureDialogClosed() {
         await wait(300);
     } catch {}
 
-    // The defocus tap above can land on a post and open its thread, which would
-    // strand the next test off the channel. If the channel post draft is no longer
-    // visible, a thread (or other pushed screen) opened — back out of it.
+    // That tap can still land on a post and open its thread, stranding the next test off
+    // the channel. If the post draft is gone, something was pushed: back out of it.
     try {
         await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
     } catch {
@@ -239,13 +235,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let testChannel: any;
     let testUser: any;
 
-    // Jest still runs afterEach for every test in a block whose beforeAll threw
-    // (verified in CI 34099282816 machine-2). With no session to recover, each of
-    // this suite's ~26 tests then spent 3.5-5 min in the afterEach channel-list
-    // recovery relaunch — ~90 min of retries that could not succeed — and the
-    // shard was killed by its 60-minute `timeout` before Jest wrote any results.
-    // The suite still fails loudly; it just stops taking the rest of the shard
-    // (channel_summary and settings, both already green) down with it.
+    // Jest runs afterEach for every test in a block whose beforeAll threw (CI 34099282816).
+    // With no session to recover, all ~26 tests burn minutes each in the recovery relaunch
+    // and the shard is killed before Jest writes results. The suite still fails loudly; it
+    // just no longer takes the rest of the shard down with it.
     let setupFailed = false;
 
     const setUpSuite = async () => {
@@ -313,9 +306,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
         await dismissErrorAlert();
 
-        // Close an integration selector modal if one is stuck open (e.g.,
-        // when a selectUser tap failed to fire). Cancel first, then try
-        // done() if cancel didn't apply.
+        // Close a stuck integration selector modal (e.g. a selectUser tap that never fired):
+        // cancel first, then fall back to done().
         try {
             await IntegrationSelectorScreen.cancel();
         } catch {}
@@ -953,9 +945,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
-        // list, so \s* would cross the newline and capture the next item's "-" bullet.
-        // That is how an empty field previously reported itself as "got: -".
+        // Match to end of line, not \s*(\S+): the payload renders as a markdown list, so \s*
+        // would cross the newline and capture the next bullet (an empty field read "-").
         const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
         const submitted = match?.[1]?.trim() ?? '';
         if (!submitted) {

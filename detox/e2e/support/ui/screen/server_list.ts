@@ -67,10 +67,9 @@ class ServerListScreen {
     open = async () => {
         await dismissKnownModals(2);
 
-        // A sheet left open by a failed step is not closed by beforeEach recovery (the channel
-        // list still exists under it). Tapping the server icon then lands on the sheet backdrop
-        // and closes the list instead of opening it: CI 33947684168 android-15 MM-T4691_3 failed
-        // on the title 2s after open() with the screenshot showing the list closed.
+        // A sheet left open by a failed step survives beforeEach recovery (the channel list still
+        // exists under it), and tapping the server icon then hits the backdrop and closes the list
+        // instead of opening it (CI 33947684168).
         try {
             await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.HALF_SEC);
             return this.toBeVisible();

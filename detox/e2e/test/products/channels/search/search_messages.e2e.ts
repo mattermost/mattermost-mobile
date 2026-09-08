@@ -66,11 +66,9 @@ describe('Search - Search Messages', () => {
     });
 
     beforeEach(async () => {
-        // A test that fails mid-flow never reaches its own searchClearButton tap, so its
-        // query stays in the search box. The next test then opens onto the results view
-        // instead of "Search options", and its searchModifier* lookups fail — which is how
-        // a single failure took out all six of MM-T5294_3.._8 in CI 31329196036. Closing
-        // the screen alone does not reset the query, so clear it here first.
+        // A test that fails mid-flow never reaches its own searchClearButton tap, so its query
+        // survives and the next test opens onto results instead of "Search options" (CI
+        // 31329196036 lost six tests that way). Closing the screen does not reset it; clear here.
         try {
             await waitForElementToExist(SearchMessagesScreen.searchClearButton, timeouts.TWO_SEC);
             await SearchMessagesScreen.searchClearButton.tap();

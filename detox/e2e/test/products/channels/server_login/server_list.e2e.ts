@@ -49,20 +49,17 @@ describe('Server Login - Server List', () => {
     let lockAcquired = false;
 
     beforeAll(async () => {
-        // MM-T4691_5 logs in to SITE_3, and custom_terms_of_service turns on server-wide
-        // custom ToS there — that modal would land on top of that login and swallow the taps
-        // that follow. Both suites hold the SITE_3 lock so they never overlap. Held for the
-        // whole suite rather than around the one test: acquiring mid-suite would mean
-        // releasing on paths that have already navigated.
+        // MM-T4691_5 logs in to SITE_3, where custom_terms_of_service enables server-wide ToS,
+        // and that modal would swallow the taps after login. Both suites hold the SITE_3 lock.
+        // Held suite-wide: acquiring mid-suite would mean releasing on already-navigated paths.
         if (hasThreeDistinctServers) {
             lockOwner = siteThreeLock.createOwner();
             await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
             lockAcquired = true;
 
-            // custom_terms_of_service heals ToS on acquire, but a stolen lease can
-            // re-enable it after this hook (CI 33941148759 iOS MM-T4691_* screenshots:
-            // E2E Custom Terms modal covering server-list taps). Clear it while we hold
-            // the lock so SITE_3 login is not sitting under that overlay.
+            // custom_terms_of_service heals ToS on acquire, but a stolen lease can re-enable it
+            // after this hook (CI 33941148759). Clear it while we hold the lock, so the SITE_3
+            // login is not sitting under that overlay.
             await User.apiAdminLogin(siteThreeUrl);
             const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
             if (error) {
@@ -120,12 +117,9 @@ describe('Server Login - Server List', () => {
         if (isIos()) {
             await ServerListScreen.serverListScreen.swipe('up');
         } else if (isAndroid()) {
-            // Swipe the sheet title, not server_list.screen. The content container swipe
-            // scrolls the inner FlatList (its bottom padding makes a one-row list scrollable)
-            // and flings the only row — plus its push-proxy alert text — above the header, so
-            // the .active item is gone: CI 33947684168 android-15 MM-T4691_2 testFnFailure.png
-            // shows only the alert's second line under "Your servers". The title swipe used by
-            // MM-T4691_3..7 leaves the list untouched and passed with the same alert present.
+            // Swipe the sheet title, not server_list.screen: swiping the content container scrolls
+            // the inner FlatList and flings the only row above the header, leaving no .active item
+            // (CI 33947684168). The title swipe leaves the list untouched.
             await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }

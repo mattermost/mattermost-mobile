@@ -94,11 +94,9 @@ describe('Channels - Channel Bookmarks', () => {
             // List too short to scroll
         }
 
-        // Do not waitFor(toBeVisible(50)) here. CI 33941148759 MM-T5602_1
-        // testFnFailure.png: last sidebar row (channel-eb7eca) is clipped to
-        // ~25% by the Home tab, so 50% never succeeds and the tap below never
-        // runs. tapSidebarPublicChannelDisplayName scrolls on toExist and taps
-        // the exposed top edge.
+        // Do not gate on toBeVisible(50): the last sidebar row is clipped to ~25% by the Home
+        // tab (CI 33941148759), so 50% never holds. The helper below scrolls on toExist and
+        // taps the exposed top edge.
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
@@ -769,16 +767,10 @@ describe('Channels - Channel Bookmarks', () => {
 
     it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         // # Create the channel and BOTH bookmarks before the test user joins it.
-        // Adding the user first races the app: on `user_added` the client fetches the
-        // channel over the network before it persists the membership, and a
-        // `channel_bookmark_created` event that lands inside that window is dropped by
-        // handleBookmarks (app/actions/local/channel_bookmark.ts: no MyChannel row yet).
-        // The file bookmark, created a request later, then IS stored, and every later
-        // fetchChannelBookmarks asks the server for `bookmarks_since` that newer
-        // bookmark, so the dropped link bookmark can never be recovered — CI 34185558418
-        // machine-4 testFnFailure.png shows channel info with only "Tap File Bookmark".
-        // With the user joining last there are no bookmark events to drop, and the first
-        // channel switch fetches with since=0, returning both.
+        // Join last, so there are no bookmark events to drop. Adding the user first races the
+        // app: handleBookmarks discards a channel_bookmark_created event that arrives before
+        // the membership is persisted, and the incremental bookmarks_since fetch then never
+        // asks for it again (CI 34185558418 showed only the file bookmark).
         const {channel: channelT69455} = await Channel.apiCreateChannel(siteOneUrl, {
             type: 'O',
             teamId: testTeam.id,

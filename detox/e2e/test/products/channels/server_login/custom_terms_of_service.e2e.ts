@@ -118,10 +118,9 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         }
     });
 
-    // Decline first: MM-T1194 relaunches the accepted session, and Android logout
-    // after that relaunch can leave a blank account tab (CI 33941148759
-    // MM-T1193_1 testFnFailure.png) so the decline case never reaches the server
-    // form. Running decline before the relaunch keeps it on a clean login.
+    // Decline first: MM-T1194 relaunches the accepted session, and Android logout after that
+    // relaunch can leave a blank account tab (CI 33941148759), so decline never reaches the
+    // server form. Running it before the relaunch keeps it on a clean login.
     it('MM-T1193_1 - should return to server screen after declining custom terms of service', async () => {
         // Fresh user so ToS is required (the beforeAll user is reserved for accept)
         const {user: declineUser} = await Setup.apiInit(siteThreeUrl);

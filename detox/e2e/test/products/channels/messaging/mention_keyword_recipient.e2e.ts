@@ -45,10 +45,9 @@ describe('Messaging - Channel-wide Mention and Keyword (Recipient)', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, mentioner.id, channel.id);
 
         // # Configure B's keyword notification and channel-mention notification.
-        // notify_props, not a preference: mention_keys is the server's keyword field
-        // (app/screens/settings/notification_mention/mention_settings.tsx). The keyword
-        // is unique per run so no other content can match it. The keyword-settings UI
-        // itself is covered by mention_notification_settings.e2e.ts (MM-T5107).
+        // notify_props, not a preference: mention_keys is the server's keyword field. The keyword
+        // is unique per run so nothing else can match it. The settings UI itself is covered by
+        // mention_notification_settings.e2e.ts (MM-T5107).
         keyword = `e2e-${getRandomId()}`;
         await User.apiLogin(siteOneUrl, {
             username: recipient.newUser.username,

@@ -2,65 +2,32 @@
 // See LICENSE.txt for license information.
 
 /**
- * Network harness for genuine offline simulation.
+ * Offline simulation for the pending-posts specs.
  *
- * The app's requests must actually fail — a mechanism that only hides traffic from
- * Detox (device.setURLBlacklist) does not mark a post as failed (verified empirically:
- * the request hangs and eventually completes). The mechanism must also be local to the
- * device under test: CI runners are shared, so nothing that affects other machines or
- * parallel workers is allowed.
+ * The app's requests must genuinely fail: device.setURLBlacklist only hides traffic
+ * from Detox's synchronisation, so the request still completes and the post is never
+ * marked failed. The mechanism must also be device-local, because CI runners are
+ * shared and anything host-wide would cut the network out from under parallel jobs.
  *
- * - Android: airplane mode via adb — emulator-local, works on CI's Ubuntu runners.
- *   This is the only supported platform, and it is a genuine offline: airplane mode
- *   kills routing outright and never has to enumerate the server's addresses.
- * - iOS: NOT SUPPORTED. isNetworkControlAvailable() always returns false, so suites
- *   gated on it skip loudly with the reason. The pfctl machinery below is retained
- *   and is correct — the anchor attachment point was device-verified on macOS — but
- *   it blocks a table of resolved IPs, and the Cloudflare-fronted E2E servers answer
- *   AAAA from anycast space with a different address per lookup. The app dials one
- *   that was never in the table. See IOS_OFFLINE_UNSUPPORTED_REASON for the full
- *   account, including the two detection attempts that were not reliable.
+ * - Android: airplane mode via adb. Emulator-local, kills routing outright, and never
+ *   has to enumerate the server's addresses. This is the only supported platform.
+ * - iOS: refused. isNetworkControlAvailable() always returns false and gated suites
+ *   skip loudly. See IOS_OFFLINE_UNSUPPORTED_REASON below for why the pf machinery,
+ *   though correct and device-verified, cannot pin a Cloudflare anycast edge.
  *
- * Scoping rules (load-bearing):
- * - ONLY the resolved IPs of the test server host are blocked — never CDN ranges
- *   (registry.npmjs.org is Cloudflare-fronted like the test server) and never more
- *   ports than the server's own.
- * - Loopback targets are refused on iOS: blocking lo0 would also kill the app<->Detox
- *   sync channel, which runs on localhost.
+ * Scoping rules (load-bearing): block only the resolved IPs of the test server host,
+ * never CDN ranges (npm is Cloudflare-fronted too) and never extra ports. Loopback is
+ * refused on iOS, since blocking lo0 would also kill the app-to-Detox sync channel.
  *
- * pf rule specifics:
- * - TCP uses `block return-rst` so connections fail instantly (connection-refused), the
- *   same fast failure airplane mode produces — a silent drop would leave the app's
- *   post hanging until a connect timeout instead of failing.
- * - UDP/443 uses `block drop`: the E2E servers advertise `alt-svc: h3=":443"` (verified
- *   live) and the app honours HTTP/3, so a TCP-only block would leave the QUIC path open.
- * - The anchor is loaded directly (`pfctl -a <anchor> -f <file>`), never by reloading
- *   /etc/pf.conf — that collides with the system-managed ruleset on live hosts
- *   (tuist/tuist#11425: "cannot define table … Resource busy"). The attachment
- *   point matters as much as the rules: see PFCTL_ANCHOR below.
+ * pf specifics: TCP uses `block return-rst` so connections fail instantly like
+ * airplane mode does, rather than hanging until a connect timeout. UDP/443 uses
+ * `block drop` because the servers advertise h3 and the app honours HTTP/3. The
+ * anchor is loaded directly, never by reloading /etc/pf.conf, which collides with the
+ * system ruleset.
  *
- * Design property — never green-because-broken: goOffline() polls until the server is
- * genuinely unreachable and throws otherwise, and goOnline() polls until connectivity
- * is restored and throws otherwise. If the block silently failed, the post would
- * succeed and the test would fail at the failed-indicator assertion; the poll makes
- * that failure loud and immediate instead. No fixed sleeps.
- *
- * Verification is platform-split and must stay that way:
- * - Android offline: an internet ICMP canary (8.8.8.8) — airplane mode kills all
- *   routing, and the server's Cloudflare edge does not answer ICMP (verified), so
- *   the canary is the only honest "everything is down" signal from the emulator.
- * - iOS offline (unreachable today — kept correct for if the servers leave the CDN):
- *   the server itself over TCP. The pf block is scoped to the server's IPs only, so
- *   an internet canary stays reachable BY DESIGN and must never be consulted on iOS.
- *   The check is hostname-based curl rather than a per-IP connect, and must query
- *   BOTH address families: a bare curl picks IPv4, and an IPv4-only view of
- *   reachability once reported "offline" while the app posted successfully over
- *   IPv6 (status 201). Note this still cannot exercise HTTP/3 — the system curl has
- *   no h3 support — which is part of why iOS is refused outright rather than probed.
- * - Both platforms online: the server itself (Android: TCP connect from the emulator
- *   via nc; iOS: curl from the host), never the canary.
+ * Never green-because-broken: goOffline() polls until the server is actually
+ * unreachable and throws otherwise, goOnline() polls until it is back. No fixed sleeps.
  */
-
 import {execSync} from 'child_process';
 import {promises as dnsPromises} from 'dns';
 import {mkdtempSync, writeFileSync} from 'fs';
@@ -87,25 +54,11 @@ const wait = async (ms: number): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-// pf evaluates an anchor only when a loaded ruleset contains an anchor rule that
-// reaches it (pf.conf(5): "When evaluation of the main ruleset reaches an anchor
-// rule, packet filter will proceed to evaluate all rules specified in that
-// anchor"). macOS's stock /etc/pf.conf main ruleset carries exactly one filter
-// anchor rule — `anchor "com.apple/*"` — and the trailing `/*` "will only
-// evaluate anchors that are directly attached to the [com.apple] anchor, and
-// will not descend to evaluate anchors recursively".
-//
-// An anchor attached to the main ruleset instead (the old
-// 'com.mattermost.e2e.offline') is therefore never reached: pfctl loads the
-// rules, `pfctl -a <anchor> -s rules` prints them, and the kernel never
-// evaluates a single one. That — not Cloudflare rotation — is why MM-T416
-// failed on every iOS run with the same four edge IPs and the rotation branch
-// in goOfflineIos never fired: curl kept connecting to IPs we had "blocked".
-//
-// Attaching directly under com.apple/ puts the ruleset on the one evaluated
-// path. The 000. prefix sorts it ahead of Apple's own 200.AirDrop and
-// 250.ApplicationFirewall (children are evaluated in alphabetical order), so
-// our `block ... quick` is reached before any of their rules can match first.
+// macOS's stock /etc/pf.conf carries a single filter anchor rule, `anchor "com.apple/*"`,
+// and the trailing /* does not descend recursively. An anchor attached anywhere else
+// loads and is never evaluated: `pfctl -a <anchor> -s rules` prints the rules and the
+// kernel ignores every one of them. The 000. prefix sorts ahead of Apple's own children
+// (evaluated alphabetically) so our `block ... quick` is reached first.
 const PFCTL_ANCHOR = 'com.apple/000.mattermostE2E';
 
 // Harness state so goOnline() can restore exactly what goOffline() changed, and so
@@ -129,35 +82,16 @@ const tryRun = (cmd: string): boolean => {
     }
 };
 
-// iOS offline is not supported, and this is a hard refusal rather than a probe.
+// iOS offline is refused outright rather than probed. The block works from a table of
+// resolved addresses, but the Cloudflare-fronted servers answer AAAA from anycast with a
+// different address on nearly every lookup (twelve lookups, four addresses on the CI
+// host), so the app dials one that was never in the table: on run 34146969443 the
+// "offline" post came back 201. Covering it would mean blocking 2606:4700::/32, all of
+// Cloudflare, which the scoping rules above forbid.
 //
-// The mechanism blocks a table of resolved addresses, so it can only work when the
-// set the app dials is enumerable. Every Mattermost E2E server is Cloudflare-fronted
-// and answers AAAA from anycast space with a different address on nearly every
-// lookup (measured on the CI host: twelve lookups, four distinct addresses):
-//
-//   2606:4700:83b2:7ab5:879e:0:94bb:d53c
-//   2606:4700:90d2:7ab5:87c5:0:94bb:d53c
-//   2606:4700:9762:7ab5:8743:0:94bb:d53c
-//
-// while the A records stay put. The app resolves an address that was never in our
-// table and connects straight past the block: on run 34146969443 the "offline" post
-// came back 201. Covering it would mean blocking 2606:4700::/32 -- all of Cloudflare
-// -- which the scoping rules above forbid, since registry.npmjs.org is behind it too.
-//
-// Two earlier attempts tried to detect the condition instead of stating it, and both
-// were wrong in the same way: they could return "available" on the runner while
-// returning "unavailable" here. Comparing two AAAA lookups fails because rotation is
-// probabilistic and duplicates are common. Checking for a Cloudflare prefix fails
-// when the runner's resolver returns no AAAA at all, which reads as "IPv4 only" and
-// lets the suite run. Neither has evidence from inside the runner to stand on, and a
-// wrong "available" costs a red test while a wrong "unavailable" costs a skip.
-//
-// So there is nothing to detect. Android keeps this coverage -- airplane mode is a
-// genuine offline and never enumerates IPs -- and MM-T416 passes there. Revisit only
-// if the E2E servers stop sitting behind a CDN; the pf machinery below is correct and
-// device-verified (anchor evaluation confirmed on macOS), it just cannot pin an
-// anycast edge.
+// Do not replace this with detection. Comparing two AAAA lookups fails because rotation
+// is probabilistic; testing for a Cloudflare prefix fails when the resolver returns no
+// AAAA at all and reads as "IPv4 only". Both can wrongly report available.
 const IOS_OFFLINE_UNSUPPORTED_REASON =
     'the E2E servers are Cloudflare-fronted and answer AAAA from anycast space with a ' +
     'different address per lookup, so a pf table of resolved IPs cannot cover the address ' +
