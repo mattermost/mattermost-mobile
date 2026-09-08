@@ -24,6 +24,8 @@ function getBaseProps(overrides: Partial<ComponentProps<typeof Header>> = {}): C
         currentTeamId: 'team-id',
         displayName: 'Test!',
         hasMoreThanOneTeam: false,
+        ephemeralModeEnabled: false,
+        isZeroPersistenceMode: false,
         ...overrides,
     };
 }
@@ -47,6 +49,37 @@ describe('components/channel_list/header', () => {
         );
 
         expect(wrapper.getByTestId('channel_list_header.push_alert')).toBeTruthy();
+    });
+
+    it('shows the ephemeral mode indicator when ephemeral mode is enabled', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps({ephemeralModeEnabled: true})}/>);
+
+        expect(wrapper.getByTestId('channel_list_header.ephemeral_mode')).toBeTruthy();
+    });
+
+    it('shows a tooltip when the ephemeral mode indicator is pressed', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps({ephemeralModeEnabled: true})}/>);
+
+        expect(wrapper.queryByText('Ephemeral mode is on')).toBeNull();
+
+        fireEvent.press(wrapper.getByTestId('channel_list_header.ephemeral_mode'));
+
+        expect(wrapper.getByText('Ephemeral mode is on')).toBeTruthy();
+    });
+
+    it('shows a zero persistence tooltip instead when running in zero persistence mode', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps({ephemeralModeEnabled: true, isZeroPersistenceMode: true})}/>);
+
+        fireEvent.press(wrapper.getByTestId('channel_list_header.ephemeral_mode'));
+
+        expect(wrapper.getByText('Zero Persistence is on')).toBeTruthy();
+        expect(wrapper.queryByText('Ephemeral mode is on')).toBeNull();
+    });
+
+    it('hides the ephemeral mode indicator when ephemeral mode is disabled', () => {
+        const wrapper = renderWithIntl(<Header {...getBaseProps()}/>);
+
+        expect(wrapper.queryByTestId('channel_list_header.ephemeral_mode')).toBeNull();
     });
 
     describe('team menu affordance', () => {

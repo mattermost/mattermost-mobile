@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
 import {resetHasEverStartedSync} from '@store/team_load_store';
@@ -9,7 +8,6 @@ import {isZeroPersistenceConfig} from '@utils/config';
 import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
-import {showSnackBar} from '@utils/snack_bar';
 
 import type {PersistenceFlag} from '@typings/database/models/app/servers';
 
@@ -79,14 +77,3 @@ export const reconcilePersistenceFlag = async (serverUrl: string, config: Client
         return false;
     }
 };
-
-export const notifyEphemeralModeToggle = (prevConfig: ClientConfig | undefined, config: ClientConfig | undefined): void => {
-    const wasEphemeralModeEnabled = prevConfig?.MobileEphemeralModeEnabled === 'true';
-    const isEphemeralModeEnabled = config?.MobileEphemeralModeEnabled === 'true';
-    if (wasEphemeralModeEnabled && !isEphemeralModeEnabled) {
-        showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
-    } else if (!wasEphemeralModeEnabled && isEphemeralModeEnabled) {
-        showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
-    }
-};
-

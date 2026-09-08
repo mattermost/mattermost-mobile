@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus, type NativeEventSubscription} from 'react-native';
-import {BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
-import {distinctUntilChanged, skip} from 'rxjs/operators';
+import {AppState, type AppStateStatus, DeviceEventEmitter, type NativeEventSubscription} from 'react-native';
+import {asapScheduler, BehaviorSubject, combineLatest, type Subscription} from 'rxjs';
+import {debounceTime, distinctUntilChanged, skip} from 'rxjs/operators';
 
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {clearEphemeralModeState, setDisconnectedSince, setLastSeenTime, setOfflineSince} from '@actions/local/systems';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
-import {getConfigBooleanValue, getConfigValue, getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
+import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
@@ -84,20 +84,6 @@ class EphemeralModeManagerSingleton {
 
         if (server?.persistenceFlag === 'zero-persistence') {
             showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
-            return;
-        }
-
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const enabled = await getConfigBooleanValue(database, 'MobileEphemeralModeEnabled');
-        if (!enabled) {
-            return;
-        }
-
-        const purgeHours = Math.max(0, Number((await getConfigValue(database, 'MobileEphemeralModeOfflinePersistenceTimerHours')) ?? '0'));
-        if (purgeHours === 0) {
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
-        } else {
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
         }
     };
 
@@ -164,6 +150,10 @@ class EphemeralModeManagerSingleton {
             observeConfigValue(database, 'MobileEphemeralModeOfflinePersistenceTimerHours'),
             observeConfigValue(database, 'MobileEphemeralModeAutoCacheCleanupDays'),
         ]).pipe(
+
+            // Each config row emits separately, so a single sync touching several
+            // settings would otherwise deliver one partially-updated tuple per row.
+            debounceTime(0, asapScheduler),
             distinctUntilChanged(
                 ([prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
                     [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays]) =>
@@ -191,19 +181,7 @@ class EphemeralModeManagerSingleton {
         const nextCleanupDays = Math.max(0, Number(cleanupDaysStr ?? '0'));
 
         const wasActive = currentTrackedServer?.kind === 'mem';
-        const currentPurgeThresholdMs = currentTrackedServer?.kind === 'mem' ? currentTrackedServer.purgeThresholdMs : undefined;
-
         this.cleanupDays[serverUrl] = nextCleanupDays;
-
-        if (currentPurgeThresholdMs !== undefined && currentPurgeThresholdMs !== nextPurgeThresholdMs) {
-            if (nextEnabled) {
-                if (nextPurgeHours === 0) {
-                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
-                } else {
-                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_ALLOWED, messageValues: {hours: nextPurgeHours}});
-                }
-            }
-        }
 
         if (nextCleanupDays > 0) {
             logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
@@ -211,12 +189,15 @@ class EphemeralModeManagerSingleton {
 
         if (nextEnabled && !wasActive) {
             this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
         if (!nextEnabled && wasActive) {
             await this.untrack(serverUrl);
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
             return;
         }
+
         if (nextEnabled && wasActive) {
             this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs});
             this.enqueueEval(serverUrl, async () => {
@@ -225,6 +206,7 @@ class EphemeralModeManagerSingleton {
                     await this.evaluatePurge(serverUrl);
                 }
             });
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
 
@@ -427,9 +409,13 @@ class EphemeralModeManagerSingleton {
     };
 
     private onTransitionToOnline = async (serverUrl: string) => {
+        logDebug('EphemeralModeManager: online', serverUrl);
         this.clearPurgeTimer(serverUrl);
         this.clearWarnTimer(serverUrl);
         await clearEphemeralModeState(serverUrl);
+
+        // emit event so UI can react in case of reconnection and the ephemeral mode offline snackbar is showing
+        DeviceEventEmitter.emit(Events.EPHEMERAL_MODE_RECONNECTED);
     };
 
     private evaluatePurge = async (serverUrl: string) => {

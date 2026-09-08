@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import {getServer} from '@queries/app/servers';
 import {getHasEverStartedSyncSubject, setTeamLoading} from '@store/team_load_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logInfo, logWarning} from '@utils/log';
-import {showSnackBar} from '@utils/snack_bar';
 
 import {
-    notifyEphemeralModeToggle,
     reconcilePersistenceFlag,
     wipeServerDatabaseWithRetry,
     wipeServerFiles,
@@ -226,29 +223,5 @@ describe('reconcilePersistenceFlag', () => {
 
         expect(result).toBe(false);
         expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
-    });
-});
-
-describe('notifyEphemeralModeToggle', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('shows the disabled snackbar when ephemeral mode transitions from enabled to disabled', () => {
-        notifyEphemeralModeToggle({MobileEphemeralModeEnabled: 'true'} as ClientConfig, {MobileEphemeralModeEnabled: 'false'} as ClientConfig);
-
-        expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
-    });
-
-    it('shows the enabled snackbar when ephemeral mode transitions from disabled to enabled', () => {
-        notifyEphemeralModeToggle({MobileEphemeralModeEnabled: 'false'} as ClientConfig, {MobileEphemeralModeEnabled: 'true'} as ClientConfig);
-
-        expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
-    });
-
-    it('does not show a snackbar when the ephemeral mode enabled state is unchanged', () => {
-        notifyEphemeralModeToggle({MobileEphemeralModeEnabled: 'true'} as ClientConfig, {MobileEphemeralModeEnabled: 'true'} as ClientConfig);
-
-        expect(showSnackBar).not.toHaveBeenCalled();
     });
 });

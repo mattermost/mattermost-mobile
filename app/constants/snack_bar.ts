@@ -39,11 +39,10 @@ export const SNACK_BAR_TYPE = keyMirror({
     BOR_POST_EXPIRED: null,
     EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE: null,
     EPHEMERAL_MODE_ENABLED: null,
+    EPHEMERAL_MODE_SETTINGS_UPDATED: null,
     EPHEMERAL_MODE_DISABLED: null,
     EPHEMERAL_MODE_DISCONNECTED: null,
     EPHEMERAL_MODE_WIPE_WARNING: null,
-    EPHEMERAL_MODE_OFFLINE_DISABLED: null,
-    EPHEMERAL_MODE_OFFLINE_ALLOWED: null,
     EPHEMERAL_MODE_CACHE_CLEANUP: null,
 });
 
@@ -55,6 +54,7 @@ export const MESSAGE_TYPE = {
 
 export type SnackBarConfig = {
     message: MessageDescriptor;
+    description?: MessageDescriptor;
     iconName: CompassIconName;
     hasAction: boolean;
     type?: typeof MESSAGE_TYPE[keyof typeof MESSAGE_TYPE];
@@ -162,9 +162,25 @@ const messages = defineMessages({
         id: 'snack.bar.ephemeral_mode.zero_persistence_active',
         defaultMessage: 'Running in Zero Persistence Mode',
     },
+    EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE_DESCRIPTION: {
+        id: 'snack.bar.ephemeral_mode.zero_persistence_active.description',
+        defaultMessage: 'Your organization has enabled Zero Persistence on this device.\nMessages and files are never saved locally and are discarded when you leave the app',
+    },
     EPHEMERAL_MODE_ENABLED: {
         id: 'snack.bar.ephemeral_mode.enabled',
-        defaultMessage: 'Ephemeral mode has been enabled in this device',
+        defaultMessage: 'Ephemeral mode is on',
+    },
+    EPHEMERAL_MODE_ENABLED_DESCRIPTION: {
+        id: 'snack.bar.ephemeral_mode.enabled.description',
+        defaultMessage: 'Your organization has enabled data lifecycle controls on this device.\nMessages and files are deleted after {hours, number} {hours, plural, one {hour} other {hours}} offline, and anything older than {days, number} {days, plural, one {day} other {days}} is removed automatically',
+    },
+    EPHEMERAL_MODE_SETTINGS_UPDATED: {
+        id: 'snack.bar.ephemeral_mode.settings_updated',
+        defaultMessage: 'Ephemeral mode settings updated',
+    },
+    EPHEMERAL_MODE_SETTINGS_UPDATED_DESCRIPTION: {
+        id: 'snack.bar.ephemeral_mode.settings_updated.description',
+        defaultMessage: 'Messages and files are deleted after {hours, number} {hours, plural, one {hour} other {hours}} offline, and anything older than {days, number} {days, plural, one {day} other {days}} is removed automatically',
     },
     EPHEMERAL_MODE_DISABLED: {
         id: 'snack.bar.ephemeral_mode.disabled',
@@ -177,14 +193,6 @@ const messages = defineMessages({
     EPHEMERAL_MODE_WIPE_WARNING: {
         id: 'snack.bar.ephemeral_mode.wipe_warning',
         defaultMessage: 'Cached data will be erased in {minutes, number} {minutes, plural, one {minute} other {minutes}}',
-    },
-    EPHEMERAL_MODE_OFFLINE_DISABLED: {
-        id: 'snack.bar.ephemeral_mode.offline_disabled',
-        defaultMessage: 'Offline usage is now forbidden. The app will wipe all cached data as soon as the device goes offline',
-    },
-    EPHEMERAL_MODE_OFFLINE_ALLOWED: {
-        id: 'snack.bar.ephemeral_mode.offline_allowed',
-        defaultMessage: 'Offline usage allowed for {hours, number} {hours, plural, one {hour} other {hours}}',
     },
     EPHEMERAL_MODE_CACHE_CLEANUP: {
         id: 'snack.bar.ephemeral_mode.cache_cleanup',
@@ -327,51 +335,50 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     },
     EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE: {
         message: messages.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE,
-        iconName: 'information-outline',
+        description: messages.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE_DESCRIPTION,
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
         isPersistent: true,
     },
     EPHEMERAL_MODE_ENABLED: {
         message: messages.EPHEMERAL_MODE_ENABLED,
-        iconName: 'information-outline',
+        description: messages.EPHEMERAL_MODE_ENABLED_DESCRIPTION,
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
+        isPersistent: true,
+    },
+    EPHEMERAL_MODE_SETTINGS_UPDATED: {
+        message: messages.EPHEMERAL_MODE_SETTINGS_UPDATED,
+        description: messages.EPHEMERAL_MODE_SETTINGS_UPDATED_DESCRIPTION,
+        iconName: 'shield-lock-outline',
+        hasAction: false,
+        type: MESSAGE_TYPE.DEFAULT,
+        isPersistent: true,
     },
     EPHEMERAL_MODE_DISABLED: {
         message: messages.EPHEMERAL_MODE_DISABLED,
-        iconName: 'information-outline',
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
     },
     EPHEMERAL_MODE_DISCONNECTED: {
         message: messages.EPHEMERAL_MODE_DISCONNECTED,
-        iconName: 'alert-outline',
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
     },
     EPHEMERAL_MODE_WIPE_WARNING: {
         message: messages.EPHEMERAL_MODE_WIPE_WARNING,
-        iconName: 'alert-circle-outline',
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.ERROR,
         isPersistent: true,
     },
-    EPHEMERAL_MODE_OFFLINE_DISABLED: {
-        message: messages.EPHEMERAL_MODE_OFFLINE_DISABLED,
-        iconName: 'information-outline',
-        hasAction: false,
-        type: MESSAGE_TYPE.DEFAULT,
-    },
-    EPHEMERAL_MODE_OFFLINE_ALLOWED: {
-        message: messages.EPHEMERAL_MODE_OFFLINE_ALLOWED,
-        iconName: 'information-outline',
-        hasAction: false,
-        type: MESSAGE_TYPE.DEFAULT,
-    },
     EPHEMERAL_MODE_CACHE_CLEANUP: {
         message: messages.EPHEMERAL_MODE_CACHE_CLEANUP,
-        iconName: 'information-outline',
+        iconName: 'shield-lock-outline',
         hasAction: false,
         type: MESSAGE_TYPE.DEFAULT,
     },

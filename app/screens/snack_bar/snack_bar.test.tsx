@@ -64,6 +64,38 @@ describe('SnackBar', () => {
         expect(getByText(customMessage)).toBeVisible();
     });
 
+    test('renders the description configured for the bar type', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <SnackBar
+                {...baseProps}
+                barType={SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED}
+            />,
+        );
+
+        expect(getByTestId('toast.description')).toBeVisible();
+    });
+
+    test('renders a custom description over the one configured for the bar type', () => {
+        const customDescription = 'Custom Test Description';
+        const {getByTestId} = renderWithIntlAndTheme(
+            <SnackBar
+                {...baseProps}
+                barType={SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED}
+                customDescription={customDescription}
+            />,
+        );
+
+        expect(getByTestId('toast.description')).toHaveTextContent(customDescription);
+    });
+
+    test('does not render a description for a bar type without one', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <SnackBar {...baseProps}/>,
+        );
+
+        expect(queryByTestId('toast.description')).toBeNull();
+    });
+
     test('auto-dismisses a non-persistent snack bar after the default duration', async () => {
         enableFakeTimers();
 

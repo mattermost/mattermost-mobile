@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
-import {notifyEphemeralModeToggle, reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
+import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -172,18 +172,6 @@ describe('WebSocket System Actions', () => {
             await handleConfigChangedEvent(serverUrl, msg);
 
             expect(reconcilePersistenceFlag).toHaveBeenCalledWith(serverUrl, mockConfig);
-        });
-
-        it('delegates the ephemeral mode enabled-state notification to notifyEphemeralModeToggle', async () => {
-            const prevConfig = {MobileEphemeralModeEnabled: 'true'} as ClientConfig;
-            jest.mocked(getConfig).mockResolvedValue(prevConfig);
-
-            const mockConfig = {MobileEphemeralModeEnabled: 'false'};
-            const msg = {data: {config: mockConfig}} as WebSocketMessage;
-
-            await handleConfigChangedEvent(serverUrl, msg);
-
-            expect(notifyEphemeralModeToggle).toHaveBeenCalledWith(prevConfig, mockConfig);
         });
     });
 });

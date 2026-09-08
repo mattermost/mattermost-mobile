@@ -28,7 +28,7 @@ import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -55,6 +55,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.centerChannelBg,
         },
+        description: {
+            color: changeOpacity(theme.centerChannelBg, 0.75),
+        },
         undo: {
             color: theme.centerChannelBg,
             ...typography('Body', 100, 'SemiBold'),
@@ -66,6 +69,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
             width: '100%',
             position: 'absolute',
+        },
+        gestureRootHeight: {
             height: SNACK_BAR_HEIGHT,
         },
         toast: {
@@ -73,11 +78,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
             backgroundColor: theme.centerChannelColor,
         },
+        toastHeight: {
+            height: TOAST_HEIGHT,
+        },
         mobile: {
             backgroundColor: theme.centerChannelColor,
             width: `${SNACK_BAR_WIDTH}%`,
             opacity: 1,
-            height: TOAST_HEIGHT,
             alignSelf: 'center' as const,
             borderRadius: 9,
             shadowColor: '#1F000000',
@@ -100,10 +107,12 @@ const defaultMessage = defineMessage({
 const SnackBar = ({
     barType,
     messageValues,
+    descriptionValues,
     onAction,
     onDismiss,
     sourceScreen,
     customMessage,
+    customDescription,
     type,
     isPersistent,
 }: SnackBarProps) => {
@@ -124,6 +133,7 @@ const SnackBar = ({
     } else {
         config = {
             message: defaultMessage,
+            description: undefined,
             iconName: DEFAULT_ICON,
             canUndo: false,
             type,
@@ -132,6 +142,8 @@ const SnackBar = ({
     }
 
     const isPersistentSnackBar = isPersistent ?? config.isPersistent ?? false;
+    const message = customMessage || intl.formatMessage(config.message, messageValues);
+    const description = customDescription || (config.description && intl.formatMessage(config.description, descriptionValues));
 
     const styles = getStyleSheet(theme);
     const gestureRootStyle = useMemo(() => {
@@ -175,9 +187,10 @@ const SnackBar = ({
 
         return [
             styles.mobile,
+            !description && styles.toastHeight,
             isTablet && tabletStyle,
         ] as StyleProp<ViewStyle>;
-    }, [windowWidth, styles.mobile, isTablet, sourceScreen]);
+    }, [windowWidth, styles.mobile, styles.toastHeight, description, isTablet, sourceScreen]);
 
     const toastStyle = useMemo(() => {
         let backgroundColor: string;
@@ -275,15 +288,15 @@ const SnackBar = ({
         }
     }, [showSnackBar, onAction, onDismiss]);
 
-    const message = customMessage || intl.formatMessage(config.message, messageValues);
-
     return (
-        <GestureHandlerRootView style={[styles.gestureRoot, gestureRootStyle]}>
+        <GestureHandlerRootView style={[styles.gestureRoot, !description && styles.gestureRootHeight, gestureRootStyle]}>
             <GestureDetector gesture={gesture}>
                 <Animated.View style={animatedMotion}>
                     <Animated.View entering={FadeIn.duration(300)}>
                         <Toast
                             animatedStyle={snackBarStyle}
+                            description={description}
+                            descriptionStyle={styles.description}
                             iconName={config.iconName}
                             message={message}
                             style={toastStyle}

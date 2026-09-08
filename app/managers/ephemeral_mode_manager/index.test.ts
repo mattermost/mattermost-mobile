@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus, DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
@@ -73,6 +73,7 @@ describe('EphemeralModeManager', () => {
             enabled?: boolean;
             timeoutSec?: number;
             purgeHours?: number;
+            cleanupDays?: number;
             disconnectedSince?: number;
             offlineSince?: number;
             lastSeenTime?: number;
@@ -91,6 +92,9 @@ describe('EphemeralModeManager', () => {
         // trip the wipe pipeline (which would tear down the server's offline subject).
         const purgeHours = opts.purgeHours ?? 24 * 365;
         configs.push({id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: String(purgeHours)});
+        if (opts.cleanupDays !== undefined) {
+            configs.push({id: 'MobileEphemeralModeAutoCacheCleanupDays', value: String(opts.cleanupDays)});
+        }
         if (configs.length) {
             await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
         }
@@ -220,24 +224,16 @@ describe('EphemeralModeManager', () => {
             expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
         });
 
-        it('shows the ephemeral mode enabled snackbar on init when ephemeral mode is enabled with a nonzero offline persistence timer', async () => {
-            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 5});
+        it('shows the ephemeral mode enabled snackbar with the offline and cache retention values on init when ephemeral mode is enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 5, cleanupDays: 7});
 
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
-            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
-            expect(showSnackBar).not.toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
-        });
-
-        it('shows the offline-disabled snackbar on init when ephemeral mode is enabled and the offline persistence timer is zero', async () => {
-            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 0});
-
-            await EphemeralModeManager.init([credsA]);
-            await advanceTimers(0);
-
-            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
-            expect(showSnackBar).not.toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED});
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED,
+                descriptionValues: {hours: 5, days: 7},
+            });
         });
 
         it('does not show any ephemeral mode snackbar on init when ephemeral mode is disabled and the server is not in zero persistence mode', async () => {
@@ -606,6 +602,25 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         });
 
+        it('reconnecting after going offline emits the ephemeral mode reconnected event', async () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            emitSpy.mockClear();
+
+            setWs(serverA, 'connected');
+            await advanceTimers(0);
+
+            expect(emitSpy).toHaveBeenCalledWith(Events.EPHEMERAL_MODE_RECONNECTED);
+        });
+
         it('backward clock jump while offline preserves the remaining time', async () => {
             const start = 1_700_000_000_000;
             jest.setSystemTime(start);
@@ -679,22 +694,8 @@ describe('EphemeralModeManager', () => {
     });
 
     describe('offline timer change notification', () => {
-        it('shows the offline-disabled snackbar when the purge threshold changes to zero while enabled', async () => {
-            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
-            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
-
-            await EphemeralModeManager.init([credsA]);
-            await advanceTimers(0);
-            jest.mocked(showSnackBar).mockClear();
-
-            await updateConfig(serverA, {purgeHours: 0});
-            await advanceTimers(0);
-
-            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_DISABLED});
-        });
-
-        it('shows how many hours offline usage is allowed when the purge threshold changes to a nonzero value while enabled', async () => {
-            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+        it('shows the ephemeral mode settings updated snackbar with the updated values when the purge threshold changes while enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1, cleanupDays: 7});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
 
             await EphemeralModeManager.init([credsA]);
@@ -705,8 +706,8 @@ describe('EphemeralModeManager', () => {
             await advanceTimers(0);
 
             expect(showSnackBar).toHaveBeenCalledWith({
-                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_OFFLINE_ALLOWED,
-                messageValues: {hours: 5},
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED,
+                descriptionValues: {hours: 5, days: 7},
             });
         });
 
@@ -866,7 +867,7 @@ describe('EphemeralModeManager', () => {
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
-            // Enabling MEM would normally activate OPM, but ZPM guard must prevent it
+            // Enabling ephemeral mode would normally activate OPM, but ZPM guard must prevent it
             await updateConfig(serverA, {enabled: true});
             await advanceTimers(0);
 
@@ -925,7 +926,7 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerFiles).not.toHaveBeenCalled();
         });
 
-        it('installs the AppState listener for a ZPM server even when no MEM-active server exists', async () => {
+        it('installs the AppState listener for a ZPM server even when no server has ephemeral mode active', async () => {
             await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
 
             await EphemeralModeManager.init([credsA]);

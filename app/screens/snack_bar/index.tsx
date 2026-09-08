@@ -7,8 +7,8 @@ import {useCallback, useEffect, useState} from 'react';
 import {DeviceEventEmitter} from 'react-native';
 import {FullWindowOverlay} from 'react-native-screens';
 
-import {Navigation} from '@constants';
-import {SNACK_BAR_CONFIG} from '@constants/snack_bar';
+import {Events, Navigation} from '@constants';
+import {SNACK_BAR_CONFIG, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {withServerDatabase} from '@database/components';
 import useDidMount from '@hooks/did_mount';
 import SnackBarStore from '@store/snackbar_store';
@@ -61,6 +61,12 @@ function SnackBarContainer() {
         }
     }, [state.visible]);
 
+    const dismissIfEphemeralModeOffline = useCallback(() => {
+        if (state.visible && state.config?.barType === SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING) {
+            SnackBarStore.dismiss();
+        }
+    }, [state.visible, state.config]);
+
     // Listen to tab navigation events
     useEffect(() => {
         const navigateToTabListener = DeviceEventEmitter.addListener(Navigation.NAVIGATE_TO_TAB, dismissIfVisible);
@@ -71,6 +77,15 @@ function SnackBarContainer() {
             tabPressedListener.remove();
         };
     }, [dismissIfVisible]);
+
+    // Listen to ephemeral mode informing a reconnection
+    useEffect(() => {
+        const ephemeralModeListener = DeviceEventEmitter.addListener(Events.EPHEMERAL_MODE_RECONNECTED, dismissIfEphemeralModeOffline);
+
+        return () => {
+            ephemeralModeListener.remove();
+        };
+    }, [dismissIfEphemeralModeOffline]);
 
     if (!state.visible || !state.config) {
         return null;
