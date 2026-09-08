@@ -602,10 +602,10 @@ export function deriveChannelAttributeBanner(
         `**${option.name}**` :
         stripUnresolvedTokens(nativeBannerText);
 
-    // Option colour is the canonical visual identity of the level (e.g. red for
+    // Option color is the canonical visual identity of the level (e.g. red for
     // SECRET). It always wins when present. The channel's authored background_color
     // is a fallback only for text-type attributes that designate a banner but carry
-    // no option colour.
+    // no option color.
     const backgroundColor = option.color || authoredColor;
 
     // An unrenderable banner still reports hasBanner, so it continues to suppress
