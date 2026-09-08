@@ -20,7 +20,7 @@ import {goOffline, goOnline, timeouts} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 // A genuine offline simulation needs the app's requests to actually fail, in a way
-// that is local to the device under test — see support/utils/network.ts for the
+// that is local to the device under test — see support/utils/offline_simulation.ts for the
 // mechanism (Android: emulator airplane mode; iOS: a pfctl anchor scoped to the
 // test server's resolved IPs). isNetworkControlAvailable() gates on that and prints
 // its reason at runtime; iOS now always refuses, because the Cloudflare-fronted E2E
