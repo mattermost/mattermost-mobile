@@ -31,7 +31,15 @@ PLATFORM=""
 DEVICE_ARGS=()
 OUTPUT_DIR="build"
 ARTIFACTS_DIR="build/maestro-artifacts"
-MERGED_XML="$OUTPUT_DIR/maestro-report.xml"
+# NOT maestro-report.xml. The workflow's parse step builds that file itself with
+# mergeMaestroBatchReportsFromDir, which globs maestro-batch-*.xml AND
+# maestro-report-*.xml so the config-gated flows run from dedicated steps
+# (MM-T67856_4, MM-T3261_1, MM-T3261_2) are counted in the gate and in TSIO.
+# That helper returns early if its output already exists, so writing
+# maestro-report.xml here silently excluded those flows from the pass/fail
+# decision. This name is outside the helper's glob, so the batches are merged
+# exactly once.
+MERGED_XML="$OUTPUT_DIR/maestro-batches-merged.xml"
 MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
 MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
 export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
