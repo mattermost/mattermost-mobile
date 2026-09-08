@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 
     // Neutral chip for the dark channel header: solid light-gray so it reads
-    // clearly on any sidebarBg colour. Text is dark to contrast the light background.
+    // clearly on any sidebarBg color. Text is dark to contrast the light background.
     neutralContainerHeader: {
         backgroundColor: NEUTRAL_CHIP_HEADER_BG,
     },
@@ -63,7 +63,7 @@ type Props = {
     // 'header' for chips inside the dark channel header; 'info' (default) for
     // chips on a light surface such as Channel Info or the overflow sheet;
     // 'option' for a chip in a picker, which renders the value in full.
-    // Only affects the neutral fallback colours — option colours are unchanged.
+    // Only affects the neutral fallback colors — option colors are unchanged.
     variant?: 'header' | 'info' | 'option';
 
     testID?: string;
@@ -72,7 +72,7 @@ type Props = {
 /**
  * One channel attribute value, as a chip.
  *
- * The value is always rendered as text: colour must never be the only carrier of
+ * The value is always rendered as text: color must never be the only carrier of
  * meaning. The background is administrator-chosen, so the foreground is derived
  * from its luminance with getContrastingSimpleColor, the same helper the channel
  * banner uses.

@@ -10,7 +10,7 @@ import AttributeChip from './index';
 const LONG_VALUE = 'UNCLASSIFIED//FOUO//NOFORN';
 
 describe('AttributeChip', () => {
-    it('should always render the value as text, so colour is never the only carrier of meaning', () => {
+    it('should always render the value as text, so color is never the only carrier of meaning', () => {
         const {getByText} = renderWithIntlAndTheme(
             <AttributeChip
                 label='classification'
@@ -95,12 +95,12 @@ describe('AttributeChip', () => {
         expect(getByTestId('chip.value').props.accessibilityLabel).toBe(`classification: ${LONG_VALUE}`);
     });
 
-    it('should fall back to the neutral treatment for a malformed colour', () => {
+    it('should fall back to the neutral treatment for a malformed color', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <AttributeChip
                 label='classification'
                 value='SECRET'
-                color='not-a-colour'
+                color='not-a-color'
                 testID='chip'
             />,
         );
@@ -108,10 +108,10 @@ describe('AttributeChip', () => {
         // The container must not take an unparseable background: an unknown
         // foreground on an unknown background is the one unreadable outcome.
         const style = getByTestId('chip').props.style.flat();
-        expect(style.some((s: {backgroundColor?: string}) => s?.backgroundColor === 'not-a-colour')).toBe(false);
+        expect(style.some((s: {backgroundColor?: string}) => s?.backgroundColor === 'not-a-color')).toBe(false);
     });
 
-    it('should use the option colour as the background when it is valid', () => {
+    it('should use the option color as the background when it is valid', () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <AttributeChip
                 label='classification'
