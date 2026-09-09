@@ -27,7 +27,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, expectVisible, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel List', () => {
@@ -63,20 +63,16 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_1 - should match elements on channel list screen', async () => {
         // * Verify basic elements on channel list screen
-        await expect(ChannelListScreen.serverIcon).toBeVisible();
+        await expectVisible(ChannelListScreen.serverIcon);
         await expect(ChannelListScreen.headerTeamDisplayName).toHaveText(testTeam.display_name);
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
-        await expect(ChannelListScreen.headerPlusButton).toBeVisible();
-        await expect(ChannelListScreen.threadsButton).toBeVisible();
+        await expectVisible(ChannelListScreen.headerPlusButton);
+        await expectVisible(ChannelListScreen.threadsButton);
         await expect(ChannelListScreen.getCategoryHeaderDisplayName(channelsCategory)).toHaveText('CHANNELS');
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();
-        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName)).toBeVisible();
-        await waitFor(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toBeVisible().withTimeout(timeouts.TWO_SEC);
-        await expect(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory)).toBeVisible();
+        await expectVisible(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name));
+        await expectVisible(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName));
+        await expectVisible(ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName));
+        await expectVisible(ChannelListScreen.getCategoryHeaderDisplayName(directMessagesCategory));
     });
 
     it('MM-T4728_2 - should be able to switch between channels', async () => {
@@ -142,8 +138,7 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_4 - should be able to go to browse channels screen', async () => {
         // # Tap on plus menu button and tap on browse channels item
-        await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await ChannelListScreen.openPlusMenu();
         await ChannelListScreen.browseChannelsItem.tap();
 
         // * Verify on browse channels screen
@@ -167,8 +162,8 @@ describe('Channels - Channel List', () => {
 
     it('MM-T4728_6 - should be able to go to create channel screen', async () => {
         // # Tap on plus menu button and tap on create new channel item
-        await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         // * Verify on create channel screen

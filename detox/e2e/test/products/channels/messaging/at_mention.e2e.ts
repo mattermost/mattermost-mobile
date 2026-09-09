@@ -25,9 +25,10 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    UserProfileScreen,
 } from '@support/ui/screen';
 import {timeouts, wait, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {by, element, expect, waitFor} from 'detox';
 
 describe('Messaging - At-Mention', () => {
     const serverOneDisplayName = 'Server 1';
@@ -69,18 +70,16 @@ describe('Messaging - At-Mention', () => {
         // # Open a channel screen and post a message with lowercase at-mention
         const camelCaseUsernameMessage = `Message @${testUser.username.substring(0, 1).toUpperCase()}${testUser.username.substring(1)}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(camelCaseUsernameMessage);
 
         // * Verify at-mention is posted as lowercase
-        const {post: lowerCasePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: lowerCasePost} = await ChannelScreen.postMessageAndVerify(camelCaseUsernameMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(lowerCasePost.id, `Message @${testUser.username.toLowerCase()}`);
 
         // # Post a message with uppercase at-mention
         const upperCaseUsernameMessage = `Message @${testOtherUser.username.toUpperCase()}`;
-        await ChannelScreen.postMessage(upperCaseUsernameMessage);
 
         // * Verify at-mention is posted as lowercase
-        const {post: upperCasePost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: upperCasePost} = await ChannelScreen.postMessageAndVerify(upperCaseUsernameMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.hasPostMessage(upperCasePost.id, `Message @${testOtherUser.username.toLowerCase()}`);
 
         // # Go back to channel list screen
@@ -88,12 +87,14 @@ describe('Messaging - At-Mention', () => {
     });
 
     it('MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', async () => {
-        // # Add more users to the channel, open a channel screen, and post @all
-        [...Array(3).keys()].forEach(async (key) => {
+        /* eslint-disable no-await-in-loop -- 3 independent users; adding them sequentially keeps server load flat */
+        for (let key = 0; key < 3; key++) {
             const {user} = await User.apiCreateUser(siteOneUrl, {prefix: `a-${key}-`});
             await Team.apiAddUserToTeam(siteOneUrl, user.id, testTeam.id);
             await Channel.apiAddUserToChannel(siteOneUrl, user.id, testChannel.id);
-        });
+        }
+        /* eslint-enable no-await-in-loop */
+
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.replaceText('@all');
         await ChannelScreen.sendButton.tap();
@@ -145,26 +146,54 @@ describe('Messaging - At-Mention', () => {
         await ChannelScreen.back();
     });
 
+    it('MM-T4874_3 - should be able to open user profile by tapping on at-mention', async () => {
+        // # Open a channel screen, post a message with at-mention, and tap on at-mention
+        const message = `@${testUser.username}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+        const mention = element(by.text(message).withAncestor(by.id(`channel.post_list.post.${post.id}`)));
+        await waitFor(mention).toExist().withTimeout(timeouts.TEN_SEC);
+        await mention.tap({x: 5, y: 10});
+        await wait(timeouts.ONE_SEC);
+
+        // * Verify on user profile screen
+        await UserProfileScreen.toBeVisible();
+
+        // The user profile bottom sheet can still be animating when its container reports visible,
+        // so the avatar briefly fails a 75% visibility threshold.
+        await waitFor(UserProfileScreen.getUserProfilePicture(testUser.id)).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(UserProfileScreen.userDisplayName).toHaveText(`@${testUser.username}`);
+
+        // # Go back to channel list screen
+        await UserProfileScreen.close();
+        await ChannelScreen.back();
+    });
+
     it('MM-T0171_1 - should be able to autocomplete at-mention for out-of-channel member', async () => {
         // # Create a user who is on the team but not in the channel
         const {user: outOfChannelUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, outOfChannelUser.id, testTeam.id);
 
-        // # Open a channel screen and type "@" + full username to activate at-mention autocomplete.
-        // Type the full username in one go to avoid the noResultsTerm race condition in
-        // at_mention.tsx: a short 3-char prefix that only matches a freshly-created user
-        // may return 0 results before the user is indexed, causing noResultsTerm to be set
-        // to the prefix and suppressing all future searches. Typing the full username
-        // maximises specificity so the search resolves to exactly this user once indexed.
+        // Fresh users can miss the first search until the server index catches up.
+        await User.waitForUserInAutocomplete(siteOneUrl, {
+            teamId: testTeam.id,
+            channelId: testChannel.id,
+            userId: outOfChannelUser.id,
+            name: outOfChannelUser.username,
+            timeoutMs: timeouts.HALF_MIN,
+        });
+
+        // # Open the channel and type "@" then the username.
+        // Android replaceText writes the draft but does not move the cursor, so
+        // AtMention reads value.substring(0, 0) and never opens the list.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.postInput.typeText(`@${outOfChannelUser.username}`);
+        await ChannelScreen.postInput.typeText('@');
+        await Autocomplete.toBeVisible();
+        await ChannelScreen.postInput.typeText(outOfChannelUser.username);
 
         // * Verify at-mention autocomplete contains the out-of-channel user suggestion.
-        // Poll directly for the specific item (not the generic sectionAtMentionList) so
-        // the assertion fails fast if a different user appears instead. Use HALF_MIN to
-        // give the search backend enough time to index a freshly-created user.
         const {atMentionItem} = Autocomplete.getAtMentionItem(outOfChannelUser.id);
         await waitForElementToExist(atMentionItem, timeouts.HALF_MIN);
 

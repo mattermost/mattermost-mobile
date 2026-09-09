@@ -1,5 +1,9 @@
 # MM-T4830: Device A starts a call so Device B can see the join banner (multi-device).
 #
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_calls_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
 # PRE-CONDITIONS:
 #   - Two devices orchestrated via scripts/run_calls_two_device.sh
 #   - Calls plugin enabled; User A logged in on Device A
@@ -22,10 +26,11 @@ tags:
   - MM-T4830
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as User A and open the test channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
-# Open the channel quick actions sheet via the three-dots (⋮) button.
+# # Start a call from the channel quick actions sheet via the three-dots (⋮) button.
 - tapOn:
     id: "channel_header.channel_quick_actions.button"
 - extendedWaitUntil:
@@ -35,7 +40,7 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "channel_info.channel_actions.join_start_call.action"
 
-# Grant permissions
+# # Grant permissions
 - tapOn:
     text: "Allow"
     optional: true
@@ -43,6 +48,7 @@ appId: ${MAESTRO_APP_ID}
     text: "Allow"
     optional: true
 
+# # Open the full call screen from the call bar.
 # After starting a call the app stays on the channel view with a call bar overlay
 # (rather than auto-navigating to the full call screen). Tap the call bar to open
 # the full call screen so the mute-unmute button becomes visible.
@@ -53,22 +59,22 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "calls.current_call_bar"
 
-# Verify call screen — User A is now the sole active participant
+# * Verify call screen — User A is now the sole active participant
 - extendedWaitUntil:
     visible:
       id: "mute-unmute"
     timeout: 15000
 - takeScreenshot: calls-device-a-call-active
 
-# Post the sync token to the channel so Device B is unblocked to join.
+# # Return to the channel so Device B is unblocked to join.
 # Device B polls the API (via fixtures/poll_for_message.ts) and starts
-# its flow only after this message appears.
+# its flow only after the sync message appears.
 - tapOn:
     id: "navigation.header.back"
     optional: true
 - back
 
-# Verify the call bar is visible on the channel view (User A is still in the call).
+# * Verify the call bar is visible on the channel view (User A is still in the call).
 # After this screenshot Device A's flow exits. The Mattermost app continues running
 # and User A remains in the call — the call stays active on the server. Device B can
 # then log in and join the call independently.

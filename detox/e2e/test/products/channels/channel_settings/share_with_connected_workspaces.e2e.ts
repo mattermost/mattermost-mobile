@@ -27,6 +27,8 @@ import {expect, device, element, by, waitFor} from 'detox';
 jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
+    // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
+    // license + EnableSharedChannels + remote clusters.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;

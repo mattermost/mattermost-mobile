@@ -116,11 +116,24 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const showReasoning = streamingState?.showReasoning ?? (persistedReasoning !== '');
 
-    // Determine tool calls - use streaming state if available, otherwise use persisted
-    const toolCalls = streamingState?.toolCalls ?? persistedToolCalls;
+    // Determine tool calls - use streaming state if available, otherwise use
+    // persisted. The streaming store snapshots completed rounds into `rounds`,
+    // so flatten them back together with the current round to keep this legacy
+    // renderer's single accumulated tool list.
+    const toolCalls = useMemo(() => {
+        if (!streamingState) {
+            return persistedToolCalls;
+        }
+        return [...streamingState.rounds.flatMap((r) => r.toolCalls), ...streamingState.toolCalls];
+    }, [streamingState, persistedToolCalls]);
 
-    // Determine annotations - use streaming state if available, otherwise use persisted
-    const annotations = streamingState?.annotations ?? persistedAnnotations;
+    // Determine annotations - same flatten so snapshotted rounds' citations are kept.
+    const annotations = useMemo(() => {
+        if (!streamingState) {
+            return persistedAnnotations;
+        }
+        return [...streamingState.rounds.flatMap((r) => r.annotations), ...streamingState.annotations];
+    }, [streamingState, persistedAnnotations]);
 
     // Check permissions
     const isRequester = useMemo(() => {
@@ -141,7 +154,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     );
 
     const canApprove = isRequester;
-    const canExpand = isDM || isRequester;
+    const canExpand = isRequester;
     const showArguments = isDM || (isRequester && (!isRedacted || privateToolCalls !== null));
     const showResults = isDM || (isRequester && (!isRedacted || privateToolResults !== null));
 
@@ -215,9 +228,11 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const isGenerationInProgress = isGenerating || isReasoningLoading;
 
     // Show controls based on state and permissions
+    const noRegenProp = (post.props as Record<string, unknown>)?.no_regen;
+    const noRegen = noRegenProp === true || noRegenProp === 'true';
     const showStopButton = isGenerationInProgress && isRequester;
     const hasContent = displayMessage !== '' || reasoningSummary !== '';
-    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM;
+    const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
 
     // Handler for stop button
     const handleStop = useCallback(async () => {

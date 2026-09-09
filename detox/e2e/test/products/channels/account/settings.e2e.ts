@@ -20,6 +20,7 @@ import {
     HomeScreen,
     NotificationSettingsScreen,
     LoginScreen,
+    ReportProblemScreen,
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
@@ -103,5 +104,14 @@ describe('Account - Settings', () => {
 
         // # Go back to settings screen
         await AboutScreen.back();
+    });
+
+    it('MM-T4991_6 - should be able to go to report a problem screen', async () => {
+        // # Tap on report a problem option
+        // * Verify on report a problem screen, on any license tier
+        await ReportProblemScreen.open();
+
+        // # Go back to settings screen
+        await ReportProblemScreen.back();
     });
 });

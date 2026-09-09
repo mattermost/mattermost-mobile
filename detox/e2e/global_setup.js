@@ -83,7 +83,12 @@ function shutdownZombieSimulators() {
 
 // One-time server health check and CI config before tests load.
 
-const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
+// Resolve the health-check URL the same way test_config does: an explicit SITE_1_URL
+// wins (CI sets it per shard); otherwise fall back to the platform-specific URL so a
+// local .env without SITE_1_URL still works on both iOS and Android runs.
+const _isIos = process.env.IOS === 'true';
+const _platformSiteOneUrl = _isIos ? process.env.IOS_SITE_1_URL : process.env.ANDROID_SITE_1_URL;
+const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
@@ -115,7 +120,24 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
             const status = err.response?.status;
             const retriable = !status || status >= 500;
             if (attempt === retries || !retriable) {
-                throw err;
+                const data = err.response?.data;
+                let bodyLength = 0;
+                if (typeof data === 'string') {
+                    bodyLength = data.length;
+                } else if (Buffer.isBuffer(data)) {
+                    bodyLength = data.length;
+                } else if (data != null) {
+                    try {
+                        bodyLength = JSON.stringify(data).length;
+                    } catch {
+                        bodyLength = -1;
+                    }
+                }
+                throw new Error(
+                    `[globalSetup] ${label} failed against ${SITE_URL}` +
+                    `${status ? ` with status ${status}` : ''}` +
+                    `${err.code ? ` code ${err.code}` : ''}: ${err.message} (body length ${bodyLength})`,
+                );
             }
             const wait = delayMs * attempt;
             process.stderr.write(
@@ -175,6 +197,8 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    // Pre-warm the server so the first app request isn't also the server's cold start. This
+    // does not warm the simulator's TLS session, so -1005 drops are still possible.
     try {
         await axios.get(`${SITE_URL}/api/v4/system/ping`);
     } catch (err) {
@@ -183,16 +207,9 @@ async function serverSetup() {
 
     try {
         await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ServiceSettings: {
-                SessionLengthWebInHours: 4320,
-                MaximumActiveUsers: 999999,
-            },
-            RateLimitSettings: {PerSec: 10000, MaxBurst: 999999},
-            TeamSettings: {ExperimentalEnableAutomaticReplies: true},
-            ExperimentalSettings: {EnableWatermark: false},
             ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
         }, {headers});
-        process.stdout.write('[globalSetup] ✅ Server configured for E2E tests\n');
+        process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
     } catch (err) {
         process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);
     }

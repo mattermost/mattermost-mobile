@@ -6,6 +6,7 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
+import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {sortCustomProfileAttributes, convertToAttributesMap, convertProfileAttributesToCustomAttributes} from '@utils/user';
@@ -26,7 +27,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const samlLastNameAttributeSet = observeConfigBooleanValue(database, 'SamlLastNameAttributeSet');
     const samlNicknameAttributeSet = observeConfigBooleanValue(database, 'SamlNicknameAttributeSet');
     const samlPositionAttributeSet = observeConfigBooleanValue(database, 'SamlPositionAttributeSet');
-    const customAttributesEnabled = observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes');
+    const customAttributesEnabled = observeCustomProfileAttributesEnabled(database);
 
     const rawCustomAttributes = currentUser.pipe(
         switchMap((u) => (u ? observeCustomProfileAttributesByUserId(database, u.id) : of$([]))),
@@ -65,7 +66,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
         lockedPicture: observeConfigBooleanValue(database, 'LdapPictureAttributeSet'),
-        enableCustomAttributes: observeConfigBooleanValue(database, 'FeatureFlagCustomProfileAttributes'),
+        enableCustomAttributes: observeCustomProfileAttributesEnabled(database),
         userCustomAttributes: rawCustomAttributes,
         customFields,
         customAttributesSet: formattedCustomAttributes,

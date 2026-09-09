@@ -13,6 +13,10 @@ describe('ClientBase route methods', () => {
         client = TestHelper.createClient();
     });
 
+    test('getAPIRoute joins base route and api version', () => {
+        expect(client.getAPIRoute()).toBe(`${client.getBaseRoute()}${client.urlVersion}`);
+    });
+
     describe('shared channels and remote cluster routes', () => {
         test('getSharedChannelsRoute returns sharedchannels path', () => {
             expect(client.getSharedChannelsRoute()).toBe(`${client.urlVersion}/sharedchannels`);

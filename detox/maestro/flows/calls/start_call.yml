@@ -23,16 +23,19 @@ tags:
   - MM-T4829
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in and open the test channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
+# # Start the call from channel quick actions
 - runFlow: ../../subflows/calls/join_channel_call.yml
 - takeScreenshot: calls-start-channel-info-open
 
-# Brief wait after call starts to let the WebSocket session event arrive.
+# # Brief wait after call starts to let the WebSocket session event arrive.
 - waitForAnimationToEnd:
     timeout: 3000
 
+# # Open the full call screen.
 # Full-screen call UI may appear directly; otherwise tap the minimized bar.
 - runFlow:
     when:
@@ -42,27 +45,29 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           id: "calls.current_call_bar"
 
-# Verify call screen is visible — mute-unmute is the reliable call-screen anchor
+# * Verify call screen is visible — mute-unmute is the reliable call-screen anchor
 - extendedWaitUntil:
     visible:
       id: "mute-unmute"
     timeout: 30000
 - takeScreenshot: calls-call-screen-active
 
-# Verify the call controls are rendered (users list shows current user)
+# * Verify the call controls are rendered (users list shows current user)
 - extendedWaitUntil:
     visible:
       id: "users-list"
     timeout: 5000
 - takeScreenshot: calls-participants-visible
 
-# Clean up: leave the call.
+# # Clean up: leave the call.
 # Tapping Leave shows a confirmation dialog; confirm with "Leave call".
 - tapOn:
     id: "leave"
 - tapOn:
     text: "Leave call"
     optional: true
+
+# * Verify the call screen is gone after leaving
 - extendedWaitUntil:
     notVisible:
       id: "mute-unmute"

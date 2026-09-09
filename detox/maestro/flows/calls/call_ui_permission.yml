@@ -23,31 +23,23 @@ tags:
   - MM-T1411
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in and open the test channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
+# # Start the call and handle the microphone permission dialog
 - runFlow: ../../subflows/calls/join_channel_call.yml
 
-# Brief wait after call starts to let the WebSocket session event arrive.
+# # Brief wait after call starts to let the WebSocket session event arrive.
 - waitForAnimationToEnd:
     timeout: 3000
 
-- runFlow:
-    when:
-      visible:
-        id: "calls.current_call_bar"
-    commands:
-      - tapOn:
-          id: "calls.current_call_bar"
-
-# Verify the full call screen is visible (mute-unmute button is the reliable call-screen indicator)
-- extendedWaitUntil:
-    visible:
-      id: "mute-unmute"
-    timeout: 30000
+# * Verify the full call screen is visible (mute-unmute button is the reliable
+# call-screen indicator); the subflow retries the call-bar tap that opens it.
+- runFlow: ../../subflows/calls/open_call_screen.yml
 - takeScreenshot: call-screen-visible
 
-# Leave the call to clean up state.
+# # Leave the call to clean up state.
 # Tapping Leave shows a confirmation dialog; confirm with "Leave call".
 - tapOn:
     id: "leave"

@@ -41,7 +41,7 @@ async function waitForArchivedChannelScreen() {
     }
     try {
         await waitForElementToExist(ChannelScreen.channelScreen, timeouts.ONE_MIN);
-        await waitForElementToBeVisible(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
+        await waitForElementToExist(ChannelScreen.postDraftArchived, timeouts.HALF_MIN);
     } finally {
         if (isIos()) {
             await device.enableSynchronization();
@@ -85,15 +85,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await HomeScreen.logout();
     });
 
-    (isIos() ? it.skip : it)('MM-T1671_1 - should be able to view members in an archived channel', async () => {
-        // iOS: tapping an archived channel in the Browse Channels modal does NOT
-        // reliably navigate to channel.screen in CI (modal stays open). Production
-        // users have not reported this; only the Detox synthetic-tap path is affected.
-        // We use the search/permalink fallback (MM-T1679_1 path) on iOS, which is
-        // why we post a sentinel message before archival. Android uses the original
-        // Browse-Channels tap flow. See openArchivedChannel() in
-        // detox/e2e/support/ui/screen/archived_channel_navigation.ts.
-
+    it('MM-T1671_1 - should be able to view members in an archived channel', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
@@ -104,12 +96,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info
         await ChannelInfoScreen.open();
@@ -124,7 +116,7 @@ describe('Channels - Archived Channel Interactions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    (isIos() ? it.skip : it)('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
+    it('MM-T1685_1 - should be able to leave an archived public channel from channel info', async () => {
         // # Create a public channel, add user, post a sentinel message, then archive.
         const {channel: archivedChannel} = await Channel.apiCreateChannel(
             siteOneUrl,
@@ -135,12 +127,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info and leave the channel
         await ChannelInfoScreen.open();
@@ -237,12 +229,12 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
-        const sentinel = await postArchivedChannelSentinel(archivedChannel.id);
+        const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, sentinel);
+        await openArchivedChannel(archivedChannel.name, sentinel, postId);
 
         // # Open channel info
         await ChannelInfoScreen.open();

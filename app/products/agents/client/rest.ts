@@ -13,6 +13,7 @@ export interface ClientAgentsMix {
     getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
+    doLoopInAgent: (postId: string, botUsername: string) => Promise<void>;
     doChannelAnalysis: (
         channelId: string,
         analysisType: string,
@@ -78,6 +79,13 @@ const ClientAgents = (superclass: any) => class extends superclass {
     regenerateResponse = async (postId: string) => {
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/regenerate`,
+            {method: 'post'},
+        );
+    };
+
+    doLoopInAgent = async (postId: string, botUsername: string) => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/loop_in_agent?botUsername=${encodeURIComponent(botUsername)}`,
             {method: 'post'},
         );
     };

@@ -384,7 +384,7 @@ index 055cede..fb7ca33 100755
          new JSIInstaller().installBinding(javaScriptContextHolder);
  
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
-index 2f170e0..bd87f92 100644
+index 2f170e0..1aaba0e 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabase.java
 @@ -11,6 +11,8 @@ import java.util.Arrays;
@@ -396,15 +396,6 @@ index 2f170e0..bd87f92 100644
  public class WMDatabase {
      private final SQLiteDatabase db;
  
-@@ -21,7 +23,7 @@ public class WMDatabase {
-     public static Map<String, WMDatabase> INSTANCES = new HashMap<>();
- 
-     public static WMDatabase getInstance(String name, Context context) {
--        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY | SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
-+        return getInstance(name, context, SQLiteDatabase.CREATE_IF_NECESSARY);
-     }
- 
-     public static WMDatabase getInstance(String name, Context context, int openFlags) {
 @@ -47,6 +49,22 @@ public class WMDatabase {
          if (name.equals(":memory:") || name.contains("mode=memory")) {
              context.getCacheDir().delete();
@@ -442,7 +433,7 @@ index 2f170e0..bd87f92 100644
      }
  
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
-index 117b2bc..57e4abb 100644
+index 4f13512..7fa03f8 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseBridge.java
 @@ -122,6 +122,14 @@ public class WMDatabaseBridge extends ReactContextBaseJavaModule {
@@ -461,24 +452,10 @@ index 117b2bc..57e4abb 100644
      public void getLocal(int tag, String key, Promise promise) {
          withDriver(tag, promise, (driver) -> driver.getLocal(key), "getLocal");
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
-index 1534830..5c5313c 100644
+index 1534830..c8c434b 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/WMDatabaseDriver.java
-@@ -55,11 +55,9 @@ public class WMDatabaseDriver {
- 
-     public WMDatabaseDriver(Context context, String dbName, boolean unsafeNativeReuse) {
-         this.database = unsafeNativeReuse ? WMDatabase.getInstance(dbName, context,
--                SQLiteDatabase.CREATE_IF_NECESSARY |
--                        SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING) :
-+                SQLiteDatabase.CREATE_IF_NECESSARY) :
-                 WMDatabase.buildDatabase(dbName, context,
--                        SQLiteDatabase.CREATE_IF_NECESSARY |
--                                SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING);
-+                        SQLiteDatabase.CREATE_IF_NECESSARY);
-         if (BuildConfig.DEBUG) {
-             this.log = Logger.getLogger("DB_Driver");
-         } else {
-@@ -230,6 +228,13 @@ public class WMDatabaseDriver {
+@@ -230,6 +230,13 @@ public class WMDatabaseDriver {
          });
      }
  
@@ -558,18 +535,9 @@ index 0224cc3..085a10c 100644
  @end
  
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
-index 8a4e9b4..dc567c6 100644
+index 8a4e9b4..7715b87 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
 +++ b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
-@@ -20,7 +20,7 @@ Database::Database(jsi::Runtime *runtime, std::string path, bool usesExclusiveLo
-     initSql += "pragma temp_store = memory;";
-     #endif
- 
--    initSql += "pragma journal_mode = WAL;";
-+    // initSql += "pragma journal_mode = WAL;";
- 
-     // set timeout before SQLITE_BUSY error is returned
-     initSql += "pragma busy_timeout = 5000;";
 @@ -102,6 +102,10 @@ void Database::unsafeResetDatabase(jsi::String &schema, int schemaVersion) {
      }
  }

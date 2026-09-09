@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useKeyboardHandler, useReanimatedFocusedInput} from 'react-native-keyboard-controller';
-import {makeMutable, useSharedValue} from 'react-native-reanimated';
+import {useSharedValue} from 'react-native-reanimated';
 
 import {isAndroidEdgeToEdge} from '@constants/device';
 import {StateMachineEventType, InputContainerStateType} from '@keyboard';
@@ -10,7 +10,7 @@ import {StateMachineEventType, InputContainerStateType} from '@keyboard';
 import type {KeyboardStateContextReturn} from '@hooks/use_keyboard_state_context';
 
 export function useKeyboardEvents(context: KeyboardStateContextReturn, inputTag: number | null) {
-    const isRotating = makeMutable(false);
+    const isRotating = useSharedValue(false);
     const wasRotating = useSharedValue(false);
 
     // Destructure to avoid passing context object into worklets

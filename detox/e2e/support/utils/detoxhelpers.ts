@@ -24,8 +24,18 @@ export async function waitForLoadingSpinner(testID: string, timeout = 10000): Pr
     await waitFor(element(by.id(testID))).not.toBeVisible().withTimeout(timeout);
 }
 
-// Tap the native-stack back chevron by accessibility label (no testID on those screens).
+// Tap the native-stack back chevron. Prefer NavigationHeader testID when present;
+// iOS 26 native headers often omit the "Back" accessibility label.
 export async function tapNativeBackButton(timeout = 10_000): Promise<void> {
+    const headerBack = element(by.id('navigation.header.back'));
+    try {
+        await waitFor(headerBack).toExist().withTimeout(Math.min(timeout, 3_000));
+        await headerBack.tap();
+        return;
+    } catch {
+        // Native stack header without the shared testID.
+    }
+
     const label = device.getPlatform() === 'ios' ? 'Back' : 'Navigate up';
     const backButton = element(by.label(label)).atIndex(0);
     await waitFor(backButton).toBeVisible().withTimeout(timeout);

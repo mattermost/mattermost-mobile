@@ -4,7 +4,8 @@
 import {ActionType, Post} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPostById} from '@queries/servers/post';
+import {getMyChannel} from '@queries/servers/channel';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {COMBINED_USER_ACTIVITY} from '@utils/post_list';
 
@@ -24,8 +25,10 @@ import {
 } from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
 
-const {SERVER: {FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {DRAFT, FILE, MY_CHANNEL, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 const serverUrl = 'baseHandler.test.com';
 let operator: ServerDataOperator;
@@ -226,6 +229,33 @@ describe('storePostsForChannel', () => {
         expect(models).toBeDefined();
         expect(models?.length).toBe(4); // Post, PostsInChannel, User, MyChannel
     });
+
+    it('should not advance lastFetchedAt for a thread payload', async () => {
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+
+        const seed = [100, 105, 110].map((t) => TestHelper.fakePost({
+            id: `seed-${t}`, channel_id: channelId, user_id: user.id, create_at: t, update_at: t,
+        }));
+        await storePostsForChannel(serverUrl, channelId, seed, seed.map((p) => p.id), '', ActionType.POSTS.RECEIVED_IN_CHANNEL, [user]);
+
+        const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+        expect((await getMyChannel(database, channelId))?.lastFetchedAt).toBe(110);
+        const intervalsBefore = await queryPostsInChannel(database, channelId).fetch();
+        expect(intervalsBefore.length).toBe(1);
+
+        // A thread reply far newer than the channel tail, as delivered by a push notification.
+        const root = TestHelper.fakePost({id: 'root', channel_id: channelId, user_id: user.id, create_at: 90, update_at: 90});
+        const reply = TestHelper.fakePost({id: 'reply', channel_id: channelId, user_id: user.id, create_at: 200, update_at: 200, root_id: 'root'});
+        await storePostsForChannel(serverUrl, channelId, [root, reply], [reply.id, root.id], '', ActionType.POSTS.RECEIVED_IN_THREAD, [user]);
+
+        // The watermark must stay put: posts created between 110 and 200 were never fetched,
+        // and getPostsSince would skip them forever if it moved.
+        expect((await getMyChannel(database, channelId))?.lastFetchedAt).toBe(110);
+
+        const intervalsAfter = await queryPostsInChannel(database, channelId).fetch();
+        expect(intervalsAfter.length).toBe(1);
+        expect(intervalsAfter[0].latest).toBe(110);
+    });
 });
 
 describe('getPosts', () => {
@@ -414,6 +444,62 @@ describe('deletePostsInChannelsByCutoff', () => {
         TestHelper.fakePost({channel_id: 'cId', create_at: RECENT}),
     ];
 
+    async function writeRootPost(id: string, chanId: string, createAt: number): Promise<void> {
+        await operator.database.write(async () => {
+            await operator.database.get(POST).create((r: any) => {
+                r._raw.id = id;
+                r.channelId = chanId;
+                r.createAt = createAt;
+                r.deleteAt = 0;
+                r.editAt = 0;
+                r.isPinned = false;
+                r.message = '';
+                r.messageSource = '';
+                r.originalId = '';
+                r.pendingPostId = '';
+                r.previousPostId = '';
+                r.props = '{}';
+                r.rootId = '';
+                r.type = '';
+                r.updateAt = 0;
+                r.userId = '';
+            });
+        });
+    }
+
+    async function writePostsInThread(rootId: string, earliest: number, latest: number): Promise<PostsInThreadModel> {
+        let record!: PostsInThreadModel;
+        await operator.database.write(async () => {
+            record = await operator.database.get<PostsInThreadModel>(POSTS_IN_THREAD).create((r) => {
+                r.rootId = rootId;
+                r.earliest = earliest;
+                r.latest = latest;
+            });
+        });
+        return record;
+    }
+
+    async function writeMyChannel(chanId: string, lastFetchedAt: number): Promise<MyChannelModel> {
+        let record!: MyChannelModel;
+        await operator.database.write(async () => {
+            record = await operator.database.get<MyChannelModel>(MY_CHANNEL).create((r) => {
+                r._raw.id = chanId;
+                r.lastPostAt = 0;
+                r.lastFetchedAt = lastFetchedAt;
+                r.lastViewedAt = 0;
+                r.manuallyUnread = false;
+                r.messageCount = 0;
+                r.mentionsCount = 0;
+                r.isUnread = false;
+                r.roles = '';
+                r.viewedAt = 0;
+                r.lastPlaybookRunsFetchAt = 0;
+                r.autotranslationDisabled = false;
+            });
+        });
+        return record;
+    }
+
     it('handle not found database', async () => {
         const {error} = await deletePostsInChannelsByCutoff('foo', [channelId], CUTOFF);
         expect(error).toBeTruthy();
@@ -441,22 +527,42 @@ describe('deletePostsInChannelsByCutoff', () => {
     });
 
     // A cached model whose earliest advances has to go through the model layer (fires observers)
-    it('advances the cached PostsInChannel earliest through the model layer when reconcileObservers is set', async () => {
+    it('advances the cached PostsInChannel earliest through the model layer', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
         const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
 
-        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set(), true);
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
 
         expect(pic.earliest).toBe(CUTOFF);
     });
 
-    it('leaves the cached PostsInChannel untouched when reconcileObservers is not set', async () => {
+    it('advances the cached PostsInThread earliest through the model layer', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
-        const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
+        await writeRootPost('rootId', 'cId', OLD);
+        const pit = await writePostsInThread('rootId', OLD, RECENT);
 
-        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF, new Set());
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
 
-        expect(pic.earliest).toBe(OLD);
+        expect(pit.earliest).toBe(CUTOFF);
+    });
+
+    it('resets the cached MyChannel lastFetchedAt when no PostsInChannel range survives for the channel', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const myChannel = await writeMyChannel('cId', RECENT);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
+
+        expect(myChannel.lastFetchedAt).toBe(0);
+    });
+
+    it('leaves the cached MyChannel lastFetchedAt untouched when a PostsInChannel range still exists for the channel', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        await operator.handleReceivedPostsInChannel(postsInChannel);
+        const myChannel = await writeMyChannel('cId', RECENT);
+
+        await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
+
+        expect(myChannel.lastFetchedAt).toBe(RECENT);
     });
 
     it('includes the PostsInChannel destroy/update and MyChannel reset, in that order, in the same unsafeExecute call as the post delete', async () => {
@@ -467,22 +573,23 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply}`;
+        const hasDraft = `EXISTS (SELECT 1 FROM ${DRAFT} WHERE ${DRAFT}.root_id = ${POST}.id)`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND NOT ${hasDraft}`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
-        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN ('${channelId}'))`;
+        const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (?))`;
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
-                [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, []],
-                [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, []],
-                [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, []],
-                [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
-                [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN ('${channelId}') AND latest < ${CUTOFF}`, []],
-                [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${CUTOFF} WHERE channel_id IN ('${channelId}') AND earliest < ${CUTOFF}`, []],
-                [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN ('${channelId}') AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, []],
+                [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${POSTS_IN_THREAD} WHERE latest < ${CUTOFF} AND ${rootInChannelsExists}`, [channelId]],
+                [`UPDATE ${POSTS_IN_THREAD} SET earliest = ${CUTOFF} WHERE earliest < ${CUTOFF} AND ${rootInChannelsExists}`, [channelId]],
+                [`DELETE FROM ${THREAD} WHERE id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${THREAD_PARTICIPANT} WHERE thread_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${THREADS_IN_TEAM} WHERE thread_id IN (${postSubquery})`, [channelId]],
+                [`DELETE FROM ${POST} WHERE ${postCondition}`, [channelId]],
+                [`DELETE FROM ${POSTS_IN_CHANNEL} WHERE channel_id IN (?) AND latest < ${CUTOFF}`, [channelId]],
+                [`UPDATE ${POSTS_IN_CHANNEL} SET earliest = ${CUTOFF} WHERE channel_id IN (?) AND earliest < ${CUTOFF}`, [channelId]],
+                [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (?) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, [channelId]],
             ],
         });
     });
@@ -504,13 +611,15 @@ describe('deletePostsInChannelsByCutoff', () => {
 
         expect(error).toBeUndefined();
         const hasActiveReply = `EXISTS (SELECT 1 FROM ${POSTS_IN_THREAD} WHERE ${POSTS_IN_THREAD}.root_id = ${POST}.id AND ${POSTS_IN_THREAD}.latest >= ${CUTOFF})`;
-        const postCondition = `channel_id IN ('${channelId}') AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND id NOT IN ('excluded-1','excluded-2')`;
+        const hasDraft = `EXISTS (SELECT 1 FROM ${DRAFT} WHERE ${DRAFT}.root_id = ${POST}.id)`;
+        const postCondition = `channel_id IN (?) AND create_at < ${CUTOFF} AND NOT ${hasActiveReply} AND NOT ${hasDraft} AND id NOT IN (?,?)`;
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+        const postConditionArgs = [channelId, 'excluded-1', 'excluded-2'];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith(
             expect.objectContaining({
                 sqls: expect.arrayContaining([
-                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, []],
-                    [`DELETE FROM ${POST} WHERE ${postCondition}`, []],
+                    [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, postConditionArgs],
+                    [`DELETE FROM ${POST} WHERE ${postCondition}`, postConditionArgs],
                 ]),
             }),
         );

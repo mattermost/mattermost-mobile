@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {by, element, waitFor} from 'detox';
 
 export const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
@@ -28,6 +28,9 @@ export const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
     'close.login.button', // entry/auth screen leftovers
     'close.server.button',
     'close.sso.button',
+
+    // Tap the Modal centre to hit the tutorial backdrop. A tap landing inside the highlight
+    // cutout taps the underlying item instead, which is acceptable for a beforeEach fallback.
     'tutorial_highlight',
 ] as const);
 
@@ -44,7 +47,11 @@ export async function dismissKnownModals(maxDepth = 1): Promise<void> {
             try {
                 await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
                 await btn.tap();
-                await wait(timeouts.ONE_SEC);
+                try {
+                    await waitFor(btn).not.toExist().withTimeout(timeouts.FOUR_SEC);
+                } catch {
+                    // Modal may dismiss via a different control than the close button.
+                }
                 dismissedOne = true;
                 break;
             } catch {

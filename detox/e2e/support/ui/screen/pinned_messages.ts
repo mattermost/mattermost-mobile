@@ -6,20 +6,18 @@ import {
     ChannelInfoScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, longPressWithRetry, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {expect} from 'detox';
 
 class PinnedMessagesScreen {
     testID = {
         pinnedMessagesScreenPrefix: 'pinned_messages.',
         pinnedMessagesScreen: 'pinned_messages.screen',
-        backButton: 'navigation.header.back',
         emptyTitle: 'pinned_messages.empty.title',
         emptyParagraph: 'pinned_messages.empty.paragraph',
     };
 
     pinnedMessagesScreen = element(by.id(this.testID.pinnedMessagesScreen));
-    backButton = element(by.id(this.testID.backButton));
     emptyTitle = element(by.id(this.testID.emptyTitle));
     emptyParagraph = element(by.id(this.testID.emptyParagraph));
 
@@ -39,13 +37,43 @@ class PinnedMessagesScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
-        await waitFor(this.pinnedMessagesScreen).toExist().withTimeout(timeout);
+
+        // Same reason as ChannelInfoScreen.toBeVisible: the screen exists while the push
+        // animation is still in flight, so callers that assert on a child straight after
+        // this would race the transition. Wait for real visibility, not just presence.
+        if (isIos()) {
+            await withSynchronizationDisabled(async () => {
+                await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+                await waitForElementToBeVisible(this.pinnedMessagesScreen, timeout);
+            });
+            return this.pinnedMessagesScreen;
+        }
+        await waitForElementToExist(this.pinnedMessagesScreen, timeout);
+        await waitForElementToBeVisible(this.pinnedMessagesScreen, timeout);
 
         return this.pinnedMessagesScreen;
     };
 
     open = async () => {
         // # Open pinned messages screen
+        if (isIos()) {
+            await withSynchronizationDisabled(async () => {
+                await waitForElementToExist(ChannelInfoScreen.pinnedMessagesOption, timeouts.TEN_SEC);
+
+                // Channel Info is still translating when the pin journey keeps Detox
+                // sync off. A center tap then misses TouchableOpacity onPress.
+                await wait(timeouts.TWO_SEC);
+                await ChannelInfoScreen.pinnedMessagesOption.tap({x: 1, y: 1});
+                try {
+                    await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+                } catch {
+                    await ChannelInfoScreen.pinnedMessagesOption.tap({x: 1, y: 1});
+                    await waitForElementToExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+                }
+            });
+            return this.pinnedMessagesScreen;
+        }
+
         await ChannelInfoScreen.pinnedMessagesOption.tap();
 
         return this.toBeVisible();
@@ -53,20 +81,28 @@ class PinnedMessagesScreen {
 
     back = async () => {
         if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
+            // Prefer native-stack header back over device.pressBack() (UiAutomator flakes on API 35).
+            await tapNativeBackButton();
+            await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            return;
         }
-        await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+
+        await withSynchronizationDisabled(async () => {
+            await wait(timeouts.TWO_SEC);
+            await this.pinnedMessagesScreen.swipe('right', 'fast', 0.8, 0.05, 0.5);
+            try {
+                await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            } catch {
+                // Edge-swipe missed under sync-off — tap the pushed header back chevron.
+                await tapNativeBackButton();
+                await waitForElementToNotExist(this.pinnedMessagesScreen, timeouts.TEN_SEC);
+            }
+        });
     };
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
 
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
-
-        // Dismiss keyboard by tapping on the post list (needed after posting a message)
         const flatList = this.postList.getFlatList();
         try {
             await flatList.scroll(100, 'down');
@@ -74,6 +110,8 @@ class PinnedMessagesScreen {
             // Ignore scroll failures when the list is already at the boundary.
         }
         await wait(timeouts.ONE_SEC);
+
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)
         await longPressWithRetry(postListPostItem, PostOptionsScreen.postOptionsScreen);

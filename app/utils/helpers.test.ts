@@ -11,6 +11,7 @@ import {
     buildQueryString,
     isEmail,
     identity,
+    safeArrayCast,
     safeParseJSON,
     safeParseJSONStringArray,
     getCurrentMomentForTimezone,
@@ -96,6 +97,33 @@ describe('Helpers', () => {
             expect(identity(123)).toBe(123);
             const obj = {};
             expect(identity(obj)).toBe(obj);
+        });
+    });
+
+    describe('safeArrayCast', () => {
+        test('should return the same array when given an array', () => {
+            const arr = [1, 2, 3];
+            expect(safeArrayCast(arr)).toBe(arr);
+        });
+
+        test('should return [] for an empty object', () => {
+            expect(safeArrayCast({})).toEqual([]);
+        });
+
+        test('should return [] for null', () => {
+            expect(safeArrayCast(null)).toEqual([]);
+        });
+
+        test('should return [] for undefined', () => {
+            expect(safeArrayCast(undefined)).toEqual([]);
+        });
+
+        test('should return [] for a string', () => {
+            expect(safeArrayCast('hello')).toEqual([]);
+        });
+
+        test('should return an empty array unchanged', () => {
+            expect(safeArrayCast([])).toEqual([]);
         });
     });
 

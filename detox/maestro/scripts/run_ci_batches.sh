@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Run Maestro flows in isolated batches for CI.
 #
+# PR exclusions: detox/maestro/config/exclude_tags.json (Zephyr tiers: README.md)
+#
 # One batch failure (e.g. iOS SFSafariViewController wedging the driver) must not
 # prevent unrelated flows from running. Each batch is a separate `maestro test`
 # invocation; JUnit XML files are merged afterward.
@@ -15,6 +17,8 @@
 #   MAESTRO_APP_ID       — default com.mattermost.rnbeta
 #   FLOW_PATH            — optional; space-separated flow dirs (default: detox/maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
+#   ADMIN_TOKEN           — re-applies the server config baseline at startup and enables
+#                           Calls in the test channel; passed through to maestro --env
 #   MAESTRO_DRIVER_STARTUP_TIMEOUT — default 180000 (Maestro CI recommendation)
 
 set -euo pipefail
@@ -117,6 +121,12 @@ should_skip_flow() {
   [[ "$base" == "attach_logs_disabled_when_download_logs_off.yml" ]] && return 0
   [[ "$base" == "file_type_preview.yml" ]] && return 0
   [[ "$base" == "start_call.yml" ]] && return 0
+  # iOS Simulator cannot reliably run CallKit + WebRTC (Maestro CI run 28306039412:
+  # call_ui_permission, leave_call, mute_unmute fail waiting for id mute-unmute).
+  # See CallKitProvider.swift — "RTCAudioSession may never activate on CI simulators
+  # and peer connection times out before CurrentCallBar appears."
+  # libraries/@mattermost/calls-native/ios/Source/Managers/CallKitProvider.swift
+  [[ "$PLATFORM" == "ios" && "$flow" == *"/calls/"* ]] && return 0
   # Skip flows whose tags appear in the platform-specific exclude list.
   if [[ -n "$EXCLUDE_TAGS_STR" && -f "$flow" ]]; then
     local flow_tags
@@ -195,6 +205,8 @@ ensure_android_app_launchable() {
   echo "==> Preparing Android app $MAESTRO_APP_ID for Maestro launch"
   adb shell am force-stop "$MAESTRO_APP_ID" 2>/dev/null || true
   adb reverse tcp:8081 tcp:8081 2>/dev/null || true
+  # Re-assert after adb root (timezone prep) — Google Autofill overlays hide form testIDs.
+  adb shell settings put secure autofill_service null 2>/dev/null || true
 }
 
 grant_ios_calls_permissions() {
@@ -214,6 +226,27 @@ grant_android_calls_permissions() {
   echo "==> Re-granting Android microphone/camera for Calls ($MAESTRO_APP_ID)"
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.RECORD_AUDIO 2>/dev/null || true
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
+}
+
+# Idempotent and non-destructive: re-asserts only the state a run requires, so a shared
+# server or a crashed earlier job cannot leak config into this one. Called once before any
+# batch runs. AllowDownloadLogs is intentionally NOT included here: MM-T67856_4 flips it in
+# its own onFlowStart/onFlowComplete hooks (fixtures/set_allow_download_logs.js) so that flow
+# is self-contained whether it runs in CI or locally.
+apply_config_baseline() {
+  [[ -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
+    echo "Warning: missing ADMIN_TOKEN/SITE_1_URL; skipping config baseline" >&2
+    return 0
+  }
+
+  echo "==> Re-applying config baseline on ${SITE_1_URL}"
+  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
+    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  fi
 }
 
 ensure_calls_channel_enabled() {
@@ -273,7 +306,18 @@ run_maestro_batch() {
   cmd+=("${maestro_env_args[@]}")
   cmd+=("${flows[@]}")
 
-  "${cmd[@]}"
+  # Tee so the batch output is still in the CI log verbatim while also being greppable for
+  # driver-startup failures (see the retry in the batch loop). PIPESTATUS keeps maestro's
+  # exit code rather than tee's.
+  local batch_log="${batch_xml%.xml}.log"
+  "${cmd[@]}" 2>&1 | tee "$batch_log"
+  return "${PIPESTATUS[0]}"
+}
+
+driver_startup_failed() {
+  local batch_log=$1
+  [[ -f "$batch_log" ]] || return 1
+  grep -q "IOSDriverTimeoutException\|iOS driver not ready in time" "$batch_log"
 }
 
 BATCH_XMLS=()
@@ -341,6 +385,8 @@ log_resource_snapshot() {
   fi
 }
 
+apply_config_baseline
+
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
   read -r -a path_arr <<< "$batch_paths"
@@ -368,9 +414,45 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
 
+  # Retry once when the driver never started. Restricted to that one signature, and to the
+  # case where no JUnit XML was produced, so a genuine flow failure is never re-run and
+  # never masked -- a flow that ran and failed writes its XML and is reported as-is.
+  if [[ $rc -ne 0 && "$PLATFORM" == "ios" && ! -s "$batch_xml" ]] && driver_startup_failed "${batch_xml%.xml}.log"; then
+    echo "==> Batch ${batch_idx}: Maestro's iOS driver never started (no flow ran). Restarting the simulator and retrying this batch once."
+    ensure_ios_simulator_healthy
+    rm -f "$batch_xml"
+    batch_start_epoch=$(date +%s)
+    run_maestro_batch "$batch_xml" "${path_arr[@]}"
+    rc=$?
+    batch_end_epoch=$(date +%s)
+    echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+  fi
+
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"
     BATCH_FAILED=1
+
+    if [[ ! -s "$batch_xml" ]]; then
+      flow_label="${path_arr[0]:-unknown_flow}"
+      flow_base="${flow_label##*/}"
+      flow_id="${flow_base%.yml}"
+      xml_escape() {
+        printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
+      }
+      flow_label_xml="$(xml_escape "$flow_label")"
+      flow_id_xml="$(xml_escape "$flow_id")"
+      cat > "$batch_xml" <<EOF
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="${flow_label_xml}" tests="1" failures="1" errors="0" skipped="0" time="0">
+    <testcase id="${flow_id_xml}" name="${flow_id_xml}" classname="${flow_label_xml}" file="${flow_label_xml}" time="0" status="ERROR">
+      <failure>Maestro batch ${batch_idx} exited ${rc} without writing JUnit XML (${flow_label_xml})</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
+EOF
+      echo "==> Wrote synthetic failure JUnit for missing ${batch_xml}"
+    fi
     if [[ "$PLATFORM" == "ios" ]]; then
       ensure_ios_simulator_healthy
     fi

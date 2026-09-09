@@ -279,9 +279,9 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
     const skipped = mergedFlows.filter((f) => f.status === 'skipped').length;
     const timeSec = (totalTime / 1000).toFixed(1);
 
-    const testcaseXml = mergedFlows.map((f) => {
+    const renderTestcase = (f, classname, filePath) => {
         const statusAttr = f.status === 'passed' ? 'SUCCESS' : f.status.toUpperCase();
-        const fileAttr = f.file ? ` file="${escapeXmlAttr(f.file)}"` : '';
+        const fileAttr = filePath ? ` file="${escapeXmlAttr(filePath)}"` : '';
         let innerBlock = '';
         if (f.status === 'skipped') {
             innerBlock = '\n      <skipped/>';
@@ -291,10 +291,37 @@ function mergeMaestroJunitReports(xmlPaths, outputPath) {
         } else if (f.failureMessage) {
             innerBlock = `\n      <failure>${escapeXmlText(f.failureMessage)}</failure>`;
         }
-        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(f.classname || f.name)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
-    }).join('\n');
+        return `    <testcase id="${escapeXmlAttr(f.name)}" name="${escapeXmlAttr(f.name)}" classname="${escapeXmlAttr(classname)}"${fileAttr} time="${f.time.toFixed(1)}" status="${statusAttr}">${innerBlock}\n    </testcase>`;
+    };
 
-    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${timeSec}">\n${testcaseXml}\n  </testsuite>\n</testsuites>\n`;
+    // One testsuite per flow file when every flow has a path — TSIO reads `file`
+    // into suite FilePath; suite name doubles as a readable title.
+    const allHaveFiles = mergedFlows.length > 0 && mergedFlows.every((f) => f.file);
+    let suitesXml;
+    if (allHaveFiles) {
+        const byFile = new Map();
+        for (const f of mergedFlows) {
+            if (!byFile.has(f.file)) {
+                byFile.set(f.file, []);
+            }
+            byFile.get(f.file).push(f);
+        }
+        suitesXml = [...byFile.entries()].map(([filePath, flows]) => {
+            const suiteFailures = flows.filter((f) => f.status === 'failed').length;
+            const suiteErrors = flows.filter((f) => f.status === 'error').length;
+            const suiteSkipped = flows.filter((f) => f.status === 'skipped').length;
+            const time = flows.reduce((n, f) => n + f.time, 0).toFixed(1);
+            const cases = flows.map((f) => renderTestcase(f, filePath, filePath)).join('\n');
+            return `  <testsuite name="${escapeXmlAttr(filePath)}" device="${escapeXmlAttr(device)}" tests="${flows.length}" failures="${suiteFailures}" errors="${suiteErrors}" skipped="${suiteSkipped}" time="${time}">\n${cases}\n  </testsuite>`;
+        }).join('\n');
+    } else {
+        const cases = mergedFlows.map((f) =>
+            renderTestcase(f, f.file || f.classname || f.name, f.file || ''),
+        ).join('\n');
+        suitesXml = `  <testsuite name="Test Suite" device="${escapeXmlAttr(device)}" tests="${tests}" failures="${failures}" errors="${errors}" skipped="${skipped}" time="${timeSec}">\n${cases}\n  </testsuite>`;
+    }
+
+    const xml = `<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n${suitesXml}\n</testsuites>\n`;
     fse.outputFileSync(outputPath, xml, 'utf-8');
     console.log(`Merged ${existing.length} Maestro JUnit files -> ${outputPath} (${tests} tests, ${failures} failures, ${errors} errors, ${skipped} skipped)`);
     return true;
@@ -579,6 +606,121 @@ h2 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--muted); te
 }
 
 /**
+ * Convert a Maestro JUnit XML report into Jest --json shape.
+ * Prefer uploading JUnit with framework=maestro (TSIO #76+). Kept for local/
+ * tooling that still wants a Jest-shaped artifact.
+ *
+ * @param {string} xmlPath
+ * @param {string} outputPath
+ * @returns {boolean}
+ */
+function writeMaestroJestJsonForTsio(xmlPath, outputPath) {
+    const summary = parseMaestroReport(xmlPath);
+    if (!summary || !summary.flows.length) {
+        console.log(`writeMaestroJestJsonForTsio: no flows parsed from ${xmlPath}`);
+        return false;
+    }
+
+    const now = Date.now();
+    const byFile = new Map();
+    for (const flow of summary.flows) {
+        const fileKey = flow.file || flow.classname || flow.name || 'maestro';
+        if (!byFile.has(fileKey)) {
+            byFile.set(fileKey, []);
+        }
+        let jestStatus = 'failed';
+        if (flow.status === 'passed') {
+            jestStatus = 'passed';
+        } else if (flow.status === 'skipped') {
+            jestStatus = 'pending';
+        }
+        const durationMs = Math.round((flow.time || 0) * 1000);
+        byFile.get(fileKey).push({
+            ancestorTitles: flow.classname && flow.classname !== flow.name ? [flow.classname] : [],
+            duration: durationMs,
+            failureDetails: flow.failureMessage ? [{error: flow.failureMessage}] : [],
+            failureMessages: flow.failureMessage ? [flow.failureMessage] : [],
+            fullName: flow.classname && flow.classname !== flow.name ?
+                `${flow.classname} ${flow.name}` : flow.name,
+            invocations: 1,
+            location: null,
+            numPassingAsserts: jestStatus === 'passed' ? 1 : 0,
+            retryReasons: [],
+            status: jestStatus,
+            title: flow.name,
+        });
+    }
+
+    let numFailedTests = 0;
+    let numPassedTests = 0;
+    let numPendingTests = 0;
+    const testResults = [];
+    for (const [fileKey, assertionResults] of byFile.entries()) {
+        for (const ar of assertionResults) {
+            if (ar.status === 'passed') {
+                numPassedTests += 1;
+            } else if (ar.status === 'pending') {
+                numPendingTests += 1;
+            } else {
+                numFailedTests += 1;
+            }
+        }
+        const fileFailed = assertionResults.some((ar) => ar.status === 'failed');
+        testResults.push({
+            assertionResults,
+            endTime: now,
+            message: fileFailed ? 'failed' : '',
+            name: fileKey.includes('/') ? fileKey : `maestro/flows/${fileKey}`,
+            startTime: now,
+            status: fileFailed ? 'failed' : 'passed',
+            summary: '',
+        });
+    }
+
+    const numTotalTests = numFailedTests + numPassedTests + numPendingTests;
+    const payload = {
+        numFailedTestSuites: testResults.filter((t) => t.status === 'failed').length,
+        numFailedTests,
+        numPassedTestSuites: testResults.filter((t) => t.status === 'passed').length,
+        numPassedTests,
+        numPendingTestSuites: 0,
+        numPendingTests,
+        numRuntimeErrorTestSuites: 0,
+        numTodoTests: 0,
+        numTotalTestSuites: testResults.length,
+        numTotalTests,
+        openHandles: [],
+        snapshot: {
+            added: 0,
+            didUpdate: false,
+            failure: false,
+            filesAdded: 0,
+            filesRemoved: 0,
+            filesRemovedList: [],
+            filesUnmatched: 0,
+            filesUpdated: 0,
+            matched: 0,
+            total: 0,
+            unchecked: 0,
+            uncheckedKeysByFile: [],
+            unmatched: 0,
+            updated: 0,
+        },
+        startTime: now,
+        success: numFailedTests === 0,
+        testResults,
+        wasInterrupted: false,
+    };
+
+    fse.outputFileSync(outputPath, JSON.stringify(payload, null, 2));
+    console.log(
+        `Wrote Maestro→Jest JSON for TSIO -> ${outputPath} ` +
+        `(${numTotalTests} tests, ${numFailedTests} failed)`,
+    );
+    return true;
+}
+
+/**
  * When the batch runner exits before merging (e.g. set -e abort), reconstruct
  * maestro-report.xml from maestro-batch-*.xml so PR status reflects real counts.
  */
@@ -608,10 +750,118 @@ function mergeMaestroBatchReportsFromDir(buildDir, outputPath) {
     return fse.existsSync(outputPath) ? outputPath : null;
 }
 
+/**
+ * Build screenshot → flow mapping by reading `takeScreenshot:` names from each
+ * flow YAML referenced in the JUnit report. Used when Maestro command logs are
+ * absent (common after --flatten-debug-output / partial artifact uploads).
+ *
+ * @param {Array<{name: string, file?: string}>} flows
+ * @param {string} [repoRoot]
+ * @returns {Map<string, string>}
+ */
+function buildScreenshotMapFromFlowYamls(flows, repoRoot = process.cwd()) {
+    const map = new Map();
+    const roots = [
+        repoRoot,
+        path.resolve(repoRoot, '..'),
+    ].filter(Boolean);
+
+    for (const flow of flows) {
+        if (!flow.file || !flow.name) {
+            continue;
+        }
+        let yamlText = null;
+        for (const root of roots) {
+            const candidate = path.resolve(root, flow.file);
+            if (fse.existsSync(candidate)) {
+                try {
+                    yamlText = fse.readFileSync(candidate, 'utf8');
+                } catch {
+                    yamlText = null;
+                }
+                break;
+            }
+        }
+        if (!yamlText) {
+            continue;
+        }
+        for (const match of yamlText.matchAll(/takeScreenshot:\s*['"]?([^\s#'"]+)/g)) {
+            const shot = match[1];
+            if (!shot) {
+                continue;
+            }
+            const png = shot.endsWith('.png') ? shot : `${shot}.png`;
+            const rel = png.includes('/') ? png.replace(/\\/g, '/') : path.join('screenshots', png).replace(/\\/g, '/');
+            map.set(rel, flow.name);
+            map.set(path.basename(rel), flow.name);
+        }
+    }
+    return map;
+}
+
+/**
+ * Stage Maestro screenshots into per-flow folders for TSIO linking.
+ *
+ * Maestro writes takeScreenshot PNGs as flat `screenshots/<name>.png`, which
+ * cannot match JUnit full_title (`<flow.yml> > <flowName>`). TSIO's linker
+ * matches folder-derived test_name against full_title, so we copy images to
+ * `<outputDir>/<flowName>/<basename>.png` using the same attribution as the
+ * HTML report (command logs + YAML takeScreenshot map + scoreFlowMatch).
+ *
+ * @param {{xmlPath: string, artifactsDir: string, outputDir: string, repoRoot?: string}} opts
+ * @returns {{copied: number, flows: number}}
+ */
+function prepareMaestroScreenshotsForTsio({xmlPath, artifactsDir, outputDir, repoRoot}) {
+    const summary = parseMaestroReport(xmlPath);
+    if (!summary || !summary.flows.length) {
+        console.log(`prepareMaestroScreenshotsForTsio: no flows in ${xmlPath}`);
+        return {copied: 0, flows: 0};
+    }
+
+    const allFiles = walkFiles(artifactsDir).filter(isImage);
+    const commandLogMap = buildScreenshotMapFromCommandLogs(artifactsDir);
+    const yamlMap = buildScreenshotMapFromFlowYamls(summary.flows, repoRoot || process.cwd());
+
+    // Command logs win when present; YAML map fills the gaps.
+    const combinedMap = new Map([...yamlMap, ...commandLogMap]);
+    const buckets = bucketArtifactsByFlow(summary.flows, allFiles, combinedMap);
+
+    fse.emptyDirSync(outputDir);
+    let copied = 0;
+    for (const [flowName, files] of Object.entries(buckets)) {
+        if (flowName === '__unattributed' || !files.length) {
+            continue;
+        }
+        for (const rel of files) {
+            const src = path.join(artifactsDir, rel);
+            const dest = path.join(outputDir, flowName, path.basename(rel));
+            fse.ensureDirSync(path.dirname(dest));
+            fse.copySync(src, dest, {overwrite: true});
+            copied += 1;
+        }
+    }
+
+    // Keep unattributed images discoverable (won't link to a case).
+    const orphaned = buckets.__unattributed || [];
+    for (const rel of orphaned) {
+        const src = path.join(artifactsDir, rel);
+        const dest = path.join(outputDir, '__unattributed', path.basename(rel));
+        fse.ensureDirSync(path.dirname(dest));
+        fse.copySync(src, dest, {overwrite: true});
+        copied += 1;
+    }
+
+    console.log(`prepareMaestroScreenshotsForTsio: copied ${copied} image(s) for ${summary.flows.length} flow(s) -> ${outputDir}`);
+    return {copied, flows: summary.flows.length};
+}
+
 module.exports = {
     parseMaestroReport,
     generateMaestroHtmlReport,
     mergeMaestroJunitReports,
     mergeMaestroBatchReportsFromDir,
+    writeMaestroJestJsonForTsio,
     buildScreenshotMapFromCommandLogs,
+    buildScreenshotMapFromFlowYamls,
+    prepareMaestroScreenshotsForTsio,
 };

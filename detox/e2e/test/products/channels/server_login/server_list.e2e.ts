@@ -11,6 +11,7 @@ import {
     User,
     Setup,
 } from '@support/server_api';
+import {SITE_THREE_LOCK_TIMEOUT_MS, siteThreeLock} from '@support/site_three_lock';
 import {
     serverOneUrl,
     serverTwoUrl,
@@ -18,7 +19,11 @@ import {
     siteOneUrl,
     siteTwoUrl,
     siteThreeUrl,
+    hasThreeDistinctServers,
 } from '@support/test_config';
+import {
+    Alert,
+} from '@support/ui/component';
 import {
     ChannelListScreen,
     EditServerScreen,
@@ -30,6 +35,8 @@ import {
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
+const itWithThreeServers = hasThreeDistinctServers ? it : it.skip;
+
 describe('Server Login - Server List', () => {
     const serverOneDisplayName = 'Server 1';
     const serverTwoDisplayName = 'Server 2';
@@ -37,14 +44,25 @@ describe('Server Login - Server List', () => {
     let serverOneUser: any;
     let serverTwoUser: any;
     let serverThreeUser: any;
+    let lockOwner = '';
+    let lockAcquired = false;
 
     beforeAll(async () => {
+        if (hasThreeDistinctServers) {
+            lockOwner = siteThreeLock.createOwner();
+            await siteThreeLock.acquire(siteThreeUrl, lockOwner, {timeoutMs: SITE_THREE_LOCK_TIMEOUT_MS});
+            lockAcquired = true;
+        }
+
         // # Log in to the first server
         ({user: serverOneUser} = await Setup.apiInit(siteOneUrl));
         await waitForElementToBeVisible(ServerScreen.headerTitleConnectToServer, timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(serverOneUser);
-    });
+
+        // The hook gets its own budget so the lock wait above does not have to fit inside the
+        // default per-test timeout.
+    }, timeouts.ONE_MIN * 22);
 
     beforeEach(async () => {
         // * Verify on channel list screen
@@ -52,8 +70,14 @@ describe('Server Login - Server List', () => {
     });
 
     afterAll(async () => {
-        // # Log out
-        await HomeScreen.logout();
+        try {
+            // # Log out
+            await HomeScreen.logout();
+        } finally {
+            if (lockAcquired) {
+                await siteThreeLock.release(siteThreeUrl, lockOwner);
+            }
+        }
     });
 
     it('MM-T4691_1 - should match elements on server list screen', async () => {
@@ -61,8 +85,11 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.open();
         await ServerListScreen.closeTutorial();
 
-        // * Verify basic elements on server list screen
+        // * Verify basic elements on server list screen. Scroll the row into view first:
+        // on iOS the collapsed sheet clips the bottom rows and toBeVisible(75) fails
+        // even though the row is rendered
         await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
+        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(serverOneDisplayName));
         await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).toBeVisible();
         await expect(ServerListScreen.addServerButton).toBeVisible();
 
@@ -70,21 +97,13 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_2 - should be able to add and log in to new servers', async () => {
+    itWithThreeServers('MM-T4691_2 - should be able to add and log in to new servers', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListScreen.swipe('up');
-        } else if (isAndroid()) {
-            // Pixel 8 API 35 uses gesture nav; a default swipe('up') on the
-            // full-screen bottom sheet starts in the system home-gesture hot
-            // zone and backgrounds the app. Use explicit coords with startY
-            // mid-screen to stay clear of the edge.
-            await ServerListScreen.serverListScreen.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
 
         // * Verify first server is active
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
@@ -93,7 +112,7 @@ describe('Server Login - Server List', () => {
         await User.apiAdminLogin(siteTwoUrl);
         ({user: serverTwoUser} = await Setup.apiInit(siteTwoUrl));
         await wait(timeouts.TWO_SEC);
-        await ServerListScreen.addServerButton.tap();
+        await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
         await LoginScreen.login(serverTwoUser);
@@ -104,12 +123,7 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
 
         // * Verify second server is active and first server is inactive
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverTwoDisplayName), timeouts.TEN_SEC);
@@ -119,7 +133,7 @@ describe('Server Login - Server List', () => {
         await User.apiAdminLogin(siteThreeUrl);
         ({user: serverThreeUser} = await Setup.apiInit(siteThreeUrl));
         await wait(timeouts.TWO_SEC);
-        await ServerListScreen.addServerButton.tap();
+        await ServerListScreen.tapAddServerButton();
         await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
         await ServerScreen.connectToServer(serverThreeUrl, serverThreeDisplayName);
         await LoginScreen.login(serverThreeUser);
@@ -131,12 +145,7 @@ describe('Server Login - Server List', () => {
         // # Open server list screen
         await ServerListScreen.open();
         await wait(timeouts.TWO_SEC);
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
 
         // * Verify third server is active, and first and second servers are inactive
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverThreeDisplayName), timeouts.TEN_SEC);
@@ -147,18 +156,13 @@ describe('Server Login - Server List', () => {
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_3 - should be able to switch to another existing server', async () => {
+    itWithThreeServers('MM-T4691_3 - should be able to switch to another existing server', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen and tap on third server
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverThreeDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverThreeDisplayName).atIndex(0).tap();
 
@@ -168,36 +172,21 @@ describe('Server Login - Server List', () => {
 
         // # Open server list screen and go back to first server
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).atIndex(0).tap();
     });
 
-    it('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
+    itWithThreeServers('MM-T4691_4 - should be able to edit server display name of active and inactive servers', async () => {
         // * Verify on channel list screen of the first server
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
 
         // # Open server list screen, swipe left on first server and tap on edit option
         await ServerListScreen.open();
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitForElementToBeVisible(ServerListScreen.serverListTitle, timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
+        await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
-
-        // .atIndex(0): the Swipeable's revealed Edit option can render twice
-        // briefly on iOS during the swipe-pan animation (CI run 26368981355,
-        // MM-T4691_4: "Multiple elements found"). All sibling taps in this
-        // file already use .atIndex(0).
         await ServerListScreen.getServerItemEditOption(serverOneDisplayName).atIndex(0).tap();
 
         // * Verify on edit server screen
@@ -216,18 +205,177 @@ describe('Server Login - Server List', () => {
         // # Tap on save button
         await EditServerScreen.saveButton.tap();
 
-        // * Verify the new first server display name
-        await expect(ServerListScreen.getServerItemActive(newServerOneDisplayName)).toBeVisible();
+        // * Verify the new first server display name. Scroll it into view first: the renamed
+        // row can sit below the collapsed sheet's fold, where a bare toBeVisible fails on a
+        // row that exists and is correct.
+        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0));
 
-        // # Revert back to original first server display name and go back to first server
+        // # Revert back to original first server display name and go back to first server.
+        // The scroll above already left this row fully visible, which is what the swipe needs.
         await ServerListScreen.getServerItemActive(newServerOneDisplayName).atIndex(0).swipe('left', 'slow');
         await wait(timeouts.ONE_SEC);
 
         // .atIndex(0) for the same reason as the first tap above.
         await ServerListScreen.getServerItemEditOption(newServerOneDisplayName).atIndex(0).tap();
+        await EditServerScreen.toBeVisible();
         await EditServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
         await EditServerScreen.saveButton.tap();
+        await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TWENTY_SEC);
+        await ServerListScreen.scrollServerItemIntoView(ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0));
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
     });
 
+    itWithThreeServers('MM-T4691_5 - should be able to remove a server from the list', async () => {
+        // * Verify on channel list screen of the first server
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
+
+        // # Open server list screen, swipe left on first server and tap on remove option
+        await ServerListScreen.open();
+        await ServerListScreen.scrollServerListIntoView();
+        await waitForElementToExist(ServerListScreen.getServerItemActive(serverOneDisplayName), timeouts.TEN_SEC);
+
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverOneDisplayName,
+            ServerListScreen.getServerItemRemoveOption(serverOneDisplayName),
+        );
+
+        // * Verify remove server alert is displayed
+        await waitForElementToBeVisible(Alert.removeServerTitle(serverOneDisplayName), timeouts.HALF_MIN);
+
+        // # Tap on remove button and go back to server list screen
+        await waitForElementToBeVisible(Alert.removeButton1, timeouts.HALF_MIN);
+        await Alert.removeButton1.tap();
+        await wait(timeouts.FOUR_SEC);
+        await ServerListScreen.open();
+        await ServerListScreen.scrollServerListIntoView();
+
+        // * Verify first server is removed
+        await expect(ServerListScreen.getServerItemActive(serverOneDisplayName)).not.toExist();
+        await expect(ServerListScreen.getServerItemInactive(serverOneDisplayName)).not.toExist();
+
+        // # Add first server back to the list and log in to the first server
+        await ServerListScreen.tapAddServerButton();
+        await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
+        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await LoginScreen.login(serverOneUser);
+    });
+
+    itWithThreeServers('MM-T4691_6 - should be able to log out a server from the list', async () => {
+        // * Verify on channel list screen of the first server
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
+
+        // # Open server list screen, swipe left on third server and tap on logout option
+        await ServerListScreen.open();
+
+        await ServerListScreen.scrollServerListIntoView();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverThreeDisplayName), timeouts.TEN_SEC);
+
+        // See MM-T4691_5: the helper gates the reveal on hittability instead of a 100% pixel
+        // threshold that never resolved on iOS, and retries the swipe.
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverThreeDisplayName,
+            ServerListScreen.getServerItemLogoutOption(serverThreeDisplayName),
+        );
+
+        // * Verify logout server alert is displayed
+        await waitForElementToBeVisible(Alert.logoutTitle(serverThreeDisplayName), timeouts.TEN_SEC);
+
+        // # Tap on logout button
+        await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
+        await Alert.logoutButton.tap();
+
+        // The server may not be reachable when the logout request goes out, in which case the
+        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
+        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
+        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
+        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
+        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
+        // bypassed it.
+        await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
+
+        // * Verify third server is logged out. swipeRevealOption is the assertion: it only
+        // returns once the Log in option is revealed and hittable.
+        await ServerListScreen.swipeRevealOption(
+            serverThreeDisplayName,
+            ServerListScreen.getServerItemLoginOption(serverThreeDisplayName),
+        );
+
+        // # Go back to first server
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
+    });
+
+    itWithThreeServers('MM-T4691_7 - should not be able to add server for an already existing server', async () => {
+        // * Verify on channel list screen of the first server
+        await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverOneDisplayName);
+
+        // # Open server list screen, attempt to add a server already logged in and with inactive session
+        await ServerListScreen.open();
+
+        // Use a partial swipe on iOS to scroll the list without over-shooting.
+        await ServerListScreen.scrollServerListIntoView();
+        await ServerListScreen.tapAddServerButton();
+        await waitForElementToExist(ServerScreen.headerTitleAddServer, timeouts.TEN_SEC);
+        await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
+        if (isAndroid()) {
+            await ServerScreen.serverUrlInput.tapReturnKey();
+        }
+        await ServerScreen.serverDisplayNameInput.replaceText(serverTwoDisplayName);
+        if (isAndroid()) {
+            await ServerScreen.serverDisplayNameInput.tapReturnKey();
+        }
+
+        if (isIos()) {
+            await ServerScreen.tapConnectButton();
+        }
+
+        // * Verify same name server error
+        const sameNameServerError = 'You are using this name for another server.';
+        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
+
+        // # Attempt to add a server already logged in and with active session, with the same server display name
+        await ServerScreen.serverUrlInput.replaceText(serverOneUrl);
+        if (isAndroid()) {
+            await ServerScreen.serverUrlInput.tapReturnKey();
+        }
+        await ServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
+        if (isAndroid()) {
+            await ServerScreen.serverDisplayNameInput.tapReturnKey();
+        }
+
+        if (isIos()) {
+            await ServerScreen.tapConnectButton();
+        }
+
+        // * Verify same name server error
+        await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);
+
+        // # Close server screen, open server list screen, log out of second server, and go back to first server
+        await ServerScreen.close();
+        await ServerListScreen.open();
+
+        await ServerListScreen.scrollServerListIntoView();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
+
+        // See MM-T4691_5: the helper gates the reveal on hittability instead of a 100% pixel
+        // threshold that never resolved on iOS, and retries the swipe.
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverTwoDisplayName,
+            ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
+        );
+        await wait(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
+        await Alert.logoutButton.tap();
+
+        // The server may not be reachable when the logout request goes out, in which case the
+        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
+        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
+        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
+        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
+        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
+        // bypassed it.
+        await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
+        await wait(timeouts.TWO_SEC);
+        await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();
+    });
 });

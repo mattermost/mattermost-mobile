@@ -1,7 +1,23 @@
 # Sub-flow: Wait for server connect to finish navigating off the server form.
 # Expected outcomes: login form (fresh server) or home tab (reused session).
+#
+# The notVisible check below must stay FIRST and must not be optional. Without it a
+# failed server connect fell through the optional login-form wait and then failed on
+# the home-tab assertion, so every connect failure was reported as
+# "Assertion is false: id: tab_bar.home.tab is visible" — a login message for a
+# connect error. CI 30466684108 (iOS) failed here having issued zero /api/v4 requests:
+# the TLS handshake to SITE_1_URL was cancelled during trust evaluation, connect never
+# completed, and login.yml was never reached. Same 120s budget as the waits below, so
+# a successful connect behaves exactly as before on both platforms.
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify the server form was left, so a failed connect is reported as a connect error
+- extendedWaitUntil:
+    notVisible:
+      id: "server_form.display_help"
+    timeout: 120000
+
+# * Verify we landed on the login form (fresh server) or the home tab (reused session)
 - extendedWaitUntil:
     visible:
       id: "login_form.forgot_password.button"

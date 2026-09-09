@@ -7,6 +7,7 @@
 export const AGENT_POST_TYPES = {
     LLMBOT: 'custom_llmbot',
     LLM_POSTBACK: 'custom_llm_postback',
+    AGENT_MENTION_REMINDER: 'custom_agent_mention_reminder',
 } as const;
 
 /**
@@ -31,6 +32,7 @@ export const CONTROL_SIGNALS = {
     START: 'start',
     END: 'end',
     CANCEL: 'cancel',
+    CONTINUE: 'continue',
     REASONING_SUMMARY: 'reasoning_summary',
     REASONING_SUMMARY_DONE: 'reasoning_summary_done',
     TOOL_CALL: 'tool_call',

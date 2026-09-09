@@ -7,8 +7,8 @@ import {
     ChannelListScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isIos, tapNativeBackButton, timeouts, wait} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isIos, tapNativeBackButton, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {by, element, expect, waitFor} from 'detox';
 
 class CreateOrEditChannelScreen {
     testID = {
@@ -59,25 +59,8 @@ class CreateOrEditChannelScreen {
             }
         }
 
-        await waitFor(ChannelListScreen.headerPlusButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
-        let tapError: unknown;
-        /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-        for (let i = 0; i < 3; i++) {
-            try {
-                await ChannelListScreen.headerPlusButton.tap();
-                tapError = undefined;
-                break;
-            } catch (err) {
-                tapError = err;
-                await wait(timeouts.ONE_SEC);
-            }
-        }
-        /* eslint-enable no-await-in-loop */
-        if (tapError) {
-            throw tapError;
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ChannelListScreen.createNewChannelItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelListScreen.openPlusMenu();
+        await waitForElementToBeVisible(ChannelListScreen.createNewChannelItem, timeouts.TEN_SEC);
         await ChannelListScreen.createNewChannelItem.tap();
 
         return this.toBeVisible();
@@ -97,7 +80,7 @@ class CreateOrEditChannelScreen {
         if (fromChannelInfo) {
             await ChannelInfoScreen.setHeaderAction.tap();
         } else {
-            await ChannelScreen.introSetHeaderAction.tap();
+            await ChannelScreen.tapIntroSetHeaderAction();
         }
 
         return this.toBeVisible();
@@ -111,6 +94,46 @@ class CreateOrEditChannelScreen {
     close = async () => {
         await this.closeButton.tap();
         await expect(this.createOrEditChannelScreen).not.toBeVisible();
+    };
+
+    save = async () => {
+        // The save button sits in the modal header, above the keyboard. A blind pressBack here
+        // dismisses create_or_edit_channel.screen itself and the save button with it.
+        await this.saveButton.tap();
+
+        // Save can leave an empty create_or_edit_channel.screen shell that blocks not.toExist, so
+        // require the save button to disappear before accepting the destination screen.
+        const {channelInfoScreen} = ChannelInfoScreen;
+        const {channelSettingsScreen} = ChannelSettingsScreen;
+        const startTime = Date.now();
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() - startTime < timeouts.HALF_MIN) {
+            try {
+                await expect(this.saveButton).not.toExist();
+            } catch {
+                await wait(timeouts.HALF_SEC);
+                continue;
+            }
+
+            try {
+                await expect(channelInfoScreen).toExist();
+                return;
+            } catch {
+                /* not on channel info yet */
+            }
+            try {
+                await expect(channelSettingsScreen).toExist();
+                return;
+            } catch {
+                /* not on channel settings yet */
+            }
+
+            // Modal dismissed even if destination matcher is still settling.
+            return;
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error('save: edit channel screen did not dismiss after save');
     };
 
     toggleMakePrivateOn = async () => {
@@ -130,6 +153,89 @@ class CreateOrEditChannelScreen {
         } catch (error) {
             // eslint-disable-next-line no-console
             console.log('Element not visible, skipping click');
+        }
+    };
+
+    // The scheduled-post tutorial modal (app/components/post_draft/send_button/
+    // scheduled_post_tooltip.tsx) steals Espresso's window focus on Android, which makes
+    // channel.screen unselectable while it is up.
+    dismissScheduledPostTooltip = async (): Promise<boolean> => {
+        const targets = [
+            ChannelScreen.scheduledPostTooltipCloseButton,
+            ChannelScreen.scheduledPostTooltipCloseButtonAdminAccount,
+        ];
+
+        /* eslint-disable no-await-in-loop -- fall through to the other close testID */
+        for (const target of targets) {
+            try {
+                await waitFor(target).toBeVisible().withTimeout(timeouts.ONE_SEC);
+                await target.tap();
+                await waitFor(target).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                return true;
+            } catch {
+                // Not this testID, or the tooltip is not up at all.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        return false;
+    };
+
+    waitForChannelScreen = async (totalTimeout: number): Promise<boolean> => {
+        const deadline = Date.now() + totalTimeout;
+        const maxAttempts = Math.max(1, Math.ceil(totalTimeout / timeouts.TWO_SEC));
+
+        /* eslint-disable no-await-in-loop -- poll the channel screen around tooltip dismissals */
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TWO_SEC);
+                return true;
+            } catch {
+                if (Date.now() >= deadline) {
+                    return false;
+                }
+                await this.dismissScheduledPostTooltip();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        return false;
+    };
+
+    // iOS simulators drop idle keep-alive connections (-1005). Create then stays on
+    // this form with edit_channel_info.error.text. Retry once after the banner appears.
+    tapCreateAndWaitForChannel = async () => {
+        const errorText = element(by.id('edit_channel_info.error.text'));
+        await this.createButton.tap();
+
+        if (await this.waitForChannelScreen(timeouts.TEN_SEC)) {
+            return;
+        }
+
+        // Every path from here on has to end on the channel screen or throw. Returning
+        // while the create is still pending hands the caller a screen it did not ask for,
+        // and the failure then surfaces somewhere unrelated later in the spec.
+        try {
+            await waitFor(errorText).toExist().withTimeout(timeouts.TEN_SEC);
+        } catch {
+            // No error banner and no channel screen: give the navigation a last chance
+            // rather than reporting success for a create we never observed.
+            if (await this.waitForChannelScreen(timeouts.TEN_SEC)) {
+                return;
+            }
+            throw new Error('CreateOrEditChannel.tapCreateAndWaitForChannel: neither the channel screen nor a create error appeared');
+        }
+
+        await wait(timeouts.TWO_SEC);
+        await this.createButton.tap();
+
+        if (!await this.waitForChannelScreen(timeouts.TWENTY_SEC)) {
+            throw new Error('CreateOrEditChannel.tapCreateAndWaitForChannel: channel did not open after retry');
+        }
+        try {
+            await expect(errorText).not.toBeVisible();
+        } catch {
+            throw new Error('CreateOrEditChannel.tapCreateAndWaitForChannel: create error remained after retry');
         }
     };
 }

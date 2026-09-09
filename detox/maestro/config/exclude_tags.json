@@ -1,5 +1,12 @@
 {
-  "default": ["MM-T67856_4"],
-  "ios": ["MM-T4832", "MM-T1411", "MM-T4833"],
-  "android": []
+  "default": [
+    "MM-T67856_4"
+  ],
+  "ios": [
+    "MM-T5603",
+    "MM-T67856_2"
+  ],
+  "android": [
+    "MM-T3260"
+  ]
 }

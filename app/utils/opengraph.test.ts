@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getDistanceBW2Points, getNearestPoint, fetchOpenGraph, testExports} from './opengraph';
+import {getDistanceBW2Points, getNearestPoint, fetchOpenGraph, normalizeOpenGraphImageUrl, testExports} from './opengraph';
 
 const {fetchRaw, getFavIcon} = testExports;
 
@@ -144,6 +144,11 @@ describe('getFavIcon', () => {
         const result = getFavIcon('http://example.com', mockHtml);
         expect(result).toBe('http://example.com/favicon-32x32.png');
     });
+
+    it('should not concatenate a data: favicon onto the page origin', () => {
+        const mockHtml = '<html><head><link rel="icon" href="data:image/png;base64,abc"></head></html>';
+        expect(getFavIcon('https://example.com', mockHtml)).toBeUndefined();
+    });
 });
 
 describe('fetchOpenGraph', () => {
@@ -186,9 +191,23 @@ describe('fetchOpenGraph', () => {
         const result = await fetchOpenGraph('http://example.com');
         expect(result).toEqual({
             link: 'http://example.com',
-            imageURL: null,
+            imageURL: undefined,
             favIcon: undefined,
             title: 'Example',
         });
+    });
+});
+
+describe('normalizeOpenGraphImageUrl', () => {
+    it('should resolve relative image URLs against the page URL', () => {
+        expect(normalizeOpenGraphImageUrl('/favicon.ico', 'https://example.com/page')).toBe('https://example.com/favicon.ico');
+    });
+
+    it('should reject non-http(s) image URLs', () => {
+        expect(normalizeOpenGraphImageUrl('data:image/png;base64,abc', 'https://example.com')).toBeUndefined();
+    });
+
+    it('should return absolute http(s) image URLs unchanged', () => {
+        expect(normalizeOpenGraphImageUrl('https://cdn.example.com/img.png', 'https://example.com')).toBe('https://cdn.example.com/img.png');
     });
 });

@@ -6,19 +6,22 @@ import {
     FileQuickAction,
     ImageQuickAction,
     InputQuickAction,
+    NavigationHeader,
     PostDraft,
     PostList,
     SendButton,
 } from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isAndroid, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 class ThreadScreen {
     testID = {
         threadScreenPrefix: 'thread.',
         threadScreen: 'thread.screen',
-        backButton: 'thread.navigation.back.button',
+
+        // App uses shared NavigationHeader (`navigation.header.back`), not a thread-prefixed id.
+        backButton: NavigationHeader.testID.backButton,
         followButton: 'thread.follow_thread.button',
         followingButton: 'thread.following_thread.button',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
@@ -27,7 +30,7 @@ class ThreadScreen {
     };
 
     threadScreen = element(by.id(this.testID.threadScreen));
-    backButton = element(by.id(this.testID.backButton));
+    backButton = NavigationHeader.backButton;
     followButton = element(by.id(this.testID.followButton));
     followingButton = element(by.id(this.testID.followingButton));
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
@@ -110,12 +113,41 @@ class ThreadScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
         await waitForElementToExist(this.threadScreen, timeout);
+        await waitForElementToExist(this.postInput, timeouts.TEN_SEC);
 
         return this.threadScreen;
     };
 
     back = async () => {
-        await this.backButton.tap();
+        let navigated = false;
+        try {
+            const backTimeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+            await waitForElementToExist(this.backButton, backTimeout);
+            await NavigationHeader.tapTopmostBackButton();
+            await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+            navigated = true;
+        } catch {
+            // Back button not in hierarchy, tap failed, or thread remained visible — fall through.
+        }
+        if (!navigated && isAndroid()) {
+            // Thread-from-search can leave no hittable header back; a single
+            // system back sometimes only dismisses the keyboard or a transient overlay.
+            /* eslint-disable no-await-in-loop */
+            for (let attempt = 0; attempt < 2 && !navigated; attempt++) {
+                try {
+                    await device.pressBack();
+                    await wait(timeouts.TWO_SEC);
+                    await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    navigated = true;
+                } catch {
+                    // still visible, retry
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+        if (!navigated) {
+            throw new Error('ThreadScreen.back: could not navigate back');
+        }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // Wait for the previous screen to be fully loaded and rendered
@@ -142,13 +174,11 @@ class ThreadScreen {
 
         // On Android, long-press on the inner text element — more reliable than the
         // compound-matched post container, which can silently swallow the gesture.
-        const longPressTarget = isAndroid()
-            ? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`)))
-            : postListPostItem;
+        const longPressTarget = isAndroid()? element(by.text(text).withAncestor(by.id(`${this.testID.threadScreenPrefix}post_list.post.${postId}`))): postListPostItem;
 
         await longPressWithScrollRetry(
             longPressTarget,
-            this.postList.getFlatList(),
+            by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
         );
         await wait(timeouts.TWO_SEC);
@@ -179,11 +209,20 @@ class ThreadScreen {
                 await this.postList.getFlatList().swipe('up', 'fast', 0.3);
             } catch { /* ignore — post list may be too short to scroll */ }
             await wait(timeouts.ONE_SEC);
+        } else {
+            try {
+                await this.postList.getFlatList().swipe('down', 'slow', 0.1);
+            } catch {
+                try {
+                    await element(by.id('navigation.header.title')).tap({x: 1, y: 1});
+                } catch { /* ignore */ }
+            }
+            await wait(timeouts.ONE_SEC);
         }
 
         await device.disableSynchronization();
         try {
-            await this.sendButton.longPress();
+            await this.sendButton.longPress(timeouts.TWO_SEC);
 
             // Wait for the schedule picker bottom sheet using polling (no sync dependency).
             await waitForElementToExist(
@@ -191,15 +230,18 @@ class ThreadScreen {
                 timeouts.HALF_MIN,
             );
         } finally {
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     };
 
     tapSendButton = async () => {
-        // # Tap send button
-        await this.sendButton.tap();
-        await expect(this.sendButton).not.toExist();
-        await expect(this.sendButtonDisabled).toBeVisible();
+        // Existence + corner tap: even 40% visibility fails when the thread composer
+        // is clipped by the pinned-messages / keyboard stack (MM-T4918_3).
+        await waitForElementToExist(this.sendButton, timeouts.TEN_SEC);
+        await this.sendButton.tap({x: 1, y: 1});
+
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.sendButtonDisabled).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

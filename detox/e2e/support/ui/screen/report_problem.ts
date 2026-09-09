@@ -33,25 +33,13 @@ class ReportProblemScreen {
     /**
      * Opens the Report a Problem screen from Settings.
      *
-     * On servers where the in-app screen is not available (unlicensed, or config
-     * not yet synced), tapping "Report a Problem" opens an external browser
-     * instead. This method detects that case, dismisses the browser, and returns
-     * false so callers can skip in-app assertions.
-     *
-     * @returns true if the in-app screen opened, false if an external browser opened
+     * Every license tier reaches this screen — the license only decides whether the
+     * button at the bottom opens a mail composer or the forums.
      */
-    open = async (): Promise<boolean> => {
+    open = async () => {
         await SettingsScreen.reportProblemOption.tap();
 
-        try {
-            await this.toBeVisible();
-            return true;
-        } catch {
-            // In-app screen didn't appear — external browser/email opened instead.
-            // Dismiss it so the app returns to Settings.
-            await tapNativeBackButton();
-            return false;
-        }
+        return this.toBeVisible();
     };
 
     back = async () => {

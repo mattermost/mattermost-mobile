@@ -13,25 +13,36 @@ npm install
 navigate to the `detox` folder and run `npm install`
 
 ## Configure your server details
-in `detox/e2e/support/test_config.ts` will provide some default values for your server, if they differ you can:
-- use environment variables
+`detox/e2e/support/test_config.ts` defaults to one local server on port `8065`.
+For iOS, both the test runner and simulator use `http://localhost:8065`. For
+Android, the test runner uses `http://localhost:8065` while the emulator uses
+`http://10.0.2.2:8065`.
+
+If you use a remote server, set the logical site variable to a URL reachable
+from both the host test runner and the device:
 ```sh
-  export SITE_1_URL="http://your-server:8065"
+  export SITE_1_URL="https://your-server.example.com"
   export ADMIN_USERNAME="your-username"
   export ADMIN_PASSWORD="your-password"
   export ADMIN_EMAIL="your-email"
 ```
 
-- create a .env file in the `detox` folder providing the values:
+You can instead create a `detox/.env` file:
 ```sh
   # detox/.env
-  SITE_1_URL=http://localhost:8065
+  SITE_1_URL=https://your-server.example.com
   ADMIN_USERNAME=your-username
   ADMIN_PASSWORD=your-password
   ADMIN_EMAIL=your-email@example.com
 ```
 
 **Note**: no need to provide all variables, only the ones that differ.
+
+`SITE_2_URL` and `SITE_3_URL` are only needed for tests that add distinct
+Mattermost servers, such as `server_login/server_list.e2e.ts`. If they are
+unset, their URL helpers alias site 1 and tests that require distinct servers
+are skipped. The five-server `ANDROID_SITE_*` and `IOS_SITE_*` topology is
+assigned by CI and is not required for ordinary local runs.
 
 ## Android
 
@@ -153,6 +164,45 @@ xcrun simctl list devices | grep Booted
 
 The Local Runs generate artifacts under `detox/artifacts/ios-debug-**` or `detox/artifacts/android-debug-**`.
 You can see the html report, failure screenshot under that folder.
+
+## Webhook sidecar (mm_blocks / interactive dialog specs)
+
+The `mm_blocks_*` and interactive-dialog specs register integrations that the
+Mattermost server calls back into. `detox/webhook_server.js` serves those
+callbacks on `:3000`, and the server must be able to reach it:
+
+- **Local server** (`SITE_1_URL=http://localhost:8065`): no tunnel needed, the
+  server reaches `127.0.0.1:3000` directly.
+
+  ```sh
+  cd detox && npm run start:webhook
+  ```
+
+- **Remote/cloud test server**: the server cannot reach your machine, so the
+  sidecar needs a public HTTPS origin. `detox/scripts/start_webhook_sidecar.sh`
+  starts `webhook_server.js` and resolves that origin, in priority order:
+
+  | Env | Behaviour |
+  |-----|-----------|
+  | `WEBHOOK_PUBLIC_BASE_URL` | Use an already-routable HTTPS origin as-is (named tunnel, ngrok, reverse proxy). Preferred. |
+  | `WEBHOOK_PUBLIC_BASE_URL` + `CLOUDFLARED_TUNNEL_TOKEN` | Run a named Cloudflare tunnel for that hostname. The token is passed via `TUNNEL_TOKEN` because argv is world-readable. |
+  | neither | Fall back to a `trycloudflare.com` quick tunnel. Time-boxed and DNS-flaky, so treat it as a last resort. |
+
+  ```sh
+  cd detox
+  SITE_1_URL="https://your-test-server" \
+  WEBHOOK_PUBLIC_BASE_URL="https://your-tunnel-hostname" \
+  bash scripts/start_webhook_sidecar.sh
+  ```
+
+  Pin a different `cloudflared` with `CLOUDFLARED_VERSION`; the script defaults to
+  a known-good release rather than `latest`.
+
+The script always exits 0 — it exports `WEBHOOK_SIDECAR_READY` and
+`WEBHOOK_CALLBACKS_REACHABLE` instead of failing, and specs that need a webhook
+fail fast on their own health check. A quick tunnel passes outbound health checks
+but does not reliably deliver server-to-sidecar callbacks, so it reports
+`WEBHOOK_CALLBACKS_REACHABLE=false`.
 
 # Playbooks Tests (AI-Powered Testing)
 

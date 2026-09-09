@@ -6,8 +6,10 @@ import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
+import {License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -25,6 +27,16 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
 
         if (license?.LockTeammateNameDisplay && (prevLicense?.LockTeammateNameDisplay !== license.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
+        }
+
+        const prevSessionAttributes = prevLicense?.SkuShortName === License.SKU_SHORT_NAME.EnterpriseAdvanced;
+        const newSessionAttributes = license?.SkuShortName === License.SKU_SHORT_NAME.EnterpriseAdvanced;
+        if (newSessionAttributes !== prevSessionAttributes) {
+            if (newSessionAttributes) {
+                await SessionAttributesManager.refreshManifest(serverUrl);
+            } else {
+                SessionAttributesManager.removeServer(serverUrl);
+            }
         }
     } catch {
         // do nothing
@@ -58,6 +70,16 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             const {error: modeChangeError} = await applyPersistenceModeChange(serverUrl);
             if (modeChangeError) {
                 logError('handleConfigChangedEvent', getFullErrorMessage(modeChangeError));
+            }
+        }
+
+        const prevSessionAttributes = prevConfig?.FeatureFlagSessionAttributes === 'true';
+        const newSessionAttributes = config?.FeatureFlagSessionAttributes === 'true';
+        if (newSessionAttributes !== prevSessionAttributes) {
+            if (newSessionAttributes) {
+                await SessionAttributesManager.refreshManifest(serverUrl);
+            } else {
+                SessionAttributesManager.removeServer(serverUrl);
             }
         }
     } catch {

@@ -16,6 +16,30 @@ import {getResponseFromError} from './common';
 // - return value defined by `@return`
 // ****************************************************************
 
+export type UserPreference = {
+    user_id: string;
+    category: string;
+    name: string;
+    value: string;
+};
+
+/**
+ * Get the user's preferences.
+ * See https://api.mattermost.com/#operation/GetPreferences
+ * @param {string} baseUrl - the base server URL
+ * @param {string} userId - the user ID
+ * @return {Object} returns {preferences} on success or {error, status} on error
+ */
+export const apiGetUserPreferences = async (baseUrl: string, userId: string): Promise<any> => {
+    try {
+        const response = await client.get(`${baseUrl}/api/v4/users/${userId}/preferences`);
+
+        return {preferences: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 /**
  * Save the user's favorite channel preference.
  * @param {string} baseUrl - the base server URL
@@ -92,6 +116,7 @@ export const apiSaveUserPreferences = async (baseUrl: string, userId: string, pr
 };
 
 export const Preference = {
+    apiGetUserPreferences,
     apiSaveFavoriteChannelPreference,
     apiSaveTeammateNameDisplayPreference,
     apiSaveTeamsOrderPreference,

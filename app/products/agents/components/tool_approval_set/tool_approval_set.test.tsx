@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React from 'react';
 
+import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -40,6 +42,10 @@ function makeTool(overrides: Partial<ToolCall> = {}): ToolCall {
         ...overrides,
     };
 }
+
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
 describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
     it('should show arguments markdown when a completed tool card is tapped open', () => {
@@ -160,5 +166,71 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
 
         expect(getByTestId('agents.tool_card.tu1.approve')).toBeTruthy();
         expect(getByTestId('agents.tool_card.tu1.reject')).toBeTruthy();
+    });
+});
+
+describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)', () => {
+    const pendingTools: ToolCall[] = [
+        makeTool({id: 'a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined}),
+        makeTool({id: 'b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined}),
+    ];
+
+    it('should accept every actionable tool in one tap', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a', 'b']);
+    });
+
+    it('should reject every actionable tool with an empty approved list', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.reject_all'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+    });
+
+    it('should suppress the status bar and per-card buttons for a viewer who cannot approve', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={false}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        expect(queryByTestId('agents.tool_approval_set.pending_decisions')).toBeNull();
+        expect(queryByTestId('agents.tool_approval_set.accept_all')).toBeNull();
+        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
+        expect(queryByTestId('agents.tool_card.b.approve')).toBeNull();
     });
 });

@@ -4,8 +4,14 @@
 #
 # NOTE: The "Schedule a message" tutorial tooltip may appear on the first channel visit.
 # Dismiss it via testID if present.
+#
+# Do NOT anchor on `channel.screen`: it is a plain SafeAreaView container that Maestro
+# does not resolve on either platform, so every flow that uses this sub-flow fails with
+# "Assertion is false: id: channel.screen is visible". The channel-item disappearing and
+# the composer appearing are the two anchors that are actually matchable here.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Expand the Channels category and open the test channel
 - runFlow: expand_channels_category.yml
 - extendedWaitUntil:
     visible:
@@ -13,13 +19,17 @@ appId: ${MAESTRO_APP_ID}
     timeout: 30000
 - tapOn:
     id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
-# Wait until the channel list item scrolls off-screen (confirms navigation started)
+
+# # Wait until the channel list item scrolls off-screen (confirms navigation started)
 - extendedWaitUntil:
     notVisible:
       id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
     timeout: 10000
-# Dismiss any "Schedule a message" tutorial tooltip if present
+
+# # Dismiss any "Schedule a message" tutorial tooltip if present
 - runFlow: dismiss_scheduled_post_tooltip.yml
+
+# * Verify the channel screen is up (post draft input is present)
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"

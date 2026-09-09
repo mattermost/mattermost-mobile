@@ -20,6 +20,7 @@ import {
     ChannelScreen,
     HomeScreen,
     LoginScreen,
+    PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
@@ -54,13 +55,11 @@ describe('Messaging - Post Display Behavior', () => {
 
         // # Post first message
         const firstMessage = `First message ${getRandomId()}`;
-        await ChannelScreen.postMessage(firstMessage);
-        const {post: firstPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: firstPost} = await ChannelScreen.postMessageAndVerify(firstMessage, testChannel.id, siteOneUrl);
 
         // # Post second consecutive message as the same user
         const secondMessage = `Second message ${getRandomId()}`;
-        await ChannelScreen.postMessage(secondMessage);
-        const {post: secondPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: secondPost} = await ChannelScreen.postMessageAndVerify(secondMessage, testChannel.id, siteOneUrl);
 
         // * Verify first post has a display name header
         const {postListPostItemHeaderDisplayName: firstPostHeader} = ChannelScreen.getPostListPostItem(firstPost.id, firstMessage);
@@ -74,9 +73,16 @@ describe('Messaging - Post Display Behavior', () => {
         await ChannelScreen.back();
     });
 
+    // Prove "left the bottom" by an older post becoming visible — not by a short
+    // newest row clearing Espresso's 50% not.toBeVisible() gate (Android 91px rows never did).
     it('MM-T216_1 - should scroll to bottom when sending a message after scrolling up', async () => {
         // # Create many posts via API to fill the channel history and enable scrolling
-        for (let i = 0; i < 20; i++) {
+        const oldestFillerMessage = `Filler post 0 ${getRandomId()}`;
+        const {post: oldestFillerPost} = await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: oldestFillerMessage,
+        });
+        for (let i = 1; i < 20; i++) {
             // eslint-disable-next-line no-await-in-loop
             await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message: `Filler post ${i} ${getRandomId()}`});
         }
@@ -90,16 +96,35 @@ describe('Messaging - Post Display Behavior', () => {
         const {postListPostItem: lastFillerItem} = ChannelScreen.getPostListPostItem(lastFillerPost.post.id, lastFillerPost.post.message);
         await waitFor(lastFillerItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Scroll up from mid-screen (bottom edge is occluded by the post-draft input on iOS).
-        await ChannelScreen.getFlatPostList().scroll(5000, 'up', 0.5, 0.5);
+        const {postListPostItem: oldestFillerItem} = ChannelScreen.getPostListPostItem(
+            oldestFillerPost.id,
+            oldestFillerMessage,
+        );
+
+        // # Scroll up from mid-screen until an older post arrives on screen.
+        // Small increments avoid long-press opening post-options over the draft input.
+        await waitFor(oldestFillerItem).toBeVisible(40).whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(300, 'up', 0.5, 0.5);
         await wait(timeouts.ONE_SEC);
+
+        // # Close the post-options sheet if a scroll gesture still tripped a long press.
+        let postOptionsOpen = true;
+        try {
+            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.HALF_SEC);
+        } catch {
+            postOptionsOpen = false;
+        }
+        if (postOptionsOpen) {
+            await PostOptionsScreen.close();
+        }
+
+        // * Re-verify an older post is on screen (list left the bottom) with no sheet open.
+        await expect(oldestFillerItem).toBeVisible(40);
 
         // # Send a new message from the UI
         const newMessage = `New bottom message ${getRandomId()}`;
-        await ChannelScreen.postMessage(newMessage);
 
         // * Verify the new message is visible (view scrolled to bottom)
-        const {post: lastPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: lastPost} = await ChannelScreen.postMessageAndVerify(newMessage, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(lastPost.id, newMessage);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 

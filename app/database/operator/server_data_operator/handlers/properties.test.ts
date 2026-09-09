@@ -131,6 +131,40 @@ describe('*** Operator: Properties Handlers tests ***', () => {
         });
     });
 
+    describe('=> handlePropertyFields (non-array resilience)', () => {
+        it('should treat a non-array fields value as empty', async () => {
+            // @ts-expect-error intentionally passing non-array to verify runtime guard
+            const result = await operator.handlePropertyFields({fields: {}, prepareRecordsOnly: false});
+            expect(result).toEqual([]);
+        });
+
+        it('should still prune by groupId when fields is non-array', async () => {
+            await operator.handlePropertyFields({fields: [makeField({id: 'stale'})], prepareRecordsOnly: false});
+
+            // @ts-expect-error intentionally passing non-array
+            await operator.handlePropertyFields({fields: null, groupId: 'group1', prepareRecordsOnly: false});
+
+            expect(await fetchFields('group1')).toHaveLength(0);
+        });
+    });
+
+    describe('=> handlePropertyValues (non-array resilience)', () => {
+        it('should treat a non-array values value as empty', async () => {
+            // @ts-expect-error intentionally passing non-array to verify runtime guard
+            const result = await operator.handlePropertyValues({values: {}, prepareRecordsOnly: false});
+            expect(result).toEqual([]);
+        });
+
+        it('should still prune by targetId when values is non-array', async () => {
+            await operator.handlePropertyValues({values: [makeValue({id: 'stale', target_id: 'target1'})], prepareRecordsOnly: false});
+
+            // @ts-expect-error intentionally passing non-array
+            await operator.handlePropertyValues({values: null, targetId: 'target1', prepareRecordsOnly: false});
+
+            expect(await fetchValues('target1')).toHaveLength(0);
+        });
+    });
+
     describe('=> handlePropertyFields (group sync)', () => {
         it('should upsert active fields and delete stale fields scoped to the group', async () => {
             await operator.handlePropertyFields({fields: [

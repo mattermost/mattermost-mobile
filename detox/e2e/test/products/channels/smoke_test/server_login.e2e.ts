@@ -16,6 +16,7 @@ import {
     siteOneUrl,
     serverTwoUrl,
     siteTwoUrl,
+    hasSecondServer,
 } from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -25,11 +26,9 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Skip MM-T4675_2 when SITE_2_URL is unset or equals SITE_1_URL (e.g. CMT single-server runs).
-const hasSecondServer = Boolean(process.env.SITE_2_URL) && process.env.SITE_2_URL !== process.env.SITE_1_URL;
 const itWithSecondServer = hasSecondServer ? it : it.skip;
 
 describe('Smoke Test - Server Login', () => {
@@ -72,16 +71,20 @@ describe('Smoke Test - Server Login', () => {
         // # Add a second server and log in to the second server
         const {error: adminLoginError} = await User.apiAdminLogin(siteTwoUrl);
         if (adminLoginError) {
-            // Site 2 may be unavailable (e.g. admin account locked from prior CI failures).
-            // Skip the rest of this test rather than failing the smoke run.
-            return;
+            throw new Error('MM-T4675_2: Site 2 admin login failed');
         }
         const {user} = await Setup.apiInit(siteTwoUrl);
-        await ServerListScreen.addServerButton.tap();
+
+        // tapAddServerButton, not a bare tap: the multi-server tutorial's full-screen
+        // backdrop SVG can intercept the hit-test at the button
+        await ServerListScreen.tapAddServerButton();
         await wait(timeouts.TWO_SEC);
         await waitFor(ServerScreen.headerTitleAddServer).toExist().withTimeout(timeouts.HALF_MIN);
         await ServerScreen.connectToServer(serverTwoUrl, serverTwoDisplayName);
-        await LoginScreen.login(user);
+
+        // login() retries via reload + reconnect to Server 1, which overruns the
+        // 300s Jest timeout on this add-server path. Stay on the current form.
+        await LoginScreen.loginWithRetryIfStuck(user);
 
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
@@ -89,48 +92,30 @@ describe('Smoke Test - Server Login', () => {
 
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
-        await wait(timeouts.ONE_SEC);
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
-        await wait(timeouts.TWO_SEC);
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverOneDisplayName), timeouts.TEN_SEC);
+        await ServerListScreen.switchToServer(serverOneDisplayName);
         await ServerListScreen.open();
-        await wait(timeouts.ONE_SEC);
-        if (isIos()) {
-            await ServerListScreen.serverListTitle.swipe('up');
-        } else if (isAndroid()) {
-            await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
-        }
-        await wait(timeouts.ONE_SEC);
-        await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
-        await wait(timeouts.ONE_SEC);
-
-        // .atIndex(0): the Swipeable's revealed Logout option can render twice
-        // briefly on iOS during the swipe-pan animation ("Multiple elements found"
-        // in CI run 26368981355). Matches the .atIndex(0) pattern used throughout
-        // the dedicated server_list spec.
-        await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).atIndex(0).tap();
+        await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
+        await ServerListScreen.swipeRevealAndTapOption(
+            serverTwoDisplayName,
+            ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
+        );
 
         // * Verify logout server alert is displayed
-        await expect(Alert.logoutTitle(serverTwoDisplayName)).toBeVisible();
+        await waitForElementToBeVisible(Alert.logoutTitle(serverTwoDisplayName), timeouts.TEN_SEC);
 
         // # Tap on logout button
+        await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
         await wait(timeouts.FOUR_SEC);
 
         // * Verify second server is logged out
-        await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
-        await wait(timeouts.ONE_SEC);
-        await expect(ServerListScreen.getServerItemLoginOption(serverTwoDisplayName).atIndex(0)).toBeVisible();
+        await ServerListScreen.swipeRevealOption(
+            serverTwoDisplayName,
+            ServerListScreen.getServerItemLoginOption(serverTwoDisplayName),
+        );
 
         // # Go back to first server
-        await ServerListScreen.getServerItemActive(serverOneDisplayName).tap();
+        await ServerListScreen.switchToServer(serverOneDisplayName);
     });
 });

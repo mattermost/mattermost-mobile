@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {isAndroid, isIos, longPressWithRetry, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
+        scrollView: 'post_options.scroll_view',
         pickReactionButton: 'post_options.reaction_bar.pick_reaction.button',
         replyPostOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
@@ -52,7 +53,7 @@ class PostOptionsScreen {
 
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
-        await waitFor(this.postOptionsScreen).toExist().withTimeout(timeout);
+        await waitForElementToExist(this.postOptionsScreen, timeout);
 
         return postOptionsScreen;
     };
@@ -62,12 +63,26 @@ class PostOptionsScreen {
             await this.postOptionsScreen.swipe('down');
         } else {
             await device.pressBack();
+            try {
+                await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
         }
         await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     deletePost = async ({confirm = true} = {}) => {
-        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        // On Android gorhom sheets, delete option may be below the fold.
+        // Guard scroll like tapPinOption — already-visible / non-scrollable sheets must not abort.
+        try {
+            await waitFor(this.deletePostOption).toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(200, 'down');
+        } catch {
+            // The option may already be visible or the sheet may not be scrollable.
+        }
+        await waitFor(this.deletePostOption).toExist().withTimeout(timeouts.TEN_SEC);
         await this.deletePostOption.tap({x: 1, y: 1});
         const {
             deletePostTitle,
@@ -79,11 +94,26 @@ class PostOptionsScreen {
         await expect(deleteButton).toBeVisible();
         if (confirm) {
             await deleteButton.tap();
-            await waitFor(this.postOptionsScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            } catch {
+                await this.close();
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
         } else {
             await cancelButton.tap();
             await wait(timeouts.TWO_SEC);
             await waitFor(this.postOptionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+            await this.close();
+        }
+    };
+
+    replyToPost = async () => {
+        await waitFor(this.replyPostOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await this.replyPostOption.tap();
+        try {
+            await waitForElementToNotExist(this.postOptionsScreen, timeouts.TEN_SEC);
+        } catch {
             await this.close();
         }
     };
@@ -96,6 +126,128 @@ class PostOptionsScreen {
     openPostOptionsForSearchedPosts = async (postId: string) => {
         await waitFor(this.searchedPostListItem(postId)).toExist().withTimeout(timeouts.TEN_SEC);
         await longPressWithRetry(this.searchedPostListItem(postId), this.postOptionsScreen);
+    };
+
+    // Gorhom + Reanimated keeps Detox's idle timer busy, so waitFor().withTimeout()
+    // never fires and Jest hits 300s (MM-T4909_5 / MM-T4911_3). Disable sync
+    // before any matcher, then poll. Corner tap avoids the row-center miss.
+    private tapSheetRowIos = async (option: Detox.NativeElement) => {
+        await withSynchronizationDisabled(async () => {
+            await waitForElementToExist(this.postOptionsScreen, timeouts.TEN_SEC);
+            await waitForElementToExist(option, timeouts.TEN_SEC);
+            await option.tap({x: 1, y: 1});
+            try {
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            } catch {
+                await option.tap({x: 1, y: 1});
+                await waitForElementToNotExist(this.postOptionsScreen, timeouts.FIVE_SEC);
+            }
+        });
+    };
+
+    private tapPostOption = async (
+        option: Detox.NativeElement,
+        optionLabel: Detox.NativeElement,
+        labelText: string,
+    ) => {
+        if (isIos()) {
+            await this.tapSheetRowIos(option);
+            return;
+        }
+
+        await this.toBeVisible();
+
+        // Android gorhom sheets + edge-to-edge: testID visibility can fail while the
+        // label text is hittable.
+        await device.disableSynchronization();
+        try {
+            const candidates = [
+                optionLabel,
+                option,
+                element(by.text(labelText).withAncestor(by.id(this.testID.postOptionsScreen))),
+            ];
+            /* eslint-disable no-await-in-loop */
+            for (const candidate of candidates) {
+                try {
+                    await waitFor(candidate).toExist().withTimeout(timeouts.TWO_SEC);
+                    await candidate.tap();
+                    return;
+                } catch {
+                    // try next matcher
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+            await optionLabel.tap();
+        } finally {
+            await safeEnableSynchronization();
+        }
+    };
+
+    tapSavePost = async () => {
+        await this.tapPostOption(this.savePostOption, this.savePostOptionLabel, 'Save');
+    };
+
+    tapUnsavePost = async () => {
+        await this.tapPostOption(this.unsavePostOption, this.unsavePostOptionLabel, 'Unsave');
+    };
+
+    private tapPinOption = async (option: Detox.NativeElement) => {
+        if (isIos()) {
+            await this.tapSheetRowIos(option);
+            return;
+        }
+
+        await this.toBeVisible();
+
+        try {
+            await waitFor(option).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // Already visible or the sheet is not scrollable.
+        }
+        await waitFor(option).toExist().withTimeout(timeouts.TEN_SEC);
+        await option.tap({x: 1, y: 1});
+    };
+
+    tapPinPost = async () => {
+        await this.tapPinOption(this.pinPostOption);
+    };
+
+    tapUnpinPost = async () => {
+        // The unpin option container is not 100% hittable (lower in the sheet),
+        // so tap the label — pin's option tap can succeed where unpin fails.
+        if (isIos()) {
+            await this.tapSheetRowIos(this.unpinPostOptionLabel);
+            return;
+        }
+        await this.toBeVisible();
+        try {
+            await waitFor(this.unpinPostOptionLabel).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // Already visible, not scrollable, or still below the fold — retry with direct scrolls.
+        }
+        const scrollView = element(by.id(this.testID.scrollView));
+        /* eslint-disable no-await-in-loop -- bounded visibility retry */
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                await waitFor(this.unpinPostOptionLabel).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                break;
+            } catch {
+                try {
+                    await scrollView.scroll(100, 'down');
+                } catch {
+                    // Sheet may not be scrollable.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await waitFor(this.unpinPostOptionLabel).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.unpinPostOptionLabel.tap();
     };
 }
 

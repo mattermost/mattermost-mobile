@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -63,41 +63,33 @@ class BrowseChannelsScreen {
         }
 
         // # Open browse channels screen from the channel list header plus button.
-        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
+        await ChannelListScreen.openPlusMenu();
 
-        const disableSyncForOpen = isAndroid();
-        if (disableSyncForOpen) {
-            await device.disableSynchronization();
-        }
-        try {
-            // On iOS, a UITransitionView (navigation animation overlay) can still be running
-            // when the element exists but is not yet hittable. Retry the tap up to 3 times
-            // with a short delay to let the transition complete.
-            let tapError: unknown;
-            /* eslint-disable no-await-in-loop -- sequential retry: each tap must complete before retrying */
-            for (let i = 0; i < 3; i++) {
-                try {
-                    await ChannelListScreen.headerPlusButton.tap();
-                    tapError = undefined;
-                    break;
-                } catch (err) {
-                    tapError = err;
-                    await wait(timeouts.ONE_SEC);
-                }
-            }
-            /* eslint-enable no-await-in-loop */
-            if (tapError) {
-                throw tapError;
-            }
-            await wait(timeouts.ONE_SEC);
+        // openPlusMenu disables synchronization for the plus tap on Android precisely because
+        // the app is busy there, but re-enables it in its own finally -- so this tap, one line
+        // later, met the same busy app with sync back on. Detox then waits for idle before
+        // dispatching, and MM-T1719_1 timed out with both RN loopers ("mqt_v_js",
+        // "mqt_v_native") executing and this exact invocation unanswered:
+        //   matcherForTestId("plus_menu_item.browse_channels") ... click
+        // Extend the same Android-only window over the menu-item tap. withSynchronizationDisabled
+        // is depth-counted, so it nests safely.
+        //
+        // NOTE: unverified against MM-T1719_1 -- that failure does not reproduce locally, clean
+        // or under CPU load. This closes a real gap in sync coverage and matches the treatment
+        // the adjacent tap already gets, but it is not confirmed to be the cause.
+        if (isAndroid()) {
+            await withSynchronizationDisabled(async () => {
+                await ChannelListScreen.browseChannelsItem.tap();
+            });
+        } else {
             await ChannelListScreen.browseChannelsItem.tap();
-        } finally {
-            if (disableSyncForOpen) {
-                await device.enableSynchronization();
-            }
         }
+        await wait(timeouts.ONE_SEC);
 
-        return this.toBeVisible();
+        // openPlusMenu disables sync on Android; wait for the screen before returning.
+        await waitForElementToExist(this.browseChannelsScreen, timeouts.TWENTY_SEC);
+
+        return this.browseChannelsScreen;
     };
 
     close = async () => {

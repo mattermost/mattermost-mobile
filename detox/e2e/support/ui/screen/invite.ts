@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {waitFor} from 'detox';
 
 class InviteScreen {
@@ -117,8 +117,12 @@ class InviteScreen {
     };
 
     open = async () => {
+        // Keep sync enabled while opening the plus menu — disableSynchronization
+        // around menu → Invite navigation amplifies Fabric addViewAt races on Android.
+        await ChannelListScreen.toBeVisible();
+        await waitFor(ChannelListScreen.headerPlusButton).toExist().withTimeout(timeouts.HALF_MIN);
         await ChannelListScreen.headerPlusButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await waitFor(ChannelListScreen.invitePeopleToTeamItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelListScreen.invitePeopleToTeamItem.tap();
 
         return this.toBeVisible();

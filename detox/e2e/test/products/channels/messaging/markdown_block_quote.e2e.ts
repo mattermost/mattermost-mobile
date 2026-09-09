@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -22,6 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isAndroid, timeouts, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Markdown Block Quote', () => {
@@ -53,12 +53,14 @@ describe('Messaging - Markdown Block Quote', () => {
         const message = 'this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile this is a quote that i am making long so it wraps on mobile';
         const markdownBlockQuote = `>${message}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownBlockQuote);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownBlockQuote, testChannel.id, siteOneUrl);
 
-        // * Verify markdown block quote is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // * Verify markdown block quote is displayed.
+        // waitForElementToBeVisible polls without requiring bridge idle; the Android markdown
+        // render keeps the bridge busy, so expect().toBeVisible() hits the synchronization timeout.
         const {postListPostItemBlockQuote} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemBlockQuote).toBeVisible(50);
+
+        await waitForElementToBeVisible(postListPostItemBlockQuote, isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC);
         await expect(element(by.text(message))).toBeVisible(50);
 
         // # Go back to channel list screen

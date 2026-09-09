@@ -2,7 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {renderHook} from '@testing-library/react-native';
-import React from 'react';
+import React, {type ComponentProps, type ReactElement} from 'react';
+import {Text, type ViewProps} from 'react-native';
+
+import Header from '@components/navigation_header/header';
+import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {
     getBottomSheetHeaderOptions,
@@ -10,14 +15,16 @@ import {
     getLoginFlowHeaderOptions,
     getLoginModalHeaderOptions,
     getModalHeaderOptions,
+    useAppNavigationHeader,
     useNavigationHeader,
 } from './navigation_header';
 
 import type {NavigationButtonProps} from '@components/navigation_button';
-import type {ViewProps} from 'react-native';
+import type {NativeStackHeaderProps, NativeStackNavigationOptions} from '@react-navigation/native-stack';
 
 const mockSetOptions = jest.fn();
 const mockCanGoBack = jest.fn();
+const mockBack = jest.fn();
 const mockNavigation = {
     setOptions: mockSetOptions,
 };
@@ -25,7 +32,12 @@ const mockRouter = {
     canGoBack: mockCanGoBack,
 };
 
+// navigateBack reaches for the router singleton rather than the useRouter hook
 jest.mock('expo-router', () => ({
+    router: {
+        canGoBack: () => mockCanGoBack(),
+        back: () => mockBack(),
+    },
     useNavigation: jest.fn(() => mockNavigation),
     useRouter: jest.fn(() => mockRouter),
 }));
@@ -249,6 +261,115 @@ describe('navigation_header', () => {
                 presentation: 'modal',
                 gestureEnabled: true,
                 animation: 'slide_from_right',
+            });
+        });
+    });
+
+    describe('useAppNavigationHeader', () => {
+        const lastHeader = () => {
+            const {header} = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+            return header as NonNullable<NativeStackNavigationOptions['header']>;
+        };
+
+        // React Navigation only supplies `back` when there is a screen to return to
+        const inBackStack = {title: 'Channel', href: undefined};
+
+        // navigateBack waits out the screen transition before resolving
+        const NAVIGATE_BACK_DELAY = 250;
+
+        type HeaderArgs = {
+            back?: NativeStackHeaderProps['back'];
+            headerRight?: NativeStackNavigationOptions['headerRight'];
+        };
+
+        const headerElement = ({back, headerRight}: HeaderArgs = {}) => {
+            return lastHeader()({back, options: {headerRight}} as NativeStackHeaderProps);
+        };
+
+        const headerProps = (args?: HeaderArgs) => {
+            return (headerElement(args) as ReactElement<ComponentProps<typeof Header>>).props;
+        };
+
+        const renderHeader = (args?: HeaderArgs) => renderWithIntlAndTheme(<>{headerElement(args)}</>);
+
+        afterEach(disableFakeTimers);
+
+        it('should replace the platform header with a custom one', () => {
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            expect(mockSetOptions).toHaveBeenCalledWith(expect.objectContaining({
+                headerShown: true,
+                presentation: 'card',
+                header: expect.any(Function),
+            }));
+        });
+
+        it('should render the given title', () => {
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            const {getByTestId} = renderHeader();
+
+            expect(getByTestId('navigation.header.title')).toHaveTextContent('Table');
+        });
+
+        // Screens register their own right side through setOptions after the hook runs
+        it('should forward the headerRight registered by the screen', () => {
+            renderHook(() => useAppNavigationHeader('Code'));
+
+            const {getByTestId} = renderHeader({headerRight: () => <Text testID='screen.header.right'>{'Copy'}</Text>});
+
+            expect(getByTestId('screen.header.right')).toBeTruthy();
+        });
+
+        it('should hide the back button when there is nothing to go back to', () => {
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            const {queryByTestId} = renderHeader();
+
+            expect(queryByTestId('navigation.header.back')).toBeNull();
+        });
+
+        it.each([
+            ['in a back stack', inBackStack, true],
+            ['at the root of the stack', undefined, false],
+        ])('should tell headerRight it can go back when %s', (_label, back, expected) => {
+            const headerRight = jest.fn(() => null);
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            headerElement({back, headerRight});
+
+            expect(headerRight).toHaveBeenCalledWith({canGoBack: expected});
+        });
+
+        it('should navigate back when the back button is pressed', async () => {
+            enableFakeTimers();
+            mockCanGoBack.mockReturnValue(true);
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            const {getByTestId} = renderHeader({back: inBackStack});
+            fireEvent.press(getByTestId('navigation.header.back'));
+            await advanceTimers(NAVIGATE_BACK_DELAY);
+
+            expect(mockBack).toHaveBeenCalledTimes(1);
+        });
+
+        it('should default to a plain, non-collapsing header', () => {
+            renderHook(() => useAppNavigationHeader('Table'));
+
+            expect(headerProps()).toMatchObject({
+                hasSearch: false,
+                heightOffset: 0,
+                isLargeTitle: false,
+            });
+        });
+
+        it('should pass through the search, offset and large title arguments', () => {
+            renderHook(() => useAppNavigationHeader('Table', true, 128, true));
+
+            expect(headerProps()).toMatchObject({
+                hasSearch: true,
+                heightOffset: 128,
+                isLargeTitle: true,
             });
         });
     });

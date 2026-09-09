@@ -120,16 +120,15 @@ const ChannelPostList = ({
     });
 
     const onViewablePostsChanged = useCallback((viewableItems: ViewToken[]) => {
-        let oldest = Infinity;
-        for (const {item, isViewable} of viewableItems) {
+        // assuming posts were queried in ascending order.
+        for (let i = viewableItems.length - 1; i >= 0; i--) {
+            const {item, isViewable} = viewableItems[i];
             if (isViewable && item.type === 'post') {
-                const createAt = item.value.currentPost.createAt;
-                if (createAt < oldest) {
-                    oldest = createAt;
-                }
+                EphemeralStore.setCurrentChannelOldestVisibleCreateAt(item.value.currentPost.createAt);
+                return;
             }
         }
-        EphemeralStore.setCurrentChannelOldestVisibleCreateAt(oldest < Infinity ? oldest : undefined);
+        EphemeralStore.setCurrentChannelOldestVisibleCreateAt(undefined);
     }, []);
 
     const intro = useMemo(() => (<Intro channelId={channelId}/>), [channelId]);

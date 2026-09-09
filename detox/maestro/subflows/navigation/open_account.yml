@@ -1,0 +1,34 @@
+# Sub-flow: open the Account tab after login.
+# Fresh login can leave Save Password / notification / scheduled-post overlays
+# on the account tab (same set AccountScreen.open dismisses). Retry the tab tap
+# so a swallowed first tap does not fail the account screen wait.
+appId: ${MAESTRO_APP_ID}
+---
+# # Dismiss the overlays a fresh login can leave over the account tab.
+# These three are matched by text on purpose. They are native dialogs, not app
+# views: "Not Now" is the iOS Save Password sheet, "Allow" is the OS
+# notification-permission prompt, and "Okay" comes from React Native's Alert.alert
+# (a UIAlertController), whose button API takes no testID. None of them appear in
+# the app's accessibility tree, so an id: selector cannot match them.
+- runFlow: dismiss_scheduled_post_tooltip.yml
+- tapOn:
+    text: "Not Now"
+    optional: true
+- tapOn:
+    text: "Okay"
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn:
+          id: "tab_bar.account.tab"
+      - tapOn:
+          text: "Not Now"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: "account.screen"
+          timeout: 15000

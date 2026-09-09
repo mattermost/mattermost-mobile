@@ -15,13 +15,19 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
+import {toMilliseconds} from '@utils/datetime';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
 import {showSnackBar} from '@utils/snack_bar';
 
 type ServerEntry =
     | {kind: 'zpm'}
-    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number};
+    | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number; cleanupDays: number};
+
+function parseNonNegativeConfigNumber(value: string | undefined): number {
+    const parsed = Number(value ?? '0');
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}
 
 // Conservative checkpoints since the offline-persistence timer is configured in whole
 // hours — a sub-minute heads-up isn't meaningful lead time at that scale.
@@ -120,7 +126,8 @@ class EphemeralModeManagerSingleton {
     };
 
     public getAutoCacheCleanupDays = (serverUrl: string): number => {
-        return this.cleanupDays[serverUrl] ?? 0;
+        const entry = this.trackedServers.get(serverUrl);
+        return entry?.kind === 'mem' ? entry.cleanupDays : 0;
     };
 
     public isZeroPersistenceMode = (serverUrl: string): boolean => {
@@ -155,8 +162,10 @@ class EphemeralModeManagerSingleton {
             // settings would otherwise deliver one partially-updated tuple per row.
             debounceTime(0, asapScheduler),
             distinctUntilChanged(
-                ([prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
-                    [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays]) =>
+                (
+                    [prevEnabled, prevTimeout, prevPurgeHours, prevCleanupDays],
+                    [nextEnabled, nextTimeout, nextPurgeHours, nextCleanupDays],
+                ) =>
                     prevEnabled === nextEnabled && prevTimeout === nextTimeout &&
                     prevPurgeHours === nextPurgeHours && prevCleanupDays === nextCleanupDays,
             ),
@@ -172,23 +181,19 @@ class EphemeralModeManagerSingleton {
         purgeHoursStr: string | undefined,
         cleanupDaysStr: string | undefined,
     ) => {
-        const currentTrackedServer = this.trackedServers.get(serverUrl);
-
         const nextEnabled = enabledStr === 'true';
-        const nextThresholdMs = Math.max(0, Number(timeoutStr ?? '0')) * 1000;
-        const nextPurgeHours = Math.max(0, Number(purgeHoursStr ?? '0'));
-        const nextPurgeThresholdMs = nextPurgeHours * 3600 * 1000;
-        const nextCleanupDays = Math.max(0, Number(cleanupDaysStr ?? '0'));
+        const nextThresholdMs = toMilliseconds({seconds: parseNonNegativeConfigNumber(timeoutStr)});
+        const nextPurgeHours = parseNonNegativeConfigNumber(purgeHoursStr);
+        const nextPurgeThresholdMs = toMilliseconds({hours: nextPurgeHours});
+        const nextCleanupDays = parseNonNegativeConfigNumber(cleanupDaysStr);
+        const wasActive = this.trackedServers.get(serverUrl)?.kind === 'mem';
 
-        const wasActive = currentTrackedServer?.kind === 'mem';
-        this.cleanupDays[serverUrl] = nextCleanupDays;
-
-        if (nextCleanupDays > 0) {
+        if (nextEnabled && nextCleanupDays > 0) {
             logDebug('EphemeralModeManager: auto cache cleanup config received, days:', nextCleanupDays, 'for', serverUrl);
         }
 
         if (nextEnabled && !wasActive) {
-            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs);
+            this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs, nextCleanupDays);
             showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
@@ -199,7 +204,7 @@ class EphemeralModeManagerSingleton {
         }
 
         if (nextEnabled && wasActive) {
-            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs});
+            this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs: nextThresholdMs, purgeThresholdMs: nextPurgeThresholdMs, cleanupDays: nextCleanupDays});
             this.enqueueEval(serverUrl, async () => {
                 await this.evaluateServer(serverUrl);
                 if (this.isOffline(serverUrl)) {
@@ -214,8 +219,8 @@ class EphemeralModeManagerSingleton {
         await setDisconnectedSince(serverUrl, null);
     };
 
-    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number) => {
-        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs});
+    private track = (serverUrl: string, thresholdMs: number, purgeThresholdMs: number, cleanupDays: number) => {
+        this.trackedServers.set(serverUrl, {kind: 'mem', thresholdMs, purgeThresholdMs, cleanupDays});
         this.ensureAppStateListener();
 
         // skip(1) drops the BehaviorSubject's replay of the current WS state so it

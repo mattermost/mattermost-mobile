@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -74,13 +74,18 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
         await ChannelScreen.dismissScheduledPostTooltip();
 
-        // * Verify on newly created public channel
+        // * Verify on newly created public channel.
+        // The intro is the post list's ListFooterComponent, so it only mounts once the
+        // list has finished its initial load — the header title lands first. Detox
+        // expectations do not poll, so asserting the intro text directly fails the
+        // instant the header appears while the list is still loading. Wait for it to
+        // exist first, matching channel_post_list.e2e.ts.
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, displayName, timeouts.HALF_MIN);
 
         // # Tap on set header action to edit the channel header
         await ChannelScreen.introSetHeaderAction.tap();
@@ -121,12 +126,12 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await CreateOrEditChannelScreen.purposeInput.replaceText(purpose);
         await CreateOrEditChannelScreen.headerInput.replaceText(header);
-        await CreateOrEditChannelScreen.createButton.tap();
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
 
-        // * Verify on newly created private channel
+        // * Verify on newly created private channel (same intro mount race as above)
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(displayName);
-        await expect(ChannelScreen.introDisplayName).toHaveText(displayName);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, displayName, timeouts.HALF_MIN);
 
         // # Tap on set header action to edit the channel header
         await ChannelScreen.introSetHeaderAction.tap();

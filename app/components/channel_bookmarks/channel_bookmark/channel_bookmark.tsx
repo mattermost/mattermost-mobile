@@ -104,13 +104,13 @@ const ChannelBookmark = ({
     return (
         <Animated.View
             ref={ref}
-            testID={`channel_bookmark.${bookmark.id}`}
         >
             <Pressable
                 accessibilityRole='button'
                 style={({pressed}) => [styles.pressable, pressed && {opacity: 0.72}]}
                 onPress={onGestureEvent}
                 onLongPress={handleLongPress}
+                testID={`channel_bookmark.${bookmark.id}`}
             >
                 <BookmarkDetails
                     bookmark={bookmark}

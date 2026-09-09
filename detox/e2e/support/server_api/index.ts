@@ -4,7 +4,7 @@
 import Bot from './bot';
 import Channel from './channel';
 import ChannelBookmark from './channel_bookmark';
-import Command from './command';
+import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command';
 import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
 import Playbooks from './playbooks';
@@ -17,6 +17,7 @@ import Setup from './setup';
 import Status from './status';
 import System from './system';
 import Team from './team';
+import TermsOfService from './terms_of_service';
 import User from './user';
 import Webhook from './webhook';
 
@@ -27,6 +28,8 @@ export {
     Channel,
     ChannelBookmark,
     Command,
+    apiGetTeamCommands,
+    waitForSlashCommandTrigger,
     CustomProfileAttributes,
     DemoPlugin,
     Ldap,
@@ -40,6 +43,7 @@ export {
     Status,
     System,
     Team,
+    TermsOfService,
     User,
     Webhook,
 };

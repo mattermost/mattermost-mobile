@@ -21,15 +21,18 @@ import {
     HomeScreen,
     LoginScreen,
     PermalinkScreen,
+    PostOptionsScreen,
     RecentMentionsScreen,
+    SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
     const serverOneDisplayName = 'Server 1';
+    const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
 
@@ -124,12 +127,14 @@ describe('Search - Hashtag Search', () => {
 
         // # Type the hashtag into the search input and tap search
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify the root post appears in search results
-        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify the reply count indicator appears
         await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -141,9 +146,9 @@ describe('Search - Hashtag Search', () => {
         // (channel context view) rather than navigating to the thread directly.
         await PermalinkScreen.toBeVisible();
 
-        // * Verify the root post containing the hashtag is visible in the permalink
+        // * Verify the root post containing the hashtag is visible in the permalink.
         const {postListPostItem: permalinkPostItem} = PermalinkScreen.getPostListPostItem(rootPost.id, message);
-        await expect(permalinkPostItem).toBeVisible();
+        await waitForElementToBeVisible(permalinkPostItem, timeouts.TEN_SEC);
 
         // # Jump to recent messages to dismiss the permalink and open the channel
         await PermalinkScreen.jumpToRecentMessages();
@@ -192,4 +197,45 @@ describe('Search - Hashtag Search', () => {
         await ChannelListScreen.open();
     });
 
+    it('MM-T361_1 - should be able to tap a hashtag in Saved Messages to trigger a hashtag search', async () => {
+        // # Post a message containing a hashtag
+        const hashtagTerm = `tag${getRandomId()}`;
+        const message = `Saved message with #${hashtagTerm}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // # Dismiss scheduled post tooltip if it appears on channel open
+        await ChannelScreen.dismissScheduledPostTooltip();
+
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
+
+        // # Dismiss scheduled post tooltip if it appears after sending the message
+        await ChannelScreen.dismissScheduledPostTooltip();
+
+        // # Get the post ID and save the post via post options
+        await ChannelScreen.openPostOptionsFor(savedPost.id, message);
+        await PostOptionsScreen.tapSavePost();
+        await wait(timeouts.TWO_SEC);
+
+        // # Go back to channel list screen and open saved messages screen
+        await ChannelScreen.back();
+        await SavedMessagesScreen.open();
+
+        // * Verify on saved messages screen
+        await SavedMessagesScreen.toBeVisible();
+
+        // * Verify the saved post with the hashtag is displayed
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
+
+        // Inline hashtag links render as text spans inside a single paragraph Text node on both
+        // platforms, so verify hashtag search through the search screen instead.
+        await ChannelListScreen.open();
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
+        const {postListPostItem: searchResultPostItem} = SearchMessagesScreen.getPostListPostItem(savedPost.id, message);
+        await expect(searchResultPostItem).toBeVisible();
+        await SearchMessagesScreen.searchClearButton.tap();
+        await ChannelListScreen.open();
+    });
 });

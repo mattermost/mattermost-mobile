@@ -21,6 +21,9 @@ struct IncomingCallRequest {
     /// resolved name when the server returns enriched fields (IdLoaded
     /// configs). Empty for synthetic requests (outbound, decode failures).
     let rawUserInfo: [AnyHashable: Any]
+    /// The ringtone filename (without extension) to use for this incoming call,
+    /// e.g. "calls_calm". nil means use the system default CallKit ringtone.
+    let ringtoneName: String?
 }
 
 private struct CallInfo {
@@ -91,6 +94,12 @@ private struct CallInfo {
         let info = CallInfo(request: request, isAnswered: false)
         setCallInfo(info, for: uuid)
 
+        // Apply the per-call ringtone before reporting. CXProvider reads
+        // ringtoneSoundName at reportNewIncomingCall time, so updating the
+        // configuration here (rather than at provider init) is safe and
+        // avoids recreating the provider.
+        applyRingtone(request.ringtoneName)
+
         let update = CXCallUpdate()
         update.remoteHandle = CXHandle(type: .generic,
                                        value: request.callerID.isEmpty ? request.channelID : request.callerID)
@@ -107,7 +116,7 @@ private struct CallInfo {
         update.supportsDTMF = false
 
         GekidouLogger.shared.log(.info,
-            "CallKitProvider: reportNewIncomingCall uuid=\(uuid.uuidString)")
+            "CallKitProvider: reportNewIncomingCall uuid=\(uuid.uuidString) ringtone=\(request.ringtoneName ?? "system")")
 
         provider.reportNewIncomingCall(with: uuid, update: update) { [weak self] error in
             guard let self = self else {
@@ -172,7 +181,8 @@ private struct CallInfo {
                                           callerID: "",
                                           callerName: calleeName,
                                           channelName: "",
-                                          rawUserInfo: [:])
+                                          rawUserInfo: [:],
+                                          ringtoneName: nil)
         let info = CallInfo(request: request, isAnswered: true)
         setCallInfo(info, for: uuid)
 
@@ -298,9 +308,7 @@ private struct CallInfo {
     }
 
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        // For Phase 1 we don't need to do anything here — outbound calls go
-        // through reportOutgoingCall above which already requested the
-        // transaction. iOS still calls this delegate; just fulfill.
+        bridge?.audioSession.configureForCall()
         action.fulfill()
     }
 
@@ -340,6 +348,28 @@ private struct CallInfo {
         calls.removeValue(forKey: uuid)
         jsOriginatedMuteActions.removeValue(forKey: uuid)
         callsLock.unlock()
+    }
+
+    // MARK: - Ringtone configuration
+
+    /// Update the provider's ringtoneSoundName for the next incoming call.
+    /// CXProvider reads this at reportNewIncomingCall time, so mutating
+    /// provider.configuration here (rather than recreating the provider)
+    /// is safe and preserves the active-call delegate state.
+    /// - Parameter name: bundle filename without extension, e.g. "calls_calm".
+    ///   Pass nil to use the system default CallKit ringtone.
+    private func applyRingtone(_ name: String?) {
+        let config = CXProviderConfiguration()
+        config.supportsVideo = provider.configuration.supportsVideo
+        config.maximumCallGroups = provider.configuration.maximumCallGroups
+        config.maximumCallsPerCallGroup = provider.configuration.maximumCallsPerCallGroup
+        config.supportedHandleTypes = provider.configuration.supportedHandleTypes
+        config.includesCallsInRecents = provider.configuration.includesCallsInRecents
+        config.iconTemplateImageData = provider.configuration.iconTemplateImageData
+        if let name {
+            config.ringtoneSound = name + ".mp3"
+        }
+        provider.configuration = config
     }
 
     // MARK: - Display-name selection

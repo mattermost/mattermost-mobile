@@ -23,19 +23,22 @@ import {
     HomeScreen,
     LoginScreen,
     ServerScreen,
+    ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
+import {waitFor} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testUser = user;
 
         // Enable CRT for global threads UI.
         await System.apiUpdateConfig(siteOneUrl, {
@@ -60,12 +63,15 @@ describe('Threads - Save and Unsave Thread', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4808_2 - should be able to save/unsave a thread via thread overview', async () => {
+    it('MM-T4808_1 - should be able to save/unsave a thread via thread options', async () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
+        const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
+        await waitForElementToBeVisible(postListPostItem, timeouts.FOUR_SEC);
+
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -74,7 +80,49 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
+
+        // # Open thread options for thread, tap on save option, and tap on thread
+        await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
+        await ThreadOptionsScreen.tapSaveThread();
+
+        // SaveOption dismisses the sheet before savePostPreference; wait for the flag.
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, parentPost.id);
+        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
+
+        // * Verify the thread is saved via ThreadOverview unsave button (.atIndex(0) for stale off-screen mounts).
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // # Go back to global threads screen, open thread options for thread, tap on unsave option, and tap on thread
+        await ThreadScreen.back();
+        await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
+        await ThreadOptionsScreen.tapUnsaveThread();
+        await Post.waitForPostUnflagged(siteOneUrl, testUser.id, parentPost.id);
+        await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
+
+        // * Verify the thread is unsaved.
+        await waitFor(ThreadScreen.getThreadOverviewSaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        // # Go back to channel list screen
+        await ThreadScreen.back();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T4808_2 - should be able to save/unsave a thread via thread overview', async () => {
+        // # Create a thread, go back to channel list screen, and then go to global threads screen
+        const parentMessage = `Message ${getRandomId()}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
+        await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
+        const replyMessage = `${parentMessage} reply`;
+        await ThreadScreen.postMessage(replyMessage);
+        await ThreadScreen.back();
+        await ChannelScreen.back();
+        await GlobalThreadsScreen.open();
+
+        // * Verify thread is displayed
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Tap on thread and tap on thread overview save button
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();

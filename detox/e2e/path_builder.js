@@ -6,7 +6,15 @@ const path = require('path');
 const sanitizeFilename = require('sanitize-filename');
 
 const SANITIZE_OPTIONS = {replacement: '_'};
-const sanitize = (filename) => sanitizeFilename(filename, SANITIZE_OPTIONS);
+
+// `/` is illegal in filesystem paths. sanitize-filename turns it into `_`, which
+// breaks TSIO screenshot linking (folder basename must match Jest fullName).
+// Use U+2215 DIVISION SLASH so the folder stays unique and TSIO can reverse it.
+const PATH_SEP_TOKEN = '\u2215';
+const sanitize = (filename) => sanitizeFilename(
+    String(filename).replaceAll('/', PATH_SEP_TOKEN),
+    SANITIZE_OPTIONS,
+);
 
 class CustomPathBuilder {
     constructor({rootDir}) {

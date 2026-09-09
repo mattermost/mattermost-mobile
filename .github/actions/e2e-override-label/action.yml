@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Resolve E2E/Override label
+description: >-
+  Report whether E2E/Override is currently set on a PR, so a TSIO result landing
+  after the label was applied does not re-red a check the maintainer bypassed.
+
+  The lookup lives here rather than in detox/utils/tsio-report-status.js: talking
+  to GitHub belongs in the Actions layer, and the reporter stays a utility that
+  acts on its inputs.
+
+inputs:
+  pr_number:
+    description: Pull request number. Empty for main / CMT runs, where no label can apply.
+    required: false
+    default: ''
+
+outputs:
+  override:
+    description: '"true" when E2E/Override is set on the PR, "false" otherwise'
+    value: ${{ steps.check.outputs.override }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        PR_NUMBER: ${{ inputs.pr_number }}
+      with:
+        script: |
+          const prNumber = parseInt(process.env.PR_NUMBER, 10);
+          if (!Number.isFinite(prNumber)) {
+            core.info('No PR number for this run — E2E/Override cannot apply.');
+            core.setOutput('override', 'false');
+            return;
+          }
+
+          try {
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const override = labels.some((label) => label.name === 'E2E/Override');
+            core.info(`PR #${prNumber} E2E/Override=${override}`);
+            core.setOutput('override', override ? 'true' : 'false');
+          } catch (err) {
+            // Fail closed: an unreadable label list must not turn a real failure green.
+            core.warning(`Could not read labels for PR #${prNumber}: ${err.message}`);
+            core.setOutput('override', 'false');
+          }

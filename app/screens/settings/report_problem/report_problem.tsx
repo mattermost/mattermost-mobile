@@ -6,20 +6,11 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
-import {DEFAULT_REPORT_A_PROBLEM_EMAIL} from '@constants/report_a_problem';
 import {navigateToSettingsScreen} from '@screens/navigation';
-import {emailLogs, getDefaultReportAProblemLink} from '@utils/share_logs';
-import {tryOpenURL} from '@utils/url';
-
-import type {ReportAProblemMetadata} from '@typings/screens/report_a_problem';
 
 type ReportProblemProps = {
     allowDownloadLogs?: boolean;
-    isFreeEdition?: boolean;
-    reportAProblemMail?: string;
     reportAProblemType?: string;
-    siteName?: string;
-    metadata: ReportAProblemMetadata;
 }
 
 const messages = defineMessages({
@@ -29,33 +20,19 @@ const messages = defineMessages({
 
 const ReportProblem = ({
     allowDownloadLogs,
-    isFreeEdition,
-    reportAProblemMail,
     reportAProblemType,
-    siteName,
-    metadata,
 }: ReportProblemProps) => {
     const intl = useIntl();
+
+    // When the admin hides the report action there is nothing to report to, but the screen is
+    // still useful to get to the app logs.
     const onlyAllowLogs = allowDownloadLogs && reportAProblemType === 'hidden';
-    const skipReportAProblemScreen =
-        (reportAProblemType === 'email' && !allowDownloadLogs) ||
-        (reportAProblemType === 'default' && isFreeEdition === true) ||
-        (reportAProblemType === 'default' && isFreeEdition === false && !allowDownloadLogs);
 
     const onPress = useCallback(() => {
-        if (skipReportAProblemScreen) {
-            if (reportAProblemType === 'default' && isFreeEdition) {
-                tryOpenURL(getDefaultReportAProblemLink(false));
-            } else {
-                const mail = reportAProblemType === 'default' ? DEFAULT_REPORT_A_PROBLEM_EMAIL : reportAProblemMail;
-                emailLogs(metadata, siteName, mail, !allowDownloadLogs);
-            }
-            return;
-        }
         const message = onlyAllowLogs ? messages.downloadLogs : messages.reportProblem;
         const title = intl.formatMessage(message);
         navigateToSettingsScreen(Screens.REPORT_PROBLEM, {title});
-    }, [allowDownloadLogs, intl, isFreeEdition, metadata, onlyAllowLogs, reportAProblemMail, reportAProblemType, siteName, skipReportAProblemScreen]);
+    }, [intl, onlyAllowLogs]);
 
     if (onlyAllowLogs) {
         return (

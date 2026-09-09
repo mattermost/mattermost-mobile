@@ -22,6 +22,7 @@ class UserProfileScreen {
         userPositionDescription: 'user_profile.position.description',
         userLocalTimeTitle: 'user_profile.local_time.title',
         userLocalTimeDescription: 'user_profile.local_time.description',
+        customAttributesList: 'user_profile.custom_attributes.list',
     };
 
     userProfileScreen = element(by.id(this.testID.userProfileScreen));

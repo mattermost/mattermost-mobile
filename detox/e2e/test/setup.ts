@@ -8,6 +8,9 @@ import {existsSync} from 'fs';
 import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {safeEnableSynchronization} from '@support/utils';
+
+import {logError, logWarn} from '../../provision/log';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -101,17 +104,24 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    const HEALTH_MAX_ATTEMPTS = 5;
+    // 8 attempts with 3s*n backoff is 84s of sleeping on its own, and each attempt can
+    // additionally spend the API client's whole retry budget. That overruns the 360s
+    // beforeAll before the attempts are even used up, which reports as a bare Jest hook
+    // timeout instead of "the server is not healthy". Bound the total instead.
+    const HEALTH_MAX_ATTEMPTS = 8;
+    const HEALTH_DEADLINE_MS = 150_000;
+    const healthDeadlineAt = Date.now() + HEALTH_DEADLINE_MS;
     for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
         try {
             await System.apiCheckSystemHealth(siteOneUrl);
             break;
         } catch (error) {
-            if (healthAttempt === HEALTH_MAX_ATTEMPTS) {
+            const backoffMs = 3000 * healthAttempt;
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS || Date.now() + backoffMs >= healthDeadlineAt) {
                 throw error;
             }
             console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
-            await new Promise((resolve) => setTimeout(resolve, 3000 * healthAttempt));
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
         }
     }
 
@@ -130,7 +140,6 @@ async function loginAdmin(): Promise<void> {
         const {error: meError} = await User.apiGetMe(siteOneUrl);
         if (!meError) {
             console.info(`✅ Admin session verified on attempt ${attempt}`);
-            await ensureServerConfigForE2E();
             return;
         }
         if (attempt === MAX_ATTEMPTS) {
@@ -141,20 +150,35 @@ async function loginAdmin(): Promise<void> {
     }
 }
 
-// E2E feature flags — idempotent per call; module-level flags reset each test file (setupFilesAfterEnv).
-async function ensureServerConfigForE2E(): Promise<void> {
-    try {
-        const {config, error} = await System.apiGetConfig(siteOneUrl);
-        if (!error && config?.FeatureFlags?.ChannelBookmarks === true) {
-            return; // Already set — skip the patch and the resulting server load.
+function recoverAndroidDevice(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+
+    const commands = [
+        'adb shell input keyevent KEYCODE_WAKEUP',
+        'adb shell wm dismiss-keyguard',
+        'adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS',
+        'adb shell svc power stayon true',
+    ];
+    for (const command of commands) {
+        try {
+            execSync(command, {stdio: 'pipe', timeout: 5_000});
+        } catch {
+            // Best effort — an unavailable command must not mask the launch error.
         }
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {ChannelBookmarks: true},
-        });
-        console.info('✅ E2E server config initialized (FeatureFlags.ChannelBookmarks=true)');
-    } catch (err) {
-        // Non-fatal: gated tests fail on their own if config patch did not apply.
-        console.warn(`⚠️ ensureServerConfigForE2E failed: ${(err as Error).message}`);
+    }
+
+    // Record what actually holds focus, so a repeat failure is diagnosable from the
+    // job log instead of only from the Espresso view dump.
+    try {
+        const focus = execSync(
+            "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 5_000},
+        );
+        logWarn(`[recoverAndroidDevice] window focus: ${focus.replace(/\s+/g, ' ').trim().slice(0, 300)}`);
+    } catch {
+        logError('[recoverAndroidDevice] could not read window focus from dumpsys');
     }
 }
 
@@ -291,7 +315,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
 
@@ -320,6 +344,7 @@ beforeAll(async () => {
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
+                recoverAndroidDevice();
                 await forceAndroidDataClear();
                 await ensureAndroidMetroReverse();
             }

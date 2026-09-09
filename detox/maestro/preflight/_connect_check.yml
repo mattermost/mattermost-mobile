@@ -1,0 +1,44 @@
+# Pre-flight check — NOT part of the reported suite and NOT a test case, so it carries no
+# Zephyr header (underscore prefix, matching validate-flow-headers.sh, which skips _*.yml
+# and only scans flows/**).
+#
+# Verifies the device can actually reach SITE_1_URL and register the server before any
+# reported flow runs, so an infrastructure problem is reported as an infrastructure
+# problem instead of as a test failure in whichever flow happens to run first.
+#
+# Why this exists: on CI 30466684108 the iOS simulator's TLS handshake to SITE_1_URL was
+# cancelled during trust evaluation ("Cancelled during verify block", NSURLErrorDomain
+# -1200 with NSURLErrorFailingURLPeerTrustErrorKey) against a valid Let's Encrypt chain,
+# while the runner itself had reached the same host over HTTPS minutes earlier to seed
+# test data. The app issued zero /api/v4 requests and the failure surfaced as a home-tab
+# assertion inside a flow — three quarantined tags were misattributed to "cold-start
+# login" this way. Running the connect path once up front also warms the device's trust
+# evaluation before the reported flows.
+#
+# This flow lives outside flows/<category>/ so run_ci_batches.sh never picks it up.
+appId: ${MAESTRO_APP_ID}
+---
+# # Launch from a clean state to simulate a fresh install
+- launchApp:
+    stopApp: true
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 45000
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# * Verify the server form is shown — a fresh install always shows it once the JS bundle loads.
+- extendedWaitUntil:
+    visible:
+      id: "server_form.display_help"
+    timeout: 180000
+
+# # Register the server
+- runFlow: ../subflows/server/connect_server_ios.yml
+
+# * Verify we reached the login form, which proves TLS + server registration worked end to end.
+- extendedWaitUntil:
+    visible:
+      id: "login_form.forgot_password.button"
+    timeout: 120000

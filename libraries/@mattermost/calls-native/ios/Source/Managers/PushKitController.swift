@@ -58,7 +58,8 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
                 IncomingCallRequest(channelID: "", serverID: "",
                                     postID: "", threadID: "",
                                     callerID: "", callerName: "",
-                                    channelName: "", rawUserInfo: [:]),
+                                    channelName: "", rawUserInfo: [:],
+                                    ringtoneName: nil),
                 pushCompletion: completion
             )
             return
@@ -75,6 +76,10 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
         GekidouLogger.shared.log(.info,
             "PushKitController: VoIP push received channelID=\(channelID)")
 
+        // Resolve the user's ringtone preference synchronously from the
+        // per-server DB via Gekidou so CallKit plays the right sound.
+        let ringtoneName = Self.resolveRingtoneName(serverID: serverID)
+
         // SYNCHRONOUS report — iOS 13+ enforces that this call happens
         // before `pushRegistry:didReceiveIncomingPush:...` returns.
         bridge.callKitProvider.reportIncomingCall(
@@ -86,9 +91,24 @@ final class PushKitController: NSObject, PKPushRegistryDelegate {
                 callerID: senderID,
                 callerName: senderName,
                 channelName: channelName,
-                rawUserInfo: dict
+                rawUserInfo: dict,
+                ringtoneName: ringtoneName
             ),
             pushCompletion: completion
         )
+    }
+
+    // MARK: - Ringtone resolution
+
+    /// Resolve the user's preferred ringtone from the Gekidou DB.
+    /// Mirrors the JS `getRingtoneOrNone` mobile-only logic:
+    ///   - If calls_mobile_sound is not "true" → nil (system default)
+    ///   - Otherwise → "calls_<tone>" (e.g. "calls_calm")
+    /// Returns nil on any DB error so the system default is used as fallback.
+    private static func resolveRingtoneName(serverID: String) -> String? {
+        guard !serverID.isEmpty,
+              let serverUrl = try? Gekidou.Database.default.getServerUrlForServer(serverID)
+        else { return nil }
+        return Gekidou.Database.default.queryRingtoneForCurrentUser(serverUrl)
     }
 }

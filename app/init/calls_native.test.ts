@@ -17,7 +17,7 @@ import {
     getNativeCallMapping,
     setNativeCallMapping,
 } from '@calls/native_call';
-import {getCurrentCall, setMicPermissionsGranted} from '@calls/state';
+import {getCurrentCall, getCallsState, setMicPermissionsGranted} from '@calls/state';
 import {Device} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerByIdentifier} from '@queries/app/servers';
@@ -53,6 +53,7 @@ jest.mock('@managers/websocket_manager', () => ({
 }));
 jest.mock('@calls/state', () => ({
     getCurrentCall: jest.fn(),
+    getCallsState: jest.fn(() => ({calls: {}})),
     setMicPermissionsGranted: jest.fn(),
 }));
 jest.mock('@queries/app/servers', () => ({
@@ -205,8 +206,45 @@ describe('onIncomingCall', () => {
             channelId: 'ch1',
             postId: 'p1',
             threadId: 't1',
+            callId: '',
         });
         expect(CallsNative.reportEnded).not.toHaveBeenCalled();
+    });
+
+    it('seeds callId from state when call_started arrived before the VoIP push', async () => {
+        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce({url: SERVER_URL});
+        jest.mocked(getCallsState).mockReturnValueOnce({calls: {'ch1': {id: 'call-1'}}} as any);
+        const {onIncomingCall} = loadAndInit();
+
+        await onIncomingCall({
+            uuid: 'u1',
+            serverId: 's1',
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callerId: '',
+            callerName: '',
+        });
+
+        expect(setNativeCallMapping).toHaveBeenCalledWith('u1', expect.objectContaining({callId: 'call-1'}));
+    });
+
+    it('sets empty callId when call_started has not yet arrived', async () => {
+        (getServerByIdentifier as jest.Mock).mockResolvedValueOnce({url: SERVER_URL});
+        jest.mocked(getCallsState).mockReturnValueOnce({calls: {}} as any);
+        const {onIncomingCall} = loadAndInit();
+
+        await onIncomingCall({
+            uuid: 'u1',
+            serverId: 's1',
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callerId: '',
+            callerName: '',
+        });
+
+        expect(setNativeCallMapping).toHaveBeenCalledWith('u1', expect.objectContaining({callId: ''}));
     });
 
     it('opens the WS to the call server so live events arrive while ringing', async () => {

@@ -165,4 +165,7 @@ describe('Account - Profile Picture', () => {
         await HomeScreen.channelListTab.tap();
         await ChannelListScreen.toBeVisible();
     });
+
+    // MM-T3260 moved to maestro/flows/account/help_url.yml: Help opens system browser UI
+    // (Chrome / SFSafariViewController) that Detox cannot control.
 });

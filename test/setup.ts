@@ -149,12 +149,26 @@ jest.mock('@mattermost/calls-native', () => ({
         setMuted: jest.fn(() => Promise.resolve()),
         foregroundServiceStart: jest.fn(),
         foregroundServiceStop: jest.fn(),
+        startAudioSession: jest.fn(() => Promise.resolve()),
+        stopAudioSession: jest.fn(() => Promise.resolve()),
+        setAudioRoute: jest.fn(() => Promise.resolve()),
+        getAudioRoute: jest.fn(() => Promise.resolve({selectedAudioDevice: 'SPEAKER_PHONE', availableAudioDeviceList: ['SPEAKER_PHONE', 'EARPIECE']})),
+        startRingtone: jest.fn(() => Promise.resolve()),
+        stopRingtone: jest.fn(() => Promise.resolve()),
         onVoIPTokenUpdated: jest.fn(() => ({remove: jest.fn()})),
         onIncomingCall: jest.fn(() => ({remove: jest.fn()})),
         onCallAnswered: jest.fn(() => ({remove: jest.fn()})),
         onCallDeclined: jest.fn(() => ({remove: jest.fn()})),
         onCallEnded: jest.fn(() => ({remove: jest.fn()})),
         onMuteChanged: jest.fn(() => ({remove: jest.fn()})),
+        onAudioRouteChanged: jest.fn(() => ({remove: jest.fn()})),
+    },
+    AudioDevice: {
+        Speakerphone: 'SPEAKER_PHONE',
+        Earpiece: 'EARPIECE',
+        Bluetooth: 'BLUETOOTH',
+        WiredHeadset: 'WIRED_HEADSET',
+        None: 'NONE',
     },
 }));
 
@@ -306,6 +320,9 @@ jest.doMock('react-native', () => {
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
 
             deleteDatabaseDirectory: jest.fn(),
+
+            beginDatabaseActivity: jest.fn().mockResolvedValue('token-1'),
+            endDatabaseActivity: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({
@@ -572,18 +589,21 @@ jest.mock('react-native-share', () => ({
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    AuthenticationOutcome: {
+        Failed: 'E_AUTH_FAILED',
+        Cancelled: 'E_CANCELLED',
+        Indeterminate: 'E_INDETERMINATE',
+    },
     addListener: jest.fn(),
-    authenticate: async () => {
-        return true;
-    },
+    applyBlurEffect: jest.fn(),
+    authenticate: jest.fn(async () => true),
+    enableBlurScreen: jest.fn(),
+    exitApp: jest.fn(),
     getManagedConfig: <T>() => ({} as T),
-    isDeviceSecured: async () => {
-        return true;
-    },
-    openSecuritySettings: () => jest.fn(),
-    setAppGroupId: () => {
-        return '';
-    },
+    isDeviceSecured: jest.fn(async () => true),
+    openSecuritySettings: jest.fn(),
+    removeBlurEffect: jest.fn(),
+    setAppGroupId: jest.fn(() => ''),
     useManagedConfig: () => ({}),
 }));
 

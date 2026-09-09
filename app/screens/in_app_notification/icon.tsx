@@ -86,7 +86,7 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
     );
 };
 
-const enhanced = withObservables([], ({database, senderId}: WithDatabaseArgs & {senderId: string}) => {
+const enhanced = withObservables(['senderId'], ({database, senderId}: WithDatabaseArgs & {senderId: string}) => {
     const author = observeUser(database, senderId);
 
     return {

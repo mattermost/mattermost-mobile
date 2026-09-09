@@ -6,11 +6,12 @@ import {
     PostList,
 } from '@support/ui/component';
 import {
+    ChannelScreen,
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, longPressWithRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect} from 'detox';
+import {isAndroid, isIos, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
@@ -76,22 +77,69 @@ class RecentMentionsScreen {
 
     open = async () => {
         // # Open recent mentions screen
+        if (isIos()) {
+            await wait(timeouts.TWO_SEC);
+            await HomeScreen.mentionsTab.tap();
+            try {
+                return await this.toBeVisible();
+            } catch {
+                // Tab tap can miss under sync-off — retry once.
+                await HomeScreen.mentionsTab.tap();
+                return this.toBeVisible();
+            }
+        }
+
         await HomeScreen.mentionsTab.tap();
+        try {
+            await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+        } catch {
+            await HomeScreen.mentionsTab.tap({x: 1, y: 1});
+        }
 
         return this.toBeVisible();
     };
 
-    openPostOptionsFor = async (postId: string, text: string) => {
-        const {postListPostItem} = this.getPostListPostItem(postId, text);
+    openPostOptionsFor = async (postId: string) => {
+        const {postListPostItem} = this.getPostListPostItem(postId);
+        const flatList = this.postList.getFlatList();
 
-        // Poll for the post to become visible without waiting for idle bridge
-        await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        try {
+            await flatList.scrollTo('top');
+        } catch {
+            // List too short to scroll
+        }
+        try {
+            await flatList.scroll(100, 'down');
+        } catch {
+            // List too short to scroll; keyboard already dismissed
+        }
+        await wait(timeouts.ONE_SEC);
 
-        // Long-press the post's TouchableHighlight directly (always rendered).
-        // post_header.date_time is only rendered on non-consecutive posts —
-        // see app/components/post_list/post/post.tsx:315.
+        try {
+            await waitForElementToExist(postListPostItem, timeouts.FIVE_SEC);
+        } catch {
+            if (isAndroid()) {
+                try {
+                    await waitFor(postListPostItem).
+                        toExist().
+                        whileElement(by.id(this.postList.testID.flatList)).
+                        scroll(250, 'down');
+                } catch {
+                    // Fall through to scrollElementIntoView
+                }
+            }
+        }
+
+        await scrollElementIntoView(postListPostItem, by.id(this.postList.testID.flatList));
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
+
+        // On Android, ensure the element is visible and not just existent
+        if (isAndroid()) {
+            await waitForElementToBeVisible(postListPostItem, timeouts.TEN_SEC);
+        }
+
         const longPressTarget = element(by.id(`${this.testID.recentMentionPostList}.${postId}`));
-        await waitForElementToBeVisible(longPressTarget, timeouts.TEN_SEC);
+        await waitForElementToExist(longPressTarget, timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
 
         // # Open post options (with retry — longPress can fail on Android during animations)
@@ -108,6 +156,20 @@ class RecentMentionsScreen {
         await expect(
             this.getPostMessageAtIndex(index),
         ).toHaveText(postMessage);
+    };
+
+    verifyPostEdited = async (postId: string, updatedMessage: string) => {
+        try {
+            await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+        } catch {
+            // Leave + re-enter the tab to force a fresh fetchRecentMentions, the same recovery
+            // recentMentionPostListToBeVisible uses, then re-check.
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.TWO_SEC);
+            await HomeScreen.mentionsTab.tap();
+            await this.toBeVisible();
+            await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+        }
     };
 }
 

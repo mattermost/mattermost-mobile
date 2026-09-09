@@ -19,13 +19,14 @@ jest.mock('react-native-keyboard-controller', () => ({
     useReanimatedFocusedInput: jest.fn(() => ({input: {value: null}})),
 }));
 
-// makeMutable must return a proper {value} object so the isRotating/wasRotating
-// shared values work when handler bodies execute synchronously in Jest.
-jest.mock('react-native-reanimated', () => ({
-    ...jest.requireActual('react-native-reanimated'),
-    makeMutable: <T>(init: T) => ({value: init}),
-    useSharedValue: <T>(init: T) => ({value: init}),
-}));
+jest.mock('react-native-reanimated', () => {
+    const ReactModule: typeof import('react') = require('react');
+
+    return {
+        ...jest.requireActual('react-native-reanimated'),
+        useSharedValue: <T, >(init: T) => ReactModule.useRef({value: init}).current,
+    };
+});
 
 type KeyboardEvent = {height: number; progress: number; target?: number | null};
 
@@ -278,6 +279,26 @@ describe('useKeyboardEvents', () => {
             handlers.onStart({height: 0, progress: 0, target: 1});
 
             // onEnd with height=0 — rotation is in progress, should suppress the END event
+            handlers.onEnd({height: 0, progress: 0, target: 1});
+
+            expect(ctx.processEvent).not.toHaveBeenCalledWith(
+                expect.objectContaining({type: StateMachineEventType.KEYBOARD_EVENT_END}),
+            );
+        });
+
+        it('should preserve rotation state across rerenders', () => {
+            const ctx = makeContext({currentStateValue: InputContainerStateType.KEYBOARD_OPEN});
+            let handlers: Record<string, (e: KeyboardEvent) => void> = {};
+            jest.mocked(useKeyboardHandler).mockImplementation((updatedHandlers) => {
+                handlers = updatedHandlers as typeof handlers;
+            });
+            const {rerender} = renderHook(
+                ({inputTag}) => useKeyboardEvents(ctx as never, inputTag),
+                {initialProps: {inputTag: 1}},
+            );
+
+            handlers.onStart({height: 0, progress: 0, target: 1});
+            rerender({inputTag: 1});
             handlers.onEnd({height: 0, progress: 0, target: 1});
 
             expect(ctx.processEvent).not.toHaveBeenCalledWith(

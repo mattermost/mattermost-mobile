@@ -18,6 +18,7 @@
 # also dismisses any error alert before reopening.
 appId: ${MAESTRO_APP_ID}
 ---
+# # Dismiss any leftover alert from a previous flow
 - tapOn:
     text: "OK"
     optional: true
@@ -28,11 +29,14 @@ appId: ${MAESTRO_APP_ID}
     text: "Dismiss"
     optional: true
 
+# * Verify we are on the channel screen before touching the header
 - extendedWaitUntil:
     visible:
       id: "channel.post_draft.post.input"
     timeout: 30000
 
+# # Open the quick-actions sheet and start the call, retrying until the Calls plugin
+# config has propagated and the Start/Join action renders.
 - retry:
     maxRetries: 6
     commands:

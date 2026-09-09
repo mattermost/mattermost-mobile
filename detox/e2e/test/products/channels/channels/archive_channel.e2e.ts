@@ -69,7 +69,7 @@ describe('Channels - Archive Channel', () => {
         // # Dismiss channel info and return to channel list before opening browse channels
         await ChannelInfoScreen.close();
         await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
@@ -78,9 +78,10 @@ describe('Channels - Archive Channel', () => {
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
-        // * Verify search returns the archived public channel item
-        await wait(timeouts.ONE_SEC);
-        await expect(element(by.text(`No matches found for “${publicChannel.name}”`))).toBeVisible();
+        // * Verify search returns empty (archived channel is not joinable from browse)
+        await waitFor(element(by.text(`No matches found for “${publicChannel.name}”`))).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();

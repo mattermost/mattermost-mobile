@@ -16,10 +16,7 @@ import {
     closeArchivedChannel,
     openArchivedChannel,
 } from '@support/ui/screen';
-import {
-    timeouts,
-    wait,
-} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 // Android skipped — Detox/Fabric text-input idle check crashes on API 35.
@@ -61,6 +58,8 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await HomeScreen.logout();
     });
 
+    // Android skip carried from the RF→Detox migration with no recorded failure and no
+    // ticket; the same assertions pass on iOS. Re-verified on Android in PR #10050.
     it('MM-T1718_1 - should not show add reaction option in post options for archived channels', async () => {
         // # Create a public channel, post a unique searchable message, and archive it.
         const message = `archived-channel-reaction-test-${Date.now()}`;
@@ -85,14 +84,14 @@ describe('Channels - Archived Channel Post Interactions', () => {
         await wait(timeouts.FOUR_SEC);
 
         // # Open the archived channel via the platform-appropriate path.
-        await openArchivedChannel(archivedChannel.name, message);
+        await openArchivedChannel(archivedChannel.name, message, post.id);
 
         // # Long-press on the post to open post options
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await PostOptionsScreen.toBeVisible();
 
         // * Verify the reaction bar / add reaction button is NOT visible (archived channels cannot add reactions)
-        await expect(PostOptionsScreen.pickReactionButton).not.toBeVisible();
+        await expect(PostOptionsScreen.pickReactionButton).not.toExist();
 
         // # Close post options and return to channel list
         await PostOptionsScreen.close();

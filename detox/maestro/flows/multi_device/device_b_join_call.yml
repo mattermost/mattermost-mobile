@@ -1,5 +1,9 @@
 # MM-T4831: Device B sees the join banner and joins User A's active call (multi-device).
 #
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_calls_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
 # PRE-CONDITIONS:
 #   - Device A has started a call (device_a_start_call.yml completed)
 #   - User B logged in on Device B in the same channel
@@ -20,10 +24,11 @@ tags:
   - MM-T4831
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as User B and open the same channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
-# The JoinCallBanner should appear at the top of the channel since Device A
+# * Verify the join call banner appears at the top of the channel, since Device A
 # started a call while Device B was logged in.
 - extendedWaitUntil:
     visible:
@@ -31,11 +36,11 @@ appId: ${MAESTRO_APP_ID}
     timeout: 120000
 - takeScreenshot: calls-device-b-join-banner-visible
 
-# Grant microphone permission before tapping Join (system dialog appears after tap)
+# # Tap Join (the system permission dialog appears after the tap)
 - tapOn:
     id: "calls.join_call_banner.join"
 
-# Grant permissions
+# # Grant permissions
 - tapOn:
     text: "Allow"
     optional: true
@@ -43,6 +48,7 @@ appId: ${MAESTRO_APP_ID}
     text: "Allow"
     optional: true
 
+# # Open the full call screen from the call bar.
 # Joining keeps the app on the channel view with a call bar overlay (same as starting
 # a call). Tap the call bar to open the full call screen so mute-unmute is accessible.
 - extendedWaitUntil:
@@ -52,14 +58,14 @@ appId: ${MAESTRO_APP_ID}
 - tapOn:
     id: "calls.current_call_bar"
 
-# Verify Device B is now on the call screen
+# * Verify Device B is now on the call screen
 - extendedWaitUntil:
     visible:
       id: "mute-unmute"
     timeout: 15000
 - takeScreenshot: calls-device-b-joined-call
 
-# Verify participants list shows both users (users-list renders one card per participant)
+# * Verify participants list shows both users (users-list renders one card per participant)
 - extendedWaitUntil:
     visible:
       id: "users-list"

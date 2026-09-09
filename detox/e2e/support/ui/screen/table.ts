@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {NavigationHeader} from '@support/ui/component';
 import {tapNativeBackButton, timeouts} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
@@ -22,8 +23,15 @@ class TableScreen {
     };
 
     back = async () => {
-        // Native expo-router stack header — no testID on the back chevron.
-        await tapNativeBackButton();
+        try {
+            await NavigationHeader.tapBackButton(1);
+        } catch {
+            try {
+                await NavigationHeader.tapBackButton(0);
+            } catch {
+                await tapNativeBackButton();
+            }
+        }
         await expect(this.tableScreen).not.toBeVisible();
     };
 }

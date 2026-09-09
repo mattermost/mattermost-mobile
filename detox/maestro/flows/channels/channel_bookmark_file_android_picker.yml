@@ -17,10 +17,13 @@ tags:
   - MM-T5603
 appId: ${MAESTRO_APP_ID}
 ---
+# * Verify the document picker opened on Recent
 - extendedWaitUntil:
     visible:
       text: "Recent"
     timeout: 15000
+
+# # Search the picker for the staged fixture by name
 - tapOn:
     text: "Downloads"
     optional: true
@@ -31,6 +34,8 @@ appId: ${MAESTRO_APP_ID}
       id: "com.google.android.documentsui:id/search_src_text"
     timeout: 10000
 - inputText: "test_bookmark"
+
+# # Select the file from the search results
 - extendedWaitUntil:
     visible:
       text: "test_bookmark.png"

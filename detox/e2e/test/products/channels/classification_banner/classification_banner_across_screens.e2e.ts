@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
@@ -20,28 +22,39 @@ import {
     SavedMessagesScreen,
     SearchMessagesScreen,
     ServerScreen,
+    TableScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
-import {by, device, element, waitFor} from 'detox';
+import {isAndroid, timeouts, wait} from '@support/utils';
+import {by, device, element, expect, waitFor} from 'detox';
 
-describe('Classification Banner - Visibility Across Screens', () => {
+import {logError} from '../../../../../provision/log';
+
+// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
+// here: up to 45m of queuing behind the other two classification suites (they share one
+// server), plus headroom for enable/setup after acquire.
+jest.setTimeout(timeouts.ONE_MIN * 30);
+
+(isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
+    let lockOwner = '';
+    let lockAcquired = false;
     let testChannel: any;
     let testUser: any;
 
     beforeAll(async () => {
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
+        lockAcquired = true;
+
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: true,
-            },
-        });
+        await enableClassificationMarkings(siteOneUrl);
         await Properties.apiSetupClassificationWithBanner(siteOneUrl, {
-            levelId: 'lvl-top-secret',
+            levelId: 'lvltopsecret00000000000000',
+            user: testUser,
         });
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -51,17 +64,38 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
+
+        // The hook gets its own budget so the lock wait does not have to fit inside the
+        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
+    }, timeouts.ONE_MIN * 50);
+
+    beforeEach(async () => {
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
+        const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+        if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
+            logError(
+                '[beforeEach] FeatureFlagClassificationMarkings flipped off mid-suite ' +
+                `(client=${String(clientConfig?.FeatureFlagClassificationMarkings)}) — re-enabling`,
+            );
+            await enableClassificationMarkings(siteOneUrl);
+        }
     });
 
     afterAll(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
-            FeatureFlags: {
-                ClassificationMarkings: false,
-            },
-        });
+        if (!lockAcquired) {
+            return;
+        }
 
-        await HomeScreen.logout();
+        try {
+            try {
+                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
+                await Properties.apiCleanupClassification(siteOneUrl);
+            } finally {
+                await HomeScreen.logout();
+            }
+        } finally {
+            await releaseClassificationLock(siteOneUrl, lockOwner);
+        }
     });
 
     it('MM-T6209_1 - should display the classification banner on the Recent Mentions screen', async () => {
@@ -129,6 +163,44 @@ describe('Classification Banner - Visibility Across Screens', () => {
         await GlobalClassificationBanner.toBeVisible();
 
         await ThreadScreen.back();
+        await ChannelScreen.back();
+    });
+
+    it('MM-T6214_1 - should display the classification banner on the expanded Table screen without covering its controls or content', async () => {
+        // # Post a small markdown table
+        const markdownTable =
+            '| BannerColA | BannerColB |\n' +
+            '| :-- | :-- |\n' +
+            '| BannerCellOne | BannerCellTwo |\n';
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: testChannel.id,
+            message: markdownTable,
+        });
+
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        await wait(timeouts.TWO_SEC);
+        await ChannelScreen.open('channels', testChannel.name);
+
+        // # Expand the table to full view
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
+        await expect(postListPostItemTable).toBeVisible(50);
+        await waitFor(postListPostItemTableExpandButton).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
+        await postListPostItemTableExpandButton.tap();
+        await TableScreen.toBeVisible();
+
+        // * Verify the classification banner is visible on the Table screen
+        await GlobalClassificationBanner.toBeVisible();
+
+        // * Verify the banner does not cover the Table screen controls or content:
+        // the back button and the table cells remain visible beneath it.
+        await expect(TableScreen.backButton).toBeVisible();
+        await expect(element(by.text('BannerColA'))).toBeVisible(50);
+        await expect(element(by.text('BannerCellOne'))).toBeVisible(50);
+
+        // # Go back to channel list screen
+        await TableScreen.back();
         await ChannelScreen.back();
     });
 });

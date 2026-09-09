@@ -325,6 +325,53 @@ describe('StreamingStoreSingleton', () => {
         });
     });
 
+    describe('round snapshotting', () => {
+        it('should snapshot the current round and reset live buffers when all tools resolve', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateMessage(SERVER_URL, postId, 'Looking it up');
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            // Still pending: no snapshot, the tool stays in the live buffer.
+            let state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.rounds).toHaveLength(0);
+            expect(state?.toolCalls.map((t) => t.id)).toEqual(['a']);
+
+            // Tool resolves -> round boundary -> snapshot + reset live buffers.
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Success, result: 'ok'},
+            ]));
+
+            state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.rounds).toHaveLength(1);
+            expect(state?.rounds[0]).toMatchObject({text: 'Looking it up'});
+            expect(state?.rounds[0].toolCalls.map((t) => t.id)).toEqual(['a']);
+            expect(state?.rounds[0].toolCalls[0].status).toBe(ToolCallStatus.Success);
+            expect(state?.toolCalls).toEqual([]);
+            expect(state?.message).toBe('');
+        });
+
+        it('should not snapshot while any tool in the round is still pending', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+                {id: 'b', name: 'read', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            // Only 'a' resolves; 'b' is still pending -> not a round boundary.
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Success},
+            ]));
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.rounds).toHaveLength(0);
+            expect(state?.toolCalls.map((t) => t.id)).toEqual(['a', 'b']);
+        });
+    });
+
     describe('updateAnnotations', () => {
         it('should parse JSON and update annotations', () => {
             const postId = 'post123';
@@ -558,6 +605,101 @@ describe('StreamingStoreSingleton', () => {
 
             // Nothing should be created
             expect(streamingStore.getStreamingState(SERVER_URL, '')).toBeUndefined();
+        });
+    });
+
+    describe('markStopped', () => {
+        it('should set stopped and clear generating/reasoning flags', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateReasoning(SERVER_URL, postId, 'thinking', true);
+
+            streamingStore.markStopped(SERVER_URL, postId);
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.stopped).toBe(true);
+            expect(state?.generating).toBe(false);
+            expect(state?.isReasoningLoading).toBe(false);
+        });
+
+        it('should do nothing when there is no streaming state', () => {
+            expect(() => streamingStore.markStopped(SERVER_URL, 'nonexistent')).not.toThrow();
+            expect(streamingStore.getStreamingState(SERVER_URL, 'nonexistent')).toBeUndefined();
+        });
+    });
+
+    describe('stop guard', () => {
+        it('should ignore a next message after the post is stopped', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateMessage(SERVER_URL, postId, 'partial');
+            streamingStore.markStopped(SERVER_URL, postId);
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, next: 'late text'});
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.message).toBe('partial');
+            expect(state?.generating).toBe(false);
+        });
+
+        it('should resume processing next after a control signal clears stopped', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.markStopped(SERVER_URL, postId);
+
+            // A fresh start clears stopped, so the next message is processed again.
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, control: CONTROL_SIGNALS.START});
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, next: 'new text'});
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.message).toBe('new text');
+            expect(state?.generating).toBe(true);
+        });
+    });
+
+    describe('CONTINUE control signal', () => {
+        it('should clear live buffers and bump continueSeq on continue', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateMessage(SERVER_URL, postId, 'prior round text');
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, control: CONTROL_SIGNALS.CONTINUE});
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.message).toBe('');
+            expect(state?.toolCalls).toEqual([]);
+            expect(state?.annotations).toEqual([]);
+            expect(state?.reasoning).toBe('');
+            expect(state?.rounds).toEqual([]);
+            expect(state?.generating).toBe(true);
+            expect(state?.precontent).toBe(true);
+            expect(state?.stopped).toBe(false);
+            expect(state?.continueSeq).toBe(1);
+        });
+
+        it('should increment continueSeq on each continue', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, control: CONTROL_SIGNALS.CONTINUE});
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.continueSeq).toBe(1);
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, control: CONTROL_SIGNALS.CONTINUE});
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.continueSeq).toBe(2);
+        });
+
+        it.each([CONTROL_SIGNALS.START, CONTROL_SIGNALS.END, CONTROL_SIGNALS.CANCEL])('should clear stopped on the %s control signal', (control) => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.markStopped(SERVER_URL, postId);
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.stopped).toBe(true);
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: postId, control});
+
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.stopped).toBe(false);
         });
     });
 

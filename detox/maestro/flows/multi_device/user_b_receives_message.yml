@@ -1,5 +1,9 @@
 # MM-T3056: Device B receives the message sent by Device A (multi-device).
 #
+# NOT RUN IN CI: two-device flow. CI provisions one device per job, so
+# scripts/run_ci_batches.sh skips flows/multi_device/*. Run manually via
+# scripts/run_two_device.sh with DEVICE_A_UDID and DEVICE_B_UDID.
+#
 # PRE-CONDITIONS:
 #   - user_a_sends_message.yml completed on Device A
 #   - User B logged in on Device B; API poll waits for server delivery
@@ -17,14 +21,15 @@ tags:
   - MM-T3056
 appId: ${MAESTRO_APP_ID}
 ---
+# # Log in as User B and open the test channel
 - runFlow: ../../subflows/auth/login.yml
 - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
-# Poll the Mattermost API until the message from Device A appears
+# # Poll the Mattermost API until the message from Device A appears
 # This ensures Device B does not assert before the message is delivered
 - runScript: ../../fixtures/poll_for_message.ts
 
-# Verify the message from Device A is visible on Device B's screen
+# * Verify the message from Device A is visible on Device B's screen
 - assertVisible:
     text: "MM-T3055 sync test message ${SYNC_TOKEN}"
     timeout: 30000

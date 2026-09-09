@@ -68,12 +68,15 @@ describe('initValues', () => {
             const parsed = moment(values.dt as string);
             expect(parsed.isValid()).toBe(true);
 
-            // Default interval is 60 min. Result should be between `before` (rounded up to next hour)
-            // and slightly after `after`, and always at minute=0 / second=0.
+            // Default interval is 60 min. Result is always at minute=0 / second=0.
+            // When `before` falls exactly on an interval boundary (e.g. 13:00:26),
+            // the implementation keeps the boundary minute and only truncates
+            // seconds (matching the webapp), so compare against the start of
+            // `before`'s minute.
             expect(parsed.second()).toBe(0);
             expect(parsed.millisecond()).toBe(0);
             expect(parsed.minute()).toBe(0);
-            expect(parsed.isSameOrAfter(before)).toBe(true);
+            expect(parsed.isSameOrAfter(before.clone().startOf('minute'))).toBe(true);
 
             // Upper bound: within one full interval after `after`
             expect(parsed.diff(after, 'minutes')).toBeLessThanOrEqual(60);
@@ -105,6 +108,31 @@ describe('initValues', () => {
             ]);
             const parsed = moment(values.dt as string);
             expect([0, 15, 30, 45]).toContain(parsed.minute());
+        });
+
+        describe('time exactly on an interval boundary', () => {
+            afterEach(() => {
+                jest.useRealTimers();
+            });
+
+            it('should keep the boundary minute and truncate seconds (no rounding up)', () => {
+                // Matches the webapp: when minutes % interval === 0 the current
+                // time is kept and only seconds/milliseconds are cleared, so
+                // 13:00:26 yields 13:00:00 rather than 14:00:00.
+                jest.useFakeTimers({doNotFake: ['nextTick']});
+                jest.setSystemTime(new Date(2026, 0, 15, 13, 0, 26));
+
+                const values = initValues([
+                    {
+                        name: 'dt',
+                        type: AppFieldTypes.DATETIME,
+                        is_required: true,
+                    } as AppField,
+                ]);
+
+                const parsed = moment(values.dt as string);
+                expect(parsed.isSame(moment(new Date(2026, 0, 15, 13, 0, 0, 0)))).toBe(true);
+            });
         });
 
         it('does NOT auto-populate a non-required datetime field', () => {
@@ -195,7 +223,9 @@ describe('initValues', () => {
                 const parsed = moment(values.dt as string);
                 const after = moment();
 
-                expect(parsed.isSameOrAfter(before)).toBe(true);
+                // startOf('minute') tolerates `before` falling exactly on an
+                // interval boundary, where only seconds are truncated
+                expect(parsed.isSameOrAfter(before.clone().startOf('minute'))).toBe(true);
                 expect(parsed.diff(after, 'minutes')).toBeLessThanOrEqual(60);
             });
         });

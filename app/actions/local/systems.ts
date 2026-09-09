@@ -26,6 +26,7 @@ import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
 import {isZeroPersistenceConfig} from '@utils/config';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
@@ -243,7 +244,16 @@ export async function updateLastDataRetentionRun(serverUrl: string, value?: numb
     }
 }
 
-export async function dataRetentionCleanup(serverUrl: string) {
+export async function performVacuum(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await database.unsafeVacuum();
+    } catch (vacuumError) {
+        logError('unsafeVacuum', getFullErrorMessage(vacuumError));
+    }
+}
+
+export async function dataRetentionCleanup(serverUrl: string): Promise<{error?: unknown; skipped?: boolean}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -252,7 +262,7 @@ export async function dataRetentionCleanup(serverUrl: string) {
 
         // Do not run if clean up is already done today
         if (lastRunAt && lastCleanedToday) {
-            return {error: undefined};
+            return {error: undefined, skipped: true};
         }
 
         const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
@@ -261,8 +271,6 @@ export async function dataRetentionCleanup(serverUrl: string) {
         if (!result.error) {
             await updateLastDataRetentionRun(serverUrl);
         }
-
-        await database.unsafeVacuum();
 
         return result;
     } catch (error) {

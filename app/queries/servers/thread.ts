@@ -133,7 +133,9 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
                 reply_count: post.reply_count,
                 last_reply_at: post.last_reply_at || post.create_at,
 
-                is_following: post.is_following ?? false,
+                // Omit when the post payload has no follow flag so we do not
+                // overwrite a local true with false (e.g. Reply → fetchPostThread).
+                is_following: post.is_following,
                 lastFetchedAt: post.create_at,
             } as ThreadWithLastFetchedAt);
         } else if (post.root_id && updateLastFetchAt) {

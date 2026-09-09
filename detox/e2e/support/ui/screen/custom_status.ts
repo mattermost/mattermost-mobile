@@ -5,7 +5,7 @@ import {
     AccountScreen,
     EmojiPickerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class CustomStatusScreen {
@@ -113,22 +113,47 @@ class CustomStatusScreen {
         // ScrollView until the setStatusOption is fully visible, then tap.
         // This handles both fresh drawer state (top of ScrollView) and
         // scrolled state from prior tests (MM-T3892).
-        await waitFor(AccountScreen.setStatusOption).toBeVisible().whileElement(by.id('account.scroll_view')).scroll(150, 'down');
+        if (isAndroid()) {
+            try {
+                await waitFor(AccountScreen.setStatusOption).toExist().whileElement(by.id(AccountScreen.testID.accountScrollView)).scroll(150, 'down');
+            } catch {
+                // Row may already be in view without scrolling.
+            }
+            await waitForElementToExist(AccountScreen.setStatusOption, timeouts.TEN_SEC);
+        } else {
+            // iOS: the account drawer sheet clips its ScrollView, so whileElement().scroll() picks
+            // an off-screen start point and refuses. Probe visibility, then scroll from the centre.
+            try {
+                await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                const scrollView = AccountScreen.accountScrollView;
+                let found = false;
+                /* eslint-disable no-await-in-loop */
+                for (let i = 0; i < 5 && !found; i++) {
+                    for (const direction of ['down', 'up'] as const) {
+                        try {
+                            await scrollView.scroll(150, direction, 0.5, 0.5);
+                        } catch { /* scroll refusal */ }
+                        try {
+                            await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                            found = true;
+                            break;
+                        } catch { /* try opposite direction */ }
+                    }
+                }
+                /* eslint-enable no-await-in-loop */
+                if (!found) {
+                    await waitFor(AccountScreen.setStatusOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                }
+            }
+        }
         await AccountScreen.setStatusOption.tap();
 
         return this.toBeVisible();
     };
 
-    openEmojiPicker = async (emojiName: string, closeToolTip = false) => {
+    openEmojiPicker = async (emojiName: string) => {
         await this.getCustomStatusEmoji(emojiName).tap();
-        if (closeToolTip) {
-            await wait(timeouts.TWO_SEC);
-            try {
-                await EmojiPickerScreen.toolTipCloseButton.tap();
-            } catch (error) {
-                // Tool tip not shown
-            }
-        }
         await EmojiPickerScreen.toBeVisible();
     };
 

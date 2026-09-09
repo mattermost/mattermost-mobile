@@ -35,13 +35,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
     var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
 
-    // Background-task assertion held across the background transition so any
-    // in-flight WatermelonDB operation (read or write) can finish and release
-    // the shared App Group SQLite lock before the OS suspends the app. Without
-    // it, iOS terminates the app with RUNNINGBOARD 0xdead10cc when it suspends
-    // while a SQLite statement still holds the lock. Only touched from main-
-    // thread lifecycle callbacks and the (also main-thread) expiration handler.
-    private var databaseLockBackgroundTask: UIBackgroundTaskIdentifier = .invalid
+    private var databaseLockProtectionToken: String?
 
     override func application(
         _ application: UIApplication,
@@ -85,6 +79,7 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
         // Configure Gekidou to use TurboLog via wrapper
         GekidouWrapper.default.configureTurboLogForGekidou()
+        GekidouWrapper.default.registerSessionAttributesOutboundHeader()
 
         // Bootstrap @mattermost/calls-native: allocates the singleton
         // PKPushRegistry + CXProvider on the main queue, synchronously,
@@ -293,22 +288,17 @@ class AppDelegate: ExpoAppDelegate, OrientationLockable {
 
     // MARK: - Database lock protection (prevents RUNNINGBOARD 0xdead10cc)
 
-    // Keeps the app from being suspended while a WatermelonDB statement still
-    // holds the shared App Group SQLite lock. Begun when entering the
-    // background; released when returning to the foreground or when the OS
-    // background-execution time expires (whichever comes first), by which point
-    // any in-flight DB read/write has finished and released the lock.
+    // Baseline safety net for the background transition; specific long-running
+    // chains hold their own independent job via DatabaseLockProtectionManager.
     private func beginDatabaseLockProtection() {
-        guard databaseLockBackgroundTask == .invalid else { return }
-        databaseLockBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "MMDatabaseLockProtection") { [weak self] in
-            self?.endDatabaseLockProtection()
-        }
+        guard databaseLockProtectionToken == nil else { return }
+        databaseLockProtectionToken = DatabaseLockProtectionManager.shared.begin("lifecycle", task: "MMDatabaseLockProtection")
     }
 
     private func endDatabaseLockProtection() {
-        guard databaseLockBackgroundTask != .invalid else { return }
-        UIApplication.shared.endBackgroundTask(databaseLockBackgroundTask)
-        databaseLockBackgroundTask = .invalid
+        guard let token = databaseLockProtectionToken else { return }
+        DatabaseLockProtectionManager.shared.end(token)
+        databaseLockProtectionToken = nil
     }
 
     // MARK: - Orientation
