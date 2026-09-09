@@ -16,8 +16,10 @@ import {determineRouteFromLaunchProps} from '@init/launch';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import IntuneManager from '@managers/intune_manager';
 import SecurityManager from '@managers/security_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {queryGlobalValue} from '@queries/app/global';
 import {getAllServers, getServerDisplayName} from '@queries/app/servers';
+import {propsToParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCacheByDir} from '@utils/file';
 import {isMainActivity} from '@utils/helpers';
@@ -135,6 +137,7 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, removeServer);
             SecurityManager.removeServer(serverUrl);
             EphemeralModeManager.removeServer(serverUrl);
+            SessionAttributesManager.removeServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
                 let displayName = '';
@@ -156,7 +159,7 @@ export class SessionManagerSingleton {
                 const launchRoute = await determineRouteFromLaunchProps({launchType, serverUrl, displayName});
 
                 requestAnimationFrame(() => {
-                    router.replace({pathname: launchRoute.route, params: launchRoute.params});
+                    router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
                 });
             }
         } finally {
@@ -175,13 +178,14 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, false);
             SecurityManager.removeServer(serverUrl);
             EphemeralModeManager.removeServer(serverUrl);
+            SessionAttributesManager.removeServer(serverUrl);
             await IntuneManager.unenrollServer(serverUrl, true);
 
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             const serverDisplayName = await getServerDisplayName(serverUrl);
 
             const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
-            router.replace({pathname: launchRoute.route, params: launchRoute.params});
+            router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
             if (activeServerUrl) {
                 addNewServer(EphemeralStore.getTheme(), serverUrl, serverDisplayName);
             } else {

@@ -119,15 +119,34 @@ class ThreadScreen {
     };
 
     back = async () => {
-        await waitForElementToExist(this.backButton, timeouts.TEN_SEC);
-
-        // Prefer the topmost back when thread is stacked over channel (two headers).
-        // Always create a fresh matcher per attempt — chaining atIndex() on a shared
-        // element mutates it (e.g. atIndex(0) after atIndex(1) becomes "index 0 of index 1").
+        let navigated = false;
         try {
-            await element(by.id(this.testID.backButton)).atIndex(1).tap();
+            const backTimeout = isAndroid() ? timeouts.HALF_MIN : timeouts.TEN_SEC;
+            await waitForElementToExist(this.backButton, backTimeout);
+            await NavigationHeader.tapTopmostBackButton();
+            await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+            navigated = true;
         } catch {
-            await element(by.id(this.testID.backButton)).atIndex(0).tap();
+            // Back button not in hierarchy, tap failed, or thread remained visible — fall through.
+        }
+        if (!navigated && isAndroid()) {
+            // Thread-from-search can leave no hittable header back; a single
+            // system back sometimes only dismisses the keyboard or a transient overlay.
+            /* eslint-disable no-await-in-loop */
+            for (let attempt = 0; attempt < 2 && !navigated; attempt++) {
+                try {
+                    await device.pressBack();
+                    await wait(timeouts.TWO_SEC);
+                    await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.FIVE_SEC);
+                    navigated = true;
+                } catch {
+                    // still visible, retry
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+        }
+        if (!navigated) {
+            throw new Error('ThreadScreen.back: could not navigate back');
         }
         await waitFor(this.threadScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
@@ -216,10 +235,13 @@ class ThreadScreen {
     };
 
     tapSendButton = async () => {
-        // # Tap send button
-        await this.sendButton.tap();
-        await expect(this.sendButton).not.toExist();
-        await expect(this.sendButtonDisabled).toBeVisible();
+        // Existence + corner tap: even 40% visibility fails when the thread composer
+        // is clipped by the pinned-messages / keyboard stack (MM-T4918_3).
+        await waitForElementToExist(this.sendButton, timeouts.TEN_SEC);
+        await this.sendButton.tap({x: 1, y: 1});
+
+        await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
+        await waitFor(this.sendButtonDisabled).toExist().withTimeout(timeouts.FIVE_SEC);
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

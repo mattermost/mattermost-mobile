@@ -33,13 +33,9 @@ env:
 # # Log in (login.yml clearState:true relaunch picks up CI TZ from launchctl setenv).
 - runFlow: ../../subflows/auth/login.yml
 
-# # Open the Account tab
-- tapOn:
-    id: "tab_bar.account.tab"
-- extendedWaitUntil:
-    visible:
-      id: "account.screen"
-    timeout: 10000
+# # Open the Account tab. Fresh login can leave Save Password / notification
+# overlays that swallow the Settings → Display tap (CI 31915934950).
+- runFlow: ../../subflows/navigation/open_account.yml
 
 # # Open Settings
 - tapOn:

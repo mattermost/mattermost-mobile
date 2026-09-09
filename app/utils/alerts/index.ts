@@ -8,11 +8,12 @@ import {Alert, Platform, type AlertButton} from 'react-native';
 import {switchToServer} from '@actions/app/server';
 import {logout} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {IntuneAuthRequiredReasons} from '@managers/intune_manager/types';
 import {queryAllActiveServers} from '@queries/app/servers';
 import {getConfigValue} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 export const messages = defineMessages({
@@ -67,6 +68,10 @@ export const messages = defineMessages({
     retry: {
         id: 'mobile.managed.retry',
         defaultMessage: 'Retry',
+    },
+    auth_interrupted_message: {
+        id: 'security_manager.auth_interrupted_message',
+        defaultMessage: 'Authentication could not be completed. Please try again.',
     },
     authentication_required_title: {
         id: 'security_manager.authentication_required_title',
@@ -184,7 +189,7 @@ const goToPreviousServer = async (lastAccessedServer: string) => {
  * Builds the alert options for the alert.
  */
 export const buildSecurityAlertOptions = async (
-    server: string, translations: Record<string, string>,
+    server: string, locale: string,
     callback?: (value: boolean) => void,
     retryCallback?: () => void,
 ) => {
@@ -197,7 +202,7 @@ export const buildSecurityAlertOptions = async (
 
     if (server && hasSessionToServer) {
         buttons.push({
-            text: translations[messages.logout.id],
+            text: getLocalizedMessage(locale, messages.logout.id, messages.logout.defaultMessage),
             style: 'destructive',
             onPress: async () => {
                 await logout(server, undefined);
@@ -206,10 +211,12 @@ export const buildSecurityAlertOptions = async (
         });
     }
 
-    if (otherServers.length > 0) {
+    // Without a server every other server matches the filter above, which would offer a
+    // managed user a way around the policy that just blocked them.
+    if (server && otherServers.length > 0) {
         if (otherServers.length === 1 && otherServers[0] === activeServer) {
             buttons.push({
-                text: translations[messages.okay.id],
+                text: getLocalizedMessage(locale, messages.okay.id, messages.okay.defaultMessage),
                 style: 'cancel',
                 onPress: () => {
                     callback?.(true);
@@ -217,7 +224,7 @@ export const buildSecurityAlertOptions = async (
             });
         } else {
             buttons.push({
-                text: translations[messages.switchServer.id],
+                text: getLocalizedMessage(locale, messages.switchServer.id, messages.switchServer.defaultMessage),
                 style: 'cancel',
                 onPress: () => {
                     goToPreviousServer(otherServers[0]);
@@ -229,9 +236,12 @@ export const buildSecurityAlertOptions = async (
 
     if (retryCallback && typeof retryCallback === 'function') {
         buttons.push({
-            text: translations[messages.retry.id],
+            text: getLocalizedMessage(locale, messages.retry.id, messages.retry.defaultMessage),
             style: 'default',
             onPress: () => {
+                // Cleanup first, so state from the previous attempt (e.g. blur) does not
+                // survive into the retry.
+                callback?.(true);
                 retryCallback();
             },
         });
@@ -239,7 +249,7 @@ export const buildSecurityAlertOptions = async (
 
     if (buttons.length === 0) {
         buttons.push({
-            text: translations[messages.exit.id],
+            text: getLocalizedMessage(locale, messages.exit.id, messages.exit.defaultMessage),
             style: 'destructive',
             onPress: () => {
                 Emm.exitApp();
@@ -259,16 +269,16 @@ export const showDeviceNotTrustedAlert = async (server: string, siteName: string
         const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
         serverSiteName = await getConfigValue(database, 'SiteName');
     } catch (error) {
-        logError('showDeviceNotTrustedAlert', error);
+        logError('showDeviceNotTrustedAlert: failed to get SiteName', getFullErrorMessage(error));
     }
 
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
-    const buttons = await buildSecurityAlertOptions(server, translations);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+    const buttons = await buildSecurityAlertOptions(server, resolvedLocale);
     const securedBy = siteName || serverSiteName || 'Mattermost';
 
     Alert.alert(
-        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-        translations[messages.jailbreak.id].
+        getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
+        getLocalizedMessage(resolvedLocale, messages.jailbreak.id, messages.jailbreak.defaultMessage).
             replace('{vendor}', securedBy),
         buttons,
         {cancelable: false},
@@ -278,46 +288,67 @@ export const showDeviceNotTrustedAlert = async (server: string, siteName: string
 /**
  * Shows an alert when the device does not have biometrics or passcode set.
  */
-export const showNotSecuredAlert = async (server: string, siteName: string | undefined, locale?: string) => {
+export const showNotSecuredAlert = async (server: string, siteName: string | undefined, locale?: string, exitOnly = false) => {
     const buttons: AlertButton[] = [];
     let serverSiteName;
-    try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
-        serverSiteName = await getConfigValue(database, 'SiteName');
-    } catch (error) {
-        logError('showNotSecuredAlert', error);
+    if (server) {
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
+            serverSiteName = await getConfigValue(database, 'SiteName');
+        } catch (error) {
+            logError('showNotSecuredAlert: failed to get SiteName', getFullErrorMessage(error));
+        }
     }
 
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
     const securedBy = siteName || serverSiteName || 'Mattermost';
+
+    let dismiss: () => void;
+    const dismissed = new Promise<void>((resolve) => {
+        dismiss = resolve;
+    });
 
     if (Platform.OS === 'android') {
         buttons.push({
-            text: translations[messages.androidSettings.id],
+            text: getLocalizedMessage(resolvedLocale, messages.androidSettings.id, messages.androidSettings.defaultMessage),
             onPress: () => {
                 Emm.openSecuritySettings();
+                dismiss();
             },
         });
     }
 
-    const alertButtons = await buildSecurityAlertOptions(server, translations);
-    buttons.push(...alertButtons);
+    if (exitOnly) {
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.exit.id, messages.exit.defaultMessage),
+            style: 'destructive',
+            onPress: () => {
+                dismiss();
+                Emm.exitApp();
+            },
+        });
+    } else {
+        const alertButtons = await buildSecurityAlertOptions(server, resolvedLocale, () => dismiss());
+        buttons.push(...alertButtons);
+    }
 
     let message;
     if (serverSiteName || siteName) {
-        const key = Platform.select({ios: messages.not_secured_vendor_ios.id, default: messages.not_secured_vendor_android.id});
-        message = translations[key].replace('{vendor}', securedBy);
+        const descriptor = Platform.select({ios: messages.not_secured_vendor_ios, default: messages.not_secured_vendor_android});
+        message = getLocalizedMessage(resolvedLocale, descriptor.id, descriptor.defaultMessage).replace('{vendor}', securedBy);
     } else {
-        const key = Platform.select({ios: messages.not_secured_ios.id, default: messages.not_secured_android.id});
-        message = translations[key];
+        const descriptor = Platform.select({ios: messages.not_secured_ios, default: messages.not_secured_android});
+        message = getLocalizedMessage(resolvedLocale, descriptor.id, descriptor.defaultMessage);
     }
 
     Alert.alert(
-        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
+        getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
         message,
         buttons,
         {cancelable: false},
     );
+
+    return dismissed;
 };
 
 /**
@@ -329,63 +360,121 @@ export const showBiometricFailureAlert = async (server: string, blurOnAuthentica
         const {database} = DatabaseManager.getServerDatabaseAndOperator(server);
         serverSiteName = await getConfigValue(database, 'SiteName');
     } catch (error) {
-        logError('showBiometricFailureAlert', error);
+        logError('showBiometricFailureAlert: failed to get SiteName', getFullErrorMessage(error));
     }
 
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
 
-    const buttons = await buildSecurityAlertOptions(server, translations, () => {
+    let dismiss: () => void;
+    const dismissed = new Promise<void>((resolve) => {
+        dismiss = resolve;
+    });
+
+    const buttons = await buildSecurityAlertOptions(server, resolvedLocale, () => {
         if (blurOnAuthenticate) {
             Emm.removeBlurEffect();
         }
+        dismiss();
     }, retryCallback);
     const securedBy = siteName || serverSiteName || 'Mattermost';
 
     Alert.alert(
-        translations[messages.blocked_by.id].replace('{vendor}', securedBy),
-        translations[messages.biometric_failed.id],
+        getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
+        getLocalizedMessage(resolvedLocale, messages.biometric_failed.id, messages.biometric_failed.defaultMessage),
         buttons,
         {cancelable: false},
     );
+
+    return dismissed;
 };
 
 export const showBiometricFailureAlertForOrganization = async (server: string, locale?: string, retryCallback?: () => void) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
-    const organization = translations[messages.organization.id];
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+    const organization = getLocalizedMessage(resolvedLocale, messages.organization.id, messages.organization.defaultMessage);
 
     return showBiometricFailureAlert(server, true, organization, locale, retryCallback);
+};
+
+/**
+ * Shows an alert when authentication could not be attempted or was interrupted.
+ *
+ * Buttons are built here rather than via buildSecurityAlertOptions so that no destructive
+ * option can appear: nobody failed authentication on this path, so the session must survive.
+ */
+export const showAuthenticationInterruptedAlert = async (server: string, siteName: string | undefined, locale?: string): Promise<'retry' | 'dismiss'> => {
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+    const securedBy = siteName || 'Mattermost';
+
+    const allServers = await queryAllActiveServers()?.fetch();
+    const otherServers = allServers?.filter((s) => s.url !== server).map((s) => s.url) || [];
+
+    return new Promise((resolve) => {
+        const buttons: AlertButton[] = [];
+
+        if (otherServers.length > 0) {
+            buttons.push({
+                text: getLocalizedMessage(resolvedLocale, messages.switchServer.id, messages.switchServer.defaultMessage),
+                onPress: () => {
+                    goToPreviousServer(otherServers[0]);
+                    resolve('dismiss');
+                },
+            });
+        }
+
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.exit.id, messages.exit.defaultMessage),
+            style: 'destructive',
+            onPress: () => {
+                resolve('dismiss');
+                Emm.exitApp();
+            },
+        });
+
+        buttons.push({
+            text: getLocalizedMessage(resolvedLocale, messages.retry.id, messages.retry.defaultMessage),
+            style: 'default',
+            onPress: () => resolve('retry'),
+        });
+
+        Alert.alert(
+            getLocalizedMessage(resolvedLocale, messages.blocked_by.id, messages.blocked_by.defaultMessage).replace('{vendor}', securedBy),
+            getLocalizedMessage(resolvedLocale, messages.auth_interrupted_message.id, messages.auth_interrupted_message.defaultMessage),
+            buttons,
+            {cancelable: false},
+        );
+    });
 };
 
 /**
  * Shows an alert when authentication is required when Intune fails.
  */
 export const showAuthenticationRequiredAlert = async (reason?: string, locale?: string, callback?: () => void) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
 
     // Customize message based on reason
-    let title = translations[messages.authentication_required_title.id];
-    let message = translations[messages.authentication_required_message.id];
+    let title = getLocalizedMessage(resolvedLocale, messages.authentication_required_title.id, messages.authentication_required_title.defaultMessage);
+    let message = getLocalizedMessage(resolvedLocale, messages.authentication_required_message.id, messages.authentication_required_message.defaultMessage);
 
     if (reason === IntuneAuthRequiredReasons.CONSENT_DENIED) {
-        title = translations[messages.consent_denied_title.id];
-        message = translations[messages.consent_denied_message.id];
+        title = getLocalizedMessage(resolvedLocale, messages.consent_denied_title.id, messages.consent_denied_title.defaultMessage);
+        message = getLocalizedMessage(resolvedLocale, messages.consent_denied_message.id, messages.consent_denied_message.defaultMessage);
     } else if (reason === IntuneAuthRequiredReasons.AUTH_FAILED) {
-        title = translations[messages.authentication_failed_title.id];
-        message = translations[messages.authentication_failed_message.id];
+        title = getLocalizedMessage(resolvedLocale, messages.authentication_failed_title.id, messages.authentication_failed_title.defaultMessage);
+        message = getLocalizedMessage(resolvedLocale, messages.authentication_failed_message.id, messages.authentication_failed_message.defaultMessage);
     }
 
-    Alert.alert(title, message, [{text: translations[messages.okay.id], onPress: callback}], {cancelable: false});
+    Alert.alert(title, message, [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}], {cancelable: false});
 };
 
 /**
  * Shows an alert when Intune conditional access blocks access to the app.
  */
 export const showConditionalAccessAlert = async (locale?: string, callback?: () => void) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
     Alert.alert(
-        translations[messages.access_blocked_title.id],
-        translations[messages.access_blocked_message.id],
-        [{text: translations[messages.okay.id], onPress: callback}],
+        getLocalizedMessage(resolvedLocale, messages.access_blocked_title.id, messages.access_blocked_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.access_blocked_message.id, messages.access_blocked_message.defaultMessage),
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
         {cancelable: false},
     );
 };
@@ -394,11 +483,11 @@ export const showConditionalAccessAlert = async (locale?: string, callback?: () 
  * Shows an alert when Intune requires an identity switch.
  */
 export const showIdentitySwitchRequiredAlert = async (locale?: string) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
     Alert.alert(
-        translations[messages.identity_switch_required_title.id],
-        translations[messages.identity_switch_required_message.id],
-        [{text: translations[messages.okay.id]}],
+        getLocalizedMessage(resolvedLocale, messages.identity_switch_required_title.id, messages.identity_switch_required_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.identity_switch_required_message.id, messages.identity_switch_required_message.defaultMessage),
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage)}],
         {cancelable: false},
     );
 };
@@ -413,21 +502,21 @@ export const showMAMEnrollmentRequiredAlert = async (
     enrollCallback: () => void,
     cancelCallback: () => void,
 ) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
-    const organization = siteName || translations[messages.organization.id];
-    const message = translations[messages.mam_enrollment_required_message.id].replace('{organization}', organization);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+    const organization = siteName || getLocalizedMessage(resolvedLocale, messages.organization.id, messages.organization.defaultMessage);
+    const message = getLocalizedMessage(resolvedLocale, messages.mam_enrollment_required_message.id, messages.mam_enrollment_required_message.defaultMessage).replace('{organization}', organization);
 
     Alert.alert(
-        translations[messages.mam_enrollment_required_title.id],
+        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_required_title.id, messages.mam_enrollment_required_title.defaultMessage),
         message,
         [
             {
-                text: translations[messages.cancel.id],
+                text: getLocalizedMessage(resolvedLocale, messages.cancel.id, messages.cancel.defaultMessage),
                 style: 'cancel',
                 onPress: cancelCallback,
             },
             {
-                text: translations[messages.enroll_now.id],
+                text: getLocalizedMessage(resolvedLocale, messages.enroll_now.id, messages.enroll_now.defaultMessage),
                 style: 'default',
                 onPress: enrollCallback,
             },
@@ -444,12 +533,12 @@ export const showMAMEnrollmentFailedAlert = async (
     locale?: string,
     callback?: () => void,
 ) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
 
     Alert.alert(
-        translations[messages.mam_enrollment_failed_title.id],
-        translations[messages.mam_enrollment_failed_message.id],
-        [{text: translations[messages.okay.id], onPress: callback}],
+        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_title.id, messages.mam_enrollment_failed_title.defaultMessage),
+        getLocalizedMessage(resolvedLocale, messages.mam_enrollment_failed_message.id, messages.mam_enrollment_failed_message.defaultMessage),
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
         {cancelable: false},
     );
 };
@@ -465,14 +554,14 @@ export const showMAMDeclinedAlert = async (
     callback: (value: boolean) => void,
     retryCallback: () => void,
 ) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
-    const organization = siteName || translations[messages.organization.id];
-    const message = translations[messages.mam_declined_message.id].replace('{organization}', organization);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
+    const organization = siteName || getLocalizedMessage(resolvedLocale, messages.organization.id, messages.organization.defaultMessage);
+    const message = getLocalizedMessage(resolvedLocale, messages.mam_declined_message.id, messages.mam_declined_message.defaultMessage).replace('{organization}', organization);
 
-    const buttons = await buildSecurityAlertOptions(server, translations, callback, retryCallback);
+    const buttons = await buildSecurityAlertOptions(server, resolvedLocale, callback, retryCallback);
 
     Alert.alert(
-        translations[messages.mam_declined_title.id],
+        getLocalizedMessage(resolvedLocale, messages.mam_declined_title.id, messages.mam_declined_title.defaultMessage),
         message,
         buttons,
         {cancelable: false},
@@ -490,27 +579,27 @@ export const showMAMComplianceFailedAlert = (
     locale?: string,
     callback?: () => void,
 ) => {
-    const translations = getTranslations(locale || DEFAULT_LOCALE);
+    const resolvedLocale = locale || DEFAULT_LOCALE;
 
-    const title = sdkTitle || translations[messages.compliance_alert_title.id];
+    const title = sdkTitle || getLocalizedMessage(resolvedLocale, messages.compliance_alert_title.id, messages.compliance_alert_title.defaultMessage);
 
     let message = sdkMessage;
     if (!message) {
         switch (reason) {
             case 'not_compliant':
-                message = translations[messages.compliance_not_compliant.id];
+                message = getLocalizedMessage(resolvedLocale, messages.compliance_not_compliant.id, messages.compliance_not_compliant.defaultMessage);
                 break;
             case 'network_failure':
-                message = translations[messages.compliance_network_failure.id];
+                message = getLocalizedMessage(resolvedLocale, messages.compliance_network_failure.id, messages.compliance_network_failure.defaultMessage);
                 break;
             case 'service_failure':
-                message = translations[messages.compliance_service_failure.id];
+                message = getLocalizedMessage(resolvedLocale, messages.compliance_service_failure.id, messages.compliance_service_failure.defaultMessage);
                 break;
             case 'user_cancelled':
-                message = translations[messages.compliance_user_cancelled.id];
+                message = getLocalizedMessage(resolvedLocale, messages.compliance_user_cancelled.id, messages.compliance_user_cancelled.defaultMessage);
                 break;
             default:
-                message = translations[messages.compliance_service_failure.id];
+                message = getLocalizedMessage(resolvedLocale, messages.compliance_service_failure.id, messages.compliance_service_failure.defaultMessage);
                 break;
         }
     }
@@ -518,7 +607,7 @@ export const showMAMComplianceFailedAlert = (
     Alert.alert(
         title,
         message,
-        [{text: translations[messages.okay.id], onPress: callback}],
+        [{text: getLocalizedMessage(resolvedLocale, messages.okay.id, messages.okay.defaultMessage), onPress: callback}],
         {cancelable: false},
     );
 };

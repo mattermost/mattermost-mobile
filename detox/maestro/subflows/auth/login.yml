@@ -22,9 +22,13 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: true
+      # # Retry iOS launchApp after a previous batch; do not retry the whole login.
+      - retry:
+          maxRetries: 3
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: true
       # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
@@ -206,7 +210,10 @@ appId: ${MAESTRO_APP_ID}
           maxRetries: 4
           commands:
             - tapOn:
-                text: "Email, Username or AD/LDAP Username"
+                # # Full-string regex: the placeholder is assembled from server
+                # auth config (Email / Username / AD-LDAP segments), so match the
+                # stable ends rather than one server's exact composition.
+                text: "Email.*Username"
             - eraseText: 80
             - inputText: ${TEST_USER_EMAIL}
             - tapOn:
@@ -219,10 +226,21 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 id: "login_options.description.enter_credentials"
                 optional: true
+            # * Empty password keeps testID login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      text: "Password"
+                      optional: true
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
             - extendedWaitUntil:
                 visible:
                   id: "login_form.signin.button"
-                timeout: 20000
+                timeout: 45000
 - runFlow:
     when:
       platform: Android

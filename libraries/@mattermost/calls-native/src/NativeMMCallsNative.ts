@@ -121,7 +121,9 @@ export interface Spec extends TurboModule {
     getAudioRoute: () => Promise<AudioRoute>;
 
     // Ringtone playback. seconds=0 loops indefinitely; seconds>0 auto-stops after that duration (Android only — iOS always loops and relies on stopRingtone()).
-    startRingtone: (name: string, seconds: number) => Promise<void>;
+    // isRingback marks an outbound ringback (progress feedback for a call you placed) rather than an incoming ring. On Android that suppresses
+    // the vibration and plays the tone on the voice-call stream so it follows the call's audio route; iOS ignores it.
+    startRingtone: (name: string, seconds: number, isRingback: boolean) => Promise<void>;
     stopRingtone: () => Promise<void>;
 }
 

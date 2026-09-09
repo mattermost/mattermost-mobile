@@ -4,6 +4,7 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
 
 import client from './client';
@@ -102,16 +103,27 @@ export const waitForClientConfigFlag = async (
     baseUrl: string,
     flagKey: string,
     expectedValue: string,
-    options: {maxAttempts?: number; pollMs?: number} = {},
+    options: {maxAttempts?: number; pollMs?: number; acceptAbsentAsEnabled?: boolean} = {},
 ): Promise<boolean> => {
     const maxAttempts = options.maxAttempts ?? 60;
     const pollMs = options.pollMs ?? timeouts.ONE_SEC;
+    const acceptAbsentAsEnabled = options.acceptAbsentAsEnabled === true && expectedValue === 'true';
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
-        const {config} = await apiGetClientConfigOld(baseUrl);
-        if (config?.[flagKey] === expectedValue) {
-            return true;
+        const {config, error} = await apiGetClientConfigOld(baseUrl);
+        if (!error && config) {
+            const value = config[flagKey];
+            if (String(value) === expectedValue) {
+                return true;
+            }
+
+            // Mobile treats a missing ExperimentalViewArchivedChannels as enabled
+            // (only explicit 'false' turns the feature off). Failed fetches are
+            // not "absent" — keep polling until a successful payload arrives.
+            if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
+                return true;
+            }
         }
 
         if (attempt < maxAttempts - 1) {
@@ -147,13 +159,16 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<any> => {
-    try {
-        // Use config/patch endpoint for partial updates — no need to GET+merge+PUT the full config
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    // A config patch is idempotent: replaying the same partial config converges on
+    // the same server state.
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, newConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
 /**
@@ -179,12 +194,15 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  * @return {Object} returns {config} on success or {error, status} on error
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
-    try {
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+    // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
+            return {config: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiPatchConfig'});
 };
 
 /**

@@ -1,6 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/**
+ * Detox reports a missing atIndex(n) as an index/out-of-bounds error naming how many
+ * elements matched. A non-hittable or obscured element reports a visibility or
+ * hittability failure instead, which must not be treated as "try a lower index".
+ */
+const isIndexOutOfBounds = (error: unknown): boolean => {
+    const message = String((error as {message?: unknown})?.message ?? error).toLowerCase();
+    return message.includes('out of bounds') ||
+        message.includes('index') ||
+        message.includes('but only') ||
+        message.includes('no elements found');
+};
+
 class NavigationHeader {
     testID = {
         backButton: 'navigation.header.back',
@@ -21,6 +34,26 @@ class NavigationHeader {
     searchInput = element(by.id(this.testID.searchInput));
     searchClearButton = element(by.id(this.testID.searchClearButton));
     searchCancelButton = element(by.id(this.testID.searchCancelButton));
+
+    tapBackButton = async (index = 0) => {
+        await element(by.id(this.testID.backButton)).atIndex(index).tap();
+    };
+
+    tapTopmostBackButton = async (maxIndex = 2) => {
+        /* eslint-disable no-await-in-loop */
+        for (let index = maxIndex; index >= 0; index -= 1) {
+            try {
+                await element(by.id(this.testID.backButton)).atIndex(index).tap();
+                return;
+            } catch (error) {
+                if (!isIndexOutOfBounds(error)) {
+                    throw error;
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        throw new Error(`No hittable ${this.testID.backButton} found (tried indices ${maxIndex}..0)`);
+    };
 }
 
 const navigationHeader = new NavigationHeader();

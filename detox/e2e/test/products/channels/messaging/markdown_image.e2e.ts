@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -23,6 +22,22 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
+
+/**
+ * Both tests below assert that a markdown image *renders*, so the URL has to actually serve an
+ * image. When the fetch fails, MarkdownImage sets `failed` and returns a bare broken-image
+ * CompassIcon from an early return that never reaches the `testID='markdown_image'` wrapper
+ * (app/components/markdown/markdown_image/index.tsx) -- so a dead URL surfaces as
+ * "10.0sec timeout expired without matching of given matcher", not as an image error.
+ *
+ * docs.mattermost.com/_images/icon-76x76.png 404s (CI 33936010053 MM-T4896
+ * testFnFailure.png: username row with empty body, no markdown_image). Sphinx rewrites
+ * `_images/` paths whenever the docs rebuild, so that host is not a safe place to pin an
+ * asset. This mattermost.com upload is the same asset file_preview_gallery.e2e.ts uses,
+ * and at 701x701 it stays under the 4096 ANDROID_MAX_WIDTH/HEIGHT cap, which is a second
+ * early return that would likewise drop the testID.
+ */
+const MARKDOWN_IMAGE_URL = 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png';
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
@@ -50,12 +65,11 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_1 - should be able to display markdown image', async () => {
         // # Open a channel screen and post a markdown image
-        const markdownImage = '![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)';
+        const markdownImage = `![Mattermost](${MARKDOWN_IMAGE_URL})`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownImage, testChannel.id, siteOneUrl);
         const {postListPostItem, postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
 
         // Scroll to the post first to ensure it's in view
@@ -70,12 +84,11 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_2 - should be able to display markdown image with link', async () => {
         // # Open a channel screen and post a markdown image with link
-        const markdownImage = '[![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)](https://github.com/mattermost/mattermost-server)';
+        const markdownImage = `[![Mattermost](${MARKDOWN_IMAGE_URL})](https://github.com/mattermost/mattermost-server)`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownImage);
 
         // * Verify markdown image with link is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownImage, testChannel.id, siteOneUrl);
         const {postListPostItem, postListPostItemImage} = ChannelScreen.getPostListPostItem(post.id);
 
         // Scroll to the post first to ensure it's in view

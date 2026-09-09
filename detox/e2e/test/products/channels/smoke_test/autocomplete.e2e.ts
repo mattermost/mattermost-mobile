@@ -8,6 +8,7 @@
 // *******************************************************************
 
 import {
+    Command,
     Post,
     Setup,
 } from '@support/server_api';
@@ -23,18 +24,22 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isIos, timeouts} from '@support/utils';
+import {waitFor} from 'detox';
+
+const itNotIos = isIos() ? it.skip : it;
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
 
     beforeAll(async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         // # Log in to server
@@ -71,11 +76,13 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText(testUser.username);
 
         // * Verify at-mention autocomplete contains associated user suggestion
-        const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
-        await expect(atMentionItem).toExist();
+        const {
+            atMentionItem,
+            atMentionItemUserDisplayName,
+        } = Autocomplete.getAtMentionItem(testUser.id);
 
-        // # Select and post at-mention suggestion
-        await atMentionItem.tap();
+        // # Select and post at-mention suggestion (existence + label tap / tapAtPoint)
+        await Autocomplete.tapSuggestion(atMentionItem, atMentionItemUserDisplayName);
         await ChannelScreen.sendButton.tap();
 
         // * Verify at-mention suggestion is posted
@@ -83,8 +90,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    // Skip iOS: R1+R3 product — channel mention suggestion not hittable at visible point
-    (isIos() ? it.skip : it)('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
+    itNotIos('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
@@ -94,10 +100,9 @@ describe('Smoke Test - Autocomplete', () => {
 
         // * Verify channel mention autocomplete contains associated channel suggestion
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItem).toExist();
+        await waitFor(channelMentionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select and post channel mention suggestion
-        // Default center tap — {x:1,y:1} fails Detox hit-testing on iOS (CI MM-T4886_2).
+        // # Select the row
         await channelMentionItem.tap();
         await ChannelScreen.sendButton.tap();
 
@@ -130,26 +135,31 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, '🦊');
     });
 
-    // Skip Android: CI run 30424009936 (f86f99e1) failed both attempts — the slash autocomplete
-    // never becomes visible after typing "/" (Autocomplete.toBeVisible, 10s).
-    (isAndroid() ? it.skip : it)('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
-        // # Type in "/" to activate slash suggestion autocomplete
+    it('MM-T4886_4 - should be able to select and post slash suggestion', async () => {
+        const slashCommand = 'away';
+        await Command.waitForSlashCommandTrigger(siteOneUrl, testTeam.id, slashCommand, {
+            timeoutMs: timeouts.HALF_MIN,
+        });
+
+        // SlashSuggestion fetches commands on the first "/" and renders nothing until
+        // that list lands, so wait for the slash list rather than the generic
+        // autocomplete container (Android CI: Autocomplete.toBeVisible timed out at 10s).
+        await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.typeText('/');
-        await Autocomplete.toBeVisible();
+        await waitFor(Autocomplete.flatSlashSuggestionList).toExist().withTimeout(timeouts.HALF_MIN);
 
         // # Type in slash command name
-        const slashCommand = 'away';
         await ChannelScreen.postInput.typeText(slashCommand);
 
         // * Verify slash suggestion autocomplete contains associated slash command suggestion
         const {slashSuggestionItem} = Autocomplete.getSlashSuggestionItem(slashCommand);
-        await expect(slashSuggestionItem).toExist();
+        await waitFor(slashSuggestionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Select and post slash suggestion
         await slashSuggestionItem.tap();
-        await ChannelScreen.sendButton.tap();
+        await ChannelScreen.tapSendButton();
 
         // * Verify slash suggestion is posted
-        await expect(element(by.text('You are now away'))).toBeVisible();
+        await waitFor(element(by.text('You are now away'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
     });
 });

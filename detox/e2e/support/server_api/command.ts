@@ -5,7 +5,9 @@ import client from './client';
 import {getResponseFromError} from './common';
 
 type SlashCommand = {
-    trigger: string;
+    trigger?: string;
+    Complete?: string;
+    Suggestion?: string;
 };
 
 type WaitForSlashCommandOptions = {
@@ -83,7 +85,11 @@ export const waitForSlashCommandTrigger = async (
     const poll = async (): Promise<SlashCommand> => {
         const result = await apiGetTeamCommands(baseUrl, teamId);
         if (Array.isArray(result.commands)) {
-            const command = result.commands.find((item: SlashCommand) => item.trigger === trigger);
+            const command = result.commands.find((item: SlashCommand) => {
+                return item.trigger === trigger ||
+                    item.Complete === trigger ||
+                    item.Suggestion === `/${trigger}`;
+            });
             if (command) {
                 return command;
             }

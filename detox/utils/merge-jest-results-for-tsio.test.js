@@ -14,6 +14,7 @@ const {
     toTsioDetoxSuite,
     relativizeDetoxPath,
     writeMergedJestResultsForTsio,
+    appendMissingShardStub,
 } = require('./merge-jest-results-for-tsio');
 
 describe('merge-jest-results-for-tsio', () => {
@@ -155,5 +156,31 @@ describe('merge-jest-results-for-tsio', () => {
         assert.equal(JSON.parse(fs.readFileSync(out, 'utf8')).testResults.length, 2);
 
         fs.rmSync(dir, {recursive: true, force: true});
+    });
+
+    it('should append a failed stub when fewer shard reports than expected', () => {
+        const merged = mergeJestResultsForTsio([]);
+        appendMissingShardStub(merged, 7, 10);
+        assert.equal(merged.testResults.length, 1);
+        assert.equal(merged.testResults[0].testFilePath, 'ci/missing-shards.stub');
+        assert.equal(merged.testResults[0].testResults[0].status, 'failed');
+        assert.match(merged.testResults[0].testResults[0].failureMessages[0], /3 of 10/);
+    });
+
+    it('should not append a stub when all expected shards reported', () => {
+        const merged = {testResults: [{testFilePath: 'a'}]};
+        appendMissingShardStub(merged, 10, 10);
+        assert.equal(merged.testResults.length, 1);
+    });
+
+    it('should still produce a stub when every shard report is missing', () => {
+        // The zero-input case is the one that matters most: if the merge exits before
+        // stubbing, TSIO never receives a report and the commit status stays pending
+        // instead of failing.
+        const merged = mergeJestResultsForTsio([]);
+        appendMissingShardStub(merged, 0, 22);
+        assert.equal(merged.testResults.length, 1, 'a run with no shard reports must still emit a report');
+        assert.equal(merged.testResults[0].testResults[0].status, 'failed');
+        assert.match(merged.testResults[0].testResults[0].failureMessages[0], /22 of 22/);
     });
 });

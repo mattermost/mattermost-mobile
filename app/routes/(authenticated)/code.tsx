@@ -8,7 +8,7 @@ import CodeScreen, {type CodeScreenProps} from '@screens/code';
 export default function CodeRoute() {
     const {code, title, ...props} = usePropsFromParams<CodeScreenProps & {title: string}>();
 
-    useAppNavigationHeader(title);
+    useAppNavigationHeader(title, false, 0, false, 'code.screen.title');
 
     return (
         <CodeScreen

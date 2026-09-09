@@ -66,6 +66,7 @@ describe('SendButton', () => {
         await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
         const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
         unmount = u;
+
         await waitFor(() => expect(getByTestId('send-button').props.scheduledPostFeatureTooltipWatched).toBe(true));
     });
 });

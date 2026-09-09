@@ -150,6 +150,50 @@ jobs:
           fi
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
+  # PR E2E runs detox provision (demo plugin, license, config) before tests.
+  # CMT previously skipped that and only used Matterwick-booted servers, so
+  # interactive_dialog_plugin failed 24× with "Demo plugin is not active".
+  provision-cmt-servers:
+    name: Provision CMT test servers
+    runs-on: ubuntu-24.04
+    needs:
+      - calculate-commit-hash
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+          persist-credentials: false
+
+      - name: Collect unique matrix server URLs
+        id: urls
+        env:
+          CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
+        run: |
+          URLS=$(echo "$CMT_MATRIX" | jq -r '
+            .server[]
+            | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url
+            | select(. != null and . != "")
+          ' | awk 'NF && !seen[$0]++')
+          if [ -z "$URLS" ]; then
+            echo "::error::CMT_MATRIX contained no server URLs to provision"
+            exit 1
+          fi
+          echo "Provisioning $(echo "$URLS" | wc -l | tr -d ' ') unique server(s)"
+          {
+            echo "list<<EOF"
+            printf '%s\n' "$URLS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Provision test servers
+        uses: ./.github/actions/provision-e2e-servers
+        env:
+          ADMIN_USERNAME: ${{ secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+        with:
+          server-urls: ${{ steps.urls.outputs.list }}
+
   # Input follows the below schema
   # {
   #   "server": [
@@ -299,6 +343,7 @@ jobs:
     needs:
       - build-ios-simulator
       - cmt-identity
+      - provision-cmt-servers
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -341,6 +386,7 @@ jobs:
     needs:
       - build-ios-simulator
       - cmt-identity
+      - provision-cmt-servers
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -388,6 +434,7 @@ jobs:
       - build-ios-simulator
       - prepare-maestro-matrix
       - cmt-identity
+      - provision-cmt-servers
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
@@ -425,6 +472,7 @@ jobs:
     needs:
       - build-android-apk
       - cmt-identity
+      - provision-cmt-servers
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(inputs.CMT_MATRIX) }}
@@ -470,6 +518,7 @@ jobs:
       - build-android-apk-maestro
       - prepare-maestro-matrix
       - cmt-identity
+      - provision-cmt-servers
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare-maestro-matrix.outputs.matrix) }}
@@ -504,6 +553,7 @@ jobs:
     needs:
       - cmt-identity
       - calculate-commit-hash
+      - provision-cmt-servers
       - detox-e2e
       - detox-android-e2e
       - detox-ipad-e2e
@@ -519,7 +569,7 @@ jobs:
         id: upstream
         run: |
           UPSTREAM="true"
-          for r in "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
+          for r in "${{ needs.provision-cmt-servers.result }}" "${{ needs.detox-e2e.result }}" "${{ needs.detox-android-e2e.result }}" "${{ needs.detox-ipad-e2e.result }}" "${{ needs.maestro-ios-e2e.result }}" "${{ needs.maestro-android-e2e.result }}"; do
             case "$r" in
               success|skipped) ;;
               *) UPSTREAM="false" ;;

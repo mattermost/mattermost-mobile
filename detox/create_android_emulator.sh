@@ -4,6 +4,9 @@
 set -ex
 set -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 SDK_VERSION=${1:-35}           # First argument is SDK version
 AVD_BASE_NAME=${2:-"detox_pixel_8"}  # Second argument is AVD base name (no api suffix — added below)
 AVD_NAME="${AVD_BASE_NAME}_api_${SDK_VERSION}"
@@ -11,7 +14,8 @@ TEST_FILES=("${@:3}")          # Capture all remaining arguments as Detox test f
 EMULATOR_RAM_MB=${MM_ANDROID_EMULATOR_RAM_MB:-3072}
 
 setup_avd_home() {
-    if [[ "$CI" == "true" ]]; then
+    # ${CI:-} so `set -u` cannot abort the TESTS_ONLY retry path on a local run.
+    if [[ "${CI:-}" == "true" ]]; then
         export ANDROID_AVD_HOME=$(pwd)/.android/avd
         mkdir -p "$ANDROID_AVD_HOME"
     fi
@@ -184,19 +188,60 @@ configure_emulator_for_tests() {
     adb shell setprop sys.timezone "America/New_York" 2>/dev/null || true
     adb shell am broadcast -a android.intent.action.TIMEZONE_CHANGED \
         --ez bypassUserRestrictions true 2>/dev/null || true
+    keep_display_awake
     configure_chrome_for_ci
+}
+
+# Espresso resolves its root view by asking for the window that currently has
+# focus. If the display sleeps or the keyguard comes back, every window reports
+# has-window-focus=false and each launch fails with "Waited for the root of the
+# view hierarchy to have window focus and not request layout for 10 seconds"
+# before the app is ever given a chance to render.
+keep_display_awake() {
+    adb shell svc power stayon true 2>/dev/null || true
+    adb shell settings put system screen_off_timeout 2147483647 2>/dev/null || true
+    adb shell input keyevent KEYCODE_WAKEUP 2>/dev/null || true
+    adb shell wm dismiss-keyguard 2>/dev/null || true
+    adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
 }
 
 configure_chrome_for_ci() {
     adb shell 'mkdir -p /data/local/tmp' 2>/dev/null || true
     adb shell 'echo "chrome --disable-fre --no-first-run --no-default-browser-check" > /data/local/tmp/chrome-command-line' 2>/dev/null || true
+    # Chrome only reads /data/local/tmp/chrome-command-line at process start, so it
+    # has to be started once for the flags to stick.
     adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main 2>/dev/null || true
     sleep 3
-    adb shell input keyevent 4 2>/dev/null || true
+    # A single BACK is not enough to get rid of Chrome: on swiftshader it is often
+    # still on its splash 3s in, so the keyevent lands on a window that ignores it
+    # and Chrome stays foregrounded holding window focus. Force-stop it instead and
+    # go back to the launcher, so the next window to take focus is the app Detox
+    # launches.
+    adb shell am force-stop com.android.chrome 2>/dev/null || true
+    adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
+}
+
+# Fail fast and loudly here rather than 10s at a time inside every beforeAll.
+wait_for_focused_window() {
+    local timeout=60 elapsed=0 focus=""
+    while (( elapsed < timeout )); do
+        focus=$(adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -m1 -E 'mCurrentFocus=' || true)
+        if [[ -n "$focus" && "$focus" != *"mCurrentFocus=null"* ]]; then
+            echo "Emulator has a focused window: ${focus}"
+            return 0
+        fi
+        echo "No focused window yet (${elapsed}s): ${focus:-<none>}"
+        keep_display_awake
+        sleep 5
+        elapsed=$(( elapsed + 5 ))
+    done
+    echo "ERROR: no focused window after ${timeout}s — Espresso root matching is expected to fail"
+    adb shell dumpsys window 2>/dev/null | tr -d '\r' | grep -E 'mCurrentFocus|mFocusedApp' || true
+    return 1
 }
 
 push_e2e_fixtures() {
-    local fixture="../detox/e2e/support/fixtures/image.png"
+    local fixture="${SCRIPT_DIR}/e2e/support/fixtures/image.png"
     if [[ -f "$fixture" ]]; then
         adb push "$fixture" /sdcard/Download/test_bookmark.png
         echo "Pushed test fixture to /sdcard/Download/test_bookmark.png"
@@ -207,7 +252,7 @@ push_e2e_fixtures() {
 
 start_server() {
     echo "Starting the server..."
-    cd ..
+    cd "$REPO_ROOT"
     RUNNING_E2E=true npm run start &
     local timeout=120 interval=5 elapsed=0
 
@@ -283,13 +328,67 @@ setup_adb_reverse() {
 run_detox_tests() {
     echo "Running Detox tests... $@"
 
-    cd detox
+    cd "$SCRIPT_DIR"
     AVD_NAME="$AVD_NAME" npm run detox:config-gen
     mkdir -p artifacts
     npm run e2e:android-test -- "$@" -- --json --outputFile=artifacts/jest-results.json
 }
 
+emulator_is_ready() {
+    adb devices 2>/dev/null | grep -qE '^emulator-[0-9]+\s+device' || return 1
+    [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]] || return 1
+    adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
+}
+
+reset_app_for_retry() {
+    local bundle_id="com.mattermost.rnbeta"
+    echo "Resetting app state for failed-spec retry..."
+    adb shell input keyevent KEYCODE_HOME 2>/dev/null || true
+    adb shell am force-stop "$bundle_id" 2>/dev/null || true
+    adb shell pm clear "$bundle_id" 2>/dev/null || true
+    if ! adb shell pm list packages 2>/dev/null | grep -q "$bundle_id"; then
+        echo "App missing after pm clear — reinstalling"
+        install_app
+    fi
+}
+
+run_tests_only() {
+    # The AVD lives under ANDROID_AVD_HOME (detox/.android/avd), not the default
+    # ~/.android/avd. main() only exports it on the cold-boot path, so the retry
+    # used to reach Detox with it unset: AVDValidator ran `emulator -list-avds`
+    setup_avd_home
+
+    if ! emulator_is_ready; then
+        echo "TESTS_ONLY: emulator is not ready"
+        exit 2
+    fi
+
+    # Exit 2 is the caller's "retry the cold-boot way" signal. Falling back beats
+    # failing the shard outright if the AVD is somehow still not visible.
+    if ! emulator -list-avds | grep -q "$AVD_NAME"; then
+        echo "TESTS_ONLY: '${AVD_NAME}' not listed under ANDROID_AVD_HOME=${ANDROID_AVD_HOME:-<unset>} — falling back to cold boot"
+        exit 2
+    fi
+    reset_app_for_retry
+    grant_android_runtime_permissions
+    configure_emulator_for_tests
+    setup_adb_reverse
+    if ! nc -z localhost 8081 2>/dev/null; then
+        echo "Metro is down — restarting"
+        start_server
+    fi
+    push_e2e_fixtures
+    run_detox_tests "$@"
+}
+
 main() {
+    cd "$SCRIPT_DIR"
+
+    if [[ "${TESTS_ONLY:-}" == "true" ]]; then
+        run_tests_only "${TEST_FILES[@]}"
+        return
+    fi
+
     setup_avd_home
 
     if ! emulator -list-avds | grep -q "$AVD_NAME"; then
@@ -316,6 +415,7 @@ main() {
             setup_adb_reverse
         fi
         push_e2e_fixtures
+        wait_for_focused_window
     fi
 
     if [[ "${BOOTSTRAP_ONLY:-}" == "true" ]]; then

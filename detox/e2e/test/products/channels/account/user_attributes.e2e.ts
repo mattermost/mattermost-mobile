@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Post, Setup} from '@support/server_api';
+import {Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     AccountScreen,
@@ -22,7 +22,7 @@ import {
 import {
     assertUserAttributesReady,
     ensureCustomProfileAttributesFeatureFlag,
-    getCustomAttributeInputByName,
+    getCustomAttributeInput,
     probeUserAttributesProvision,
     scrollProfileAttributeIntoView,
     seedUserAttributeValues,
@@ -33,9 +33,7 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// Spinwick does not yet set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES, and the server
-// forces the client flag back to false after API config updates.
-describe.skip('Account - User Attributes', () => {
+describe('Account - User Attributes', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
@@ -122,11 +120,12 @@ describe.skip('Account - User Attributes', () => {
         await AccountScreen.open();
         await EditProfileScreen.open();
         await EditProfileScreen.toBeVisible();
-        await waitForEditProfileCustomAttributes();
+        const [bioFieldId, deptFieldId, teamFieldId] = fieldIds!;
+        await waitForEditProfileCustomAttributes(bioFieldId);
 
         if (isAndroid()) {
-            const fillField = async (fieldName: typeof USER_ATTRIBUTE_FIELD_NAMES[number], value: string, scrollAmount: number) => {
-                const input = getCustomAttributeInputByName(fieldName);
+            const fillField = async (fieldId: string, value: string, scrollAmount: number) => {
+                const input = getCustomAttributeInput(fieldId);
                 await waitFor(input).
                     toBeVisible().
                     whileElement(by.id(EditProfileScreen.testID.scrollView)).
@@ -136,21 +135,31 @@ describe.skip('Account - User Attributes', () => {
                 await input.replaceText(value);
                 await expect(input).toHaveText(value);
             };
-            await fillField(USER_ATTRIBUTE_FIELD_NAMES[0], attrValue1, 300);
-            await fillField(USER_ATTRIBUTE_FIELD_NAMES[1], attrValue2, 200);
-            await fillField(USER_ATTRIBUTE_FIELD_NAMES[2], attrValue3, 200);
+            await fillField(bioFieldId, attrValue1, 300);
+            await fillField(deptFieldId, attrValue2, 200);
+            await fillField(teamFieldId, attrValue3, 200);
         } else {
-            const bioInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[0]);
-            const deptInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[1]);
-            const teamInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[2]);
+            const bioInput = getCustomAttributeInput(bioFieldId);
+            const deptInput = getCustomAttributeInput(deptFieldId);
+            const teamInput = getCustomAttributeInput(teamFieldId);
 
             await waitFor(bioInput).
                 toBeVisible().
                 whileElement(by.id(EditProfileScreen.testID.scrollView)).
                 scroll(300, 'down');
+
+            // clearText before every typeText: these fields arrive pre-filled with the
+            // API-seeded values, and typeText appends. Without this the saved attribute
+            // became "Mobile engineerMobile engineer" and MM-T5781_2 then failed reading it
+            // back. The Android branch above already clears for the same reason.
             await bioInput.tap();
+            await bioInput.clearText();
             await bioInput.typeText(`${attrValue1}\n`);
+            await deptInput.tap();
+            await deptInput.clearText();
             await deptInput.typeText(`${attrValue2}\n`);
+            await teamInput.tap();
+            await teamInput.clearText();
             await teamInput.typeText(attrValue3);
         }
 
@@ -161,10 +170,9 @@ describe.skip('Account - User Attributes', () => {
 
     it('MM-T5781_2 - should display user attribute values in profile pop-over when tapping on post username', async () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage('Checking user attributes');
         await wait(timeouts.ONE_SEC);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify('Checking user attributes', testChannel.id, siteOneUrl);
         const {postListPostItemHeaderDisplayName} = ChannelScreen.getPostListPostItem(post.id, 'Checking user attributes');
         await postListPostItemHeaderDisplayName.tap();
         await wait(timeouts.ONE_SEC);

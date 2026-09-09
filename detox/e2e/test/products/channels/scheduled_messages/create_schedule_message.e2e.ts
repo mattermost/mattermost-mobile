@@ -32,10 +32,6 @@ import {
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
-// Scheduled-message timestamps render as "Invalid Date" on iOS, so these run on Android
-// only. Same root cause as MM-T5720 below (CI run 30000635898).
-const itAndroidOnly = isIos() ? it.skip : it;
-
 describe('Scheduled Draft,', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -65,6 +61,10 @@ describe('Scheduled Draft,', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+
+        // The schedule labels are rendered in the device's timezone, which is not the Node
+        // runner's in CI. Resolve it once from the timezone the app itself pushed on login.
+        await ScheduleMessageScreen.resolveDeviceTimeZone(siteOneUrl, testUser.id);
     });
 
     beforeEach(async () => {
@@ -77,7 +77,7 @@ describe('Scheduled Draft,', () => {
         await HomeScreen.logout();
     });
 
-    itAndroidOnly('MM-T5762 should be able to create a scheduled message', async () => {
+    it('MM-T5762 should be able to create a scheduled message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -97,7 +97,7 @@ describe('Scheduled Draft,', () => {
         await DraftScreen.backButton.tap();
     });
 
-    itAndroidOnly('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
+    it('MM-T5767 should be able to create a scheduled message under a threaded post', async () => {
         const parentMessage = 'Root Post for Scheduled Message';
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -143,7 +143,7 @@ describe('Scheduled Draft,', () => {
         await ChannelScreen.back();
     });
 
-    itAndroidOnly('MM-T5731 should be able to Delete a scheduled Message', async () => {
+    it('MM-T5731 should be able to Delete a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -164,7 +164,7 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    itAndroidOnly('MM-T5730 should be able to Send a scheduled Message', async () => {
+    it('MM-T5730 should be able to Send a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);
@@ -197,8 +197,24 @@ describe('Scheduled Draft,', () => {
         await verifyScheduledScheduledMessageDoesNotExist();
     });
 
-    // Skip both: CI run 30000635898 — iOS renders "Invalid Date" and Android cascades during channel setup.
-    it.skip('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
+    // Reschedule UI path is iOS-only below (Android native date picker is not Detox-interactable).
+    //
+    // Skipped on iOS: the Drafts > Scheduled row renders "Send on Invalid Date" on every iOS
+    // run and never on Android, so the assertion below fails deterministically. The cause is a
+    // user timezone that iOS Hermes (Foundation) cannot format while Android (ICU) and
+    // moment-timezone both accept it -- the row's other timestamp, built from the same
+    // getUserTimezone(currentUser) via FormattedTime, renders correctly in the same screenshot.
+    //
+    // The exact value is NOT yet identified, and two attempts at fixing it from inference were
+    // both wrong (a timezone-sync poll, and dropping a falsy timeZone -- reverted). What IS
+    // established, by local reproduction: an *empty* timezone is not the cause, because it
+    // crashes the app outright ("TypeError: Cannot read property 'set' of undefined" in
+    // ScheduledPostCoreOptions) rather than mis-formatting. In CI the app stays alive and
+    // renders, so its timezone is non-empty.
+    //
+    // Restores the state this test was in before #10123 unskipped it. Re-enable once the
+    // rejected timezone value has been captured from a CI run and handled.
+    (isIos() ? it.skip : it)('MM-T5720 should be able to Reschedule a scheduled Message', async () => {
         const scheduledMessageText = 'Scheduled Message In a channel';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.enterMessageToSchedule(scheduledMessageText);

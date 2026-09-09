@@ -29,6 +29,9 @@ outputs:
   specs:
     description: The specs generated for the strategy
     value: ${{ steps.generate-specs.outputs.specs }}
+  shard_count:
+    description: Number of matrix shards in specs.include (for TSIO missing-shard checks)
+    value: ${{ steps.generate-specs.outputs.shard_count }}
 runs:
   using: "composite"
   steps:
@@ -51,4 +54,5 @@ runs:
           exit 1
         fi
         echo "specs=$(cat output.json)" >> "$GITHUB_OUTPUT"
+        echo "shard_count=$(jq '.include | length' output.json)" >> "$GITHUB_OUTPUT"
       shell: bash

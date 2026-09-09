@@ -2,9 +2,13 @@
 # screen, but without the app logs or the attach-app-logs toggle.
 #
 # PRE-CONDITIONS:
-#   - Server SupportSettings.AllowDownloadLogs=false (patched in CI before this flow runs)
 #   - Logged-in test user
-#   - CI restores AllowDownloadLogs=true after this flow (exclude-tag + dedicated step)
+#   - The flow patches SupportSettings.AllowDownloadLogs=false itself in onFlowStart and
+#     restores true in onFlowComplete (fixtures/set_allow_download_logs.js), so a local
+#     `maestro test` of this file behaves the same as CI. Tagged MM-T67856_4 and listed in
+#     config/exclude_tags.json so the default batch does not run it with the flag flipped;
+#     CI keeps a standalone always() restore step for runner hard-kills, which never reach
+#     onFlowComplete.
 #
 # REQUIRED ENV VARS:
 #   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, SITE_1_URL, ADMIN_TOKEN
@@ -26,6 +30,16 @@
 tags:
   - MM-T67856_4
 appId: ${MAESTRO_APP_ID}
+onFlowStart:
+  - runScript:
+      file: ../../fixtures/set_allow_download_logs.js
+      env:
+        ALLOW_DOWNLOAD_LOGS: "false"
+onFlowComplete:
+  - runScript:
+      file: ../../fixtures/set_allow_download_logs.js
+      env:
+        ALLOW_DOWNLOAD_LOGS: "true"
 ---
 # # Log in as the test user
 - runFlow: ../../subflows/auth/login.yml

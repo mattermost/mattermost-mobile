@@ -33,7 +33,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect} from 'detox';
 
 describe('Search - Recent Mentions', () => {
@@ -115,11 +115,6 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // * Verify the fixture mention is displayed with channel + team info.
-        // Wait on the specific post (by id) — the generic
-        // `recentMentionPostListToBeVisible()` helper matches the bare
-        // `recent_mentions.post_list.post` tag, which is ambiguous when
-        // multiple fixtures live in the feed.
         const {
             postListPostItem: recentMentionsPostListPostItem,
             postListPostItemChannelInfoChannelDisplayName,
@@ -148,26 +143,24 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Skip: depends on app-side Saved Messages observe() fix (not in this PR).
-    it.skip('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
+    it('MM-T4909_4 - should be able to save/unsave a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
         // # Open post options for the fixture mention and tap Save
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id);
         await PostOptionsScreen.savePostOption.tap();
 
         await Post.waitForPostFlagged(siteOneUrl, testUser.id, mentionPost.id);
         await SavedMessagesScreen.open();
 
         // * Verify mention appears on saved messages screen
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
+        await SavedMessagesScreen.waitForPostInList(mentionPost.id, mentionPost.messageText);
 
         // # Unsave: back to recent mentions, open post options, tap Unsave
         await RecentMentionsScreen.open();
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
+        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id);
         await PostOptionsScreen.unsavePostOption.tap();
 
         // Confirm the server dropped the flag before opening the screen, otherwise it can
@@ -187,9 +180,18 @@ describe('Search - Recent Mentions', () => {
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // # Open post options for the fixture mention and tap Pin to Channel
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-        await PostOptionsScreen.pinPostOption.tap();
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
+
+        // Keep sync off only while the post-options sheet is active. The tap helper waits
+        // for dismissal; server state and the visible mentions screen form the idle boundary.
+        await withSynchronizationDisabled(async () => {
+            // # Open post options for the fixture mention and tap Pin to Channel
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id);
+            await PostOptionsScreen.tapPinPost();
+            await Post.waitForPostPinned(siteOneUrl, testChannel.id, mentionPost.id);
+            await RecentMentionsScreen.toBeVisible();
+            await wait(timeouts.ONE_SEC);
+        });
 
         // # Navigate to the channel's Pinned Messages screen
         await ChannelListScreen.open();
@@ -198,19 +200,20 @@ describe('Search - Recent Mentions', () => {
         await PinnedMessagesScreen.open();
 
         // * Verify mention is displayed on pinned messages screen
-        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(mentionPost.id, mentionPost.messageText);
-        await expect(postListPostItem).toBeVisible();
+        await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
 
         // # Unpin and verify removal
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
         await RecentMentionsScreen.open();
-        await RecentMentionsScreen.openPostOptionsFor(mentionPost.id, mentionPost.messageText);
-
-        // Tap an explicit point: the unpin option is not always 100% visible in the bottom sheet,
-        // which fails iOS hittability checks.
-        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
+        await withSynchronizationDisabled(async () => {
+            await RecentMentionsScreen.openPostOptionsFor(mentionPost.id);
+            await PostOptionsScreen.tapUnpinPost();
+            await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, mentionPost.id);
+            await RecentMentionsScreen.toBeVisible();
+            await wait(timeouts.ONE_SEC);
+        });
 
         // * Verify mention is no longer pinned
         await ChannelListScreen.open();
@@ -226,15 +229,13 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    // Must run last — mutates the shared mention fixture. Skip: the edited mention UI never
-    // updates on Android CI (29cdff, 59ec6ae, a4c0e33).
     it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
         // # Open post options for the testUser-owned mention and tap Edit
-        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id, ownMentionPost.messageText);
+        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id);
         await PostOptionsScreen.editPostOption.tap();
         await EditPostScreen.toBeVisible();
 
@@ -252,16 +253,11 @@ describe('Search - Recent Mentions', () => {
             updatedMessage,
         );
 
-        // Force a mentions refetch so the list shows the edited body (CI 59ec6ae
-        // matched /edit$/ against a stale row that never updated).
-        await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();
 
-        // * Verify the edited state in the recent-mentions UI.
+        // * Refresh and verify the edited state in the recent-mentions UI.
         await RecentMentionsScreen.verifyPostEdited(ownMentionPost.id, updatedMessage);
-
-        // # Open post options via header date_time long-press (avoids the @mention tap handler)
-        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);
+        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id);
         await PostOptionsScreen.replyPostOption.tap();
         await ThreadScreen.toBeVisible();
 
@@ -278,12 +274,12 @@ describe('Search - Recent Mentions', () => {
         await ThreadScreen.back();
         await waitForElementToBeVisible(element(by.text('1 reply')), timeouts.TEN_SEC);
 
-        // # Delete the post via post options
-        await element(by.id('post_header.date_time').withAncestor(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).longPress(timeouts.TWO_SEC);
+        // # Delete the post via post options (same helper, same reason as above)
+        await RecentMentionsScreen.openPostOptionsFor(ownMentionPost.id);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify mention is removed
-        await expect(element(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).not.toExist();
+        await waitFor(element(by.id(`recent_mentions.post_list.post.${ownMentionPost.id}`))).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelListScreen.open();

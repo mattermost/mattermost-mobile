@@ -57,6 +57,15 @@ jobs:
           echo "::group::detox-typecheck"
           cd detox && npm run tsc
           echo "::endgroup::"
+      # Also validated by the E2E workflow, but that one is label-gated, so a header
+      # contract break could sit unreported until someone asked for an E2E run. This
+      # job is unconditional and finishes in about a minute.
+      - name: ci/detox-validate-flow-headers
+        shell: bash
+        run: |
+          echo "::group::detox-validate-flow-headers"
+          bash detox/maestro/scripts/validate-flow-headers.sh
+          echo "::endgroup::"
 
   test:
     runs-on: ubuntu-22.04

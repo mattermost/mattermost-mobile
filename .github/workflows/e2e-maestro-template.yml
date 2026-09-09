@@ -154,11 +154,6 @@ jobs:
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
 
-      # disable_ios_autofill.js (called later during simulator boot) lives in
-      # detox/utils/ and requires `shelljs` from detox/package.json. The repo-root
-      # `prepare-node-deps` only installs top-level node_modules, so we need a
-      # separate install for the detox sub-package or the script throws
-      # `Cannot find module 'shelljs'`.
       - name: Install Detox Dependencies
         run: cd detox && npm ci --prefer-offline --no-audit --no-fund
 
@@ -203,9 +198,6 @@ jobs:
           unzip -o mobile-artifacts/*.zip -d mobile-artifacts/
           rm -f mobile-artifacts/*.zip
 
-      # Maestro-only: enable Files-app access for channel_bookmark_file picker flows.
-      # Must patch Info.plist before simctl install (see e2e-maestro-template comment
-      # in the prior Install step).
       - name: Patch iOS app Info.plist for file-sharing flows
         run: |
           APP_PATH=$(find mobile-artifacts -name "*.app" -maxdepth 2 | head -1)
@@ -220,10 +212,6 @@ jobs:
             plutil -insert LSSupportsOpeningDocumentsInPlace -bool true "$APP_PATH/Info.plist" 2>/dev/null || true
           echo "UIFileSharingEnabled patched in $APP_PATH/Info.plist"
 
-      # Same simulator boot / autofill / install sequence as Detox iOS CI.
-      # Skip pre-warm: Maestro login.yml uses clearState:true every flow, so a
-      # pre-warm launch is discarded immediately and can leave launchd in a
-      # bad state on iOS 26 before the first Maestro launchApp.
       - name: Pre-boot iOS Simulator (Detox-compatible)
         env:
           DEVICE_NAME: ${{ env.E2E_IOS_DEVICE_NAME }}
@@ -279,12 +267,6 @@ jobs:
           ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
 
       - name: Push test fixture into iOS simulator
-        # Required by detox/maestro/flows/channels/channel_bookmark_file.yml: the
-        # iOS document picker can only see files that already exist in the
-        # local File Provider storage at maestro launch time. We drop the
-        # detox image fixture there so the picker's "On My iPhone > Browse"
-        # path can reach it. Android does the equivalent via `adb push` in
-        # the Android job below.
         continue-on-error: true
         run: |
           set +e
@@ -317,13 +299,8 @@ jobs:
           echo $! > build/sim-device.pid
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
-      # Gate the suite on connectivity so an infra failure is reported as infra rather
-      # than as a test failure in whichever flow happens to run first. CI 30466684108:
-      # the simulator's TLS handshake to SITE_1_URL was cancelled during trust evaluation
-      # against a valid chain, the app issued zero /api/v4 requests, and the failure
-      # surfaced as a home-tab assertion inside attach_logs. Also warms the device's
-      # trust evaluation before the reported flows run.
       - name: Pre-flight — simulator can reach test server
+        id: maestro-ios-preflight
         env:
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
         run: |
@@ -344,6 +321,10 @@ jobs:
           exit 1
 
       - name: Run Maestro Flows (iOS)
+        # CI 33936010053: this step ran 64m then the runner died (completed_at
+        # null, logs BlobNotFound). always() TSIO stub/upload never ran, so
+        # e2e-test/maestro-ios stayed pending. Cap the step so those steps run.
+        timeout-minutes: 50
         continue-on-error: true
         env:
           FLOW_PATH: ${{ inputs.flow-path }}
@@ -381,35 +362,19 @@ jobs:
           fi
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (iOS)
-        # Isolated step: patch the server config to AllowDownloadLogs=false,
-        # run the single flow, then restore. Always restore even on failure.
-        # Failure here does not fail the job — the main report is the source
-        # of truth; this is additive coverage.
-        if: always()
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
         continue-on-error: true
         run: |
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
 
-          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
-          # in the Mattermost server config — verified during local maestro
-          # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          # Always restore the default before exiting this step, regardless
-          # of whether the maestro run passes.
-          trap 'curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
-            echo "==> Restored AllowDownloadLogs=true"' EXIT
+          # The flow flips SupportSettings.AllowDownloadLogs=false in its own
+          # onFlowStart hook and restores true in onFlowComplete
+          # (detox/maestro/fixtures/set_allow_download_logs.js), so this step
+          # only runs it; a local `maestro test` of the same file does the same.
+          # The always() restore step below stays as the safety net for runner
+          # hard-kills, which never reach onFlowComplete.
 
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
@@ -425,6 +390,28 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Standalone restore independent of the dedicated T67856_4 step:
+          # its in-step EXIT trap does not fire on runner hard-kills and is
+          # skipped entirely when the step is skipped, while transient restore
+          # failures are masked by continue-on-error. Setting true when already
+          # true is a harmless no-op, which keeps this safe when multiple jobs
+          # share one server and a concurrent job re-flipped the flag.
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()
@@ -651,8 +638,6 @@ jobs:
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'Maestro E2E Tests (Android)' }}
     if: ${{ inputs.platform == 'android' }}
     runs-on: ubuntu-latest-8-cores
-    # Match iOS (90). CI 30447839548: apt-get update ~38m then suite cancelled mid leave_call
-    # at 60m with 7 passed / 0 failures (SHARD_CANCELLED → STATUS=error).
     timeout-minutes: 90
     outputs:
       STATUS: ${{ steps.determine-status.outputs.STATUS }}
@@ -669,12 +654,15 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Moved before node/Maestro/seed: zero deps on checkout beyond the action,
-      # and apt-get update can be slow (~38m on run 30447839548).
       - name: Install system dependencies
+        timeout-minutes: 6
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libpulse0 scrot ffmpeg xvfb
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y --no-install-recommends "${PACKAGES[@]}"
+          }
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps
@@ -877,32 +865,23 @@ jobs:
           detox/maestro/scripts/run_ci_batches.sh --platform android
 
       - name: Run MM-T67856_4 with AllowDownloadLogs=false (Android)
-        # Isolated step: patch server config to AllowDownloadLogs=false, run
-        # the single flow, restore on exit. continue-on-error so the main
-        # report stays authoritative.
-        if: always()
+        # Isolated step: the flow patches AllowDownloadLogs=false in onFlowStart and
+        # restores it in onFlowComplete, so it must not share a batch with attach_logs.yml.
+        # continue-on-error keeps the main batch report authoritative.
+        # Skip when seed never wrote the env file (e.g. inactive Matterwick site).
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
         continue-on-error: true
         run: |
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
 
-          # AllowDownloadLogs lives under SupportSettings (not ServiceSettings)
-          # in the Mattermost server config — verified during local maestro
-          # iteration against SITE_1_URL.
-          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
-
-          trap 'curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"SupportSettings\":{\"AllowDownloadLogs\":true}}" \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
-            echo "==> Restored AllowDownloadLogs=true"' EXIT
+          # The flow flips SupportSettings.AllowDownloadLogs=false in its own
+          # onFlowStart hook and restores true in onFlowComplete
+          # (detox/maestro/fixtures/set_allow_download_logs.js), so this step
+          # only runs it; a local `maestro test` of the same file does the same.
+          # The always() restore step below stays as the safety net for runner
+          # hard-kills, which never reach onFlowComplete.
 
           ~/.maestro/bin/maestro test \
             --format junit \
@@ -918,6 +897,24 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Restore AllowDownloadLogs baseline (self-healing)
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          # # Android copy of the iOS restore step — see that step for the
+          # rationale (trap-less hard-kill and skip-path coverage).
+          echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
+          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
         if: always()

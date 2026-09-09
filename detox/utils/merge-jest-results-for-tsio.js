@@ -139,6 +139,38 @@ function mergeJestResultsForTsio(inputPaths, opts = {}) {
 }
 
 /**
+ * When CI shards fail before uploading jest-results.json, TSIO otherwise shows
+ * only the shards that reported — CMT looks like "Android didn't run tests".
+ * Append a failed stub so the missing machines are visible.
+ *
+ * @param {{testResults: object[]}} merged
+ * @param {number} foundCount
+ * @param {number} expectedCount
+ * @returns {{testResults: object[]}}
+ */
+function appendMissingShardStub(merged, foundCount, expectedCount) {
+    if (!(expectedCount > 0) || foundCount >= expectedCount) {
+        return merged;
+    }
+    const missing = expectedCount - foundCount;
+    const reason = `${missing} of ${expectedCount} Detox shards uploaded no jest-results.json (found ${foundCount}). Those machines failed or timed out before tests reported.`;
+    const now = Date.now();
+    merged.testResults.push({
+        testFilePath: 'ci/missing-shards.stub',
+        perfStats: {start: now},
+        testResults: [{
+            ancestorTitles: ['CI shard reporting'],
+            duration: 0,
+            failureMessages: [reason],
+            fullName: `CI shard reporting — ${missing} shard(s) missing jest-results.json`,
+            status: 'failed',
+            title: 'missing shard results',
+        }],
+    });
+    return merged;
+}
+
+/**
  * Recursively collect jest-results.json under dir, skipping `excludePath`.
  *
  * @param {string} dir
@@ -201,15 +233,29 @@ function main() {
         inputPaths = findJestResultFiles(args.dir, output);
     }
 
-    if (inputPaths.length === 0) {
-        console.error('merge-jest-results-for-tsio: no jest-results.json found');
-        process.exit(1);
-    }
-
     const opts = {
         repoRoot: args['repo-root'] || process.env.GITHUB_WORKSPACE || process.cwd(),
     };
-    const {suites, tests} = writeMergedJestResultsForTsio(inputPaths, output, opts);
+    const expectedCount = Number.parseInt(args['expected-count'] || '0', 10);
+
+    // Exiting here when a shard count is known would leave TSIO with no report at all,
+    // so the commit status stays pending forever instead of failing. Fall through and let
+    // appendMissingShardStub below produce the failure rows.
+    if (inputPaths.length === 0 && !(expectedCount > 0)) {
+        console.error('merge-jest-results-for-tsio: no jest-results.json found and no expected shard count');
+        process.exit(1);
+    }
+
+    const merged = mergeJestResultsForTsio(inputPaths, opts);
+    if (expectedCount > 0 && inputPaths.length < expectedCount) {
+        console.error(`merge-jest-results-for-tsio: found ${inputPaths.length} jest-results.json, expected ${expectedCount}`);
+        appendMissingShardStub(merged, inputPaths.length, expectedCount);
+    }
+
+    fs.mkdirSync(path.dirname(output), {recursive: true});
+    fs.writeFileSync(output, JSON.stringify(merged));
+    const suites = merged.testResults.length;
+    const tests = merged.testResults.reduce((n, s) => n + (s.testResults?.length || 0), 0);
     console.log(`Merged ${inputPaths.length} shard JSON(s) -> ${suites} suite(s), ${tests} test(s) -> ${output}`);
 }
 
@@ -220,6 +266,7 @@ if (require.main === module) {
 module.exports = {
     mergeJestResultsForTsio,
     writeMergedJestResultsForTsio,
+    appendMissingShardStub,
     toTsioDetoxSuite,
     relativizeDetoxPath,
     resolveRepoRoots,
