@@ -26,8 +26,27 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
+
+// MM-T5294_12 hangs on iOS at the same site as MM-T585_1 in search_modifiers.e2e.ts: the
+// synchronization re-enable inside ChannelScreen.back(). PR #10122 skipped it on iOS as a
+// "remaining iOS skip"; commit 05c47fec5c un-skipped it as "already passing" on the strength of
+// a local run, and it has failed every CI run since (34304338033: 386855ms against a 360000ms
+// cap). It hangs on the `await ChannelScreen.back()` below -- the fourth statement of the test,
+// before the search screen is ever opened -- so this is not a search-results problem.
+//
+// From the CI artifact for that run (ios shard 5 detox.log):
+//   616 setSyncSettings {"enabled":false} -> setSyncSettingsDone
+//   617 tap navigation.header.back        -> invokeResult (the tap worked)
+//   618 setSyncSettings {"enabled":true}  -> NEVER ACKNOWLEDGED
+// device.enableSynchronization() only resolves once the app reports idle, and from that tap on
+// the app reports app_status "busy" indefinitely on a never-completing
+// one_time_events "Runloop Perform Block" on the JS Run Loop.
+//
+// The stall is app-side, so the fix does not belong in this spec. Re-enable once it is fixed --
+// do not simply delete the guard again.
+const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -183,7 +202,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    it('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
+    itNotIos('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;

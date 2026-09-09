@@ -40,6 +40,29 @@ appId: ${MAESTRO_APP_ID}
 - retry:
     maxRetries: 3
     commands:
+      # # Recover the Account screen before (re)tapping. A tap that lands one row high opens
+      # "Your Profile", whose modal covers the Account screen -- so the retry's next tap could
+      # never find the Settings row again and the whole retry was useless. That is how
+      # attach_logs_toggle_visible failed on CI 34304338033 (maestro-ios): the failure
+      # screenshot is the Your Profile form, and the command trace shows the first
+      # `settings.screen` assertion FAILED and the second `tapOn account.settings.option`
+      # FAILED with "Element not found". Closing it first makes every attempt start from the
+      # same screen instead of compounding the first mis-tap.
+      - runFlow:
+          when:
+            visible:
+              id: "edit_profile.screen"
+          commands:
+            - tapOn:
+                id: "close.edit_profile.button"
+            - extendedWaitUntil:
+                visible:
+                  id: "account.screen"
+                timeout: 10000
+      - extendedWaitUntil:
+          visible:
+            id: "account.settings.option"
+          timeout: 15000
       - tapOn:
           id: "account.settings.option"
       - extendedWaitUntil:

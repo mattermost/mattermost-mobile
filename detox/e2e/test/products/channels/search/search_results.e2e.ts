@@ -90,11 +90,16 @@ describe('Search - Result Interactions', () => {
         const postCount = 20;
         const postIds: string[] = [];
 
+        // retryOnTransportFailure: this test only needs a list long enough to scroll, so a post
+        // duplicated by a replayed request is harmless here. Without it a single dropped
+        // connection in the middle of the loop fails the test outright -- CI 34304338033 iOS
+        // shard 20 died on "apiCreatePost failed: read ECONNRESET" partway through the 20.
         /* eslint-disable no-await-in-loop */
         for (let i = 0; i < postCount; i++) {
             const {post} = await Post.apiCreatePost(siteOneUrl, {
                 channelId: testChannel.id,
                 message: `${commonWord} post number ${i}`,
+                retryOnTransportFailure: true,
             });
             postIds.push(post.id);
         }

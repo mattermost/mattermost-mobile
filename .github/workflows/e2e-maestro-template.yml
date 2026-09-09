@@ -407,6 +407,7 @@ jobs:
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
+            --debug-output build/maestro-debug-T67856_4 \
             --flatten-debug-output \
             --env SITE_1_URL="${SITE_1_URL}" \
             --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
@@ -456,6 +457,7 @@ jobs:
             --format junit \
             --output build/maestro-report-T3261_1.xml \
             --test-output-dir build/maestro-artifacts-T3261_1 \
+            --debug-output build/maestro-debug-T3261_1 \
             --flatten-debug-output \
             --env SITE_1_URL="${SITE_1_URL}" \
             --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
@@ -984,6 +986,7 @@ jobs:
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
+            --debug-output build/maestro-debug-T67856_4 \
             --flatten-debug-output \
             --platform android \
             --env SITE_1_URL="${SITE_1_URL}" \
@@ -1055,6 +1058,7 @@ jobs:
             --format junit \
             --output build/maestro-report-T3261_2.xml \
             --test-output-dir build/maestro-artifacts-T3261_2 \
+            --debug-output build/maestro-debug-T3261_2 \
             --flatten-debug-output \
             --platform android \
             --env SITE_1_URL="${SITE_1_URL}" \
@@ -1104,6 +1108,7 @@ jobs:
             --format junit \
             --output build/maestro-report-T3261_1.xml \
             --test-output-dir build/maestro-artifacts-T3261_1 \
+            --debug-output build/maestro-debug-T3261_1 \
             --flatten-debug-output \
             --platform android \
             --env SITE_1_URL="${SITE_1_URL}" \

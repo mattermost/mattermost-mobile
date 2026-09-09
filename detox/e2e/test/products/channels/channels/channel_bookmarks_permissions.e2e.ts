@@ -193,8 +193,10 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
 
-        // Mobile still shows "Removed from channel" and pops to the list when it
-        // cannot view archived channels (CI testFnFailure.png). Dismiss and reopen.
+        // The server publishes channel_deleted and keeps membership, but the client still
+        // surfaces a "Removed from channel"/"Archived channel" alert and pops to the list when
+        // it cannot view archived channels (CI testFnFailure.png). Dismiss and reopen. This is
+        // a first, prompt alert; a second can arrive much later -- see the press below.
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         try {
@@ -223,8 +225,46 @@ describe('Channels - Channel Bookmarks Permissions', () => {
                 withAncestor(by.id(ChannelInfoScreen.testID.bookmarksList)),
         );
         await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-        await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
-        await wait(timeouts.ONE_SEC);
+
+        // Archiving soft-deletes the channel; the client reacts by raising a native
+        // "Removed from channel"/"Archived channel" alert, and it can arrive late. On main run
+        // 34267109236 a second such alert appeared 4.1s AFTER the long press had already been
+        // dispatched and handled (device.log: touch down 21:26:44.316, touch up 21:26:48.325 +
+        // "send gesture actions", then _willShowAlertController at 21:26:52.431, never removed).
+        // So the press was not swallowed -- the client was torn out of channel info while the
+        // sheet was opening and the sheet never mounted.
+        //
+        // Because the blocker lands after the press, draining beforehand cannot catch it. The
+        // recovery therefore hangs off the sheet gate: press, gate, and only if the gate fails
+        // AND an alert is actually present do we clear it, re-establish channel info and press
+        // once more. Bounded at two presses, and gated on a named blocker rather than pressing
+        // again blind -- if the gate fails with no alert up, the sheet genuinely did not mount
+        // and that is an app defect to report, not something to retry.
+        const reopenChannelInfo = async () => {
+            await openArchivedChannel(channelT5725.name, sentinel, postId);
+            await ChannelInfoScreen.open();
+            await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        };
+
+        // Asserting the sheet is up is load-bearing, not decoration: the two absence checks
+        // below pass trivially when no sheet exists at all, so without this gate the test
+        // reported a green "no Edit/Delete" while never having opened the sheet, and only died
+        // later on the unrelated dismiss step.
+        const pressAndGateSheet = async () => {
+            await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
+            await waitFor(ChannelBookmarkScreen.optionsSheet).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        };
+
+        try {
+            await pressAndGateSheet();
+        } catch (sheetError) {
+            const dismissed = await Alert.dismissChannelRemoveOrArchiveAlert(timeouts.TWO_SEC);
+            if (!dismissed) {
+                throw sheetError;
+            }
+            await reopenChannelInfo();
+            await pressAndGateSheet();
+        }
 
         // Archived sheet is Copy Link / Share only — no Edit/Delete.
         await expect(ChannelBookmarkScreen.editOption).not.toExist();

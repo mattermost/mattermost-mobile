@@ -99,7 +99,7 @@ baseClient.interceptors.response.use(
  * committed it. Replaying is only safe for idempotent methods; a POST that timed
  * out may well have created the team/channel/post already, and replaying it
  * duplicates the record. Non-idempotent callers that want a retry ask for one
- * explicitly (see withTransportRetry's allowNonIdempotent).
+ * explicitly (see withTransportRetry's allowDuplicateWrites).
  *
  * A non-replayable body (a stream or FormData) is single-use: it has already been
  * consumed by the failed attempt, so a replay would send an empty or truncated

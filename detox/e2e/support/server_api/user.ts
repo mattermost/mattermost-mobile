@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {adminPassword, adminUsername} from '@support/test_config';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 
 import {logError} from '../../../provision/log';
 
@@ -42,18 +43,41 @@ export const apiAdminLogin = (baseUrl: string): any => {
  * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = null}: any = {}): Promise<any> => {
-    try {
-        const newUser = user || generateRandomUser({prefix});
+    // A dropped connection here fails the caller's whole beforeAll. CI 34304338033 iOS shard 11
+    // lost all six channel_members tests to one such drop; the client logged
+    // "No response from server: socket hang up" while the spec only reported
+    // "[beforeAll] Failed to create gmUser2", so the transport cause was invisible in the report.
+    //
+    // Replaying is safe only when we generate the account ourselves: each attempt builds a fresh
+    // random username/email, so a first attempt that committed server-side but lost its response
+    // leaves an unused orphan account instead of colliding on the unique constraint. A
+    // caller-supplied `user` is never replayed -- that retry would fail with "username already
+    // exists" and turn a transient drop into a hard error.
+    return withTransportRetry(async () => {
+        try {
+            const newUser = user || generateRandomUser({prefix});
 
-        const response = await client.post(
-            `${baseUrl}/api/v4/users`,
-            newUser,
-        );
+            const response = await client.post(
+                `${baseUrl}/api/v4/users`,
+                newUser,
+            );
 
-        return {user: {...response.data, password: newUser.password, newUser}};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+            return {user: {...response.data, password: newUser.password, newUser}};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {
+        idempotent: false,
+        allowDuplicateWrites: !user,
+        label: 'apiCreateUser',
+
+        // Tighter than the default budget on purpose: specs create several users in one
+        // beforeAll (channel_members.e2e.ts makes seven), and the full budget on each could
+        // reach Jest's 300s hook cap, replacing a readable "failed to create X" with a hang.
+        // A dropped socket fails in milliseconds, so retries still fit; only a call already
+        // burning the client's 45s request timeout is denied a replay.
+        budgetMs: timeouts.HALF_MIN,
+    });
 };
 
 /**
