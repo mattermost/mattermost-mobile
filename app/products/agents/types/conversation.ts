@@ -56,6 +56,9 @@ export interface ContentBlock {
     status?: ToolCallStatusString;
     shared?: boolean;
 
+    // Marks a pending tool_use block that passed the auto-execution policy.
+    would_auto_execute?: boolean;
+
     tool_use_id?: string;
     content?: string;
 
