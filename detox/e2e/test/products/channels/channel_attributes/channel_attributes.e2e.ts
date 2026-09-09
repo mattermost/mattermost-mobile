@@ -203,8 +203,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
 
-        // * Chip container and the HIGH chip are visible.
-        await ChannelAttributeLabels.toBeVisible();
+        // * The HIGH chip is visible.
         await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
@@ -280,7 +279,6 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await openChannel(channel.name);
 
         // * Both chips visible.
-        await ChannelAttributeLabels.toBeVisible();
         await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChip(SECOND_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
@@ -531,7 +529,6 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await openChannel(channel.name);
 
         // * Chip shows HIGH initially.
-        await ChannelAttributeLabels.toBeVisible();
         await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
         // # Back out before changing the value so the app is on the channel list when reloaded.

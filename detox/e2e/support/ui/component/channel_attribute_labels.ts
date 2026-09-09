@@ -24,11 +24,6 @@ class ChannelAttributeLabels {
     // chip.{field.name}.value — the value text inside the chip
     getChipValue = (fieldName: string) => element(by.id(`channel_attribute_labels.chip.${fieldName}.value`));
 
-    toBeVisible = async () => {
-        await waitFor(this.container).toBeVisible().withTimeout(timeouts.HALF_MIN);
-        return this.container;
-    };
-
     toNotBeVisible = async () => {
         // Use waitFor rather than an immediate expect — the chip row may take a moment
         // to settle after navigation (e.g. DM channels where no chip should appear).
