@@ -925,6 +925,19 @@ jobs:
           echo "==> All ${MAX_ATTEMPTS} boot attempts failed"
           exit 1
 
+      # The iOS job has captured a device log since it was written; the Android job never has,
+      # so an Android Maestro failure has no record of what the OS did. That gap is why
+      # report_problem_link_mode could not be diagnosed across three runs: the command trace
+      # proves the "Report a problem" tap completed and the app stayed put, but with no logcat
+      # there is no way to tell whether the browser intent was fired, resolved, or foregrounded.
+      - name: Start Android logcat capture
+        run: |
+          mkdir -p build
+          adb logcat -c || true
+          adb logcat -v threadtime > build/android-logcat.log 2> build/android-logcat.err &
+          echo $! > build/android-logcat.pid
+          echo "==> logcat capture started (pid $(cat build/android-logcat.pid))"
+
       - name: Run Maestro Flows (Android)
         continue-on-error: true
         env:
@@ -1119,6 +1132,18 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/report_problem_link_mode.yml
+
+      - name: Stop Android logcat capture
+        if: always()
+        run: |
+          if [ -f build/android-logcat.pid ]; then
+            pid=$(cat build/android-logcat.pid)
+            kill "$pid" 2>/dev/null || true
+            echo "==> logcat capture stopped (pid $pid)"
+          fi
+          if [ -f build/android-logcat.log ]; then
+            echo "==> logcat size: $(wc -c < build/android-logcat.log) bytes"
+          fi
 
       - name: Upload Maestro Artifacts
         if: always()
