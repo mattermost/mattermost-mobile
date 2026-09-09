@@ -102,4 +102,49 @@ describe('failed-jest-specs', () => {
         assert.equal(failSuite.status, 'passed');
         fs.rmSync(dir, {recursive: true, force: true});
     });
+
+    it('should keep attempt-1 results when the retry produced no test results', () => {
+        // Detox can fail a retry before Jest runs a test ("Tests: 0 total").
+        // That empty suite must not erase attempt 1's real outcomes.
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'failed-specs-empty-'));
+        const a = path.join(dir, 'a.json');
+        const b = path.join(dir, 'b.json');
+        fs.writeFileSync(a, JSON.stringify({
+            testResults: [
+                {
+                    name: '/repo/detox/e2e/test/fail.e2e.ts',
+                    status: 'failed',
+                    assertionResults: [
+                        {status: 'failed', title: 'MM-T4944_1'},
+                        {status: 'failed', title: 'MM-T4944_2'},
+                    ],
+                },
+            ],
+        }));
+        fs.writeFileSync(b, JSON.stringify({
+            testResults: [
+                {name: '/repo/detox/e2e/test/fail.e2e.ts', status: 'failed', assertionResults: []},
+            ],
+        }));
+
+        const merged = mergeJestResultsPreferLater([a, b]);
+        assert.equal(merged.numFailedTests, 2);
+        assert.equal(merged.success, false);
+        fs.rmSync(dir, {recursive: true, force: true});
+    });
+
+    it('should count a failed suite with no test results as a failure', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'failed-specs-crash-'));
+        const a = path.join(dir, 'a.json');
+        fs.writeFileSync(a, JSON.stringify({
+            testResults: [
+                {name: '/repo/detox/e2e/test/crash.e2e.ts', status: 'failed', assertionResults: []},
+            ],
+        }));
+
+        const merged = mergeJestResultsPreferLater([a]);
+        assert.equal(merged.numFailedTests, 1);
+        assert.equal(merged.success, false);
+        fs.rmSync(dir, {recursive: true, force: true});
+    });
 });

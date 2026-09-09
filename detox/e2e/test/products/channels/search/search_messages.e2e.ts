@@ -28,7 +28,7 @@ import {
     ServerScreen,
     TeamDropdownMenuScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -66,11 +66,6 @@ describe('Search - Search Messages', () => {
     });
 
     beforeEach(async () => {
-        // A test that fails mid-flow never reaches its own searchClearButton tap, so its
-        // query stays in the search box. The next test then opens onto the results view
-        // instead of "Search options", and its searchModifier* lookups fail — which is how
-        // a single failure took out all six of MM-T5294_3.._8 in CI 31329196036. Closing
-        // the screen alone does not reset the query, so clear it here first.
         try {
             await waitForElementToExist(SearchMessagesScreen.searchClearButton, timeouts.TWO_SEC);
             await SearchMessagesScreen.searchClearButton.tap();
@@ -143,6 +138,7 @@ describe('Search - Search Messages', () => {
         await waitForElementToBeVisible(atMentionItem, timeouts.TWO_SEC);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages from user
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
@@ -155,10 +151,7 @@ describe('Search - Search Messages', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // Skip iOS (SEC-10996): the channel-mention row never passes Detox's 100% visibility
-    // gate, so the tap fails at centre and at corner alike. Failed CI 31329196036,
-    // 31368420580, 31424626068. The beforeEach searchClearButton reset keeps _4.._9 green.
-    (isIos() ? it.skip : it)('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
+    it('MM-T5294_3 - should be able to search messages in a specific channel', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -174,11 +167,13 @@ describe('Search - Search Messages', () => {
         // modal's UITransitionView (same workaround as PostOptionsScreen.deletePost).
         await SearchMessagesScreen.searchModifierIn.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
-        const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
-
-        await waitForElementToBeVisible(channelMentionItem, timeouts.TWO_SEC);
-        await channelMentionItem.tap();
+        const {
+            channelMentionItem,
+            channelMentionItemChannelDisplayName,
+        } = Autocomplete.getChannelMentionItem(testChannel.name);
+        await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await SearchMessagesScreen.searchInput.tapReturnKey();
+        await wait(timeouts.TWO_SEC);
 
         // * Verify search results contain messages in channel
         const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
@@ -213,7 +208,6 @@ describe('Search - Search Messages', () => {
 
         // Corner-tap: a centre tap here landed without inserting the "-" modifier, so the
         // query became "Message<term>" instead of "Message -<term>" and returned 0 results
-        // (CI 31329196036 MM-T5294_4). Same clip as searchModifierIn/Phrases.
         await SearchMessagesScreen.searchModifierExclude.tap({x: 1, y: 1});
         await SearchMessagesScreen.searchInput.typeText(excludedTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();

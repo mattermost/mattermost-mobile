@@ -87,12 +87,14 @@ describe('Messaging - At-Mention', () => {
     });
 
     it('MM-T4874_2 - should display confirmation dialog when posting @all, @channel, and @here', async () => {
-        // # Add more users to the channel, open a channel screen, and post @all
-        [...Array(3).keys()].forEach(async (key) => {
+        /* eslint-disable no-await-in-loop -- 3 independent users; adding them sequentially keeps server load flat */
+        for (let key = 0; key < 3; key++) {
             const {user} = await User.apiCreateUser(siteOneUrl, {prefix: `a-${key}-`});
             await Team.apiAddUserToTeam(siteOneUrl, user.id, testTeam.id);
             await Channel.apiAddUserToChannel(siteOneUrl, user.id, testChannel.id);
-        });
+        }
+        /* eslint-enable no-await-in-loop */
+
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.replaceText('@all');
         await ChannelScreen.sendButton.tap();

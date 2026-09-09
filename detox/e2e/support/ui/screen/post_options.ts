@@ -216,7 +216,38 @@ class PostOptionsScreen {
     };
 
     tapUnpinPost = async () => {
-        await this.tapPinOption(this.unpinPostOption);
+        // The unpin option container is not 100% hittable (lower in the sheet),
+        // so tap the label — pin's option tap can succeed where unpin fails.
+        if (isIos()) {
+            await this.tapSheetRowIos(this.unpinPostOptionLabel);
+            return;
+        }
+        await this.toBeVisible();
+        try {
+            await waitFor(this.unpinPostOptionLabel).
+                toBeVisible().
+                whileElement(by.id(this.testID.scrollView)).
+                scroll(100, 'down');
+        } catch {
+            // Already visible, not scrollable, or still below the fold — retry with direct scrolls.
+        }
+        const scrollView = element(by.id(this.testID.scrollView));
+        /* eslint-disable no-await-in-loop -- bounded visibility retry */
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                await waitFor(this.unpinPostOptionLabel).toBeVisible().withTimeout(timeouts.TWO_SEC);
+                break;
+            } catch {
+                try {
+                    await scrollView.scroll(100, 'down');
+                } catch {
+                    // Sheet may not be scrollable.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        await waitFor(this.unpinPostOptionLabel).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.unpinPostOptionLabel.tap();
     };
 }
 
