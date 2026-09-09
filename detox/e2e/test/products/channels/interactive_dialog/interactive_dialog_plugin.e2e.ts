@@ -973,7 +973,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
         // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
         await wait(1000);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post, error: lastPostError} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+
+        // The helper returns {error} instead of throwing when every poll failed (CI 34290629488:
+        // a Cloudflare challenge answered the posts endpoint for two minutes, and this read as
+        // "Cannot read properties of undefined (reading 'message')" — a code bug's signature).
+        if (lastPostError || !post) {
+            throw new Error(`Could not read the submission post from channel ${testChannel.id}: ${JSON.stringify(lastPostError ?? 'no post returned')}`);
+        }
 
         // Match to end of line, not \s*(\S+): the payload renders as a markdown list, so \s*
         // would cross the newline and capture the next bullet (an empty field read "-").

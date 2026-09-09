@@ -436,12 +436,20 @@ jobs:
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
 
+          # On patch failure, record the flow as failed so it stays in the merged report
+          # instead of vanishing from the count (see the email step for the precedent).
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
           curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_1.xml \
+                detox/maestro/flows/account/report_problem_link_mode.yml \
+                "config patch ReportAProblemType=link failed before the flow could start"
+              exit 1
+            }
 
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
@@ -1026,12 +1034,22 @@ jobs:
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
 
+          # ReportAProblemMail is required: the server rejects ReportAProblemType=email
+          # without a valid address (model/config.go IsValid — CI 34290629488 got HTTP 400
+          # here and the flow never ran). On patch failure, record the flow as failed so
+          # it stays in the merged report instead of vanishing from the count.
           echo "==> Patching SupportSettings.ReportAProblemType=email on ${SITE_1_URL}"
           curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"email"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+            -d '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_2.xml \
+                detox/maestro/flows/account/report_problem_mail_mode.yml \
+                "config patch ReportAProblemType=email failed before the flow could start"
+              exit 1
+            }
 
           ~/.maestro/bin/maestro test \
             --format junit \
@@ -1067,12 +1085,20 @@ jobs:
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
 
+          # On patch failure, record the flow as failed so it stays in the merged report
+          # instead of vanishing from the count (see the email step for the precedent).
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
           curl -f -sS --show-error -X PUT \
             -H "Authorization: Bearer $ADMIN_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_1.xml \
+                detox/maestro/flows/account/report_problem_link_mode.yml \
+                "config patch ReportAProblemType=link failed before the flow could start"
+              exit 1
+            }
 
           ~/.maestro/bin/maestro test \
             --format junit \

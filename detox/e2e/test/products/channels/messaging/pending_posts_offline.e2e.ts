@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Setup} from '@support/server_api';
+import {Post, Setup} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     ChannelListScreen,
@@ -16,20 +16,20 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {goOffline, goOnline, timeouts} from '@support/utils';
+import {goOffline, goOnline, isNetworkControlAvailable, timeouts} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 // Offline has to make the app's requests genuinely fail, locally to the device under
 // test; see support/utils/offline_simulation.ts. Android uses emulator airplane mode.
 // iOS is refused by isNetworkControlAvailable(), because the Cloudflare-fronted servers
 // answer AAAA from anycast and a pf block of resolved IPs cannot cover the address the
-// app actually dials.
+// app actually dials — the suite skips loudly there with the reason printed at runtime.
 //
-// SKIPPED. The Android mechanism is sound (passed in 41s on 8ddfd50af), but the app
-// red-boxed on a Fabric addViewAt reparent about half the time and burned the full 300s
-// timeout (run 34160726648). That crash is fixed on this branch; re-enable by restoring
-// the isNetworkControlAvailable() gate once CI shows the Android suite clean.
-describe.skip('Messaging - Pending Posts Offline', () => {
+// Android was suite-skipped while the app red-boxed on a Fabric addViewAt reparent when
+// the failed-post sheet's SlideUpPanelItem was pressed (run 34160726648). That crash is
+// fixed on this branch (collapsable={false} on the SlideUpPanelItem row), so the gate is
+// back: Android runs, iOS skips.
+(isNetworkControlAvailable(serverOneUrl) ? describe : describe.skip)('Messaging - Pending Posts Offline', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
@@ -51,12 +51,18 @@ describe.skip('Messaging - Pending Posts Offline', () => {
 
     afterAll(async () => {
         // # Restore network and log out — goOnline polls until connectivity is
-        // verified, so a failure mid-test cannot leave the host blocked.
+        // verified, so a failure mid-test cannot leave the host blocked. Leave the
+        // channel first: the tab bar is hidden inside it and logout needs the account tab.
         await goOnline(serverOneUrl);
+        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 
-    it('MM-T416 - should fail to post without network and re-send after network is restored', async () => {
+    // Zephyr MM-T416 has two steps on two failed posts: retry one, delete the other. They run
+    // as two offline/online cycles with one failed post each. With two failed posts on screen
+    // at once, post.failed.button matches twice and the pending posts carry client-side ids
+    // the test cannot know, so there is no stable way to say which "i" belongs to which post.
+    it('MM-T416_1 - should fail to post without network and re-send after network is restored', async () => {
         const message = `offline post ${Date.now()}`;
 
         // # Disable the network to simulate offline (verified unreachable by the
@@ -88,5 +94,40 @@ describe.skip('Messaging - Pending Posts Offline', () => {
         await waitFor(element(by.text(message))).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(failedButton).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(element(by.text(message))).toBeVisible();
+    });
+
+    it('MM-T416_2 - should delete a failed post after network is restored without sending it', async () => {
+        const message = `offline delete ${Date.now()}`;
+
+        // # Disable the network and send a message while offline
+        await goOffline(serverOneUrl);
+        await ChannelScreen.composePostDraft(message);
+        await ChannelScreen.tapSendButton();
+
+        // * Verify the post failed (failed indicator appears)
+        const failedButton = element(by.id('post.failed.button'));
+        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // # Restore network access
+        await goOnline(serverOneUrl);
+
+        // # Tap the failed indicator and delete the post
+        await failedButton.tap();
+        const deleteOption = element(by.id('post.failed.delete'));
+        await waitFor(deleteOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await deleteOption.tap();
+        await ChannelScreen.dismissKeyboard();
+
+        // * Verify the post is removed locally and never reached the server
+        await waitFor(element(by.text(message))).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(failedButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+        const {posts, error} = await Post.apiGetPostsInChannel(siteOneUrl, testChannel.id);
+        if (error) {
+            throw new Error(`Failed to read channel posts after delete: ${JSON.stringify(error)}`);
+        }
+        const leaked = posts.find((post: any) => post.message === message);
+        if (leaked) {
+            throw new Error(`Deleted failed post reached the server as ${leaked.id}`);
+        }
     });
 });
