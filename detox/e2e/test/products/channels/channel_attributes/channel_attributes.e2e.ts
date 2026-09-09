@@ -384,6 +384,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
+        // Channel Info shows required-but-unset attributes only to channel admins (same gate the
+        // server applies when deciding who must supply missing values). Promote testUser so the
+        // "Not set" row is visible in the app without a system-admin login.
+        await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
+
         // # Now create the required field (no value set on the channel).
         await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
