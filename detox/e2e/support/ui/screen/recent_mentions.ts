@@ -89,6 +89,16 @@ class RecentMentionsScreen {
             }
         }
 
+        // The tab bar is not in the hierarchy for a moment after the tree (re)mounts. The
+        // caller that exposed this is verifyPostEdited below, which calls open() straight
+        // after device.reloadReactNative(): the tap landed while the bar was still unmounted
+        // and Espresso reported "No views in hierarchy found matching: (view.getTag() is
+        // "tab_bar.mentions.tab" and view has effective visibility <VISIBLE>)"
+        // (CI 34344304929, MM-T4909_3, detox-android). Gate on the tab itself rather than
+        // sleeping a fixed amount: this returns as soon as the bar is hittable, and a genuine
+        // absence still fails, just with the wait spent before the tap instead of after it.
+        await waitForElementToBeVisible(HomeScreen.mentionsTab, timeouts.TWENTY_SEC);
+
         await HomeScreen.mentionsTab.tap();
         try {
             await waitFor(this.recentMentionsScreen).toExist().withTimeout(timeouts.FIVE_SEC);

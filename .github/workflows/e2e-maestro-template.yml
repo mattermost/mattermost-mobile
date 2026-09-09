@@ -437,18 +437,18 @@ jobs:
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
 
-          # On patch failure, record the flow as failed so it stays in the merged report
-          # instead of vanishing from the count (see the email step for the precedent).
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            ReportAProblemType link || {
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_1.xml \
                 detox/maestro/flows/account/report_problem_link_mode.yml \
-                "config patch ReportAProblemType=link failed before the flow could start"
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
               exit 1
             }
 
@@ -1054,16 +1054,18 @@ jobs:
           # without a valid address (model/config.go IsValid — CI 34290629488 got HTTP 400
           # here and the flow never ran). On patch failure, record the flow as failed so
           # it stays in the merged report instead of vanishing from the count.
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=email on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
+            ReportAProblemType email || {
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_2.xml \
                 detox/maestro/flows/account/report_problem_mail_mode.yml \
-                "config patch ReportAProblemType=email failed before the flow could start"
+                "ReportAProblemType=email never reached the client config; the flow's pre-condition was not in force"
               exit 1
             }
 
@@ -1102,18 +1104,18 @@ jobs:
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored ReportAProblemType=default"' EXIT
 
-          # On patch failure, record the flow as failed so it stays in the merged report
-          # instead of vanishing from the count (see the email step for the precedent).
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null || {
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            ReportAProblemType link || {
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_1.xml \
                 detox/maestro/flows/account/report_problem_link_mode.yml \
-                "config patch ReportAProblemType=link failed before the flow could start"
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
               exit 1
             }
 
