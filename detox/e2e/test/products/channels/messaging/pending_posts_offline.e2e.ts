@@ -16,7 +16,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {goOffline, goOnline, isNetworkControlAvailable, timeouts} from '@support/utils';
+import {goOffline, goOnline, isNetworkControlAvailable, timeouts, wait} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 // Offline has to make the app's requests genuinely fail, locally to the device under
@@ -98,6 +98,16 @@ import {by, element, expect, waitFor} from 'detox';
 
     it('MM-T416_2 - should delete a failed post after network is restored without sending it', async () => {
         const message = `offline delete ${Date.now()}`;
+
+        // # Give the emulator's radio state and the app's post-reconnect resync (WebSocket,
+        // missed-message fetch) time to settle before toggling airplane mode again. Without
+        // this, CI 34304338033 lost the Detox<->device connection outright for 60s while
+        // waiting on the failed-post indicator below — identically on both the first attempt
+        // and the automatic retry, so this is deterministic contention from the rapid
+        // offline/online/offline cycle, not a one-off flake. goOnline() only confirms the
+        // emulator can reach the server again; it does not wait for the app to finish
+        // reacting to that recovery.
+        await wait(timeouts.TWO_SEC);
 
         // # Disable the network and send a message while offline
         await goOffline(serverOneUrl);
