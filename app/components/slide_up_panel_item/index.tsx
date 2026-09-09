@@ -90,15 +90,6 @@ const SlideUpPanelItem = ({
 
     const handleOnPress = usePreventDoubleTap(onPress);
 
-    // The row View gets collapsable={false} so it stays a real native view. It only has
-    // layout props, so Fabric flattens it away until TouchableHighlight applies its
-    // pressed opacity, at which point Fabric materialises the row and moves the text into
-    // it, then flattens it again on release. On Android that reparenting of a
-    // ReactTextView mid-press races the sheet's own mounting and throws
-    // "addViewAt: cannot insert view: View already has a parent", which red-boxes the app
-    // (CI 34185558418: browse-channels dropdown, plus menu, failed-post retry, set-status;
-    // reproduced locally on the first tap). A view that is always a host view gets a plain
-    // opacity update instead of a reparent. No visual change.
     return (
         <TouchableHighlight
             onPress={handleOnPress}
@@ -106,10 +97,7 @@ const SlideUpPanelItem = ({
             testID={testID}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
         >
-            <View
-                style={style.row}
-                collapsable={false}
-            >
+            <View style={style.row}>
                 {Boolean(leftImage) &&
                     <View style={leftIconStyle}>{leftImage}</View>
                 }
