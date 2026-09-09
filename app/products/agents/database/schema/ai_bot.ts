@@ -19,5 +19,6 @@ export default tableSchema({
         {name: 'user_access_level', type: 'number'},
         {name: 'user_ids', type: 'string'}, // JSON string array
         {name: 'team_ids', type: 'string'}, // JSON string array
+        {name: 'is_default', type: 'boolean'},
     ],
 });

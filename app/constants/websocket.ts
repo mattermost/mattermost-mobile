@@ -115,6 +115,7 @@ const WebsocketEvents = {
     AGENTS_POST_UPDATE: 'custom_mattermost-ai_postupdate',
     AGENTS_TOOL_CALL_STATUS: 'custom_mattermost-ai_tool_call_status_updated',
     AGENTS_CONVERSATION_UPDATED: 'custom_mattermost-ai_conversation_updated',
+    AGENTS_BOTS_INVALIDATE: 'custom_mattermost-ai_bots_invalidate',
 
     // Burn on Read
     BOR_POST_REVEALED: 'post_revealed',

@@ -31,7 +31,26 @@ export const ToolApprovalStage = {
 export type ToolApprovalStage = typeof ToolApprovalStage[keyof typeof ToolApprovalStage];
 
 /**
- * Tool call data structure
+ * User-interaction kinds a tool can declare. Mirrors llm.UserInteraction*
+ * in the plugin; 'select' is answered by picking from offered options
+ * (AskUserQuestion).
+ */
+export const UserInteractionSelect = 'select';
+
+/**
+ * A user's structured answer to a pending user-interaction tool call:
+ * the predefined option labels picked, plus optional free-form text.
+ * Mirrors mmtools.UserInteractionAnswer.
+ */
+export interface ToolAnswer {
+    selected: string[];
+    custom?: string;
+}
+
+/**
+ * Tool call data structure. Mirrors the fields the plugin sends on
+ * llm.ToolCall (streaming) and the tool_use/tool_result content blocks
+ * (persisted conversations).
  */
 export interface ToolCall {
     id: string;
@@ -40,17 +59,37 @@ export interface ToolCall {
     arguments: any;
     result?: string;
     status: ToolCallStatus;
+
+    // Tool answered through user interaction (e.g. 'select' for
+    // AskUserQuestion) rather than server-side execution.
+    user_interaction?: string;
+
+    // Bare tool name for MCP tools (without the server-namespace prefix).
+    // Server-provided; preferred over `name` for display.
+    mcp_bare_name?: string;
+
+    // MCP server this tool came from (the BaseURL). Empty for built-in tools.
+    server_origin?: string;
+
+    // Pending call that passed the auto-execution policy. Never show approval
+    // controls for it — the server re-checks the policy and runs it on resume.
+    would_auto_execute?: boolean;
+
+    // Set when the share/keep-private decision on the result is final (from
+    // the tool_result block). Absent means the result still needs a decision.
+    decided_at?: number;
 }
 
 /**
- * Citation/annotation data structure
+ * Citation/annotation data structure. `url`/`title` may be absent on
+ * annotations persisted from web-search context results.
  */
 export interface Annotation {
     type: string;
     start_index: number;
     end_index: number;
-    url: string;
-    title: string;
+    url?: string;
+    title?: string;
     cited_text?: string;
     index: number;
 }
@@ -108,10 +147,9 @@ export interface StreamingState {
 // Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
     id: string;
-    message: string;
     title: string;
     channel_id: string;
-    reply_count: number;
+    turn_count: number;
     update_at: number;
 
     // Raw plugin >= 2.0 fields, surfaced for callers that need them.
@@ -119,13 +157,13 @@ export interface AIThread {
     bot_id?: string;
 }
 
-// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+// Wire-format AI thread before normalisation (plugin 2.x aiThreadResponse:
+// {id, title, channel_id, bot_id, root_post_id, turn_count, update_at}).
 export type RawAIThread = {
     id: string;
-    message?: string;
     title?: string;
     channel_id?: string | null;
-    reply_count?: number;
+    turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;
     bot_id?: string;
@@ -138,6 +176,7 @@ export const ChannelAccessLevel = {
     All: 0,
     Allow: 1,
     Block: 2,
+    None: 3,
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
@@ -170,8 +209,8 @@ export interface LLMBot {
     userIDs: string[];
     teamIDs: string[];
 
-    // System-wide default bot flag. Absent on older servers.
-    is_default?: boolean;
+    // System-wide default bot flag. Omitted by the server when false.
+    isDefault?: boolean;
 }
 
 /**

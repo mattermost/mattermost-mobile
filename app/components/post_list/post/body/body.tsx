@@ -5,6 +5,8 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
+import AgentPost from '@agents/components/agent_post';
+import {isAgentPost} from '@agents/utils';
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
@@ -29,6 +31,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type BodyProps = {
     appsEnabled: boolean;
     mmBlocksEnabled: boolean;
+    currentUserId?: string;
     filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
@@ -91,6 +94,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Body = ({
     appsEnabled,
     mmBlocksEnabled,
+    currentUserId,
     filesInfo,
     hasReactions,
     highlight,
@@ -180,6 +184,17 @@ const Body = ({
                 location={location}
                 post={post}
                 theme={theme}
+            />
+        );
+    } else if (isAgentPost(post)) {
+        // Agent posts render their conversation rounds in the message slot so
+        // they keep the standard body chrome: files, embeds (permalink
+        // previews), reactions and acknowledgements.
+        message = (
+            <AgentPost
+                post={post}
+                currentUserId={currentUserId}
+                location={location}
             />
         );
     } else if (isJumboEmoji) {

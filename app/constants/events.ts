@@ -5,6 +5,7 @@ import keyMirror from '@utils/key_mirror';
 
 export default keyMirror({
     ACCOUNT_SELECT_TABLET_VIEW: null,
+    AGENT_CHAT_NEW_CONVERSATION: null,
     CHANNEL_ARCHIVED: null,
     CHANNEL_SWITCH: null,
     CLOSE_BOTTOM_SHEET: null,

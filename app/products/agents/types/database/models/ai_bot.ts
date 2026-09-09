@@ -41,6 +41,9 @@ declare class AiBotModel extends Model {
 
     /** Array of team IDs the bot belongs to */
     teamIds: string[];
+
+    /** Whether this bot is the system-wide default agent */
+    isDefault: boolean;
 }
 
 export default AiBotModel;

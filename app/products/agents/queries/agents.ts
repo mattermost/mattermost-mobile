@@ -9,7 +9,12 @@ import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 
 import type {Database} from '@nozbe/watermelondb';
 
-export const observeIsAgentsEnabled = (serverUrl: string) => {
+/**
+ * Observe whether at least one agent is available on the server (agent-list
+ * based). Distinct from the version-based gate in
+ * `@agents/database/queries/version.ts`, which checks the plugin version.
+ */
+export const observeHasAgents = (serverUrl: string) => {
     return rewriteStore.observeAgents(serverUrl).pipe(
         map((agents) => agents.length > 0),
     );

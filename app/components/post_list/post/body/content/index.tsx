@@ -12,7 +12,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
 const enhance = withObservables(['post'], ({database, post}: WithDatabaseArgs & {post: PostModel}) => {
-    const hasPermalinkEmbed = post.metadata?.embeds?.[0]?.type === 'permalink';
+    // The permalink embed is not always first (e.g. agent thread summaries can
+    // carry other embeds), so check the whole list like the webapp does.
+    const hasPermalinkEmbed = post.metadata?.embeds?.some((embed) => embed.type === 'permalink') ?? false;
     const showPermalinkPreviews = hasPermalinkEmbed ? observeConfigBooleanValue(database, 'EnablePermalinkPreviews', false) : of$(false);
 
     return {

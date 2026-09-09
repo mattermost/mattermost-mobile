@@ -14,6 +14,7 @@ export default tableSchema({
         {name: 'title', type: 'string'},
         {name: 'channel_id', type: 'string', isIndexed: true},
         {name: 'reply_count', type: 'number'},
+        {name: 'turn_count', type: 'number'},
         {name: 'update_at', type: 'number', isIndexed: true},
     ],
 });

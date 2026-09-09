@@ -51,6 +51,10 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
 
     let type: string | undefined = post.metadata?.embeds?.[0].type;
 
+    // The permalink embed is not always first; render it whenever no other
+    // embed type takes the slot (matches the webapp, which checks every embed).
+    const permalinkEmbed = post.metadata?.embeds?.find((embed) => embed.type === 'permalink');
+
     const nAppBindings = Array.isArray(post.props?.app_bindings) ? post.props.app_bindings.length : 0;
     if (!type && nAppBindings) {
         type = contentType.app_bindings;
@@ -122,17 +126,28 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
             }
             break;
         case contentType.permalink:
-            if (!showPermalinkPreviews) {
+            if (!showPermalinkPreviews || !permalinkEmbed) {
                 return null;
             }
             return (
                 <PermalinkPreview
-                    embedData={post.metadata!.embeds![0].data as PermalinkEmbedData}
+                    embedData={permalinkEmbed.data as PermalinkEmbedData}
                     location={location}
                     parentLocation={location}
                     parentPostId={post.id}
                 />
             );
+    }
+
+    if (permalinkEmbed && showPermalinkPreviews) {
+        return (
+            <PermalinkPreview
+                embedData={permalinkEmbed.data as PermalinkEmbedData}
+                location={location}
+                parentLocation={location}
+                parentPostId={post.id}
+            />
+        );
     }
 
     return null;

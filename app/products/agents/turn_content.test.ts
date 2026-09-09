@@ -12,6 +12,7 @@ import {
     extractAnnotationsFromTurn,
     extractReasoningFromTurn,
     statusStringToEnum,
+    stripCitationClutter,
 } from './turn_content';
 
 const POST_ID = 'anchorPost';
@@ -178,6 +179,71 @@ describe('extractAnnotationsFromTurn', () => {
         expect(annotations.map((a) => a.index)).toEqual([0, 1]);
         expect(annotations[1]).toMatchObject({url: 'https://c', title: 'C'});
     });
+
+    it('should surface url_citation annotations persisted in web_search_context results', () => {
+        const turn = makeTurn({
+            sequence: 1,
+            role: 'assistant',
+            content: [
+                {type: BlockType.Text, text: 'answer'},
+                {
+                    type: BlockType.Annotations,
+                    web_search_context: {
+                        results: [
+                            {type: 'url_citation', start_index: 5, end_index: 9, url: 'https://a', title: 'A', cited_text: 'quo', index: 1},
+                            {type: 'not_a_citation', url: 'https://skip'},
+                            {type: 'url_citation', url: 'https://b'},
+                        ],
+                        executed_queries: [],
+                        count: 3,
+                    },
+                },
+            ],
+        });
+
+        const annotations = extractAnnotationsFromTurn(turn);
+
+        expect(annotations).toHaveLength(2);
+        expect(annotations[0]).toMatchObject({
+            type: 'url_citation',
+            start_index: 5,
+            end_index: 9,
+            url: 'https://a',
+            title: 'A',
+            cited_text: 'quo',
+            index: 1,
+        });
+
+        // Missing indices fall back to defaults; non-citation entries are skipped.
+        expect(annotations[1]).toMatchObject({url: 'https://b', start_index: 0, end_index: 0, index: 1});
+    });
+
+    it('should return no annotations when web_search_context results is not an array', () => {
+        const turn = makeTurn({
+            sequence: 1,
+            role: 'assistant',
+            content: [
+                {
+                    type: BlockType.Annotations,
+                    web_search_context: {results: {bogus: true}, executed_queries: [], count: 0},
+                },
+            ],
+        });
+
+        expect(extractAnnotationsFromTurn(turn)).toHaveLength(0);
+    });
+});
+
+describe('stripCitationClutter', () => {
+    it('should strip inline OpenAI citation clutter and fix dangling periods', () => {
+        const input = 'Rust is fast (reuters.com: https://reuters.com/a) .';
+        expect(stripCitationClutter(input)).toBe('Rust is fast.');
+    });
+
+    it('should leave text without the pattern untouched', () => {
+        const input = 'Plain answer (with parens) and a URL https://example.com in text .';
+        expect(stripCitationClutter(input)).toBe(input);
+    });
 });
 
 // deriveApprovalStageForPost now reads the server-computed approval_state
@@ -340,6 +406,46 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds[1].toolCalls.map((t) => t.id)).toEqual(['callB']);
         expect(rounds[1].toolCalls[0].result).toBe('resultB');
         expect(rounds[2].toolCalls).toHaveLength(0);
+    });
+
+    it('should carry MCP metadata, auto-execution flag, and result decided_at onto the tool call', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {
+                        type: BlockType.ToolUse,
+                        id: 'call1',
+                        name: 'mattermost__read_post',
+                        mcp_bare_name: 'read_post',
+                        server_origin: 'https://mcp.example.com',
+                        would_auto_execute: true,
+                        input: {},
+                        status: ToolCallStatusString.Success,
+                    },
+                ],
+            }),
+            makeTurn({
+                sequence: 2,
+                role: 'tool_result',
+                content: [{type: BlockType.ToolResult, tool_use_id: 'call1', content: 'ok', decided_at: 1700000000000}],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls[0]).toMatchObject({
+            id: 'call1',
+            name: 'mattermost__read_post',
+            mcp_bare_name: 'read_post',
+            server_origin: 'https://mcp.example.com',
+            would_auto_execute: true,
+            decided_at: 1700000000000,
+        });
     });
 
     it('should attach reasoning to its own round rather than flattening onto the anchor', () => {

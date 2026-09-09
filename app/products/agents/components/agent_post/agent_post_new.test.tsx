@@ -699,3 +699,22 @@ describe('AgentPostNew — combined Sources aggregation', () => {
         expect(await findByText('Sources (2)')).toBeTruthy();
     });
 });
+
+describe('AgentPostNew — loading placeholder (WS7c)', () => {
+    it('should show a loading indicator instead of a blank body while the conversation fetch is in flight', async () => {
+        // A fetch that never resolves keeps the loading state active.
+        mockFetchConversation.mockReturnValue(new Promise(() => undefined));
+
+        const {findByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost()}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        expect(await findByTestId('agents.agent_post.loading')).toBeTruthy();
+    });
+});

@@ -4,7 +4,7 @@
 import {FlashList, type ListRenderItem} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, Platform, Pressable, RefreshControl} from 'react-native';
+import {View, Text, Platform, Pressable, RefreshControl, DeviceEventEmitter} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -14,7 +14,7 @@ import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -187,6 +187,14 @@ const AgentThreadsList = ({
         navigateBack();
     }, []);
 
+    // Pop back into the (still mounted) agent chat with a fresh conversation:
+    // the chat listens for this event and resets its thread root while
+    // keeping the currently selected agent.
+    const startNewChat = useCallback(() => {
+        DeviceEventEmitter.emit(Events.AGENT_CHAT_NEW_CONVERSATION);
+        navigateBack();
+    }, []);
+
     useAndroidHardwareBackHandler(Screens.AGENT_THREADS_LIST, exit);
 
     const handleRefresh = useCallback(() => {
@@ -296,7 +304,7 @@ const AgentThreadsList = ({
                     {/* Right - New chat button */}
                     <View style={styles.headerRight}>
                         <Pressable
-                            onPress={exit}
+                            onPress={startNewChat}
                             style={({pressed}) => [styles.headerIconButton, pressed && {opacity: 0.72}]}
                             testID='agent_threads_list.new_chat_button'
                         >

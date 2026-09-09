@@ -12,10 +12,15 @@ import type AiBotModel from '@agents/types/database/models/ai_bot';
 const {AI_BOT} = AGENTS_TABLES;
 
 /**
- * Returns a query for all AI bots in the database.
+ * Returns a query for all AI bots in the database, default bot first (the
+ * server returns the default first from /ai_bots; sorting preserves that
+ * ordering across caching), then alphabetical for determinism.
  */
 export function queryAIBots(database: Database) {
-    return database.get<AiBotModel>(AI_BOT).query();
+    return database.get<AiBotModel>(AI_BOT).query(
+        Q.sortBy('is_default', Q.desc),
+        Q.sortBy('display_name', Q.asc),
+    );
 }
 
 /**

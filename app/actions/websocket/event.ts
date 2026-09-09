@@ -9,7 +9,7 @@ import {
 } from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
-import {handleAgentConversationUpdated, handleAgentPostUpdate} from '@agents/actions/websocket';
+import {handleAgentConversationUpdated, handleAgentPostUpdate, handleAgentsBotsInvalidate} from '@agents/actions/websocket';
 import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
@@ -345,6 +345,10 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         case WebsocketEvents.AGENTS_CONVERSATION_UPDATED:
             handleAgentConversationUpdated(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.AGENTS_BOTS_INVALIDATE:
+            handleAgentsBotsInvalidate(serverUrl);
             break;
 
         // Burn on Read Events

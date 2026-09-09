@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {setAgentsConfig} from '@agents/store/agents_config';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
@@ -20,6 +21,10 @@ export async function fetchAIBots(
     try {
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIBots();
+
+        // Keep the global unsafe-links setting current for the markdown
+        // renderers on agent posts and tool cards.
+        setAgentsConfig(serverUrl, {allowUnsafeLinks: response.allowUnsafeLinks ?? false});
 
         // Store bots in database and remove any that no longer exist on the server
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

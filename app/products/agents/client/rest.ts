@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolCall} from '@agents/types';
-import type {Agent, AgentsResponse, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
+import type {Agent, AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, CustomPrompt, RenderCustomPromptResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export type {Agent};
 
@@ -10,7 +10,6 @@ export interface ClientAgentsMix {
     getAgentsRoute: () => string;
     getAIBots: () => Promise<AIBotsResponse>;
     getAIThreads: () => Promise<RawAIThread[] | null>;
-    getAgents: () => Promise<Agent[]>;
     stopGeneration: (postId: string) => Promise<void>;
     regenerateResponse: (postId: string) => Promise<void>;
     doLoopInAgent: (postId: string, botUsername: string) => Promise<void>;
@@ -20,7 +19,19 @@ export interface ClientAgentsMix {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ) => Promise<ChannelAnalysisResponse>;
-    submitToolApproval: (postId: string, acceptedToolIds: string[]) => Promise<void>;
+    doThreadAnalysis: (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ) => Promise<ChannelAnalysisResponse>;
+    getChannelInterval: (
+        channelId: string,
+        botUsername: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+    ) => Promise<ChannelAnalysisResponse>;
+    submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
     // New plugin scopes privacy at the conversation-fetch / websocket layer.
@@ -35,6 +46,12 @@ export interface ClientAgentsMix {
     // Rewrite methods
     getRewrittenMessage: (message: string, action?: string, customPrompt?: string, agentId?: string) => Promise<string>;
     getAgentsStatus: () => Promise<AgentsStatusResponse>;
+
+    // Custom prompts (consumption only; authoring stays on the webapp).
+    getCustomPrompts: () => Promise<CustomPrompt[]>;
+    getCustomPromptPins: () => Promise<string[]>;
+    setCustomPromptPin: (promptId: string, pinned: boolean) => Promise<void>;
+    renderCustomPrompt: (promptId: string, channelId?: string, botUsername?: string) => Promise<RenderCustomPromptResponse>;
 }
 
 const ClientAgents = (superclass: any) => class extends superclass {
@@ -54,19 +71,6 @@ const ClientAgents = (superclass: any) => class extends superclass {
             `${this.getAgentsRoute()}/ai_threads`,
             {method: 'get'},
         );
-    };
-
-    getAgents = async (): Promise<Agent[]> => {
-        const response = await this.doFetch(
-            `${this.urlVersion}/agents`,
-            {method: 'get'},
-        );
-
-        // Handle both array response and wrapped response
-        if (Array.isArray(response)) {
-            return response;
-        }
-        return (response as AgentsResponse).agents || [];
     };
 
     stopGeneration = async (postId: string) => {
@@ -96,7 +100,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
         botUsername: string,
         options?: ChannelAnalysisOptions,
     ): Promise<ChannelAnalysisResponse> => {
-        const {since, until, days, prompt, unreads_only} = options || {};
+        const {since, until, days, prompt, team_id} = options || {};
         return this.doFetch(
             `${this.getAgentsRoute()}/channel/${channelId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
             {
@@ -107,18 +111,103 @@ const ClientAgents = (superclass: any) => class extends superclass {
                     until,
                     days,
                     prompt,
-                    unreads_only,
+                    team_id,
                 },
             },
         );
     };
 
-    submitToolApproval = async (postId: string, acceptedToolIds: string[]) => {
+    doThreadAnalysis = async (
+        postId: string,
+        analysisType: string,
+        botUsername: string,
+    ): Promise<ChannelAnalysisResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/post/${postId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {analysis_type: analysisType},
+            },
+        );
+    };
+
+    getChannelInterval = async (
+        channelId: string,
+        botUsername: string,
+        startTime: number,
+        endTime: number,
+        presetPrompt: string,
+    ): Promise<ChannelAnalysisResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/channel/${channelId}/interval?botUsername=${encodeURIComponent(botUsername)}`,
+            {
+                method: 'post',
+                body: {
+                    start_time: startTime,
+                    end_time: endTime,
+                    preset_prompt: presetPrompt,
+                    prompt: '',
+                },
+            },
+        );
+    };
+
+    getCustomPrompts = async (): Promise<CustomPrompt[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts`,
+            {method: 'get'},
+        );
+    };
+
+    getCustomPromptPins = async (): Promise<string[]> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts/pins`,
+            {method: 'get'},
+        );
+    };
+
+    setCustomPromptPin = async (promptId: string, pinned: boolean): Promise<void> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts/pins`,
+            {
+                method: 'put',
+                body: {prompt_id: promptId, pinned},
+            },
+        );
+    };
+
+    renderCustomPrompt = async (
+        promptId: string,
+        channelId?: string,
+        botUsername?: string,
+    ): Promise<RenderCustomPromptResponse> => {
+        return this.doFetch(
+            `${this.getAgentsRoute()}/custom-prompts/${promptId}/render`,
+            {
+                method: 'post',
+                body: {
+                    channel_id: channelId ?? '',
+                    bot_username: botUsername ?? '',
+                },
+            },
+        );
+    };
+
+    submitToolApproval = async (postId: string, acceptedToolIds: string[], toolAnswers?: Record<string, ToolAnswer>) => {
+        const body: {accepted_tool_ids: string[]; tool_answers?: Record<string, ToolAnswer>} = {
+            accepted_tool_ids: acceptedToolIds,
+        };
+
+        // Answers for accepted user-interaction tool calls (AskUserQuestion),
+        // keyed by tool_use block ID. Omitted entirely when there are none.
+        if (toolAnswers && Object.keys(toolAnswers).length > 0) {
+            body.tool_answers = toolAnswers;
+        }
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/tool_call`,
             {
                 method: 'post',
-                body: {accepted_tool_ids: acceptedToolIds},
+                body,
             },
         );
     };

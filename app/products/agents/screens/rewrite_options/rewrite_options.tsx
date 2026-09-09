@@ -1,15 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {fetchCustomPrompts, renderCustomPrompt} from '@agents/actions/remote/custom_prompts';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {useAgents, useRewrite} from '@agents/hooks';
-import {resolveSelectedAgent} from '@agents/utils';
+import {useAgents, useCustomPrompts, useRewrite} from '@agents/hooks';
+import {buildCustomPromptMessage, isAgentDMChannel, resolveSelectedAgent} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
@@ -21,13 +24,14 @@ import useDidMount from '@hooks/did_mount';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
-import {getFullErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logError, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {Agent, RewriteAction} from '@agents/types';
+import type {CustomPrompt} from '@agents/types/api';
 
 const messages = defineMessages({
     errorTitle: {
@@ -82,6 +86,14 @@ const messages = defineMessages({
         id: 'ai_rewrite.summarize',
         defaultMessage: 'Summarize',
     },
+    customPrompts: {
+        id: 'agents.custom_prompts.title',
+        defaultMessage: 'Custom prompts',
+    },
+    customPromptsErrorTitle: {
+        id: 'agents.custom_prompts.error_title',
+        defaultMessage: 'Unable to run prompt',
+    },
 });
 
 export type updateValueFn = (value: string | ((prevValue: string) => string)) => void;
@@ -90,6 +102,7 @@ type Props = {
     originalMessage: string;
     updateValue?: updateValueFn;
     selectedAgentId: string;
+    channelId?: string;
 };
 
 const CUSTOM_PROMPT_INPUT_HEIGHT = 64;
@@ -141,12 +154,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     bottomSheetContent: {
         paddingTop: 10,
     },
+    promptsEmptyText: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        paddingVertical: 16,
+        textAlign: 'center',
+        ...typography('Body', 200),
+    },
 }));
 
 const RewriteOptions = ({
     originalMessage,
     updateValue,
     selectedAgentId,
+    channelId,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -156,7 +176,10 @@ const RewriteOptions = ({
     const {startRewrite} = useRewrite();
 
     const [customPrompt, setCustomPrompt] = useState('');
+    const [showPrompts, setShowPrompts] = useState(false);
+    const [promptRunning, setPromptRunning] = useState(false);
     const agents = useAgents(serverUrl);
+    const {prompts} = useCustomPrompts(serverUrl);
 
     // Warm-init from cache when available; effect below covers the cold path.
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(
@@ -172,6 +195,10 @@ const RewriteOptions = ({
     }, [agents, selectedAgentId]);
 
     useDidMount(() => {
+        // Refresh the ephemeral prompts cache; failures are non-fatal (the
+        // panel shows its empty state).
+        fetchCustomPrompts(serverUrl);
+
         return () => {
             CallbackStore.removeCallback();
         };
@@ -260,6 +287,40 @@ const RewriteOptions = ({
         }
     }, [customPrompt, handleRewrite]);
 
+    const handleShowPrompts = useCallback(() => {
+        Keyboard.dismiss();
+        setShowPrompts(true);
+    }, []);
+
+    const handleHidePrompts = useCallback(() => {
+        setShowPrompts(false);
+    }, []);
+
+    // Render the prompt server-side and place the result in the draft. Outside
+    // an agent DM the agent must be @mentioned or it never sees the post.
+    const handlePromptSelect = useCallback(async (promptId: string | boolean) => {
+        if (promptRunning || typeof promptId !== 'string') {
+            return;
+        }
+        setPromptRunning(true);
+
+        const botUsername = selectedAgent?.username;
+        const {data: rendered, error} = await renderCustomPrompt(serverUrl, promptId, channelId, botUsername);
+        setPromptRunning(false);
+
+        if (error || !rendered) {
+            Alert.alert(
+                intl.formatMessage(messages.customPromptsErrorTitle),
+                getErrorMessage(error, intl),
+            );
+            return;
+        }
+
+        const isBotDM = channelId ? isAgentDMChannel(agents, channelId) : false;
+        updateValue?.(buildCustomPromptMessage(rendered, botUsername, isBotDM));
+        await closeBottomSheet();
+    }, [promptRunning, selectedAgent?.username, serverUrl, channelId, agents, intl, updateValue, closeBottomSheet]);
+
     const handleOpenAgentSelector = useCallback(() => {
         const onSelectAgent = async (agent: Agent) => {
             setSelectedAgent(agent);
@@ -278,13 +339,48 @@ const RewriteOptions = ({
         // Add agent selector height if multiple agents available
         const agentSelectorHeight = agents.length > 1 ? ITEM_HEIGHT : 0;
 
-        // Use the same height for both generation and editing modes
-        const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT);
+        // Use the same height for both generation and editing modes. The
+        // custom prompts entry adds one more always-visible row; the prompts
+        // panel reuses the same height and scrolls internally.
+        const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(6, ITEM_HEIGHT) + ITEM_HEIGHT;
         const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
         const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
 
         return [1, COMPONENT_HEIGHT];
     }, [agents.length, insets.bottom]);
+
+    const renderPromptsPanel = useCallback(() => (
+        <View style={styles.container}>
+            <OptionItem
+                label={intl.formatMessage(messages.customPrompts)}
+                icon='arrow-left'
+                action={handleHidePrompts}
+                type='default'
+                testID='ai_rewrite.custom_prompts.back'
+            />
+            <BottomSheetScrollView bounces={false}>
+                {prompts.length === 0 ? (
+                    <FormattedText
+                        id='agents.custom_prompts.empty'
+                        defaultMessage='No custom prompts yet. Create them in the web app.'
+                        style={styles.promptsEmptyText}
+                    />
+                ) : (
+                    prompts.map((prompt: CustomPrompt) => (
+                        <OptionItem
+                            key={prompt.id}
+                            label={prompt.name}
+                            description={prompt.description || undefined}
+                            action={handlePromptSelect}
+                            value={prompt.id}
+                            type='default'
+                            testID={`ai_rewrite.custom_prompts.${prompt.id}`}
+                        />
+                    ))
+                )}
+            </BottomSheetScrollView>
+        </View>
+    ), [styles, intl, prompts, handleHidePrompts, handlePromptSelect]);
 
     const renderContent = useCallback(() => (
         <View style={styles.container}>
@@ -337,12 +433,20 @@ const RewriteOptions = ({
                     ))}
                 </View>
             )}
+
+            <OptionItem
+                label={intl.formatMessage(messages.customPrompts)}
+                icon='lightbulb-outline'
+                action={handleShowPrompts}
+                type='arrow'
+                testID='ai_rewrite.custom_prompts'
+            />
         </View>
-    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite]);
+    ), [styles, agents, intl, selectedAgent, handleOpenAgentSelector, theme, isInGenerationMode, customPrompt, handleCustomPromptSubmit, handleRewrite, handleShowPrompts]);
 
     return (
         <BottomSheet
-            renderContent={renderContent}
+            renderContent={showPrompts ? renderPromptsPanel : renderContent}
             screen={Screens.AGENTS_REWRITE_OPTIONS}
             initialSnapIndex={1}
             snapPoints={snapPoints}

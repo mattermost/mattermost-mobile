@@ -3,6 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {Pressable, Text, View} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
@@ -120,11 +121,21 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
             </Pressable>
             {isExpanded && reasoningSummary ? (
                 <Animated.View style={[styles.reasoningContentContainer, contentAnimatedStyle]}>
-                    <View style={styles.reasoningContent}>
+                    {/* Long reasoning exceeds the height cap; a nested scroll
+                        region keeps it reachable without fighting the post
+                        list (which only scrolls when the drag starts outside).
+                        The gesture-handler ScrollView is used because it
+                        arbitrates nested pans correctly inside the post
+                        touchable + post list tree; the core one never wins
+                        the gesture. */}
+                    <ScrollView
+                        style={styles.reasoningContent}
+                        nestedScrollEnabled={true}
+                    >
                         <Text style={styles.reasoningText}>
                             {reasoningSummary}
                         </Text>
-                    </View>
+                    </ScrollView>
                 </Animated.View>
             ) : null}
         </View>

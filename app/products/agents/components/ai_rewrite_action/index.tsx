@@ -20,6 +20,7 @@ type Props = {
     disabled?: boolean;
     value: string;
     updateValue: (value: string | ((prevValue: string) => string)) => void;
+    channelId: string;
 }
 
 const styles = {
@@ -35,6 +36,7 @@ export default function AIRewriteAction({
     disabled = false,
     value,
     updateValue,
+    channelId,
 }: Props) {
     const theme = useTheme();
     const {isProcessing} = useRewrite();
@@ -43,8 +45,8 @@ export default function AIRewriteAction({
     const handlePress = useCallback(async () => {
         await blurAndDismissKeyboard();
         CallbackStore.setCallback(updateValue);
-        navigateToScreen(Screens.AGENTS_REWRITE_OPTIONS, {originalMessage: value});
-    }, [blurAndDismissKeyboard, updateValue, value]);
+        navigateToScreen(Screens.AGENTS_REWRITE_OPTIONS, {originalMessage: value, channelId});
+    }, [blurAndDismissKeyboard, updateValue, value, channelId]);
 
     const isDisabled = disabled || isProcessing;
     const actionTestID = isDisabled ? `${testID}.disabled` : testID;

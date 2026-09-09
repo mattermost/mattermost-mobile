@@ -2,16 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
-import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 
 import type PostModel from '@typings/database/models/servers/post';
 
 /**
  * Resolve which agent/bot should be selected when a selector opens.
  * Precedence: saved preference (if still available) -> system default -> first.
- * `is_default` is tolerated when absent (older servers / DB-backed lists).
+ * `isDefault` matches the camelCase field on the plugin's /ai_bots wire shape;
+ * the server omits it when false.
  */
-export function resolveSelectedAgent<T extends {id: string; is_default?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
+export function resolveSelectedAgent<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): T | null {
     if (agents.length === 0) {
         return null;
     }
@@ -23,7 +24,81 @@ export function resolveSelectedAgent<T extends {id: string; is_default?: boolean
         }
     }
 
-    return agents.find((a) => a.is_default) ?? agents[0];
+    return agents.find((a) => a.isDefault) ?? agents[0];
+}
+
+/**
+ * Shared agent-selection rule for action entry points (channel/thread
+ * analysis, custom prompts, unreads summarization): only surface an agent
+ * picker when the user actually has a choice.
+ *
+ * - 0 agents  -> {agent: null, showPicker: false}: caller renders its empty state.
+ * - 1 agent   -> {agent, showPicker: false}: use it silently, no picker.
+ * - >1 agents -> {agent, showPicker: true}: `agent` is the resolved
+ *   preselection (saved preference -> default -> first).
+ */
+export function resolveAgentSelection<T extends {id: string; isDefault?: boolean}>(
+    agents: T[],
+    savedPrefId?: string | null,
+): {agent: T | null; showPicker: boolean} {
+    if (agents.length <= 1) {
+        return {agent: agents[0] ?? null, showPicker: false};
+    }
+
+    return {agent: resolveSelectedAgent(agents, savedPrefId), showPicker: true};
+}
+
+/**
+ * Whether an agent may be used in a given channel, per its channel-scope
+ * configuration. Mirrors the webapp's useBotlistForChannel predicate; the
+ * 'none' access level (3) fails every branch and is always filtered.
+ * User-level restrictions are applied server-side before /ai_bots returns.
+ */
+export function isAgentAvailableInChannel<T extends {channelAccessLevel?: number; channelIDs?: string[]}>(agent: T, channelId: string): boolean {
+    const channelIds = agent.channelIDs ?? [];
+    const level = agent.channelAccessLevel ?? ChannelAccessLevel.All;
+    return level === ChannelAccessLevel.All ||
+        (level === ChannelAccessLevel.Allow && channelIds.includes(channelId)) ||
+        (level === ChannelAccessLevel.Block && !channelIds.includes(channelId));
+}
+
+/**
+ * Whether a channel is some agent's DM channel with the current user. In an
+ * agent DM the agent already sees every post, so custom prompt messages don't
+ * need an @mention prepend. Mirrors the webapp's isBotDMChannel check.
+ */
+export function isAgentDMChannel<T extends {dmChannelID?: string}>(agents: T[], channelId: string): boolean {
+    return agents.some((agent) => agent.dmChannelID === channelId);
+}
+
+/**
+ * Compose the message a rendered custom prompt produces: outside an agent DM
+ * the agent must be @mentioned or it never sees the post. Mirrors the webapp's
+ * custom_prompts_dropdown handlePromptClick.
+ */
+export function buildCustomPromptMessage(rendered: string, botUsername: string | undefined, isBotDM: boolean): string {
+    if (!isBotDM && botUsername) {
+        return `@${botUsername} ${rendered}`;
+    }
+    return rendered;
+}
+
+/**
+ * Heuristic wire-prefix strip for MCP tool names ("mattermost__read_post" ->
+ * "read_post") at call sites without server context, e.g. pending tool_use
+ * blocks where the server omits mcp_bare_name. Mirrors the webapp's
+ * stripWirePrefix.
+ */
+export function stripWirePrefix(toolName: string): string {
+    const idx = toolName.indexOf('__');
+    if (idx <= 0) {
+        return toolName;
+    }
+    const prefix = toolName.slice(0, idx);
+    if (!(/^[a-zA-Z0-9_-]+$/).test(prefix)) {
+        return toolName;
+    }
+    return toolName.slice(idx + 2);
 }
 
 /**

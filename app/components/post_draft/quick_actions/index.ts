@@ -6,7 +6,7 @@ import React from 'react';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {observeIsAgentsEnabled} from '@agents/queries/agents';
+import {observeHasAgents} from '@agents/queries/agents';
 import {Preferences} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
@@ -32,7 +32,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
 
     return {
         canUploadFiles,
-        isAgentsEnabled: observeIsAgentsEnabled(serverUrl),
+        isAgentsEnabled: observeHasAgents(serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled: observeIsBoREnabled(database),
         maxFileCount,

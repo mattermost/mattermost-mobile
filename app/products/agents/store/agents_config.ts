@@ -6,10 +6,17 @@ import {BehaviorSubject} from 'rxjs';
 
 export type AgentsConfigState = {
     pluginEnabled: boolean;
+
+    // Global plugin setting from /ai_bots. Agent posts are tagged
+    // unsafe_links because their content may be prompt-injected; links,
+    // channel links, hashtags and LaTeX stay inert unless the admin has
+    // explicitly allowed them. Defaults to false so rendering fails safe.
+    allowUnsafeLinks: boolean;
 };
 
 const DefaultAgentsConfig: AgentsConfigState = {
     pluginEnabled: false,
+    allowUnsafeLinks: false,
 };
 
 const agentsConfigSubjects: Dictionary<BehaviorSubject<AgentsConfigState>> = {};

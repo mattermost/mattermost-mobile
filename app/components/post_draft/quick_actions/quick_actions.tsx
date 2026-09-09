@@ -28,6 +28,7 @@ type Props = {
     maxFileCount: number;
     showAttachLogs?: boolean;
     location?: AvailableScreens;
+    channelId: string;
 
     // Draft Handler
     value: string;
@@ -72,6 +73,7 @@ export default function QuickActions({
     updatePostBoRStatus,
     postBoRConfig,
     location,
+    channelId,
 }: Props) {
     const atDisabled = value.endsWith('@');
     const slashDisabled = value.length > 0;
@@ -129,6 +131,7 @@ export default function QuickActions({
                     testID={aiRewriteActionTestID}
                     value={value}
                     updateValue={updateValue}
+                    channelId={channelId}
                 />
             )}
             {isPostPriorityEnabled && canShowPostPriority && (
