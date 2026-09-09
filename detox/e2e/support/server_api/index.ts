@@ -8,8 +8,6 @@ import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command
 import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
 import Mfa from './mfa';
-import Playbooks from './playbooks';
-import PlaybooksHelpers from './playbooks_helpers';
 import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
@@ -35,8 +33,6 @@ export {
     DemoPlugin,
     Ldap,
     Mfa,
-    Playbooks,
-    PlaybooksHelpers,
     Plugin,
     Post,
     Preference,
