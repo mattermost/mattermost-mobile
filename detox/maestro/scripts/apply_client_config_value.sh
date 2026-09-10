@@ -15,9 +15,12 @@
 #
 # Usage: apply_client_config_value.sh <site-url> <admin-token> <patch-json> <key> <expected-value>
 # Exit 0: the client config serves <expected-value>.
-# Exit 3: this installation forbids the write (ExperimentalSettings.RestrictSystemAdmin is true,
-#         which makes every `write_restrictable`/`cloud_restrictable` field silently unwritable —
-#         config/patch still answers 200 and drops the field). The caller should skip, not fail.
+# Exit 3: this installation forbids the write. Two causes are checked and both are printed:
+#         the key being supplied by an environment variable (Mattermost keeps the env value
+#         and silently ignores config/patch while answering 200 -- this is what the PR
+#         Spinwicks do, proven in run 34452126763: "RestrictSystemAdmin=false,
+#         set-by-environment=true"), or ExperimentalSettings.RestrictSystemAdmin being true
+#         (drops every write_restrictable/cloud_restrictable field). Caller should skip.
 # Exit 1: the value never took for some other reason. Exit 2: usage error.
 set -euo pipefail
 

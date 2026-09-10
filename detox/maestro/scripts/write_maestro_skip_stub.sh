@@ -4,11 +4,11 @@
 #
 # Distinct from write_maestro_failure_stub.sh on purpose: a failure means the product or the
 # flow is wrong, a skip means the environment cannot host the test. The MM-T3261 flows need
-# SupportSettings.ReportAProblemType changed, and that field is tagged
-# `write_restrictable,cloud_restrictable` in the server's model, so PUT /api/v4/config/patch
-# silently drops it (still answering 200) whenever ExperimentalSettings.RestrictSystemAdmin is
-# true — which is how the PR Spinwicks are provisioned. RestrictSystemAdmin is itself
-# write_restrictable, so an API admin session cannot turn it off either.
+# SupportSettings.ReportAProblemType changed, and on the PR Spinwicks that key is supplied by
+# an environment variable -- Mattermost keeps the env value and silently ignores
+# PUT /api/v4/config/patch while still answering 200. Proven by apply_client_config_value.sh's
+# own diagnostics in run 34452126763: "RestrictSystemAdmin=false, set-by-environment=true".
+# (RestrictSystemAdmin was the first guess and is checked too, but it is not the cause here.)
 #
 # The skip is re-evaluated every run: the moment a server allows the write, the flow runs again.
 # The reason is written into the report so this can never become a silent hole in the count.

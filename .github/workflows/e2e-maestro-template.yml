@@ -446,14 +446,15 @@ jobs:
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
             ReportAProblemType link || {
               rc=$?
-              # 3 = this installation forbids the write (RestrictSystemAdmin); the flow's
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
               # pre-condition cannot be created here, so record a skip rather than a red.
               # Anything else is a real failure and stays red.
               if [ "$rc" -eq 3 ]; then
                 bash detox/maestro/scripts/write_maestro_skip_stub.sh \
                   build/maestro-report-T3261_1.xml \
                   detox/maestro/flows/account/report_problem_link_mode.yml \
-                  "ReportAProblemType=link is not writable on this server (RestrictSystemAdmin); flow cannot run here"
+                  "ReportAProblemType=link is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
                 exit 0
               fi
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
@@ -1074,14 +1075,15 @@ jobs:
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
             ReportAProblemType email || {
               rc=$?
-              # 3 = this installation forbids the write (RestrictSystemAdmin); the flow's
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
               # pre-condition cannot be created here, so record a skip rather than a red.
               # Anything else is a real failure and stays red.
               if [ "$rc" -eq 3 ]; then
                 bash detox/maestro/scripts/write_maestro_skip_stub.sh \
                   build/maestro-report-T3261_2.xml \
                   detox/maestro/flows/account/report_problem_mail_mode.yml \
-                  "ReportAProblemType=email is not writable on this server (RestrictSystemAdmin); flow cannot run here"
+                  "ReportAProblemType=email is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
                 exit 0
               fi
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
@@ -1135,14 +1137,15 @@ jobs:
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
             ReportAProblemType link || {
               rc=$?
-              # 3 = this installation forbids the write (RestrictSystemAdmin); the flow's
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
               # pre-condition cannot be created here, so record a skip rather than a red.
               # Anything else is a real failure and stays red.
               if [ "$rc" -eq 3 ]; then
                 bash detox/maestro/scripts/write_maestro_skip_stub.sh \
                   build/maestro-report-T3261_1.xml \
                   detox/maestro/flows/account/report_problem_link_mode.yml \
-                  "ReportAProblemType=link is not writable on this server (RestrictSystemAdmin); flow cannot run here"
+                  "ReportAProblemType=link is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
                 exit 0
               fi
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
