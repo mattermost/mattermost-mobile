@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireChannelAttributesLock, createChannelAttributesLockOwner, releaseChannelAttributesLock} from '@support/channel_attributes_lock';
 import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
-import {Channel, Properties, System, Team, User} from '@support/server_api';
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {Channel, Properties, Team, User} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeForm, ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, CreateOrEditChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -55,8 +55,8 @@ describe('Channel Attributes - Setting values at channel creation', () => {
     let testChannel: any = null;
 
     beforeAll(async () => {
-        lockOwner = createChannelAttributesLockOwner();
-        await acquireChannelAttributesLock(siteOneUrl, lockOwner);
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
         lockAcquired = true;
 
         // A prior interrupted run may have left a required field behind, which would
@@ -84,10 +84,9 @@ describe('Channel Attributes - Setting values at channel creation', () => {
             if (canControlFlag) {
                 await disableChannelAttributes(siteOneUrl);
             }
-            await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
             await HomeScreen.logout();
         } finally {
-            await releaseChannelAttributesLock(siteOneUrl, lockOwner);
+            await releaseClassificationLock(siteOneUrl, lockOwner);
         }
     });
 
@@ -100,13 +99,29 @@ describe('Channel Attributes - Setting values at channel creation', () => {
             return;
         }
 
+        let cleanupError: unknown;
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (result.error) {
+                cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+        } catch (error) {
+            cleanupError ??= error;
+        }
         if (canControlFlag) {
-            await disableChannelAttributes(siteOneUrl);
+            try {
+                await disableChannelAttributes(siteOneUrl);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -132,40 +147,18 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         return result;
     }
 
-    /**
-     * Same shape as CreateOrEditChannelScreen.tapCreateAndWaitForChannel, but with
-     * a longer final wait.
-     *
-     * This flow's create request carries property_values alongside the channel, so
-     * the server validates and upserts the attribute in the same round trip as the
-     * create — real extra latency the shared helper's ~30s budget was not sized
-     * for. Kept local rather than widening the shared helper, which other,
-     * attribute-free create flows already rely on at its current budget.
-     */
     async function tapCreateAndWaitForChannelWithAttributes() {
         const errorText = element(by.id('edit_channel_info.error.text'));
         await CreateOrEditChannelScreen.createButton.tap();
+        await ChannelScreen.dismissScheduledPostTooltip();
 
         try {
-            await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            return;
-        } catch {
-            // Create may still be in flight, or the request failed.
-        }
-
-        try {
-            await waitFor(errorText).toExist().withTimeout(timeouts.TEN_SEC);
-        } catch {
-            // No error banner and no channel screen yet: this is the slow-but-
-            // succeeding path, so the final wait gets real slack instead of the
-            // shared helper's 10s.
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.HALF_MIN);
-            return;
+        } catch (error) {
+            await waitFor(errorText).toExist().withTimeout(timeouts.FOUR_SEC);
+            const attributes = await errorText.getAttributes() as {text?: string};
+            throw new Error(`Channel creation failed: ${attributes.text ?? String(error)}`);
         }
-
-        await wait(timeouts.TWO_SEC);
-        await CreateOrEditChannelScreen.createButton.tap();
-        await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.HALF_MIN);
     }
 
     /**
@@ -175,6 +168,12 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         await CreateOrEditChannelScreen.displayNameInput.replaceText(displayName);
         await tapCreateAndWaitForChannelWithAttributes();
         await ChannelScreen.toBeVisible();
+        const {channel} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, displayName);
+        if (!channel) {
+            throw new Error(`Created channel "${displayName}" was not returned by the server`);
+        }
+        testChannel = channel;
+        return channel;
     }
 
     it('MM-T6330_1 - should list a required, creator-settable attribute above Purpose and gate Create on it', async () => {
@@ -214,6 +213,11 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         // # Create the channel.
         await tapCreateAndWaitForChannelWithAttributes();
         await ChannelScreen.toBeVisible();
+        const {channel} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, 'created-town-square');
+        if (!channel) {
+            throw new Error('Created channel "created-town-square" was not returned by the server');
+        }
+        testChannel = channel;
 
         // * The created channel already carries the value: in the header chip and
         // in Channel Info, with no extra edit needed.
@@ -224,8 +228,6 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         await ChannelInfoAttributes.toBeVisible();
         await waitFor(ChannelInfoAttributes.getChipValue(REQUIRED_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
-        const {channel} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, 'created-town-square');
-        testChannel = channel;
         assertStoredValue(REQUIRED_FIELD_NAME, await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId), OPTION_IDS.high);
 
         await ChannelInfoScreen.close();
@@ -233,6 +235,10 @@ describe('Channel Attributes - Setting values at channel creation', () => {
     });
 
     it('MM-T6330_4 - should not offer any attribute when the feature is disabled', async () => {
+        if (!canControlFlag) {
+            throw new Error('MM-T6330_4 requires a server where ChannelAttributes can be disabled');
+        }
+
         // The field exists server-side, same as it would the moment after an
         // administrator disables the feature with configured attributes already
         // in place — only the client-side gate is under test here.
@@ -291,10 +297,7 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         // it, so creation must not be gated on it either.
         await ChannelAttributeForm.toNotBeVisible();
 
-        await createChannelWithDisplayName('created-no-sysadmin');
-
-        const {channel} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, 'created-no-sysadmin');
-        testChannel = channel;
+        const channel = await createChannelWithDisplayName('created-no-sysadmin');
 
         // * Nothing was written for the field the creator could not set.
         const stored = await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId);

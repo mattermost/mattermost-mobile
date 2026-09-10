@@ -17,6 +17,7 @@ import {
     canEditAttributeField,
     getAttributeEditability,
     getPropertyFieldChangePolicy,
+    isPropertyFieldRequired,
     isPropertyValueSet,
     reachableOptions,
     type AttributeEditability,
@@ -90,6 +91,39 @@ type Props = {
     permissions: ChannelAttributePermissions;
 };
 
+type ValidatedSubmission = {
+    valid: boolean;
+    value: ChannelAttributeValueInput;
+};
+
+function validateSubmission(attribute: ResolvedChannelAttribute, value: ChannelAttributeValueInput): ValidatedSubmission {
+    const {field, rawValue} = attribute;
+    const isClear = !isPropertyValueSet(value);
+    if (isClear) {
+        const clearable = !isPropertyFieldRequired(field) &&
+            (!isPropertyValueSet(rawValue) || getPropertyFieldChangePolicy(field) === 'any');
+        return {valid: clearable, value: null};
+    }
+
+    if (field.type === 'text') {
+        return {valid: typeof value === 'string', value};
+    }
+
+    const reachableIds = new Set(reachableOptions(field, rawValue).map((option) => option.id));
+    if (field.type === 'multiselect' && Array.isArray(value)) {
+        const filtered = value.filter((id) => reachableIds.has(id));
+        return {
+            valid: !isPropertyFieldRequired(field) || filtered.length > 0,
+            value: filtered,
+        };
+    }
+
+    return {
+        valid: typeof value === 'string' && reachableIds.has(value),
+        value,
+    };
+}
+
 /**
  * The CHANNEL ATTRIBUTES block in Channel Info.
  *
@@ -149,6 +183,10 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         }
         return map;
     }, [attributes]);
+    const byFieldIdRef = useRef(byFieldId);
+    const permissionsRef = useRef(permissions);
+    byFieldIdRef.current = byFieldId;
+    permissionsRef.current = permissions;
 
     // Editability is resolved for the whole section in one pass, because whether a
     // permission lock is worth explaining depends on the other rows.
@@ -177,18 +215,29 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
             return next;
         });
 
-        // The sheet was built from a snapshot of the field taken when the row was
-        // pressed, so a policy change arriving over the websocket while it was open
-        // would not be reflected there. Re-check against the live attribute rather
-        // than trust the sheet's own snapshot before sending the write.
-        const current = byFieldId.get(fieldId);
-        if (!current || !getAttributeEditability(current.field, current.rawValue, canEditAttributeField(current.field, permissions)).editable) {
-            logDebug('handleSubmit', 'skipped stale submit; attribute is no longer editable', channelId, fieldId);
-            return;
-        }
-
         const previousWrite = pendingWrites.current.get(fieldId) ?? Promise.resolve();
-        const thisWrite = previousWrite.then(() => setChannelAttributeValue(serverUrl, channelId, fieldId, value));
+        const thisWrite = previousWrite.then(async () => {
+            // Read after earlier writes finish. The sheet may have been open while
+            // a websocket changed the field, value, or permissions, so captured
+            // render data is not authoritative at request time.
+            const current = byFieldIdRef.current.get(fieldId);
+            if (!current || !getAttributeEditability(
+                current.field,
+                current.rawValue,
+                canEditAttributeField(current.field, permissionsRef.current),
+            ).editable) {
+                logDebug('handleSubmit', 'skipped stale submit; attribute is no longer editable', channelId, fieldId);
+                return {error: 'attribute is no longer editable'};
+            }
+
+            const validated = validateSubmission(current, value);
+            if (!validated.valid) {
+                logDebug('handleSubmit', 'skipped stale submit; value is no longer valid', channelId, fieldId);
+                return {error: 'attribute value is no longer valid'};
+            }
+
+            return setChannelAttributeValue(serverUrl, channelId, fieldId, validated.value);
+        });
         pendingWrites.current.set(fieldId, thisWrite);
 
         const {error} = await thisWrite;
@@ -202,7 +251,7 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
         if (error) {
             setFailedFieldIds((prev) => new Set(prev).add(fieldId));
         }
-    }, [byFieldId, channelId, permissions, serverUrl]);
+    }, [channelId, serverUrl]);
 
     const handleRowPress = useCallback((fieldId: string) => {
         const attribute = byFieldId.get(fieldId);
@@ -215,8 +264,9 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
 
         // Clearing is offered only where the server would accept it: a directional
         // policy refuses a clear outright, because clearing and re-setting would
-        // launder a value straight past it.
-        const clearable = getPropertyFieldChangePolicy(field) === 'any' || !isPropertyValueSet(rawValue);
+        // launder a value straight past it. A required field never accepts a
+        // clear regardless of policy — the server always rejects it.
+        const clearable = !isPropertyFieldRequired(field) && (getPropertyFieldChangePolicy(field) === 'any' || !isPropertyValueSet(rawValue));
 
         const renderContent = () => (
             <ChannelAttributeEditor

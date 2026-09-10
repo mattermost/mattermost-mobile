@@ -13,7 +13,8 @@ import NetworkManager from '@managers/network_manager';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
-import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from './classification';
+import {channelAttributeWriteLockKey} from './channel_attributes';
+import {accessControlWriteLockKey, fetchAccessControlAttributeFields, fetchChannelAttributeValues} from './classification';
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
@@ -243,10 +244,32 @@ describe('fetchAccessControlAttributeFields', () => {
         mockClient.getPropertyFields.mockResolvedValueOnce([differentGroupField]);
 
         const result = await fetchAccessControlAttributeFields(serverUrl);
-        expect(result).toEqual({});
+        expect(result.error).toBeDefined();
 
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         expect(await getStoredFields(database)).toHaveLength(0);
+    });
+
+    it('should back off non-forced retries after a malformed response, but allow a forced retry', async () => {
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        const differentGroupField = {...channelField, group_id: 'other_group'};
+        mockClient.getPropertyFields.
+            mockResolvedValueOnce([systemField]).
+            mockResolvedValueOnce([differentGroupField]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
+
+        // A non-forced call within the backoff window must not retry.
+        await fetchAccessControlAttributeFields(serverUrl);
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(2);
+
+        // A forced call must still reach the network.
+        mockClient.getPropertyFields.
+            mockResolvedValueOnce([systemField]).
+            mockResolvedValueOnce([channelField]);
+        await fetchAccessControlAttributeFields(serverUrl, true);
+        expect(mockClient.getPropertyFields).toHaveBeenCalledTimes(4);
     });
 
     it('should return error when network client throws', async () => {
@@ -312,7 +335,66 @@ describe('fetchAccessControlAttributeFields', () => {
 
         expect(await getStoredFields(database)).toEqual(['system-field-id']);
         const otherGroup = await queryFieldsByGroup(database, 'other_group');
-        expect(otherGroup.map((f) => f.id)).toEqual(['other-field']);
+        expect(otherGroup).toHaveLength(1);
+    });
+
+    it('should not delete a user/session field in the same group that this request never fetched', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // access_control is shared with other object types this feature does not
+        // own or ever request. The group-wide prune must not treat "missing from
+        // this system+channel response" as "delete it".
+        const userField = {...systemField, id: 'user-field-id', object_type: 'user' as PropertyFieldObjectType, name: 'assignee'};
+        await operator.handlePropertyFields({fields: [userField], prepareRecordsOnly: false});
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        const survivors = await queryFieldsByGroup(database, CLASSIFICATIONS_GROUP_NAME);
+        expect(survivors.map((r) => r.id).sort()).toEqual(['system-field-id', 'user-field-id']);
+    });
+
+    it('should not delete a user/session field\'s values when the field itself survives the prune', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const userField = {...systemField, id: 'user-field-id', object_type: 'user' as PropertyFieldObjectType, name: 'assignee'};
+        await operator.handlePropertyFields({fields: [userField], prepareRecordsOnly: false});
+        await operator.handlePropertyValues({
+            values: [{...systemValue, id: 'user-value-id', field_id: 'user-field-id', target_id: 'channel-1', target_type: 'channel'}],
+            prepareRecordsOnly: false,
+        });
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        const values = await getStoredValues(database, 'channel-1');
+        expect(values.map((v) => v.id)).toEqual(['user-value-id']);
+    });
+
+    it('should not prune another group\'s value for the system target', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const foreignValue = {...systemValue, id: 'foreign-system-value', group_id: 'other_group'};
+        await operator.handlePropertyValues({values: [foreignValue], prepareRecordsOnly: false});
+
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        const values = await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID);
+        expect(values.map((value) => value.id).sort()).toEqual(['foreign-system-value', 'val-1']);
     });
 
     it('should leave same-group user fields untouched', async () => {
@@ -356,6 +438,34 @@ describe('fetchAccessControlAttributeFields', () => {
         await fetchAccessControlAttributeFields(serverUrl, true);
 
         expect(mockClient.getPropertyFields).toHaveBeenCalled();
+    });
+
+    it('should hold the access-control lock while the field request is in flight', async () => {
+        setConfig({FeatureFlagClassificationMarkings: 'true', Version: '11.10.0'});
+        let resolveFields: (fields: PropertyField[]) => void = () => {};
+        let markFetchStarted: () => void = () => {};
+        const fetchStarted = new Promise<void>((resolve) => {
+            markFetchStarted = resolve;
+        });
+        mockClient.searchPropertyFields.mockImplementationOnce(() => {
+            markFetchStarted();
+            return new Promise((resolve) => {
+                resolveFields = resolve;
+            });
+        });
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        const fetchPromise = fetchAccessControlAttributeFields(serverUrl);
+        await fetchStarted;
+        const queuedWrite = jest.fn().mockResolvedValue(undefined);
+        const writePromise = EphemeralStore.runExclusive(accessControlWriteLockKey(serverUrl), queuedWrite);
+        await Promise.resolve();
+
+        expect(queuedWrite).not.toHaveBeenCalled();
+
+        resolveFields([systemField]);
+        await Promise.all([fetchPromise, writePromise]);
+        expect(queuedWrite).toHaveBeenCalledTimes(1);
     });
 
     it('should return error and not cache when batch write fails', async () => {
@@ -543,6 +653,56 @@ describe('fetchChannelAttributeValues', () => {
         expect(values[0].value).toBe('opt-secret');
     });
 
+    it('should hold the channel write lock while the REST request is in flight', async () => {
+        setConfig({FeatureFlagChannelAttributes: 'true'});
+        let resolveFetch: (values: Array<PropertyValue<string>>) => void = () => {};
+        let markFetchStarted: () => void = () => {};
+        const fetchStarted = new Promise<void>((resolve) => {
+            markFetchStarted = resolve;
+        });
+        mockClient.getPropertyValues.mockImplementationOnce(() => {
+            markFetchStarted();
+            return new Promise((resolve) => {
+                resolveFetch = resolve;
+            });
+        });
+
+        const fetchPromise = fetchChannelAttributeValues(serverUrl, channelId);
+        await fetchStarted;
+        const queuedWrite = jest.fn().mockResolvedValue(undefined);
+        const writePromise = EphemeralStore.runExclusive(channelAttributeWriteLockKey(serverUrl, channelId), queuedWrite);
+        await Promise.resolve();
+
+        expect(queuedWrite).not.toHaveBeenCalled();
+
+        resolveFetch([channelValue]);
+        await Promise.all([fetchPromise, writePromise]);
+        expect(queuedWrite).toHaveBeenCalledTimes(1);
+    });
+
+    it('should deduplicate concurrent non-forced fetches for the same channel', async () => {
+        setConfig({FeatureFlagChannelAttributes: 'true'});
+        let resolveFetch: (values: Array<PropertyValue<string>>) => void = () => {};
+        let markFetchStarted: () => void = () => {};
+        const fetchStarted = new Promise<void>((resolve) => {
+            markFetchStarted = resolve;
+        });
+        mockClient.getPropertyValues.mockImplementationOnce(() => {
+            markFetchStarted();
+            return new Promise((resolve) => {
+                resolveFetch = resolve;
+            });
+        });
+
+        const first = fetchChannelAttributeValues(serverUrl, channelId);
+        const second = fetchChannelAttributeValues(serverUrl, channelId);
+        await fetchStarted;
+        resolveFetch([channelValue]);
+
+        await Promise.all([first, second]);
+        expect(mockClient.getPropertyValues).toHaveBeenCalledTimes(1);
+    });
+
     it('should clear existing channel values when API returns none', async () => {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handlePropertyValues({values: [channelValue], prepareRecordsOnly: false});
@@ -566,6 +726,26 @@ describe('fetchChannelAttributeValues', () => {
 
         const result = await fetchChannelAttributeValues(serverUrl, channelId);
         expect(result).toEqual({error: networkError});
+    });
+
+    it('should report an error and leave existing values untouched when the local write fails', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const existing = {...channelValue, id: 'cv-existing'};
+        await operator.handlePropertyValues({values: [existing], prepareRecordsOnly: false});
+        await setAccessControlGroupId(serverUrl, CLASSIFICATIONS_GROUP_NAME);
+
+        setConfig({FeatureFlagChannelAttributes: 'true'});
+        mockClient.getPropertyValues.mockResolvedValueOnce([channelValue]);
+        jest.spyOn(operator, 'batchRecords').mockRejectedValueOnce(new Error('write failed'));
+
+        const result = await fetchChannelAttributeValues(serverUrl, channelId);
+
+        expect(result.error).toBeDefined();
+
+        // Neither the incoming upsert nor the stale prune applied: the pre-existing
+        // row is exactly as it was, and the new value was never persisted.
+        const values = await getStoredValues(database, channelId);
+        expect(values.map((v) => v.id)).toEqual(['cv-existing']);
     });
 
     it('should isolate values across different targets', async () => {

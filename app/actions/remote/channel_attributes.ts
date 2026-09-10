@@ -4,14 +4,23 @@
 // The write path for channel attribute values. Reads live in
 // @actions/remote/classification, which fetches the whole access_control group.
 
-import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getAccessControlGroupId} from '@queries/servers/properties';
+import {getConfigValue} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
+
+// Keys the per-target write serialization shared with the websocket value
+// handlers, so a REST reconciliation and a websocket write for the same
+// channel can never interleave their read-modify-write sequence.
+export function channelAttributeWriteLockKey(serverUrl: string, channelId: string): string {
+    return `channel-attributes:${serverUrl}:${channelId}`;
+}
 
 export type ChannelAttributeValueInput = string | string[] | null;
 
@@ -51,6 +60,13 @@ export async function setChannelAttributeValue(
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
+        // Checked independently of any UI gating: this is a network-writing action
+        // reachable from more than one screen, and it must not depend on a caller
+        // having already checked the flag.
+        if ((await getConfigValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES)) !== 'true') {
+            return {error: 'channel attributes are disabled'};
+        }
+
         // Every value is addressed by group, and nothing maps the group name to an
         // id locally until the fields have been fetched. Writing without it would
         // address the wrong group, so this fails rather than guessing.
@@ -61,17 +77,26 @@ export async function setChannelAttributeValue(
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const values = await client.patchPropertyValues(
-            ACCESS_CONTROL_GROUP_NAME,
-            CHANNEL_ATTRIBUTE_OBJECT_TYPE,
-            channelId,
-            [{field_id: fieldId, value: normalizeValue(value)}],
-        );
+        const values = await EphemeralStore.runExclusive(channelAttributeWriteLockKey(serverUrl, channelId), async () => {
+            const response = await client.patchPropertyValues(
+                ACCESS_CONTROL_GROUP_NAME,
+                CHANNEL_ATTRIBUTE_OBJECT_TYPE,
+                channelId,
+                [{field_id: fieldId, value: normalizeValue(value)}],
+            );
 
-        // Deliberately no targetId: it makes the write authoritative for the whole
-        // channel, so a single-field response would delete every other attribute's
-        // value on this channel. targetId belongs only to the full-channel read.
-        await operator.handlePropertyValues({values, prepareRecordsOnly: false});
+            // Deliberately no targetId: it makes the write authoritative for the
+            // whole channel, so a single-field response would delete every other
+            // attribute's value on this channel. targetId belongs only to the
+            // full-channel read.
+            //
+            // prepareRecordsOnly + a propagated batch: a failed write must throw
+            // here rather than silently succeed, so the caller never reports
+            // {data} for a value that was never actually persisted.
+            const models = await operator.handlePropertyValues({values: response, prepareRecordsOnly: true});
+            await operator.batchRecords(models, 'setChannelAttributeValue', true);
+            return response;
+        });
 
         return {data: values};
     } catch (error) {

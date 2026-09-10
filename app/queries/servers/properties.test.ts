@@ -96,6 +96,14 @@ describe('observeClassificationBannerState', () => {
         const state = await firstValueFrom(observeClassificationBannerState(database));
         expect(state).toEqual({visible: false, levelName: '', color: ''});
     });
+
+    it('should ignore fields and values from another property group', async () => {
+        await seedFields([makeField({group_id: 'other-group'})]);
+        await seedValues([makeValue({group_id: 'other-group'})]);
+
+        const state = await firstValueFrom(observeClassificationBannerState(database));
+        expect(state).toEqual({visible: false, levelName: '', color: ''});
+    });
 });
 
 describe('observeChannelAttributeFields', () => {
@@ -152,6 +160,22 @@ describe('observeResolvedChannelAttributes', () => {
     it('should not leak another channel value into this channel', async () => {
         await seedFields([makeField({id: 'cf-1', name: 'classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret'}]}})]);
         await seedValues([makeValue({id: 'cv-1', target_id: 'another-channel', target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
+
+        const resolved = await firstValueFrom(observeResolvedChannelAttributes(database, channelId));
+        expect(resolved).toHaveLength(1);
+        expect(resolved[0].displayValue).toBe('');
+    });
+
+    it('should ignore a value for the same target from another property group', async () => {
+        await seedFields([makeField({id: 'cf-1', name: 'classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret'}]}})]);
+        await seedValues([makeValue({
+            id: 'cv-1',
+            group_id: 'other-group',
+            target_id: channelId,
+            target_type: 'channel',
+            field_id: 'cf-1',
+            value: 'level-secret',
+        })]);
 
         const resolved = await firstValueFrom(observeResolvedChannelAttributes(database, channelId));
         expect(resolved).toHaveLength(1);

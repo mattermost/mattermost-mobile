@@ -192,65 +192,80 @@ describe('selectAttributesForAction', () => {
 });
 
 describe('selectChannelInfoAttributes', () => {
+    const ADMIN_PERMS: ChannelAttributePermissions = {canManageChannelProperties: true, canManageChannelRoles: true, canManageSystem: false};
+    const MEMBER_PERMS: ChannelAttributePermissions = {canManageChannelProperties: true, canManageChannelRoles: false, canManageSystem: false};
+    const NO_PROPERTIES_PERMS: ChannelAttributePermissions = {canManageChannelProperties: false, canManageChannelRoles: true, canManageSystem: true};
+
     // Fields with no display configuration (attrs.actions absent or empty) are the
     // key case — they must still appear in Channel Info because it is the only
     // editing surface, even when display_label_info is not set.
     const noDesignation = field({id: '1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS}});
     const noDesignationValue: ChannelAttributeValue = {fieldId: '1', value: 'level-secret'} as ChannelAttributeValue;
 
-    const requiredNoDesignation = field({id: '2', name: 'b', attrs: {options: CLASSIFICATION_OPTIONS, required: true}});
+    const requiredAdminTier = field({id: '2', name: 'b', permissionValues: 'admin', attrs: {options: CLASSIFICATION_OPTIONS, required: true}});
+    const requiredMemberTier = field({id: '6', name: 'f', permissionValues: 'member', attrs: {options: CLASSIFICATION_OPTIONS, required: true}});
     const optionalNoDesignation = field({id: '3', name: 'c', attrs: {options: CLASSIFICATION_OPTIONS}});
 
     const infoDesignated = field({id: '4', name: 'd', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_info']}});
     const headerOnly = field({id: '5', name: 'e', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
     const headerOnlyValue: ChannelAttributeValue = {fieldId: '5', value: 'level-secret'} as ChannelAttributeValue;
 
-    describe('channel admin (isChannelAdmin = true)', () => {
+    describe('channel admin', () => {
         it('should include an attribute with a stored value regardless of display configuration', () => {
             const resolved = resolveChannelAttributes([noDesignation], [noDesignationValue]);
-            expect(selectChannelInfoAttributes(resolved, true).map((a) => a.field.id)).toEqual(['1']);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['1']);
         });
 
         it('should include a header-only attribute that has a stored value', () => {
             const resolved = resolveChannelAttributes([headerOnly], [headerOnlyValue]);
-            expect(selectChannelInfoAttributes(resolved, true).map((a) => a.field.id)).toEqual(['5']);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['5']);
         });
 
-        it('should include a required-unset attribute even with no display designation', () => {
-            const resolved = resolveChannelAttributes([requiredNoDesignation], []);
-            expect(selectChannelInfoAttributes(resolved, true).map((a) => a.field.id)).toEqual(['2']);
+        it('should include a required-unset attribute the admin can edit, even with no display designation', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS).map((a) => a.field.id)).toEqual(['2']);
+        });
+
+        it('should omit a required-unset attribute when the viewer lacks manage_channel_properties, even with manage_channel_roles', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, NO_PROPERTIES_PERMS)).toHaveLength(0);
         });
 
         it('should omit an optional attribute with no stored value — reached via Add Attribute', () => {
             const resolved = resolveChannelAttributes([optionalNoDesignation], []);
-            expect(selectChannelInfoAttributes(resolved, true)).toHaveLength(0);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS)).toHaveLength(0);
         });
 
         it('should omit an info-designated optional attribute that is unset', () => {
             const resolved = resolveChannelAttributes([infoDesignated], []);
-            expect(selectChannelInfoAttributes(resolved, true)).toHaveLength(0);
+            expect(selectChannelInfoAttributes(resolved, ADMIN_PERMS)).toHaveLength(0);
         });
     });
 
-    describe('regular member (isChannelAdmin = false)', () => {
+    describe('regular member', () => {
         it('should include an attribute with a stored value', () => {
             const resolved = resolveChannelAttributes([noDesignation], [noDesignationValue]);
-            expect(selectChannelInfoAttributes(resolved, false).map((a) => a.field.id)).toEqual(['1']);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['1']);
         });
 
         it('should include a header-only attribute that has a stored value', () => {
             const resolved = resolveChannelAttributes([headerOnly], [headerOnlyValue]);
-            expect(selectChannelInfoAttributes(resolved, false).map((a) => a.field.id)).toEqual(['5']);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['5']);
         });
 
-        it('should omit a required-unset attribute — member cannot act on it', () => {
-            const resolved = resolveChannelAttributes([requiredNoDesignation], []);
-            expect(selectChannelInfoAttributes(resolved, false)).toHaveLength(0);
+        it('should omit an admin-tier required-unset attribute — a member cannot edit it', () => {
+            const resolved = resolveChannelAttributes([requiredAdminTier], []);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS)).toHaveLength(0);
+        });
+
+        it('should include a member-tier required-unset attribute — a member with channel-properties permission can edit it, without manage_channel_roles', () => {
+            const resolved = resolveChannelAttributes([requiredMemberTier], []);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['6']);
         });
 
         it('should omit an optional unset attribute', () => {
             const resolved = resolveChannelAttributes([optionalNoDesignation], []);
-            expect(selectChannelInfoAttributes(resolved, false)).toHaveLength(0);
+            expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS)).toHaveLength(0);
         });
     });
 
@@ -261,7 +276,7 @@ describe('selectChannelInfoAttributes', () => {
 
         // displayValue resolves to the raw id (unrecognised), but rawValue is set.
         expect(resolved[0].displayValue).toBe('deleted-option-id');
-        expect(selectChannelInfoAttributes(resolved, false).map((a) => a.field.id)).toEqual(['1']);
+        expect(selectChannelInfoAttributes(resolved, MEMBER_PERMS).map((a) => a.field.id)).toEqual(['1']);
     });
 });
 

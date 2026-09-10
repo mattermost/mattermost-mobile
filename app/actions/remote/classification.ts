@@ -7,6 +7,7 @@
 // were already scoped by group rather than by field name.
 
 import {removeStoredFields} from '@actions/local/channel_attributes';
+import {channelAttributeWriteLockKey} from '@actions/remote/channel_attributes';
 import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_TARGET_ID,
@@ -18,7 +19,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PROPERTY_FIELDS_SEARCH_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getAccessControlValuesForTarget, getPropertyFieldsByGroupId, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
+import {getAccessControlValuesForTarget, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -34,15 +35,18 @@ import type {Database} from '@nozbe/watermelondb';
 // a stale option would force a field refetch on every text value ever set.
 const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect', 'rank']);
 
+export function accessControlWriteLockKey(serverUrl: string): string {
+    return `access-control:${serverUrl}`;
+}
+
 /**
  * Fetches every field definition in the access_control group, plus the system
  * values that drive the global classification banner.
  *
  * One request covers both features: the group holds the classification system and
  * channel fields and every other channel attribute, and the search is scoped by
- * group rather than by field name. The write is authoritative for the object
- * types this feature owns (`system` and `channel`). User and session fields
- * share the group and must not be pruned.
+ * group rather than by field name. The write is authoritative for the group, so a
+ * field deleted server-side disappears locally without a reload.
  */
 export async function fetchAccessControlAttributeFields(serverUrl: string, force = false): Promise<{error?: unknown}> {
     if (!force && !EphemeralStore.shouldFetchClassificationBanner(serverUrl)) {
@@ -50,94 +54,93 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
         return {};
     }
 
-    try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    return EphemeralStore.runExclusive(accessControlWriteLockKey(serverUrl), async () => {
+        if (!force && !EphemeralStore.shouldFetchClassificationBanner(serverUrl)) {
+            return {};
+        }
 
-        if (await isAccessControlPropertiesEnabled(database)) {
-            const client = NetworkManager.getClient(serverUrl);
-            const serverVersion = await getConfigValue(database, 'Version');
+        try {
+            const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-            let allFields: PropertyField[];
-            if (isMinimumServerVersion(serverVersion, ...PROPERTY_FIELDS_SEARCH_VERSION)) {
-                allFields = await client.searchPropertyFields(ACCESS_CONTROL_GROUP_NAME, {
-                    object_types: [CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CHANNEL_ATTRIBUTE_OBJECT_TYPE],
-                    target_type: CLASSIFICATIONS_FIELD_TARGET_TYPE,
-                    target_id: CLASSIFICATIONS_FIELD_TARGET_ID,
-                });
-            } else {
-                const [systemFields, channelFields] = await Promise.all([
-                    client.getPropertyFields(ACCESS_CONTROL_GROUP_NAME, CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
-                    client.getPropertyFields(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
-                ]);
-                allFields = [...systemFields, ...channelFields];
-            }
+            if (await isAccessControlPropertiesEnabled(database)) {
+                const client = NetworkManager.getClient(serverUrl);
+                const serverVersion = await getConfigValue(database, 'Version');
 
-            if (allFields.length > 0) {
-                const groupId = allFields[0].group_id;
-                if (!groupId || allFields.some((f) => f.group_id !== groupId)) {
-                    logError('fetchAccessControlAttributeFields', 'Unexpected access control fields');
+                let allFields: PropertyField[];
+                if (isMinimumServerVersion(serverVersion, ...PROPERTY_FIELDS_SEARCH_VERSION)) {
+                    allFields = await client.searchPropertyFields(ACCESS_CONTROL_GROUP_NAME, {
+                        object_types: [CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CHANNEL_ATTRIBUTE_OBJECT_TYPE],
+                        target_type: CLASSIFICATIONS_FIELD_TARGET_TYPE,
+                        target_id: CLASSIFICATIONS_FIELD_TARGET_ID,
+                    });
+                } else {
+                    const [systemFields, channelFields] = await Promise.all([
+                        client.getPropertyFields(ACCESS_CONTROL_GROUP_NAME, CLASSIFICATIONS_SYSTEM_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
+                        client.getPropertyFields(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, CLASSIFICATIONS_FIELD_TARGET_TYPE, CLASSIFICATIONS_FIELD_TARGET_ID),
+                    ]);
+                    allFields = [...systemFields, ...channelFields];
+                }
 
-                    // Set the TTL even on this error path so a bad server
-                    // response does not produce a repeated fetch-and-fail loop
-                    // for every non-forced caller within the cache lifetime.
+                if (allFields.length > 0) {
+                    const groupId = allFields[0].group_id;
+                    if (!groupId || allFields.some((f) => f.group_id !== groupId)) {
+                        logError('fetchAccessControlAttributeFields', 'Unexpected access control fields');
+
+                        // A short backoff, not the 1-hour success TTL: this suppresses
+                        // a fetch-and-fail loop from non-forced callers without
+                        // hiding a genuine fix (or a forced retry) for an hour, and
+                        // existing local data is left untouched.
+                        EphemeralStore.setClassificationBannerFailed(serverUrl);
+                        return {error: 'access control fields returned an unexpected group_id'};
+                    }
+
+                    const values = await client.getSystemPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME);
+
+                    // objectTypes scopes the authoritative prune to what this request
+                    // actually fetched: only system+channel object types. Without it,
+                    // the group's user/session fields (owned by other features) would
+                    // read as "missing from the response" and be deleted.
+                    const fieldModels = await operator.handlePropertyFields({groupId, fields: allFields, objectTypes: [...OWNED_OBJECT_TYPES], prepareRecordsOnly: true});
+                    const valueModels = await operator.handlePropertyValues({
+                        targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID,
+                        groupId,
+                        values,
+                        prepareRecordsOnly: true,
+                    });
+
+                    // Published for the field observables, which cannot scope
+                    // themselves to this group until the id is known. Persisted in the
+                    // same batch so field records never exist without a group ID: a
+                    // failed write leaves the DB as it was rather than storing
+                    // unscopeable rows.
+                    const systemIdModels = await operator.handleSystem({
+                        systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: groupId}],
+                        prepareRecordsOnly: true,
+                    });
+                    await operator.batchRecords([...fieldModels, ...valueModels, ...systemIdModels], 'fetchAccessControlAttributeFields', true);
+
                     EphemeralStore.setClassificationBannerFetched(serverUrl);
                     return {};
                 }
 
-                const values = await client.getSystemPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME);
+                logDebug('fetchAccessControlAttributeFields', 'No access control fields returned');
 
-                // Do not pass groupId: that prune is unscoped by object_type and
-                // would delete user/session fields that share access_control.
-                const existing = await getPropertyFieldsByGroupId(database, groupId);
-                const incomingIds = new Set(allFields.filter((f) => f.delete_at === 0).map((f) => f.id));
-                const staleOwned = existing.filter((f) =>
-                    OWNED_OBJECT_TYPES.has(f.objectType as PropertyFieldObjectType) && !incomingIds.has(f.id),
-                );
-
-                const fieldModels = await operator.handlePropertyFields({
-                    fields: [
-                        ...allFields,
-                        ...staleOwned.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),
-                    ],
-                    prepareRecordsOnly: true,
-                });
-                const valueModels = await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: true});
-
-                // Published for the field observables, which cannot scope
-                // themselves to this group until the id is known. Persisted in the
-                // same batch so field records never exist without a group ID: a
-                // failed write leaves the DB as it was rather than storing
-                // unscopeable rows.
-                const systemIdModels = await operator.handleSystem({
-                    systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: groupId}],
-                    prepareRecordsOnly: true,
-                });
-                await operator.batchRecords([...fieldModels, ...valueModels, ...systemIdModels], 'fetchAccessControlAttributeFields', true);
-
+                await removeStoredFields(serverUrl);
                 EphemeralStore.setClassificationBannerFetched(serverUrl);
                 return {};
             }
 
-            logDebug('fetchAccessControlAttributeFields', 'No access control fields returned');
-
-            // Authoritative empty result: stamp the cache so we do not refetch
-            // empty for the rest of the TTL.
+            // Do not stamp the success cache while disabled. A subsequent flag
+            // enablement must be able to fetch immediately.
+            logDebug('fetchAccessControlAttributeFields', 'Access control features disabled; skipping fetch');
             await removeStoredFields(serverUrl);
-            EphemeralStore.setClassificationBannerFetched(serverUrl);
             return {};
+        } catch (error) {
+            logError('fetchAccessControlAttributeFields', 'Failed to fetch access control attribute fields', getFullErrorMessage(error));
+            forceLogoutIfNecessary(serverUrl, error);
+            return {error};
         }
-
-        // Features off: drop local rows so chips/banner go away, but do not stamp
-        // the fetch cache. Stamping here would skip the next mount after a flag is
-        // turned back on — reload resets the flagChanged ref in the banner container.
-        logDebug('fetchAccessControlAttributeFields', 'Access control features disabled; skipping fetch');
-        await removeStoredFields(serverUrl);
-        return {};
-    } catch (error) {
-        logError('fetchAccessControlAttributeFields', 'Failed to fetch access control attribute fields', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-        return {error};
-    }
+    });
 }
 
 /**
@@ -167,33 +170,50 @@ export async function fetchChannelAttributeValues(serverUrl: string, channelId: 
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const values = await client.getPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, channelId);
+        let values: Array<PropertyValue<string>> | undefined;
 
-        // Upsert without targetId: passing targetId to handlePropertyValues makes
-        // the write authoritative by deleting every PropertyValue WHERE
-        // target_id=channelId that is not in the list. The table is shared across
-        // groups — managed channel categories and future features may store
-        // per-channel values in it — so a group-unscoped delete is data loss.
-        // Instead, we upsert the returned values and separately prune stale rows
-        // that belong to the access_control group.
-        await operator.handlePropertyValues({values, prepareRecordsOnly: false});
+        // The request itself is serialized with websocket and local writes. Locking
+        // only after the response arrives would still let an older REST request
+        // commit after a newer websocket update and prune that update as stale.
+        await EphemeralStore.runExclusive(channelAttributeWriteLockKey(serverUrl, channelId), async () => {
+            // Concurrent non-forced callers can both pass the check above before
+            // either enters the queue. Re-check here so only the first one fetches.
+            if (!force && EphemeralStore.getChannelAttributeValuesSynced(serverUrl, channelId)) {
+                return;
+            }
 
-        // Prune access_control values the server no longer returns.
-        // getAccessControlValuesForTarget returns [] when the group id is not yet
-        // known, which is the safe direction for a destructive call.
-        const existing = await getAccessControlValuesForTarget(database, channelId);
-        const incomingIds = new Set(values.map((v) => v.id));
-        const stale = existing.filter((v) => !incomingIds.has(v.id));
-        if (stale.length) {
-            await operator.handlePropertyValues({
+            values = await client.getPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, channelId);
+
+            // Upsert without targetId: passing targetId to handlePropertyValues
+            // makes the write authoritative by deleting every PropertyValue WHERE
+            // target_id=channelId that is not in the list. The table is shared
+            // across groups — managed channel categories and future features may
+            // store per-channel values in it — so a group-unscoped delete is data
+            // loss. Instead, we upsert the returned values and separately prune
+            // stale rows that belong to the access_control group.
+            const upsertModels = await operator.handlePropertyValues({values, prepareRecordsOnly: true});
+
+            // Prune access_control values the server no longer returns.
+            // getAccessControlValuesForTarget returns [] when the group id is not
+            // yet known, which is the safe direction for a destructive call.
+            const existing = await getAccessControlValuesForTarget(database, channelId);
+            const incomingIds = new Set(values.map((v) => v.id));
+            const stale = existing.filter((v) => !incomingIds.has(v.id));
+            const deleteModels = stale.length ? await operator.handlePropertyValues({
                 values: stale.map((v) => ({id: v.id, delete_at: Date.now()} as PropertyValue)),
-                prepareRecordsOnly: false,
-            });
+                prepareRecordsOnly: true,
+            }) : [];
+
+            // One propagated batch: a failed write must throw rather than leave the
+            // upsert applied and the prune silently skipped (or vice versa), and it
+            // must not reach setChannelAttributeValuesSynced below.
+            await operator.batchRecords([...upsertModels, ...deleteModels], 'fetchChannelAttributeValues', true);
+            EphemeralStore.setChannelAttributeValuesSynced(serverUrl, channelId);
+        });
+
+        if (values) {
+            await resyncStaleOptions(serverUrl, database, values);
         }
-
-        await resyncStaleOptions(serverUrl, database, values);
-
-        EphemeralStore.setChannelAttributeValuesSynced(serverUrl, channelId);
 
         return {};
     } catch (error) {

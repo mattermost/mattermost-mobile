@@ -21,7 +21,10 @@ export async function removeStoredFields(serverUrl: string) {
     let groupId = await getAccessControlGroupId(database);
     if (!groupId) {
         const classificationFields = await getPropertyFieldsByNames(database, [CLASSIFICATIONS_FIELD_NAME]);
-        groupId = classificationFields[0]?.groupId ?? '';
+        const candidateGroupIds = new Set(classificationFields.map((field) => field.groupId).filter(Boolean));
+        if (candidateGroupIds.size === 1) {
+            groupId = [...candidateGroupIds][0];
+        }
     }
 
     const candidates = groupId ? await getPropertyFieldsByGroupId(database, groupId) : [];
@@ -31,17 +34,20 @@ export async function removeStoredFields(serverUrl: string) {
     // are not being turned off here.
     const stale = candidates.filter((f) => OWNED_OBJECT_TYPES.has(f.objectType as PropertyFieldObjectType));
 
-    if (stale.length) {
-        await operator.handlePropertyFields({
-            fields: stale.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),
-            prepareRecordsOnly: false,
-        });
-    }
+    const fieldModels = stale.length ? await operator.handlePropertyFields({
+        fields: stale.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),
+        prepareRecordsOnly: true,
+    }) : [];
 
-    const {error} = await setAccessControlGroupId(serverUrl, '');
-    if (error) {
-        throw error;
-    }
+    // The field deletion and the group-id clear are committed in one batch: a
+    // failed write must not clear the group id while leaving the owned fields
+    // (and their cascaded values) still stored, or vice versa.
+    const systemModels = await operator.handleSystem({
+        systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: ''}],
+        prepareRecordsOnly: true,
+    });
+
+    await operator.batchRecords([...fieldModels, ...systemModels], 'removeStoredFields', true);
 }
 
 export async function setAccessControlGroupId(serverUrl: string, groupId: string) {

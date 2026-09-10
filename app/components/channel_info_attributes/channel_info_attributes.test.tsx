@@ -343,5 +343,49 @@ describe('ChannelInfoAttributes', () => {
 
             expect(sheetProps().clearable).toBe(true);
         });
+
+        it('should not offer a clear on a required field', () => {
+            const required = field({attrs: {options: OPTIONS, actions: ['display_label_info'], required: true}});
+            const {getByTestId} = render([attribute({field: required})]);
+
+            fireEvent.press(getByTestId('channel_info.attributes.classification.edit'));
+
+            expect(sheetProps().clearable).toBe(false);
+        });
+
+        it('should reject a sheet submission after live permissions revoke editing', async () => {
+            const currentAttribute = attribute();
+            const result = render([currentAttribute]);
+            fireEvent.press(result.getByTestId('channel_info.attributes.classification.edit'));
+
+            result.rerender(
+                <ChannelInfoAttributes
+                    channelId={channelId}
+                    attributes={[currentAttribute]}
+                    permissions={permissions({canManageChannelProperties: false})}
+                />,
+            );
+            await submitFromSheet('cf-1', 'level-public');
+
+            expect(mockedSetValue).not.toHaveBeenCalled();
+        });
+
+        it('should reject an option removed while its sheet was open', async () => {
+            const currentAttribute = attribute();
+            const result = render([currentAttribute]);
+            fireEvent.press(result.getByTestId('channel_info.attributes.classification.edit'));
+
+            const updatedField = field({attrs: {options: [OPTIONS[0]], actions: ['display_label_info']}});
+            result.rerender(
+                <ChannelInfoAttributes
+                    channelId={channelId}
+                    attributes={[attribute({field: updatedField})]}
+                    permissions={permissions()}
+                />,
+            );
+            await submitFromSheet('cf-1', 'level-secret');
+
+            expect(mockedSetValue).not.toHaveBeenCalled();
+        });
     });
 });

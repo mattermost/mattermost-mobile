@@ -195,6 +195,45 @@ describe('CreateOrEditChannel', () => {
         });
     });
 
+    it('should not submit an option removed after its editor opened', async () => {
+        jest.mocked(createChannel).mockResolvedValue({channel: TestHelper.fakeChannel({id: 'created-channel', team_id: 'team1'})});
+        const initialField = requiredField();
+        const {getByTestId, rerender} = renderWithEverything(
+            <CreateOrEditChannel
+                {...getBaseProps()}
+                attributeFields={[initialField]}
+            />,
+            {database, serverUrl},
+        );
+
+        fireEvent.changeText(getByTestId('channel_info_form.display_name.input'), 'town-square');
+        fireEvent.press(getByTestId('channel_attribute_form.sensitivity.edit'));
+        const staleSubmit = sheetProps().onSubmit;
+
+        rerender(
+            <CreateOrEditChannel
+                {...getBaseProps()}
+                attributeFields={[requiredField({attrs: {required: true, options: [{id: 'opt-2', name: 'LOW'}]}})]}
+            />,
+        );
+        await act(async () => {
+            staleSubmit('field-1', 'opt-1');
+        });
+
+        await act(async () => {
+            lastHeaderButton().props.onPress();
+        });
+
+        expect(createChannel).toHaveBeenCalledWith(
+            expect.any(String),
+            'town-square',
+            expect.any(String),
+            expect.any(String),
+            expect.any(String),
+            [],
+        );
+    });
+
     it('should not render the attribute section while editing', () => {
         const {queryByTestId} = renderWithEverything(
             <CreateOrEditChannel

@@ -14,7 +14,7 @@ import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
-import {getPropertyFieldLabel, reachableOptions, type ResolvedChannelAttribute} from '@utils/channel_attributes';
+import {getPropertyFieldLabel, isPropertyFieldRequired, reachableOptions, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -170,12 +170,18 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
         [field, rawValue, unlockOptions],
     );
 
+    // Intersected against the field's current option ids so a stored id whose
+    // option has since been deleted server-side never gets silently resubmitted:
+    // it is invisible in the picker, and submitting it back would have the
+    // server reject the whole write.
+    const currentOptionIds = useMemo(() => new Set((field.attrs?.options ?? []).map((option) => option.id)), [field]);
+
     const initialSelection = useMemo(() => {
         if (Array.isArray(rawValue)) {
-            return rawValue.filter((id): id is string => typeof id === 'string');
+            return rawValue.filter((id): id is string => typeof id === 'string' && currentOptionIds.has(id));
         }
-        return typeof rawValue === 'string' && rawValue ? [rawValue] : [];
-    }, [rawValue]);
+        return typeof rawValue === 'string' && rawValue && currentOptionIds.has(rawValue) ? [rawValue] : [];
+    }, [rawValue, currentOptionIds]);
 
     const [selection, setSelection] = useState<string[]>(initialSelection);
     const [text, setText] = useState(typeof rawValue === 'string' ? rawValue : '');
@@ -211,6 +217,11 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
     const multiselectChanged = selection.length !== initialSelection.length || selection.some((id) => !initialSelection.includes(id));
     const textChanged = text.trim() !== (typeof rawValue === 'string' ? rawValue : '');
 
+    // A required field never accepts an empty write — the server always rejects
+    // it — so trimming down to nothing must not be offered as a savable change.
+    const isRequired = isPropertyFieldRequired(field);
+    const textEmptied = isRequired && text.trim() === '';
+
     if (isText) {
         return (
             <BottomSheetContent
@@ -219,7 +230,7 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
                 titleSeparator={true}
                 title={intl.formatMessage(messages.title, {attribute: label})}
                 buttonText={intl.formatMessage(messages.save)}
-                disableButton={!textChanged}
+                disableButton={!textChanged || textEmptied}
                 onPress={handleSaveText}
                 testID={`channel_attribute_editor.${field.name}`}
             >
@@ -245,7 +256,7 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
             titleSeparator={true}
             title={intl.formatMessage(messages.title, {attribute: label})}
             buttonText={isMultiselect ? intl.formatMessage(messages.save) : undefined}
-            disableButton={!multiselectChanged}
+            disableButton={!multiselectChanged || (isRequired && selection.length === 0)}
             onPress={handleSaveMultiselect}
             testID={`channel_attribute_editor.${field.name}`}
         >

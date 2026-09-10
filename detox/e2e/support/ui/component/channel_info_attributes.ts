@@ -72,6 +72,11 @@ class ChannelInfoAttributes {
         await this.getEditorOption(fieldName, optionId).tap();
         await waitFor(this.getEditorSheet(fieldName)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
+
+    closeEditor = async (fieldName: string) => {
+        await this.getEditorSheet(fieldName).swipe('down', 'fast');
+        await waitFor(this.getEditorSheet(fieldName)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+    };
 }
 
 const channelInfoAttributes = new ChannelInfoAttributes();

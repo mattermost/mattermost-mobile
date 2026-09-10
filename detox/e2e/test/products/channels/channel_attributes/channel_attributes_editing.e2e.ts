@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireChannelAttributesLock, createChannelAttributesLockOwner, releaseChannelAttributesLock} from '@support/channel_attributes_lock';
 import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
-import {Channel, Properties, System, Team, User} from '@support/server_api';
+import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {Channel, Properties, Team, User} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels, ChannelInfoAttributes} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -79,8 +79,8 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
     let testChannel: any = null;
 
     beforeAll(async () => {
-        lockOwner = createChannelAttributesLockOwner();
-        await acquireChannelAttributesLock(siteOneUrl, lockOwner);
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
         lockAcquired = true;
 
         // A prior interrupted run may have left a required field behind, which would
@@ -108,10 +108,9 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
             if (canControlFlag) {
                 await disableChannelAttributes(siteOneUrl);
             }
-            await System.apiPatchConfig(siteOneUrl, {FeatureFlags: {ClassificationMarkings: false}});
             await HomeScreen.logout();
         } finally {
-            await releaseChannelAttributesLock(siteOneUrl, lockOwner);
+            await releaseClassificationLock(siteOneUrl, lockOwner);
         }
     });
 
@@ -124,13 +123,29 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
             return;
         }
 
+        let cleanupError: unknown;
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (result.error) {
+                cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+        } catch (error) {
+            cleanupError ??= error;
+        }
         if (canControlFlag) {
-            await disableChannelAttributes(siteOneUrl);
+            try {
+                await disableChannelAttributes(siteOneUrl);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -186,12 +201,14 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         }
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        if (!channel) {
+            throw new Error('setupChannelWithAttribute failed to create its channel');
+        }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
-        // Channel Info lists by role: required-unset rows only show to a channel
-        // admin. The channel was created by the admin API (not testUser), so testUser
-        // starts as a plain member. Promote them so the tests exercise the admin path.
+        // The channel was created by the admin API, so testUser starts as a plain
+        // member. Most scenarios exercise the channel-admin editing path.
         await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
 
         if (opts.value) {
@@ -233,6 +250,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         assertStoredValue(await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId), OPTION_IDS.medium);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6320_2 - should show the new value on the channel header chip as well as the Channel Info row', async () => {
@@ -277,6 +295,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6320_4 - should clear a value under an any policy', async () => {
@@ -300,25 +319,24 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         assertStoredValueUnset(await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId));
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
-    it('MM-T6320_5 - should refuse to clear a required attribute', async () => {
+    it('MM-T6320_5 - should not offer clearing for a required attribute', async () => {
         const {channelFieldId, channel} = await setupChannelWithAttribute({changePolicy: 'any', value: OPTION_IDS.medium, required: true});
 
-        // # Attempt to clear the value.
+        // # Open the required attribute's editor.
         await ChannelInfoAttributes.openEditor(FIELD_NAME);
-        await waitFor(ChannelInfoAttributes.getEditorClear(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await ChannelInfoAttributes.getEditorClear(FIELD_NAME).tap();
 
-        // * The server refuses to empty a required field, so the row reports
-        // the failure and keeps showing the value it still holds.
-        await waitFor(ChannelInfoAttributes.getError(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+        // * Invalid clearing is unavailable rather than deferred to a server error.
+        await expect(ChannelInfoAttributes.getEditorClear(FIELD_NAME)).not.toExist();
 
         // * The server still holds the value.
         assertStoredValue(await Properties.apiGetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId), OPTION_IDS.medium);
 
+        await ChannelInfoAttributes.closeEditor(FIELD_NAME);
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6321_1 - should offer only the higher options, and no clear, under a raise_only policy', async () => {
@@ -340,6 +358,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6321_2 - should render read-only with a reason once a raise_only policy is exhausted', async () => {
@@ -355,6 +374,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await expect(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('HIGH');
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6321_3 - should lock a set value under a never policy but allow the first write', async () => {
@@ -374,6 +394,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await expect(ChannelInfoAttributes.getEditableRow(FIELD_NAME)).not.toExist();
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6322_1 - should not offer editing for a field whose permission tier the user cannot satisfy', async () => {
@@ -387,6 +408,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getLockReason(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6322_2 - should never offer editing for a none-tier field', async () => {
@@ -401,6 +423,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getLockReason(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6323_1 - should reflect a value changed on the server while the app is on the screen', async () => {
@@ -415,6 +438,7 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getChipValue(FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.HALF_MIN);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6325_1 - should show a valued attribute in Channel Info even when it has no display_label_info action', async () => {
@@ -435,6 +459,9 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         });
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        if (!channel) {
+            throw new Error('MM-T6325_1 failed to create its channel');
+        }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
@@ -455,13 +482,12 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         await waitFor(ChannelInfoAttributes.getEditableRow(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
     it('MM-T6324_1 - should not offer editing when the ChannelAttributes flag is off', async () => {
         if (!canControlFlag) {
-            // The server controls FeatureFlagChannelAttributes via an env var, so
-            // flag-off behaviour cannot be exercised here.
-            return;
+            throw new Error('MM-T6324_1 requires a server where ChannelAttributes can be disabled');
         }
 
         const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
@@ -502,8 +528,8 @@ describe('Channel Attributes - Member view (read-only)', () => {
     const MEMBER_FIELD_NAME = 'memberfield';
 
     beforeAll(async () => {
-        lockOwner = createChannelAttributesLockOwner();
-        await acquireChannelAttributesLock(siteOneUrl, lockOwner);
+        lockOwner = createClassificationLockOwner();
+        await acquireClassificationLock(siteOneUrl, lockOwner);
         lockAcquired = true;
 
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
@@ -537,7 +563,7 @@ describe('Channel Attributes - Member view (read-only)', () => {
             }
             await HomeScreen.logout();
         } finally {
-            await releaseChannelAttributesLock(siteOneUrl, lockOwner);
+            await releaseClassificationLock(siteOneUrl, lockOwner);
         }
     });
 
@@ -550,13 +576,29 @@ describe('Channel Attributes - Member view (read-only)', () => {
             return;
         }
 
+        let cleanupError: unknown;
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (result.error) {
+                cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+        } catch (error) {
+            cleanupError ??= error;
+        }
         if (canControlFlag) {
-            await disableChannelAttributes(siteOneUrl);
+            try {
+                await disableChannelAttributes(siteOneUrl);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -567,11 +609,14 @@ describe('Channel Attributes - Member view (read-only)', () => {
             fieldName: MEMBER_FIELD_NAME,
             options: FIELD_OPTIONS,
             actions: DISPLAY_ACTIONS,
-            permissionValues: 'member',
+            permissionValues: 'admin',
             required: false,
         });
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        if (!channel) {
+            throw new Error('MM-T6326_1 failed to create its channel');
+        }
         testChannel = channel;
 
         // adminUser creates the channel via API; promote to admin so they can set values.
@@ -591,32 +636,31 @@ describe('Channel Attributes - Member view (read-only)', () => {
         await ChannelInfoAttributes.toBeVisible();
         await waitFor(ChannelInfoAttributes.getChipValue(MEMBER_FIELD_NAME)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
 
-        // * No edit affordance — members cannot edit channel attributes.
+        // * No edit affordance — this admin-tier field excludes regular members.
         await expect(ChannelInfoAttributes.getEditableRow(MEMBER_FIELD_NAME)).not.toExist();
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 
-    it('MM-T6326_2 - should hide a required-unset attribute from a regular member', async () => {
-        // A required-unset row is the signal that the channel is incomplete. Only
-        // admins see it because only they can act on it; showing it to a member
-        // who cannot edit would be noise.
+    it('MM-T6326_2 - should hide an admin-tier required-unset attribute from a regular member', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        await Properties.apiSetupChannelAttributeField(siteOneUrl, {
+        const {channelFieldId} = await Properties.apiSetupChannelAttributeField(siteOneUrl, {
             fieldName: MEMBER_FIELD_NAME,
             options: FIELD_OPTIONS,
             actions: DISPLAY_ACTIONS,
-            permissionValues: 'member',
-
-            // Required from creation: no channel to block here, because no channel
-            // exists yet when the field is created.
-            required: true,
+            permissionValues: 'admin',
+            required: false,
         });
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        if (!channel) {
+            throw new Error('MM-T6326_2 failed to create its channel');
+        }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, memberUser.id, channel.id);
+        await Properties.apiSetChannelAttributeFieldRequired(siteOneUrl, channelFieldId, true);
 
         // No value is set — the attribute is required-and-unset.
         await device.reloadReactNative();
@@ -629,5 +673,6 @@ describe('Channel Attributes - Member view (read-only)', () => {
         await ChannelInfoAttributes.toNotBeVisible();
 
         await ChannelInfoScreen.close();
+        await ChannelScreen.back();
     });
 });

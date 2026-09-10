@@ -525,8 +525,14 @@ export const apiGetChannelAttributeValue = async (
     channelId: string,
     fieldId: string,
 ): Promise<unknown> => {
-    const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId) as {values?: any[]};
-    return (result.values ?? []).find((v: any) => v.field_id === fieldId)?.value;
+    const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId) as {
+        values?: Array<{field_id: string; value: unknown}>;
+        error?: unknown;
+    };
+    if (result.error || !result.values) {
+        throw new Error(`apiGetChannelAttributeValue: ${JSON.stringify(result.error ?? result)}`);
+    }
+    return result.values.find((value) => value.field_id === fieldId)?.value;
 };
 
 /**
@@ -553,29 +559,49 @@ export const apiCleanupChannelAttributeFields = async (baseUrl: string, fieldNam
         [CHANNEL_OBJECT_TYPE, CHANNEL_TARGET_TYPE],
         [LINKED_OBJECT_TYPE, TARGET_TYPE],
     ];
+    let firstError: Error | undefined;
 
     for (const [objectType, targetType] of objectTypePairs) {
         // eslint-disable-next-line no-await-in-loop
-        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, targetType) as {fields?: any[]};
+        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, targetType) as {
+            fields?: Array<{id: string; name: string; delete_at: number}>;
+            error?: unknown;
+        };
         if (!fieldsResult.fields) {
+            firstError ??= new Error(`apiCleanupChannelAttributeFields: list ${objectType} fields failed: ${JSON.stringify(fieldsResult.error ?? fieldsResult)}`);
             continue;
         }
         for (const field of fieldsResult.fields) {
             if (nameSet.has(field.name) && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id);
+                const deleteResult = await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id) as {error?: unknown};
+                if (deleteResult.error) {
+                    firstError ??= new Error(`apiCleanupChannelAttributeFields: delete ${objectType} field failed: ${JSON.stringify(deleteResult.error)}`);
+                }
             }
         }
     }
 
-    const templateResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
+    const templateResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {
+        fields?: Array<{id: string; name: string; delete_at: number}>;
+        error?: unknown;
+    };
     if (templateResult.fields) {
         for (const field of templateResult.fields) {
             if (nameSet.has(field.name) && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, field.id);
+                const deleteResult = await apiDeletePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, field.id) as {error?: unknown};
+                if (deleteResult.error) {
+                    firstError ??= new Error(`apiCleanupChannelAttributeFields: delete template field failed: ${JSON.stringify(deleteResult.error)}`);
+                }
             }
         }
+    } else {
+        firstError ??= new Error(`apiCleanupChannelAttributeFields: list template fields failed: ${JSON.stringify(templateResult.error ?? templateResult)}`);
+    }
+
+    if (firstError) {
+        throw firstError;
     }
 };
 

@@ -481,13 +481,15 @@ export function selectAttributesForAction(
  * attribute the viewer can act on — hiding a value because an admin did not tick
  * "show in info panel" would leave a channel admin with no way to correct it.
  *
- * Channel admin (canManageChannelRoles) or sysadmin: every attribute with a stored
- * value, plus every required attribute even when unset — the required-but-unset row
- * is the signal that the channel is incomplete, and Channel Info is the only editing
- * surface, so hiding it would strand the channel with no way to correct it.
+ * Required-and-unset rows are shown per field, not per a single "is this user a
+ * channel admin" boolean: a custom role can hold manage_public/private_channel_
+ * properties and edit a member-tier field without holding manage_channel_roles,
+ * and that user must still see the only row that lets them complete it. Each
+ * field's own effective editability (canEditAttributeField) decides, not the
+ * channel-role permission alone.
  *
- * Regular member: every attribute with a stored value, read-only. Required-unset rows
- * are admin-only because a member cannot act on them.
+ * Any attribute with a stored value is listed regardless of who can edit it —
+ * read-only for a viewer who cannot act on it.
  *
  * Optional unset attributes are reached through Add Attribute (a later story).
  *
@@ -498,13 +500,13 @@ export function selectAttributesForAction(
  */
 export function selectChannelInfoAttributes(
     attributes: ResolvedChannelAttribute[],
-    isChannelAdmin: boolean,
+    permissions: ChannelAttributePermissions,
 ): ResolvedChannelAttribute[] {
     const listed = attributes.filter((attribute) => {
         if (isPropertyValueSet(attribute.rawValue)) {
             return true;
         }
-        return isChannelAdmin && isPropertyFieldRequired(attribute.field);
+        return isPropertyFieldRequired(attribute.field) && canEditAttributeField(attribute.field, permissions);
     });
     return listed.length === 0 ? EMPTY_RESOLVED : listed;
 }
