@@ -17,8 +17,8 @@ import {navigateToScreen, navigateToRoot} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
-import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
-import {notificationError} from '@utils/notification';
+import {alertChannelArchived, alertChannelRemove, alertTeamRemove, showChannelAccessRevoked} from '@utils/navigation';
+import {notificationError, type NotificationErrorType} from '@utils/notification';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
@@ -55,7 +55,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
     useHardwareKeyboardEvents(events);
 
     useEffect(() => {
-        const notificationErrorListener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
+        const notificationErrorListener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: NotificationErrorType) => {
             notificationError(intl, value);
         });
 
@@ -71,6 +71,10 @@ export function useHomeScreenEffects(props: LaunchProps) {
             alertChannelArchived(displayName, intl);
         });
 
+        const accessRevokedListener = DeviceEventEmitter.addListener(Events.CHANNEL_ACCESS_REVOKED, (displayName: string) => {
+            showChannelAccessRevoked(displayName);
+        });
+
         const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
             if (isSameServer) {
                 navigateToRoot();
@@ -82,6 +86,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
             leaveTeamListener.remove();
             leaveChannelListener.remove();
             archivedChannelListener.remove();
+            accessRevokedListener.remove();
             crtToggledListener.remove();
         };
     }, [intl]);

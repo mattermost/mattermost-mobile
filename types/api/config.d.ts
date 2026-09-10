@@ -126,6 +126,7 @@ interface ClientConfig {
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
+    FeatureFlagAccessChannelABACPermission?: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
@@ -133,6 +134,7 @@ interface ClientConfig {
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;
+    FeatureFlagPermissionPolicies?: string;
     FeatureFlagSessionAttributes?: string;
     ForgotPasswordLink?: string;
     GfycatApiKey: string;

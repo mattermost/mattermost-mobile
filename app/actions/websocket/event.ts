@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import {reconcileChannelAccess} from '@actions/remote/channel_access';
 import {
     handleBoRPostAllRevealed,
     handleBoRPostBurnedEvent,
@@ -361,6 +362,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         // Autotranslation
         case WebsocketEvents.POST_TRANSLATION_UPDATED:
             handlePostTranslationUpdatedEvent(serverUrl, msg);
+            break;
+
+        // Access control policies
+        case WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED:
+        case WebsocketEvents.PERMISSION_POLICY_UPDATED:
+            reconcileChannelAccess(serverUrl);
             break;
 
         // File access control
