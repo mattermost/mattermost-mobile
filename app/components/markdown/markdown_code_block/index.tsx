@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {getHighlightLanguageForCode, getHighlightLanguageName} from '@utils/markdown';
+import {getHighlightLanguageFromNameOrAlias, getHighlightLanguageName} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {SyntaxHiglightProps} from '@typings/components/syntax_highlight';
@@ -96,8 +96,8 @@ const MarkdownCodeBlock = ({language = '', content, textStyle, theme}: MarkdownC
     }, []);
     const {content: codeContent, numberOfLines} = trimContent(content);
     const highlightLanguage = useMemo(() => {
-        return getHighlightLanguageForCode(language, codeContent);
-    }, [codeContent, language]);
+        return getHighlightLanguageFromNameOrAlias(language);
+    }, [language]);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const languageDisplayName = getHighlightLanguageName(language);

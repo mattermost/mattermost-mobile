@@ -20,10 +20,6 @@ type LanguageObject = {
     };
 }
 
-let lowlight: {
-    highlightAuto: (code: string) => {language: string | null};
-};
-
 // pattern to detect the existence of a Chinese, Japanese, Korean, or Thai character in a string
 // http://stackoverflow.com/questions/15033196/using-javascript-to-check-whether-a-string-contains-japanese-characters-includi
 const cjkPattern = /[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf\uac00-\ud7a3\u0e00-\u0e7f]/;
@@ -219,19 +215,6 @@ export function getHighlightLanguageFromNameOrAlias(name: string) {
     return Object.keys(highlightedLanguages).find((key) => {
         return highlightedLanguages[key].aliases?.has(langName);
     }) || '';
-}
-
-export function getHighlightLanguageForCode(language: string, code: string) {
-    const languageFromNameOrAlias = getHighlightLanguageFromNameOrAlias(language);
-    if (languageFromNameOrAlias) {
-        return languageFromNameOrAlias;
-    }
-
-    if (!lowlight) {
-        lowlight = require('lowlight');
-    }
-
-    return lowlight.highlightAuto(code).language ?? 'text';
 }
 
 export function getHighlightLanguageName(language: string): string {
