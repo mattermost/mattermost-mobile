@@ -114,16 +114,29 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.composePostDraft(message);
         await ChannelScreen.tapSendButton();
 
-        // # Dismiss the keyboard before asserting on the indicator. composePostDraft focuses
-        // the input, so the keyboard is still up here, and unlike MM-T416_1 this channel
-        // already holds that test's re-sent post — the list is taller and the newest failed
-        // post renders lower, into the keyboard. The assertion below is a *visibility* one, so
-        // an occluded-but-present indicator fails it: CI 34351941461 reported "10.0sec timeout
-        // expired without matching ... covers at least <50> percent of the view's area", which
-        // is occlusion, not absence. Same mechanism the re-send step below already documents.
-        await ChannelScreen.dismissKeyboard();
-
         // * Verify the post failed (failed indicator appears)
+        //
+        // KNOWN TO FAIL INTERMITTENTLY ON CI, and not for a timing reason -- do not "fix" this
+        // by raising the timeout or dismissing the keyboard. Both were tried and neither is the
+        // mechanism. Evidence from run 34442291241 (detox-android, shard 16qnf9j1h6-7):
+        //   - the failure screenshot shows this post still rendered GREY, i.e. pending, with no
+        //     failed indicator anywhere on screen -- so nothing was occluded, the element was
+        //     never created;
+        //   - testDone.png, taken at the end of the test, shows it still pending, so a longer
+        //     wait would not have helped either;
+        //   - the device log for this test's own window contains no "Error sending a post" at
+        //     all. MM-T416_1's window does (06:22:01), which is why that test passes.
+        // The app only marks a post failed once a send attempt fails. MM-T416_1 is sent while
+        // the app has not yet processed the disconnect, so it attempts, gets "Unable to resolve
+        // host", and flags the post. By the time this test sends, the app has registered the
+        // network loss ("websocket closed" at 06:22:14) and holds the post as pending without
+        // attempting it -- so post.failed.button is never rendered and this assertion is waiting
+        // on a state the app will not reach on that path.
+        // Making this deterministic means making the app attempt the send, which airplane mode
+        // (see goOffline in support/utils/offline_simulation.ts) actively prevents because it
+        // also signals connectivity loss to the app. A network-level block that leaves the radio
+        // up would not have that problem. Not changed here: that is a shared-helper change and
+        // it should be made deliberately, not folded into a flake fix.
         const failedButton = element(by.id('post.failed.button'));
         await waitFor(failedButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
