@@ -74,10 +74,10 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.tapSendButton();
 
         // * Verify the post failed (failed indicator appears). Same client retry budget as
-        // MM-T416_2 below -- createPost() retries three times with exponential backoff before
-        // it rejects, so the indicator cannot appear for ~11s.
+        // MM-T416_2 below (four attempts + 7 s backoff, up to 47 s if the connect hangs);
+        // this test's cold DNS cache usually fails fast, but it is bounded the same way.
         const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.ONE_MIN);
 
         // # Restore network access (harness polls until the server is reachable)
         await goOnline(serverOneUrl);
@@ -118,21 +118,30 @@ import {by, element, expect, waitFor} from 'detox';
 
         // * Verify the post failed (failed indicator appears)
         //
-        // Waits for the client's retry budget, not for CI to catch up. NetworkManager's
-        // DEFAULT_CONFIG sets retryPolicyConfiguration EXPONENTIAL_RETRY with retryLimit 3,
-        // base 2, scale 0.5, so createPost() does not reject until four attempts and roughly
-        // 0.5*2^1 + 0.5*2^2 + 0.5*2^3 = 7s of backoff have elapsed. Only then does
-        // app/actions/remote/post.ts catch the error and write props.failed, which is what
-        // renders post.failed.button. The budget lands near 11s, i.e. just past the 10s this
-        // used to allow -- which is why it passed locally and on quick runs and failed on
-        // slower ones. Run 34442291241 caught it mid-budget: the failure screenshot shows the
-        // post still pending with no indicator anywhere, testDone.png shows it still pending,
-        // and this test's device.log window has no "Error sending a post" at all (MM-T416_1's
-        // window does, which is why that one passed).
-        // Waiting longer cannot mask a defect here: props.failed is terminal, so the indicator
+        // The bound below is derived from the client's retry interceptor, not from CI timing.
+        // react-native-network-client RetryInterceptor.intercept(): every IOException on a
+        // method in defaultRetryMethods (which includes POST) is replayed while
+        // attempts <= retryLimit, and the app's DEFAULT_CONFIG sets retryLimit 3 -- so four
+        // attempts, with ExponentialRetryInterceptor backoff of 2^n * 0.5 s = 1 + 2 + 4 = 7 s.
+        // The per-attempt cost depends on DNS cache state, which is what makes MM-T416_1 and
+        // this test behave differently on the same code:
+        //   - MM-T416_1 sends with a cold cache: the resolver fails in ~5 s per attempt
+        //     ("Unable to resolve host"), so the rejection lands at ~31 s. Observed in run
+        //     34452126763's device log: the _1 error at 08:21:04, 31 s after its disconnect.
+        //   - This test sends after goOnline() warmed the cache: the connect to the cached IP
+        //     hangs for OkHttp's default 10 s connectTimeout (nothing in the library or the
+        //     app overrides it), so the rejection lands at 4 * 10 + 7 = 47 s. The same run's
+        //     device log has NO "Error sending a post" inside this test's own window, which
+        //     is exactly what a >30 s failure looks like from a 30 s wait.
+        // Only after that rejection does app/actions/remote/post.ts write props.failed, which
+        // is what renders post.failed.button. ONE_MIN covers the 47 s bound with margin.
+        // props.failed is terminal, so waiting longer cannot mask a defect: the indicator
         // either arrives once the retries are exhausted or it never does.
+        // Prior attempts on this assertion that did NOT hold, so they are not retried:
+        // dismissing the keyboard (the element was absent, not occluded) and a 30 s wait
+        // (undersized -- it assumed instant DNS failure).
         const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
+        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.ONE_MIN);
 
         // # Restore network access
         await goOnline(serverOneUrl);
