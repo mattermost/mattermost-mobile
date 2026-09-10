@@ -57,7 +57,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderRadius: CIRCULAR_SEND_SIZE / 2,
             height: CIRCULAR_SEND_SIZE,
             justifyContent: 'center',
-            width: CIRCULAR_SEND_SIZE,
+            paddingLeft: 18,
+            paddingRight: 15,
         },
         circularSendButtonDisabled: {
             backgroundColor: 'transparent',

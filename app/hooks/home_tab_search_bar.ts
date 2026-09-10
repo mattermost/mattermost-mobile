@@ -43,8 +43,13 @@ export function useHomeTabSearchBar({
                 autoCapitalize: 'none',
                 hideWhenScrolling: false,
                 hideNavigationBar: false,
-                placement: 'stacked',
-                allowToolbarIntegration: false,
+
+                // The search tab role makes iOS 26 host the field in the tab bar. Toolbar
+                // integration has to stay on: with it off the tab bar renders an empty,
+                // unfocusable pill. `stacked` forces it off natively, and `integrated`
+                // lands late enough to flash, so `automatic` is the placement that works.
+                placement: 'automatic',
+                allowToolbarIntegration: true,
                 placeholder,
                 textColor: tintColor,
                 tintColor,

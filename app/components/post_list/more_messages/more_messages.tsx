@@ -51,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             right: 0,
             padding: 8,
 
-            // Above sheetTopCover (5) and sheetChrome (6)
+            // Above sheetChrome (6)
             zIndex: 7,
         },
         cancelContainer: {
@@ -135,9 +135,8 @@ const MoreMessages = ({
     const callsAdjustment = useCallsAdjustment(serverUrl, channelId);
     const platformUi = isPlatformUiIos();
 
-    // Platform UI: list is inside sheetBody. Corner inset is body marginTop (no chrome) or
-    // list paddingTop (chrome). Pin at 0 so animatedContainer padding (8) sits flush under
-    // sheet top / bookmarks — do not subtract CONTENT_TOP_INSET (that recreated the gap).
+    // Platform UI: list is inside sheetBody. Pin at 0 so animatedContainer padding (8)
+    // sits flush under the sheet top / bookmarks.
     // Legacy: top stays 0; translateY carries insets.top.
     const pinnedTop = platformUi ? callsAdjustment : 0;
     const shownTranslateY = platformUi ? 0 : ((isTablet ? 0 : insets.top) + callsAdjustment);

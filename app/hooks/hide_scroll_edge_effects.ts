@@ -20,12 +20,13 @@ export function useEnsureHiddenScrollEdgeEffects(enabled: boolean, ready = true)
         }
 
         // Change value first so Fabric commits a real prop update on the follow-up.
+        // Only the horizontal edges flip — a vertical post list never renders them, so the
+        // intermediate frame is invisible. Toggling top/bottom here flashed the list.
         navigation.setOptions({
             scrollEdgeEffects: {
-                top: 'soft',
-                bottom: 'soft',
-                left: 'hidden',
-                right: 'hidden',
+                ...HIDDEN_SCROLL_EDGE_EFFECTS,
+                left: 'soft',
+                right: 'soft',
             },
         });
 

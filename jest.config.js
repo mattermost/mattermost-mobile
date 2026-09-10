@@ -22,6 +22,7 @@ module.exports = {
     transformIgnorePatterns: [
         'node_modules/(?!' +
         '(@react-native|react-native)|' +
+        '@react-navigation/[^/]+|' +
         'expo(?:-[^/]+)?|@expo|expo-modules-core|uuid|' +
         '@sentry/react-native|' +
         'react-intl|@formatjs/[^/]+|intl-messageformat|@messageformat/[^/]+|' +

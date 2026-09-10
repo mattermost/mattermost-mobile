@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} from '@actions/app/global';
@@ -17,6 +17,7 @@ import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useEnsureHiddenScrollEdgeEffects} from '@hooks/hide_scroll_edge_effects';
+import {useSheetStyle} from '@hooks/sheet_style';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -115,6 +116,11 @@ const Channel = ({
     // Platform UI: keep the sheet top at the full header height so CHANNEL_SHEET_RADIUS is visible.
     // Legacy phone layout tucks content under the status-bar portion of the absolute header.
     const marginTop = defaultHeight + (isTablet || platformUi ? 0 : -insets.top);
+
+    // Holds the sheet shape while content is gated so the push transition doesn't show a
+    // bare sidebarBg screen and then pop the sheet in.
+    const sheetPlaceholderStyle = useSheetStyle(marginTop);
+
     useEffect(() => {
         // Platform UI: mount FlatList immediately so RNSScreen can find it for scrollEdgeEffects.
         // Legacy: delay one frame so the absolute header paints first on blank screens.
@@ -158,7 +164,7 @@ const Channel = ({
             onLayout={onLayout}
         >
             {/* Before header: RNScreens finds FlatList via first-child chain (iOS 26 scroll-edge). */}
-            {shouldRender && (
+            {shouldRender ? (
                 <ChannelContent
                     channelId={channelId}
                     marginTop={marginTop}
@@ -168,7 +174,7 @@ const Channel = ({
                     includeBookmarkBar={includeBookmarkBar}
                     includeChannelBanner={includeChannelBanner}
                 />
-            )}
+            ) : platformUi && <View style={sheetPlaceholderStyle}/>}
             <ChannelHeader
                 channelId={channelId}
                 callsEnabledInChannel={isCallsEnabledInChannel}

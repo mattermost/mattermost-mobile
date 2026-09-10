@@ -8,6 +8,7 @@ import {
     blendColors,
     changeOpacity,
     getChromeMaterialBlurEffect,
+    getGlassTintColor,
     getColorSchemeForBackground,
     getComponents,
     getKeyboardAppearanceFromTheme,
@@ -101,6 +102,22 @@ describe('getChromeMaterialBlurEffect', () => {
     it('should use light chrome material on light custom colors', () => {
         expect(getChromeMaterialBlurEffect('#f7e7ce')).toBe('systemChromeMaterialLight');
         expect(getChromeMaterialBlurEffect(themes.quartz.sidebarBg)).toBe('systemChromeMaterialLight');
+    });
+});
+
+describe('getGlassTintColor', () => {
+    it('should lighten dark backdrops', () => {
+        expect(getGlassTintColor('#000000')).toBe('#1e1e1e');
+        expect(getGlassTintColor(themes.denim.sidebarBg)).not.toBe(themes.denim.sidebarBg);
+    });
+
+    it('should darken light backdrops', () => {
+        expect(getGlassTintColor('#ffffff')).toBe('#e0e0e0');
+        expect(getGlassTintColor(themes.quartz.sidebarBg)).not.toBe(themes.quartz.sidebarBg);
+    });
+
+    it('should return undefined without a backdrop', () => {
+        expect(getGlassTintColor()).toBeUndefined();
     });
 });
 

@@ -18,7 +18,7 @@ import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
-import {CHANNEL_SHEET_CONTENT_TOP_INSET, isPlatformUiIos} from '@constants/platform_ui';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {PostTypes} from '@constants/post';
 import {useKeyboardState} from '@context/keyboard_state';
 import {PostConfigProvider} from '@context/post_config';
@@ -529,19 +529,14 @@ const PostList = ({
     );
 
     const contentContainerStyleWithMargin = useMemo(() => {
-        // Inverted list: marginTop clears compose (visual bottom); paddingBottom clears
-        // the opaque sheetTopCover (visual top) on platform UI channel/thread sheets.
-        const sheetTopPadding = (platformUi && (location === Screens.CHANNEL || location === Screens.THREAD)) ?
-            CHANNEL_SHEET_CONTENT_TOP_INSET : 0;
-
+        // Inverted list: marginTop clears the compose (visual bottom).
         return [
             contentContainerStyle,
             {
                 marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
-                ...(sheetTopPadding > 0 ? {paddingBottom: sheetTopPadding} : null),
             },
         ];
-    }, [contentContainerStyle, emojiPickerPadding, location, platformUi, postInputContainerHeight]);
+    }, [contentContainerStyle, emojiPickerPadding, location, postInputContainerHeight]);
 
     const animatedProps = useAnimatedProps(
         () => {

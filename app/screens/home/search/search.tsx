@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
+import {HeaderHeightContext} from '@react-navigation/elements';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {FlatList, Keyboard, KeyboardAvoidingView, type LayoutChangeEvent, Platform, type ViewStyle} from 'react-native';
+import {FlatList, Keyboard, KeyboardAvoidingView, type LayoutChangeEvent, Platform, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -18,7 +19,7 @@ import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
-import {isPlatformUiIos, PLATFORM_UI_HEADER_HEIGHT} from '@constants/platform_ui';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
@@ -29,6 +30,7 @@ import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import {useHomeTabSearchBar} from '@hooks/home_tab_search_bar';
+import {useSheetStyle} from '@hooks/sheet_style';
 import useTabs from '@hooks/use_tabs';
 import {useCurrentScreen} from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
@@ -53,8 +55,6 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
-const NATIVE_STACKED_SEARCH_BAR_HEIGHT = 52;
-
 type Props = {
     teamId: string;
     teams: TeamModel[];
@@ -118,8 +118,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const isGalleryScreen = currentScreen === Screens.GALLERY;
     const platformUi = isPlatformUiIos();
     const scrimPadding = useSheetTabBarScrimPadding();
-    const nativeChromeOffset = insets.top + PLATFORM_UI_HEADER_HEIGHT + NATIVE_STACKED_SEARCH_BAR_HEIGHT;
-    const nativeResultsHeaderStyle = useMemo(() => ({paddingTop: nativeChromeOffset}), [nativeChromeOffset]);
+
+    // The search bar keeps the native header translucent, so the sheet has to clear it itself.
+    // iOS 26 can hoist the search field into the tab bar, so measure rather than assume its height.
+    const nativeChromeOffset = useContext(HeaderHeightContext) ?? 0;
+    const nativeSheetStyle = useSheetStyle(nativeChromeOffset);
 
     useAndroidHomeTabBackHandler(Screens.SEARCH);
 
@@ -512,6 +515,55 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         tintColor: theme.centerChannelColor,
     });
 
+    const resultsHeader = lastSearchedValue && !loading ? (
+        <Header
+            teamId={searchTeamId}
+            setTeamId={handleResultsTeamChange}
+            onFilterChanged={handleFilterChange}
+            selectedTab={selectedTab}
+            selectedFilter={filter}
+            teams={teams}
+            crossTeamSearchEnabled={crossTeamSearchEnabled}
+            tabsProps={tabsProps}
+        />
+    ) : null;
+
+    const listContent = (
+        <>
+            {!showResults &&
+            <Animated.FlatList
+                onLayout={onFlatLayout}
+                data={dummyData}
+                contentContainerStyle={initialContainerStyle}
+                contentInsetAdjustmentBehavior='never'
+                keyboardShouldPersistTaps='handled'
+                keyboardDismissMode={'interactive'}
+                nestedScrollEnabled={true}
+                indicatorStyle='black'
+                onScroll={platformUi ? undefined : onScroll}
+                scrollEventThrottle={16}
+                removeClippedSubviews={false}
+                scrollToOverflowEnabled={true}
+                overScrollMode='always'
+                ref={scrollRef}
+                renderItem={renderInitialOrLoadingItem}
+            />
+            }
+            {showResults && !loading &&
+            <Results
+                loading={resultsLoading}
+                selectedTab={selectedTab}
+                searchValue={lastSearchedValue.replace(/[\u201C\u201D]/g, '"')}
+                posts={posts}
+                matches={matches}
+                fileInfos={fileInfos}
+                scrollPaddingTop={platformUi ? 0 : lockValue}
+                fileChannelIds={fileChannelIds}
+            />
+            }
+        </>
+    );
+
     return (
         <>
             <SafeAreaView
@@ -546,69 +598,21 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 >
                     <Animated.View style={animated}>
-                        {!platformUi && (
-                            <Animated.View style={headerTopStyle}>
-                                <RoundedHeaderContext/>
-                                {lastSearchedValue && !loading &&
-                                <Header
-                                    teamId={searchTeamId}
-                                    setTeamId={handleResultsTeamChange}
-                                    onFilterChanged={handleFilterChange}
-                                    selectedTab={selectedTab}
-                                    selectedFilter={filter}
-                                    teams={teams}
-                                    crossTeamSearchEnabled={crossTeamSearchEnabled}
-                                    tabsProps={tabsProps}
-                                />
-                                }
-                            </Animated.View>
+                        {platformUi ? (
+                            <View style={nativeSheetStyle}>
+                                {resultsHeader}
+                                {listContent}
+                                <SheetTabBarScrim/>
+                            </View>
+                        ) : (
+                            <>
+                                <Animated.View style={headerTopStyle}>
+                                    <RoundedHeaderContext/>
+                                    {resultsHeader}
+                                </Animated.View>
+                                {listContent}
+                            </>
                         )}
-                        {platformUi && lastSearchedValue && !loading &&
-                        <Animated.View style={nativeResultsHeaderStyle}>
-                            <Header
-                                teamId={searchTeamId}
-                                setTeamId={handleResultsTeamChange}
-                                onFilterChanged={handleFilterChange}
-                                selectedTab={selectedTab}
-                                selectedFilter={filter}
-                                teams={teams}
-                                crossTeamSearchEnabled={crossTeamSearchEnabled}
-                                tabsProps={tabsProps}
-                            />
-                        </Animated.View>
-                        }
-                        {!showResults &&
-                        <Animated.FlatList
-                            onLayout={onFlatLayout}
-                            data={dummyData}
-                            contentContainerStyle={initialContainerStyle}
-                            contentInsetAdjustmentBehavior={platformUi ? 'automatic' : 'never'}
-                            keyboardShouldPersistTaps='handled'
-                            keyboardDismissMode={'interactive'}
-                            nestedScrollEnabled={true}
-                            indicatorStyle='black'
-                            onScroll={platformUi ? undefined : onScroll}
-                            scrollEventThrottle={16}
-                            removeClippedSubviews={false}
-                            scrollToOverflowEnabled={true}
-                            overScrollMode='always'
-                            ref={scrollRef}
-                            renderItem={renderInitialOrLoadingItem}
-                        />
-                        }
-                        {showResults && !loading &&
-                        <Results
-                            loading={resultsLoading}
-                            selectedTab={selectedTab}
-                            searchValue={lastSearchedValue.replace(/[\u201C\u201D]/g, '"')}
-                            posts={posts}
-                            matches={matches}
-                            fileInfos={fileInfos}
-                            scrollPaddingTop={platformUi ? 0 : lockValue}
-                            fileChannelIds={fileChannelIds}
-                        />
-                        }
-                        {platformUi && <SheetTabBarScrim/>}
                     </Animated.View>
                 </KeyboardAvoidingView>
             </SafeAreaView>

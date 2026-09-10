@@ -206,7 +206,7 @@ export function withChromeHeaderTextButton(props: {
 }
 
 /**
- * Native large-title header for iPhone home tabs (Mentions, Saved, Profile, Search).
+ * Standard native header for iPhone home tabs (Mentions, Saved, Profile, Search).
  * Android and tablet keep the JS NavigationHeader, so the nested stack header stays hidden.
  */
 export function getHomeTabHeaderOptions(theme: Theme): NativeStackNavigationOptions {
@@ -217,32 +217,18 @@ export function getHomeTabHeaderOptions(theme: Theme): NativeStackNavigationOpti
         };
     }
 
-    const largeTitleFont = typography('Heading', 800, 'SemiBold');
-
     return {
         headerShown: true,
-        headerLargeTitleEnabled: true,
         headerShadowVisible: false,
-        headerLargeTitleShadowVisible: false,
         headerBackVisible: false,
         headerTintColor: theme.sidebarHeaderTextColor,
-
-        // The collapsed bar carries the brand color; the expanded one must stay transparent
-        // because iOS 26 hides the large title behind any bar background or blur.
         headerStyle: {backgroundColor: theme.sidebarBg},
-        headerLargeStyle: {backgroundColor: 'transparent'},
-
-        // Compact title sits on sidebarBg, the large title on the content behind the bar.
         headerTitleStyle: {
             ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
         },
-        headerLargeTitleStyle: {
-            color: theme.sidebarHeaderTextColor,
-            fontFamily: largeTitleFont.fontFamily,
-            fontSize: largeTitleFont.fontSize,
-            fontWeight: largeTitleFont.fontWeight?.toString(),
-        },
+
+        // sidebarBg backs the screen so the sheet's rounded top corners reveal it.
         contentStyle: {backgroundColor: theme.sidebarBg},
     };
 }

@@ -92,7 +92,18 @@ function interfaceStyleForBackground(background: string): NativeTabInterfaceStyl
     return getColorSchemeForBackground(background);
 }
 
+// Rasterizing icons is synchronous and the chrome colors flip mid-push (sidebar <-> sheet),
+// so regenerating all ten images on every transition stalls the animation. There are only a
+// handful of name/color combinations, so cache them for the life of the process.
+const nativeTabIconCache = new Map<string, ImageSourcePropType>();
+
 function getNativeTabIcon(name: CompassIconName, color: string): ImageSourcePropType | undefined {
+    const cacheKey = `${name}-${color}`;
+    const cached = nativeTabIconCache.get(cacheKey);
+    if (cached) {
+        return cached;
+    }
+
     // Typed as ImageResult, but guard in case the native module is unavailable.
     const source = CompassIcon.getImageSourceSync(name, BOTTOM_TAB_ICON_SIZE, color) as ImageSourcePropType | null;
     if (!source) {
@@ -101,6 +112,8 @@ function getNativeTabIcon(name: CompassIconName, color: string): ImageSourceProp
         }
         return undefined;
     }
+
+    nativeTabIconCache.set(cacheKey, source);
     return source;
 }
 

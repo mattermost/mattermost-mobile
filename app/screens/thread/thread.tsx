@@ -4,7 +4,7 @@
 import {useIsFocused} from '@react-navigation/native';
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeLastViewedThreadIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -18,6 +18,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useEnsureHiddenScrollEdgeEffects} from '@hooks/hide_scroll_edge_effects';
+import {useSheetStyle} from '@hooks/sheet_style';
 import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -63,6 +64,9 @@ const Thread = ({
     const platformUi = isPlatformUiIos();
     const defaultHeight = useDefaultHeaderHeight();
     const shouldRenderContent = Boolean(rootPost);
+
+    // Holds the sheet shape until rootPost resolves so the push doesn't pop the sheet in.
+    const sheetPlaceholderStyle = useSheetStyle(platformUi ? defaultHeight : 0);
 
     useEnsureHiddenScrollEdgeEffects(platformUi, shouldRenderContent);
 
@@ -138,7 +142,7 @@ const Thread = ({
             onLayout={onLayout}
         >
             {/* Before header chrome: RNScreens finds FlatList via first-child chain. */}
-            {shouldRenderContent && (
+            {shouldRenderContent ? (
                 <ThreadContent
                     rootId={rootId}
                     rootPost={rootPost!}
@@ -148,7 +152,7 @@ const Thread = ({
                     includeChannelBanner={includeChannelBanner}
                     marginTop={platformUi ? defaultHeight : 0}
                 />
-            )}
+            ) : platformUi && <View style={sheetPlaceholderStyle}/>}
             {platformUi ? (
                 <NavigationHeader
                     isLargeTitle={false}

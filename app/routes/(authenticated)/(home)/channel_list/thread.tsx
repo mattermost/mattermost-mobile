@@ -49,7 +49,10 @@ export default function ThreadRoute() {
             navigation.setOptions({
                 headerShown: false,
                 scrollEdgeEffects: HIDDEN_SCROLL_EDGE_EFFECTS,
-                contentStyle: {backgroundColor: theme.centerChannelBg},
+
+                // sidebarBg, not centerChannelBg: the screen paints sidebarBg behind its
+                // rounded sheet, so a centerChannelBg card flashes white during the push.
+                contentStyle: {backgroundColor: theme.sidebarBg},
             });
             return;
         }

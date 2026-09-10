@@ -5,10 +5,7 @@ import {GlassView, isGlassEffectAPIAvailable, type GlassColorScheme} from 'expo-
 import React, {type ReactNode} from 'react';
 import {type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 
-import {changeOpacity, getColorSchemeForBackground} from '@utils/theme';
-
-/** Fallback fill when UIGlassEffect is unavailable on a dark backdrop. */
-const DARK_BACKDROP_FILL = changeOpacity('#ffffff', 0.16);
+import {changeOpacity, getColorSchemeForBackground, getGlassTintColor} from '@utils/theme';
 
 type Props = {
     backdropColor?: string;
@@ -32,10 +29,11 @@ export default function GlassSurface({
     tintColor,
 }: Props) {
     const scheme = colorScheme ?? getGlassColorScheme(backdropColor);
+    const glassTint = tintColor ?? getGlassTintColor(backdropColor);
 
     if (isGlassEffectAPIAvailable()) {
         // Remount when theme colors change — UIGlassEffect only applies during layoutSubviews.
-        const glassKey = `${scheme}-${backdropColor ?? ''}-${tintColor ?? ''}`;
+        const glassKey = `${scheme}-${backdropColor ?? ''}-${glassTint ?? ''}`;
 
         return (
             <GlassView
@@ -44,7 +42,7 @@ export default function GlassSurface({
                 glassEffectStyle='regular'
                 isInteractive={interactive}
                 style={style}
-                tintColor={tintColor}
+                tintColor={glassTint}
             >
                 {children}
             </GlassView>
@@ -55,7 +53,7 @@ export default function GlassSurface({
         return (
             <View
                 style={[
-                    {backgroundColor: DARK_BACKDROP_FILL},
+                    {backgroundColor: changeOpacity(glassTint ?? '#ffffff', 0.24)},
                     style,
                 ]}
             >
@@ -64,7 +62,7 @@ export default function GlassSurface({
         );
     }
 
-    const fallbackFill = changeOpacity(tintColor ?? backdropColor ?? '#ffffff', 0.78);
+    const fallbackFill = changeOpacity(glassTint ?? '#ffffff', 0.78);
     const fallbackBorder = changeOpacity('#000000', 0.08);
 
     return (

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useHeaderHeight} from '@react-navigation/elements';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
@@ -16,12 +15,13 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useSheetStyle} from '@hooks/sheet_style';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -42,16 +42,9 @@ type Props = {
     mentions: PostModel[];
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
-    },
-    sheet: {
-        backgroundColor: theme.centerChannelBg,
-        borderTopLeftRadius: CHANNEL_SHEET_RADIUS,
-        borderTopRightRadius: CHANNEL_SHEET_RADIUS,
-        flex: 1,
-        overflow: 'hidden',
     },
     empty: {
         alignItems: 'center',
@@ -63,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const nativeHeaderHeight = useHeaderHeight();
+    const sheetStyle = useSheetStyle();
     const route = useRoute();
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
@@ -216,7 +209,7 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
                 />
             )}
             {platformUi ? (
-                <View style={[styles.sheet, {marginTop: nativeHeaderHeight}]}>
+                <View style={sheetStyle}>
                     <Animated.FlatList
                         ref={scrollRef}
                         contentContainerStyle={paddingTop}

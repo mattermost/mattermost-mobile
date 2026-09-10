@@ -70,13 +70,6 @@ export function getFloatingTabBarScrimHeight(safeAreaBottom: number) {
 
 export const CHANNEL_SHEET_RADIUS = 32;
 
-/**
- * Height of the opaque sheetTopCover that masks inverted FlatList overdraw under the
- * rounded clip. Also used as inverted contentContainerStyle.paddingBottom so end-of-scroll
- * content clears that cover. Do not apply as paddingTop on the overflow:'hidden' sheet —
- * overdraw paints through padding and still clips at the border.
- */
-export const CHANNEL_SHEET_CONTENT_TOP_INSET = 24;
 export const CHROME_ICON_BUTTON_SIZE = 44;
 export const CHROME_ICON_BUTTON_ICON_OPACITY = 0.64;
 export const CHROME_ICON_BUTTON_DISABLED_ICON_OPACITY = 0.32;

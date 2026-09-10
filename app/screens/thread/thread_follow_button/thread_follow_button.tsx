@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {defineMessages} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Platform, type StyleProp, StyleSheet, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
+import ChromeTextButton from '@components/chrome/chrome_text_button';
 import FormattedText from '@components/formatted_text';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
@@ -61,6 +63,7 @@ const messages = defineMessages({
 });
 
 function ThreadFollow({isFollowing, teamId, threadId}: Props) {
+    const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -82,6 +85,17 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
     }
 
     const followThreadButtonTestId = isFollowing ? 'thread.following_thread.button' : 'thread.follow_thread.button';
+    const followLabel = intl.formatMessage(followTextProps);
+
+    if (isPlatformUiIos()) {
+        return (
+            <ChromeTextButton
+                onPress={onPress}
+                testID={followThreadButtonTestId}
+                text={followLabel}
+            />
+        );
+    }
 
     return (
         <TouchableOpacity

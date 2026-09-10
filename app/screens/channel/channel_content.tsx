@@ -3,7 +3,7 @@
 
 import {PortalHost} from '@gorhom/portal';
 import React, {useCallback, useEffect, useState} from 'react';
-import {View, type LayoutChangeEvent} from 'react-native';
+import {StyleSheet, View, type LayoutChangeEvent} from 'react-native';
 
 import ChannelBanner from '@components/channel_banner';
 import SheetTabBarScrim from '@components/chrome/sheet_tab_bar_scrim';
@@ -11,12 +11,11 @@ import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_d
 import PostDraft from '@components/post_draft';
 import ScheduledPostIndicator from '@components/scheduled_post_indicator';
 import {Screens} from '@constants';
-import {CHANNEL_SHEET_CONTENT_TOP_INSET, CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {KeyboardStateProvider} from '@context/keyboard_state';
-import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {useSheetStyle} from '@hooks/sheet_style';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeaderBookmarks from './header/bookmarks';
@@ -38,31 +37,12 @@ const CHANNEL_POST_INPUT_NATIVE_ID = `${CHANNEL_POST_DRAFT_TESTID}.post.input`;
 
 const PORTAL_NAME = 'channel_autocomplete';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const styles = StyleSheet.create({
     flex: {
         flex: 1,
     },
-    sheet: {
-        backgroundColor: theme.centerChannelBg,
-        borderTopLeftRadius: CHANNEL_SHEET_RADIUS,
-        borderTopRightRadius: CHANNEL_SHEET_RADIUS,
-        flex: 1,
-        overflow: 'hidden',
-    },
     sheetBody: {
         flex: 1,
-    },
-
-    // Covers inverted FlatList overdraw in the rounded-top zone (padding/margin alone do not).
-    sheetTopCover: {
-        backgroundColor: theme.centerChannelBg,
-        height: CHANNEL_SHEET_CONTENT_TOP_INSET,
-        left: 0,
-        pointerEvents: 'none',
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        zIndex: 5,
     },
     sheetChrome: {
         left: 0,
@@ -71,7 +51,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 0,
         zIndex: 6,
     },
-}));
+});
 
 const ChannelContent = ({
     channelId,
@@ -83,9 +63,8 @@ const ChannelContent = ({
     includeChannelBanner,
 }: ChannelContentProps) => {
     const isTablet = useIsTablet();
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const platformUi = isPlatformUiIos();
+    const sheetStyle = useSheetStyle(marginTop);
 
     // Channel lives under the Home tab stack. NativeTabs are an overlay and hide when the
     // software keyboard occupies the bottom, so keyboard translate must not subtract
@@ -109,7 +88,6 @@ const ChannelContent = ({
 
     // Keep FlatList first in the sheet subtree for RNScreens scroll-edge finder;
     // bookmarks/banner overlay the sheet top and list padding clears them.
-    // Rounded-top clearance: opaque sheetTopCover + inverted list paddingBottom (not sheet padding).
     const containerStyle = platformUi ? [
         styles.flex,
         sheetChromeHeight > 0 && {paddingTop: sheetChromeHeight},
@@ -157,20 +135,11 @@ const ChannelContent = ({
     }
 
     return (
-        <View style={[styles.sheet, {marginTop}]}>
+        <View style={sheetStyle}>
             {/* First child must lead to FlatList (iOS 26 scroll-edge). */}
             <View style={styles.sheetBody}>
                 {body}
             </View>
-            <View
-                style={[
-                    styles.sheetTopCover,
-                    {
-                        backgroundColor: theme.centerChannelBg,
-                        height: CHANNEL_SHEET_CONTENT_TOP_INSET,
-                    },
-                ]}
-            />
             {showSheetChrome &&
             <View
                 onLayout={onChromeLayout}

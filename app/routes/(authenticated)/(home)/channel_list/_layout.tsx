@@ -36,16 +36,23 @@ export default function ChannelListStackLayout() {
         ...(platformUi ? {scrollEdgeEffects: HIDDEN_SCROLL_EDGE_EFFECTS} : {}),
     }), [platformUi, styles.sheetCard]);
 
+    // Channel and thread paint sidebarBg behind their rounded sheet, so the native card
+    // must match — otherwise the push shows a centerChannelBg frame before content mounts.
+    const roundedSheetOptions = useMemo(() => ({
+        contentStyle: platformUi ? styles.sidebarCard : styles.sheetCard,
+        ...(platformUi ? {scrollEdgeEffects: HIDDEN_SCROLL_EDGE_EFFECTS} : {}),
+    }), [platformUi, styles.sheetCard, styles.sidebarCard]);
+
     return (
         <Stack screenOptions={screenOptions}>
             <Stack.Screen name='index'/>
             <Stack.Screen
                 name='channel'
-                options={sheetOptions}
+                options={roundedSheetOptions}
             />
             <Stack.Screen
                 name='thread'
-                options={sheetOptions}
+                options={roundedSheetOptions}
             />
             <Stack.Screen
                 name='global_drafts'

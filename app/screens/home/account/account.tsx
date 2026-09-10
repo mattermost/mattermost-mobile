@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useHeaderHeight} from '@react-navigation/elements';
 import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {ScrollView, View} from 'react-native';
@@ -14,6 +13,7 @@ import {isPlatformUiIos} from '@constants/platform_ui';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useIsTablet} from '@hooks/device';
+import {useSheetStyle} from '@hooks/sheet_style';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AccountOptions from './components/options';
@@ -34,7 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         screen: {
-            backgroundColor: isPlatformUiIos() ? theme.centerChannelBg : theme.sidebarBg,
+            backgroundColor: theme.sidebarBg,
             flex: 1,
         },
         flexRow: {
@@ -65,14 +65,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const scrimPadding = useSheetTabBarScrimPadding();
-    const headerHeight = useHeaderHeight();
-
-    // Pad past the native large title instead of relying on automatic insets: iOS only
-    // applies those while the content is scrollable, which a short profile is not.
-    const platformContentStyle = useMemo(() => ({
-        paddingTop: headerHeight,
-        paddingBottom: scrimPadding,
-    }), [headerHeight, scrimPadding]);
+    const sheetStyle = useSheetStyle();
+    const platformContentStyle = useMemo(() => ({paddingBottom: scrimPadding}), [scrimPadding]);
 
     useAndroidHomeTabBackHandler(Screens.ACCOUNT);
 
@@ -133,17 +127,29 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
         </ScrollView>
     ) : null;
 
+    if (platformUi) {
+        return (
+            <View
+                style={styles.screen}
+                testID='account.screen'
+            >
+                <View style={sheetStyle}>
+                    {content}
+                    <SheetTabBarScrim/>
+                </View>
+            </View>
+        );
+    }
+
     return (
         <View
             style={styles.screen}
             testID='account.screen'
         >
-            {!platformUi && (
-                <View style={[{height: insets.top, flexDirection: 'row', backgroundColor: theme.sidebarBg}]}>
-                    <View style={[styles.flex, tabletSidebarStyle]}/>
-                    {isTablet && <View style={styles.tabletContainer}/>}
-                </View>
-            )}
+            <View style={[{height: insets.top, flexDirection: 'row', backgroundColor: theme.sidebarBg}]}>
+                <View style={[styles.flex, tabletSidebarStyle]}/>
+                {isTablet && <View style={styles.tabletContainer}/>}
+            </View>
             <Animated.View
                 onLayout={onLayout}
                 style={[styles.flexRow, animated]}
@@ -154,7 +160,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
                         <AccountTabletView/>
                     </View>
                 }
-                {platformUi && <SheetTabBarScrim/>}
             </Animated.View>
         </View>
     );

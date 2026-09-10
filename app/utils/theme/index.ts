@@ -90,6 +90,19 @@ export function getChromeMaterialBlurEffect(color?: string): 'systemChromeMateri
     return getColorSchemeForBackground(color) === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight';
 }
 
+const GLASS_TINT_CONTRAST = 0.12;
+
+/** Slightly lightens or darkens a backdrop so glass chrome reads against it. */
+export function getGlassTintColor(backdropColor?: string): string | undefined {
+    if (!backdropColor) {
+        return undefined;
+    }
+
+    return getColorSchemeForBackground(backdropColor) === 'dark' ?
+        blendColors(backdropColor, '#ffffff', GLASS_TINT_CONTRAST, true) :
+        blendColors(backdropColor, '#000000', GLASS_TINT_CONTRAST, true);
+}
+
 export function hexToHue(hexColor: string) {
     let {red, green, blue} = getComponents(hexColor);
     red /= 255;

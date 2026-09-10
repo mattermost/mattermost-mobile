@@ -474,7 +474,7 @@ describe('navigation_header', () => {
     });
 
     describe('getHomeTabHeaderOptions', () => {
-        it('should return large-title native header options on iPhone platform UI', () => {
+        it('should return standard native header options on iPhone platform UI', () => {
             const theme = {
                 centerChannelBg: '#ffffff',
                 centerChannelColor: '#3d3c40',
@@ -485,14 +485,17 @@ describe('navigation_header', () => {
             const result = getHomeTabHeaderOptions(theme);
 
             expect(result.headerShown).toBe(true);
-            expect(result.headerLargeTitleEnabled).toBe(true);
+            expect(result.headerLargeTitleEnabled).toBeUndefined();
             expect(result.headerBackVisible).toBe(false);
             expect(result.headerTintColor).toBe('#ffffff');
             expect(result.headerStyle).toEqual({backgroundColor: '#1c1c1e'});
-            expect(result.contentStyle).toEqual({backgroundColor: '#ffffff'});
+            expect(result.headerTitleStyle).toEqual(expect.objectContaining({
+                color: '#ffffff',
+                fontFamily: 'Metropolis-SemiBold',
+            }));
         });
 
-        it('should keep the expanded bar transparent so iOS 26 paints the large title', () => {
+        it('should back the screen with sidebarBg so the sheet corners reveal it', () => {
             const theme = {
                 centerChannelBg: '#ffffff',
                 centerChannelColor: '#3d3c40',
@@ -502,16 +505,7 @@ describe('navigation_header', () => {
 
             const result = getHomeTabHeaderOptions(theme);
 
-            expect(result.headerBlurEffect).toBeUndefined();
-            expect(result.headerLargeStyle).toEqual({backgroundColor: 'transparent'});
-            expect(result.headerTitleStyle).toEqual(expect.objectContaining({
-                color: '#ffffff',
-                fontFamily: 'Metropolis-SemiBold',
-            }));
-            expect(result.headerLargeTitleStyle).toEqual(expect.objectContaining({
-                color: '#3d3c40',
-                fontFamily: 'Metropolis-SemiBold',
-            }));
+            expect(result.contentStyle).toEqual({backgroundColor: '#1c1c1e'});
         });
     });
 
