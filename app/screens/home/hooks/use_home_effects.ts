@@ -72,7 +72,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
         });
 
         const accessRevokedListener = DeviceEventEmitter.addListener(Events.CHANNEL_ACCESS_REVOKED, (displayName: string) => {
-            showChannelAccessRevoked(displayName);
+            showChannelAccessRevoked(displayName, intl);
         });
 
         const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {

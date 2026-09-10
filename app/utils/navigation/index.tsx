@@ -3,7 +3,7 @@
 
 import {Alert, DeviceEventEmitter} from 'react-native';
 
-import ChannelAccessRevoked, {SNAP_POINT as CHANNEL_ACCESS_REVOKED_SNAP_POINT} from '@components/channel_access_revoked';
+import ChannelAccessRevoked, {description as channelAccessRevokedText, snapPointFor} from '@components/channel_access_revoked';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Events, Screens, ServerErrors} from '@constants';
 import AttachmentOptions from '@screens/attachment_options';
@@ -78,9 +78,10 @@ export function alertChannelArchived(displayName: string, intl: IntlShape) {
     );
 }
 
-export function showChannelAccessRevoked(displayName: string) {
-    const renderContent = () => (<ChannelAccessRevoked displayName={displayName}/>);
-    bottomSheet(renderContent, [1, CHANNEL_ACCESS_REVOKED_SNAP_POINT]);
+export function showChannelAccessRevoked(displayName: string, intl: IntlShape) {
+    const text = channelAccessRevokedText(intl, displayName);
+    const renderContent = () => (<ChannelAccessRevoked text={text}/>);
+    bottomSheet(renderContent, [1, snapPointFor(text)]);
 }
 
 export function alertTeamAddError(error: unknown, intl: IntlShape) {
