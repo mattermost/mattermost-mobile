@@ -4,10 +4,19 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
+import {fetchChannelAttributeValues} from '@actions/remote/classification';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import {handlePropertyFieldCreatedOrUpdated, handlePropertyFieldDeleted, handlePropertyValuesUpdated} from './properties';
+
+jest.mock('@actions/remote/classification', () => ({
+    accessControlWriteLockKey: (serverUrl: string) => `access-control:${serverUrl}`,
+    fetchAccessControlAttributeFields: jest.fn(),
+    fetchChannelAttributeValues: jest.fn(),
+}));
+
+const mockedFetchChannelAttributeValues = jest.mocked(fetchChannelAttributeValues);
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
@@ -56,6 +65,7 @@ const getStoredValues = async (database: Database, targetId: string) => {
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
+    jest.clearAllMocks();
 });
 
 afterEach(async () => {
@@ -329,30 +339,29 @@ describe('handlePropertyValuesUpdated', () => {
             await setAccessControlGroupId(serverUrl, ownedGroupId);
         });
 
-        it('should prune this feature\'s values when a target is cleared', async () => {
+        // An empty-target event carries no group identity: the exact same shape is
+        // sent for "all access_control values cleared" and for "all managed
+        // channel categories values cleared" on this channel. Pruning locally here
+        // would apply someone else's clear to our data whenever the two happen to
+        // race, so the handler defers to a forced, group-scoped REST
+        // reconciliation instead of deleting anything itself.
+        it('should trigger a forced, group-scoped reconciliation instead of pruning locally when a target is cleared', async () => {
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
 
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, channelId, true);
+
+            // Nothing was deleted synchronously by the handler itself — the
+            // reconciliation (mocked here) owns that decision.
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const remaining = await getStoredValues(database, channelId);
-            expect(remaining).toHaveLength(1);
-            expect(remaining[0].id).toBe('val-foreign');
+            expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
 
-        it('should leave another property group\'s value on the same channel alone', async () => {
-            await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
-
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            const foreign = await database.get<PropertyValueModel>(PROPERTY_VALUE).query(Q.where('id', 'val-foreign')).fetch();
-            expect(foreign).toHaveLength(1);
-        });
-
-        it('should prune nothing when the group id is not known yet', async () => {
+        it('should still trigger reconciliation when the group id is not known yet', async () => {
             await setAccessControlGroupId(serverUrl, '');
 
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: channelId}));
 
-            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-            expect(await getStoredValues(database, channelId)).toHaveLength(2);
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, channelId, true);
         });
 
         it('should prune every value of a field when that field is cleared', async () => {
@@ -385,11 +394,11 @@ describe('handlePropertyValuesUpdated', () => {
             expect(await getStoredValues(database, channelId)).toHaveLength(2);
         });
 
-        it('should no-op when the target has no access_control values to destroy', async () => {
-            // A different target has no access_control values, so destroyValues
-            // receives an empty stale list and the write should be skipped entirely.
+        it('should scope reconciliation to the event\'s own target and leave other channels alone', async () => {
             const otherTarget = 'channel-no-attributes';
             await handlePropertyValuesUpdated(serverUrl, clearedMessage({target_id: otherTarget}));
+
+            expect(mockedFetchChannelAttributeValues).toHaveBeenCalledWith(serverUrl, otherTarget, true);
 
             // The original channel's values must be completely untouched.
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

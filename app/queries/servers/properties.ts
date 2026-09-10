@@ -83,18 +83,39 @@ export const isAccessControlPropertiesEnabled = async (database: Database) => {
     return classification === 'true' || channelAttributes === 'true';
 };
 
+const EMPTY_FIELDS: PropertyFieldModel[] = [];
+const EMPTY_VALUES: PropertyValueModel[] = [];
+
 export const observeClassificationFields = (database: Database) => {
-    return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
-        Q.where('name', CLASSIFICATIONS_FIELD_NAME),
-        Q.where('delete_at', 0),
-    ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+    return observeAccessControlGroupId(database).pipe(
+        switchMap((groupId) => {
+            if (!groupId) {
+                return of$(EMPTY_FIELDS);
+            }
+
+            return database.get<PropertyFieldModel>(PROPERTY_FIELD).query(
+                Q.where('group_id', groupId),
+                Q.where('name', CLASSIFICATIONS_FIELD_NAME),
+                Q.where('delete_at', 0),
+            ).observeWithColumns(['update_at', 'delete_at', 'attrs']);
+        }),
+    );
 };
 
 export const observePropertyValuesByTargetId = (database: Database, targetId: string) => {
-    return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
-        Q.where('target_id', targetId),
-        Q.where('delete_at', 0),
-    ).observeWithColumns(['value', 'update_at', 'delete_at']);
+    return observeAccessControlGroupId(database).pipe(
+        switchMap((groupId) => {
+            if (!groupId) {
+                return of$(EMPTY_VALUES);
+            }
+
+            return database.get<PropertyValueModel>(PROPERTY_VALUE).query(
+                Q.where('group_id', groupId),
+                Q.where('target_id', targetId),
+                Q.where('delete_at', 0),
+            ).observeWithColumns(['value', 'update_at', 'delete_at']);
+        }),
+    );
 };
 
 export const observeClassificationBannerState = (database: Database) => {
@@ -106,8 +127,6 @@ export const observeClassificationBannerState = (database: Database) => {
         distinctUntilChanged((a, b) => a.visible === b.visible && a.levelName === b.levelName && a.color === b.color),
     );
 };
-
-const EMPTY_FIELDS: PropertyFieldModel[] = [];
 
 /**
  * Whether channel attributes are available on this server.
@@ -122,7 +141,7 @@ const EMPTY_FIELDS: PropertyFieldModel[] = [];
  * with Custom Profile Attributes and Classification Markings.
  */
 export const observeChannelAttributesEnabled = (database: Database) => {
-    const flag = observeConfigBooleanValue(database, 'FeatureFlagChannelAttributes', false);
+    const flag = observeConfigBooleanValue(database, FEATURE_FLAG_CHANNEL_ATTRIBUTES, false);
     const isLicensed = observeIsMinimumLicenseTier(database, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 
     return combineLatest([flag, isLicensed]).pipe(

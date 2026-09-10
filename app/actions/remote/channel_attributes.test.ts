@@ -4,7 +4,7 @@
 import {Q, type Database} from '@nozbe/watermelondb';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {ACCESS_CONTROL_GROUP_NAME} from '@constants/channel_attributes';
+import {ACCESS_CONTROL_GROUP_NAME, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -50,6 +50,13 @@ beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
     jest.clearAllMocks();
     await setAccessControlGroupId(serverUrl, groupId);
+
+    const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    await operator.handleConfigs({
+        configs: [{id: FEATURE_FLAG_CHANNEL_ATTRIBUTES, value: 'true'}],
+        configsToDelete: [],
+        prepareRecordsOnly: false,
+    });
 });
 
 afterEach(async () => {
@@ -156,6 +163,32 @@ describe('setChannelAttributeValue', () => {
         await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', 'option-public');
 
         expect(await storedValues(database, otherChannelId)).toHaveLength(1);
+    });
+
+    it('should not reach the network when the ChannelAttributes flag is off', async () => {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleConfigs({
+            configs: [{id: FEATURE_FLAG_CHANNEL_ATTRIBUTES, value: 'false'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const result = await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', 'option-secret');
+
+        expect(result.error).toBeDefined();
+        expect(mockClient.patchPropertyValues).not.toHaveBeenCalled();
+    });
+
+    it('should report an error and leave the DB untouched when the local write fails', async () => {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        mockClient.patchPropertyValues.mockResolvedValueOnce([value({value: 'option-secret'})]);
+        jest.spyOn(operator, 'batchRecords').mockRejectedValueOnce(new Error('write failed'));
+
+        const result = await setChannelAttributeValue(serverUrl, channelId, 'field-id-1', 'option-secret');
+
+        expect(result.error).toBeDefined();
+        expect(result.data).toBeUndefined();
+        expect(await storedValues(database, channelId)).toHaveLength(0);
     });
 
     it('should not request anything when the access_control group id is not known yet', async () => {

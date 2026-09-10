@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
@@ -154,6 +154,14 @@ const CreateOrEditChannel = ({
         setAttributeValues((current) => pruneStaleAttributeValues(attributeFields, current));
     }, [attributeFields]);
 
+    // Also derive the pruned values synchronously. A sheet opened before an option
+    // update can submit its stale selection after the effect above has run; this
+    // keeps rendering, validation, and the create payload on the latest fields.
+    const validAttributeValues = useMemo(
+        () => pruneStaleAttributeValues(attributeFields, attributeValues),
+        [attributeFields, attributeValues],
+    );
+
     const onAttributeValueChange = useCallback((fieldId: string, value: ChannelAttributeValueInput) => {
         setAttributeValues((current) => {
             if (!isPropertyValueSet(value)) {
@@ -176,8 +184,8 @@ const CreateOrEditChannel = ({
         }
 
         const propertyValues = attributeFields.
-            filter((field) => isPropertyValueSet(attributeValues[field.id])).
-            map((field) => ({field_id: field.id, value: attributeValues[field.id]}));
+            filter((field) => isPropertyValueSet(validAttributeValues[field.id])).
+            map((field) => ({field_id: field.id, value: validAttributeValues[field.id]}));
         const createdChannel = await createChannel(serverUrl, displayName, purpose, header, type, propertyValues);
         if (createdChannel.error) {
             const isMissingRequiredAttributes = getServerError(createdChannel.error) === MISSING_REQUIRED_ATTRIBUTES_ERROR_ID;
@@ -192,7 +200,7 @@ const CreateOrEditChannel = ({
         navigation.getParent()?.goBack();
         await new Promise((resolve) => setTimeout(resolve, 250));
         switchToChannelById(serverUrl, createdChannel.channel!.id, createdChannel.channel!.team_id);
-    }, [isValidDisplayName, serverUrl, displayName, purpose, header, type, attributeFields, attributeValues, formatMessage, navigation]);
+    }, [isValidDisplayName, serverUrl, displayName, purpose, header, type, attributeFields, validAttributeValues, formatMessage, navigation]);
 
     const onUpdateChannel = useCallback(async () => {
         if (!channel) {
@@ -244,7 +252,7 @@ const CreateOrEditChannel = ({
     // Required attributes gate Create only: editing gains no attribute gate, both
     // because there is no attribute editing on this screen in edit mode and
     // because a channel that already exists cannot regress into "incomplete".
-    const allRequiredAttributesSet = editing || attributeFields.every((field) => isPropertyValueSet(attributeValues[field.id]));
+    const allRequiredAttributesSet = editing || attributeFields.every((field) => isPropertyValueSet(validAttributeValues[field.id]));
 
     // attributesBlocked means some required attribute the caller could otherwise
     // satisfy has no mobile editor at all — nothing typed here could ever fix
@@ -288,7 +296,7 @@ const CreateOrEditChannel = ({
                 canCreatePrivateChannels={canCreatePrivateChannels}
                 canCreatePublicChannels={canCreatePublicChannels}
                 attributeFields={attributeFields}
-                attributeValues={attributeValues}
+                attributeValues={validAttributeValues}
                 onAttributeValueChange={onAttributeValueChange}
             />
         </View>
