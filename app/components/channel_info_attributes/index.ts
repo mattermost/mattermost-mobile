@@ -33,7 +33,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
         ),
         permissions,
     ]).pipe(
-        map(([resolved, perms]) => selectChannelInfoAttributes(resolved, perms.canManageChannelRoles || perms.canManageSystem)),
+        map(([resolved, perms]) => selectChannelInfoAttributes(resolved, perms)),
     );
 
     return {attributes, permissions};

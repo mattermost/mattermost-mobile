@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {CLASSIFICATION_BANNER_CACHE_TTL} from '@constants/classification';
+import {CLASSIFICATION_BANNER_CACHE_TTL, CLASSIFICATION_BANNER_FAILURE_BACKOFF} from '@constants/classification';
 import {toMilliseconds} from '@utils/datetime';
 
 import EphemeralStore from './ephemeral_store';
@@ -107,6 +107,17 @@ describe('EphemeralStore', () => {
             EphemeralStore.setClassificationBannerFetched(serverUrl);
             expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(false);
             expect(EphemeralStore.shouldFetchClassificationBanner(otherServerUrl)).toBe(true);
+        });
+
+        it('should retry after failure backoff even when a prior success was fresh', () => {
+            jest.useFakeTimers({doNotFake: ['nextTick']});
+            EphemeralStore.setClassificationBannerFetched(serverUrl);
+            EphemeralStore.setClassificationBannerFailed(serverUrl);
+
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(false);
+
+            jest.advanceTimersByTime(CLASSIFICATION_BANNER_FAILURE_BACKOFF);
+            expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
         });
 
         it('should guard field sync attempts scoped per server and option', () => {

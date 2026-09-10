@@ -244,6 +244,22 @@ describe('ChannelAttributeEditor', () => {
 
             await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('cf-1', ['level-public']));
         });
+
+        it('should remove deleted option ids from the submitted selection', async () => {
+            const onSubmit = jest.fn();
+            const {getByTestId, getByText} = renderWithIntlAndTheme(
+                <ChannelAttributeEditor
+                    attribute={attribute({field: multiField, rawValue: ['deleted-option', 'level-public'], displayValue: 'deleted-option, Public'})}
+                    clearable={true}
+                    onSubmit={onSubmit}
+                />,
+            );
+
+            fireEvent.press(getByTestId('channel_attribute_editor.classification.option.level-secret'));
+            fireEvent.press(getByText('Save'));
+
+            await waitFor(() => expect(onSubmit).toHaveBeenCalledWith('cf-1', ['level-public', 'level-secret']));
+        });
     });
 
     describe('text', () => {
@@ -288,6 +304,23 @@ describe('ChannelAttributeEditor', () => {
             );
 
             fireEvent.changeText(getByTestId('channel_attribute_editor.program.input'), 'Aurora ');
+            fireEvent.press(getByText('Save'));
+
+            expect(onSubmit).not.toHaveBeenCalled();
+        });
+
+        it('should not submit empty text for a required field', () => {
+            const onSubmit = jest.fn();
+            const requiredTextField = field({type: 'text', name: 'program', attrs: {required: true}});
+            const {getByTestId, getByText} = renderWithIntlAndTheme(
+                <ChannelAttributeEditor
+                    attribute={attribute({field: requiredTextField, rawValue: 'Aurora', displayValue: 'Aurora'})}
+                    clearable={false}
+                    onSubmit={onSubmit}
+                />,
+            );
+
+            fireEvent.changeText(getByTestId('channel_attribute_editor.program.input'), '   ');
             fireEvent.press(getByText('Save'));
 
             expect(onSubmit).not.toHaveBeenCalled();
