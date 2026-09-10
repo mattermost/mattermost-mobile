@@ -114,6 +114,15 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.composePostDraft(message);
         await ChannelScreen.tapSendButton();
 
+        // # Dismiss the keyboard before asserting on the indicator. composePostDraft focuses
+        // the input, so the keyboard is still up here, and unlike MM-T416_1 this channel
+        // already holds that test's re-sent post — the list is taller and the newest failed
+        // post renders lower, into the keyboard. The assertion below is a *visibility* one, so
+        // an occluded-but-present indicator fails it: CI 34351941461 reported "10.0sec timeout
+        // expired without matching ... covers at least <50> percent of the view's area", which
+        // is occlusion, not absence. Same mechanism the re-send step below already documents.
+        await ChannelScreen.dismissKeyboard();
+
         // * Verify the post failed (failed indicator appears)
         const failedButton = element(by.id('post.failed.button'));
         await waitFor(failedButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
