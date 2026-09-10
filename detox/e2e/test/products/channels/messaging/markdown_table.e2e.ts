@@ -192,7 +192,19 @@ describe('Messaging - Markdown Table', () => {
         if (isIos()) {
             await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
             await expect(element(by.text('Header VS last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible(50);
+
+            // The final check re-scrolls if needed instead of asserting the frame the loop above
+            // stopped on. The table screen's SafeAreaView declares a bottom edge, but while this
+            // loop scrolls the scroll view is 734 pt tall (874 - header), i.e. unpadded -- in CI
+            // and in local passing runs alike. In run 34472384034 the 34 pt home-indicator
+            // padding landed after the loop had reached the end of that frame: the failure
+            // screenshot shows a 700 pt scroll view, a 34 pt blank strip, and the last row
+            // clipped above it. UIScrollView keeps an offset that is still in range when its
+            // frame shrinks, so the last 34 pt of content sit outside the new bounds until the
+            // next scroll. A whileElement scroll of 50 pt is that next scroll; when the row is
+            // already fully visible it never runs, and when the content is truly at its end
+            // Detox cannot scroll and the assertion still fails.
+            await waitFor(expectedElement).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(50, 'down');
         } else {
             await expect(expectedElement).toExist();
         }
