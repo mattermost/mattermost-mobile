@@ -97,11 +97,17 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
+        const {channelMentionItem, channelMentionItemChannelDisplayName} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitFor(channelMentionItem).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Select the row
-        await channelMentionItem.tap();
+        // # Select the row via the shared helper, the way MM-T4886_1 already does. A bare
+        // .tap() requires the element to pass Detox's 100% visibility threshold, so a row
+        // that merely exists but is clipped by the keyboard or the list edge is refused:
+        // CI 34351941461 failed here with "View does not pass visibility percent threshold
+        // (100)" while reporting visible bounds identical to the view's own bounds.
+        // tapSuggestion lowers the threshold and taps a point inside the row instead of its
+        // centre, which is what makes the at-mention case reliable.
+        await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await ChannelScreen.sendButton.tap();
 
         // * Verify channel mention suggestion is posted

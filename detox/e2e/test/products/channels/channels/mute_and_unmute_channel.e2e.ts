@@ -51,7 +51,11 @@ describe('Channels - Mute and Unmute Channel', () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on mute quick action to mute the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
-        await wait(timeouts.ONE_SEC);
+
+        // Gate on the row itself rather than sleeping a fixed second: the quick actions bar
+        // animates in, and a tap dispatched mid-animation is swallowed, which surfaces much
+        // later as the toast below never appearing rather than as a failed tap.
+        await waitFor(ChannelScreen.muteQuickAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.muteQuickAction.tap();
 
         // * Verify muted toast message appears. Use waitFor instead of immediate
@@ -63,7 +67,13 @@ describe('Channels - Mute and Unmute Channel', () => {
 
         // # Tap on channel quick actions button and tap on muted quick action to unmute the channel
         await ChannelScreen.channelQuickActionsButton.tap();
-        await wait(timeouts.ONE_SEC);
+
+        // Same gate as the mute step, and this is the one that actually failed: CI 34351941461
+        // timed out on the unmute toast below, not on this tap. The preceding step waits for
+        // the muted toast to leave the tree, but its Animated.View exit is still settling here
+        // -- the same "Main Run Loop is awake" blocker noted above -- so a blind one-second
+        // wait can dispatch this tap before the row is interactive. No unmute, so no toast.
+        await waitFor(ChannelScreen.unmuteQuickAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.unmuteQuickAction.tap();
 
         // * Verify unmuted toast message appears
