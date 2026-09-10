@@ -14,7 +14,11 @@
 # re-applied rather than silently accepted; a value that genuinely will not stick still fails.
 #
 # Usage: apply_client_config_value.sh <site-url> <admin-token> <patch-json> <key> <expected-value>
-# Exits 0 once the client config serves <expected-value>, 1 if it never does, 2 on usage error.
+# Exit 0: the client config serves <expected-value>.
+# Exit 3: this installation forbids the write (ExperimentalSettings.RestrictSystemAdmin is true,
+#         which makes every `write_restrictable`/`cloud_restrictable` field silently unwritable —
+#         config/patch still answers 200 and drops the field). The caller should skip, not fail.
+# Exit 1: the value never took for some other reason. Exit 2: usage error.
 set -euo pipefail
 
 if [[ $# -ne 5 ]]; then
@@ -76,6 +80,26 @@ for attempt in 1 2 3; do
 
     echo "==> ${key} is '${actual}' after attempt ${attempt}, re-applying the patch" >&2
 done
+
+# Separate "this server will not let us" from "this should have worked". RestrictSystemAdmin
+# gates every write_restrictable/cloud_restrictable field, and it is itself write_restrictable,
+# so an API admin session cannot clear it — the environment simply cannot host the test.
+restricted="$(curl -f -sS --show-error \
+    -H "Authorization: Bearer ${admin_token}" \
+    "${site_url}/api/v4/config" 2>/dev/null | python3 -c "
+import json, sys
+try:
+    config = json.load(sys.stdin)
+except ValueError:
+    print('unknown')
+    sys.exit(0)
+print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unknown')).lower())
+" || printf 'unknown')"
+
+if [[ "$restricted" == "true" ]]; then
+    echo "==> ${key} is not writable on this server: ExperimentalSettings.RestrictSystemAdmin is true, which silently drops write_restrictable/cloud_restrictable fields (config/patch still returns 200). Wanted '${expected}', client config serves '${actual}'." >&2
+    exit 3
+fi
 
 echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}'" >&2
 exit 1
