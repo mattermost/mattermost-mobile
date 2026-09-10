@@ -6,6 +6,7 @@ import {View, type LayoutChangeEvent, type ListRenderItemInfo, Text, FlatList} f
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostsListTutorial} from '@actions/app/global';
+import {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_SCHEDULED} from '@constants/draft';
@@ -76,6 +77,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const tutorialTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    const scrimPadding = useSheetTabBarScrimPadding();
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
     }, []);
@@ -103,6 +105,11 @@ const GlobalScheduledPostList: React.FC<Props> = ({
     if (isErrorInScheduledPosts) {
         scheduledPostsInSequence.unshift(...allScheduledPosts.filter((post) => post.errorCode !== ''));
     }
+
+    const contentContainerStyle = useMemo(() => [
+        !scheduledPostsInSequence.length && styles.empty,
+        {paddingBottom: scrimPadding},
+    ], [scheduledPostsInSequence.length, scrimPadding, styles.empty]);
 
     useAndroidHardwareBackHandler(Screens.GLOBAL_DRAFTS, navigateBack);
 
@@ -172,7 +179,7 @@ const GlobalScheduledPostList: React.FC<Props> = ({
             <FlatList
                 data={scheduledPostsInSequence}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={!scheduledPostsInSequence.length && styles.empty}
+                contentContainerStyle={contentContainerStyle}
                 maxToRenderPerBatch={10}
                 nativeID={Screens.GLOBAL_DRAFTS}
                 renderItem={renderItem}

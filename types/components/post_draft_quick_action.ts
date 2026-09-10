@@ -9,4 +9,7 @@ export interface QuickActionAttachmentProps {
     onUploadFiles: (files: ExtractedFileInfo[]) => void;
     showAttachLogs?: boolean;
     testID?: string;
+
+    /** Platform UI resting pill — drop trailing margin so plus matches send inset */
+    flush?: boolean;
 }

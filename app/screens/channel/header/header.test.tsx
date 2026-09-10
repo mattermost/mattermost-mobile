@@ -46,7 +46,6 @@ describe('ChannelHeader', () => {
             callsEnabledInChannel: false,
             groupCallsAllowed: false,
             isBookmarksEnabled: false,
-            canAddBookmarks: false,
             hasBookmarks: false,
             shouldRenderBookmarks: false,
             isCustomStatusEnabled: false,

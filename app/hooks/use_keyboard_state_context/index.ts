@@ -81,10 +81,14 @@ export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): 
     // Used for setting KeyboardGestureArea extra offset
     const postInputContainerHeight = useSharedValue(DEFAULT_POST_INPUT_HEIGHT);
 
-    // Update SharedValues when config or insets change (e.g., rotation)
+    // Update SharedValues when config or insets change (e.g., rotation, NativeTabs hide)
     useEffect(() => {
         tabBarHeight.value = config.tabBarHeight;
     }, [config.tabBarHeight, tabBarHeight]);
+
+    useEffect(() => {
+        safeAreaBottom.value = safeAreaInsets.bottom;
+    }, [safeAreaBottom, safeAreaInsets.bottom]);
 
     // Helper: Create snapshot by reading all SharedValues
     const createStateSnapshot = (): StateSnapshot => {

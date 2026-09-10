@@ -237,3 +237,13 @@ export const HOME_TAB_SCREENS = new Set<string>([
     SAVED_MESSAGES,
     ACCOUNT,
 ]);
+
+// Nested under the Home tab's channel_list stack so NativeTabs persist.
+export const HOME_CHANNEL_LIST_SCREENS = new Set<string>([
+    CHANNEL,
+    THREAD,
+    GLOBAL_DRAFTS,
+    GLOBAL_THREADS,
+    AGENTS_SCREENS.AGENT_CHAT,
+    AGENTS_SCREENS.AGENT_THREADS_LIST,
+]);

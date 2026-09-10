@@ -9,11 +9,11 @@ import {Keyboard, Text, View} from 'react-native';
 
 import Button from '@components/button';
 import DateTimeSelector from '@components/date_time_selector';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {getDueDateString} from '@playbooks/utils/time';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
@@ -89,16 +89,12 @@ export default function SelectDate({
     }, []);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSave}
-                    testID='playbooks.select_date.save.button'
-                    text={intl.formatMessage({id: 'playbooks.edit_due_date.save.button', defaultMessage: 'Save'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: handleSave,
+            testID: 'playbooks.select_date.save.button',
+            text: intl.formatMessage({id: 'playbooks.edit_due_date.save.button', defaultMessage: 'Save'}),
+        }));
     }, [canSave, handleSave, intl, navigation]);
 
     useBackNavigation(removeCallback);

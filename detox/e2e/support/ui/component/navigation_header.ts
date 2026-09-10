@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isIos} from '@support/utils';
+import {expect} from 'detox';
+
 /**
  * Detox reports a missing atIndex(n) as an index/out-of-bounds error naming how many
  * elements matched. A non-hittable or obscured element reports a visibility or
@@ -31,9 +34,40 @@ class NavigationHeader {
     headerSubtitle = element(by.id(this.testID.headerSubtitle));
     largeHeaderTitle = element(by.id(this.testID.largeHeaderTitle));
     largeHeaderSubtitle = element(by.id(this.testID.largeHeaderSubtitle));
-    searchInput = element(by.id(this.testID.searchInput));
-    searchClearButton = element(by.id(this.testID.searchClearButton));
     searchCancelButton = element(by.id(this.testID.searchCancelButton));
+
+    get searchInput() {
+        if (isIos()) {
+            return element(by.type('UISearchBarTextField'));
+        }
+
+        return element(by.id(this.testID.searchInput));
+    }
+
+    get searchClearButton() {
+        if (isIos()) {
+            return element(by.label('Clear text'));
+        }
+
+        return element(by.id(this.testID.searchClearButton));
+    }
+
+    expectTitle = async (title: string) => {
+        if (isIos()) {
+            await expect(element(by.text(title).withAncestor(by.type('UINavigationBar')))).toExist();
+            return;
+        }
+
+        await expect(this.largeHeaderTitle).toHaveText(title);
+    };
+
+    expectSubtitle = async (subtitle: string) => {
+        if (isIos()) {
+            return;
+        }
+
+        await expect(this.largeHeaderSubtitle).toHaveText(subtitle);
+    };
 
     tapBackButton = async (index = 0) => {
         await element(by.id(this.testID.backButton)).atIndex(index).tap();
@@ -58,3 +92,4 @@ class NavigationHeader {
 
 const navigationHeader = new NavigationHeader();
 export default navigationHeader;
+

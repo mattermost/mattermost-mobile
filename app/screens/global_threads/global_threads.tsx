@@ -8,10 +8,11 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {removeLastViewedChannelIdAndServer, storeLastViewedChannelIdAndServer} from '@actions/app/global';
 import {setGlobalThreadsTab} from '@actions/local/systems';
+import SheetTabBarScrim from '@components/chrome/sheet_tab_bar_scrim';
 import NavigationHeader from '@components/navigation_header';
-import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
@@ -48,6 +49,7 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
     const isTablet = useIsTablet();
     const flatListRef = useRef<FlatList<ThreadModel>>(null);
     const defaultHeight = useDefaultHeaderHeight();
+    const platformUi = isPlatformUiIos();
 
     useEffect(() => {
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_THREADS);
@@ -91,14 +93,6 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
         return {flex: 1, marginTop};
     }, [defaultHeight]);
 
-    const headerLeftComponent = useMemo(() => {
-        if (isTablet) {
-            return undefined;
-        }
-
-        return (<OtherMentionsBadge channelId={Screens.GLOBAL_THREADS}/>);
-    }, [isTablet]);
-
     useEffect(() => {
         mounted.current = true;
         return () => {
@@ -134,7 +128,6 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
                         defaultMessage: 'Threads',
                     })
                 }
-                leftComponent={headerLeftComponent}
             />
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
@@ -152,6 +145,7 @@ const GlobalThreads = ({globalThreadsTab, hasUnreads, teamId}: Props) => {
                     testID={testID}
                     flatListRef={flatListRef}
                 />
+                {platformUi && <SheetTabBarScrim/>}
             </View>
             }
         </SafeAreaView>

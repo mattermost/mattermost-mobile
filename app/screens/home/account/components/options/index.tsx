@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatus from './custom_status';
@@ -25,14 +26,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            height: '100%',
-            borderTopRightRadius: 12,
-            borderTopLeftRadius: 12,
+            ...(!isPlatformUiIos() && {height: '100%'}),
+            borderTopRightRadius: isPlatformUiIos() ? 0 : 12,
+            borderTopLeftRadius: isPlatformUiIos() ? 0 : 12,
             paddingTop: 12,
-            shadowColor: 'rgba(0, 0, 0, 0.12)',
-            shadowOffset: {width: 0, height: -2},
-            shadowOpacity: 1,
-            shadowRadius: 6,
+            ...(!isPlatformUiIos() && {
+                shadowColor: 'rgba(0, 0, 0, 0.12)',
+                shadowOffset: {width: 0, height: -2},
+                shadowOpacity: 1,
+                shadowRadius: 6,
+            }),
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),

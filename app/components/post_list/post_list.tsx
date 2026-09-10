@@ -18,6 +18,7 @@ import Post from '@components/post_list/post';
 import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
+import {CHANNEL_SHEET_CONTENT_TOP_INSET, isPlatformUiIos} from '@constants/platform_ui';
 import {PostTypes} from '@constants/post';
 import {useKeyboardState} from '@context/keyboard_state';
 import {PostConfigProvider} from '@context/post_config';
@@ -93,6 +94,7 @@ const PostList = ({
     appsEnabled,
     mmBlocksEnabled,
     channelId,
+    contentContainerStyle,
     currentUser,
     customEmojiNames,
     disablePullToRefresh,
@@ -134,6 +136,7 @@ const PostList = ({
         postInputContainerHeight: postInputContainerHeightShared,
         inputAccessoryHeight,
     } = stateContext;
+    const platformUi = isPlatformUiIos();
 
     useAnimatedReaction(
         () => ({
@@ -144,9 +147,9 @@ const PostList = ({
         (current, previous) => {
             'worklet';
 
-            // Skip scroll compensation if reconciler is paused
-            // This allows exit actions to manually adjust scrollPosition without interference
-            if (current.isReconcilerPaused || !listRef) {
+            // Platform UI: compose clears the keyboard via absolute `bottom`; contentInset stays 0.
+            // Keyboard scrollOffset compensation would double-push the inverted list.
+            if (platformUi || current.isReconcilerPaused || !listRef) {
                 return;
             }
 
@@ -191,7 +194,7 @@ const PostList = ({
             if (!isAndroidEdgeToEdge && (kbState === KeyboardState.CLOSED || kbState === KeyboardState.OPEN)) {
                 const translateY = postInputTranslateY.value;
                 const containerHeight = postInputContainerHeightShared.value;
-                const offset = containerHeight + translateY;
+                const offset = platformUi ? containerHeight : containerHeight + translateY;
                 scheduleOnRN(setProgressViewOffset, offset);
             }
         },
@@ -222,7 +225,7 @@ const PostList = ({
     const scrollToEnd = useCallback(() => {
         if (listRef) {
             scheduleOnUI(() => {
-                scrollTo(listRef, 0, -postInputTranslateY.value, true);
+                scrollTo(listRef, 0, platformUi ? 0 : -postInputTranslateY.value, true);
             });
         }
         setShowScrollToEndBtn(false);
@@ -296,10 +299,12 @@ const PostList = ({
             return;
         }
 
+        // Platform UI lists live in the sheet below the header — no header tuck offset.
+        const viewOffset = applyOffset && !isPlatformUiIos() ? -(insets.top + defaultHeaderHeight) : 0;
         listRef.current.scrollToIndex({
             animated,
             index,
-            viewOffset: applyOffset ? -(insets.top + defaultHeaderHeight) : 0,
+            viewOffset,
             viewPosition: 1, // 0 is at bottom
         });
     }, [defaultHeaderHeight, insets.top, listRef]);
@@ -523,15 +528,28 @@ const PostList = ({
         [isKeyboardVisible],
     );
 
-    const contentContainerStyleWithMargin = useMemo(() => ({
-        marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
-    }), [location, emojiPickerPadding, postInputContainerHeight]);
+    const contentContainerStyleWithMargin = useMemo(() => {
+        // Inverted list: marginTop clears compose (visual bottom); paddingBottom clears
+        // the opaque sheetTopCover (visual top) on platform UI channel/thread sheets.
+        const sheetTopPadding = (platformUi && (location === Screens.CHANNEL || location === Screens.THREAD)) ?
+            CHANNEL_SHEET_CONTENT_TOP_INSET : 0;
+
+        return [
+            contentContainerStyle,
+            {
+                marginTop: location === Screens.PERMALINK || !isEdgeToEdge ? 0 : postInputContainerHeight + emojiPickerPadding,
+                ...(sheetTopPadding > 0 ? {paddingBottom: sheetTopPadding} : null),
+            },
+        ];
+    }, [contentContainerStyle, emojiPickerPadding, location, platformUi, postInputContainerHeight]);
 
     const animatedProps = useAnimatedProps(
         () => {
             return {
                 contentInset: {
-                    top: Math.max(postInputTranslateY.value, 0),
+
+                    // Platform UI compose already clears the keyboard; inset would double-push content.
+                    top: platformUi ? 0 : Math.max(postInputTranslateY.value, 0),
                 },
             };
         },
@@ -585,7 +603,7 @@ const PostList = ({
                             onRefresh={onRefresh}
                             maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                             removeClippedSubviews={true}
-                            style={styles.flex}
+                            style={[styles.flex, {backgroundColor: theme.centerChannelBg}]}
                             windowSize={10}
                         />
                     </GestureDetector>

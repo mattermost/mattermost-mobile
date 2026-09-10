@@ -10,6 +10,7 @@ import {scheduleOnUI} from 'react-native-worklets';
 import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
 import {Events} from '@constants';
 import {isEdgeToEdge} from '@constants/device';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useKeyboardState} from '@context/keyboard_state';
 import useDidMount from '@hooks/did_mount';
 import {dismissKeyboard} from '@utils/keyboard';
@@ -17,6 +18,7 @@ import {dismissKeyboard} from '@utils/keyboard';
 // Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
 // Android < 35 uses native keyboard handling with adjustResize
 const Wrapper = isEdgeToEdge ? KeyboardGestureArea : View;
+const platformUi = isPlatformUiIos();
 
 type Props = {
     children: ReactNode;
@@ -57,8 +59,16 @@ export const KeyboardAwarePostDraftContainer = ({
 
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
+            // Platform UI floating compose tracks the keyboard via its own marginBottom
+            // (full keyboard height). Parent translate would double-count / fight that.
+            // List contentInset/scrollOffset are also disabled for platform UI in post_list
+            // so onLayout height (compose + keyboard margin) is the sole list clearance.
+            if (platformUi || !isEdgeToEdge) {
+                return {transform: [{translateY: 0}]};
+            }
+
             return {
-                transform: [{translateY: isEdgeToEdge ? -stateContext.postInputTranslateY.value : 0}],
+                transform: [{translateY: -stateContext.postInputTranslateY.value}],
             };
         },
         [],
@@ -154,9 +164,9 @@ export const KeyboardAwarePostDraftContainer = ({
                 const emojiPickerHeight = stateContext.targetHeight.value;
                 const currentScroll = stateContext.scrollPosition.value;
 
-                // Only perform scroll adjustment on iOS
-                // Android uses marginBottom which doesn't require scroll compensation
-                if (Platform.OS === 'ios' && listRef.current) {
+                // Platform UI: compose marginBottom + list marginTop already clear the accessory;
+                // contentInset stays 0 so skip inset scroll compensation.
+                if (Platform.OS === 'ios' && !platformUi && listRef.current) {
                     // For inverted list: when bottomInset increases, content shifts UP visually. Scroll UP to compensate.
                     scrollToEmojiPickerCompensation(currentScroll - emojiPickerHeight);
                 }

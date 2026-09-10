@@ -8,12 +8,12 @@ import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {fetchMyChannel, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import Search from '@components/search';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack, navigateToScreenWithBaseRoute} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
@@ -95,24 +95,20 @@ export default function BrowseChannels(props: Props) {
 
     const setHeaderButtons = useCallback((createEnabled: boolean) => {
         if (canCreateChannels) {
-            navigation.setOptions({
-                headerRight: () => (
-                    <NavigationButton
-                        onPress={handleCreate}
-                        text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
-                        testID='browse_channels.create.button'
-                        color={createEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                        disabled={!createEnabled}
-                    />
-                ),
-            });
+            navigation.setOptions(withChromeHeaderTextButton({
+                disabled: !createEnabled,
+                onPress: handleCreate,
+                testID: 'browse_channels.create.button',
+                text: intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+            }));
             return;
         }
         navigation.setOptions({
             headerRight: undefined,
+            unstable_headerRightItems: undefined,
         });
 
-    }, [canCreateChannels, handleCreate, intl, navigation, theme.sidebarHeaderTextColor]);
+    }, [canCreateChannels, handleCreate, intl, navigation]);
 
     const onSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);

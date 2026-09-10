@@ -1,13 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHeaderHeight} from '@react-navigation/elements';
 import {useRoute} from '@react-navigation/native';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import SheetTabBarScrim, {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import {View as ViewConstants, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useTheme} from '@context/theme';
 import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useIsTablet} from '@hooks/device';
@@ -28,6 +31,10 @@ type AccountScreenProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         flex: {
+            flex: 1,
+        },
+        screen: {
+            backgroundColor: isPlatformUiIos() ? theme.centerChannelBg : theme.sidebarBg,
             flex: 1,
         },
         flexRow: {
@@ -57,6 +64,15 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const headerHeight = useHeaderHeight();
+
+    // Pad past the native large title instead of relying on automatic insets: iOS only
+    // applies those while the content is scrollable, which a short profile is not.
+    const platformContentStyle = useMemo(() => ({
+        paddingTop: headerHeight,
+        paddingBottom: scrimPadding,
+    }), [headerHeight, scrimPadding]);
 
     useAndroidHomeTabBackHandler(Screens.ACCOUNT);
 
@@ -66,14 +82,20 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
         tabletSidebarStyle = {maxWidth: TABLET_SIDEBAR_WIDTH};
     }
 
-    const params = route.params! as {direction: string};
-    const toLeft = params.direction === 'left';
+    // NativeTabs does not pass direction; JS TabBar still does for slide animation.
+    const params = route.params as {direction?: string} | undefined;
+    const toLeft = params?.direction === 'left';
+    const platformUi = isPlatformUiIos();
 
     const onLayout = useCallback(() => {
         setStart(true);
     }, []);
 
     const animated = useAnimatedStyle(() => {
+        if (platformUi) {
+            return {};
+        }
+
         if (start) {
             return {
                 opacity: withTiming(1, {duration: 150}),
@@ -85,7 +107,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
             opacity: withTiming(0, {duration: 150}),
             transform: [{translateX: withTiming(toLeft ? -25 : 25, {duration: 150})}],
         };
-    }, [start]);
+    }, [platformUi, start, toLeft]);
 
     const styles = getStyleSheet(theme);
 
@@ -93,7 +115,8 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
         <ScrollView
             alwaysBounceVertical={false}
             style={tabletSidebarStyle}
-            contentContainerStyle={styles.totalHeight}
+            contentContainerStyle={platformUi ? platformContentStyle : styles.totalHeight}
+            contentInsetAdjustmentBehavior='never'
             testID='account.scroll_view'
         >
             <AccountUserInfo
@@ -112,13 +135,15 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
 
     return (
         <View
-            style={styles.flex}
+            style={styles.screen}
             testID='account.screen'
         >
-            <View style={[{height: insets.top, flexDirection: 'row', backgroundColor: theme.sidebarBg}]}>
-                <View style={[styles.flex, tabletSidebarStyle]}/>
-                {isTablet && <View style={styles.tabletContainer}/>}
-            </View>
+            {!platformUi && (
+                <View style={[{height: insets.top, flexDirection: 'row', backgroundColor: theme.sidebarBg}]}>
+                    <View style={[styles.flex, tabletSidebarStyle]}/>
+                    {isTablet && <View style={styles.tabletContainer}/>}
+                </View>
+            )}
             <Animated.View
                 onLayout={onLayout}
                 style={[styles.flexRow, animated]}
@@ -129,6 +154,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
                         <AccountTabletView/>
                     </View>
                 }
+                {platformUi && <SheetTabBarScrim/>}
             </Animated.View>
         </View>
     );

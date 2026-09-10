@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useRef, useState} from 'react';
-import {View} from 'react-native';
+import {Pressable, View} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeScheduledPostTutorial} from '@actions/app/global';
@@ -11,6 +11,7 @@ import ScheduledPostTooltip from '@components/post_draft/send_button/scheduled_p
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import useDidMount from '@hooks/did_mount';
+import usePressableOpacityStyle from '@hooks/use_pressable_opacity';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -21,7 +22,12 @@ type Props = {
     showScheduledPostOptions: () => void;
     scheduledPostFeatureTooltipWatched: boolean;
     scheduledPostEnabled: boolean;
+
+    /** iPhone platform UI — circular send (Figma resting/focused compose) */
+    circular?: boolean;
 }
+
+const CIRCULAR_SEND_SIZE = 40;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -39,6 +45,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 80,
             alignItems: 'center',
             justifyContent: 'center',
+        },
+        circularSendButtonContainer: {
+
+            // Pill container already provides the 4pt inset — keep send flush with plus.
+            justifyContent: 'center',
+        },
+        circularSendButton: {
+            alignItems: 'center',
+            backgroundColor: theme.buttonBg,
+            borderRadius: CIRCULAR_SEND_SIZE / 2,
+            height: CIRCULAR_SEND_SIZE,
+            justifyContent: 'center',
+            width: CIRCULAR_SEND_SIZE,
+        },
+        circularSendButtonDisabled: {
+            backgroundColor: 'transparent',
         },
         scheduledPostTooltipStyle: {
             shadowColor: '#000',
@@ -59,6 +81,7 @@ const SendButton: React.FC<Props> = ({
     showScheduledPostOptions,
     scheduledPostFeatureTooltipWatched,
     scheduledPostEnabled,
+    circular = false,
 }: Props) => {
     const theme = useTheme();
     const sendButtonTestID = `${testID}.send.button` + (disabled ? '.disabled' : '');
@@ -85,36 +108,67 @@ const SendButton: React.FC<Props> = ({
         storeScheduledPostTutorial();
     }, []);
 
-    const viewStyle = useMemo(() => [style.sendButton, disabled ? style.disableButton : {}], [disabled, style]);
+    const viewStyle = useMemo(() => {
+        if (circular) {
+            return [style.circularSendButton, disabled && style.circularSendButtonDisabled];
+        }
 
-    const buttonColor = disabled ? changeOpacity(theme.buttonColor, 0.5) : theme.buttonColor;
+        return [style.sendButton, disabled ? style.disableButton : undefined];
+    }, [circular, disabled, style]);
+
+    let buttonColor = theme.buttonColor;
+    if (disabled && circular) {
+        buttonColor = changeOpacity(theme.centerChannelColor, 0.56);
+    } else if (disabled) {
+        buttonColor = changeOpacity(theme.buttonColor, 0.5);
+    }
 
     const sendMessageWithDoubleTapPrevention = usePreventDoubleTap(sendMessage);
+    const containerStyle = circular ? style.circularSendButtonContainer : style.sendButtonContainer;
+    const pressableStyle = usePressableOpacityStyle(containerStyle);
+
+    const buttonBody = (
+        <Tooltip
+            isVisible={scheduledPostTooltipVisible}
+            placement='top'
+            content={<ScheduledPostTooltip onClose={onCloseScheduledPostTooltip}/>}
+            onClose={onCloseScheduledPostTooltip}
+            tooltipStyle={style.scheduledPostTooltipStyle}
+        >
+            <View style={viewStyle}>
+                <CompassIcon
+                    name={circular ? 'send-outline' : 'send'}
+                    size={24}
+                    color={buttonColor}
+                />
+            </View>
+        </Tooltip>
+    );
+
+    if (circular) {
+        return (
+            <Pressable
+                testID={sendButtonTestID}
+                onPress={sendMessageWithDoubleTapPrevention}
+                style={pressableStyle}
+                disabled={disabled}
+                onLongPress={scheduledPostEnabled ? showScheduledPostOptions : undefined}
+            >
+                {buttonBody}
+            </Pressable>
+        );
+    }
 
     return (
         <TouchableWithFeedback
             testID={sendButtonTestID}
             onPress={sendMessageWithDoubleTapPrevention}
-            style={style.sendButtonContainer}
+            style={containerStyle}
             type={'opacity'}
             disabled={disabled}
             onLongPress={scheduledPostEnabled ? showScheduledPostOptions : undefined}
         >
-            <Tooltip
-                isVisible={scheduledPostTooltipVisible}
-                placement='top'
-                content={<ScheduledPostTooltip onClose={onCloseScheduledPostTooltip}/>}
-                onClose={onCloseScheduledPostTooltip}
-                tooltipStyle={style.scheduledPostTooltipStyle}
-            >
-                <View style={viewStyle}>
-                    <CompassIcon
-                        name='send'
-                        size={24}
-                        color={buttonColor}
-                    />
-                </View>
-            </Tooltip>
+            {buttonBody}
         </TouchableWithFeedback>
     );
 };

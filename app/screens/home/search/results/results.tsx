@@ -6,6 +6,7 @@ import {Freeze} from 'react-freeze';
 import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
@@ -77,6 +78,7 @@ const Results = ({
     const {width} = useWindowDimensions();
     const theme = useTheme();
     const styles = useMemo(() => getStyles(width), [width]);
+    const scrimPadding = useSheetTabBarScrimPadding();
 
     const transform = useAnimatedStyle(() => {
         const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -width;
@@ -91,8 +93,8 @@ const Results = ({
     }, [selectedTab, width, !loading]);
 
     const paddingTop = useMemo(() => (
-        {paddingTop: scrollPaddingTop}
-    ), [scrollPaddingTop]);
+        {paddingTop: scrollPaddingTop, paddingBottom: scrimPadding}
+    ), [scrollPaddingTop, scrimPadding]);
 
     return (
         <>

@@ -9,11 +9,11 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {createPlaybookRun, fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
@@ -90,15 +90,12 @@ function CreateQuickChecklist({
     }, [serverUrl, currentUserId, currentTeamId, checklistName, description, channelId]));
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleCreate}
-                    disabled={!canSave}
-                    text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
-                    testID='create_quick_checklist.create.button'
-                />
-            )});
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: handleCreate,
+            testID: 'create_quick_checklist.create.button',
+            text: intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        }));
     }, [theme, intl, canSave, navigation, handleCreate]);
 
     const close = useCallback(() => {

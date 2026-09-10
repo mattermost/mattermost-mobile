@@ -7,9 +7,12 @@ import {type Insets, Pressable, type PressableStateCallbackType, type StyleProp,
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {logout} from '@actions/remote/session';
+import ChromeIconButton from '@components/chrome/chrome_icon_button';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {CHROME_HEADER_BOTTOM_INSET, CHROME_HEADER_TITLE_GAP, CHROME_HEADER_TOP_INSET, PLATFORM_UI_HEADER_HEIGHT, isPlatformUiIos} from '@constants/platform_ui';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
@@ -40,6 +43,7 @@ type Props = {
     hasMoreThanOneTeam: boolean;
     iconPad?: boolean;
     pushProxyStatus: string;
+    onOpenServers?: () => void;
 }
 
 const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -106,6 +110,37 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     firstBox: {
         width: '85%', // ratio derived from the design
     },
+    platformHeader: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        minHeight: PLATFORM_UI_HEADER_HEIGHT,
+        ...HOME_PADDING,
+        paddingTop: CHROME_HEADER_TOP_INSET,
+        paddingBottom: CHROME_HEADER_BOTTOM_INSET,
+        width: '100%',
+    },
+    platformTitleBlock: {
+        alignItems: 'flex-start',
+        flex: 1,
+        marginRight: 8,
+        minWidth: 0,
+    },
+    platformTitleAfterChrome: {
+        marginLeft: CHROME_HEADER_TITLE_GAP,
+    },
+    platformTitle: {
+        color: theme.sidebarText,
+        ...typography('Heading', 400, 'SemiBold'),
+    },
+    platformSubtitle: {
+        color: changeOpacity(theme.sidebarText, 0.64),
+        ...typography('Body', 75),
+    },
+    platformSubtitleRow: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 4,
+    },
 }));
 
 const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
@@ -121,6 +156,7 @@ const ChannelListHeader = ({
     hasMoreThanOneTeam,
     iconPad,
     pushProxyStatus,
+    onOpenServers,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
@@ -202,7 +238,64 @@ const ChannelListHeader = ({
     }, [hasTeamMenuItems, styles.teamPressable, styles.teamPressed]);
 
     let header;
-    if (displayName) {
+    if (isPlatformUiIos() && displayName) {
+        header = (
+            <View style={styles.platformHeader}>
+                {onOpenServers && (
+                    <ChromeIconButton
+                        iconName='server-variant'
+                        onPress={onOpenServers}
+                        testID='channel_list_header.servers.button'
+                    />
+                )}
+                <Pressable
+                    disabled={!hasTeamMenuItems}
+                    onPress={hasTeamMenuItems ? onTeamPress : undefined}
+                    style={[styles.platformTitleBlock, onOpenServers && styles.platformTitleAfterChrome]}
+                    testID='channel_list_header.team.button'
+                >
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={styles.platformTitle}
+                        testID='channel_list_header.team_display_name'
+                    >
+                        {displayName}
+                    </Text>
+                    <View style={styles.platformSubtitleRow}>
+                        <FormattedText
+                            defaultMessage='Server: {name}'
+                            ellipsizeMode='tail'
+                            id='channel_list_header.server'
+                            numberOfLines={1}
+                            style={styles.platformSubtitle}
+                            testID='channel_list_header.server_display_name'
+                            values={{name: serverDisplayName}}
+                        />
+                        {pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED && (
+                            <TouchableWithFeedback
+                                onPress={onPushAlertPress}
+                                testID='channel_list_header.push_alert'
+                                type='opacity'
+                            >
+                                <CompassIcon
+                                    name='alert-outline'
+                                    color={theme.errorTextColor}
+                                    size={14}
+                                    style={styles.pushAlert}
+                                />
+                            </TouchableWithFeedback>
+                        )}
+                    </View>
+                </Pressable>
+                <ChromeIconButton
+                    iconName='dots-horizontal'
+                    onPress={onPress}
+                    testID='channel_list_header.plus.button'
+                />
+            </View>
+        );
+    } else if (displayName) {
         header = (
             <View style={styles.outsideBox}>
                 <View style={styles.firstBox}>
@@ -302,7 +395,7 @@ const ChannelListHeader = ({
     }
 
     return (
-        <Animated.View style={[animatedStyle, HOME_PADDING]}>
+        <Animated.View style={[animatedStyle, isPlatformUiIos() ? undefined : HOME_PADDING]}>
             {header}
         </Animated.View>
     );

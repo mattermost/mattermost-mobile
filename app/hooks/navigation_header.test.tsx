@@ -12,6 +12,7 @@ import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_he
 import {
     getBottomSheetHeaderOptions,
     getHeaderOptions,
+    getHomeTabHeaderOptions,
     getLoginFlowHeaderOptions,
     getLoginModalHeaderOptions,
     getModalHeaderOptions,
@@ -472,6 +473,48 @@ describe('navigation_header', () => {
         });
     });
 
+    describe('getHomeTabHeaderOptions', () => {
+        it('should return large-title native header options on iPhone platform UI', () => {
+            const theme = {
+                centerChannelBg: '#ffffff',
+                centerChannelColor: '#3d3c40',
+                sidebarBg: '#1c1c1e',
+                sidebarHeaderTextColor: '#ffffff',
+            } as Theme;
+
+            const result = getHomeTabHeaderOptions(theme);
+
+            expect(result.headerShown).toBe(true);
+            expect(result.headerLargeTitleEnabled).toBe(true);
+            expect(result.headerBackVisible).toBe(false);
+            expect(result.headerTintColor).toBe('#ffffff');
+            expect(result.headerStyle).toEqual({backgroundColor: '#1c1c1e'});
+            expect(result.contentStyle).toEqual({backgroundColor: '#ffffff'});
+        });
+
+        it('should keep the expanded bar transparent so iOS 26 paints the large title', () => {
+            const theme = {
+                centerChannelBg: '#ffffff',
+                centerChannelColor: '#3d3c40',
+                sidebarBg: '#1c1c1e',
+                sidebarHeaderTextColor: '#ffffff',
+            } as Theme;
+
+            const result = getHomeTabHeaderOptions(theme);
+
+            expect(result.headerBlurEffect).toBeUndefined();
+            expect(result.headerLargeStyle).toEqual({backgroundColor: 'transparent'});
+            expect(result.headerTitleStyle).toEqual(expect.objectContaining({
+                color: '#ffffff',
+                fontFamily: 'Metropolis-SemiBold',
+            }));
+            expect(result.headerLargeTitleStyle).toEqual(expect.objectContaining({
+                color: '#3d3c40',
+                fontFamily: 'Metropolis-SemiBold',
+            }));
+        });
+    });
+
     describe('getHeaderOptions', () => {
         it('should return correct header options', () => {
             const theme = {
@@ -487,10 +530,12 @@ describe('navigation_header', () => {
             expect(result.presentation).toBe('card');
             expect(result.contentStyle).toEqual({backgroundColor: '#ffffff'});
             expect(result.headerStyle).toEqual({backgroundColor: '#1c1c1e'});
+            expect(result.headerTitleAlign).toBe('left');
             expect(result.headerTitleStyle).toBeDefined();
             expect(result.headerTintColor).toBe('#ffffff');
             expect(result.headerBackButtonDisplayMode).toBe('minimal');
-            expect(result.headerBackVisible).toBe(true);
+            expect(result.headerBackVisible).toBe(false);
+            expect(result.unstable_headerLeftItems).toBeDefined();
         });
 
         it('should include typography in headerTitleStyle', () => {
@@ -506,6 +551,36 @@ describe('navigation_header', () => {
             expect(result.headerTitleStyle).toHaveProperty('fontSize');
             expect(result.headerTitleStyle).toHaveProperty('fontWeight');
             expect(result.headerTitleStyle).toHaveProperty('color', '#ffffff');
+        });
+
+        it('should render chrome back button when unstable_headerLeftItems can go back', () => {
+            const theme = {
+                centerChannelBg: '#ffffff',
+                sidebarBg: '#1c1c1e',
+                sidebarHeaderTextColor: '#ffffff',
+            } as Theme;
+
+            const result = getHeaderOptions(theme);
+            const items = result.unstable_headerLeftItems?.({canGoBack: true, tintColor: '#ffffff'});
+
+            expect(items).toHaveLength(1);
+            expect(items?.[0]).toMatchObject({
+                type: 'custom',
+                hidesSharedBackground: true,
+            });
+        });
+
+        it('should omit chrome back button when unstable_headerLeftItems cannot go back', () => {
+            const theme = {
+                centerChannelBg: '#ffffff',
+                sidebarBg: '#1c1c1e',
+                sidebarHeaderTextColor: '#ffffff',
+            } as Theme;
+
+            const result = getHeaderOptions(theme);
+            const items = result.unstable_headerLeftItems?.({canGoBack: false, tintColor: '#ffffff'});
+
+            expect(items).toEqual([]);
         });
     });
 
@@ -526,12 +601,14 @@ describe('navigation_header', () => {
             expect(result.presentation).toBe('modal');
             expect(result.contentStyle).toEqual({backgroundColor: '#ffffff'});
             expect(result.headerStyle).toEqual({backgroundColor: '#1c1c1e'});
+            expect(result.headerTitleAlign).toBe('left');
             expect(result.headerTitleStyle).toBeDefined();
             expect(result.headerLeft).toBeDefined();
             expect(typeof result.headerLeft).toBe('function');
+            expect(result.unstable_headerLeftItems).toBeDefined();
         });
 
-        it('should render NavigationButton wrapped in View with Android margin', () => {
+        it('should render ChromeIconButton wrapped in View on iPhone platform UI', () => {
             const theme = {
                 centerChannelBg: '#ffffff',
                 sidebarBg: '#1c1c1e',
@@ -551,13 +628,19 @@ describe('navigation_header', () => {
             // The root element is View
             expect((element.type as any).displayName).toBe('View');
 
-            // The NavigationButton inside View
-            const buttonElement = element.props.children as React.ReactElement<NavigationButtonProps>;
-            expect((buttonElement.type as any).name).toBe('NavigationButton');
+            // The ChromeIconButton inside View
+            const buttonElement = element.props.children as React.ReactElement<{onPress: () => void; iconName: string; iconSize: number; testID?: string}>;
+            expect((buttonElement.type as any).name).toBe('ChromeIconButton');
             expect(buttonElement.props.onPress).toBe(onClose);
             expect(buttonElement.props.iconName).toBe('close');
             expect(buttonElement.props.iconSize).toBe(24);
             expect(buttonElement.props.testID).toBe(testID);
+
+            const leftItems = result.unstable_headerLeftItems?.({canGoBack: false, tintColor: '#ffffff'});
+            expect(leftItems?.[0]).toMatchObject({
+                type: 'custom',
+                hidesSharedBackground: true,
+            });
         });
 
         it('should work without testID', () => {
@@ -574,7 +657,7 @@ describe('navigation_header', () => {
             // eslint-disable-next-line new-cap
             const element = HeaderLeftComponent();
 
-            const buttonElement = element.props.children as React.ReactElement<NavigationButtonProps>;
+            const buttonElement = element.props.children as React.ReactElement<{testID?: string}>;
             expect(buttonElement.props.testID).toBeUndefined();
         });
     });

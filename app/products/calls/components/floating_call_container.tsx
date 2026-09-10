@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import CurrentCallBar from '@calls/components/current_call_bar';
 import {IncomingCallsContainer} from '@calls/components/incoming_calls_container';
 import JoinCallBanner from '@calls/components/join_call_banner';
+import {PLATFORM_UI_HEADER_HEIGHT, isPlatformUiIos} from '@constants/platform_ui';
 import {BOOKMARKS_BAR_HEIGHT, CHANNEL_BANNER_HEIGHT, DEFAULT_HEADER_HEIGHT, TABLET_HEADER_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -47,7 +48,8 @@ const FloatingCallContainer = ({
     const isTablet = useIsTablet();
 
     const topBarForTablet = (isTablet && !threadScreen) ? TABLET_HEADER_HEIGHT : 0;
-    const topBarChannel = (!isTablet && !threadScreen) ? DEFAULT_HEADER_HEIGHT : 0;
+    const channelHeaderHeight = isPlatformUiIos() ? PLATFORM_UI_HEADER_HEIGHT : DEFAULT_HEADER_HEIGHT;
+    const topBarChannel = (!isTablet && !threadScreen) ? channelHeaderHeight : 0;
     const wrapperTop = {
         top: (threadScreen ? 0 : insets.top) + topBarForTablet + topBarChannel + (includeBookmarkBar ? BOOKMARKS_BAR_HEIGHT : 0) + (includeChannelBanner ? CHANNEL_BANNER_HEIGHT : 0),
     };

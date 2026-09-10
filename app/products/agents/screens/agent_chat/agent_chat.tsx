@@ -17,10 +17,12 @@ import AgentChatPostList from '@agents/screens/agent_chat/agent_chat_post_list';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
 import {resolveSelectedAgent} from '@agents/utils';
+import SheetTabBarScrim from '@components/chrome/sheet_tab_bar_scrim';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {KeyboardStateProvider} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
@@ -66,6 +68,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     const isTablet = useIsTablet();
     const isFocused = useIsFocused();
     const defaultHeight = useDefaultHeaderHeight();
+    const platformUi = isPlatformUiIos();
 
     // Track if this is the first load
     const initialLoadDone = useRef(false);
@@ -82,14 +85,14 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     const [rootId, setRootId] = useState<string | null>(null);
 
     const tabBarHeight = isTablet ? BOTTOM_TAB_HEIGHT : 0;
-    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+    const marginTop = defaultHeight + (isTablet || platformUi ? 0 : -insets.top);
 
     const safeAreaViewEdges: Edge[] = useMemo(() => {
-        if (isTablet) {
+        if (isTablet || platformUi) {
             return ['left', 'right'];
         }
         return ['left', 'right', 'bottom'];
-    }, [isTablet]);
+    }, [isTablet, platformUi]);
 
     // Auto-resolve the selected bot (saved pref -> default -> first) without persisting.
     useEffect(() => {
@@ -258,14 +261,19 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                 <KeyboardAwarePostDraftContainer
                     textInputNativeID={AGENT_CHAT_INPUT_NATIVE_ID}
                     containerStyle={[styles.flex, {marginTop}]}
-                    renderList={() => (rootId ? (
-                        <AgentChatPostList rootId={rootId}/>
-                    ) : (
-                        <AgentChatContent
-                            loading={loading && bots.length === 0}
-                            error={error}
-                        />
-                    ))}
+                    renderList={() => (
+                        <>
+                            {rootId ? (
+                                <AgentChatPostList rootId={rootId}/>
+                            ) : (
+                                <AgentChatContent
+                                    loading={loading && bots.length === 0}
+                                    error={error}
+                                />
+                            )}
+                            {platformUi && <SheetTabBarScrim/>}
+                        </>
+                    )}
                 >
                     {channelId ? (
                         <PostDraft

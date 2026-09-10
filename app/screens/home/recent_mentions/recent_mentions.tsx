@@ -1,19 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useHeaderHeight} from '@react-navigation/elements';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, type ListRenderItemInfo, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
+import SheetTabBarScrim, {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
+import {CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -21,6 +24,7 @@ import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useCollapsibleHeader} from '@hooks/header';
 import {useCurrentScreen} from '@store/navigation_store';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import EmptyState from './components/empty';
 
@@ -38,19 +42,28 @@ type Props = {
     mentions: PostModel[];
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    sheet: {
+        backgroundColor: theme.centerChannelBg,
+        borderTopLeftRadius: CHANNEL_SHEET_RADIUS,
+        borderTopRightRadius: CHANNEL_SHEET_RADIUS,
+        flex: 1,
+        overflow: 'hidden',
     },
     empty: {
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
     },
-});
+}));
 
 const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, mentions, currentTimezone}: Props) => {
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    const nativeHeaderHeight = useHeaderHeight();
     const route = useRoute();
     const isFocused = useIsFocused();
     const {formatMessage} = useIntl();
@@ -61,14 +74,16 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
     const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
+    const platformUi = isPlatformUiIos();
 
     useAndroidHomeTabBackHandler(Screens.MENTIONS);
 
-    const params = route.params as {direction: string};
-    const toLeft = params.direction === 'left';
+    // NativeTabs does not pass direction; JS TabBar still does for slide animation.
+    const params = route.params as {direction?: string} | undefined;
+    const toLeft = params?.direction === 'left';
     const translateSide = toLeft ? -25 : 25;
-    const opacity = useSharedValue(isFocused ? 1 : 0);
-    const translateX = useSharedValue(isFocused ? 0 : translateSide);
+    const opacity = useSharedValue(isFocused || platformUi ? 1 : 0);
+    const translateX = useSharedValue(isFocused || platformUi ? 0 : translateSide);
 
     const title = formatMessage({id: 'screen.mentions.title', defaultMessage: 'Recent Mentions'});
     const subtitle = formatMessage({id: 'screen.mentions.subtitle', defaultMessage: 'Messages you\'ve been mentioned in'});
@@ -78,9 +93,15 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
     };
 
     useEffect(() => {
+        if (platformUi) {
+            opacity.value = 1;
+            translateX.value = 0;
+            return;
+        }
+
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused, opacity, translateSide, translateX]);
+    }, [isFocused, opacity, platformUi, translateSide, translateX]);
 
     useEffect(() => {
         if (isFocused) {
@@ -91,12 +112,17 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
         }
     }, [serverUrl, isFocused]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(!platformUi, platformUi ? undefined : onSnap);
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const paddingTop = useMemo(() => ({
+        paddingTop: platformUi ? 0 : scrollPaddingTop,
+        paddingBottom: scrimPadding,
+        flexGrow: 1,
+    }), [platformUi, scrollPaddingTop, scrimPadding]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, mentions]);
 
     const animated = useAnimatedStyle(() => {
-        if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
+        if (platformUi || isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
             return {};
         }
 
@@ -104,7 +130,7 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
             opacity: withTiming(opacity.value, {duration: 150}),
             transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
         };
-    }, [isBottomSheetOpen, isPemalinkScreen, isGalleryScreen]);
+    }, [isBottomSheetOpen, isGalleryScreen, isPemalinkScreen, platformUi]);
 
     const top = useAnimatedStyle(() => {
         return {
@@ -144,7 +170,7 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme]);
+    ), [loading, styles.empty, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -175,41 +201,68 @@ const RecentMentionsScreen = ({appsEnabled, currentUser, customEmojiNames, menti
 
     return (
         <SafeAreaView
-            style={styles.flex}
+            style={[styles.flex, platformUi && {backgroundColor: theme.sidebarBg}]}
             edges={EDGES}
             testID='recent_mentions.screen'
         >
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                subtitle={subtitle}
-                title={title}
-                hasSearch={false}
-                scrollValue={scrollValue}
-            />
-            <Animated.View style={[styles.flex, animated]}>
-                <Animated.View style={top}>
-                    <RoundedHeaderContext/>
-                </Animated.View>
-                <Animated.FlatList
-                    ref={scrollRef}
-                    contentContainerStyle={paddingTop}
-                    ListEmptyComponent={renderEmptyList()}
-                    data={posts}
-                    scrollToOverflowEnabled={true}
-                    showsVerticalScrollIndicator={false}
-                    progressViewOffset={scrollPaddingTop}
-                    scrollEventThrottle={16}
-                    indicatorStyle='black'
-                    onScroll={onScroll}
-                    onRefresh={handleRefresh}
-                    refreshing={refreshing}
-                    renderItem={renderItem}
-                    removeClippedSubviews={true}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    testID='recent_mentions.post_list.flat_list'
+            {!platformUi && (
+                <NavigationHeader
+                    isLargeTitle={true}
+                    showBackButton={false}
+                    subtitle={subtitle}
+                    title={title}
+                    hasSearch={false}
+                    scrollValue={scrollValue}
                 />
-            </Animated.View>
+            )}
+            {platformUi ? (
+                <View style={[styles.sheet, {marginTop: nativeHeaderHeight}]}>
+                    <Animated.FlatList
+                        ref={scrollRef}
+                        contentContainerStyle={paddingTop}
+                        contentInsetAdjustmentBehavior='never'
+                        ListEmptyComponent={renderEmptyList()}
+                        data={posts}
+                        scrollToOverflowEnabled={true}
+                        showsVerticalScrollIndicator={false}
+                        progressViewOffset={0}
+                        scrollEventThrottle={16}
+                        indicatorStyle='black'
+                        onRefresh={handleRefresh}
+                        refreshing={refreshing}
+                        renderItem={renderItem}
+                        removeClippedSubviews={false}
+                        onViewableItemsChanged={onViewableItemsChanged}
+                        testID='recent_mentions.post_list.flat_list'
+                    />
+                    <SheetTabBarScrim/>
+                </View>
+            ) : (
+                <Animated.View style={[styles.flex, animated]}>
+                    <Animated.View style={top}>
+                        <RoundedHeaderContext/>
+                    </Animated.View>
+                    <Animated.FlatList
+                        ref={scrollRef}
+                        contentContainerStyle={paddingTop}
+                        contentInsetAdjustmentBehavior='never'
+                        ListEmptyComponent={renderEmptyList()}
+                        data={posts}
+                        scrollToOverflowEnabled={true}
+                        showsVerticalScrollIndicator={false}
+                        progressViewOffset={scrollPaddingTop}
+                        scrollEventThrottle={16}
+                        indicatorStyle='black'
+                        onScroll={onScroll}
+                        onRefresh={handleRefresh}
+                        refreshing={refreshing}
+                        renderItem={renderItem}
+                        removeClippedSubviews={true}
+                        onViewableItemsChanged={onViewableItemsChanged}
+                        testID='recent_mentions.post_list.flat_list'
+                    />
+                </Animated.View>
+            )}
         </SafeAreaView>
     );
 };

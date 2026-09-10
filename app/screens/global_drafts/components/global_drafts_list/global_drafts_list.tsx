@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {FlatList, StyleSheet, View, type LayoutChangeEvent, type ListRenderItemInfo} from 'react-native';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {storeDraftsTutorial} from '@actions/app/global';
+import {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import {Screens} from '@constants';
 import {DRAFT_SCHEDULED_POST_LAYOUT_PADDING, DRAFT_TYPE_DRAFT} from '@constants/draft';
 import {staticStyles} from '@constants/tooltip';
@@ -59,6 +60,11 @@ const GlobalDraftsList: React.FC<Props> = ({
     const [layoutWidth, setLayoutWidth] = useState(0);
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const tutorialTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const contentContainerStyle = useMemo(() => [
+        !allDrafts.length && styles.empty,
+        {paddingBottom: scrimPadding},
+    ], [allDrafts.length, scrimPadding]);
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.GLOBAL_DRAFTS) {
             setLayoutWidth(e.nativeEvent.layout.width - DRAFT_SCHEDULED_POST_LAYOUT_PADDING);
@@ -135,7 +141,7 @@ const GlobalDraftsList: React.FC<Props> = ({
             <FlatList
                 data={allDrafts}
                 keyExtractor={keyExtractor}
-                contentContainerStyle={!allDrafts.length && styles.empty}
+                contentContainerStyle={contentContainerStyle}
                 maxToRenderPerBatch={10}
                 nativeID={location}
                 renderItem={renderItem}

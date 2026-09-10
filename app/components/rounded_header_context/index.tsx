@@ -4,6 +4,7 @@
 import React from 'react';
 import {View} from 'react-native';
 
+import {CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,8 +17,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     content: {
         backgroundColor: theme.centerChannelBg,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        borderTopLeftRadius: isPlatformUiIos() ? CHANNEL_SHEET_RADIUS : 12,
+        borderTopRightRadius: isPlatformUiIos() ? CHANNEL_SHEET_RADIUS : 12,
         flex: 1,
     },
 }));

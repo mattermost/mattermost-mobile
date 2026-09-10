@@ -29,6 +29,8 @@ class RecentMentionsScreen {
     // convenience props
     largeHeaderTitle = NavigationHeader.largeHeaderTitle;
     largeHeaderSubtitle = NavigationHeader.largeHeaderSubtitle;
+    expectTitle = NavigationHeader.expectTitle;
+    expectSubtitle = NavigationHeader.expectSubtitle;
 
     postList = new PostList(this.testID.recentMentionsScreenPrefix);
 

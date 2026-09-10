@@ -1,11 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {usePropsFromParams} from '@hooks/props_from_params';
-import GlobalDraftScreen, {type GlobalDraftProps} from '@screens/global_drafts';
+import {Redirect, useLocalSearchParams} from 'expo-router';
+import React from 'react';
 
-export default function GlobalDraftRoute() {
-    const props = usePropsFromParams<GlobalDraftProps>();
-
-    return (<GlobalDraftScreen {...props}/>);
+/**
+ * Legacy path redirect: drafts now live under the Home tab stack
+ * so the tab bar can persist.
+ */
+export default function GlobalDraftsRedirect() {
+    const params = useLocalSearchParams();
+    return (
+        <Redirect
+            href={{
+                pathname: '/(authenticated)/(home)/channel_list/global_drafts',
+                params,
+            }}
+        />
+    );
 }

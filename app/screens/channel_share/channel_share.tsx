@@ -16,13 +16,13 @@ import {
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import NavigationHeaderTitle from '@components/navigation_header_title';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -250,18 +250,13 @@ const ChannelShare = ({channelId, displayName}: Props) => {
     useAndroidHardwareBackHandler(Screens.CHANNEL_SHARE, onClose);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={save}
-                    text={intl.formatMessage(messages.save)}
-                    testID='channel_share.save.button'
-                    color={canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                    disabled={!canSave}
-                />
-            ),
-        });
-    }, [canSave, intl, navigation, save, saving, theme.sidebarHeaderTextColor]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: save,
+            testID: 'channel_share.save.button',
+            text: intl.formatMessage(messages.save),
+        }));
+    }, [canSave, intl, navigation, save]);
 
     const addWorkspace = useCallback(
         (remote: RemoteClusterInfo) => {

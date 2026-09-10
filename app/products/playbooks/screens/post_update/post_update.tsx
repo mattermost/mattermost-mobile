@@ -11,13 +11,13 @@ import {getPosts} from '@actions/local/post';
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {fetchPlaybookRun, fetchPlaybookRunMetadata, postStatusUpdate} from '@playbooks/actions/remote/runs';
 import {navigateBack} from '@screens/navigation';
 import {toSeconds} from '@utils/datetime';
@@ -218,16 +218,12 @@ const PostUpdate = ({
     }, [alsoMarkRunAsFinished, intl, onConfirm, outstanding, runName]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onPostUpdate}
-                    testID='playbooks.post_update.button'
-                    text={intl.formatMessage({id: 'playbooks.post_update.post.button', defaultMessage: 'Post'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: onPostUpdate,
+            testID: 'playbooks.post_update.button',
+            text: intl.formatMessage({id: 'playbooks.post_update.post.button', defaultMessage: 'Post'}),
+        }));
     }, [canSave, intl, navigation, onPostUpdate]);
 
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_POST_UPDATE, close);

@@ -7,12 +7,15 @@ import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect} from 'react';
 import {StyleSheet, View, type TextStyle} from 'react-native';
 
+import ChromeIconButton from '@components/chrome/chrome_icon_button';
 import NavigationButton from '@components/navigation_button';
 import SyntaxHiglight from '@components/syntax_highlight';
 import {Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderRight} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
@@ -42,17 +45,24 @@ const CodeScreen = ({code, language, textStyle}: CodeScreenProps) => {
     }, [code]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    iconName='content-copy'
-                    iconSize={24}
-                    color={theme.sidebarHeaderTextColor}
-                    onPress={copyToClipboard}
-                    testID='copy-code'
-                />
-            ),
-        });
+        const button = isPlatformUiIos() ? (
+            <ChromeIconButton
+                iconName='content-copy'
+                iconSize={24}
+                onPress={copyToClipboard}
+                testID='copy-code'
+            />
+        ) : (
+            <NavigationButton
+                iconName='content-copy'
+                iconSize={24}
+                color={theme.sidebarHeaderTextColor}
+                onPress={copyToClipboard}
+                testID='copy-code'
+            />
+        );
+
+        navigation.setOptions(withChromeHeaderRight(button));
     }, [copyToClipboard, navigation, theme.sidebarHeaderTextColor]);
 
     return (

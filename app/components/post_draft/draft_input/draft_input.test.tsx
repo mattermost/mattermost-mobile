@@ -3,8 +3,9 @@
 
 import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
+import {DeviceEventEmitter} from 'react-native';
 
-import {License, Screens} from '@constants';
+import {Events, License, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostPriorityType} from '@constants/post';
 import NetworkManager from '@managers/network_manager';
@@ -219,6 +220,13 @@ describe('DraftInput', () => {
             const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
             fireEvent(getByTestId('draft_input.post.input'), 'focus');
             expect(baseProps.setIsFocused).toHaveBeenCalledWith(true);
+        });
+
+        it('does not hide the tab bar on focus when the software keyboard is closed', () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+            const {getByTestId} = render(<DraftInput {...baseProps}/>, {database});
+            fireEvent(getByTestId('draft_input.post.input'), 'focus');
+            expect(emitSpy).not.toHaveBeenCalledWith(Events.TAB_BAR_VISIBLE, false);
         });
     });
 

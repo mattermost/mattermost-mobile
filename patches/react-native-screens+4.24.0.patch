@@ -1,0 +1,28 @@
+diff --git a/node_modules/react-native-screens/ios/helpers/scroll-view/RNSScrollEdgeEffectApplicator.mm b/node_modules/react-native-screens/ios/helpers/scroll-view/RNSScrollEdgeEffectApplicator.mm
+index 0723b64..ca2c7cc 100644
+--- a/node_modules/react-native-screens/ios/helpers/scroll-view/RNSScrollEdgeEffectApplicator.mm
++++ b/node_modules/react-native-screens/ios/helpers/scroll-view/RNSScrollEdgeEffectApplicator.mm
+@@ -9,12 +9,17 @@
+ {
+ #if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0)
+   if (@available(iOS 26, *)) {
+-    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.bottomEdgeEffect
+-                                          withEnum:[provider bottomScrollEdgeEffect]];
+-    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.leftEdgeEffect withEnum:[provider leftScrollEdgeEffect]];
+-    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.rightEdgeEffect
+-                                          withEnum:[provider rightScrollEdgeEffect]];
+-    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.topEdgeEffect withEnum:[provider topScrollEdgeEffect]];
++    // Inverted chat lists wash out when soft/automatic edge effects are applied (RN #54181).
++    // Mattermost post lists are inverted — always hide rather than trusting Screen finder timing.
++    BOOL inverted = scrollView.layer.transform.m22 == -1.0;
++    RNSScrollEdgeEffect bottom = inverted ? RNSScrollEdgeEffectHidden : [provider bottomScrollEdgeEffect];
++    RNSScrollEdgeEffect left = inverted ? RNSScrollEdgeEffectHidden : [provider leftScrollEdgeEffect];
++    RNSScrollEdgeEffect right = inverted ? RNSScrollEdgeEffectHidden : [provider rightScrollEdgeEffect];
++    RNSScrollEdgeEffect top = inverted ? RNSScrollEdgeEffectHidden : [provider topScrollEdgeEffect];
++    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.bottomEdgeEffect withEnum:bottom];
++    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.leftEdgeEffect withEnum:left];
++    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.rightEdgeEffect withEnum:right];
++    [RNSScrollEdgeEffectApplicator configureEffect:scrollView.topEdgeEffect withEnum:top];
+   }
+ #endif
+ }

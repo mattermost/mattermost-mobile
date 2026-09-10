@@ -204,8 +204,53 @@ describe('navigation', () => {
             navigateToScreen(Screens.CHANNEL, {channelId: 'abc123'});
 
             expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(authenticated)/channel',
+                pathname: '/(authenticated)/(home)/channel_list/channel',
                 params: {channelId: '"abc123"'},
+            });
+        });
+
+        it('should navigate to thread under the home channel_list stack', () => {
+            navigateToScreen(Screens.THREAD, {rootId: 'root1'});
+
+            expect(router.push).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/(home)/channel_list/thread',
+                params: {rootId: '"root1"'},
+            });
+        });
+
+        it('should navigate to drafts under the home channel_list stack', () => {
+            navigateToScreen(Screens.GLOBAL_DRAFTS, {initialTab: 'drafts'});
+
+            expect(router.push).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/(home)/channel_list/global_drafts',
+                params: {initialTab: '"drafts"'},
+            });
+        });
+
+        it('should navigate to global threads under the home channel_list stack', () => {
+            navigateToScreen(Screens.GLOBAL_THREADS);
+
+            expect(router.push).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/(home)/channel_list/global_threads',
+                params: {},
+            });
+        });
+
+        it('should navigate to agent chat under the home channel_list stack', () => {
+            navigateToScreen(Screens.AGENT_CHAT);
+
+            expect(router.push).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/(home)/channel_list/agent_chat',
+                params: {},
+            });
+        });
+
+        it('should navigate to agent threads list under the home channel_list stack', () => {
+            navigateToScreen(Screens.AGENT_THREADS_LIST);
+
+            expect(router.push).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/(home)/channel_list/agent_threads_list',
+                params: {},
             });
         });
 
@@ -434,7 +479,7 @@ describe('navigation', () => {
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
-            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/channel');
+            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list/channel');
             expect(router.setParams).toHaveBeenCalledWith({channelId: '"abc"'});
         });
 
@@ -445,7 +490,7 @@ describe('navigation', () => {
 
             expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/(home)/channel_list');
             expect(router.push).toHaveBeenCalledWith({
-                pathname: '/(authenticated)/channel',
+                pathname: '/(authenticated)/(home)/channel_list/channel',
                 params: {channelId: '"abc"'},
             });
         });

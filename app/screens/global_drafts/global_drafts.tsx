@@ -7,11 +7,13 @@ import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {removeLastViewedChannelIdAndServer, storeLastViewedChannelIdAndServer} from '@actions/app/global';
+import SheetTabBarScrim from '@components/chrome/sheet_tab_bar_scrim';
 import NavigationHeader from '@components/navigation_header';
 import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
 import {DRAFT_SCREEN_TAB_DRAFTS, type DraftScreenTab} from '@constants/draft';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -40,6 +42,7 @@ const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Glob
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
     const defaultHeight = useDefaultHeaderHeight();
+    const platformUi = isPlatformUiIos();
 
     useEffect(() => {
         DeviceEventEmitter.emit(Events.ACTIVE_SCREEN, Screens.GLOBAL_DRAFTS);
@@ -121,6 +124,7 @@ const GlobalDraftsAndScheduledPosts = ({scheduledPostsEnabled, initialTab}: Glob
                         />
                     ) : draftList
                 }
+                {platformUi && <SheetTabBarScrim/>}
             </View>
             }
         </SafeAreaView>

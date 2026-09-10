@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Events} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
@@ -46,8 +47,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         animatedContainer: {
             position: 'absolute',
+            left: 0,
+            right: 0,
             padding: 8,
-            width: '100%',
+
+            // Above sheetTopCover (5) and sheetChrome (6)
+            zIndex: 7,
         },
         cancelContainer: {
             alignItems: 'center',
@@ -128,9 +133,15 @@ const MoreMessages = ({
     const styles = getStyleSheet(theme);
     const top = useSharedValue(0);
     const callsAdjustment = useCallsAdjustment(serverUrl, channelId);
+    const platformUi = isPlatformUiIos();
 
-    // The final top:
-    const adjustedTop = (isTablet ? 0 : insets.top) + callsAdjustment;
+    // Platform UI: list is inside sheetBody. Corner inset is body marginTop (no chrome) or
+    // list paddingTop (chrome). Pin at 0 so animatedContainer padding (8) sits flush under
+    // sheet top / bookmarks — do not subtract CONTENT_TOP_INSET (that recreated the gap).
+    // Legacy: top stays 0; translateY carries insets.top.
+    const pinnedTop = platformUi ? callsAdjustment : 0;
+    const shownTranslateY = platformUi ? 0 : ((isTablet ? 0 : insets.top) + callsAdjustment);
+    const hideTranslateY = HIDDEN_TOP;
 
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
 
@@ -145,15 +156,15 @@ const MoreMessages = ({
                     MAX_INPUT,
                 ],
                 [
-                    HIDDEN_TOP,
-                    HIDDEN_TOP,
-                    adjustedTop,
-                    adjustedTop,
+                    hideTranslateY,
+                    hideTranslateY,
+                    shownTranslateY,
+                    shownTranslateY,
                 ],
                 'clamp',
             ), {mass: 1, stiffness: 100, damping: 14}),
         }],
-    }), [adjustedTop]);
+    }), [hideTranslateY, shownTranslateY]);
 
     // Due to the implementation differences "unreadCount" gets updated for a channel on reset but not for a thread.
     // So we maintain a localUnreadCount to hide the indicator when the count is reset.
@@ -163,16 +174,21 @@ const MoreMessages = ({
         localUnreadCount.current = unreadCount;
     }, [unreadCount]);
 
+    const hideBanner = useCallback(() => {
+        setRemaining(0);
+        top.value = 0;
+    }, [top]);
+
     const onScrollEndIndex = () => {
         pressed.current = false;
     };
 
     const onCancel = useCallback(() => {
         pressed.current = true;
-        top.value = 0;
+        hideBanner();
         resetMessageCount(serverUrl, channelId);
         pressed.current = false;
-    }, [top, serverUrl, channelId]);
+    }, [hideBanner, serverUrl, channelId]);
 
     const onPress = useCallback(() => {
         if (pressed.current) {
@@ -219,11 +235,17 @@ const MoreMessages = ({
         function onViewableItemsChanged(viewableItems: ViewToken[]) {
             pressed.current = false;
 
-            if (newMessageLineIndex <= 0 || viewableItems.length === 0 || isManualUnread || resetting.current) {
+            if (newMessageLineIndex <= 0 || isManualUnread || resetting.current) {
+                hideBanner();
                 return;
             }
 
-            const lastViewableIndex = viewableItems.filter((v) => v.isViewable)[viewableItems.length - 1]?.index || 0;
+            if (viewableItems.length === 0) {
+                return;
+            }
+
+            const viewable = viewableItems.filter((v) => v.isViewable);
+            const lastViewableIndex = viewable[viewable.length - 1]?.index ?? 0;
             const nextViewableIndex = lastViewableIndex + 1;
             if (viewableItems[0].index === 0 && nextViewableIndex > newMessageLineIndex && !initialScroll.current) {
                 // Auto scroll if the first post is viewable and
@@ -231,7 +253,7 @@ const MoreMessages = ({
                 // * the new message line will be the first next viewable item
                 scrollToIndex(newMessageLineIndex, true, false);
                 resetCount();
-                top.value = 0;
+                hideBanner();
                 initialScroll.current = true;
                 return;
             }
@@ -240,25 +262,36 @@ const MoreMessages = ({
             const totalUnread = localUnreadCount.current - readCount;
             if (lastViewableIndex >= newMessageLineIndex) {
                 resetCount();
-                top.value = 0;
+                hideBanner();
             } else if (totalUnread > 0) {
                 setRemaining(totalUnread);
                 top.value = 1;
+            } else {
+                hideBanner();
             }
         }
 
         const unregister = registerViewableItemsListener(onViewableItemsChanged);
 
         return () => unregister();
-    }, [channelId, unreadCount, newMessageLineIndex, posts, registerViewableItemsListener, isCRTEnabled, rootId, serverUrl, isManualUnread, scrollToIndex, top]);
+    }, [channelId, unreadCount, newMessageLineIndex, posts, registerViewableItemsListener, isCRTEnabled, rootId, serverUrl, isManualUnread, scrollToIndex, top, hideBanner]);
 
     useEffect(() => {
         resetting.current = false;
         initialScroll.current = false;
-    }, [channelId]);
+        hideBanner();
+    }, [channelId, hideBanner]);
+
+    // remaining <= 0 must not mount — HIDDEN translate alone still peeked "0 new messages".
+    if (remaining <= 0) {
+        return null;
+    }
 
     return (
-        <Animated.View style={[styles.animatedContainer, animatedStyle]}>
+        <Animated.View
+            pointerEvents='box-none'
+            style={[styles.animatedContainer, {top: pinnedTop}, animatedStyle]}
+        >
             <View style={[styles.container]}>
                 <TouchableWithFeedback
                     type={'opacity'}

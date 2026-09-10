@@ -10,7 +10,6 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {fetchChannelMemberships} from '@actions/remote/channel';
 import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
-import NavigationButton from '@components/navigation_button';
 import Search from '@components/search';
 import SectionNotice from '@components/section_notice';
 import UserList from '@components/user_list';
@@ -21,6 +20,7 @@ import {TutorialProvider} from '@context/tutorial';
 import {useAccessControlAttributes} from '@hooks/access_control_attributes';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {openUserProfile} from '@utils/navigation';
@@ -230,15 +230,11 @@ export default function ManageChannelMembers({
     }, [hasTerm]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    text={isManageMode ? formatMessage(messages.button_done) : formatMessage(messages.button_manage)}
-                    testID={`${TEST_ID}.button`}
-                    onPress={toggleManageEnabled}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            onPress: toggleManageEnabled,
+            testID: `${TEST_ID}.button`,
+            text: isManageMode ? formatMessage(messages.button_done) : formatMessage(messages.button_manage),
+        }));
     }, [formatMessage, isManageMode, navigation, toggleManageEnabled]);
 
     const getFetchChannelMembers = useCallback(async () => {

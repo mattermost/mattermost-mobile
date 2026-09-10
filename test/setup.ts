@@ -40,6 +40,14 @@ jest.mock('expo-crypto', () => ({
     }),
 }));
 
+jest.mock('expo-glass-effect', () => {
+    const {View} = require('react-native');
+    return {
+        GlassView: View,
+        isGlassEffectAPIAvailable: jest.fn(() => false),
+    };
+});
+
 jest.mock('expo-device', () => {
     return {
         deviceName: 'Device',

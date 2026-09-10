@@ -26,6 +26,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             height: 40,
             marginRight: 8,
         },
+        iconContainerFlush: {
+            marginRight: 0,
+        },
         icon: {
             alignSelf: 'center',
         },
@@ -40,6 +43,7 @@ export default function AttachmentQuickAction({
     maxFileCount,
     showAttachLogs,
     testID = '',
+    flush = false,
 }: QuickActionAttachmentProps) {
     const theme = useTheme();
     const {blurAndDismissKeyboard} = useKeyboardState();
@@ -67,7 +71,7 @@ export default function AttachmentQuickAction({
             testID={actionTestID}
             disabled={disabled}
             onPress={openFileAttachmentOptions}
-            style={style.iconContainer}
+            style={[style.iconContainer, flush && style.iconContainerFlush]}
             type={'opacity'}
         >
             <CompassIcon

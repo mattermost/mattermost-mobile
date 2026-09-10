@@ -12,12 +12,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {handleGotoLocation} from '@actions/remote/command';
 import Button from '@components/button';
 import Markdown from '@components/markdown';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
@@ -434,19 +434,15 @@ function AppsFormComponent({
         // no options (nothing renders inline), keep the header Submit so the
         // form remains submittable.
         if (submitButtons?.options?.length) {
-            navigation.setOptions({headerRight: undefined});
+            navigation.setOptions({headerRight: undefined, unstable_headerRightItems: undefined});
             return;
         }
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSubmit}
-                    disabled={submitting}
-                    testID='interactive_dialog.submit.button'
-                    text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: submitting,
+            onPress: handleSubmit,
+            testID: 'interactive_dialog.submit.button',
+            text: form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
+        }));
     }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting]);
 
     // Cleanup on unmount to prevent memory leaks

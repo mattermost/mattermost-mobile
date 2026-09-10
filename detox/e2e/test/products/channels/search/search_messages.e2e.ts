@@ -111,7 +111,7 @@ describe('Search - Search Messages', () => {
         await SearchMessagesScreen.open();
 
         // * Verify basic elements on search messages screen
-        await expect(SearchMessagesScreen.largeHeaderTitle).toHaveText('Search');
+        await SearchMessagesScreen.expectTitle('Search');
         await expect(SearchMessagesScreen.searchInput).toBeVisible();
         await expect(SearchMessagesScreen.searchModifierHeader).toHaveText('Search options');
         await expect(SearchMessagesScreen.searchModifierFrom).toBeVisible();

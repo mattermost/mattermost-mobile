@@ -8,7 +8,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, type IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, type AppStateStatus, DeviceEventEmitter,
-    Platform, type TextInputSelectionChangeEvent,
+    Platform, Text, type TextInputSelectionChangeEvent, View,
 } from 'react-native';
 import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
@@ -18,6 +18,7 @@ import {userTyping} from '@actions/websocket/users';
 import {useRewrite} from '@agents/hooks';
 import {Events, Screens} from '@constants';
 import {isAndroidEdgeToEdge} from '@constants/device';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -26,6 +27,7 @@ import {useCurrentScreen} from '@store/navigation_store';
 import {handleDraftUpdate} from '@utils/draft';
 import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -96,6 +98,37 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
             android: 2,
         }),
         minHeight: 30,
+    },
+    floatingContainer: {
+        flex: 1,
+        minHeight: 40,
+        minWidth: 0,
+    },
+    floatingInput: {
+        backgroundColor: 'transparent',
+        color: theme.centerChannelColor,
+        ...typography('Body', 200),
+        minHeight: 40,
+        paddingBottom: 8,
+        paddingHorizontal: 8,
+        paddingTop: 8,
+        textAlignVertical: 'center',
+    },
+
+    // Same padding box as floatingInput so truncated placeholder aligns with typed text.
+    floatingPlaceholderWrap: {
+        bottom: 0,
+        left: 0,
+        paddingBottom: 8,
+        paddingHorizontal: 8,
+        paddingTop: 8,
+        position: 'absolute',
+        right: 0,
+        top: 0,
+    },
+    floatingPlaceholder: {
+        ...typography('Body', 200),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
 }));
 
@@ -169,10 +202,11 @@ export default function PostInput({
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
+    const platformUi = isPlatformUiIos();
     const maxHeight = isTablet ? 150 : 88;
     const pasteInputStyle = useMemo(() => {
-        return {...style.input, maxHeight};
-    }, [maxHeight, style.input]);
+        return {...(platformUi ? style.floatingInput : style.input), maxHeight};
+    }, [maxHeight, platformUi, style.floatingInput, style.input]);
 
     // Pulsing animation for when AI rewrite is processing
     const pulseOpacity = useSharedValue(1);
@@ -386,8 +420,25 @@ export default function PostInput({
     }), [handleHardwareEnterPress, handleHardwareShiftEnter]);
     useHardwareKeyboardEvents(events);
 
+    const placeholderText = intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName});
+    const showFloatingPlaceholder = platformUi && !value;
+
     return (
-        <Animated.View style={pulsingAnimatedStyle}>
+        <Animated.View style={[pulsingAnimatedStyle, platformUi && style.floatingContainer]}>
+            {showFloatingPlaceholder && (
+                <View
+                    pointerEvents='none'
+                    style={style.floatingPlaceholderWrap}
+                >
+                    <Text
+                        ellipsizeMode='tail'
+                        numberOfLines={1}
+                        style={style.floatingPlaceholder}
+                    >
+                        {placeholderText}
+                    </Text>
+                </View>
+            )}
             <PasteableTextInput
                 allowFontScaling={true}
                 disableCopyPaste={disableCopyAndPaste}
@@ -399,7 +450,7 @@ export default function PostInput({
                 onFocus={onFocus}
                 onPaste={onPaste}
                 onSelectionChange={handlePostDraftSelectionChanged}
-                placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
+                placeholder={platformUi ? undefined : placeholderText}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                 ref={inputRef}
                 smartPunctuation='disable'

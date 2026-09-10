@@ -11,7 +11,6 @@ import {getExistingUserProfilesByIdWithFallback} from '@actions/local/user';
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
-import NavigationButton from '@components/navigation_button';
 import SearchBar from '@components/search';
 import ServerUserList from '@components/server_user_list';
 import {General, Screens, View as ViewConstants} from '@constants';
@@ -19,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidMount from '@hooks/did_mount';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {useDebounce} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
 import SettingsStore from '@store/settings_store';
@@ -417,15 +417,11 @@ function IntegrationSelector({
             return;
         }
 
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onHandleMultiselectSubmit}
-                    testID='integration_selector.multiselect.submit.button'
-                    text={intl.formatMessage({id: 'integration_selector.multiselect.submit', defaultMessage: 'Done'})}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            onPress: onHandleMultiselectSubmit,
+            testID: 'integration_selector.multiselect.submit.button',
+            text: intl.formatMessage({id: 'integration_selector.multiselect.submit', defaultMessage: 'Done'}),
+        }));
     }, [onHandleMultiselectSubmit, isMultiselect, navigation, intl]);
 
     useEffect(() => {

@@ -4,6 +4,7 @@
 import {act, renderHook} from '@testing-library/react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {PLATFORM_UI_HEADER_HEIGHT} from '@constants/platform_ui';
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 
@@ -54,7 +55,7 @@ describe('Header Hooks', () => {
     describe('useDefaultHeaderHeight', () => {
         it('should return correct height for mobile', () => {
             const {result} = renderHook(() => useDefaultHeaderHeight());
-            expect(result.current).toBe(ViewConstants.DEFAULT_HEADER_HEIGHT + 20);
+            expect(result.current).toBe(PLATFORM_UI_HEADER_HEIGHT + 20);
         });
 
         it('should return correct height for tablet', () => {
@@ -67,7 +68,7 @@ describe('Header Hooks', () => {
     describe('useLargeHeaderHeight', () => {
         it('should return correct large header height', () => {
             const {result} = renderHook(() => useLargeHeaderHeight());
-            const expectedHeight = ViewConstants.DEFAULT_HEADER_HEIGHT +
+            const expectedHeight = PLATFORM_UI_HEADER_HEIGHT +
                                  ViewConstants.LARGE_HEADER_TITLE_HEIGHT +
                                  ViewConstants.SUBTITLE_HEIGHT + 20;
             expect(result.current).toBe(expectedHeight);
@@ -77,7 +78,7 @@ describe('Header Hooks', () => {
     describe('useHeaderHeight', () => {
         it('should return correct height values', () => {
             const {result} = renderHook(() => useHeaderHeight());
-            const defaultHeight = ViewConstants.DEFAULT_HEADER_HEIGHT + 20;
+            const defaultHeight = PLATFORM_UI_HEADER_HEIGHT + 20;
             const largeHeight = defaultHeight +
                               ViewConstants.LARGE_HEADER_TITLE_HEIGHT +
                               ViewConstants.SUBTITLE_HEIGHT;

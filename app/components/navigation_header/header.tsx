@@ -6,10 +6,12 @@ import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, type SharedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ChromeIconButton from '@components/chrome/chrome_icon_button';
 import CompassIcon from '@components/compass_icon';
 import NavigationButton, {type NavigationButtonProps} from '@components/navigation_button';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import ViewConstants from '@constants/view';
+import {CHROME_HEADER_BOTTOM_INSET, CHROME_HEADER_TITLE_GAP, CHROME_HEADER_TOP_INSET, PLATFORM_UI_HEADER_HEIGHT, isPlatformUiIos} from '@constants/platform_ui';
+import ViewConstants, {HOME_PADDING} from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -35,91 +37,87 @@ type Props = {
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
+const platformChromeInsets = {
+    paddingTop: CHROME_HEADER_TOP_INSET,
+    paddingBottom: CHROME_HEADER_BOTTOM_INSET,
+};
+const platformBarStyle = {height: PLATFORM_UI_HEADER_HEIGHT, ...platformChromeInsets};
+const platformChromeStyle = {
+    height: PLATFORM_UI_HEADER_HEIGHT,
+    ...platformChromeInsets,
+};
+const PLATFORM_UI_RIGHT_BUTTON_GAP = 12;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    centered: {
-        alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
+    titleContent: {
+        alignItems: 'flex-start',
+        width: '100%',
     },
     container: {
         alignItems: 'center',
         backgroundColor: theme.sidebarBg,
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        paddingHorizontal: 16,
+        ...(isPlatformUiIos() ? HOME_PADDING : {paddingHorizontal: 16}),
         zIndex: 10,
     },
     subtitleContainer: {
         flexDirection: 'row',
-        justifyContent: Platform.select({android: 'flex-start', ios: 'center'}),
+        justifyContent: 'flex-start',
         left: Platform.select({ios: undefined, default: 3}),
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+        flexShrink: 1,
         ...typography('Body', 75),
         lineHeight: 12,
-        marginBottom: 8,
+        marginBottom: isPlatformUiIos() ? 0 : 8,
         marginTop: 2,
         height: 13,
     },
     titleContainer: {
-        alignItems: Platform.select({android: 'flex-start', ios: 'center'}),
-        justifyContent: 'center',
-        flex: 3,
+        flex: 1,
         height: '100%',
-        ...Platform.select({
-            ios: {
-                flex: undefined,
-                width: '100%',
-                position: 'absolute',
-                left: 16,
-                bottom: 0,
-                zIndex: 1,
-            },
-        }),
+        justifyContent: 'center',
+        minWidth: 0,
+        overflow: 'hidden',
     },
     leftAction: {
         alignItems: 'center',
         flexDirection: 'row',
     },
     leftContainer: {
+        flexShrink: 0,
         height: '100%',
         justifyContent: 'center',
         ...Platform.select({
             ios: {
-                paddingLeft: 4,
-                zIndex: 5,
-                position: 'absolute',
-                bottom: 0,
+                paddingLeft: isPlatformUiIos() ? 0 : 4,
             },
         }),
     },
     rightContainer: {
         alignItems: 'center',
         flexDirection: 'row',
+        flexShrink: 0,
         height: '100%',
         justifyContent: 'flex-end',
-        ...Platform.select({
-            ios: {
-                right: 4,
-                bottom: 0,
-                position: 'absolute',
-                zIndex: 2,
-            },
-        }),
     },
     rightButtonContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: isPlatformUiIos() ? PLATFORM_UI_RIGHT_BUTTON_GAP : 6,
     },
     title: {
         color: theme.sidebarHeaderTextColor,
+        flexShrink: 1,
         ...typography('Heading', 300),
     },
     titleRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
+        width: '100%',
     },
 }));
 
@@ -175,45 +173,60 @@ const Header = ({
         [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
 
     const additionalTitleStyle = useMemo(() => {
+        if (Platform.OS === 'android') {
+            return {
+                marginLeft: showBackButton && !leftComponent ? 20 : 0,
+                paddingHorizontal: 8,
+            };
+        }
+
         return {
-            marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
-            paddingHorizontal: Platform.select({
-                ios: rightButtons?.length === 2 || rightComponent ? 90 : 60,
-                android: 8,
-            }),
+            marginLeft: showBackButton ? CHROME_HEADER_TITLE_GAP : 0,
+            marginRight: 8,
         };
-    }, [leftComponent, showBackButton, rightButtons, rightComponent]);
+    }, [leftComponent, showBackButton]);
 
     return (
         <Animated.View style={containerStyle}>
             {showBackButton &&
-            <Animated.View style={styles.leftContainer}>
-                <TouchableWithFeedback
-                    borderlessRipple={true}
-                    onPress={onBackPress}
-                    rippleRadius={20}
-                    type={Platform.select({android: 'native', default: 'opacity'})}
-                    testID='navigation.header.back'
-                    hitSlop={hitSlop}
-                >
-                    <Animated.View style={styles.leftAction}>
-                        <CompassIcon
-                            size={24}
-                            name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
-                            color={theme.sidebarHeaderTextColor}
+            <Animated.View style={[styles.leftContainer, isPlatformUiIos() && platformChromeStyle]}>
+                {isPlatformUiIos() ? (
+                    <>
+                        <ChromeIconButton
+                            iconName='arrow-back-ios'
+                            onPress={() => onBackPress?.()}
+                            testID='navigation.header.back'
                         />
                         {leftComponent}
-                    </Animated.View>
-                </TouchableWithFeedback>
+                    </>
+                ) : (
+                    <TouchableWithFeedback
+                        borderlessRipple={true}
+                        onPress={onBackPress}
+                        rippleRadius={20}
+                        type={Platform.select({android: 'native', default: 'opacity'})}
+                        testID='navigation.header.back'
+                        hitSlop={hitSlop}
+                    >
+                        <Animated.View style={styles.leftAction}>
+                            <CompassIcon
+                                size={24}
+                                name={Platform.select({android: 'arrow-left', ios: 'arrow-back-ios'})!}
+                                color={theme.sidebarHeaderTextColor}
+                            />
+                            {leftComponent}
+                        </Animated.View>
+                    </TouchableWithFeedback>
+                )}
             </Animated.View>
             }
-            <Animated.View style={[styles.titleContainer, additionalTitleStyle]}>
-                <TouchableWithFeedback
-                    disabled={!onTitlePress}
-                    onPress={onTitlePress}
-                    type='opacity'
-                >
-                    <View style={styles.centered}>
+            <Animated.View style={[styles.titleContainer, additionalTitleStyle, isPlatformUiIos() && platformBarStyle]}>
+                <View style={styles.titleContent}>
+                    <TouchableWithFeedback
+                        disabled={!onTitlePress}
+                        onPress={onTitlePress}
+                        type='opacity'
+                    >
                         {!hasSearch &&
                         <View style={styles.titleRow}>
                             <Animated.Text
@@ -240,23 +253,34 @@ const Header = ({
                             {subtitleCompanion}
                         </View>
                         }
-                    </View>
-                </TouchableWithFeedback>
+                    </TouchableWithFeedback>
+                </View>
             </Animated.View>
-            <Animated.View style={styles.rightContainer}>
+            <Animated.View style={[styles.rightContainer, isPlatformUiIos() && platformChromeStyle]}>
                 {rightComponent}
                 {Boolean(rightButtons?.length) &&
-                rightButtons?.map((r) => (
-                    <NavigationButton
-                        key={r.iconName}
-                        borderless={r.borderless}
-                        iconName={r.iconName}
-                        count={r.count}
-                        onPress={r.onPress}
-                        rippleRadius={r.rippleRadius}
-                        testID={r.testID}
-                    />
-                ))
+                <View style={styles.rightButtonContainer}>
+                    {rightButtons?.map((r) => (
+                        isPlatformUiIos() && r.iconName ? (
+                            <ChromeIconButton
+                                key={r.iconName}
+                                iconName={r.iconName}
+                                onPress={r.onPress}
+                                testID={r.testID}
+                            />
+                        ) : (
+                            <NavigationButton
+                                key={r.iconName}
+                                borderless={r.borderless}
+                                iconName={r.iconName}
+                                count={r.count}
+                                onPress={r.onPress}
+                                rippleRadius={r.rippleRadius}
+                                testID={r.testID}
+                            />
+                        )
+                    ))}
+                </View>
                 }
             </Animated.View>
         </Animated.View>

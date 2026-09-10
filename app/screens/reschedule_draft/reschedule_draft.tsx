@@ -11,12 +11,12 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
 import DateTimeSelector from '@components/date_time_selector';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack} from '@screens/navigation';
 import {logDebug} from '@utils/log';
@@ -98,17 +98,13 @@ const RescheduledDraft: React.FC<Props> = ({
     }, [draft, handleUIUpdates, intl, selectedTime, serverUrl]));
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    disabled={!canSave}
-                    onPress={onSavePostMessage}
-                    testID='reschedule_draft.save.button'
-                    text={intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'})}
-                />
-            ),
-        });
-    }, [canSave, intl, navigation, onSavePostMessage, theme.sidebarHeaderTextColor]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: onSavePostMessage,
+            testID: 'reschedule_draft.save.button',
+            text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
+        }));
+    }, [canSave, intl, navigation, onSavePostMessage]);
 
     useAndroidHardwareBackHandler(Screens.RESCHEDULE_DRAFT, onClose);
 

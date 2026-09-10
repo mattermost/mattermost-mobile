@@ -73,7 +73,21 @@ export function changeOpacity(oldColor: string, opacity: number): string {
 }
 
 export function getKeyboardAppearanceFromTheme(theme: Theme) {
-    return tinyColor(theme.centerChannelBg).isLight() ? 'light' : 'dark';
+    return getColorSchemeForBackground(theme.centerChannelBg);
+}
+
+/** Light vs dark chrome for any theme color, including custom themes. */
+export function getColorSchemeForBackground(color?: string): 'light' | 'dark' {
+    if (!color) {
+        return 'dark';
+    }
+
+    return tinyColor(color).isLight() ? 'light' : 'dark';
+}
+
+/** iOS 26 chrome material that matches a theme color, including custom themes. */
+export function getChromeMaterialBlurEffect(color?: string): 'systemChromeMaterialDark' | 'systemChromeMaterialLight' {
+    return getColorSchemeForBackground(color) === 'dark' ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight';
 }
 
 export function hexToHue(hexColor: string) {

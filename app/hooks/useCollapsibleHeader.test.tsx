@@ -3,17 +3,18 @@
 
 import {act, renderHook} from '@testing-library/react-native';
 
+import {PLATFORM_UI_HEADER_HEIGHT} from '@constants/platform_ui';
 import ViewConstants from '@constants/view';
 
 import * as DeviceFunctions from './device';
 import {useCollapsibleHeader} from './header';
 
-const LARGE_HEADER_TITLE_HEIGHT = 128;
-const HEADER_OFFSET = LARGE_HEADER_TITLE_HEIGHT - ViewConstants.DEFAULT_HEADER_HEIGHT;
+const LARGE_HEADER_HEIGHT = PLATFORM_UI_HEADER_HEIGHT + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.SUBTITLE_HEIGHT;
+const HEADER_OFFSET = LARGE_HEADER_HEIGHT - PLATFORM_UI_HEADER_HEIGHT;
 
 describe('useCollapsibleHeader', () => {
     const commonHookResponse = {
-        largeHeight: LARGE_HEADER_TITLE_HEIGHT,
+        largeHeight: LARGE_HEADER_HEIGHT,
         scrollRef: expect.any(Function),
         scrollValue: expect.objectContaining({value: 0}),
         onScroll: expect.any(Object),
@@ -29,10 +30,10 @@ describe('useCollapsibleHeader', () => {
         const {result} = renderHook(() => useCollapsibleHeader(true));
 
         expect(result.current).toEqual({
-            defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
-            scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
+            defaultHeight: PLATFORM_UI_HEADER_HEIGHT,
+            scrollPaddingTop: LARGE_HEADER_HEIGHT,
             headerHeight: expect.objectContaining({
-                value: LARGE_HEADER_TITLE_HEIGHT,
+                value: LARGE_HEADER_HEIGHT,
             }),
             ...commonHookResponse,
         });
@@ -42,28 +43,31 @@ describe('useCollapsibleHeader', () => {
         const {result} = renderHook(() => useCollapsibleHeader(false));
 
         expect(result.current).toEqual({
-            defaultHeight: ViewConstants.DEFAULT_HEADER_HEIGHT,
-            scrollPaddingTop: ViewConstants.DEFAULT_HEADER_HEIGHT,
+            defaultHeight: PLATFORM_UI_HEADER_HEIGHT,
+            scrollPaddingTop: PLATFORM_UI_HEADER_HEIGHT,
             headerHeight: expect.objectContaining({
-                value: ViewConstants.DEFAULT_HEADER_HEIGHT,
+                value: PLATFORM_UI_HEADER_HEIGHT,
             }),
             ...commonHookResponse,
         });
     });
 
     it('should return the correct values with isLargeTitle is true, and on a tablet', () => {
-        jest.spyOn(DeviceFunctions, 'useIsTablet').mockReturnValue(true);
+        const tabletSpy = jest.spyOn(DeviceFunctions, 'useIsTablet').mockReturnValue(true);
 
         const {result} = renderHook(() => useCollapsibleHeader(true));
 
         expect(result.current).toEqual({
             defaultHeight: ViewConstants.TABLET_HEADER_HEIGHT,
-            scrollPaddingTop: LARGE_HEADER_TITLE_HEIGHT,
+            scrollPaddingTop: ViewConstants.TABLET_HEADER_HEIGHT + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.SUBTITLE_HEIGHT,
             headerHeight: expect.objectContaining({
-                value: LARGE_HEADER_TITLE_HEIGHT,
+                value: ViewConstants.TABLET_HEADER_HEIGHT + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.SUBTITLE_HEIGHT,
             }),
             ...commonHookResponse,
+            largeHeight: ViewConstants.TABLET_HEADER_HEIGHT + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.SUBTITLE_HEIGHT,
         });
+
+        tabletSpy.mockRestore();
     });
 
     it('should change the lock value when hideHeader is called', () => {
@@ -73,7 +77,7 @@ describe('useCollapsibleHeader', () => {
 
         act(() => result.current.hideHeader(true));
 
-        expect(result.current.lockValue).toBe(ViewConstants.DEFAULT_HEADER_HEIGHT);
+        expect(result.current.lockValue).toBe(PLATFORM_UI_HEADER_HEIGHT);
     });
 
     it('should reset the lockValue when unlock is called', () => {
@@ -81,7 +85,7 @@ describe('useCollapsibleHeader', () => {
 
         act(() => result.current.hideHeader(true));
 
-        expect(result.current.lockValue).toBe(ViewConstants.DEFAULT_HEADER_HEIGHT);
+        expect(result.current.lockValue).toBe(PLATFORM_UI_HEADER_HEIGHT);
 
         act(() => result.current.unlock());
 

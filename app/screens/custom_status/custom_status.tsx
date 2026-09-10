@@ -11,7 +11,6 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
-import NavigationButton from '@components/navigation_button';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES, CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -19,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {navigateBack, navigateToScreen, navigateToScreenWithBaseRoute} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
@@ -311,17 +311,13 @@ const CustomStatus = ({
     useAndroidHardwareBackHandler(Screens.CUSTOM_STATUS, handleBackButton);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSetStatus}
-                    text={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
-                    testID='custom_status.done.button'
-                    disabled={!isBtnEnabled}
-                />
-            ),
-        });
-    }, [handleSetStatus, intl, isBtnEnabled, navigation, theme.sidebarHeaderTextColor]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !isBtnEnabled,
+            onPress: handleSetStatus,
+            testID: 'custom_status.done.button',
+            text: intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'}),
+        }));
+    }, [handleSetStatus, intl, isBtnEnabled, navigation]);
 
     return (
         <View style={style.flex}>

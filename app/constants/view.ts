@@ -4,7 +4,7 @@
 import {Platform} from 'react-native';
 
 export const BOTTOM_TAB_HEIGHT = 52;
-export const BOTTOM_TAB_ICON_SIZE = 31.2;
+export const BOTTOM_TAB_ICON_SIZE = 24;
 export const BOTTOM_TAB_PROFILE_PHOTO_SIZE = 22;
 export const BOTTOM_TAB_STATUS_SIZE = 12;
 

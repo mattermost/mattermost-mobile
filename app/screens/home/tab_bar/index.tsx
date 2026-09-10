@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, View, TouchableOpacity} from 'react-native';
+import {DeviceEventEmitter, View, Pressable} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -81,7 +81,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
 
     useEffect(() => {
         const listner = DeviceEventEmitter.addListener(NavigationConstants.NAVIGATION_HOME, () => {
-            navigation.navigate(Screens.HOME);
+            navigation.navigate(Screens.CHANNEL_LIST);
         });
 
         return () => listner.remove();
@@ -182,7 +182,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                         };
 
                         return (
-                            <TouchableOpacity
+                            <Pressable
                                 key={route.name}
                                 accessibilityRole='button'
                                 accessibilityState={isFocused ? {selected: true} : {}}
@@ -190,10 +190,10 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                                 testID={options.tabBarButtonTestID}
                                 onPress={onPress}
                                 onLongPress={onLongPress}
-                                style={style.item}
+                                style={({pressed}) => [style.item, pressed && {opacity: 0.72}]}
                             >
                                 {renderOption()}
-                            </TouchableOpacity>
+                            </Pressable>
                         );
                     })}
                 </Animated.View>

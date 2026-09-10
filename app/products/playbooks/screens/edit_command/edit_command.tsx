@@ -6,10 +6,10 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
@@ -57,16 +57,12 @@ const CreateOrEditChannel = ({
     }, [command]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onEditCommand}
-                    testID='playbooks.edit_command.save.button'
-                    text={intl.formatMessage({id: 'playbooks.edit_command.save.button', defaultMessage: 'Save'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: onEditCommand,
+            testID: 'playbooks.edit_command.save.button',
+            text: intl.formatMessage({id: 'playbooks.edit_command.save.button', defaultMessage: 'Save'}),
+        }));
     }, [navigation, onEditCommand, intl, canSave]);
 
     useBackNavigation(removeCallback);

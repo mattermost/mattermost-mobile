@@ -60,8 +60,8 @@ describe('Search - Recent Mentions (empty state)', () => {
     it('MM-T4909_1 - should match elements on recent mentions screen', async () => {
         await RecentMentionsScreen.open();
 
-        await expect(RecentMentionsScreen.largeHeaderTitle).toHaveText('Recent Mentions');
-        await expect(RecentMentionsScreen.largeHeaderSubtitle).toHaveText('Messages you\'ve been mentioned in');
+        await RecentMentionsScreen.expectTitle('Recent Mentions');
+        await RecentMentionsScreen.expectSubtitle('Messages you\'ve been mentioned in');
         await expect(RecentMentionsScreen.emptyTitle).toHaveText('No Mentions yet');
         await expect(RecentMentionsScreen.emptyParagraph).toHaveText('You\'ll see messages here when someone mentions you or uses terms you\'re monitoring.');
 

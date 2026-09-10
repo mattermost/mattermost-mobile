@@ -7,10 +7,10 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
@@ -66,16 +66,12 @@ const EditChecklistItemBottomSheet = ({
     }, [title, description]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSave}
-                    testID='playbooks.checklist_item.edit.save.button'
-                    text={formatMessage({id: 'playbooks.checklist_item.edit.save', defaultMessage: 'Save'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: handleSave,
+            testID: 'playbooks.checklist_item.edit.save.button',
+            text: formatMessage({id: 'playbooks.checklist_item.edit.save', defaultMessage: 'Save'}),
+        }));
     }, [navigation, handleSave, formatMessage, canSave]);
 
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_EDIT_CHECKLIST_ITEM, close);

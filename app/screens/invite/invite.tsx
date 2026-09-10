@@ -2,18 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useState, useRef, useMemo} from 'react';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, View, type LayoutChangeEvent} from 'react-native';
 
 import {searchProfiles} from '@actions/remote/user';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useKeyboardOverlap} from '@hooks/device';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -210,21 +210,22 @@ export default function Invite({
         }, TIMEOUT_MILLISECONDS);
     }, [handleSend]);
 
-    const sendButton = useMemo(() => (
-        <NavigationButton
-            onPress={handleSend}
-            testID='invite.send.button'
-            text={formatMessage({id: 'invite.send_invite', defaultMessage: 'Send'})}
-            disabled={!hasSelection}
-        />
-    ), [handleSend, hasSelection, formatMessage]);
-
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (isSelecting ? sendButton : undefined),
-        });
+        if (isSelecting) {
+            navigation.setOptions(withChromeHeaderTextButton({
+                disabled: !hasSelection,
+                onPress: handleSend,
+                testID: 'invite.send.button',
+                text: formatMessage({id: 'invite.send_invite', defaultMessage: 'Send'}),
+            }));
+            return;
+        }
 
-    }, [theme, hasSelection, isSelecting, formatMessage, navigation, sendButton]);
+        navigation.setOptions({
+            headerRight: undefined,
+            unstable_headerRightItems: undefined,
+        });
+    }, [formatMessage, handleSend, hasSelection, isSelecting, navigation]);
 
     useEffect(() => {
         navigation.setOptions({

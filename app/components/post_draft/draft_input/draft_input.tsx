@@ -1,16 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {useAnimatedReaction} from 'react-native-reanimated';
+import {DeviceEventEmitter, type LayoutChangeEvent, Platform, ScrollView, StyleSheet, View} from 'react-native';
+import {useAnimatedKeyboard} from 'react-native-keyboard-controller';
+import Animated, {useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {isAndroidEdgeToEdge} from '@constants/device';
+import {FLOATING_CHROME_SHADOW, FLOATING_COMPOSE_FOCUSED_HORIZONTAL_INSET, FLOATING_COMPOSE_HORIZONTAL_INSET, FLOATING_COMPOSE_PILL_INSET, FLOATING_COMPOSE_TAB_GAP, getFloatingComposeRestingInset, isPlatformUiIos} from '@constants/platform_ui';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -84,6 +86,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 2,
             }),
         },
+        floatingActionsContainer: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+
+            // Pill already applies FLOATING_COMPOSE_PILL_INSET (8) — keep bottom flush so
+            // icon clearance matches the left inset used by the quick-action buttons.
+            paddingBottom: 0,
+            paddingTop: 8,
+        },
         inputContainer: {
             flex: 1,
             flexDirection: 'column',
@@ -94,6 +106,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 ios: 7,
                 android: 0,
             }),
+        },
+        floatingInputContentContainer: {
+            alignItems: 'stretch',
+            paddingTop: 0,
         },
         inputWrapper: {
             alignItems: 'flex-end',
@@ -106,6 +122,45 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.20),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
+        },
+
+        // Outer wrapper carries the soft floating-chrome shadow (overflow:hidden would clip it).
+        floatingComposeShadow: {
+            ...FLOATING_CHROME_SHADOW,
+        },
+        floatingComposeResting: {
+            marginHorizontal: FLOATING_COMPOSE_HORIZONTAL_INSET,
+        },
+        floatingComposeFocused: {
+            marginHorizontal: FLOATING_COMPOSE_FOCUSED_HORIZONTAL_INSET,
+        },
+
+        // Opaque floating pill — GlassView over the post list washes out channel content on iOS 26.
+        floatingInput: {
+            alignItems: 'center',
+            backgroundColor: theme.centerChannelBg,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+            borderWidth: StyleSheet.hairlineWidth,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            padding: FLOATING_COMPOSE_PILL_INSET,
+        },
+        floatingInputResting: {
+            borderRadius: 40,
+        },
+        floatingInputFocused: {
+            borderRadius: 28,
+        },
+        restingRow: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            minHeight: 40,
+        },
+        restingInputWrap: {
+            flex: 1,
+            justifyContent: 'center',
+            minWidth: 0,
         },
         postPriorityLabel: {
             marginLeft: 12,
@@ -151,9 +206,30 @@ function DraftInput({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const currentScreen = useCurrentScreen();
-    const [layoutHeight, setLayoutHeight] = React.useState(0);
+    const [layoutHeight, setLayoutHeight] = useState(0);
     const {bottom} = useSafeAreaInsets();
     const {inputRef, stateContext, blurAndDismissKeyboard} = useKeyboardState();
+    const [focused, setFocused] = useState(false);
+    const platformUi = isPlatformUiIos();
+    const animatedKeyboard = useAnimatedKeyboard();
+    const restingInset = getFloatingComposeRestingInset(bottom);
+
+    const updateFocused = useCallback((next: boolean) => {
+        setFocused(next);
+        setIsFocused(next);
+    }, [setIsFocused]);
+
+    const setTabBarVisible = useCallback((show: boolean) => {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, show);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (isPlatformUiIos()) {
+                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+            }
+        };
+    }, []);
 
     const focus = useCallback(() => {
         inputRef.current?.focus();
@@ -169,13 +245,61 @@ function DraftInput({
         return SAFE_AREA_VIEW_EDGES;
     }, [isTablet, currentScreen]);
 
+    // Resting inset keeps compose above NativeTabs. Software keyboard / emoji picker
+    // lift is applied below; hardware-keyboard focus stays at restingInset (height 0).
+    const getComposeBottomMargin = useCallback(() => {
+        if (!platformUi) {
+            return bottom;
+        }
+
+        const lift = Math.max(animatedKeyboard.height.value, stateContext.inputAccessoryHeight.value);
+        return lift > 0 ? lift + FLOATING_COMPOSE_TAB_GAP : restingInset;
+    }, [animatedKeyboard, bottom, platformUi, restingInset, stateContext.inputAccessoryHeight]);
+
+    const floatingPositionStyle = useAnimatedStyle(() => {
+        // Full keyboard (incl. predictive bar) or emoji accessory — sit GAP above it.
+        // Avoids postInputTranslateY safe-area/tab math that left the pill behind the keyboard.
+        // List clearance uses this margin via KeyboardAware onLayout; contentInset stays 0 on platform UI.
+        const lift = Math.max(animatedKeyboard.height.value, stateContext.inputAccessoryHeight.value);
+        return {
+            marginBottom: lift > 0 ? lift + FLOATING_COMPOSE_TAB_GAP : restingInset,
+        };
+    }, [restingInset, animatedKeyboard, stateContext.inputAccessoryHeight]);
+
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         const {height} = e.nativeEvent.layout;
         setLayoutHeight(height);
         if (!isAndroidEdgeToEdge) {
-            updatePostInputTop(height + bottom);
+            // Platform UI marginBottom is the full offset from the screen bottom; do not add safe area again.
+            updatePostInputTop(height + getComposeBottomMargin());
         }
-    }, [bottom, updatePostInputTop]);
+    }, [getComposeBottomMargin, updatePostInputTop]);
+
+    useEffect(() => {
+        if (!isAndroidEdgeToEdge && platformUi && layoutHeight) {
+            updatePostInputTop(layoutHeight + getComposeBottomMargin());
+        }
+    }, [getComposeBottomMargin, layoutHeight, platformUi, updatePostInputTop]);
+
+    useAnimatedReaction(
+        () => Math.max(animatedKeyboard.height.value, stateContext.inputAccessoryHeight.value),
+        (lift, previousLift) => {
+            if (platformUi) {
+                const occupied = lift > 0;
+                const wasOccupied = (previousLift ?? 0) > 0;
+                if (occupied !== wasOccupied) {
+                    scheduleOnRN(setTabBarVisible, !occupied);
+                }
+            }
+
+            if (!platformUi || isAndroidEdgeToEdge || !layoutHeight) {
+                return;
+            }
+            const margin = lift > 0 ? lift + FLOATING_COMPOSE_TAB_GAP : restingInset;
+            scheduleOnRN(updatePostInputTop, layoutHeight + margin);
+        },
+        [layoutHeight, platformUi, restingInset, setTabBarVisible, updatePostInputTop, animatedKeyboard, stateContext.inputAccessoryHeight],
+    );
 
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -221,35 +345,59 @@ function DraftInput({
         [layoutHeight, updatePostInputTop, bottom, stateContext.postInputTranslateY],
     );
 
-    return (
-        <>
-            <RewritingIndicator/>
-            <Typing
-                channelId={channelId}
-                rootId={rootId}
+    const resting = platformUi && !focused;
+    const showExpandedActions = !platformUi || focused;
+
+    const quickActions = (
+        <QuickActions
+            testID={quickActionsTestID}
+            fileCount={files.length}
+            addFiles={addFiles}
+            updateValue={updateValue}
+            value={value}
+            postPriority={postPriority}
+            updatePostPriority={updatePostPriority}
+            canShowPostPriority={canShowPostPriority}
+            postBoRConfig={postBoRConfig}
+            updatePostBoRStatus={updatePostBoRStatus}
+            focus={focus}
+            location={location}
+            compact={resting}
+            floating={platformUi}
+        />
+    );
+
+    const sendAction = (
+        <SendAction
+            testID={sendActionTestID}
+            disabled={sendActionDisabled}
+            sendMessage={handleSendMessage}
+            showScheduledPostOptions={handleShowScheduledPostOptions}
+            scheduledPostEnabled={scheduledPostsEnabled}
+            circular={platformUi}
+        />
+    );
+
+    const inputBody = (
+        <ScrollView
+            style={style.inputContainer}
+            contentContainerStyle={platformUi ? style.floatingInputContentContainer : style.inputContentContainer}
+            keyboardShouldPersistTaps={'always'}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            pinchGestureEnabled={false}
+            overScrollMode={'never'}
+            disableScrollViewPanResponder={true}
+        >
+            <Header
+                noMentionsError={noMentionsError}
+                postPriority={postPriority}
+                postBoRConfig={postBoRConfig}
             />
-            <SafeAreaView
-                edges={edges}
-                onLayout={handleLayout}
-                style={style.inputWrapper}
-                testID={testID}
-            >
-                <ScrollView
-                    style={style.inputContainer}
-                    contentContainerStyle={style.inputContentContainer}
-                    keyboardShouldPersistTaps={'always'}
-                    scrollEnabled={false}
-                    showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}
-                    pinchGestureEnabled={false}
-                    overScrollMode={'never'}
-                    disableScrollViewPanResponder={true}
-                >
-                    <Header
-                        noMentionsError={noMentionsError}
-                        postPriority={postPriority}
-                        postBoRConfig={postBoRConfig}
-                    />
+            <View style={resting ? style.restingRow : undefined}>
+                {resting && quickActions}
+                <View style={resting ? style.restingInputWrap : undefined}>
                     <PostInput
                         testID={postInputTestID}
                         channelId={channelId}
@@ -261,40 +409,64 @@ function DraftInput({
                         value={value}
                         addFiles={addFiles}
                         sendMessage={handleSendMessage}
-                        setIsFocused={setIsFocused}
+                        setIsFocused={updateFocused}
                     />
-                    <Uploads
-                        currentUserId={currentUserId}
-                        files={files}
-                        uploadFileError={uploadFileError}
-                        channelId={channelId}
-                        rootId={rootId}
-                    />
-                    <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                            postPriority={postPriority}
-                            updatePostPriority={updatePostPriority}
-                            canShowPostPriority={canShowPostPriority}
-                            postBoRConfig={postBoRConfig}
-                            updatePostBoRStatus={updatePostBoRStatus}
-                            focus={focus}
-                            location={location}
-                        />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={sendActionDisabled}
-                            sendMessage={handleSendMessage}
-                            showScheduledPostOptions={handleShowScheduledPostOptions}
-                            scheduledPostEnabled={scheduledPostsEnabled}
-                        />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
+                </View>
+                {resting && sendAction}
+            </View>
+            <Uploads
+                currentUserId={currentUserId}
+                files={files}
+                uploadFileError={uploadFileError}
+                channelId={channelId}
+                rootId={rootId}
+            />
+            {showExpandedActions && (
+                <View style={platformUi ? style.floatingActionsContainer : style.actionsContainer}>
+                    {quickActions}
+                    {sendAction}
+                </View>
+            )}
+        </ScrollView>
+    );
+
+    return (
+        <>
+            <RewritingIndicator/>
+            <Typing
+                channelId={channelId}
+                rootId={rootId}
+            />
+            {platformUi ? (
+                <Animated.View
+                    style={[
+                        style.floatingComposeShadow,
+                        focused ? style.floatingComposeFocused : style.floatingComposeResting,
+                        floatingPositionStyle,
+                    ]}
+                >
+                    <SafeAreaView
+                        edges={edges}
+                        onLayout={handleLayout}
+                        style={[
+                            style.floatingInput,
+                            focused ? style.floatingInputFocused : style.floatingInputResting,
+                        ]}
+                        testID={testID}
+                    >
+                        {inputBody}
+                    </SafeAreaView>
+                </Animated.View>
+            ) : (
+                <SafeAreaView
+                    edges={edges}
+                    onLayout={handleLayout}
+                    style={style.inputWrapper}
+                    testID={testID}
+                >
+                    {inputBody}
+                </SafeAreaView>
+            )}
         </>
     );
 }

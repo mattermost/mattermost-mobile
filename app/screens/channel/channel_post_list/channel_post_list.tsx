@@ -10,7 +10,9 @@ import {fetchPosts, fetchPostsBefore} from '@actions/remote/post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {useAppState, useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
 import useDidUpdate from '@hooks/did_update';
@@ -43,6 +45,7 @@ const ChannelPostList = ({
 }: Props) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
+    const theme = useTheme();
     const serverUrl = useServerUrl();
     const canLoadPostsBefore = useRef(true);
     const canLoadPost = useRef(true);
@@ -136,7 +139,7 @@ const ChannelPostList = ({
     return (
         <SafeAreaView
             edges={edges}
-            style={styles.flex}
+            style={[styles.flex, isPlatformUiIos() && {backgroundColor: theme.centerChannelBg}]}
         >
             {postList}
         </SafeAreaView>

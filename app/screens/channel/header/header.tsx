@@ -13,9 +13,9 @@ import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import NavigationHeader from '@components/navigation_header';
 import {ITEM_HEIGHT} from '@components/option_item';
-import OtherMentionsBadge from '@components/other_mentions_badge';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, General, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -35,7 +35,6 @@ import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 import type {NavigationButtonProps} from '@components/navigation_button';
 
 type ChannelProps = {
-    canAddBookmarks: boolean;
     channelId: string;
     channelType: ChannelType;
     currentUserId: string;
@@ -88,7 +87,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const ChannelHeader = ({
-    canAddBookmarks,
     channelId,
     channelType,
     currentUserId,
@@ -133,14 +131,6 @@ const ChannelHeader = ({
     const contextStyle = useMemo(() => ({
         top: defaultHeight,
     }), [defaultHeight]);
-
-    const leftComponent = useMemo(() => {
-        if (isTablet || !channelId || !teamId) {
-            return undefined;
-        }
-
-        return (<OtherMentionsBadge channelId={channelId}/>);
-    }, [isTablet, channelId, teamId]);
 
     const onBackPress = useCallback(() => {
         DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
@@ -311,12 +301,12 @@ const ChannelHeader = ({
     }, [channelId, serverUrl, isPlaybooksEnabled]);
 
     const showBookmarkBar = isBookmarksEnabled && hasBookmarks && shouldRenderBookmarks;
+    const platformUi = isPlatformUiIos();
 
     return (
         <>
             <NavigationHeader
                 isLargeTitle={false}
-                leftComponent={leftComponent}
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
@@ -326,21 +316,21 @@ const ChannelHeader = ({
                 title={title}
                 titleCompanion={titleCompanion}
             />
+            {!platformUi &&
             <View style={contextStyle}>
                 <RoundedHeaderContext/>
             </View>
-            {showBookmarkBar &&
+            }
+            {!platformUi && showBookmarkBar &&
             <ChannelHeaderBookmarks
-                canAddBookmarks={canAddBookmarks}
                 channelId={channelId}
             />
             }
-            {
-                shouldRenderChannelBanner &&
-                <ChannelBanner
-                    channelId={channelId}
-                    isTopItem={!showBookmarkBar}
-                />
+            {!platformUi && shouldRenderChannelBanner &&
+            <ChannelBanner
+                channelId={channelId}
+                isTopItem={!showBookmarkBar}
+            />
             }
         </>
     );

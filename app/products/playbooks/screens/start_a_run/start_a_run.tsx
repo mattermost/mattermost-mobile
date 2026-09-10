@@ -10,13 +10,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FloatingAutocompleteSelector from '@components/floating_input/floating_autocomplete_selector';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
-import NavigationButton from '@components/navigation_button';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {createPlaybookRun} from '@playbooks/actions/remote/runs';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
@@ -106,17 +106,12 @@ function StartARun({
     }, [runName, serverUrl, playbook.id, currentUserId, currentTeamId, runDescription, selectedChannelId, channelOption, createPublicChannel]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleStartRun}
-                    testID='start_a_run.create.button'
-                    disabled={!canSave}
-                    text={intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'})}
-                />
-
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: handleStartRun,
+            testID: 'start_a_run.create.button',
+            text: intl.formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'}),
+        }));
     }, [theme, intl, canSave, navigation, handleStartRun]);
 
     const close = useCallback(() => {

@@ -2,22 +2,25 @@
 // See LICENSE.txt for license information.
 
 import {Q, type Database} from '@nozbe/watermelondb';
+import {useHeaderHeight} from '@react-navigation/elements';
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, type ListRenderItemInfo, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {fetchSavedPosts} from '@actions/remote/post';
+import SheetTabBarScrim, {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
+import {CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {PostConfigProvider} from '@context/post_config';
 import {useServerUrl} from '@context/server';
@@ -30,6 +33,7 @@ import {useCurrentScreen} from '@store/navigation_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getTimezone} from '@utils/user';
 
 import EmptyState from './components/empty';
@@ -47,16 +51,23 @@ type Props = {
 
 const edges: Edge[] = ['left', 'right'];
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     flex: {
         flex: 1,
+    },
+    sheet: {
+        backgroundColor: theme.centerChannelBg,
+        borderTopLeftRadius: CHANNEL_SHEET_RADIUS,
+        borderTopRightRadius: CHANNEL_SHEET_RADIUS,
+        flex: 1,
+        overflow: 'hidden',
     },
     empty: {
         alignItems: 'center',
         flex: 1,
         justifyContent: 'center',
     },
-});
+}));
 
 function observeSavedPosts(database: Database) {
     return querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
@@ -77,6 +88,8 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
+    const nativeHeaderHeight = useHeaderHeight();
     const serverUrl = useServerUrl();
     const currentTimezone = useMemo(() => getTimezone(currentUser.timezone), [currentUser.timezone]);
     const route = useRoute();
@@ -85,14 +98,16 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     const isBottomSheetOpen = currentScreen && SCREENS_AS_BOTTOM_SHEET.has(currentScreen);
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
+    const platformUi = isPlatformUiIos();
 
     useAndroidHomeTabBackHandler(Screens.SAVED_MESSAGES);
 
-    const params = route.params as {direction: string};
-    const toLeft = params.direction === 'left';
+    // NativeTabs does not pass direction; JS TabBar still does for slide animation.
+    const params = route.params as {direction?: string} | undefined;
+    const toLeft = params?.direction === 'left';
     const translateSide = toLeft ? -25 : 25;
-    const opacity = useSharedValue(isFocused ? 1 : 0);
-    const translateX = useSharedValue(isFocused ? 0 : translateSide);
+    const opacity = useSharedValue(isFocused || platformUi ? 1 : 0);
+    const translateX = useSharedValue(isFocused || platformUi ? 0 : translateSide);
 
     const title = intl.formatMessage({id: 'screen.saved_messages.title', defaultMessage: 'Saved Messages'});
     const subtitle = intl.formatMessage({id: 'screen.saved_messages.subtitle', defaultMessage: 'All messages you\'ve saved for follow up'});
@@ -102,9 +117,15 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     };
 
     useEffect(() => {
+        if (platformUi) {
+            opacity.value = 1;
+            translateX.value = 0;
+            return;
+        }
+
         opacity.value = isFocused ? 1 : 0;
         translateX.value = isFocused ? 0 : translateSide;
-    }, [isFocused, opacity, translateSide, translateX]);
+    }, [isFocused, opacity, platformUi, translateSide, translateX]);
 
     useEffect(() => {
         if (!isFocused) {
@@ -127,12 +148,17 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
         }
     }, [serverUrl, isFocused]);
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
+    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<Animated.FlatList<string>>(!platformUi, platformUi ? undefined : onSnap);
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const paddingTop = useMemo(() => ({
+        paddingTop: platformUi ? 0 : scrollPaddingTop,
+        paddingBottom: scrimPadding,
+        flexGrow: 1,
+    }), [platformUi, scrollPaddingTop, scrimPadding]);
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, currentTimezone, false).reverse(), [currentTimezone, posts]);
 
     const animated = useAnimatedStyle(() => {
-        if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
+        if (platformUi || isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
             return {};
         }
 
@@ -140,7 +166,7 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
             opacity: withTiming(opacity.value, {duration: 150}),
             transform: [{translateX: withTiming(translateX.value, {duration: 150})}],
         };
-    }, [isBottomSheetOpen, isPemalinkScreen, isGalleryScreen]);
+    }, [isBottomSheetOpen, isGalleryScreen, isPemalinkScreen, platformUi]);
 
     const top = useAnimatedStyle(() => {
         return {
@@ -180,7 +206,7 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
                 <EmptyState/>
             )}
         </View>
-    ), [loading, theme.buttonBg]);
+    ), [loading, styles.empty, theme.buttonBg]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -213,42 +239,71 @@ function SavedMessages({appsEnabled, currentUser, customEmojiNames, database}: P
     return (
         <SafeAreaView
             edges={edges}
-            style={styles.flex}
+            style={[styles.flex, platformUi && {backgroundColor: theme.sidebarBg}]}
             testID='saved_messages.screen'
         >
-            <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                subtitle={subtitle}
-                title={title}
-                hasSearch={false}
-                scrollValue={scrollValue}
-            />
-            <Animated.View style={[styles.flex, animated]}>
-                <Animated.View style={top}>
-                    <RoundedHeaderContext/>
+            {!platformUi && (
+                <NavigationHeader
+                    isLargeTitle={true}
+                    showBackButton={false}
+                    subtitle={subtitle}
+                    title={title}
+                    hasSearch={false}
+                    scrollValue={scrollValue}
+                />
+            )}
+            {platformUi ? (
+                <View style={[styles.sheet, {marginTop: nativeHeaderHeight}]}>
+                    <PostConfigProvider>
+                        <Animated.FlatList
+                            ref={scrollRef}
+                            contentContainerStyle={paddingTop}
+                            contentInsetAdjustmentBehavior='never'
+                            ListEmptyComponent={emptyList}
+                            data={data}
+                            onRefresh={handleRefresh}
+                            refreshing={refreshing}
+                            renderItem={renderItem}
+                            scrollToOverflowEnabled={true}
+                            showsVerticalScrollIndicator={false}
+                            progressViewOffset={0}
+                            scrollEventThrottle={16}
+                            indicatorStyle='black'
+                            removeClippedSubviews={false}
+                            onViewableItemsChanged={onViewableItemsChanged}
+                            testID='saved_messages.post_list.flat_list'
+                        />
+                    </PostConfigProvider>
+                    <SheetTabBarScrim/>
+                </View>
+            ) : (
+                <Animated.View style={[styles.flex, animated]}>
+                    <Animated.View style={top}>
+                        <RoundedHeaderContext/>
+                    </Animated.View>
+                    <PostConfigProvider>
+                        <Animated.FlatList
+                            ref={scrollRef}
+                            contentContainerStyle={paddingTop}
+                            contentInsetAdjustmentBehavior='never'
+                            ListEmptyComponent={emptyList}
+                            data={data}
+                            onRefresh={handleRefresh}
+                            refreshing={refreshing}
+                            renderItem={renderItem}
+                            scrollToOverflowEnabled={true}
+                            showsVerticalScrollIndicator={false}
+                            progressViewOffset={scrollPaddingTop}
+                            scrollEventThrottle={16}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            removeClippedSubviews={true}
+                            onViewableItemsChanged={onViewableItemsChanged}
+                            testID='saved_messages.post_list.flat_list'
+                        />
+                    </PostConfigProvider>
                 </Animated.View>
-                <PostConfigProvider>
-                    <Animated.FlatList
-                        ref={scrollRef}
-                        contentContainerStyle={paddingTop}
-                        ListEmptyComponent={emptyList}
-                        data={data}
-                        onRefresh={handleRefresh}
-                        refreshing={refreshing}
-                        renderItem={renderItem}
-                        scrollToOverflowEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                        progressViewOffset={scrollPaddingTop}
-                        scrollEventThrottle={16}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        removeClippedSubviews={true}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        testID='saved_messages.post_list.flat_list'
-                    />
-                </PostConfigProvider>
-            </Animated.View>
+            )}
         </SafeAreaView>
     );
 }

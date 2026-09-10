@@ -5,14 +5,17 @@ import {useNavigation, useRouter} from 'expo-router';
 import React, {useEffect, useLayoutEffect} from 'react';
 import {Platform, View} from 'react-native';
 
+import ChromeIconButton from '@components/chrome/chrome_icon_button';
+import ChromeTextButton from '@components/chrome/chrome_text_button';
 import NavigationButton from '@components/navigation_button';
 import Header from '@components/navigation_header/header';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useTheme} from '@context/theme';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {navigateBack} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
-import type {NativeStackHeaderProps, NativeStackNavigationOptions} from '@react-navigation/native-stack';
+import type {NativeStackHeaderItem, NativeStackHeaderProps, NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import type {ScreenProps} from 'react-native-screens';
 
 /**
@@ -134,8 +137,118 @@ export function getLoginModalHeaderOptions(theme: Theme, onClose?: () => void, t
     };
 }
 
-export function getHeaderOptions(theme: Theme): NativeStackNavigationOptions {
+/**
+ * Wraps a header button so iOS 26 system liquid glass is suppressed
+ * (hidesSharedBackground) while theme-adapted chrome is shown.
+ * Keeps headerLeft/headerRight for Android/tablet and for tests that call them.
+ */
+export function withChromeHeaderLeft(element: React.ReactElement): Pick<NativeStackNavigationOptions, 'headerLeft' | 'unstable_headerLeftItems'> {
+    const headerLeft = () => element;
+
+    if (!isPlatformUiIos()) {
+        return {headerLeft};
+    }
+
     return {
+        headerLeft,
+        unstable_headerLeftItems: (): NativeStackHeaderItem[] => [{
+            type: 'custom',
+            hidesSharedBackground: true,
+            element,
+        }],
+    };
+}
+
+export function withChromeHeaderRight(element: React.ReactElement): Pick<NativeStackNavigationOptions, 'headerRight' | 'unstable_headerRightItems'> {
+    const headerRight = () => element;
+
+    if (!isPlatformUiIos()) {
+        return {headerRight};
+    }
+
+    return {
+        headerRight,
+        unstable_headerRightItems: (): NativeStackHeaderItem[] => [{
+            type: 'custom',
+            hidesSharedBackground: true,
+            element,
+        }],
+    };
+}
+
+/**
+ * Text action for sidebarBg native headers (Save, Done, Create, etc.).
+ * Uses theme-adapted chrome on iPhone platform UI; plain NavigationButton elsewhere.
+ */
+export function withChromeHeaderTextButton(props: {
+    disabled?: boolean;
+    onPress: () => void;
+    testID?: string;
+    text: string;
+}): Pick<NativeStackNavigationOptions, 'headerRight' | 'unstable_headerRightItems'> {
+    const element = isPlatformUiIos() ? (
+        <ChromeTextButton
+            disabled={props.disabled}
+            onPress={props.onPress}
+            testID={props.testID}
+            text={props.text}
+        />
+    ) : (
+        <NavigationButton
+            disabled={props.disabled}
+            onPress={props.onPress}
+            testID={props.testID}
+            text={props.text}
+        />
+    );
+
+    return withChromeHeaderRight(element);
+}
+
+/**
+ * Native large-title header for iPhone home tabs (Mentions, Saved, Profile, Search).
+ * Android and tablet keep the JS NavigationHeader, so the nested stack header stays hidden.
+ */
+export function getHomeTabHeaderOptions(theme: Theme): NativeStackNavigationOptions {
+    if (!isPlatformUiIos()) {
+        return {
+            headerShown: false,
+            contentStyle: {backgroundColor: theme.centerChannelBg},
+        };
+    }
+
+    const largeTitleFont = typography('Heading', 800, 'SemiBold');
+
+    return {
+        headerShown: true,
+        headerLargeTitleEnabled: true,
+        headerShadowVisible: false,
+        headerLargeTitleShadowVisible: false,
+        headerBackVisible: false,
+        headerTintColor: theme.sidebarHeaderTextColor,
+
+        // The collapsed bar carries the brand color; the expanded one must stay transparent
+        // because iOS 26 hides the large title behind any bar background or blur.
+        headerStyle: {backgroundColor: theme.sidebarBg},
+        headerLargeStyle: {backgroundColor: 'transparent'},
+
+        // Compact title sits on sidebarBg, the large title on the content behind the bar.
+        headerTitleStyle: {
+            ...typography('Heading', 300, 'SemiBold'),
+            color: theme.sidebarHeaderTextColor,
+        },
+        headerLargeTitleStyle: {
+            color: theme.sidebarHeaderTextColor,
+            fontFamily: largeTitleFont.fontFamily,
+            fontSize: largeTitleFont.fontSize,
+            fontWeight: largeTitleFont.fontWeight?.toString(),
+        },
+        contentStyle: {backgroundColor: theme.sidebarBg},
+    };
+}
+
+export function getHeaderOptions(theme: Theme): NativeStackNavigationOptions {
+    const options: NativeStackNavigationOptions = {
         headerShown: true,
         animation: 'default',
         presentation: 'card',
@@ -143,6 +256,7 @@ export function getHeaderOptions(theme: Theme): NativeStackNavigationOptions {
         headerStyle: {
             backgroundColor: theme.sidebarBg,
         },
+        headerTitleAlign: 'left',
         headerTitleStyle: {
             ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
@@ -151,9 +265,52 @@ export function getHeaderOptions(theme: Theme): NativeStackNavigationOptions {
         headerBackButtonDisplayMode: 'minimal',
         headerBackVisible: true,
     };
+
+    if (isPlatformUiIos()) {
+        options.headerBackVisible = false;
+        options.unstable_headerLeftItems = ({canGoBack}) => {
+            if (!canGoBack) {
+                return [];
+            }
+
+            return [{
+                type: 'custom',
+                hidesSharedBackground: true,
+                element: (
+                    <ChromeIconButton
+                        iconName='arrow-back-ios'
+                        onPress={navigateBack}
+                        testID='navigation.header.back'
+                    />
+                ),
+            }];
+        };
+    }
+
+    return options;
 }
 
 export function getModalHeaderOptions(theme: Theme, onClose: () => void, testID?: string): NativeStackNavigationOptions {
+    const closeButton = (
+        <View style={{marginRight: Platform.select({android: 20})}}>
+            {isPlatformUiIos() ? (
+                <ChromeIconButton
+                    iconName='close'
+                    iconSize={24}
+                    onPress={onClose}
+                    testID={testID}
+                />
+            ) : (
+                <NavigationButton
+                    onPress={onClose}
+                    iconName='close'
+                    iconSize={24}
+                    testID={testID}
+                />
+            )}
+        </View>
+    );
+
     return {
         headerShown: true,
         animation: 'slide_from_bottom',
@@ -162,20 +319,12 @@ export function getModalHeaderOptions(theme: Theme, onClose: () => void, testID?
         headerStyle: {
             backgroundColor: theme.sidebarBg,
         },
+        headerTitleAlign: 'left',
         headerTitleStyle: {
             ...typography('Heading', 300, 'SemiBold'),
             color: theme.sidebarHeaderTextColor,
         },
-        headerLeft: () => (
-            <View style={{marginRight: Platform.select({android: 20})}}>
-                <NavigationButton
-                    onPress={onClose}
-                    iconName='close'
-                    iconSize={24}
-                    testID={testID}
-                />
-            </View>
-        ),
+        ...withChromeHeaderLeft(closeButton),
     };
 }
 

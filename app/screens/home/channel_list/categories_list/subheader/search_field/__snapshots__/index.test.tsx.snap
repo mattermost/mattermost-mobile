@@ -2,6 +2,15 @@
 
 exports[`Search Field should match snapshot 1`] = `
 <View
+  accessibilityState={
+    {
+      "busy": undefined,
+      "checked": undefined,
+      "disabled": undefined,
+      "expanded": undefined,
+      "selected": undefined,
+    }
+  }
   accessibilityValue={
     {
       "max": undefined,
@@ -11,8 +20,11 @@ exports[`Search Field should match snapshot 1`] = `
     }
   }
   accessible={true}
+  collapsable={false}
   focusable={true}
+  onBlur={[Function]}
   onClick={[Function]}
+  onFocus={[Function]}
   onResponderGrant={[Function]}
   onResponderMove={[Function]}
   onResponderRelease={[Function]}
@@ -20,65 +32,83 @@ exports[`Search Field should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
-      "backgroundColor": "rgba(255,255,255,0.12)",
-      "borderRadius": 8,
-      "flex": 1,
-      "height": 40,
-      "justifyContent": "flex-start",
-      "marginVertical": 20,
-      "padding": 8,
-    }
+    [
+      {
+        "borderRadius": 22,
+        "flex": 1,
+        "height": 44,
+        "justifyContent": "center",
+        "marginVertical": 16,
+      },
+      false,
+    ]
   }
   testID="channel_list_subheader.search_field.button"
 >
   <View
     style={
-      {
-        "flexDirection": "row",
-      }
+      [
+        {
+          "backgroundColor": "rgba(255,255,255,0.16)",
+        },
+        {
+          "alignItems": "center",
+          "borderRadius": 22,
+          "flex": 1,
+          "flexDirection": "row",
+          "paddingHorizontal": 16,
+        },
+      ]
     }
   >
-    <Text
-      allowFontScaling={false}
-      selectable={false}
-      style={
-        [
-          {
-            "color": "black",
-            "fontSize": 12,
-          },
-          {
-            "color": "rgba(255,255,255,0.72)",
-            "fontSize": 24,
-            "width": 24,
-          },
-          {
-            "fontFamily": "compass-icons",
-            "fontStyle": "normal",
-            "fontWeight": "normal",
-          },
-          undefined,
-        ]
-      }
-    >
-      󰍉
-    </Text>
-    <Text
+    <View
       style={
         {
-          "color": "rgba(255,255,255,0.72)",
-          "fontFamily": "OpenSans",
-          "fontSize": 16,
-          "fontWeight": "400",
-          "lineHeight": 24,
-          "marginLeft": 5,
-          "marginTop": 1,
+          "flexDirection": "row",
         }
       }
     >
-      Find channels...
-    </Text>
+      <Text
+        allowFontScaling={false}
+        selectable={false}
+        style={
+          [
+            {
+              "color": "black",
+              "fontSize": 12,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+              "fontSize": 24,
+              "width": 24,
+            },
+            {
+              "fontFamily": "compass-icons",
+              "fontStyle": "normal",
+              "fontWeight": "normal",
+            },
+            undefined,
+          ]
+        }
+      >
+        󰍉
+      </Text>
+      <Text
+        style={
+          {
+            "color": "rgba(255,255,255,0.72)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+            "marginLeft": 5,
+            "marginTop": 1,
+          }
+        }
+      >
+        Find channels...
+      </Text>
+    </View>
   </View>
 </View>
 `;

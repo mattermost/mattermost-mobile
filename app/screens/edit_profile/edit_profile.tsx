@@ -4,23 +4,20 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Pressable, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView, KeyboardController} from 'react-native-keyboard-controller';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
 import {fetchCustomProfileAttributes, updateCustomProfileAttributes} from '@actions/remote/custom_profile';
 import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
-import FormattedText from '@components/formatted_text';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {logError} from '@utils/log';
-import {changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {isCustomFieldSamlLinked} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
@@ -43,12 +40,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    saveText: {
-        ...typography('Body', 200),
-    },
-    pressed: {
-        opacity: 0.7,
-    },
 });
 
 const CUSTOM_ATTRS_PREFIX_NAME = `${CUSTOM_ATTRS_PREFIX}.`;
@@ -61,7 +52,6 @@ const EditProfile = ({
     const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const theme = useTheme();
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
     const hasUpdateUserInfo = useRef<boolean>(false);
     const [userInfo, setUserInfo] = useState<UserInfo>({
@@ -249,33 +239,16 @@ const EditProfile = ({
 
     useEffect(() => {
         if (!isTablet) {
-            navigation.setOptions({
-                headerRight: () => (
-
-                    // Wrapper View with the testID constrains the hit area so
-                    // Detox doesn't report the full header width as the
-                    // Pressable's bounds (MM-T4989_2 / MM-T3250). On iOS,
-                    // React Navigation's native bar button item stretches
-                    // the child to fill the right slot, causing .tap() at
-                    // the center (193, 24) to land on the "Your Profile"
-                    // title instead of the "Save" text.
-                    <View testID='edit_profile.save.button'>
-                        <Pressable
-                            onPress={submitUser}
-                            disabled={!canSave}
-                            style={({pressed}) => pressed && styles.pressed}
-                        >
-                            <FormattedText
-                                id='mobile.account.settings.save'
-                                defaultMessage='Save'
-                                style={[styles.saveText, {color: canSave ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.32)}]}
-                            />
-                        </Pressable>
-                    </View>
-                ),
-            });
+            // testID on the button (not a full-width wrapper) keeps Detox hit
+            // targets on the Save control (MM-T4989_2 / MM-T3250).
+            navigation.setOptions(withChromeHeaderTextButton({
+                disabled: !canSave,
+                onPress: submitUser,
+                testID: 'edit_profile.save.button',
+                text: intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'}),
+            }));
         }
-    }, [isTablet, navigation, canSave, theme.sidebarHeaderTextColor, submitUser]);
+    }, [isTablet, navigation, canSave, submitUser, intl]);
 
     useEffect(() => {
         const loadCustomAttributes = async () => {

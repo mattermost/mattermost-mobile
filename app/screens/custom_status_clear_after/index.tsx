@@ -8,11 +8,11 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {observeCurrentUser} from '@queries/servers/user';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
@@ -72,16 +72,12 @@ function CustomStatusClearAfter({currentUser, initialDuration}: CustomStatusClea
     }, []);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onDone}
-                    testID='custom_status_clear_after.done.button'
-                    text={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
-                />
-            ),
-        });
-    }, [intl, navigation, onDone, theme.sidebarHeaderTextColor]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            onPress: onDone,
+            testID: 'custom_status_clear_after.done.button',
+            text: intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'}),
+        }));
+    }, [intl, navigation, onDone]);
 
     const clearAfterMenuComponent = useMemo(() => {
         const clearAfterMenu = Object.values(CustomStatusDurationEnum).map(

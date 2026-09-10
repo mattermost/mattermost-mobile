@@ -11,7 +11,6 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
-import NavigationButton from '@components/navigation_button';
 import {QUICK_ACTIONS_HEIGHT} from '@components/post_draft/quick_actions/quick_actions';
 import {Screens} from '@constants';
 import {EditPostProvider} from '@context/edit_post';
@@ -20,6 +19,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useKeyboardOverlap} from '@hooks/device';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
 import {navigateBack} from '@screens/navigation';
@@ -381,17 +381,13 @@ const EditPost = ({
     }, [shouldDeleteOnSave, post.metadata?.files, post.id, serverUrl, postMessage, handleUIUpdates, handleDeletePost, postFiles]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onSavePostMessage}
-                    disabled={!canSave}
-                    testID={'edit_post.save.button'}
-                    text={intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'})}
-                />
-            ),
-        });
-    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, intl]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: onSavePostMessage,
+            testID: 'edit_post.save.button',
+            text: intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'}),
+        }));
+    }, [navigation, onSavePostMessage, canSave, intl]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);

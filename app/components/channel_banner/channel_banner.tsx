@@ -8,6 +8,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import {fetchChannelClassificationValue} from '@actions/remote/classification';
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
+import {CHANNEL_SHEET_RADIUS, isPlatformUiIos} from '@constants/platform_ui';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -35,8 +36,8 @@ const getStyleSheet = (bannerTextColor: string) => ({
         height: CHANNEL_BANNER_HEIGHT,
     },
     containerTopItem: {
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
+        borderTopLeftRadius: isPlatformUiIos() ? CHANNEL_SHEET_RADIUS : 12,
+        borderTopRightRadius: isPlatformUiIos() ? CHANNEL_SHEET_RADIUS : 12,
     },
     baseTextStyle: {
         ...typography('Body', 100, 'Regular'),

@@ -7,11 +7,11 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
 
@@ -59,16 +59,12 @@ const RenameChecklistBottomSheet = ({currentTitle}: Props) => {
     }, [title]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSave}
-                    testID='playbooks.checklist.rename.button'
-                    text={formatMessage({id: 'playbooks.checklist.rename.button', defaultMessage: 'Save'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: handleSave,
+            testID: 'playbooks.checklist.rename.button',
+            text: formatMessage({id: 'playbooks.checklist.rename.button', defaultMessage: 'Save'}),
+        }));
     }, [navigation, handleSave, formatMessage, canSave]);
 
     useBackNavigation(removeCallbacks);

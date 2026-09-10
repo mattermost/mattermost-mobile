@@ -59,19 +59,15 @@ describe('components/channel_list/header', () => {
             expect(bottomSheet).not.toHaveBeenCalled();
         });
 
-        it('shows the chevron and opens a sheet when canJoinOtherTeams is true', () => {
+        it('opens a sheet when canJoinOtherTeams is true', () => {
             const wrapper = renderWithIntl(<Header {...getBaseProps({canJoinOtherTeams: true})}/>);
-
-            expect(wrapper.getByTestId('channel_list_header.team.chevron')).toBeTruthy();
 
             fireEvent.press(wrapper.getByTestId('channel_list_header.team.button'));
             expect(bottomSheet).toHaveBeenCalledTimes(1);
         });
 
-        it('shows the chevron and opens a sheet when hasMoreThanOneTeam is true', () => {
+        it('opens a sheet when hasMoreThanOneTeam is true', () => {
             const wrapper = renderWithIntl(<Header {...getBaseProps({hasMoreThanOneTeam: true})}/>);
-
-            expect(wrapper.getByTestId('channel_list_header.team.chevron')).toBeTruthy();
 
             fireEvent.press(wrapper.getByTestId('channel_list_header.team.button'));
             expect(bottomSheet).toHaveBeenCalledTimes(1);

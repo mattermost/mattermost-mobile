@@ -312,8 +312,8 @@ describe('Search - Saved Messages', () => {
         /* eslint-enable no-await-in-loop */
 
         // * Verify basic elements on saved messages screen
-        await expect(SavedMessagesScreen.largeHeaderTitle).toHaveText('Saved Messages');
-        await expect(SavedMessagesScreen.largeHeaderSubtitle).toHaveText('All messages you\'ve saved for follow up');
+        await SavedMessagesScreen.expectTitle('Saved Messages');
+        await SavedMessagesScreen.expectSubtitle('All messages you\'ve saved for follow up');
         await expect(SavedMessagesScreen.emptyTitle).toHaveText('No saved messages yet');
         await expect(SavedMessagesScreen.emptyParagraph).toHaveText('To save something for later, long-press on a message and choose Save from the menu. Saved messages are only visible to you.');
 

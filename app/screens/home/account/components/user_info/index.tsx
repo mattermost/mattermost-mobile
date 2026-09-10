@@ -5,6 +5,7 @@ import React from 'react';
 import {Text, View} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -16,9 +17,13 @@ type Props = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    const platformUi = isPlatformUiIos();
+    const surface = platformUi ? theme.centerChannelBg : theme.sidebarBg;
+    const textColor = platformUi ? theme.centerChannelColor : theme.sidebarText;
+
     return {
         container: {
-            backgroundColor: theme.sidebarBg,
+            backgroundColor: surface,
             paddingBottom: 20,
             top: 0,
             paddingTop: 22,
@@ -27,20 +32,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         statusStyle: {
             right: 10,
             bottom: 10,
-            borderColor: theme.sidebarBg,
-            backgroundColor: theme.sidebarBg,
+            borderColor: surface,
+            backgroundColor: surface,
         },
         textFullName: {
             fontSize: 28,
             lineHeight: 36,
-            color: theme.sidebarText,
+            color: textColor,
             fontFamily: 'Metropolis-SemiBold',
             marginTop: 16,
         },
         textUserName: {
             fontSize: 16,
             lineHeight: 24,
-            color: theme.sidebarText,
+            color: textColor,
             fontFamily: 'OpenSans',
             marginTop: 4,
         },

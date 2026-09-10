@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {FadeIn, useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -16,6 +16,7 @@ import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
 import {Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {HOME_TAB_SCREENS} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -30,7 +31,7 @@ import {addSentryContext} from '@utils/sentry';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
-import Servers from './servers';
+import Servers, {type ServersRef} from './servers';
 
 import type {LaunchType} from '@typings/launch';
 
@@ -82,9 +83,17 @@ const ChannelListScreen = (props: ChannelProps) => {
     const currentScreen = useCurrentScreen();
     const insets = useSafeAreaInsets();
     const serverUrl = useServerUrl();
-    const params = route.params as {direction: string};
+
+    // NativeTabs does not pass direction; JS TabBar still does for slide animation.
+    const params = route.params as {direction?: string} | undefined;
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
     const isTabScreen = currentScreen && HOME_TAB_SCREENS.has(currentScreen);
+    const platformUi = isPlatformUiIos();
+    const serversRef = useRef<ServersRef>(null);
+
+    const openServers = useCallback(() => {
+        serversRef.current?.openServers();
+    }, []);
 
     const handleBackPress = useCallback(() => {
         const focused = navigation.isFocused();
@@ -113,7 +122,9 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [intl, navigation]);
 
     const animated = useAnimatedStyle(() => {
-        if (!isTabScreen) {
+        // NativeTabs owns tab transitions; keep content fully opaque so focus churn
+        // in the nested channel_list stack cannot leave Home blank.
+        if (platformUi || !isTabScreen) {
             return {};
         }
 
@@ -131,7 +142,7 @@ const ChannelListScreen = (props: ChannelProps) => {
             opacity: withTiming(1, {duration: 150}),
             transform: [{translateX: withTiming(0, {duration: 150})}],
         };
-    }, [isFocused, isTabScreen, params]);
+    }, [platformUi, isFocused, isTabScreen, params]);
 
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
@@ -204,19 +215,29 @@ const ChannelListScreen = (props: ChannelProps) => {
             <AnnouncementBanner/>
             }
             <View style={styles.content}>
-                {canAddOtherServers && <Servers/>}
+                {canAddOtherServers &&
+                <Servers
+                    ref={serversRef}
+
+                    // Platform UI header owns the server affordance; keep the sheet via ref.
+                    hideIcon={platformUi}
+                />
+                }
                 <Animated.View
                     style={[styles.content, animated]}
                 >
+                    {!platformUi &&
                     <TeamSidebar
                         iconPad={canAddOtherServers}
                         hasMoreThanOneTeam={props.hasMoreThanOneTeam}
                     />
+                    }
                     <CategoriesList
-                        iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
+                        iconPad={!platformUi && canAddOtherServers && !props.hasMoreThanOneTeam}
                         isCRTEnabled={props.isCRTEnabled}
                         moreThanOneTeam={props.hasMoreThanOneTeam}
                         hasChannels={props.hasChannels}
+                        onOpenServers={platformUi && canAddOtherServers ? openServers : undefined}
                     />
                     {isTablet && props.hasChannels &&
                     <AdditionalTabletView/>

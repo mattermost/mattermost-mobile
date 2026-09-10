@@ -11,10 +11,12 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
 import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
+import SheetTabBarScrim, {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -122,6 +124,12 @@ const AgentThreadsList = ({
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
+    const platformUi = isPlatformUiIos();
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const listContentStyle = useMemo(() => [
+        styles.listContent,
+        {paddingBottom: scrimPadding},
+    ], [scrimPadding, styles.listContent]);
 
     // Track if this is the first load (show loading spinner only on first load with no cached data)
     const initialLoadDone = useRef(false);
@@ -315,7 +323,7 @@ const AgentThreadsList = ({
                 <FlashList
                     data={threads}
                     renderItem={renderItem}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={listContentStyle}
                     ListEmptyComponent={renderEmptyState}
                     refreshControl={
                         <RefreshControl
@@ -327,6 +335,7 @@ const AgentThreadsList = ({
                     }
                     testID='agent_threads_list.flat_list'
                 />
+                {platformUi && <SheetTabBarScrim/>}
             </View>
         </View>
     );

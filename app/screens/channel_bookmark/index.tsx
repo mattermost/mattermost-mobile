@@ -10,11 +10,11 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createChannelBookmark, deleteChannelBookmark, editChannelBookmark} from '@actions/remote/channel_bookmark';
 import Button from '@components/button';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {getFullErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -265,16 +265,12 @@ const ChannelBookmarkScreen = ({
     }, [bookmark, formatMessage, handleDelete]);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onSaveBookmark}
-                    disabled={!enabled}
-                    text={formatMessage({id: 'channel_bookmark.edit.save_button', defaultMessage: 'Save'})}
-                    testID='channel_bookmark.edit.save_button'
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !enabled,
+            onPress: onSaveBookmark,
+            testID: 'channel_bookmark.edit.save_button',
+            text: formatMessage({id: 'channel_bookmark.edit.save_button', defaultMessage: 'Save'}),
+        }));
     }, [enabled, formatMessage, navigation, onSaveBookmark]);
 
     useAndroidHardwareBackHandler(Screens.CHANNEL_BOOKMARK, close);

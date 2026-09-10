@@ -5,7 +5,7 @@ import {useHardwareKeyboardEvents} from '@mattermost/hardware-keyboard';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
-import {FlatList, type LayoutChangeEvent, Platform, type ViewStyle, KeyboardAvoidingView, Keyboard, StyleSheet} from 'react-native';
+import {FlatList, Keyboard, KeyboardAvoidingView, type LayoutChangeEvent, Platform, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming, type AnimatedStyle} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,10 +13,12 @@ import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import Autocomplete from '@components/autocomplete';
+import SheetTabBarScrim, {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
+import {isPlatformUiIos, PLATFORM_UI_HEADER_HEIGHT} from '@constants/platform_ui';
 import {SCREENS_AS_BOTTOM_SHEET} from '@constants/screens';
 import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
@@ -26,10 +28,12 @@ import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
+import {useHomeTabSearchBar} from '@hooks/home_tab_search_bar';
 import useTabs from '@hooks/use_tabs';
 import {useCurrentScreen} from '@store/navigation_store';
 import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes} from '@utils/search';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Initial from './initial';
 import Results from './results';
@@ -38,6 +42,7 @@ import Header from './results/header';
 import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
 import type TeamModel from '@typings/database/models/servers/team';
+import type {SearchBarCommands} from 'react-native-screens';
 
 const EDGES: Edge[] = ['left', 'right'];
 
@@ -48,6 +53,7 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
+const NATIVE_STACKED_SEARCH_BAR_HEIGHT = 52;
 
 type Props = {
     teamId: string;
@@ -55,7 +61,7 @@ type Props = {
     crossTeamSearchEnabled: boolean;
 }
 
-const styles = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     flex: {
         flex: 1,
     },
@@ -66,7 +72,7 @@ const styles = StyleSheet.create({
     autocompleteContainer: {
         zIndex: 11,
     },
-});
+}));
 
 const getSearchParams = (terms: string, filterValue?: FileFilter) => {
     const fileExtensions = filterFileExtensions(filterValue);
@@ -102,6 +108,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
     const currentScreen = useCurrentScreen();
@@ -109,6 +116,10 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
+    const platformUi = isPlatformUiIos();
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const nativeChromeOffset = insets.top + PLATFORM_UI_HEADER_HEIGHT + NATIVE_STACKED_SEARCH_BAR_HEIGHT;
+    const nativeResultsHeaderStyle = useMemo(() => ({paddingTop: nativeChromeOffset}), [nativeChromeOffset]);
 
     useAndroidHomeTabBackHandler(Screens.SEARCH);
 
@@ -119,7 +130,20 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
     const searchRef = useRef<SearchRef>(null);
+    const nativeSearchRef = useRef<SearchBarCommands>(null);
     const processedSearchTermRef = useRef<string>('');
+    const nativeSearchAdapter = useMemo<SearchRef>(() => ({
+        blur: () => nativeSearchRef.current?.blur(),
+        cancel: () => nativeSearchRef.current?.cancelSearch(),
+        clear: () => nativeSearchRef.current?.clearText(),
+        focus: () => nativeSearchRef.current?.focus(),
+        setCaretPosition: () => {
+            // Native search bar does not expose caret placement.
+        },
+    }), []);
+    const modifiersSearchRef = useMemo(() => (
+        platformUi ? {current: nativeSearchAdapter} : searchRef
+    ), [nativeSearchAdapter, platformUi]);
 
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
@@ -168,7 +192,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         scrollValue,
         setAutoScroll,
         unlock,
-    } = useCollapsibleHeader<FlatList>(true, onSnap);
+    } = useCollapsibleHeader<FlatList>(!platformUi, platformUi ? undefined : onSnap);
 
     const resetToInitial = useCallback(() => {
         setShowResults(false);
@@ -186,8 +210,12 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const handleClearSearch = useCallback(() => {
         clearRef.current = true;
         Keyboard.dismiss();
+        if (platformUi) {
+            nativeSearchRef.current?.clearText();
+            nativeSearchRef.current?.cancelSearch();
+        }
         resetToInitial();
-    }, [resetToInitial]);
+    }, [platformUi, resetToInitial]);
 
     const handleCancelSearch = useCallback(() => {
         cancelRef.current = true;
@@ -199,13 +227,25 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         setCursorPosition(newValue.length);
     }, []);
 
+    const handleAutocompleteValue = useCallback((newValue: string) => {
+        handleTextChange(newValue);
+        if (platformUi) {
+            nativeSearchRef.current?.setText(newValue);
+        }
+    }, [handleTextChange, platformUi]);
+
     const handleModifierTextChange = useCallback((newValue: string) => {
         setSearchIsFocused(true);
         requestAnimationFrame(() => {
-            searchRef.current?.focus?.();
+            if (platformUi) {
+                nativeSearchRef.current?.setText(newValue);
+                nativeSearchRef.current?.focus();
+            } else {
+                searchRef.current?.focus?.();
+            }
             handleTextChange(newValue);
         });
-    }, [handleTextChange]);
+    }, [handleTextChange, platformUi]);
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
@@ -217,13 +257,13 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             handleClearSearch();
             return;
         }
-        hideHeader(true);
+        if (!platformUi) {
+            hideHeader(true);
+        }
         handleLoading(true);
         setLastSearchedValue(term);
 
-        const persistHistory = newSearchTeamId === ALL_TEAMS_ID
-            ? undefined
-            : addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
+        const persistHistory = newSearchTeamId === ALL_TEAMS_ID? undefined: addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
         const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
             searchFiles(serverUrl, newSearchTeamId, searchParams),
@@ -239,7 +279,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
         setShowResults(true);
-    }, [filter, handleClearSearch, handleLoading, hideHeader, serverUrl]);
+    }, [filter, handleClearSearch, handleLoading, hideHeader, platformUi, serverUrl]);
 
     const onBlur = useCallback(() => {
         setSearchIsFocused(false);
@@ -258,8 +298,11 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const handleRecentSearch = useCallback((text: string) => {
         handleTextChange(text);
+        if (platformUi) {
+            nativeSearchRef.current?.setText(text);
+        }
         handleSearch(searchTeamId, text);
-    }, [handleSearch, handleTextChange, searchTeamId]);
+    }, [handleSearch, handleTextChange, platformUi, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setResultsLoading(true);
@@ -289,17 +332,18 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const initialContainerStyle: AnimatedStyle<ViewStyle> = useMemo(() => {
         return {
-            paddingTop: scrollPaddingTop,
+            paddingTop: platformUi ? 0 : scrollPaddingTop,
+            paddingBottom: scrimPadding,
             flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
             paddingHorizontal: 18,
         };
-    }, [loading, resultsLoading, scrollPaddingTop]);
+    }, [loading, platformUi, resultsLoading, scrollPaddingTop, scrimPadding]);
 
     const renderInitialOrLoadingItem = useCallback(() => {
         return loading ? (
             <Loading
-                containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                containerStyle={[styles.loading, {paddingTop: platformUi ? 0 : scrollPaddingTop}]}
                 color={theme.buttonBg}
                 size='large'
             />
@@ -308,7 +352,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
-                searchRef={searchRef}
+                searchRef={modifiersSearchRef}
                 setSearchValue={handleModifierTextChange}
                 setTeamId={updateSearchTeamId}
                 teamId={searchTeamId}
@@ -319,18 +363,21 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         handleModifierTextChange,
         handleRecentSearch,
         loading,
+        modifiersSearchRef,
         scrollEnabled,
         scrollPaddingTop,
         searchTeamId,
         searchValue,
+        styles.loading,
         teams,
         theme.buttonBg,
         updateSearchTeamId,
+        platformUi,
     ]);
 
     const animated = useAnimatedStyle(() => {
-        if (isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
-            return {};
+        if (platformUi || isBottomSheetOpen || isPemalinkScreen || isGalleryScreen) {
+            return {flex: 1};
         }
 
         if (isFocused) {
@@ -346,7 +393,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             flex: 1,
             transform: [{translateX: withTiming((stateIndex || 0) < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
-    }, [isFocused, isBottomSheetOpen, isPemalinkScreen, isGalleryScreen, stateIndex]);
+    }, [isFocused, isBottomSheetOpen, isPemalinkScreen, isGalleryScreen, platformUi, stateIndex]);
 
     const headerTopStyle = useAnimatedStyle(() => ({
         top: lockValue || headerHeight.value,
@@ -359,13 +406,17 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const autocompleteMaxHeight = useDerivedValue(() => {
         const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
-        const autocompleteRemoveFromHeight = headerHeight.value + (Platform.OS === 'ios' ? iosAdjust : 0);
+        const headerOffset = platformUi ? nativeChromeOffset : headerHeight.value;
+        const autocompleteRemoveFromHeight = headerOffset + (Platform.OS === 'ios' ? iosAdjust : 0);
         return containerHeight - autocompleteRemoveFromHeight;
-    }, [keyboardHeight, insets.bottom, containerHeight]);
+    }, [keyboardHeight, insets.bottom, containerHeight, nativeChromeOffset, platformUi]);
 
     const autocompletePosition = useDerivedValue(() => {
+        if (platformUi) {
+            return nativeChromeOffset - AutocompletePaddingTop;
+        }
         return headerHeight.value - AutocompletePaddingTop;
-    }, [headerHeight]);
+    }, [headerHeight, nativeChromeOffset, platformUi]);
 
     // when clearing the input from the search results, scroll the initial view
     // back to the top so the header is in the collapsed state
@@ -390,13 +441,16 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         processedSearchTermRef.current = searchTerm;
         clearInputs();
         setSearchValue(searchTerm);
+        if (platformUi) {
+            nativeSearchRef.current?.setText(searchTerm);
+        }
 
         const raf = requestAnimationFrame(() => {
             handleSearch(searchTeamId, searchTerm);
         });
 
         return () => cancelAnimationFrame(raf);
-    }, [handleSearch, clearInputs, searchTeamId, searchTerm]);
+    }, [handleSearch, clearInputs, platformUi, searchTeamId, searchTerm]);
 
     useDidUpdate(() => {
         if (isFocused) {
@@ -429,13 +483,34 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const handleEnterPressed = useCallback(() => {
         if (isFocused && searchValue.trim().length > 0) {
-            searchRef.current?.blur();
+            if (platformUi) {
+                nativeSearchRef.current?.blur();
+            } else {
+                searchRef.current?.blur();
+            }
             onSubmit();
         }
-    }, [isFocused, onSubmit, searchValue]);
+    }, [isFocused, onSubmit, platformUi, searchValue]);
 
     const events = useMemo(() => ({onEnterPressed: handleEnterPressed}), [handleEnterPressed]);
     useHardwareKeyboardEvents(events);
+
+    const searchPlaceholder = intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'});
+    const onNativeSearchSubmit = useCallback((text: string) => {
+        handleSearch(searchTeamId, text);
+    }, [handleSearch, searchTeamId]);
+
+    useHomeTabSearchBar({
+        enabled: platformUi,
+        nativeSearchRef,
+        onBlur,
+        onCancel: handleCancelSearch,
+        onChangeText: handleTextChange,
+        onFocus,
+        onSubmit: onNativeSearchSubmit,
+        placeholder: searchPlaceholder,
+        tintColor: theme.centerChannelColor,
+    });
 
     return (
         <>
@@ -445,33 +520,51 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                 onLayout={onLayout}
                 testID='search_messages.screen'
             >
-                <NavigationHeader
-                    isLargeTitle={true}
-                    showBackButton={false}
-                    title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                    hasSearch={true}
-                    scrollValue={scrollValue}
-                    lockValue={lockValue}
-                    hideHeader={hideHeader}
-                    onChangeText={handleTextChange}
-                    onSubmitEditing={onSubmit}
-                    blurOnSubmit={true}
-                    placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                    onBlur={onBlur}
-                    onClear={handleClearSearch}
-                    onCancel={handleCancelSearch}
-                    onFocus={onFocus}
-                    defaultValue={searchValue}
-                    ref={searchRef}
-                />
+                {!platformUi && (
+                    <NavigationHeader
+                        isLargeTitle={true}
+                        showBackButton={false}
+                        title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
+                        hasSearch={true}
+                        scrollValue={scrollValue}
+                        lockValue={lockValue}
+                        hideHeader={hideHeader}
+                        onChangeText={handleTextChange}
+                        onSubmitEditing={onSubmit}
+                        blurOnSubmit={true}
+                        placeholder={searchPlaceholder}
+                        onBlur={onBlur}
+                        onClear={handleClearSearch}
+                        onCancel={handleCancelSearch}
+                        onFocus={onFocus}
+                        defaultValue={searchValue}
+                        ref={searchRef}
+                    />
+                )}
                 <KeyboardAvoidingView
                     style={styles.flex}
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 >
                     <Animated.View style={animated}>
-                        <Animated.View style={headerTopStyle}>
-                            <RoundedHeaderContext/>
-                            {lastSearchedValue && !loading &&
+                        {!platformUi && (
+                            <Animated.View style={headerTopStyle}>
+                                <RoundedHeaderContext/>
+                                {lastSearchedValue && !loading &&
+                                <Header
+                                    teamId={searchTeamId}
+                                    setTeamId={handleResultsTeamChange}
+                                    onFilterChanged={handleFilterChange}
+                                    selectedTab={selectedTab}
+                                    selectedFilter={filter}
+                                    teams={teams}
+                                    crossTeamSearchEnabled={crossTeamSearchEnabled}
+                                    tabsProps={tabsProps}
+                                />
+                                }
+                            </Animated.View>
+                        )}
+                        {platformUi && lastSearchedValue && !loading &&
+                        <Animated.View style={nativeResultsHeaderStyle}>
                             <Header
                                 teamId={searchTeamId}
                                 setTeamId={handleResultsTeamChange}
@@ -482,18 +575,19 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                                 crossTeamSearchEnabled={crossTeamSearchEnabled}
                                 tabsProps={tabsProps}
                             />
-                            }
                         </Animated.View>
+                        }
                         {!showResults &&
                         <Animated.FlatList
                             onLayout={onFlatLayout}
                             data={dummyData}
                             contentContainerStyle={initialContainerStyle}
+                            contentInsetAdjustmentBehavior={platformUi ? 'automatic' : 'never'}
                             keyboardShouldPersistTaps='handled'
                             keyboardDismissMode={'interactive'}
                             nestedScrollEnabled={true}
                             indicatorStyle='black'
-                            onScroll={onScroll}
+                            onScroll={platformUi ? undefined : onScroll}
                             scrollEventThrottle={16}
                             removeClippedSubviews={false}
                             scrollToOverflowEnabled={true}
@@ -510,16 +604,17 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
                             posts={posts}
                             matches={matches}
                             fileInfos={fileInfos}
-                            scrollPaddingTop={lockValue}
+                            scrollPaddingTop={platformUi ? 0 : lockValue}
                             fileChannelIds={fileChannelIds}
                         />
                         }
+                        {platformUi && <SheetTabBarScrim/>}
                     </Animated.View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
             {searchIsFocused &&
             <Autocomplete
-                updateValue={handleTextChange}
+                updateValue={handleAutocompleteValue}
                 cursorPosition={cursorPosition}
                 value={searchValue}
                 isSearch={true}

@@ -157,7 +157,7 @@ describe('Search - Cross Team Search', () => {
 
         // * h) Verify on the Search screen
         await SearchMessagesScreen.toBeVisible();
-        await expect(SearchMessagesScreen.largeHeaderTitle).toHaveText('Search');
+        await SearchMessagesScreen.expectTitle('Search');
 
         // * i) Verify to the right of "Search Options" is "Team Open" with a drop-down arrow.
         // The team display name can render multiple times (header + team picker button);

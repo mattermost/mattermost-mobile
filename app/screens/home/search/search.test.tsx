@@ -25,9 +25,18 @@ jest.mock('@react-navigation/native', () => ({
             index: 0,
             routes: [{params: {searchTerm: ''}}],
         }),
+        setOptions: jest.fn(),
     }),
     useIsFocused: () => true,
 }));
+
+jest.mock('@constants/platform_ui', () => {
+    const actual = jest.requireActual('@constants/platform_ui');
+    return {
+        ...actual,
+        isPlatformUiIos: () => false,
+    };
+});
 
 jest.mock('@actions/local/post', () => ({
     getPosts: jest.fn().mockResolvedValue([]),
@@ -241,6 +250,7 @@ describe('SearchScreen', () => {
                 index: 0,
                 routes: [{params: {searchTerm: '#hashtag'}}],
             }),
+            setOptions: jest.fn(),
         };
 
         jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue(mockNavigation);
@@ -278,6 +288,7 @@ describe('SearchScreen', () => {
                 index: 0,
                 routes: [{params: {searchTerm: currentSearchTerm}}],
             }),
+            setOptions: jest.fn(),
         }));
 
         const {rerender} = renderWithEverything(<SearchScreen {...baseProps}/>, {database});
@@ -322,6 +333,7 @@ describe('SearchScreen', () => {
                 index: 0,
                 routes: [{params: {searchTerm: '#newtag'}}],
             }),
+            setOptions: jest.fn(),
         };
 
         jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue(mockNavigation);

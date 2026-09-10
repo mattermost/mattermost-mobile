@@ -2,17 +2,20 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, FlatList, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
+import {DeviceEventEmitter, FlatList, View, useWindowDimensions, type LayoutChangeEvent} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
 import {ROW_HEIGHT} from '@components/channel_item/channel_item';
+import SheetTabBarScrim from '@components/chrome/sheet_tab_bar_scrim';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';
+import TeamSidebar from '@components/team_sidebar';
 import ThreadsButton from '@components/threads_button';
 import {Events, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -34,10 +37,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
-        paddingTop: 10,
+        paddingTop: isPlatformUiIos() ? 0 : 10,
     },
     flex: {
         flex: 1,
+    },
+    body: {
+        flex: 1,
+        flexDirection: 'row',
     },
 }));
 
@@ -55,6 +62,7 @@ type ChannelListProps = {
     scheduledPostsEnabled?: boolean;
     agentsEnabled?: boolean;
     showPlaybooksButton?: boolean;
+    onOpenServers?: () => void;
 };
 
 const getTabletWidth = (moreThanOneTeam: boolean) => {
@@ -75,6 +83,7 @@ const CategoriesList = ({
     scheduledPostsEnabled,
     agentsEnabled,
     showPlaybooksButton,
+    onOpenServers,
 }: ChannelListProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -246,8 +255,20 @@ const CategoriesList = ({
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-            <ChannelListHeader iconPad={iconPad}/>
-            {content}
+            <ChannelListHeader
+                iconPad={iconPad}
+                onOpenServers={onOpenServers}
+            />
+            {isPlatformUiIos() ? (
+                <View style={styles.body}>
+                    <TeamSidebar
+                        hasMoreThanOneTeam={moreThanOneTeam}
+                        iconPad={false}
+                    />
+                    {content}
+                </View>
+            ) : content}
+            {isPlatformUiIos() && <SheetTabBarScrim color={theme.sidebarBg}/>}
         </Animated.View>
     );
 };

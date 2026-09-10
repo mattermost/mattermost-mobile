@@ -6,6 +6,7 @@ import Animated, {scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerived
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN} from 'react-native-worklets';
 
+import {PLATFORM_UI_HEADER_HEIGHT, isPlatformUiIos} from '@constants/platform_ui';
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
 
@@ -26,6 +27,8 @@ export const useDefaultHeaderHeight = () => {
     let headerHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (isTablet) {
         headerHeight = ViewConstants.TABLET_HEADER_HEIGHT;
+    } else if (isPlatformUiIos()) {
+        headerHeight = PLATFORM_UI_HEADER_HEIGHT;
     }
     return headerHeight + insets.top;
 };

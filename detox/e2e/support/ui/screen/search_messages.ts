@@ -43,8 +43,17 @@ class SearchMessagesScreen {
     // convenience props
     largeHeaderTitle = NavigationHeader.largeHeaderTitle;
     largeHeaderSubtitle = NavigationHeader.largeHeaderSubtitle;
-    searchInput = NavigationHeader.searchInput;
-    searchClearButton = NavigationHeader.searchClearButton;
+    expectTitle = NavigationHeader.expectTitle;
+    expectSubtitle = NavigationHeader.expectSubtitle;
+
+    get searchInput() {
+        return NavigationHeader.searchInput;
+    }
+
+    get searchClearButton() {
+        return NavigationHeader.searchClearButton;
+    }
+
     searchCancelButton = NavigationHeader.searchCancelButton;
 
     postList = new PostList(this.testID.searchResultsScreenPrefix);

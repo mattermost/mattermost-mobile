@@ -7,11 +7,11 @@ import {useIntl} from 'react-intl';
 import {StyleSheet, View} from 'react-native';
 
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {updatePlaybookRun} from '@playbooks/actions/remote/runs';
 import {navigateBack} from '@screens/navigation';
@@ -75,16 +75,12 @@ const RenamePlaybookRunBottomSheet = ({
     const onSave = usePreventDoubleTap(handleSave);
 
     useEffect(() => {
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={onSave}
-                    testID='playbooks.playbook_run.rename.button'
-                    text={formatMessage({id: 'playbooks.playbook_run.rename.button', defaultMessage: 'Save'})}
-                    disabled={!canSave}
-                />
-            ),
-        });
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !canSave,
+            onPress: onSave,
+            testID: 'playbooks.playbook_run.rename.button',
+            text: formatMessage({id: 'playbooks.playbook_run.rename.button', defaultMessage: 'Save'}),
+        }));
     }, [canSave, formatMessage, onSave, navigation]);
 
     useAndroidHardwareBackHandler(Screens.PLAYBOOK_RENAME_RUN, close);

@@ -7,15 +7,13 @@ import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
-import NavigationButton from '@components/navigation_button';
 import {General, Screens} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {withChromeHeaderTextButton} from '@hooks/navigation_header';
 import {navigateBack} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
-import {changeOpacity} from '@utils/theme';
 
 import ChannelInfoForm from './channel_info_form';
 
@@ -71,7 +69,6 @@ const CreateOrEditChannel = ({
     const navigation = useNavigation();
     const intl = useIntl();
     const {formatMessage} = intl;
-    const theme = useTheme();
     const serverUrl = useServerUrl();
 
     const editing = Boolean(channel);
@@ -181,18 +178,13 @@ const CreateOrEditChannel = ({
 
     useEffect(() => {
         const buttonText = editing ? formatMessage({id: 'mobile.edit_channel', defaultMessage: 'Save'}) : formatMessage({id: 'mobile.create_channel', defaultMessage: 'Create'});
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={editing ? onUpdateChannel : onCreateChannel}
-                    text={buttonText}
-                    testID={editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button'}
-                    color={isEnabled ? theme.sidebarHeaderTextColor : changeOpacity(theme.sidebarHeaderTextColor, 0.5)}
-                    disabled={!isEnabled}
-                />
-            ),
-        });
-    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, isEnabled, theme.sidebarHeaderTextColor]);
+        navigation.setOptions(withChromeHeaderTextButton({
+            disabled: !isEnabled,
+            onPress: editing ? onUpdateChannel : onCreateChannel,
+            testID: editing ? 'create_or_edit_channel.save.button' : 'create_or_edit_channel.create.button',
+            text: buttonText,
+        }));
+    }, [editing, formatMessage, navigation, onUpdateChannel, onCreateChannel, isEnabled]);
 
     useEffect(() => {
         setCanSave(

@@ -9,11 +9,14 @@ import {storeLastViewedChannelIdAndServer, removeLastViewedChannelIdAndServer} f
 import {fetchPostsForChannel} from '@actions/remote/post';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import {Events, Screens} from '@constants';
+import {isPlatformUiIos} from '@constants/platform_ui';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useEnsureHiddenScrollEdgeEffects} from '@hooks/hide_scroll_edge_effects';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {navigateBack} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -73,7 +76,12 @@ const Channel = ({
     const defaultHeight = useDefaultHeaderHeight();
     const [containerHeight, setContainerHeight] = useState(0);
     const serverUrl = useServerUrl();
+    const theme = useTheme();
+    const platformUi = isPlatformUiIos();
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
+
+    // FlatList must exist when scrollEdgeEffects are applied (iOS 26 soft edges wash out posts).
+    useEnsureHiddenScrollEdgeEffects(platformUi, shouldRender);
     const currentScreen = useCurrentScreen();
     const isVisible = useMemo(() => {
         if (isTablet) {
@@ -87,8 +95,11 @@ const Channel = ({
         if (isTablet) {
             return ['left', 'right'];
         }
+        if (platformUi) {
+            return ['left', 'right'];
+        }
         return ['left', 'right', 'bottom'];
-    }, [isTablet]);
+    }, [isTablet, platformUi]);
 
     useAndroidHardwareBackHandler(Screens.CHANNEL, navigateBack);
 
@@ -101,13 +112,20 @@ const Channel = ({
         return () => listener.remove();
     }, [serverUrl, channelId]);
 
-    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
+    // Platform UI: keep the sheet top at the full header height so CHANNEL_SHEET_RADIUS is visible.
+    // Legacy phone layout tucks content under the status-bar portion of the absolute header.
+    const marginTop = defaultHeight + (isTablet || platformUi ? 0 : -insets.top);
     useEffect(() => {
-        // This is done so that the header renders
-        // and the screen does not look totally blank
-        const raf = requestAnimationFrame(() => {
+        // Platform UI: mount FlatList immediately so RNSScreen can find it for scrollEdgeEffects.
+        // Legacy: delay one frame so the absolute header paints first on blank screens.
+        let raf: number | undefined;
+        if (platformUi) {
             setShouldRenderPosts(Boolean(channelId));
-        });
+        } else {
+            raf = requestAnimationFrame(() => {
+                setShouldRenderPosts(Boolean(channelId));
+            });
+        }
 
         // This is done to give time to the WS event
         const t = setTimeout(() => {
@@ -117,12 +135,14 @@ const Channel = ({
         storeLastViewedChannelIdAndServer(channelId);
 
         return () => {
-            cancelAnimationFrame(raf);
+            if (raf !== undefined) {
+                cancelAnimationFrame(raf);
+            }
             clearTimeout(t);
             removeLastViewedChannelIdAndServer();
             EphemeralStore.removeSwitchingToChannel(channelId);
         };
-    }, [channelId]);
+    }, [channelId, platformUi]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -132,11 +152,23 @@ const Channel = ({
 
     return (
         <SafeAreaView
-            style={styles.flex}
+            style={[styles.flex, platformUi && {backgroundColor: theme.sidebarBg}]}
             edges={safeAreaViewEdges}
             testID='channel.screen'
             onLayout={onLayout}
         >
+            {/* Before header: RNScreens finds FlatList via first-child chain (iOS 26 scroll-edge). */}
+            {shouldRender && (
+                <ChannelContent
+                    channelId={channelId}
+                    marginTop={marginTop}
+                    scheduledPostCount={scheduledPostCount}
+                    containerHeight={containerHeight}
+                    enabled={isVisible}
+                    includeBookmarkBar={includeBookmarkBar}
+                    includeChannelBanner={includeChannelBanner}
+                />
+            )}
             <ChannelHeader
                 channelId={channelId}
                 callsEnabledInChannel={isCallsEnabledInChannel}
@@ -145,15 +177,6 @@ const Channel = ({
                 shouldRenderBookmarks={shouldRender}
                 shouldRenderChannelBanner={includeChannelBanner}
             />
-            {shouldRender && (
-                <ChannelContent
-                    channelId={channelId}
-                    marginTop={marginTop}
-                    scheduledPostCount={scheduledPostCount}
-                    containerHeight={containerHeight}
-                    enabled={isVisible}
-                />
-            )}
             {showFloatingCallContainer && shouldRender &&
             <FloatingCallContainer
                 channelId={channelId}

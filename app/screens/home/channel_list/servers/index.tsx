@@ -49,10 +49,12 @@ type Props = {
     iconColor?: string;
     iconStyle?: StyleProp<ViewStyle>;
     testID?: string;
+    hideIcon?: boolean;
 }
 
 const Servers = React.forwardRef<ServersRef, Props>(({
     badgeBorderColor,
+    hideIcon,
     iconColor,
     iconStyle = styles.icon,
     testID = 'channel_list.servers.server_icon',
@@ -163,6 +165,10 @@ const Servers = React.forwardRef<ServersRef, Props>(({
             subscriptions.clear();
         };
     });
+
+    if (hideIcon) {
+        return null;
+    }
 
     return (
         <ServerIcon

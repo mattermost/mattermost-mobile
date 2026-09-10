@@ -5,7 +5,7 @@ import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
 import {Events, Navigation, Screens} from '@constants';
-import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
+import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, HOME_CHANNEL_LIST_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
 import {logError} from '@utils/log';
@@ -45,6 +45,12 @@ export function getExpoRouterPath(screen: AvailableScreens, props?: any): string
 
     if (MODAL_SCREENS.has(screen)) {
         return `/(modals)/${screen}`;
+    }
+
+    // Channel, thread, drafts, threads, and agents live under the Home tab stack
+    // so the tab bar persists.
+    if (HOME_CHANNEL_LIST_SCREENS.has(screen)) {
+        return `/(authenticated)/(home)/channel_list/${screen}`;
     }
 
     return `/(authenticated)/${screen}`;

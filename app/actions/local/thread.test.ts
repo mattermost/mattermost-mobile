@@ -45,7 +45,7 @@ jest.mock('@store/navigation_store', () => {
             getScreensInStack: jest.fn(() => []),
             getRootRouteInfo: jest.fn(() => {
                 return {
-                    pathname: '/(authenticated)/(home)/channel',
+                    pathname: '/(authenticated)/(home)/channel_list/channel',
                     params: {team: 'team1', channel: 'channel1'},
                 };
             }),

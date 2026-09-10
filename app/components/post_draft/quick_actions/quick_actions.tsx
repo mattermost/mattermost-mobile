@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import AIRewriteAction from '@agents/components/ai_rewrite_action';
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
@@ -29,6 +29,12 @@ type Props = {
     showAttachLogs?: boolean;
     location?: AvailableScreens;
 
+    /** Resting platform UI pill — only the plus / attachment control */
+    compact?: boolean;
+
+    /** Platform UI floating compose — drop legacy left margin; pill padding is the inset */
+    floating?: boolean;
+
     // Draft Handler
     value: string;
     updateValue: (value: string) => void;
@@ -49,6 +55,16 @@ const style = StyleSheet.create({
         height: QUICK_ACTIONS_HEIGHT,
         marginLeft: 8,
     },
+    floatingActionsContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: QUICK_ACTIONS_HEIGHT,
+    },
+    compactActionsContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: 40,
+    },
 });
 
 export default function QuickActions({
@@ -64,6 +80,8 @@ export default function QuickActions({
     canShowEmojiPicker = true,
     maxFileCount,
     showAttachLogs,
+    compact = false,
+    floating = false,
     updateValue,
     addFiles,
     postPriority,
@@ -94,57 +112,69 @@ export default function QuickActions({
         showAttachLogs,
     };
 
+    let containerStyle: StyleProp<ViewStyle> = style.quickActionsContainer;
+    if (compact) {
+        containerStyle = style.compactActionsContainer;
+    } else if (floating) {
+        containerStyle = style.floatingActionsContainer;
+    }
+
     return (
         <View
             testID={testID}
-            style={style.quickActionsContainer}
+            style={containerStyle}
         >
             <AttachmentAction
                 testID={attachmentActionTestID}
+                flush={compact}
                 {...uploadProps}
             />
-            <InputAction
-                testID={atInputActionTestID}
-                disabled={atDisabled}
-                inputType='at'
-                updateValue={updateValue}
-                focus={focus}
-            />
-            {canShowSlashCommands && (
-                <InputAction
-                    testID={slashInputActionTestID}
-                    disabled={slashDisabled}
-                    inputType='slash'
-                    updateValue={updateValue}
-                    focus={focus}
-                />
+            {!compact && (
+                <>
+                    <InputAction
+                        testID={atInputActionTestID}
+                        disabled={atDisabled}
+                        inputType='at'
+                        updateValue={updateValue}
+                        focus={focus}
+                    />
+                    {canShowSlashCommands && (
+                        <InputAction
+                            testID={slashInputActionTestID}
+                            disabled={slashDisabled}
+                            inputType='slash'
+                            updateValue={updateValue}
+                            focus={focus}
+                        />
+                    )}
+                    {canShowEmojiPicker && (
+                        <EmojiAction
+                            testID={emojiActionTestID}
+                        />
+                    )}
+                    {isAgentsEnabled && (
+                        <AIRewriteAction
+                            testID={aiRewriteActionTestID}
+                            value={value}
+                            updateValue={updateValue}
+                        />
+                    )}
+                    {isPostPriorityEnabled && canShowPostPriority && (
+                        <PostPriorityAction
+                            testID={postPriorityActionTestID}
+                            postPriority={postPriority}
+                            updatePostPriority={updatePostPriority}
+                        />
+                    )}
+                    {showBoRAction &&
+                        <BoRQuickAction
+                            testId={borPriorityActionTestID}
+                            postBoRConfig={postBoRConfig}
+                            updatePostBoRStatus={updatePostBoRStatus}
+                        />
+                    }
+                </>
             )}
-            {canShowEmojiPicker && (
-                <EmojiAction
-                    testID={emojiActionTestID}
-                />
-            )}
-            {isAgentsEnabled && (
-                <AIRewriteAction
-                    testID={aiRewriteActionTestID}
-                    value={value}
-                    updateValue={updateValue}
-                />
-            )}
-            {isPostPriorityEnabled && canShowPostPriority && (
-                <PostPriorityAction
-                    testID={postPriorityActionTestID}
-                    postPriority={postPriority}
-                    updatePostPriority={updatePostPriority}
-                />
-            )}
-            {showBoRAction &&
-                <BoRQuickAction
-                    testId={borPriorityActionTestID}
-                    postBoRConfig={postBoRConfig}
-                    updatePostBoRStatus={updatePostBoRStatus}
-                />
-            }
         </View>
     );
 }

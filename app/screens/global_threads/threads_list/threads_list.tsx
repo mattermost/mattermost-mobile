@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {FlatList, type ListRenderItemInfo, StyleSheet} from 'react-native';
 
 import {loadEarlierThreads, syncTeamThreads} from '@actions/remote/thread';
+import {useSheetTabBarScrimPadding} from '@components/chrome/sheet_tab_bar_scrim';
 import Loading from '@components/loading';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -53,6 +54,11 @@ const ThreadsList = ({
 }: Props) => {
     const serverUrl = useServerUrl();
     const theme = useTheme();
+    const scrimPadding = useSheetTabBarScrimPadding();
+    const contentContainerStyle = useMemo(() => [
+        threads.length ? styles.messagesContainer : styles.empty,
+        {paddingBottom: scrimPadding},
+    ], [scrimPadding, threads.length]);
 
     const hasFetchedOnce = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -153,7 +159,7 @@ const ThreadsList = ({
         <FlatList
             ListEmptyComponent={listEmptyComponent}
             ListFooterComponent={listFooterComponent}
-            contentContainerStyle={threads.length ? styles.messagesContainer : styles.empty}
+            contentContainerStyle={contentContainerStyle}
             data={threads}
             maxToRenderPerBatch={10}
             onEndReached={handleEndReached}

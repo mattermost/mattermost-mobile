@@ -7,6 +7,8 @@ import EphemeralStore from '@store/ephemeral_store';
 import {
     blendColors,
     changeOpacity,
+    getChromeMaterialBlurEffect,
+    getColorSchemeForBackground,
     getComponents,
     getKeyboardAppearanceFromTheme,
     hexToHue,
@@ -53,6 +55,52 @@ describe('getKeyboardAppearanceFromTheme', () => {
         const theme = {centerChannelBg: '#000000'} as Theme;
         const result = getKeyboardAppearanceFromTheme(theme);
         expect(result).toBe('dark');
+    });
+});
+
+describe('getColorSchemeForBackground', () => {
+    it('should treat denim sidebar as dark chrome', () => {
+        expect(getColorSchemeForBackground(themes.denim.sidebarBg)).toBe('dark');
+        expect(getColorSchemeForBackground(themes.denim.centerChannelBg)).toBe('light');
+    });
+
+    it('should treat quartz sidebar as light chrome', () => {
+        expect(getColorSchemeForBackground(themes.quartz.sidebarBg)).toBe('light');
+        expect(getColorSchemeForBackground(themes.quartz.centerChannelBg)).toBe('light');
+    });
+
+    it('should treat indigo content as dark chrome', () => {
+        expect(getColorSchemeForBackground(themes.indigo.sidebarBg)).toBe('dark');
+        expect(getColorSchemeForBackground(themes.indigo.centerChannelBg)).toBe('dark');
+    });
+
+    it('should treat onyx content as dark chrome', () => {
+        expect(getColorSchemeForBackground(themes.onyx.sidebarBg)).toBe('dark');
+        expect(getColorSchemeForBackground(themes.onyx.centerChannelBg)).toBe('dark');
+    });
+
+    it('should follow custom theme hex colors', () => {
+        expect(getColorSchemeForBackground('#f7e7ce')).toBe('light');
+        expect(getColorSchemeForBackground('#2a0a4a')).toBe('dark');
+        expect(getColorSchemeForBackground('#ffffff')).toBe('light');
+        expect(getColorSchemeForBackground('#000000')).toBe('dark');
+    });
+
+    it('should default missing colors to dark chrome', () => {
+        expect(getColorSchemeForBackground()).toBe('dark');
+        expect(getColorSchemeForBackground('')).toBe('dark');
+    });
+});
+
+describe('getChromeMaterialBlurEffect', () => {
+    it('should use dark chrome material on dark custom colors', () => {
+        expect(getChromeMaterialBlurEffect('#2a0a4a')).toBe('systemChromeMaterialDark');
+        expect(getChromeMaterialBlurEffect(themes.denim.sidebarBg)).toBe('systemChromeMaterialDark');
+    });
+
+    it('should use light chrome material on light custom colors', () => {
+        expect(getChromeMaterialBlurEffect('#f7e7ce')).toBe('systemChromeMaterialLight');
+        expect(getChromeMaterialBlurEffect(themes.quartz.sidebarBg)).toBe('systemChromeMaterialLight');
     });
 });
 
