@@ -23,10 +23,6 @@ const clientFlagIsTrue = (baseUrl: string, maxAttempts = 30): Promise<boolean> =
 };
 
 export const enableClassificationMarkings = async (baseUrl: string): Promise<void> => {
-    // Read before write. Every caller holds the classification lock, so nothing else flips
-    // the flag while this runs; if the client config already reports it on there is nothing
-    // to patch. A config PATCH is a global write that reloads server config, and the second
-    // classification suite to land on a server used to pay for one anyway.
     if (await clientFlagIsTrue(baseUrl, 1)) {
         return;
     }
@@ -36,21 +32,12 @@ export const enableClassificationMarkings = async (baseUrl: string): Promise<voi
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        // No transport-retry wrapper here: apiPatchConfig already retries the patch
-        // internally, and this loop re-patches on top of that. Stacking a third layer
-        // is what let a single stalled request consume a whole 300s hook budget.
         const patchResult = await System.apiPatchConfig(baseUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
             },
         });
         if (patchResult.error) {
-            // A dropped response is not a dropped write. In run 34487859024 the transport
-            // layer spent its whole budget (3 × 45 s) waiting for this PATCH's reply on a
-            // server that answered every other shard, and the old code threw here without
-            // ever asking whether the flag had actually been set. Check the state the tests
-            // depend on instead of trusting the HTTP reply. Deliberately no further patch on
-            // this path: another 139 s is the stacking the comment above warns about.
             if (await clientFlagIsTrue(baseUrl)) {
                 return;
             }

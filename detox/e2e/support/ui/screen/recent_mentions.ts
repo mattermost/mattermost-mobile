@@ -89,14 +89,6 @@ class RecentMentionsScreen {
             }
         }
 
-        // The tab bar is not in the hierarchy for a moment after the tree (re)mounts. The
-        // caller that exposed this is verifyPostEdited below, which calls open() straight
-        // after device.reloadReactNative(): the tap landed while the bar was still unmounted
-        // and Espresso reported "No views in hierarchy found matching: (view.getTag() is
-        // "tab_bar.mentions.tab" and view has effective visibility <VISIBLE>)"
-        // (CI 34344304929, MM-T4909_3, detox-android). Gate on the tab itself rather than
-        // sleeping a fixed amount: this returns as soon as the bar is hittable, and a genuine
-        // absence still fails, just with the wait spent before the tap instead of after it.
         await waitForElementToBeVisible(HomeScreen.mentionsTab, timeouts.TWENTY_SEC);
 
         await HomeScreen.mentionsTab.tap();
@@ -181,15 +173,6 @@ class RecentMentionsScreen {
             try {
                 await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
             } catch {
-                // This reload is a workaround for app behaviour, not a flaky-test retry, and it
-                // is what established the behaviour. Measured on iOS 26.3 against a Release
-                // build: after the edit the server and the local record both hold the new text
-                // (the test's own waitForPostMessage and waitForPostMessageInSearch pass first),
-                // yet the mounted Recent Mentions row keeps rendering the pre-edit text, and the
-                // tab bounce above does not clear it. Only remounting the whole tree surfaces
-                // the edit, which places the gap in the mounted list rather than in the fetch or
-                // the data. Drop this once that screen updates on POST_EDITED; if it is dropped
-                // while the behaviour remains, MM-T4909_3 goes red again.
                 await device.reloadReactNative();
                 await this.open();
                 await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');

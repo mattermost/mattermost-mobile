@@ -52,11 +52,6 @@ export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId
         label: 'apiCreatePost',
     });
 
-    // Throw rather than return {error}. Almost every call site destructures
-    // {post} without checking `error`, so a transport failure here used to
-    // surface as `TypeError: Cannot read properties of undefined` on whichever
-    // later line first touched the missing post, with nothing about the network
-    // in the report.
     if (result?.error || !result?.post) {
         throw new Error(`apiCreatePost failed: ${JSON.stringify(result?.error ?? 'no post returned')}`);
     }
@@ -121,18 +116,6 @@ export const apiGetLastPostInChannel = async (
     return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
-/**
- * Poll a channel until it contains a post for `message`.
- *
- * `exact` matters once callers use this to confirm their own send: substring matching can return an
- * unrelated post whose text merely contains theirs (`Message abc` inside `Message abc reply`), and a
- * caller that then treats it as "my post" acts on the wrong id. Verification callers pass
- * `exact: true`; the default stays substring so existing content-search callers are unaffected.
- *
- * Relies on apiGetPostsInChannel returning newest-first (it maps the API's `order` array, which is
- * why apiGetLastPostInChannel can take `posts[0]`). So when a suite legitimately posts the same text
- * twice to one channel, this returns the newer one — the one the caller just sent.
- */
 export const apiFindPostInChannelByMessage = async (
     baseUrl: string,
     channelId: string,
@@ -323,9 +306,6 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
         throw new Error(`apiCreatePostWithImageAttachment: upload failed: ${JSON.stringify(uploadError)}`);
     }
 
-    // Creating a post is not idempotent and a duplicate IS observable — it shows up in
-    // the channel and breaks post-count assertions. A timed-out create may already have
-    // committed, so fail and let the caller surface it rather than posting twice.
     const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
         message: '',

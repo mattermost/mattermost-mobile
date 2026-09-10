@@ -10,18 +10,6 @@ import {logError} from '../../../provision/log';
 import client from './client';
 import {getResponseFromError} from './common';
 
-// ****************************************************************
-// Users
-// See https://api.mattermost.com/#tag/users
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
-
 /**
  * Login to Mattermost server as sysadmin.
  * @param {string} baseUrl - the base server URL
@@ -43,16 +31,6 @@ export const apiAdminLogin = (baseUrl: string): any => {
  * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = null}: any = {}): Promise<any> => {
-    // A dropped connection here fails the caller's whole beforeAll. CI 34304338033 iOS shard 11
-    // lost all six channel_members tests to one such drop; the client logged
-    // "No response from server: socket hang up" while the spec only reported
-    // "[beforeAll] Failed to create gmUser2", so the transport cause was invisible in the report.
-    //
-    // Replaying is safe only when we generate the account ourselves: each attempt builds a fresh
-    // random username/email, so a first attempt that committed server-side but lost its response
-    // leaves an unused orphan account instead of colliding on the unique constraint. A
-    // caller-supplied `user` is never replayed -- that retry would fail with "username already
-    // exists" and turn a transient drop into a hard error.
     return withTransportRetry(async () => {
         try {
             const newUser = user || generateRandomUser({prefix});
@@ -70,12 +48,6 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
         idempotent: false,
         allowDuplicateWrites: !user,
         label: 'apiCreateUser',
-
-        // Tighter than the default budget on purpose: specs create several users in one
-        // beforeAll (channel_members.e2e.ts makes seven), and the full budget on each could
-        // reach Jest's 300s hook cap, replacing a readable "failed to create X" with a hang.
-        // A dropped socket fails in milliseconds, so retries still fit; only a call already
-        // burning the client's 45s request timeout is denied a replay.
         budgetMs: timeouts.HALF_MIN,
     });
 };
@@ -169,9 +141,6 @@ export const apiGetUserByUsername = async (baseUrl: string, username: string): P
 export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
         if (!user?.username || !user?.password) {
-            // Every call site awaits this without checking the result, so a malformed
-            // credential pair would otherwise surface only as a bare 400 in the log and
-            // leave the shared client on its previous session. Name the caller's mistake.
             logError(
                 '[apiLogin] refusing to log in with incomplete credentials ' +
                 `(hasUsername=${Boolean(user?.username)}, hasPassword=${Boolean(user?.password)}). ` +

@@ -229,11 +229,6 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
-
-    // Jest runs afterEach for every test in a block whose beforeAll threw (CI 34099282816).
-    // With no session to recover, all ~26 tests burn minutes each in the recovery relaunch
-    // and the shard is killed before Jest writes results. The suite still fails loudly; it
-    // just no longer takes the rest of the shard down with it.
     let setupFailed = false;
 
     const setUpSuite = async () => {

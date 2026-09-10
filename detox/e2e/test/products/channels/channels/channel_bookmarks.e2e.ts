@@ -762,10 +762,6 @@ describe('Channels - Channel Bookmarks', () => {
 
     it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
         // # Create the channel and BOTH bookmarks before the test user joins it.
-        // Join last, so there are no bookmark events to drop. Adding the user first races the
-        // app: handleBookmarks discards a channel_bookmark_created event that arrives before
-        // the membership is persisted, and the incremental bookmarks_since fetch then never
-        // asks for it again (CI 34185558418 showed only the file bookmark).
         const {channel: channelT69455} = await Channel.apiCreateChannel(siteOneUrl, {
             type: 'O',
             teamId: testTeam.id,

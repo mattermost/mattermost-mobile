@@ -55,7 +55,7 @@ describe('Server Login - Server List', () => {
             lockAcquired = true;
 
             // custom_terms_of_service heals ToS on acquire, but a stolen lease can re-enable it
-            // after this hook (CI 33941148759). Clear it while we hold the lock, so the SITE_3
+            // after this hook. Clear it while we hold the lock, so the SITE_3
             // login is not sitting under that overlay.
             await User.apiAdminLogin(siteThreeUrl);
             const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteThreeUrl);
@@ -299,14 +299,6 @@ describe('Server Login - Server List', () => {
         // # Tap on logout button
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.TEN_SEC);
         await Alert.logoutButton.tap();
-
-        // The server may not be reachable when the logout request goes out, in which case the
-        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
-        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
-        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
-        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
-        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
-        // bypassed it.
         await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
         await wait(timeouts.TWO_SEC);
 
@@ -372,9 +364,6 @@ describe('Server Login - Server List', () => {
 
         await ServerListScreen.scrollServerListIntoView();
         await waitForElementToExist(ServerListScreen.getServerItemInactive(serverTwoDisplayName), timeouts.TEN_SEC);
-
-        // See MM-T4691_5: the helper gates the reveal on hittability instead of a 100% pixel
-        // threshold that never resolved on iOS, and retries the swipe.
         await ServerListScreen.swipeRevealAndTapOption(
             serverTwoDisplayName,
             ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName),
@@ -382,14 +371,6 @@ describe('Server Login - Server List', () => {
         await wait(timeouts.FOUR_SEC);
         await waitForElementToBeVisible(Alert.logoutButton, timeouts.HALF_MIN);
         await Alert.logoutButton.tap();
-
-        // The server may not be reachable when the logout request goes out, in which case the
-        // app raises a native "Logout not complete" alert over the sheet. It is not a modal
-        // dismissKnownModals can reach, and left up it covers the rows this test taps next --
-        // MM-T4691_7 failed at the Server 1 row with "does not pass visibility percent
-        // threshold (100)" while that alert was on screen. AccountScreen.logout() already
-        // guards its own logout this way; these specs tap Alert.logoutButton directly and so
-        // bypassed it.
         await Alert.dismissLogoutNotCompleteIfPresent(timeouts.FOUR_SEC);
         await wait(timeouts.TWO_SEC);
         await ServerListScreen.getServerItemActive(serverOneDisplayName).atIndex(0).tap();

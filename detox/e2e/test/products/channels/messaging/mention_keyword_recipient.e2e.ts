@@ -7,27 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-// MM-T510, the five-channel mention matrix. A second user posts, in five different channels the
-// recipient belongs to, one message each: `@channel`, `@all`, the recipient's keyword, a DM, and a
-// GM with no mention words. All five count as one mention for the recipient: the server adds an
-// implicit GM mention to every member on every group-message post (app/notification.go, "Add a GM
-// mention to all members of a GM channel"), exactly as it does for a DM, so the GM row carries a
-// badge too. The test case's "(no mention)" for the GM is about the push text -- "posted a
-// message" rather than "mentioned you" -- which is not observable here.
-//
-// Two server rules shape the setup, both verified against a live server:
-//   - being added to a channel by someone else is itself an implicit mention for the added user
-//     (app/notification.go, PostTypeAddToChannel). apiInit and createSharedChannel add the recipient
-//     via the admin session, so the recipient views those channels before anything is posted;
-//     otherwise every public channel starts at mention_count=1 and exact counts are impossible.
-//   - the server decides what is a mention at post time, so the recipient's keyword is configured
-//     before the mentioner posts.
-//
-// What is asserted is the server's per-channel mention/unread state and the app's rendering of it
-// (sidebar badges, Recent Mentions). The push notification that each mention would also produce is
-// not observable here: the PR test servers have no push proxy and simulators receive no APNs/FCM.
-// The tap-to-open half of the case is covered by notifications/push_notification_open.e2e.ts.
-
 import {Channel, Post, Setup, Team, User} from '@support/server_api';
 import {
     serverOneUrl,
@@ -113,8 +92,7 @@ describe('Messaging - Channel-wide Mention and Keyword (Recipient)', () => {
         // # Configure B's keyword notification and channel-mention notification BEFORE anything is
         // posted: the server decides what counts as a mention at post time. notify_props, not a
         // preference: mention_keys is the server's keyword field, and `channel` is what makes
-        // @channel/@all count. The keyword is unique per run so nothing else can match it. The
-        // settings UI itself is covered by mention_notification_settings.e2e.ts (MM-T5107).
+        // @channel/@all count.
         keyword = `e2e-${getRandomId()}`;
         await User.apiLogin(siteOneUrl, {
             username: recipient.newUser.username,

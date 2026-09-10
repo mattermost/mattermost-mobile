@@ -28,21 +28,6 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {device, expect} from 'detox';
 
-/**
- * Enabling custom ToS is server-wide and has no per-user scoping, so every login on the
- * server is forced through the modal while this suite runs. PR CI provisions only two Detox
- * servers and rotates them as SITE_1/SITE_2 across all shards, so running this against
- * SITE_1 would push a ToS modal in front of roughly half the other shards mid-run.
- *
- * It therefore runs against the dedicated third site and holds the SITE_3 lock, which
- * `server_list` also holds while it logs in to the third server — without that, this suite's
- * ToS modal would land on top of that login. iOS and Android share SITE_3, so the lock also
- * serialises the two platform jobs.
- *
- * The `hasThreeDistinctServers` gate is load-bearing: `siteThreeUrl` silently falls back to
- * `siteOneUrl` on single-server topologies, so without it a local run would quietly
- * reintroduce the blast radius this suite exists to avoid.
- */
 jest.setTimeout(timeouts.ONE_MIN * 25);
 
 /**
@@ -118,9 +103,6 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         }
     });
 
-    // Decline first: MM-T1194 relaunches the accepted session, and Android logout after that
-    // relaunch can leave a blank account tab (CI 33941148759), so decline never reaches the
-    // server form. Running it before the relaunch keeps it on a clean login.
     it('MM-T1193_1 - should return to server screen after declining custom terms of service', async () => {
         // Fresh user so ToS is required (the beforeAll user is reserved for accept)
         const {user: declineUser} = await Setup.apiInit(siteThreeUrl);

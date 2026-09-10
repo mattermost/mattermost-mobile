@@ -67,12 +67,6 @@ describe('Channels - Mute and Unmute Channel', () => {
 
         // # Tap on channel quick actions button and tap on muted quick action to unmute the channel
         await ChannelScreen.channelQuickActionsButton.tap();
-
-        // Same gate as the mute step, and this is the one that actually failed: CI 34351941461
-        // timed out on the unmute toast below, not on this tap. The preceding step waits for
-        // the muted toast to leave the tree, but its Animated.View exit is still settling here
-        // -- the same "Main Run Loop is awake" blocker noted above -- so a blind one-second
-        // wait can dispatch this tap before the row is interactive. No unmute, so no toast.
         await waitFor(ChannelScreen.unmuteQuickAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.unmuteQuickAction.tap();
 
@@ -92,10 +86,6 @@ describe('Channels - Mute and Unmute Channel', () => {
         await ChannelInfoScreen.muteAction.tap();
 
         // * Verify channel is muted.
-        // Poll rather than assert once: tapping mute swaps the Mute row for the Unmute
-        // row on a later render, and Detox's expect() evaluates a single time with no
-        // retry, so it can land on the frame before the swap. CI 34170835045 failed here
-        // on the 50%-visibility matcher for exactly that reason.
         await waitFor(ChannelInfoScreen.unmuteAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.FOUR_SEC);
 

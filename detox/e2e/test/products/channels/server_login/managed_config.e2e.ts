@@ -24,12 +24,6 @@ import {
 } from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
-// MM-T2940 covers the settings an MDM pushes to an enrolled iOS device. Enrollment and
-// app wrapping need a real device, but the app reads the payload from
-// UserDefaults["com.apple.configuration.managed"], which the simulator can be seeded with
-// (support/utils/managed_config.ts). What is asserted here is the config-enforcement
-// layer: serverUrl / serverName / username pre-fill and allowOtherServers autoconnect.
-// Android is skipped loudly — app restrictions need a DPC the emulator does not carry.
 (isManagedConfigControlAvailable() ? describe : describe.skip)('Server Login - EMM Managed Configuration', () => {
     const managedServerName = 'Managed Server';
     let testUser: any;

@@ -19,16 +19,6 @@ import {
 import {goOffline, goOnline, isNetworkControlAvailable, timeouts, wait} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
-// Offline has to make the app's requests genuinely fail, locally to the device under
-// test; see support/utils/offline_simulation.ts. Android uses emulator airplane mode.
-// iOS is refused by isNetworkControlAvailable(), because the Cloudflare-fronted servers
-// answer AAAA from anycast and a pf block of resolved IPs cannot cover the address the
-// app actually dials — the suite skips loudly there with the reason printed at runtime.
-//
-// Android was suite-skipped while the app red-boxed on a Fabric addViewAt reparent when
-// the failed-post sheet's SlideUpPanelItem was pressed (run 34160726648). That crash is
-// fixed on this branch (collapsable={false} on the SlideUpPanelItem row), so the gate is
-// back: Android runs, iOS skips.
 (isNetworkControlAvailable(serverOneUrl) ? describe : describe.skip)('Messaging - Pending Posts Offline', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -50,12 +40,6 @@ import {by, element, expect, waitFor} from 'detox';
     });
 
     afterEach(async () => {
-        // # Never carry airplane mode into the next test. In run 34472384034 (attempt 1)
-        // MM-T416_1 timed out before its own goOnline, so MM-T416_2 started offline with
-        // _1's post still pending: _1's failed indicator then appeared during _2's wait,
-        // _2 matched it (post.failed.button is not scoped to a post), deleted _1's post,
-        // and _2's own post was re-sent on reconnect. goOnline is idempotent when already
-        // online (airplane-mode disable is a no-op and the reachability poll returns at once).
         await goOnline(serverOneUrl);
     });
 
@@ -68,33 +52,8 @@ import {by, element, expect, waitFor} from 'detox';
         await HomeScreen.logout();
     });
 
-    // How long an offline send can take before the app marks the post failed. This is the
-    // client's retry chain, which is finite but wide, not a guess at CI timing:
-    //   - react-native-network-client RetryInterceptor replays every IOException for POST
-    //     while attempts <= retryLimit (app DEFAULT_CONFIG: 3), so four attempts, with
-    //     ExponentialRetryInterceptor backoff 2^n * 0.5 s = 1 + 2 + 4 = 7 s between them.
-    //   - The app sets no timeoutIntervalForRequest, so TimeoutInterceptor keeps its
-    //     defaults: read and write timeout 60 s. OkHttp's connect timeout is its default 10 s.
-    //   - What each attempt costs under airplane mode depends on state the test cannot see.
-    //     Measured in run 34472384034 on one emulator, minutes apart, same code:
-    //       MM-T416_1 attempt 2: send -> "Error sending a post" in 7.3 s (resolver fails at once)
-    //       MM-T416_1 attempt 1: 67.3 s (resolver blocked ~15 s per attempt: 4 x 15 + 7)
-    //       MM-T416_2 attempt 2: no error within the 60 s wait at all
-    //     MM-T416_2 is the worst case by construction: goOnline() just re-established
-    //     connections, so the POST is written into a pooled socket that airplane mode has
-    //     silently cut, and the first attempt only fails at the 60 s read timeout. Then three
-    //     fresh attempts at up to ~15 s each, plus backoff: 60 + 3 x 15 + 7 = 112 s.
-    // 150 s covers that with margin for OkHttp's own retryOnConnectionFailure route retry.
-    // props.failed is terminal (app/actions/remote/post.ts), so a wider wait cannot hide a
-    // defect: the indicator arrives when the retries are exhausted or it never arrives.
-    // Bounds that did NOT hold, so they are not retried: 30 s and 60 s (both assumed a
-    // per-attempt cost that CI does not guarantee).
     const FAILED_POST_TIMEOUT = timeouts.TWO_MIN + timeouts.HALF_MIN;
 
-    // Zephyr MM-T416 has two steps on two failed posts: retry one, delete the other. They run
-    // as two offline/online cycles with one failed post each. With two failed posts on screen
-    // at once, post.failed.button matches twice and the pending posts carry client-side ids
-    // the test cannot know, so there is no stable way to say which "i" belongs to which post.
     it('MM-T416_1 - should fail to post without network and re-send after network is restored', async () => {
         const message = `offline post ${Date.now()}`;
 
@@ -132,19 +91,8 @@ import {by, element, expect, waitFor} from 'detox';
     it('MM-T416_2 - should delete a failed post after network is restored without sending it', async () => {
         const message = `offline delete ${Date.now()}`;
 
-        // # Give the emulator's radio state and the app's post-reconnect resync (WebSocket,
-        // missed-message fetch) time to settle before toggling airplane mode again. Without
-        // this, CI 34304338033 lost the Detox<->device connection outright for 60s while
-        // waiting on the failed-post indicator below — identically on both the first attempt
-        // and the automatic retry, so this is deterministic contention from the rapid
-        // offline/online/offline cycle, not a one-off flake. goOnline() only confirms the
-        // emulator can reach the server again; it does not wait for the app to finish
-        // reacting to that recovery.
         await wait(timeouts.TWO_SEC);
 
-        // * Precondition: no failed post is on screen from MM-T416_1. post.failed.button is
-        // not scoped to a post, so a leftover would be matched below and the wrong post
-        // deleted; fail here, with the cause named, instead of at the final assertion.
         const failedButton = element(by.id('post.failed.button'));
         await expect(failedButton).not.toExist();
 

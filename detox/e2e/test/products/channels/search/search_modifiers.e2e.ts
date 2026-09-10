@@ -29,34 +29,6 @@ import {
 import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
-// MM-T585_1 hangs on iOS and takes the rest of the file down with it. PR #10122 skipped it on
-// iOS as a "remaining iOS skip"; commit 05c47fec5c un-skipped it as "already passing", verified
-// only on an idle local machine. It is not passing: it fails on every CI run and reproduces
-// locally on iOS 26.3 / iPhone 17 Pro every time.
-//
-// Mechanism, from a local trace run (matches CI run 34304338033 message-for-message):
-//   284 expectation toExist navigation.header.back  -> invokeResult (app was idle here)
-//   285 setSyncSettings {"enabled":false}           -> done
-//   286 tap navigation.header.back                  -> invokeResult (the tap worked)
-//   287 setSyncSettings {"enabled":true}            -> NEVER ACKNOWLEDGED
-// That is the enable inside ChannelScreen.back()'s withSynchronizationDisabled block.
-// device.enableSynchronization() only resolves once the app reports idle, and from the tap
-// onwards the app reports app_status "busy" forever, on a never-completing
-// one_time_events "Runloop Perform Block" on the JS Run Loop (24/24 status polls busy).
-//
-// It takes the next test with it, and the reason matters: the Detox connection itself recovers
-// (after this test's afterEach, message 299 setSyncSettings{false} is acknowledged normally and
-// MM-T348_1's beforeEach runs through to invokeResult). What does not recover is the APP -- it
-// is left wedged in the same never-idle state, so MM-T348_1 then hits a second, independent
-// instance of the same stall on its own beforeEach `ChannelListScreen.toBeVisible()`
-// (channel_list.ts:363) and dies at its own timeout. Skipping this test works because it stops
-// wedging the app, NOT because it unblocks a queue.
-//
-// Verified locally on iOS 26.3 / iPhone 17 Pro: with MM-T585_1 running the file is
-// "2 failed, 2 passed"; with it skipped, "1 skipped, 3 passed" and MM-T348_1 passes in 64s.
-//
-// The stall is app-side (a JS run-loop block that never completes), so the fix does not belong
-// in this spec. Re-enable once that is fixed -- do not simply delete the guard again.
 const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Modifiers', () => {
@@ -206,7 +178,7 @@ describe('Search - Modifiers', () => {
         }
 
         // Cleanup must run with sync on — under disableSynchronization the recent-item
-        // row can exist then vanish before tap (CI 59ec6ae iOS MM-T585_1).
+        // row can exist then vanish before tap
         await SearchMessagesScreen.searchClearButton.tap();
         const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
         await waitFor(plainRemove).toExist().withTimeout(timeouts.TEN_SEC);

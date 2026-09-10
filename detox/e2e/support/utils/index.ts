@@ -153,8 +153,6 @@ export async function retryWithReload(
                     const {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
                     /* eslint-disable no-await-in-loop -- sequential recovery after reload */
 
-                    // Reload can restore the last channel (tab bar hidden). connectToServer
-                    // would then wait 30s for server.screen (CI Detox Android hook 300s).
                     if (await screenExists(ChannelScreen.channelScreen)) {
                         logDebug('retryWithReload: channel visible after reload, popping to list');
                         if (isAndroid()) {
@@ -165,9 +163,6 @@ export async function retryWithReload(
                         await wait(timeouts.TWO_SEC);
                     }
 
-                    // HomeScreen.logout swallows its own errors, so detection and logout
-                    // stay separate: a failed logout still leaves the session on the
-                    // channel list, and connectToServer would then hunt server.screen.
                     if (await screenExists(ChannelListScreen.channelListScreen)) {
                         await HomeScreen.logout();
                         await wait(timeouts.TWO_SEC);
@@ -184,8 +179,6 @@ export async function retryWithReload(
                         try {
                             await ServerScreen.connectToServer(serverUrl, serverDisplayName);
                         } catch {
-                            // White/loading screens have no server.screen; keep retrying func()
-                            // instead of aborting the loop (CI 33912536937 MM-T6230 beforeAll).
                             logDebug('retryWithReload: connectToServer failed after reload, will retry login');
                         }
                     }

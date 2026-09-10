@@ -19,25 +19,6 @@ import {
 import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
-// A real push cannot reach the CI app: the PR test servers have no push proxy (the harness
-// already dismisses "Notifications cannot be received from this server" at four sites) and
-// simulators/emulators receive no APNs/FCM. What CAN be exercised is everything the app does
-// once a notification is tapped, which is the product logic MM-T3271/MM-T3272 protect:
-// the tap -> onNotificationOpened -> processNotification -> openNotification ->
-// switchToChannelById path (app/init/push_notifications.ts, app/actions/remote/notifications.ts).
-//
-// Detox delivers a synthetic notification as the app's launch reason:
-//   device.launchApp({newInstance: false, userNotification})  == tap a push while backgrounded
-//   device.launchApp({newInstance: true,  userNotification})  == tap a push while closed
-// On iOS the framework hands `payload` to the app as the notification's userInfo. On Android
-// NotificationDataParser turns `payload` into a Bundle and LaunchIntentsFactory spreads it as
-// Intent extras; react-native-notifications' NotificationIntentAdapter then requires the
-// fields under a "pushNotification" sub-bundle (otherwise it falls back to ALL extras, which
-// would include Detox's own launch args). Hence the platform branch in buildTapPayload.
-//
-// Not covered here, deliberately: that a real post *produces* a real push. That needs a push
-// proxy and a physical device and stays manual.
-
 type TapTarget = {
     serverUrl: string;
     channelId: string;
@@ -100,14 +81,6 @@ describe('Notifications - Open App via Push Notification', () => {
 
     it('MM-T3271 - should open the channel the notification came from when tapped from the background', async () => {
         // # Open a channel, then send the app to the background.
-        // Android: Detox's sendToHome is a plain HOME keypress (AndroidDriver -> uiDevice.pressHome)
-        // with no in-app wait. iOS: deliberately not called. Detox implements it as an in-app
-        // "waitForBackground" with no timeout (client/actions/actions.js), and on the iOS 26.x
-        // simulator that callback never fires even though SpringBoard does come to the front --
-        // the first run of this spec sat on "(id = 76) waitForBackground" until the 240 s test
-        // timeout with the home screen in testFnFailure.png. The relaunch below resumes the
-        // running app with the notification instead; the path it exercises
-        // (onNotificationOpened -> processNotification -> openNotification) is the same.
         await ChannelScreen.open(channelsCategory, testChannel.name);
         if (isAndroid()) {
             await device.sendToHome();
@@ -118,12 +91,6 @@ describe('Notifications - Open App via Push Notification', () => {
         const {post} = await Post.apiCreatePost(siteOneUrl, {channelId: testChannel.id, message});
 
         // # Tap the notification: bring the app back with it as the open reason.
-        // Android has to use newInstance: true. With false, Detox builds an implicit
-        // MAIN/LAUNCHER intent (LaunchIntentsFactory.intentWithNotificationData,
-        // initialLaunch=false) that the OS refuses: "No Activity found to handle Intent
-        // { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] ... }".
-        // The fresh-process launch resolves the component explicitly, and the HOME press
-        // above still makes this a real return from the background at the OS level.
         await device.launchApp({
             newInstance: isAndroid(),
             userNotification: buildTapPayload({
