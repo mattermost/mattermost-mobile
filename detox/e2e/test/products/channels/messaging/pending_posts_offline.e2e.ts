@@ -49,6 +49,16 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.open(channelsCategory, testChannel.name);
     });
 
+    afterEach(async () => {
+        // # Never carry airplane mode into the next test. In run 34472384034 (attempt 1)
+        // MM-T416_1 timed out before its own goOnline, so MM-T416_2 started offline with
+        // _1's post still pending: _1's failed indicator then appeared during _2's wait,
+        // _2 matched it (post.failed.button is not scoped to a post), deleted _1's post,
+        // and _2's own post was re-sent on reconnect. goOnline is idempotent when already
+        // online (airplane-mode disable is a no-op and the reachability poll returns at once).
+        await goOnline(serverOneUrl);
+    });
+
     afterAll(async () => {
         // # Restore network and log out — goOnline polls until connectivity is
         // verified, so a failure mid-test cannot leave the host blocked. Leave the
@@ -57,6 +67,29 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.back();
         await HomeScreen.logout();
     });
+
+    // How long an offline send can take before the app marks the post failed. This is the
+    // client's retry chain, which is finite but wide, not a guess at CI timing:
+    //   - react-native-network-client RetryInterceptor replays every IOException for POST
+    //     while attempts <= retryLimit (app DEFAULT_CONFIG: 3), so four attempts, with
+    //     ExponentialRetryInterceptor backoff 2^n * 0.5 s = 1 + 2 + 4 = 7 s between them.
+    //   - The app sets no timeoutIntervalForRequest, so TimeoutInterceptor keeps its
+    //     defaults: read and write timeout 60 s. OkHttp's connect timeout is its default 10 s.
+    //   - What each attempt costs under airplane mode depends on state the test cannot see.
+    //     Measured in run 34472384034 on one emulator, minutes apart, same code:
+    //       MM-T416_1 attempt 2: send -> "Error sending a post" in 7.3 s (resolver fails at once)
+    //       MM-T416_1 attempt 1: 67.3 s (resolver blocked ~15 s per attempt: 4 x 15 + 7)
+    //       MM-T416_2 attempt 2: no error within the 60 s wait at all
+    //     MM-T416_2 is the worst case by construction: goOnline() just re-established
+    //     connections, so the POST is written into a pooled socket that airplane mode has
+    //     silently cut, and the first attempt only fails at the 60 s read timeout. Then three
+    //     fresh attempts at up to ~15 s each, plus backoff: 60 + 3 x 15 + 7 = 112 s.
+    // 150 s covers that with margin for OkHttp's own retryOnConnectionFailure route retry.
+    // props.failed is terminal (app/actions/remote/post.ts), so a wider wait cannot hide a
+    // defect: the indicator arrives when the retries are exhausted or it never arrives.
+    // Bounds that did NOT hold, so they are not retried: 30 s and 60 s (both assumed a
+    // per-attempt cost that CI does not guarantee).
+    const FAILED_POST_TIMEOUT = timeouts.TWO_MIN + timeouts.HALF_MIN;
 
     // Zephyr MM-T416 has two steps on two failed posts: retry one, delete the other. They run
     // as two offline/online cycles with one failed post each. With two failed posts on screen
@@ -73,11 +106,9 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.composePostDraft(message);
         await ChannelScreen.tapSendButton();
 
-        // * Verify the post failed (failed indicator appears). Same client retry budget as
-        // MM-T416_2 below (four attempts + 7 s backoff, up to 47 s if the connect hangs);
-        // this test's cold DNS cache usually fails fast, but it is bounded the same way.
+        // * Verify the post failed (failed indicator appears); see FAILED_POST_TIMEOUT
         const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.ONE_MIN);
+        await waitFor(failedButton).toBeVisible().withTimeout(FAILED_POST_TIMEOUT);
 
         // # Restore network access (harness polls until the server is reachable)
         await goOnline(serverOneUrl);
@@ -111,37 +142,21 @@ import {by, element, expect, waitFor} from 'detox';
         // reacting to that recovery.
         await wait(timeouts.TWO_SEC);
 
+        // * Precondition: no failed post is on screen from MM-T416_1. post.failed.button is
+        // not scoped to a post, so a leftover would be matched below and the wrong post
+        // deleted; fail here, with the cause named, instead of at the final assertion.
+        const failedButton = element(by.id('post.failed.button'));
+        await expect(failedButton).not.toExist();
+
         // # Disable the network and send a message while offline
         await goOffline(serverOneUrl);
         await ChannelScreen.composePostDraft(message);
         await ChannelScreen.tapSendButton();
 
-        // * Verify the post failed (failed indicator appears)
-        //
-        // The bound below is derived from the client's retry interceptor, not from CI timing.
-        // react-native-network-client RetryInterceptor.intercept(): every IOException on a
-        // method in defaultRetryMethods (which includes POST) is replayed while
-        // attempts <= retryLimit, and the app's DEFAULT_CONFIG sets retryLimit 3 -- so four
-        // attempts, with ExponentialRetryInterceptor backoff of 2^n * 0.5 s = 1 + 2 + 4 = 7 s.
-        // The per-attempt cost depends on DNS cache state, which is what makes MM-T416_1 and
-        // this test behave differently on the same code:
-        //   - MM-T416_1 sends with a cold cache: the resolver fails in ~5 s per attempt
-        //     ("Unable to resolve host"), so the rejection lands at ~31 s. Observed in run
-        //     34452126763's device log: the _1 error at 08:21:04, 31 s after its disconnect.
-        //   - This test sends after goOnline() warmed the cache: the connect to the cached IP
-        //     hangs for OkHttp's default 10 s connectTimeout (nothing in the library or the
-        //     app overrides it), so the rejection lands at 4 * 10 + 7 = 47 s. The same run's
-        //     device log has NO "Error sending a post" inside this test's own window, which
-        //     is exactly what a >30 s failure looks like from a 30 s wait.
-        // Only after that rejection does app/actions/remote/post.ts write props.failed, which
-        // is what renders post.failed.button. ONE_MIN covers the 47 s bound with margin.
-        // props.failed is terminal, so waiting longer cannot mask a defect: the indicator
-        // either arrives once the retries are exhausted or it never does.
-        // Prior attempts on this assertion that did NOT hold, so they are not retried:
-        // dismissing the keyboard (the element was absent, not occluded) and a 30 s wait
-        // (undersized -- it assumed instant DNS failure).
-        const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.ONE_MIN);
+        // * Verify the post failed (failed indicator appears); see FAILED_POST_TIMEOUT. The
+        // keyboard is not the reason this can be slow: a prior "dismiss keyboard" fix did not
+        // hold because the element was absent, not occluded.
+        await waitFor(failedButton).toBeVisible().withTimeout(FAILED_POST_TIMEOUT);
 
         // # Restore network access
         await goOnline(serverOneUrl);
