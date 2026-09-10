@@ -110,4 +110,14 @@ describe('openLink', () => {
         matchDeepLinkMock.mockRestore();
         tryOpenURLMock.mockRestore();
     });
+
+    it('should open tel: links with tryOpenURL', async () => {
+        const tryOpenURLMock = jest.spyOn(UrlUtils, 'tryOpenURL').mockImplementation(() => {});
+
+        await Links.openLink('tel:+15551234567', 'https://server-url.com', 'https://site-url.com', intl);
+
+        expect(tryOpenURLMock).toHaveBeenCalledWith('tel:+15551234567', expect.any(Function));
+
+        tryOpenURLMock.mockRestore();
+    });
 });

@@ -948,6 +948,7 @@
   "mobile.markdown.copy_header": "Copy header text",
   "mobile.markdown.image.too_large": "Image exceeds max dimensions of {maxWidth} by {maxHeight}:",
   "mobile.markdown.link.copy_email": "Copy Email Address",
+  "mobile.markdown.link.copy_phone": "Copy Phone Number",
   "mobile.markdown.link.copy_url": "Copy URL",
   "mobile.mention.copy_mention": "Copy Mention",
   "mobile.message_length.message": "Your current message is too long. Current character count: {count}/{max}",
