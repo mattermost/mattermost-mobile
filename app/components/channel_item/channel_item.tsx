@@ -205,6 +205,7 @@ const ChannelItem = ({
                     visible={mentionsCount > 0}
                     value={mentionsCount}
                     style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
+                    testID={`${channelItemTestId}.badge`}
                 />
                 {hasCall &&
                 <CompassIcon
