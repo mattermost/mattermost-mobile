@@ -251,4 +251,35 @@ describe('Markdown', () => {
             });
         });
     });
+
+    describe('phone number autolinking', () => {
+        it('should autolink phone numbers when links are enabled', () => {
+            const spy = jest.spyOn(Transforms, 'autolinkPhoneNumbers');
+
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='This is a test'
+                />,
+            );
+
+            expect(spy).toHaveBeenCalled();
+            spy.mockRestore();
+        });
+
+        it('should not autolink phone numbers when links are disabled', () => {
+            const spy = jest.spyOn(Transforms, 'autolinkPhoneNumbers');
+
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    disableLinks={true}
+                    value='This is a test'
+                />,
+            );
+
+            expect(spy).not.toHaveBeenCalled();
+            spy.mockRestore();
+        });
+    });
 });

@@ -38,7 +38,7 @@ import MarkdownTable from './markdown_table';
 import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
 import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
-import {addListItemIndices, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, processInlineEntities, pullOutImages} from './transform';
+import {addListItemIndices, autolinkPhoneNumbers, combineTextNodes, highlightMentions, highlightWithoutNotification, highlightSearchPatterns, parseTaskLists, processInlineEntities, pullOutImages} from './transform';
 
 import type {ChannelMentions} from './channel_mention/channel_mention';
 import type {
@@ -728,6 +728,9 @@ const Markdown = ({
             ast = addListItemIndices(ast);
             ast = pullOutImages(ast);
             ast = parseTaskLists(ast);
+            if (!disableLinks && !isUnsafeLinksPost) {
+                ast = autolinkPhoneNumbers(ast);
+            }
             ast = processInlineEntities(ast, serverUrl);
             if (mentionKeys) {
                 ast = highlightMentions(ast, mentionKeys);
@@ -791,7 +794,7 @@ const Markdown = ({
                 />
             );
         }
-    }, [channelId, highlightKeys, isEdited, mentionKeys, parser, postId, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
+    }, [channelId, disableLinks, highlightKeys, isEdited, isUnsafeLinksPost, mentionKeys, parser, postId, renderer, searchPatterns, serverUrl, style.errorMessage, value]);
 
     return output;
 };

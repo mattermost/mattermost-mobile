@@ -7,6 +7,7 @@ import {Node, Parser} from 'commonmark';
 
 import {
     addListItemIndices,
+    autolinkPhoneNumbers,
     combineTextNodes,
     getFirstMatch,
     highlightMentions,
@@ -3474,6 +3475,202 @@ describe('Components.Markdown.transform', () => {
                 expect(result).toBeNull();
             });
         });
+    });
+
+    describe('autolinkPhoneNumbers', () => {
+        const tests = [{
+            name: 'grouped national number',
+            input: 'Call me at 555-123-4567',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Call me at ',
+                    }, {
+                        type: 'link',
+                        destination: 'tel:5551234567',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: '555-123-4567',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'E.164 number',
+            input: 'Call +15551234567',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Call ',
+                    }, {
+                        type: 'link',
+                        destination: 'tel:+15551234567',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: '+15551234567',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'tel URI with plus that the parser does not autolink',
+            input: 'Call tel:+15551234567',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Call ',
+                    }, {
+                        type: 'link',
+                        destination: 'tel:+15551234567',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: 'tel:+15551234567',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'multiple numbers',
+            input: '555-123-4567 or 1-800-555-1234',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'link',
+                        destination: 'tel:5551234567',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: '555-123-4567',
+                        }],
+                    }, {
+                        type: 'text',
+                        literal: ' or ',
+                    }, {
+                        type: 'link',
+                        destination: 'tel:18005551234',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: '1-800-555-1234',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'does not match inside an existing markdown link',
+            input: '[Call 555-123-4567](https://example.com)',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'link',
+                        destination: 'https://example.com',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: 'Call 555-123-4567',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'does not match inside an existing tel markdown link',
+            input: '[Call](tel:+15551234567)',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'link',
+                        destination: 'tel:+15551234567',
+                        title: '',
+                        children: [{
+                            type: 'text',
+                            literal: 'Call',
+                        }],
+                    }],
+                }],
+            },
+        }, {
+            name: 'does not match inside a code span',
+            input: 'Use `555-123-4567`',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Use ',
+                    }, {
+                        type: 'code',
+                        literal: '555-123-4567',
+                    }],
+                }],
+            },
+        }, {
+            name: 'does not match a bare digit run',
+            input: 'Ticket 1234567890',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Ticket 1234567890',
+                    }],
+                }],
+            },
+        }, {
+            name: 'links a number inside emphasis',
+            input: 'Call **555-123-4567**',
+            expected: {
+                type: 'document',
+                children: [{
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        literal: 'Call ',
+                    }, {
+                        type: 'strong',
+                        children: [{
+                            type: 'link',
+                            destination: 'tel:5551234567',
+                            title: '',
+                            children: [{
+                                type: 'text',
+                                literal: '555-123-4567',
+                            }],
+                        }],
+                    }],
+                }],
+            },
+        }];
+
+        for (const test of tests) {
+            it(test.name, () => {
+                const input = combineTextNodes(parser.parse(test.input));
+                const expected = makeAst(test.expected);
+                const actual = autolinkPhoneNumbers(input);
+
+                assert.ok(verifyAst(actual));
+                assert.deepStrictEqual(stripUnusedFields(actual), stripUnusedFields(expected));
+            });
+        }
     });
 
     describe('processInlineEntities', () => {
