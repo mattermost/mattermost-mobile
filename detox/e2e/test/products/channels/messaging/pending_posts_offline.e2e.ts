@@ -73,9 +73,11 @@ import {by, element, expect, waitFor} from 'detox';
         await ChannelScreen.composePostDraft(message);
         await ChannelScreen.tapSendButton();
 
-        // * Verify the post failed (failed indicator appears)
+        // * Verify the post failed (failed indicator appears). Same client retry budget as
+        // MM-T416_2 below -- createPost() retries three times with exponential backoff before
+        // it rejects, so the indicator cannot appear for ~11s.
         const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Restore network access (harness polls until the server is reachable)
         await goOnline(serverOneUrl);
@@ -116,29 +118,21 @@ import {by, element, expect, waitFor} from 'detox';
 
         // * Verify the post failed (failed indicator appears)
         //
-        // KNOWN TO FAIL INTERMITTENTLY ON CI, and not for a timing reason -- do not "fix" this
-        // by raising the timeout or dismissing the keyboard. Both were tried and neither is the
-        // mechanism. Evidence from run 34442291241 (detox-android, shard 16qnf9j1h6-7):
-        //   - the failure screenshot shows this post still rendered GREY, i.e. pending, with no
-        //     failed indicator anywhere on screen -- so nothing was occluded, the element was
-        //     never created;
-        //   - testDone.png, taken at the end of the test, shows it still pending, so a longer
-        //     wait would not have helped either;
-        //   - the device log for this test's own window contains no "Error sending a post" at
-        //     all. MM-T416_1's window does (06:22:01), which is why that test passes.
-        // The app only marks a post failed once a send attempt fails. MM-T416_1 is sent while
-        // the app has not yet processed the disconnect, so it attempts, gets "Unable to resolve
-        // host", and flags the post. By the time this test sends, the app has registered the
-        // network loss ("websocket closed" at 06:22:14) and holds the post as pending without
-        // attempting it -- so post.failed.button is never rendered and this assertion is waiting
-        // on a state the app will not reach on that path.
-        // Making this deterministic means making the app attempt the send, which airplane mode
-        // (see goOffline in support/utils/offline_simulation.ts) actively prevents because it
-        // also signals connectivity loss to the app. A network-level block that leaves the radio
-        // up would not have that problem. Not changed here: that is a shared-helper change and
-        // it should be made deliberately, not folded into a flake fix.
+        // Waits for the client's retry budget, not for CI to catch up. NetworkManager's
+        // DEFAULT_CONFIG sets retryPolicyConfiguration EXPONENTIAL_RETRY with retryLimit 3,
+        // base 2, scale 0.5, so createPost() does not reject until four attempts and roughly
+        // 0.5*2^1 + 0.5*2^2 + 0.5*2^3 = 7s of backoff have elapsed. Only then does
+        // app/actions/remote/post.ts catch the error and write props.failed, which is what
+        // renders post.failed.button. The budget lands near 11s, i.e. just past the 10s this
+        // used to allow -- which is why it passed locally and on quick runs and failed on
+        // slower ones. Run 34442291241 caught it mid-budget: the failure screenshot shows the
+        // post still pending with no indicator anywhere, testDone.png shows it still pending,
+        // and this test's device.log window has no "Error sending a post" at all (MM-T416_1's
+        // window does, which is why that one passed).
+        // Waiting longer cannot mask a defect here: props.failed is terminal, so the indicator
+        // either arrives once the retries are exhausted or it never does.
         const failedButton = element(by.id('post.failed.button'));
-        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(failedButton).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Restore network access
         await goOnline(serverOneUrl);
