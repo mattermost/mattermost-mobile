@@ -81,9 +81,16 @@ for attempt in 1 2 3; do
     echo "==> ${key} is '${actual}' after attempt ${attempt}, re-applying the patch" >&2
 done
 
-# Separate "this server will not let us" from "this should have worked". RestrictSystemAdmin
-# gates every write_restrictable/cloud_restrictable field, and it is itself write_restrictable,
-# so an API admin session cannot clear it — the environment simply cannot host the test.
+# Work out WHY before deciding failure vs skip, and say so either way. The first version
+# of this script only reported that the value "never took", which left the next run just as
+# undiagnosable as the one before it -- so both signals are printed unconditionally.
+#
+# Two ways an installation can refuse a write while still answering 200:
+#   1. ExperimentalSettings.RestrictSystemAdmin -- drops every write_restrictable /
+#      cloud_restrictable field (server/channels/api4/config.go, makeFilterConfigByPermission).
+#   2. The setting is supplied by an environment variable. Mattermost keeps the env value and
+#      silently ignores the patch; GET /api/v4/config/environment reports which fields those
+#      are. Cloud provisioners configure installations this way.
 restricted="$(curl -f -sS --show-error \
     -H "Authorization: Bearer ${admin_token}" \
     "${site_url}/api/v4/config" 2>/dev/null | python3 -c "
@@ -96,10 +103,33 @@ except ValueError:
 print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unknown')).lower())
 " || printf 'unknown')"
 
-if [[ "$restricted" == "true" ]]; then
-    echo "==> ${key} is not writable on this server: ExperimentalSettings.RestrictSystemAdmin is true, which silently drops write_restrictable/cloud_restrictable fields (config/patch still returns 200). Wanted '${expected}', client config serves '${actual}'." >&2
+env_managed="$(curl -f -sS --show-error \
+    -H "Authorization: Bearer ${admin_token}" \
+    "${site_url}/api/v4/config/environment" 2>/dev/null | python3 -c "
+import json, sys
+patch = sys.argv[1]
+try:
+    env = json.load(sys.stdin)
+    fields = json.loads(patch)
+except ValueError:
+    print('unknown')
+    sys.exit(0)
+for section, values in fields.items():
+    if not isinstance(values, dict):
+        continue
+    section_env = env.get(section, {})
+    for field in values:
+        if section_env.get(field):
+            print('true')
+            sys.exit(0)
+print('false')
+" "$patch_json" || printf 'unknown')"
+
+echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})" >&2
+
+if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
+    echo "==> This installation does not allow that write, so the flow's pre-condition cannot be created here." >&2
     exit 3
 fi
 
-echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}'" >&2
 exit 1
