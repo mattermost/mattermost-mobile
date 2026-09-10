@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
@@ -16,11 +16,18 @@ import PlaybookRunsOption from '@playbooks/components/channel_actions/playbook_r
 import {dismissBottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import {openPluginPage} from './open_plugin_page';
+import PluginEntries from './plugin_entries';
+
+import type {PluginMobileEntry} from './use_plugin_entries';
+
 export type ChannelQuickActionsProps = {
     channelId: string;
     callsEnabled: boolean;
     isDMorGM: boolean;
     hasPlaybookRuns: boolean;
+    pluginEntries: PluginMobileEntry[];
+    pluginId: string;
 }
 
 export const SEPARATOR_HEIGHT = 17;
@@ -48,11 +55,18 @@ const ChannelQuickActions = ({
     callsEnabled,
     isDMorGM,
     hasPlaybookRuns,
+    pluginEntries,
+    pluginId,
 }: ChannelQuickActionsProps) => {
     const serverUrl = useServerUrl();
     const {pluginEnabled: agentsEnabled} = useAgentsConfig(serverUrl);
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const openPluginEntry = useCallback(async (entry: PluginMobileEntry) => {
+        await dismissBottomSheet();
+        openPluginPage(serverUrl, pluginId, entry.url, channelId, theme);
+    }, [serverUrl, pluginId, channelId, theme]);
 
     return (
         <View style={styles.container}>
@@ -64,6 +78,12 @@ const ChannelQuickActions = ({
                     testID='channel.quick_actions'
                 />
             </View>
+            {pluginEntries.length > 0 && (
+                <PluginEntries
+                    entries={pluginEntries}
+                    onPress={openPluginEntry}
+                />
+            )}
             <InfoBox
                 channelId={channelId}
                 showAsLabel={true}

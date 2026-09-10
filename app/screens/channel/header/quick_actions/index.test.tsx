@@ -30,6 +30,8 @@ describe('ChannelQuickAction', () => {
             callsEnabled: false,
             isDMorGM: false,
             hasPlaybookRuns: false,
+            pluginEntries: [],
+            pluginId: 'com.mattermost.demo-plugin',
         };
     }
 

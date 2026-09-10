@@ -32,6 +32,8 @@ import {typography} from '@utils/typography';
 
 import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
+import {PLUGIN_ENTRIES_HEIGHT} from './quick_actions/plugin_entries';
+import {usePluginEntries} from './quick_actions/use_plugin_entries';
 
 import type {NavigationButtonProps} from '@components/navigation_button';
 
@@ -122,6 +124,7 @@ const ChannelHeader = ({
 
     const callsConfig = getCallsConfig(serverUrl);
     const {pluginEnabled: agentsEnabled} = useAgentsConfig(serverUrl);
+    const {entries: pluginEntries, pluginId} = usePluginEntries(serverUrl);
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
@@ -179,7 +182,12 @@ const ChannelHeader = ({
         if (agentsEnabled) {
             items += 1; // Ask Agents action (shown in all channel types)
         }
-        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (MARGIN * 2) + (items * ITEM_HEIGHT);
+
+        // Plugin entries are one horizontally scrolling row, so any number of them
+        // costs the same fixed height.
+        const pluginEntriesHeight = pluginEntries.length ? PLUGIN_ENTRIES_HEIGHT : 0;
+        const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (MARGIN * 2) +
+            (items * ITEM_HEIGHT) + pluginEntriesHeight;
 
         const renderContent = () => {
             return (
@@ -188,12 +196,14 @@ const ChannelHeader = ({
                     callsEnabled={callsAvailable}
                     isDMorGM={isDMorGM}
                     hasPlaybookRuns={hasPlaybookRuns}
+                    pluginEntries={pluginEntries}
+                    pluginId={pluginId}
                 />
             );
         };
 
         bottomSheet(renderContent, [1, height]);
-    }, [callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, channelId]);
+    }, [callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, channelId, pluginEntries, pluginId]);
 
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead
