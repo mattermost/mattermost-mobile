@@ -49,6 +49,7 @@ jest.mock('@utils/file', () => ({
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logInfo: jest.fn(),
+    logWarning: jest.fn(),
 }));
 
 jest.mock('@utils/server', () => ({
@@ -56,7 +57,8 @@ jest.mock('@utils/server', () => ({
 }));
 
 jest.mock('@init/credentials', () => ({
-    setServerCredentials: jest.fn(),
+    setServerCredentials: jest.fn().mockResolvedValue(undefined),
+    setPreauthSecret: jest.fn().mockResolvedValue(true),
 }));
 
 jest.mock('@managers/performance_metrics_manager', () => ({
@@ -81,6 +83,8 @@ describe('ClientTracking', () => {
         put: jest.fn(),
         patch: jest.fn(),
         delete: jest.fn(),
+        addHeaders: jest.fn().mockResolvedValue(undefined),
+        invalidate: jest.fn().mockResolvedValue(undefined),
     };
 
     let client: ClientTracking;
@@ -105,12 +109,14 @@ describe('ClientTracking', () => {
         LocalConfig.CollectNetworkMetrics = false;
     });
 
-    it('should set bearer token', () => {
+    it('should set bearer token', async () => {
         const token = 'testToken';
         client.setClientCredentials(token);
+        await new Promise(process.nextTick);
 
         expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} ${token}`);
-        expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith(apiClientMock.baseUrl, token, undefined);
+        expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith(apiClientMock.baseUrl, token);
+        expect(require('@init/credentials').setPreauthSecret).not.toHaveBeenCalled();
     });
 
     it('should set CSRF token', () => {
@@ -847,23 +853,88 @@ describe('ClientTracking', () => {
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
         });
 
-        it('should remove shared password header when undefined', () => {
-            // First set a shared password
+        it('should persist the secret in its own keychain entry, after the token', async () => {
             client.setClientCredentials('bearer-token', 'shared-password');
-            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
 
-            // Then remove it by setting undefined
-            client.setClientCredentials('bearer-token', undefined);
-            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            // The secret write is chained onto the token write, so let the microtasks drain.
+            await new Promise(process.nextTick);
+
+            expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith(apiClientMock.baseUrl, 'bearer-token');
+            expect(require('@init/credentials').setPreauthSecret).toHaveBeenCalledWith(apiClientMock.baseUrl, 'shared-password');
         });
 
-        it('should remove shared password header when empty string', () => {
-            // First set a shared password
-            client.setClientCredentials('bearer-token', 'shared-password');
-            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+        it('should not persist the secret if storing the token fails', async () => {
+            jest.mocked(require('@init/credentials').setServerCredentials).
+                mockRejectedValueOnce(new Error('Keystore error'));
 
-            // Then remove it by setting empty string
+            client.setClientCredentials('bearer-token', 'shared-password');
+            await new Promise(process.nextTick);
+
+            expect(require('@init/credentials').setPreauthSecret).not.toHaveBeenCalled();
+            expect(require('@utils/log').logWarning).toHaveBeenCalledWith(
+                'ClientTracking.setClientCredentials: persist failed',
+                expect.any(String),
+            );
+        });
+
+        it('should not touch the stored secret on a token-only refresh', async () => {
+            client.setClientCredentials('bearer-token', undefined);
+            await new Promise(process.nextTick);
+
+            expect(require('@init/credentials').setPreauthSecret).not.toHaveBeenCalled();
+        });
+
+        it('should set the pre-auth header on the live session', async () => {
+            await client.setPreauthSecretHeader('shared-password');
+
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+            expect(apiClientMock.addHeaders).toHaveBeenCalledWith({
+                [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: 'shared-password',
+            });
+        });
+
+        it('should clear the pre-auth header without invalidating the session', async () => {
+            await client.setPreauthSecretHeader('shared-password');
+
+            await client.setPreauthSecretHeader('');
+
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(apiClientMock.addHeaders).toHaveBeenLastCalledWith({
+                [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: '',
+            });
+            expect(apiClientMock.invalidate).not.toHaveBeenCalled();
+        });
+
+        it('should not persist anything before there is a session token', async () => {
+            client.setClientCredentials('', 'shared-password');
+            await new Promise(process.nextTick);
+
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+            expect(require('@init/credentials').setServerCredentials).not.toHaveBeenCalled();
+            expect(require('@init/credentials').setPreauthSecret).not.toHaveBeenCalled();
+        });
+
+        it('should keep the pre-auth header when no secret is passed', () => {
+            client.setClientCredentials('bearer-token', 'shared-password');
+
+            // A token-only refresh must not drop a working secret (MM-70605).
+            client.setClientCredentials('new-bearer-token', undefined);
+
+            expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} new-bearer-token`);
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+        });
+
+        it('should keep the pre-auth header when passed an empty string', () => {
+            client.setClientCredentials('bearer-token', 'shared-password');
+
             client.setClientCredentials('bearer-token', '');
+
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+        });
+
+        it('should not set a pre-auth header when there was never a secret', () => {
+            client.setClientCredentials('bearer-token', undefined);
+
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
         });
 
@@ -886,10 +957,10 @@ describe('ClientTracking', () => {
             expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} bearer2`);
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('password2');
 
-            // Remove password
+            // Token-only refresh keeps the last known password
             client.setClientCredentials('bearer3', undefined);
             expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBe(`${ClientConstants.HEADER_BEARER} bearer3`);
-            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('password2');
         });
     });
 

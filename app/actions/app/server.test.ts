@@ -162,7 +162,24 @@ describe('switchToServerAndLogin', () => {
         await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
-        expect(callback).toHaveBeenCalledWith({config, license});
+        expect(callback).toHaveBeenCalledWith({config, license}, undefined);
+    });
+
+    it('should hand the stored pre-auth secret back to the callback', async () => {
+        const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
+        const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
+        const license = {} as ClientLicense;
+        jest.mocked(getServer).mockResolvedValueOnce(server);
+        jest.mocked(getPreauthSecret).mockResolvedValueOnce('secret-a');
+        jest.mocked(doPing).mockResolvedValueOnce({});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValueOnce({config, license});
+        jest.mocked(getServerByIdentifier).mockResolvedValueOnce(undefined);
+        jest.mocked(SecurityManager.authenticateWithBiometrics).mockResolvedValueOnce(true);
+
+        const callback = jest.fn();
+        await Actions.switchToServerAndLogin('serverUrl', intl, callback);
+
+        expect(callback).toHaveBeenCalledWith({config, license}, 'secret-a');
     });
 
     it('should not proceed if device is jailbroken', async () => {

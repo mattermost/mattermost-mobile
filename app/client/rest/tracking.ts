@@ -6,13 +6,13 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 
 import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
-import {setServerCredentials} from '@init/credentials';
+import {setPreauthSecret, setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
-import {isErrorWithStatusCode} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
-import {logDebug, logInfo} from '@utils/log';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
 
 import * as ClientConstants from './constants';
@@ -76,14 +76,45 @@ export default class ClientTracking {
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
 
+        // Undefined means leave the in-memory header alone (token-only refresh must not drop it).
+        // Clear the header with setPreauthSecretHeader(''); clear storage with removePreauthSecret.
+        if (preauthSecret) {
+            this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
+        }
+
+        // Nothing is persisted before there is a session: an unauthenticated ping must not store a
+        // secret the server has not accepted yet. Sequenced so the credential the secret attaches to
+        // already exists in the cache.
+        if (bearerToken) {
+            setServerCredentials(this.apiClient.baseUrl, bearerToken).then(() => {
+                if (preauthSecret) {
+                    return setPreauthSecret(this.apiClient.baseUrl, preauthSecret);
+                }
+
+                return undefined;
+            }).catch((e) => {
+                logWarning('ClientTracking.setClientCredentials: persist failed', getFullErrorMessage(e));
+            });
+        }
+    }
+
+    /**
+     * Updates the pre-auth secret on the live native session. Passing an empty string clears it.
+     *
+     * Deliberately not implemented by invalidating and recreating the client: tearing down a
+     * URLSession that still has requests in flight aborts the process from CFNetwork with
+     * "Task created in a session that has been invalidated".
+     */
+    setPreauthSecretHeader(preauthSecret: string) {
         if (preauthSecret) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         } else {
-            // Remove shared password header when undefined
             delete this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
         }
 
-        setServerCredentials(this.apiClient.baseUrl, bearerToken, preauthSecret);
+        return this.apiClient.addHeaders({
+            [ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]: preauthSecret,
+        });
     }
 
     setCSRFToken(csrfToken: string) {
