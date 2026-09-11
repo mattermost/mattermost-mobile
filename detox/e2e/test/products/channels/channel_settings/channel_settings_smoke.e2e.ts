@@ -111,8 +111,7 @@ describe('Channel Settings - Smoke', () => {
         await ChannelScreen.back();
     });
 
-    // Skip both: iOS R1+R3 (duplicate navigation.header.back) + Android R2+R3 (thread back)
-    it.skip('MM-T851 - RN apps: Pinned Messages', async () => {
+    it('MM-T851 - RN apps: Pinned Messages', async () => {
         const pinnedText = 'Pinned';
 
         // # Post a message to the channel via API and pin it via the UI

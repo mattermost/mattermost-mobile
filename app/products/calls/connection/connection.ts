@@ -200,9 +200,11 @@ export async function newConnection(
         }
     };
 
+    // Reports whether the unmute actually went out: callers show us as live off the back of it, and
+    // there is no voice track to enable if getUserMedia lost its race with the peer connection.
     const unmute = () => {
         if (!peer || !voiceTrack) {
-            return;
+            return false;
         }
 
         // NOTE: we purposely clear the monitor's stats cache upon unmuting
@@ -222,13 +224,15 @@ export async function newConnection(
             }
         } catch (e) {
             logError('calls: from RTCPeer, error on unmute:', e);
-            return;
+            return false;
         }
 
         voiceTrack.enabled = true;
         if (ws) {
             ws.send('unmute');
         }
+
+        return true;
     };
 
     const raiseHand = () => {

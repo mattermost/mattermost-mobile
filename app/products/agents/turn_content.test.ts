@@ -397,6 +397,28 @@ describe('buildRoundsFromTurns', () => {
 
         expect(rounds[0].toolCalls[0].arguments).toBeUndefined();
     });
+
+    it('should carry would_auto_execute from the tool_use block so the card hides its approval controls', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.ToolUse, id: 'auto', name: 'search', status: ToolCallStatusString.Pending, would_auto_execute: true},
+                    {type: BlockType.ToolUse, id: 'manual', name: 'write', status: ToolCallStatusString.Pending},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls).toHaveLength(2);
+        expect(rounds[0].toolCalls[0].would_auto_execute).toBe(true);
+        expect(rounds[0].toolCalls[1].would_auto_execute).toBeUndefined();
+    });
 });
 
 describe('anyToolHasArguments / anyToolHasResult', () => {
