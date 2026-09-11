@@ -315,6 +315,26 @@ describe('fetchAccessControlAttributeFields', () => {
         expect(otherGroup.map((f) => f.id)).toEqual(['other-field']);
     });
 
+    it('should leave same-group user fields untouched', async () => {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const userField: PropertyField = {
+            ...systemField,
+            id: 'user-field-id',
+            name: 'title',
+            object_type: 'user',
+        };
+        await operator.handlePropertyFields({fields: [systemField, channelField, userField], prepareRecordsOnly: false});
+
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        expect(await getStoredFields(database)).toEqual(['system-field-id', 'user-field-id']);
+    });
+
     it('should skip the request when cached and not forced', async () => {
         EphemeralStore.setClassificationBannerFetched(serverUrl);
 

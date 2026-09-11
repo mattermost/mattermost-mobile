@@ -7,7 +7,7 @@
 // were already scoped by group rather than by field name.
 
 import {removeStoredFields} from '@actions/local/channel_attributes';
-import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES} from '@constants/channel_attributes';
+import {ACCESS_CONTROL_GROUP_NAME, CHANNEL_ATTRIBUTE_OBJECT_TYPE, FEATURE_FLAG_CHANNEL_ATTRIBUTES, OWNED_OBJECT_TYPES} from '@constants/channel_attributes';
 import {
     CLASSIFICATIONS_FIELD_TARGET_ID,
     CLASSIFICATIONS_FIELD_TARGET_TYPE,
@@ -18,7 +18,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PROPERTY_FIELDS_SEARCH_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getAccessControlValuesForTarget, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
+import {getAccessControlValuesForTarget, getPropertyFieldsByGroupId, getPropertyFieldsByIds, isAccessControlPropertiesEnabled} from '@queries/servers/properties';
 import {getConfigValue} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
@@ -40,8 +40,9 @@ const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect',
  *
  * One request covers both features: the group holds the classification system and
  * channel fields and every other channel attribute, and the search is scoped by
- * group rather than by field name. The write is authoritative for the group, so a
- * field deleted server-side disappears locally without a reload.
+ * group rather than by field name. The write is authoritative for the object
+ * types this feature owns (`system` and `channel`). User and session fields
+ * share the group and must not be pruned.
  */
 export async function fetchAccessControlAttributeFields(serverUrl: string, force = false): Promise<{error?: unknown}> {
     if (!force && !EphemeralStore.shouldFetchClassificationBanner(serverUrl)) {
@@ -85,7 +86,21 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
 
                 const values = await client.getSystemPropertyValues<string>(ACCESS_CONTROL_GROUP_NAME);
 
-                const fieldModels = await operator.handlePropertyFields({groupId, fields: allFields, prepareRecordsOnly: true});
+                // Do not pass groupId: that prune is unscoped by object_type and
+                // would delete user/session fields that share access_control.
+                const existing = await getPropertyFieldsByGroupId(database, groupId);
+                const incomingIds = new Set(allFields.filter((f) => f.delete_at === 0).map((f) => f.id));
+                const staleOwned = existing.filter((f) =>
+                    OWNED_OBJECT_TYPES.has(f.objectType as PropertyFieldObjectType) && !incomingIds.has(f.id),
+                );
+
+                const fieldModels = await operator.handlePropertyFields({
+                    fields: [
+                        ...allFields,
+                        ...staleOwned.map((f) => ({id: f.id, delete_at: Date.now()} as PropertyField)),
+                    ],
+                    prepareRecordsOnly: true,
+                });
                 const valueModels = await operator.handlePropertyValues({targetId: CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID, values, prepareRecordsOnly: true});
 
                 // Published for the field observables, which cannot scope
