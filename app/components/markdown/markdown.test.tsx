@@ -43,6 +43,19 @@ describe('Markdown', () => {
             expect(screen.getByText('This is a test')).toBeVisible();
         });
 
+        it('should remove object replacement characters before rendering Markdown', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value={'before\uFFFCmiddle\n\n\uFFFC\n\nafter'}
+                />,
+            );
+
+            expect(screen.getByText('beforemiddle')).toBeVisible();
+            expect(screen.getByText('after')).toBeVisible();
+            expect(screen.queryByText('\uFFFC')).toBeNull();
+        });
+
         test('should catch errors when parsing Markdown', () => {
             jest.spyOn(CommonMark, 'Parser').mockImplementation(() => {
                 const parser = new Parser();
