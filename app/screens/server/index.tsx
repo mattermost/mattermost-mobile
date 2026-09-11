@@ -226,9 +226,15 @@ const Server = ({
             return;
         }
 
-        if (connecting && cancelPing) {
+        if (cancelPing) {
             cancelPing();
-            return;
+
+            // Button taps cancel an in-flight ping. Auto-connect passes an
+            // explicit URL and must start a new ping after cancelling.
+            // Use cancelPing (set synchronously) rather than connecting state.
+            if (!manualUrl) {
+                return;
+            }
         }
 
         const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
@@ -318,6 +324,10 @@ const Server = ({
         };
 
         const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
+        if (canceled) {
+            return;
+        }
+
         if (!headRequest.url) {
             cancelPing();
             if (retryWithHttp) {
@@ -396,6 +406,9 @@ const Server = ({
 
         if (data.config.MobileJailbreakProtection === 'true') {
             const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
+            if (canceled) {
+                return;
+            }
             if (isJailbroken) {
                 setConnecting(false);
                 return;
@@ -404,6 +417,9 @@ const Server = ({
 
         if (data.config.MobileEnableBiometrics === 'true') {
             const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
+            if (canceled) {
+                return;
+            }
             if (!biometricsResult) {
                 setConnecting(false);
                 return;
@@ -412,6 +428,9 @@ const Server = ({
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
         const credentials = await getServerCredentials(headRequest.url);
+        if (canceled) {
+            return;
+        }
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {

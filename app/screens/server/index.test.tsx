@@ -1,14 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
+import {type ComponentProps} from 'react';
+
 import {doPing} from '@actions/remote/general';
 import {DeepLink, Launch, Preferences} from '@constants';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
 import Server from './index';
-
-import type {ComponentProps} from 'react';
 
 jest.mock('@actions/remote/general', () => ({
     doPing: jest.fn(),
@@ -108,5 +109,41 @@ describe('Server', () => {
         );
 
         await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(2));
+    });
+
+    it('should start a new auto-connect when the deep-link request changes while a ping is pending', async () => {
+        let resolveFirstRedirect!: (value: {url: string}) => void;
+        const firstRedirect = new Promise<{url: string}>((resolve) => {
+            resolveFirstRedirect = resolve;
+        });
+        jest.mocked(getServerUrlAfterRedirect).
+            mockImplementationOnce(() => firstRedirect).
+            mockResolvedValue({url: serverUrl});
+        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+
+        const {rerender} = renderWithIntl(
+            <Server
+                {...props}
+                deepLinkRequestId={1}
+            />,
+        );
+        await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(1));
+
+        rerender(
+            <Server
+                {...props}
+                deepLinkRequestId={2}
+            />,
+        );
+
+        await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(1));
+
+        await act(async () => {
+            resolveFirstRedirect({url: serverUrl});
+        });
+
+        expect(doPing).toHaveBeenCalledTimes(1);
+        expect(doPing).toHaveBeenCalledWith(serverUrl, true, undefined, undefined);
     });
 });
