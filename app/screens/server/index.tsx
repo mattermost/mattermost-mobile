@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
@@ -91,6 +91,7 @@ const Server = ({
     const [urlError, setUrlError] = useState<string | undefined>();
     const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
     const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+    const connectGeneration = useRef(0);
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
@@ -255,8 +256,12 @@ const Server = ({
             setUrlError(undefined);
         }
 
+        const generation = ++connectGeneration.current;
         const server = await getServerByDisplayName(displayName);
         const credentials = await getServerCredentials(serverUrl);
+        if (generation !== connectGeneration.current) {
+            return;
+        }
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({

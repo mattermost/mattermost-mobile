@@ -6,6 +6,8 @@ import {type ComponentProps} from 'react';
 
 import {doPing} from '@actions/remote/general';
 import {DeepLink, Launch, Preferences} from '@constants';
+import {getServerCredentials} from '@init/credentials';
+import {getServerByDisplayName} from '@queries/app/servers';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
@@ -22,6 +24,9 @@ jest.mock('@hooks/did_mount', () => jest.fn());
 jest.mock('@hooks/screen_transition_animation', () => ({
     useScreenTransitionAnimation: jest.fn(() => ({})),
 }));
+jest.mock('@init/credentials', () => ({
+    getServerCredentials: jest.fn(),
+}));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
     default: {
@@ -34,6 +39,10 @@ jest.mock('@mattermost/react-native-emm', () => ({
         addListener: jest.fn(() => jest.fn()),
     },
     useManagedConfig: jest.fn(() => ({})),
+}));
+jest.mock('@queries/app/servers', () => ({
+    getServerByDisplayName: jest.fn(),
+    getServerByIdentifier: jest.fn(),
 }));
 jest.mock('@managers/network_manager', () => ({
     __esModule: true,
@@ -76,6 +85,8 @@ describe('Server', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.mocked(getServerByDisplayName).mockResolvedValue(undefined);
+        jest.mocked(getServerCredentials).mockResolvedValue(null);
     });
 
     it('should auto-connect using the canonical saved server URL from a deep link', async () => {
@@ -144,6 +155,44 @@ describe('Server', () => {
         });
 
         expect(doPing).toHaveBeenCalledTimes(1);
+        expect(doPing).toHaveBeenCalledWith(serverUrl, true, undefined, undefined);
+    });
+
+    it('should discard a stale deep-link auto-connect that pauses before pinging', async () => {
+        let resolveFirstLookup!: (value: undefined) => void;
+        const firstLookup = new Promise<undefined>((resolve) => {
+            resolveFirstLookup = resolve;
+        });
+        jest.mocked(getServerByDisplayName).
+            mockImplementationOnce(() => firstLookup).
+            mockResolvedValue(undefined);
+        jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: serverUrl});
+        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+
+        const {rerender} = renderWithIntl(
+            <Server
+                {...props}
+                deepLinkRequestId={1}
+            />,
+        );
+        await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledTimes(1));
+
+        rerender(
+            <Server
+                {...props}
+                deepLinkRequestId={2}
+            />,
+        );
+
+        await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledTimes(2));
+
+        await act(async () => {
+            resolveFirstLookup(undefined);
+        });
+
+        await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(1));
+        expect(doPing).toHaveBeenCalledTimes(1);
+        expect(getServerUrlAfterRedirect).toHaveBeenCalledWith(serverUrl, false, undefined);
         expect(doPing).toHaveBeenCalledWith(serverUrl, true, undefined, undefined);
     });
 });
