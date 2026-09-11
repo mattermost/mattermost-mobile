@@ -14,9 +14,9 @@ import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
-import {getActiveServerUrl} from '@queries/app/servers';
+import {getActiveServerUrl, getAllServers} from '@queries/app/servers';
 import {queryUsersByUsername} from '@queries/servers/user';
-import {navigateToRoot} from '@screens/navigation';
+import {navigateToRoot, updateParams} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
@@ -25,6 +25,8 @@ import {addNewServer} from '@utils/server';
 import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
 
 import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from './index';
+
+import type ServersModel from '@typings/database/models/app/servers';
 
 jest.mock('@actions/remote/user', () => ({
     fetchUsersByUsernames: jest.fn(),
@@ -36,6 +38,7 @@ jest.mock('@actions/remote/permalink', () => ({
 
 jest.mock('@queries/app/servers', () => ({
     getActiveServerUrl: jest.fn(),
+    getAllServers: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('@queries/servers/user', () => ({
@@ -132,6 +135,57 @@ describe('parseAndHandleDeepLink', () => {
             },
             url: 'https://newserver.com/team/channels/town-square',
         });
+        expect(result).toEqual({error: false});
+    });
+
+    it('should reconnect a saved logged-out server from another screen', async () => {
+        const savedServer = {
+            displayName: 'Existing Server',
+            lastActiveAt: 0,
+            url: 'https://existingserver.com',
+        } as ServersModel;
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce(undefined);
+        jest.mocked(getAllServers).mockResolvedValueOnce([savedServer]);
+
+        const result = await parseAndHandleDeepLink('mattermost://existingserver.com', intl, undefined, true);
+
+        expect(addNewServer).toHaveBeenCalledTimes(1);
+        expect(addNewServer).toHaveBeenCalledWith(Preferences.THEMES.denim, savedServer.url, savedServer.displayName, {
+            data: {serverUrl: 'existingserver.com'},
+            type: DeepLink.Server,
+            url: 'mattermost://existingserver.com',
+        });
+        expect(updateParams).not.toHaveBeenCalled();
+        expect(result).toEqual({error: false});
+    });
+
+    it('should reconnect a saved logged-out server from the server screen', async () => {
+        const savedServer = {
+            displayName: 'Existing Server',
+            lastActiveAt: 0,
+            url: 'https://existingserver.com',
+        } as ServersModel;
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('');
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce(undefined);
+        jest.mocked(getAllServers).mockResolvedValueOnce([savedServer]);
+        jest.mocked(NavigationStore.getVisibleScreen).mockReturnValueOnce(Screens.SERVER);
+
+        const result = await parseAndHandleDeepLink('mattermost://existingserver.com', intl, undefined, true);
+
+        expect(updateParams).toHaveBeenCalledTimes(1);
+        expect(updateParams).toHaveBeenCalledWith({
+            deepLinkRequestId: expect.any(Number),
+            displayName: savedServer.displayName,
+            extra: {
+                data: {serverUrl: 'existingserver.com'},
+                type: DeepLink.Server,
+                url: 'mattermost://existingserver.com',
+            },
+            launchType: Launch.DeepLink,
+            serverUrl: savedServer.url,
+        });
+        expect(addNewServer).not.toHaveBeenCalled();
         expect(result).toEqual({error: false});
     });
 

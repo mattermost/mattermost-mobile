@@ -20,7 +20,7 @@ import {fetchPlaybookRun} from '@playbooks/actions/remote/runs';
 import {getPlaybookRunById} from '@playbooks/database/queries/run';
 import {fetchIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {goToPlaybookRun} from '@playbooks/screens/navigation';
-import {getActiveServerUrl} from '@queries/app/servers';
+import {getActiveServerUrl, getAllServers} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {navigateToRoot, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -49,8 +49,32 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
             return {error: true};
         }
 
+        const deepLinkServerUrl = deepLink.data.serverUrl;
         const currentServerUrl = await getActiveServerUrl();
-        const existingServerUrl = DatabaseManager.searchUrl(deepLink.data.serverUrl);
+        const existingServerUrl = DatabaseManager.searchUrl(deepLinkServerUrl);
+
+        if (deepLink.type === DeepLink.Server && !existingServerUrl) {
+            const savedServer = (await getAllServers()).find((server) => (
+                server.lastActiveAt === 0 &&
+                removeProtocol(server.url) === removeProtocol(deepLinkServerUrl)
+            ));
+
+            if (savedServer) {
+                const theme = EphemeralStore.getTheme() || getDefaultThemeByAppearance();
+                if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
+                    updateParams({
+                        deepLinkRequestId: Date.now(),
+                        displayName: savedServer.displayName,
+                        extra: deepLink,
+                        launchType: Launch.DeepLink,
+                        serverUrl: savedServer.url,
+                    });
+                } else {
+                    addNewServer(theme, savedServer.url, savedServer.displayName, deepLink);
+                }
+                return {error: false};
+            }
+        }
 
         // After checking the server for http & https then we add it
         if (!existingServerUrl) {

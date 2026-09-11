@@ -65,13 +65,20 @@ export const addEventListener = () => {
 
 /**
  * Optional: Redirect system paths if needed
- * We don't need custom redirection, so just return the path as-is
+ * Initial links route through the root so determineInitialExpoRoute processes
+ * them once after app initialization. Runtime links use the custom handler.
  *
  * Exception: SSO callback URLs (mmauth://, mmauthbeta://) are consumed by the
  * SSO screen's own Linking listener. If they reach expo-router they resolve to
  * an unregistered route. Returning null keeps the app on its current path.
  */
 export async function redirectSystemPath(options: {path: string; initial: boolean}) {
+    const isSsoRedirect = options.path.startsWith(Sso.REDIRECT_URL_SCHEME) ||
+        options.path.startsWith(Sso.REDIRECT_URL_SCHEME_DEV);
+    if (options.initial && !isSsoRedirect) {
+        return '/';
+    }
+
     const handled = await handleUrl({url: options.path});
     if (handled) {
         return null;

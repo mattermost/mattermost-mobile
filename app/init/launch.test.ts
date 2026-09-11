@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Launch} from '@constants';
+import {Linking} from 'react-native';
+
+import {DeepLink, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {getLastViewedTeamIdAndServer} from '@queries/app/global';
-import {getServer} from '@queries/app/servers';
+import {getAllServers, getServer} from '@queries/app/servers';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {queryMyTeams} from '@queries/servers/team';
 
-import {determineRouteFromLaunchProps} from './launch';
+import {determineInitialExpoRoute, determineRouteFromLaunchProps} from './launch';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {LaunchProps} from '@typings/launch';
@@ -20,6 +22,37 @@ jest.mock('@queries/app/servers');
 jest.mock('@queries/servers/preference');
 jest.mock('@queries/servers/team');
 jest.mock('@store/ephemeral_store');
+
+describe('determineInitialExpoRoute', () => {
+    it('should reconnect a saved logged-out server from a cold-start deep link', async () => {
+        const savedServer = {
+            displayName: 'Existing Server',
+            lastActiveAt: 0,
+            url: 'https://existingserver.com',
+        } as ServersModel;
+        jest.mocked(Linking.getInitialURL).mockResolvedValueOnce('mattermost://existingserver.com');
+        jest.mocked(getAllServers).mockResolvedValueOnce([savedServer]);
+        jest.mocked(getServerCredentials).mockResolvedValueOnce(null);
+        DatabaseManager.searchUrl = jest.fn().mockReturnValue(undefined);
+
+        const result = await determineInitialExpoRoute();
+
+        expect(result).toEqual({
+            route: '/(unauthenticated)/server',
+            params: expect.objectContaining({
+                coldStart: true,
+                displayName: savedServer.displayName,
+                extra: {
+                    data: {serverUrl: 'existingserver.com'},
+                    type: DeepLink.Server,
+                    url: 'mattermost://existingserver.com',
+                },
+                launchType: Launch.DeepLink,
+                serverUrl: savedServer.url,
+            }),
+        });
+    });
+});
 
 describe('determineRouteFromLaunchProps', () => {
     const serverUrl = 'https://server-1.com';

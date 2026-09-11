@@ -37,6 +37,7 @@ import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
+    deepLinkRequestId?: number;
     isModal?: boolean;
     theme: Theme;
 }
@@ -69,6 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const Server = ({
     animated,
+    deepLinkRequestId,
     displayName: defaultDisplayName,
     extra,
     isModal,
@@ -113,7 +115,7 @@ const Server = ({
                 }
             } else {
                 autoconnect = true;
-                serverUrl = deepLinkServerUrl;
+                serverUrl = defaultServerUrl || deepLinkServerUrl;
             }
         } else if (launchType === Launch.AddServer) {
             serverName = defaultDisplayName;
@@ -130,13 +132,13 @@ const Server = ({
         }
 
         if (serverUrl && serverName && autoconnect) {
-            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            // Connect automatically when the server comes from managed config, local config, or a deep link.
+            handleConnect(serverUrl);
         }
 
         // We only want to handle connect when a smaller set of variables change
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl, deepLinkRequestId]);
 
     useEffect(() => {
         if (url && displayName && !urlError && !preauthSecretError) {
