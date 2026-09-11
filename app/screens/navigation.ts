@@ -162,15 +162,21 @@ export async function dismissAllRoutesAndPopToScreen(screenId: AvailableScreens,
         if (!route) {
             return;
         }
+        const params = propsToParams(passProps);
 
         if (NavigationStore.isScreenInStack(screenId)) {
             // dismissTo only resolves divergence at the outermost navigator level
             // it finds. With our nesting (root Stack -> (authenticated) Stack), one
             // call only peels outer routes (modals, bottom sheets). A second call
             // then operates on the inner stack and pops down to the target.
-            router.dismissTo(route);
-            router.dismissTo(route);
-            router.setParams(propsToParams(passProps));
+            //
+            // The params must travel in the href: dismissTo dispatches POP_TO
+            // without `merge`, which replaces the target route's params rather
+            // than extending them. A follow-up router.setParams() cannot fix that
+            // either - it is synchronous while dismissTo is queued, so it lands on
+            // whichever route is still focused instead of the target.
+            router.dismissTo({pathname: route, params});
+            router.dismissTo({pathname: route, params});
             await new Promise((resolve) => setTimeout(resolve, 250));
         } else {
             // Screen not in stack - reset to root then push target

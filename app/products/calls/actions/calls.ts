@@ -6,6 +6,7 @@
 import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
 
+import {fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -42,7 +43,7 @@ import {
     startOutgoingCall,
 } from '@calls/state';
 import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
-import {areGroupCallsAllowed} from '@calls/utils';
+import {areGroupCallsAllowed, errorAlert} from '@calls/utils';
 import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -61,6 +62,7 @@ import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
+import type {ChannelModel} from '@database/models/server';
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -788,12 +790,33 @@ export const hostRemove = async (serverUrl: string, callId: string, sessionId: s
     }
 };
 
-export const switchToCallThread = async (serverUrl: string, rootId: string, title: string) => {
+export const switchToCallThread = async (serverUrl: string, rootId: string, title: string, intl: IntlShape) => {
     try {
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const post = await getPostById(database, rootId);
-        const channel = await getChannelById(database, post?.channelId || '');
+
+        let post = await getPostById(database, rootId);
+        if (!post) {
+            // If no posts are available for that thread yet
+            // Try to fetch the post from the server to ensure it's available locally.
+            const {error} = await fetchPostThread(serverUrl, rootId);
+            if (error) {
+                logDebug('error on switchToCallThread', getFullErrorMessage(error));
+                errorAlert(getFullErrorMessage(error, intl), intl);
+                return;
+            }
+            post = await getPostById(database, rootId);
+        }
+
+        let channel: ChannelModel | undefined;
+        if (post && post.channelId) {
+            channel = await getChannelById(database, post.channelId);
+        } else {
+            logDebug('error on switchToCallThread: post unavailable');
+            errorAlert(intl.formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'}), intl);
+            return;
+        }
+
         const currentTeamId = await getCurrentTeamId(database);
 
         if (channel?.teamId && currentTeamId !== channel.teamId) {
@@ -812,5 +835,6 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
     } catch (error) {
         logDebug('error on switchToCallThread', getFullErrorMessage(error));
+        errorAlert(getFullErrorMessage(error, intl), intl);
     }
 };

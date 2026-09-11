@@ -434,8 +434,31 @@ describe('navigation', () => {
 
             await dismissAllRoutesAndPopToScreen(Screens.CHANNEL, {channelId: 'abc'});
 
-            expect(router.dismissTo).toHaveBeenCalledWith('/(authenticated)/channel');
-            expect(router.setParams).toHaveBeenCalledWith({channelId: '"abc"'});
+            expect(router.dismissTo).toHaveBeenCalledWith({
+                pathname: '/(authenticated)/channel',
+                params: {channelId: '"abc"'},
+            });
+        });
+
+        it('should carry the params in the href instead of setting them afterwards', async () => {
+            // dismissTo dispatches POP_TO without `merge`, which replaces the
+            // target route's params. Passing them separately via setParams left
+            // an already-mounted screen with no params at all - see MM-70539,
+            // where the thread screen re-rendered without its rootId.
+            jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(true);
+
+            await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId: 'thread-1', title: 'Call Thread'});
+
+            expect(router.dismissTo).toHaveBeenCalledTimes(2);
+            expect(router.dismissTo).toHaveBeenNthCalledWith(1, {
+                pathname: '/(authenticated)/thread',
+                params: {rootId: '"thread-1"', title: '"Call Thread"'},
+            });
+            expect(router.dismissTo).toHaveBeenNthCalledWith(2, {
+                pathname: '/(authenticated)/thread',
+                params: {rootId: '"thread-1"', title: '"Call Thread"'},
+            });
+            expect(router.setParams).not.toHaveBeenCalled();
         });
 
         it('should reset to root and push when screen is not in stack', async () => {
