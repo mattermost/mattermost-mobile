@@ -31,7 +31,15 @@ PLATFORM=""
 DEVICE_ARGS=()
 OUTPUT_DIR="build"
 ARTIFACTS_DIR="build/maestro-artifacts"
-MERGED_XML="$OUTPUT_DIR/maestro-report.xml"
+# NOT maestro-report.xml. The workflow's parse step builds that file itself with
+# mergeMaestroBatchReportsFromDir, which globs maestro-batch-*.xml AND
+# maestro-report-*.xml so the config-gated flows run from dedicated steps
+# (MM-T67856_4, MM-T3261_1, MM-T3261_2) are counted in the gate and in TSIO.
+# That helper returns early if its output already exists, so writing
+# maestro-report.xml here silently excluded those flows from the pass/fail
+# decision. This name is outside the helper's glob, so the batches are merged
+# exactly once.
+MERGED_XML="$OUTPUT_DIR/maestro-batches-merged.xml"
 MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
 MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
 export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
@@ -292,10 +300,23 @@ run_maestro_batch() {
     cmd+=("${platform_args[@]}")
   fi
 
+  # Keep Maestro's debug output (maestro.log, per-command timings, the failure screenshot
+  # and hierarchy dump, and the XCUITest runner's console via `simctl launch --console`)
+  # inside the uploaded build/ tree. With --flatten-debug-output and no --debug-output,
+  # Maestro 2.6.1 writes all of it to $HOME (TestDebugReporter.getDebugOutputPath), which
+  # CI never collects. That is why run 34185558418 reported attach_logs_toggle_visible as
+  # "Unknown error": the runner process (the app's XPC peer) exited mid-flow and the only
+  # record of why was in /Users/runner. One directory per batch, so the flattened files of
+  # one batch never overwrite another's.
+  local debug_dir
+  debug_dir="$ARTIFACTS_DIR/debug/$(basename "${batch_xml%.xml}")"
+  mkdir -p "$debug_dir"
+
   cmd+=(
     --format junit
     --output "$batch_xml"
     --test-output-dir "$ARTIFACTS_DIR"
+    --debug-output "$debug_dir"
     --flatten-debug-output
   )
   local exclude_tags

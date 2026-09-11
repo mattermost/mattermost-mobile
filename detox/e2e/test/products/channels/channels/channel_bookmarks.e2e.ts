@@ -760,22 +760,12 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelScreen.back();
     });
 
-    // Skipped on iOS: the link bookmark never reaches the device, so there is nothing to tap.
-    // In the artifact for run 34195039757 (machine-4) the failure screenshot shows Channel info
-    // open with only "Tap File Bookmark" present -- the link bookmark, created via the API
-    // moments earlier in the same test, is absent entirely. There is no -1005 and no
-    // CONNECTION_CLOSE in that device.log, so it is not the transport.
-    //
-    // This is not for want of hardening. waitForBookmarkInChannelInfo already retries three
-    // times, swipes the virtualized horizontal list on every attempt, falls back to matching by
-    // text and by bookmark id, and calls onResync() to re-enter the channel -- which is the only
-    // thing that triggers fetchChannelBookmarks. That resync path was added for this exact
-    // failure and still does not recover it, which puts this in the same class as MM-T4929_1:
-    // the app not reflecting server state, not a test that mis-waits.
-    //
-    // Android is unaffected and keeps the coverage. Re-enable once the bookmark sync is fixed.
-    (isIos() ? it.skip : it)('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
-        const channelT69455 = await createChannel();
+    it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
+        // # Create the channel and BOTH bookmarks before the test user joins it.
+        const {channel: channelT69455} = await Channel.apiCreateChannel(siteOneUrl, {
+            type: 'O',
+            teamId: testTeam.id,
+        });
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT69455.id, 'Tap Link Bookmark', 'https://mattermost.com',
@@ -799,6 +789,8 @@ describe('Channels - Channel Bookmarks', () => {
         if (fileBookmarkError || !bookmarkFileT69455?.id) {
             throw new Error(`[MM-T69455_1] Failed to create bookmarkFileT69455: ${JSON.stringify(fileBookmarkError)}`);
         }
+
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelT69455.id);
 
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();

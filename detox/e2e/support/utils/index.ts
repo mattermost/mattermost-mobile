@@ -5,8 +5,12 @@ import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
+import {logDebug} from '../../../provision/log';
+
 export * from './email';
 export * from './detoxhelpers';
+export * from './offline_simulation';
+export * from './managed_config';
 
 export const wait = async (ms: number): Promise<any> => {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -115,6 +119,15 @@ export async function withSynchronizationDisabled<T>(fn: () => Promise<T>): Prom
     }
 }
 
+async function screenExists(detoxElement: Detox.NativeElement, timeout: number = timeouts.THREE_SEC): Promise<boolean> {
+    try {
+        await waitForElementToExist(detoxElement, timeout);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 export async function retryWithReload(
     func: () => Promise<void>,
     retries: number = 2,
@@ -135,22 +148,41 @@ export async function retryWithReload(
                 await new Promise((res) => setTimeout(res, 10000));
 
                 if (serverUrl && serverDisplayName) {
-                    // A prior suite may have left the session authenticated, so log out before connectToServer
-                    // can show the server form again. Lazy require avoids a utils <-> screen circular import.
+                    // Lazy require avoids a utils <-> screen circular import.
                     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-                    const {ChannelListScreen, HomeScreen} = require('@support/ui/screen');
-                    try {
-                        // eslint-disable-next-line no-await-in-loop
-                        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(timeouts.THREE_SEC);
-                        // eslint-disable-next-line no-await-in-loop
-                        await HomeScreen.logout();
-                        // eslint-disable-next-line no-await-in-loop
+                    const {ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, MfaScreen} = require('@support/ui/screen');
+                    /* eslint-disable no-await-in-loop -- sequential recovery after reload */
+
+                    if (await screenExists(ChannelScreen.channelScreen)) {
+                        logDebug('retryWithReload: channel visible after reload, popping to list');
+                        if (isAndroid()) {
+                            await device.pressBack();
+                        } else {
+                            await ChannelScreen.back();
+                        }
                         await wait(timeouts.TWO_SEC);
-                    } catch {
-                        // Not on channel list — proceed to connect.
                     }
-                    // eslint-disable-next-line no-await-in-loop
-                    await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+
+                    if (await screenExists(ChannelListScreen.channelListScreen)) {
+                        await HomeScreen.logout();
+                        await wait(timeouts.TWO_SEC);
+                    }
+
+                    if (await screenExists(LoginScreen.loginScreen)) {
+                        logDebug('retryWithReload: login screen visible after reload, skipping connectToServer');
+                    } else if (await screenExists(MfaScreen.mfaScreen)) {
+                        logDebug('retryWithReload: MFA screen visible after reload, skipping connectToServer');
+                    } else if (await screenExists(ChannelListScreen.channelListScreen)) {
+                        logDebug('retryWithReload: still on channel list after logout, skipping connectToServer');
+                    } else {
+                        logDebug('retryWithReload: connecting to server after reload');
+                        try {
+                            await ServerScreen.connectToServer(serverUrl, serverDisplayName);
+                        } catch {
+                            logDebug('retryWithReload: connectToServer failed after reload, will retry login');
+                        }
+                    }
+                    /* eslint-enable no-await-in-loop */
                 }
             } else {
                 throw err;

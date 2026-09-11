@@ -229,7 +229,7 @@ describe('Search - Recent Mentions', () => {
         await ChannelListScreen.open();
     });
 
-    it.skip('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
+    it('MM-T4909_3 - should be able to edit, reply to, and delete a recent mention from recent mentions screen', async () => {
         // # Open recent mentions screen
         await RecentMentionsScreen.open();
         await RecentMentionsScreen.toBeVisible();

@@ -339,6 +339,25 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+
+          # MM-T3261 (report_problem_action.yml) requires the link variant: the
+          # default paid-tier path opens the native mail composer, which cannot
+          # open on iOS simulators (no Mail accounts) — the app then shows an
+          # error alert and the report screen never dismisses. Patch it to the
+          # link variant (report URL opens in the browser) and always restore.
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform ios --device "$SIMULATOR_ID"
 
@@ -376,11 +395,19 @@ jobs:
           # The always() restore step below stays as the safety net for runner
           # hard-kills, which never reach onFlowComplete.
 
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
+            --debug-output build/maestro-debug-T67856_4 \
             --flatten-debug-output \
             --env SITE_1_URL="${SITE_1_URL}" \
             --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
@@ -390,6 +417,68 @@ jobs:
             --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
             --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
             detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml
+
+      - name: Run MM-T3261_1 with ReportAProblemType=link (iOS)
+        # Isolated step: patch ReportAProblemType=link plus the report link, run the
+        # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
+        # of its own, so the patch and the trap restore live here. continue-on-error so
+        # the main batch report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != '' && steps.maestro-ios-preflight.conclusion == 'success'
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            ReportAProblemType link || {
+              rc=$?
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
+              # pre-condition cannot be created here, so record a skip rather than a red.
+              # Anything else is a real failure and stays red.
+              if [ "$rc" -eq 3 ]; then
+                bash detox/maestro/scripts/write_maestro_skip_stub.sh \
+                  build/maestro-report-T3261_1.xml \
+                  detox/maestro/flows/account/report_problem_link_mode.yml \
+                  "ReportAProblemType=link is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
+                exit 0
+              fi
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_1.xml \
+                detox/maestro/flows/account/report_problem_link_mode.yml \
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
+              exit 1
+            }
+
+          ~/.maestro/bin/maestro test \
+            --device "$SIMULATOR_ID" \
+            --format junit \
+            --output build/maestro-report-T3261_1.xml \
+            --test-output-dir build/maestro-artifacts-T3261_1 \
+            --debug-output build/maestro-debug-T3261_1 \
+            --flatten-debug-output \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_link_mode.yml
 
       - name: Restore AllowDownloadLogs baseline (self-healing)
         if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
@@ -848,6 +937,19 @@ jobs:
           echo "==> All ${MAX_ATTEMPTS} boot attempts failed"
           exit 1
 
+      # The iOS job has captured a device log since it was written; the Android job never has,
+      # so an Android Maestro failure has no record of what the OS did. That gap is why
+      # report_problem_link_mode could not be diagnosed across three runs: the command trace
+      # proves the "Report a problem" tap completed and the app stayed put, but with no logcat
+      # there is no way to tell whether the browser intent was fired, resolved, or foregrounded.
+      - name: Start Android logcat capture
+        run: |
+          mkdir -p build
+          adb logcat -c || true
+          adb logcat -v threadtime > build/android-logcat.log 2> build/android-logcat.err &
+          echo $! > build/android-logcat.pid
+          echo "==> logcat capture started (pid $(cat build/android-logcat.pid))"
+
       - name: Run Maestro Flows (Android)
         continue-on-error: true
         env:
@@ -861,6 +963,21 @@ jobs:
           set -a
           source detox/maestro/.maestro-test-env.sh
           set +a
+
+          # Same link-mode patch as the iOS batch — see the iOS step's comment.
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"ReportAProblemType":"link"}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
           chmod +x detox/maestro/scripts/run_ci_batches.sh
           detox/maestro/scripts/run_ci_batches.sh --platform android
 
@@ -883,10 +1000,18 @@ jobs:
           # The always() restore step below stays as the safety net for runner
           # hard-kills, which never reach onFlowComplete.
 
+          echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
+          curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+
           ~/.maestro/bin/maestro test \
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
+            --debug-output build/maestro-debug-T67856_4 \
             --flatten-debug-output \
             --platform android \
             --env SITE_1_URL="${SITE_1_URL}" \
@@ -915,6 +1040,148 @@ jobs:
             -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
             "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
             echo "==> Restored AllowDownloadLogs=true"
+
+      - name: Run MM-T3261_2 with ReportAProblemType=email (Android)
+        # Isolated step: clear Gmail, patch ReportAProblemType=email, run the
+        # mail-mode flow, restore on exit. Android-only — iOS simulators have no
+        # Mail app. continue-on-error so the main report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          echo "==> Clearing Gmail so MM-T3261_2 hits first-run onboarding"
+          adb shell pm clear com.google.android.gm || true
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          # ReportAProblemMail is required: the server rejects ReportAProblemType=email
+          # without a valid address (model/config.go IsValid — CI 34290629488 got HTTP 400
+          # here and the flow never ran). On patch failure, record the flow as failed so
+          # it stays in the merged report instead of vanishing from the count.
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
+          echo "==> Patching SupportSettings.ReportAProblemType=email on ${SITE_1_URL}"
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
+            ReportAProblemType email || {
+              rc=$?
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
+              # pre-condition cannot be created here, so record a skip rather than a red.
+              # Anything else is a real failure and stays red.
+              if [ "$rc" -eq 3 ]; then
+                bash detox/maestro/scripts/write_maestro_skip_stub.sh \
+                  build/maestro-report-T3261_2.xml \
+                  detox/maestro/flows/account/report_problem_mail_mode.yml \
+                  "ReportAProblemType=email is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
+                exit 0
+              fi
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_2.xml \
+                detox/maestro/flows/account/report_problem_mail_mode.yml \
+                "ReportAProblemType=email never reached the client config; the flow's pre-condition was not in force"
+              exit 1
+            }
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T3261_2.xml \
+            --test-output-dir build/maestro-artifacts-T3261_2 \
+            --debug-output build/maestro-debug-T3261_2 \
+            --flatten-debug-output \
+            --platform android \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_mail_mode.yml
+
+      - name: Run MM-T3261_1 with ReportAProblemType=link (Android)
+        # Isolated step: patch ReportAProblemType=link plus the report link, run the
+        # link-mode flow, restore the default on exit. The flow has no onFlowStart hook
+        # of its own, so the patch and the trap restore live here. continue-on-error so
+        # the main batch report stays authoritative.
+        if: always() && hashFiles('detox/maestro/.maestro-test-env.sh') != ''
+        continue-on-error: true
+        run: |
+          set -a
+          source detox/maestro/.maestro-test-env.sh
+          set +a
+
+          trap 'curl -f -sS --show-error -X PUT \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"SupportSettings\":{\"ReportAProblemType\":\"default\"}}" \
+            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+            echo "==> Restored ReportAProblemType=default"' EXIT
+
+          # Patch and then confirm the client config actually serves it. Two config writes
+          # close together can lose the later one: in run 34344304929 the mail step's trap
+          # restored 'default' 58 ms before this step patched, the app observed 'default',
+          # and handleReport() emailed instead of opening the browser.
+          echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
+            ReportAProblemType link || {
+              rc=$?
+              # 3 = this installation forbids the write (run 34452126763 proved it is set by an
+              # environment variable, so config/patch is silently ignored); the flow's
+              # pre-condition cannot be created here, so record a skip rather than a red.
+              # Anything else is a real failure and stays red.
+              if [ "$rc" -eq 3 ]; then
+                bash detox/maestro/scripts/write_maestro_skip_stub.sh \
+                  build/maestro-report-T3261_1.xml \
+                  detox/maestro/flows/account/report_problem_link_mode.yml \
+                  "ReportAProblemType=link is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
+                exit 0
+              fi
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T3261_1.xml \
+                detox/maestro/flows/account/report_problem_link_mode.yml \
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
+              exit 1
+            }
+
+          ~/.maestro/bin/maestro test \
+            --format junit \
+            --output build/maestro-report-T3261_1.xml \
+            --test-output-dir build/maestro-artifacts-T3261_1 \
+            --debug-output build/maestro-debug-T3261_1 \
+            --flatten-debug-output \
+            --platform android \
+            --env SITE_1_URL="${SITE_1_URL}" \
+            --env TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+            --env TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+            --env TEST_CHANNEL_NAME="${TEST_CHANNEL_NAME}" \
+            --env TEST_TEAM_NAME="${TEST_TEAM_NAME}" \
+            --env ADMIN_TOKEN="${ADMIN_TOKEN}" \
+            --env MAESTRO_APP_ID="com.mattermost.rnbeta" \
+            detox/maestro/flows/account/report_problem_link_mode.yml
+
+      - name: Stop Android logcat capture
+        if: always()
+        run: |
+          if [ -f build/android-logcat.pid ]; then
+            pid=$(cat build/android-logcat.pid)
+            kill "$pid" 2>/dev/null || true
+            echo "==> logcat capture stopped (pid $pid)"
+          fi
+          if [ -f build/android-logcat.log ]; then
+            echo "==> logcat size: $(wc -c < build/android-logcat.log) bytes"
+          fi
 
       - name: Upload Maestro Artifacts
         if: always()

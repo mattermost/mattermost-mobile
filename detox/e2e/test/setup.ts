@@ -5,7 +5,6 @@
 import {execSync} from 'child_process';
 import {existsSync} from 'fs';
 
-import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
 import {safeEnableSynchronization} from '@support/utils';
@@ -353,15 +352,6 @@ beforeAll(async () => {
     }
 
     console.info('✅ App launched');
-
-    // Initialize Claude AI prompt handler if available
-    try {
-        if (process.env.ANTHROPIC_API_KEY) {
-            pilot.init(new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY));
-        }
-    } catch (e) {
-        console.warn('Claude init failed:', e);
-    }
 
     await loginAdmin();
 }, 360_000);

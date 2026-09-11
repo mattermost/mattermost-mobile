@@ -81,6 +81,12 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    // Mention-count badge on a sidebar row. Badge returns null while its count is 0, so
+    // `not.toExist()` is the "unread but not mentioned" assertion, not a visibility check.
+    getChannelItemBadge = (categoryKey: string, channelName: string) => {
+        return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.badge`));
+    };
+
     ensureCategoryExpanded = async (categoryKey: string) => {
         try {
             await waitForElementToExist(this.getCategoryCollapsed(categoryKey), timeouts.TWO_SEC);

@@ -178,7 +178,7 @@ describe('Search - Modifiers', () => {
         }
 
         // Cleanup must run with sync on — under disableSynchronization the recent-item
-        // row can exist then vanish before tap (CI 59ec6ae iOS MM-T585_1).
+        // row can exist then vanish before tap
         await SearchMessagesScreen.searchClearButton.tap();
         const plainRemove = SearchMessagesScreen.getRecentSearchItemRemoveButton(plainTerm);
         await waitFor(plainRemove).toExist().withTimeout(timeouts.TEN_SEC);
