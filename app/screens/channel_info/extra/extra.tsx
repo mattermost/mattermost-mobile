@@ -21,6 +21,7 @@ import {ANDROID_33, OS_VERSION} from '@constants/versions';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
+import {isTelHref} from '@utils/phone_number';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -88,6 +89,10 @@ const messages = defineMessages({
         id: 'mobile.markdown.link.copy_email',
         defaultMessage: 'Copy Email Address',
     },
+    copyPhone: {
+        id: 'mobile.markdown.link.copy_phone',
+        defaultMessage: 'Copy Phone Number',
+    },
     copyURL: {
         id: 'mobile.markdown.link.copy_url',
         defaultMessage: 'Copy URL',
@@ -123,8 +128,13 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
     const handleLongPress = useCallback((url?: string) => {
         if (managedConfig?.copyAndPasteProtection !== 'true') {
 
-            const cleanUrl = url?.replace(/^mailto:/, '') || '';
-            const isEmailLink = isEmail(cleanUrl);
+            const cleanUrl = url?.replace(/^(mailto:|tel:)/i, '') || '';
+            let copyMessage = messages.copyURL;
+            if (url && isTelHref(url)) {
+                copyMessage = messages.copyPhone;
+            } else if (isEmail(cleanUrl)) {
+                copyMessage = messages.copyEmail;
+            }
 
             const renderContent = () => (
                 <View
@@ -149,7 +159,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomS
                                 onCopy(cleanUrl, true);
                             }}
                             testID={`${headerTestId}.bottom_sheet.copy_url`}
-                            text={intl.formatMessage(isEmailLink ? messages.copyEmail : messages.copyURL)}
+                            text={intl.formatMessage(copyMessage)}
                         />
                     )}
                     <SlideUpPanelItem

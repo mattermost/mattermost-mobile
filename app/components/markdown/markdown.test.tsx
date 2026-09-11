@@ -21,6 +21,18 @@ jest.mock('@screens/navigation', () => ({
     navigateToRoot: jest.fn(),
 }));
 
+jest.mock('./markdown_link', () => {
+    const MockReact = require('react');
+    const {Text} = require('react-native');
+
+    return {
+        __esModule: true,
+        default: ({href, children}: {href: string; children: React.ReactNode}) => (
+            MockReact.createElement(Text, {testID: 'markdown_link', href}, children)
+        ),
+    };
+});
+
 describe('Markdown', () => {
     const baseProps: React.ComponentProps<typeof Markdown> = {
         baseTextStyle: {},
@@ -249,6 +261,52 @@ describe('Markdown', () => {
                 fontFamily: 'OpenSans',
                 color: baseProps.theme.linkColor,
             });
+        });
+    });
+
+    describe('phone number autolinking', () => {
+        beforeEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('should autolink phone numbers when links are enabled', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    value='Call 555-123-4567'
+                />,
+            );
+
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('tel:5551234567');
+            expect(screen.getByText('555-123-4567')).toBeVisible();
+        });
+
+        it('should not autolink phone numbers when links are disabled', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    disableLinks={true}
+                    value='Call 555-123-4567'
+                />,
+            );
+
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText('Call 555-123-4567')).toBeVisible();
+        });
+
+        it('should not autolink phone numbers when the post has unsafe links', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    isUnsafeLinksPost={true}
+                    value='Call 555-123-4567'
+                />,
+            );
+
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText('Call 555-123-4567')).toBeVisible();
         });
     });
 });
