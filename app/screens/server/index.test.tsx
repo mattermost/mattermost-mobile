@@ -11,6 +11,8 @@ import {getServerByDisplayName} from '@queries/app/servers';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
+import ServerForm from './form';
+
 import Server from './index';
 
 jest.mock('@actions/remote/general', () => ({
@@ -194,5 +196,43 @@ describe('Server', () => {
         expect(doPing).toHaveBeenCalledTimes(1);
         expect(getServerUrlAfterRedirect).toHaveBeenCalledWith(serverUrl, false, undefined);
         expect(doPing).toHaveBeenCalledWith(serverUrl, true, undefined, undefined);
+    });
+
+    it('should start a new button connect after a previous ping has finished', async () => {
+        jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: serverUrl});
+        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+
+        const {unmount} = renderWithIntl(<Server {...props}/>);
+        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(1));
+        unmount();
+
+        jest.mocked(ServerForm).mockClear();
+        jest.mocked(getServerUrlAfterRedirect).mockClear();
+        jest.mocked(doPing).mockClear();
+        jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: 'https://server-two.com'});
+        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+
+        renderWithIntl(
+            <Server
+                displayName='Server 2'
+                launchType={Launch.AddServer}
+                serverUrl='https://server-two.com'
+                theme={Preferences.THEMES.denim}
+            />,
+        );
+
+        await waitFor(() => {
+            const lastCall = jest.mocked(ServerForm).mock.calls[jest.mocked(ServerForm).mock.calls.length - 1];
+            expect(lastCall[0].buttonDisabled).toBe(false);
+        });
+
+        const lastCall = jest.mocked(ServerForm).mock.calls[jest.mocked(ServerForm).mock.calls.length - 1];
+        const handleConnect = lastCall[0].handleConnect;
+        await act(async () => {
+            await handleConnect();
+        });
+
+        await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(1));
+        expect(getServerUrlAfterRedirect).toHaveBeenCalledWith('https://server-two.com', false, undefined);
     });
 });

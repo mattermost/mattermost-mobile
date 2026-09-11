@@ -321,11 +321,14 @@ const Server = ({
 
     const pingServer = async (pingUrl: string, retryWithHttp = true) => {
         let canceled = false;
+        const finishPing = () => {
+            cancelPing = undefined;
+            setConnecting(false);
+        };
         setConnecting(true);
         cancelPing = () => {
             canceled = true;
-            setConnecting(false);
-            cancelPing = undefined;
+            finishPing();
         };
 
         const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
@@ -341,7 +344,6 @@ const Server = ({
             } else {
                 setUrlError(getErrorMessage(headRequest.error, intl));
                 setButtonDisabled(true);
-                setConnecting(false);
             }
             return;
         }
@@ -367,7 +369,7 @@ const Server = ({
                 setUrlError(getErrorMessage(result.error, intl));
             }
             setButtonDisabled(true);
-            setConnecting(false);
+            finishPing();
             return;
         }
 
@@ -393,7 +395,7 @@ const Server = ({
             }
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error, intl));
-            setConnecting(false);
+            finishPing();
             return;
         }
 
@@ -405,7 +407,7 @@ const Server = ({
                 id: 'mobile.diagnostic_id.empty',
                 defaultMessage: 'A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.',
             }));
-            setConnecting(false);
+            finishPing();
             return;
         }
 
@@ -415,7 +417,7 @@ const Server = ({
                 return;
             }
             if (isJailbroken) {
-                setConnecting(false);
+                finishPing();
                 return;
             }
         }
@@ -426,7 +428,7 @@ const Server = ({
                 return;
             }
             if (!biometricsResult) {
-                setConnecting(false);
+                finishPing();
                 return;
             }
         }
@@ -436,7 +438,7 @@ const Server = ({
         if (canceled) {
             return;
         }
-        setConnecting(false);
+        finishPing();
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
