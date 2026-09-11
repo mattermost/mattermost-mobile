@@ -144,6 +144,10 @@ class WebsocketManagerSingleton {
         return this.clients[serverUrl]?.isConnected();
     };
 
+    public hasFailedToConnect = (serverUrl: string): boolean => {
+        return this.clients[serverUrl]?.hasFailedToConnect() === true;
+    };
+
     public observeWebsocketState = (serverUrl: string) => {
         return this.getConnectedSubject(serverUrl).asObservable().pipe(
             distinctUntilChanged(),

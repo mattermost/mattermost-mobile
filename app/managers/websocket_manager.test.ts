@@ -69,6 +69,7 @@ describe('WebsocketManager', () => {
             }),
             initialize: jest.fn(),
             isConnected: jest.fn().mockReturnValue(true),
+            hasFailedToConnect: jest.fn().mockReturnValue(false),
             close: jest.fn(),
             invalidate: jest.fn(),
             waitForClose: jest.fn().mockResolvedValue(undefined),
@@ -340,6 +341,26 @@ describe('WebsocketManager', () => {
 
             // Verify that clients are closed when network is disconnected
             expect(manager.getClient(mockServerUrl)?.close).toHaveBeenCalled();
+        });
+    });
+
+    describe('hasFailedToConnect', () => {
+        it('is false when no client exists for the server', () => {
+            expect(manager.hasFailedToConnect('https://nonexistent.com')).toBe(false);
+        });
+
+        it('is false while a client exists but no attempt has failed yet', async () => {
+            await manager.init(mockCredentials);
+            mockWebSocketClient.hasFailedToConnect.mockReturnValue(false);
+
+            expect(manager.hasFailedToConnect(mockServerUrl)).toBe(false);
+        });
+
+        it('is true once a connection attempt has failed', async () => {
+            await manager.init(mockCredentials);
+            mockWebSocketClient.hasFailedToConnect.mockReturnValue(true);
+
+            expect(manager.hasFailedToConnect(mockServerUrl)).toBe(true);
         });
     });
 
