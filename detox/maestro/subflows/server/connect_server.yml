@@ -37,9 +37,12 @@ appId: ${MAESTRO_APP_ID}
           id: "server_form.server_url.input"
       - eraseText: 50
       - inputText: ${SITE_1_URL}
-      # # Avoid hideKeyboard here — on headless API 35 it can leave the next
-      # TextInput undiscoverable (CI 30216081940). IME next focuses display name
-      # (returnKeyType=next); scroll/wait/tap as fallback.
+      # # Android FloatingTextInput is queryable by testID, not the floated
+      # label. `text: Display Name` fails on API 35 (CI 33915931136, 10/10
+      # flows). Do not hideKeyboard before this field — on headless API 35
+      # that can leave the next TextInput undiscoverable (CI 30216081940).
+      # IME next focuses display name (returnKeyType=next); scroll/wait/tap
+      # by id as fallback.
       - pressKey: Enter
       - scrollUntilVisible:
           element:

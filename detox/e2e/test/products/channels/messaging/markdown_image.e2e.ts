@@ -24,6 +24,12 @@ import {
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
+// The markdown image must actually load: on a fetch failure MarkdownImage renders a bare
+// broken-image icon and never mounts the `markdown_image` testID. docs.mattermost.com rewrites
+// its `_images/` paths on every docs rebuild (icon-76x76.png now 404s), so use the same
+// mattermost.com asset file_preview_gallery.e2e.ts already relies on.
+const MARKDOWN_IMAGE_URL = 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png';
+
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -50,7 +56,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_1 - should be able to display markdown image', async () => {
         // # Open a channel screen and post a markdown image
-        const markdownImage = '![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)';
+        const markdownImage = `![Mattermost](${MARKDOWN_IMAGE_URL})`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownImage);
 
@@ -70,7 +76,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_2 - should be able to display markdown image with link', async () => {
         // # Open a channel screen and post a markdown image with link
-        const markdownImage = '[![Mattermost](https://docs.mattermost.com/_images/icon-76x76.png)](https://github.com/mattermost/mattermost-server)';
+        const markdownImage = `[![Mattermost](${MARKDOWN_IMAGE_URL})](https://github.com/mattermost/mattermost-server)`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(markdownImage);
 
