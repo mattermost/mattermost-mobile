@@ -54,9 +54,10 @@ type DisplayProps = {
     isCRTEnabled: boolean;
     isCRTSwitchEnabled: boolean;
     isThemeSwitchingEnabled: boolean;
+    themeAutoSwitch: boolean;
 }
 
-const Display = ({currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled}: DisplayProps) => {
+const Display = ({currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, themeAutoSwitch}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
 
@@ -86,7 +87,7 @@ const Display = ({currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchE
                 <SettingItem
                     optionName='theme'
                     onPress={goToThemeSettings}
-                    info={theme.type!}
+                    info={themeAutoSwitch ? intl.formatMessage({id: 'display_settings.theme.auto', defaultMessage: 'Auto'}) : theme.type!}
                     testID='display_settings.theme.option'
                 />
             )}

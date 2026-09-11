@@ -5,6 +5,7 @@ import {adminEmail, adminPassword, adminUsername} from '@support/test_config';
 import {waitFor} from 'detox';
 import {v4 as uuidv4} from 'uuid';
 
+export * from './appearance';
 export * from './email';
 export * from './detoxhelpers';
 
