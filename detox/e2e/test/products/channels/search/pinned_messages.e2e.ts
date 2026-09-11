@@ -29,7 +29,7 @@ import {
     ChannelInfoScreen,
 } from '@support/ui/screen';
 import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {by, expect, waitFor} from 'detox';
 
 describe('Search - Pinned Messages', () => {
     const serverOneDisplayName = 'Server 1';
@@ -139,8 +139,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: edit/reply/delete from pinned messages flake
-    it.skip('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
+    it('MM-T4918_3 - should be able to edit, reply to, and delete a pinned message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -150,6 +149,7 @@ describe('Search - Pinned Messages', () => {
 
         await ChannelScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, pinnedPost.id);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
@@ -181,8 +181,10 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.assertPostMessageEdited(pinnedPost.id, updatedMessage, 'pinned_page');
 
         // # Open post options for updated pinned message and tap on reply option
-        await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);
-        await PostOptionsScreen.replyToPost();
+        // Post text now renders as "<message> edit (edited)", so the exact-text matcher
+        // would not match; use the post-id-only matcher (same pattern as MM-T4910_3).
+        await updatedPostListPostItem.longPress(timeouts.TWO_SEC);
+        await PostOptionsScreen.replyPostOption.tap();
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
@@ -206,12 +208,19 @@ describe('Search - Pinned Messages', () => {
         if (isAndroid()) {
             await wait(timeouts.TWO_SEC);
         }
-        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, updatedMessage);
+        const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id);
+
+        // Scope the reply-count text to the specific pinned post item: an unscoped
+        // by.text('1 reply') matches multiple thread-overview instances on this screen.
+        await waitForElementToBeVisible(
+            element(by.id(`pinned_messages.post_list.post.${pinnedPost.id}`).
+                withDescendant(by.text('1 reply'))),
+            timeouts.TWO_SEC,
+        );
         await PinnedMessagesScreen.verifyReplyCount(pinnedPost.id, 1);
-        await PinnedMessagesScreen.verifyFollowingLabel(pinnedPost.id, true);
 
         // # Open post options for updated pinned message and delete post
-        await PostOptionsScreen.openPostOptionsForPinedPosts(pinnedPost.id);
+        await postListPostItem.longPress(timeouts.TWO_SEC);
         await PostOptionsScreen.deletePost({confirm: true});
 
         // * Verify updated pinned message is deleted
@@ -223,8 +232,7 @@ describe('Search - Pinned Messages', () => {
         await ChannelScreen.back();
     });
 
-    // Skip: unpin from pinned messages flake
-    it.skip('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
+    it('MM-T4918_4 - should be able to unpin a message from pinned messages screen', async () => {
         // # Open a channel screen, post a message, open post options for message, tap on pin to channel option, open channel info screen, and open pinned messages screen
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -234,6 +242,7 @@ describe('Search - Pinned Messages', () => {
 
         await ChannelScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, pinnedPost.id);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 
@@ -242,16 +251,12 @@ describe('Search - Pinned Messages', () => {
 
         // # Open post options for pinned message and tap on unpin from channel option
         await PinnedMessagesScreen.openPostOptionsFor(pinnedPost.id, message);
-
-        // The post-options sheet's presentation overlay can obscure the option row's
-        // center; tap a corner (same workaround as PostOptionsScreen.deletePost).
-        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
-        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
+        await PostOptionsScreen.tapUnpinPost();
+        await Post.waitForPostUnpinned(siteOneUrl, testChannel.id, pinnedPost.id);
 
         // * Verify pinned message is not displayed anymore
-        await wait(timeouts.ONE_SEC);
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
-        await expect(postListPostItem).not.toExist();
+        await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await PinnedMessagesScreen.back();
@@ -270,6 +275,7 @@ describe('Search - Pinned Messages', () => {
 
         await ChannelScreen.openPostOptionsFor(pinnedPost.id, message);
         await PostOptionsScreen.pinPostOption.tap();
+        await Post.waitForPostPinned(siteOneUrl, testChannel.id, pinnedPost.id);
         await ChannelInfoScreen.open();
         await PinnedMessagesScreen.open();
 

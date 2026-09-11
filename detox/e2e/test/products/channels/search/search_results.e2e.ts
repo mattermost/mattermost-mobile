@@ -90,11 +90,16 @@ describe('Search - Result Interactions', () => {
         const postCount = 20;
         const postIds: string[] = [];
 
+        // retryOnTransportFailure: this test only needs a list long enough to scroll, so a post
+        // duplicated by a replayed request is harmless here. Without it a single dropped
+        // connection in the middle of the loop fails the test outright.
+        // "apiCreatePost failed: read ECONNRESET" partway through the 20.
         /* eslint-disable no-await-in-loop */
         for (let i = 0; i < postCount; i++) {
             const {post} = await Post.apiCreatePost(siteOneUrl, {
                 channelId: testChannel.id,
                 message: `${commonWord} post number ${i}`,
+                retryOnTransportFailure: true,
             });
             postIds.push(post.id);
         }
@@ -211,6 +216,13 @@ describe('Search - Result Interactions', () => {
 
         // # Open search, search for term, and save the result
         await SearchMessagesScreen.open();
+
+        try {
+            await SearchMessagesScreen.searchClearButton.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch {
+            // Nothing to clear on the first search of a fresh screen.
+        }
         await SearchMessagesScreen.searchInput.tap();
 
         await device.disableSynchronization();

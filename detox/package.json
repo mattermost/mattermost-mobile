@@ -14,8 +14,6 @@
     "@types/jest": "29.5.14",
     "@types/tough-cookie": "4.0.5",
     "@types/uuid": "10.0.0",
-    "@wix-pilot/core": "3.4.2",
-    "@wix-pilot/detox": "1.0.13",
     "async": "3.2.6",
     "axios": "1.8.2",
     "axios-cookiejar-support": "5.0.4",
@@ -61,7 +59,7 @@
     "detox:config-gen": "cd utils && node generate_detox_config_ci.js",
     "check": "npm run lint && npm run tsc && npm run test:unit && npm run validate:flow-headers",
     "validate:flow-headers": "bash maestro/scripts/validate-flow-headers.sh",
-    "test:unit": "node --test utils/*.test.js && npx tsx --test e2e/support/utils/transport_retry.test.ts && npx tsx --test e2e/support/classification_lock_core.test.ts",
+    "test:unit": "node --test utils/*.test.js && npx tsx --test e2e/support/utils/transport_retry.test.ts && npx tsx --test e2e/support/classification_lock_core.test.ts && npx tsx --test e2e/support/classification_test_helper.test.ts && npx tsx --test e2e/support/server_api/client.test.ts",
     "clean-detox": "detox clean",
     "lint": "eslint --ignore-pattern node_modules --quiet .",
     "e2e:save-report": "node save_report.js",
@@ -71,7 +69,5 @@
     "tsc": "NODE_OPTIONS=--max_old_space_size=12000 tsc --noEmit",
     "postinstall": "node scripts/postinstall.js"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.56.0"
-  }
+  "dependencies": {}
 }

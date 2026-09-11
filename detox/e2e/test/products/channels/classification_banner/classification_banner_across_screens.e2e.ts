@@ -7,9 +7,9 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Post, Properties, Setup} from '@support/server_api';
+import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {
@@ -28,12 +28,13 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
+import {logError} from '../../../../../provision/log';
+
 // Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
 // here: up to 45m of queuing behind the other two classification suites (they share one
 // server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// Skip Android: suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -68,20 +69,26 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
     }, timeouts.ONE_MIN * 50);
 
+    beforeEach(async () => {
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
+        const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+        if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
+            logError(
+                '[beforeEach] FeatureFlagClassificationMarkings flipped off mid-suite ' +
+                `(client=${String(clientConfig?.FeatureFlagClassificationMarkings)}) — re-enabling`,
+            );
+            await enableClassificationMarkings(siteOneUrl);
+        }
+    });
+
     afterAll(async () => {
         if (!lockAcquired) {
             return;
         }
 
         try {
-            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the session logged in for later suites.
-            //
-            // ClassificationMarkings is deliberately NOT unset here. It is server-global and
-            // ~10 shards share each provisioned server, so unsetting it yanks the flag out
-            // from under any concurrent classification suite. See the invariant documented in
-            // global_classification_banner.e2e.ts; every suite enables it idempotently.
             try {
+                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
                 await HomeScreen.logout();

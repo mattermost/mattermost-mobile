@@ -71,6 +71,7 @@
   "agents.tool_call.reject_all": "Reject all",
   "agents.tool_call.response": "Response",
   "agents.tool_call.review_tool_response": "Review tool response",
+  "agents.tool_call.run_tools": "Run tools",
   "agents.tool_call.share": "Share",
   "agents.tool_call.status.rejected": "Rejected",
   "agents.tool_call.submitting": "Submitting...",

@@ -12,6 +12,8 @@ const path = require('path');
 
 const axios = require('axios');
 
+const {isRetriableCloudWarmupError} = require('../utils/retriable_cloud_error');
+
 const DEVICE_REGISTRY_PATH = path.join(
     os.homedir(),
     'Library', 'Detox', 'device.registry.json',
@@ -83,7 +85,12 @@ function shutdownZombieSimulators() {
 
 // One-time server health check and CI config before tests load.
 
-const SITE_URL = process.env.SITE_1_URL || 'http://localhost:8065';
+// Resolve the health-check URL the same way test_config does: an explicit SITE_1_URL
+// wins (CI sets it per shard); otherwise fall back to the platform-specific URL so a
+// local .env without SITE_1_URL still works on both iOS and Android runs.
+const _isIos = process.env.IOS === 'true';
+const _platformSiteOneUrl = _isIos ? process.env.IOS_SITE_1_URL : process.env.ANDROID_SITE_1_URL;
+const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localhost:8065';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
@@ -105,6 +112,10 @@ const PREPACKAGED_PLUGINS = new Set([
     'zoom',
 ]);
 
+// Match Maestro seed.ts: Matterwick can 403 / serve the inactive portal for ~2min.
+const WARMUP_RETRIES = 8;
+const WARMUP_DELAY_MS = 15000;
+
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {
     let lastErr;
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -113,15 +124,36 @@ async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} =
         } catch (err) {
             lastErr = err;
             const status = err.response?.status;
-            const retriable = !status || status >= 500;
+            const body = err.response?.data;
+            const retriable = isRetriableCloudWarmupError({
+                status,
+                message: err.message,
+                body,
+            });
             if (attempt === retries || !retriable) {
-                throw err;
+                const data = err.response?.data;
+                let bodyLength = 0;
+                if (typeof data === 'string') {
+                    bodyLength = data.length;
+                } else if (Buffer.isBuffer(data)) {
+                    bodyLength = data.length;
+                } else if (data != null) {
+                    try {
+                        bodyLength = JSON.stringify(data).length;
+                    } catch {
+                        bodyLength = -1;
+                    }
+                }
+                throw new Error(
+                    `[globalSetup] ${label} failed against ${SITE_URL}` +
+                    `${status ? ` with status ${status}` : ''}` +
+                    `${err.code ? ` code ${err.code}` : ''}: ${err.message} (body length ${bodyLength})`,
+                );
             }
-            const wait = delayMs * attempt;
             process.stderr.write(
-                `[globalSetup] ⚠️ ${label} attempt ${attempt} failed (${err.message}), retrying in ${wait}ms…\n`,
+                `[globalSetup] ⚠️ ${label} attempt ${attempt}/${retries} failed (${err.message}), retrying in ${delayMs}ms…\n`,
             );
-            await new Promise((r) => setTimeout(r, wait)); // eslint-disable-line no-await-in-loop
+            await new Promise((r) => setTimeout(r, delayMs)); // eslint-disable-line no-await-in-loop
         }
     }
     throw lastErr;
@@ -137,18 +169,25 @@ async function serverSetup() {
     http.globalAgent.options.family = 4;
     https.globalAgent.options.family = 4;
 
-    const ping = await retryAxios(
-        () => axios.get(`${SITE_URL}/api/v4/system/ping?get_server_status=true`),
-        {label: 'health check'},
+    await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/system/ping?get_server_status=true`).then((res) => {
+            if (res.data?.status !== 'OK') {
+                const snippet = typeof res.data === 'string'
+                    ? res.data.slice(0, 200)
+                    : JSON.stringify(res.data);
+                const err = new Error(`Server health check failed: ${snippet}`);
+                err.response = res;
+                throw err;
+            }
+            return res;
+        }),
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'health check'},
     );
-    if (ping.data.status !== 'OK') {
-        throw new Error(`Server health check failed: ${JSON.stringify(ping.data)}`);
-    }
     process.stdout.write('[globalSetup] ✅ Server health check passed\n');
 
     const clientConfig = await retryAxios(
         () => axios.get(`${SITE_URL}/api/v4/config/client?format=old`),
-        {label: 'client config'},
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'client config'},
     );
     const cfg = clientConfig.data || {};
     process.stdout.write(
@@ -166,7 +205,7 @@ async function serverSetup() {
             login_id: ADMIN_USERNAME,
             password: ADMIN_PASSWORD,
         }),
-        {label: 'admin login'},
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'admin login'},
     );
     const token = login.headers.token;
     if (!token) {

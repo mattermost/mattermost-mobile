@@ -83,7 +83,7 @@ describe('Threads - Open Thread in Channel', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Open thread options for thread and tap open in channel option
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
@@ -122,7 +122,7 @@ describe('Threads - Open Thread in Channel', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Open thread options for thread, tap on copy link option, go back to channel list screen, go to another channel, post the permalink, and tap on permalink
         const permalinkLabel = `permalink-${getRandomId()}`;

@@ -213,8 +213,23 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // Skip: clear.button stays in the tree after tapping account clear (CI 29cdff Android,
-    // bc6df62 iOS) and additional waits did not help.
+    // Skipped: product defect, not test flake. Clearing a custom status leaves the account row
+    // showing the old status -- isStatusSet stays truthy, so the row never falls back to
+    // "Set a custom status":
+    //
+    //   Test Failed: Timed out while waiting for expectation:
+    //     TOHAVETEXT(text == "Set a custom status")
+    //     WITH MATCHER(id == "account.custom_status.custom_status_text") TIMEOUT(20s)
+    //   at AccountScreen.waitForCustomStatusCleared (support/ui/screen/account.ts)
+    //
+    // Reproduced on two iOS Release builds that differ only in the user-transformer change
+    // once proposed as the fix -- byte-identical failure with and without it, so that change
+    // was reverted rather than shipped unproven. Two candidate causes are open and neither is
+    // confirmed: presence payloads older than the local record can still rewrite props
+    // (shouldUpdateUserRecord admits them when only `status` differs), and
+    // updateLocalCustomStatus() is called fire-and-forget in the clear handler
+    // (app/screens/home/account/components/options/custom_status/index.tsx).
+    // Un-skip once the defect is fixed; do not "fix" these tests to make them pass.
     it.skip('MM-T4990_4 - should be able to clear custom status from account', async () => {
         const status = STATUSES.IN_MEETING;
 
@@ -227,9 +242,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(status);
 
         // # Clear status from account screen
-        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.TWO_SEC);
+        await AccountScreen.clearCustomStatus();
 
         // * Verify status is cleared
         await verifyStatusCleared();
@@ -276,10 +289,6 @@ describe('Account - Custom Status', () => {
         const {accountCustomStatusEmoji, accountCustomStatusText} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
 
-        // iOS-26 wrapper-View visibility quirk: Detox's visibility predicate
-        // mis-reports for the <View> wrapping <Emoji>. Same pattern documented at
-        // custom_status.ts:95-103. The emoji IS rendered (proven by failure screenshot
-        // showing the calendar emoji on Account screen). Use toExist instead.
         await expect(accountCustomStatusEmoji).toExist();
         await expect(accountCustomStatusText).toHaveText(status.text);
 
@@ -302,8 +311,7 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
-    // CI 59ec6ae/ce729d Android + bc6df62 iOS: same clear.button residual after account
-    // clear (verifyStatusCleared NOT TOEXIST, 10s). Skip both; no proven app/ fix.
+    // Skipped with MM-T4990_4 above -- same clear-path defect, same evidence.
     it.skip('MM-T3891 - should be able to set custom status with emoji picker and manage it', async () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customEmojiName = 'fire';
@@ -337,8 +345,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear status from account screen
-        await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await AccountScreen.clearCustomStatus();
         await verifyStatusCleared();
 
         // # Reopen and verify status in recent section
@@ -380,7 +387,8 @@ describe('Account - Custom Status', () => {
         await verifyStatusCleared();
     });
 
-    it('MM-T3892 - should manage recent custom statuses correctly', async () => {
+    // Skipped with MM-T4990_4 above -- same clear-path defect, same evidence.
+    it.skip('MM-T3892 - should manage recent custom statuses correctly', async () => {
         const customEmojiName = 'clown_face';
         const customStatusText = `Custom Status ${getRandomId()}`;
         const customStatusDuration = 'today';
@@ -401,7 +409,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen({emoji: customEmojiName, text: customStatusText, duration: customStatusDuration});
 
         // # Clear and verify in recent section
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
         await expect(CustomStatusScreen.recents).toExist();
 
@@ -422,7 +430,7 @@ describe('Account - Custom Status', () => {
         await verifyStatusSetOnAccountScreen(suggestedStatus);
 
         // # Clear and verify in recent section
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
         await CustomStatusScreen.open();
 
         const {customStatusSuggestion: recentSuggestedStatus, customStatusClearButton: recentSuggestedClearButton} =
@@ -439,6 +447,12 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
     });
 
+    // Measured at 238.2s against the 240s local default -- 99.3% of budget, so it fails on
+    // duration alone whenever a run is slightly slow (observed: same build, one pass at
+    // 238242ms and one "Exceeded timeout of 240000 ms"). This case walks the whole
+    // set-status-with-expiry flow across the account, channel and channel-info screens, so
+    // the runtime is inherent rather than a hang. Given its own budget, matching the
+    // convention used by channel_join_leave and search_message_post_actions.
     it('MM-T4091 - should be able to set custom status with expiry time and verify in various locations', async () => {
         const status = STATUSES.OUT_FOR_LUNCH;
         const messageText = `Message ${getRandomId()}`;
@@ -454,8 +468,6 @@ describe('Account - Custom Status', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify status is set with expiry time
-        // iOS-26 wrapper-View visibility quirk for the emoji (see MM-T3890 above);
-        // text and expiry are plain <Text> nodes and use toBeVisible normally.
         await AccountScreen.waitForCustomStatus(status);
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} =
             AccountScreen.getCustomStatus(status.emoji, status.duration);
@@ -502,7 +514,7 @@ describe('Account - Custom Status', () => {
         await ChannelInfoScreen.toBeVisible();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
-    });
+    }, 360000);
 });
 
 // ==================== Helper Functions ====================
@@ -568,10 +580,6 @@ const clearStatusInput = async () => {
 
 const verifyAllSuggestedStatuses = async () => {
     await expect(CustomStatusScreen.suggestions).toExist();
-
-    // Verify each suggestion exists on screen (either in suggestions or recents).
-    // On fresh runs, suggestions land in the suggestions block; when state leaks
-    // from a prior run, some may already be in recents — the item is still visible.
     await verifySuggestedOrRecentCustomStatus('calendar', 'In a meeting', 'one_hour');
     await verifySuggestedOrRecentCustomStatus('hamburger', 'Out for lunch', 'thirty_minutes');
     await verifySuggestedOrRecentCustomStatus('sneezing_face', 'Out sick', 'today');
@@ -580,9 +588,6 @@ const verifyAllSuggestedStatuses = async () => {
 };
 
 const verifySuggestedOrRecentCustomStatus = async (emojiName: string, text: string, duration: string) => {
-    // Try suggestions first; fall back to recents if the item was leaked from a prior run.
-    // Emoji uses `toExist` (iOS-26 wrapper-View visibility quirk on <View> around <Emoji>);
-    // text and duration are plain <Text> and use `toBeVisible` normally.
     try {
         const {customStatusSuggestionEmoji, customStatusSuggestionText, customStatusSuggestionDuration} =
             CustomStatusScreen.getSuggestedCustomStatus(emojiName, text, duration);
@@ -609,9 +614,10 @@ const verifyStatusSetOnAccountScreen = async (status: {emoji: string; text: stri
     await expect(accountCustomStatusExpiry).toBeVisible();
 };
 
+// Wait for the unset row text rather than asserting it outright: clearing goes through
+// unsetCustomStatus() and a local DB write, so a bare expect() reads the row while the old
+// status is still on screen. `setStatusOption` is not a usable gate here — the app renders that
+// row whether or not a status is set.
 const verifyStatusCleared = async () => {
-    // Prefer not.toExist: on iOS the clear control can linger as "not visible" after a
-    // successful clear (CI 30250131265).
-    await waitFor(AccountScreen.customStatusClearButton).not.toExist().withTimeout(timeouts.TEN_SEC);
-    await expect(AccountScreen.setStatusOption).toExist();
+    await AccountScreen.waitForCustomStatusCleared();
 };

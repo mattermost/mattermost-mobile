@@ -42,11 +42,19 @@ export type TransportRetryOptions = {
 
     /** Identifies the operation in the give-up log line. */
     label?: string;
+
+    /**
+     * Wall-clock ceiling for the whole retry sequence. Defaults to TRANSPORT_RETRY_BUDGET_MS.
+     * Lower it for calls a `beforeAll` makes repeatedly: the client's own request timeout is
+     * 45s, so several budget-spending calls in one hook can reach Jest's 300s hook cap and
+     * turn a clean, readable failure into an unexplained hang.
+     */
+    budgetMs?: number;
 };
 
 export const withTransportRetry = async <T>(
     operation: () => Promise<T>,
-    {delayMs = NETWORK_RETRY_DELAY_MS, idempotent, allowDuplicateWrites = false, label = 'operation'}: TransportRetryOptions,
+    {delayMs = NETWORK_RETRY_DELAY_MS, idempotent, allowDuplicateWrites = false, label = 'operation', budgetMs = TRANSPORT_RETRY_BUDGET_MS}: TransportRetryOptions,
 ): Promise<T> => {
     const startedAt = Date.now();
     let result = await operation();
@@ -57,7 +65,7 @@ export const withTransportRetry = async <T>(
 
     for (let attempt = 1; attempt < NETWORK_RETRY_ATTEMPTS && isTransportFailure(result as ApiResult); attempt++) {
         const elapsed = Date.now() - startedAt;
-        if (elapsed + delayMs >= TRANSPORT_RETRY_BUDGET_MS) {
+        if (elapsed + delayMs >= budgetMs) {
             // eslint-disable-next-line no-console
             console.warn(`[withTransportRetry] ${label}: retry budget spent after ${elapsed}ms on attempt ${attempt}; returning the transport failure`);
             return result;

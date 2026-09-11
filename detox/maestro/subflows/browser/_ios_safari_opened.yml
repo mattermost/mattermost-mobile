@@ -1,0 +1,36 @@
+# Succeeds when iOS Safari / SFSafariViewController chrome is on screen.
+# tryOpenURL on iOS 26 does not always expose id:breadcrumb (CI 33924565190
+# report_problem_action). SFSafariViewController still does. Fail if none of
+# the OS dismiss controls are visible so the caller can retry.
+#
+# Underscore prefix: helper, not a Zephyr test case.
+appId: ${MAESTRO_APP_ID}
+---
+- runFlow:
+    when:
+      visible:
+        id: "breadcrumb"
+    commands:
+      - assertVisible:
+          id: "breadcrumb"
+- runFlow:
+    when:
+      notVisible:
+        id: "breadcrumb"
+      visible:
+        text: "Done"
+    commands:
+      - assertVisible:
+          text: "Done"
+- runFlow:
+    when:
+      notVisible:
+        id: "breadcrumb"
+    commands:
+      - runFlow:
+          when:
+            notVisible:
+              text: "Done"
+          commands:
+            - assertVisible:
+                text: "Mattermost"
