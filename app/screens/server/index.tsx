@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useNavigation} from 'expo-router';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {Alert, BackHandler, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-controller';
@@ -37,6 +37,7 @@ import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
+    deepLinkRequestId?: number;
     isModal?: boolean;
     theme: Theme;
 }
@@ -69,6 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const Server = ({
     animated,
+    deepLinkRequestId,
     displayName: defaultDisplayName,
     extra,
     isModal,
@@ -89,6 +91,7 @@ const Server = ({
     const [urlError, setUrlError] = useState<string | undefined>();
     const [preauthSecretError, setPreauthSecretError] = useState<string | undefined>();
     const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+    const connectGeneration = useRef(0);
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
@@ -113,7 +116,7 @@ const Server = ({
                 }
             } else {
                 autoconnect = true;
-                serverUrl = deepLinkServerUrl;
+                serverUrl = defaultServerUrl || deepLinkServerUrl;
             }
         } else if (launchType === Launch.AddServer) {
             serverName = defaultDisplayName;
@@ -130,13 +133,13 @@ const Server = ({
         }
 
         if (serverUrl && serverName && autoconnect) {
-            // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            // Connect automatically when the server comes from managed config, local config, or a deep link.
+            handleConnect(serverUrl, serverName);
         }
 
         // We only want to handle connect when a smaller set of variables change
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl]);
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName, defaultServerUrl, deepLinkRequestId]);
 
     useEffect(() => {
         if (url && displayName && !urlError && !preauthSecretError) {
@@ -183,7 +186,7 @@ const Server = ({
         };
     });
 
-    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
+    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense, serverDisplayName = displayName) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
         const passProps = {
             config,
@@ -192,7 +195,7 @@ const Server = ({
             launchError,
             launchType,
             license,
-            serverDisplayName: displayName,
+            serverDisplayName,
             serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
@@ -219,14 +222,20 @@ const Server = ({
         setUrl(serverUrl);
     };
 
-    const handleConnect = async (manualUrl?: string) => {
+    const handleConnect = async (manualUrl?: string, connectDisplayName?: string) => {
         if (buttonDisabled && !manualUrl) {
             return;
         }
 
-        if (connecting && cancelPing) {
+        if (cancelPing) {
             cancelPing();
-            return;
+
+            // Button taps cancel an in-flight ping. Auto-connect passes an
+            // explicit URL and must start a new ping after cancelling.
+            // Use cancelPing (set synchronously) rather than connecting state.
+            if (!manualUrl) {
+                return;
+            }
         }
 
         const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
@@ -247,8 +256,12 @@ const Server = ({
             setUrlError(undefined);
         }
 
-        const server = await getServerByDisplayName(displayName);
+        const generation = ++connectGeneration.current;
+        const server = await getServerByDisplayName(connectDisplayName || displayName);
         const credentials = await getServerCredentials(serverUrl);
+        if (generation !== connectGeneration.current) {
+            return;
+        }
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
@@ -259,7 +272,7 @@ const Server = ({
             return;
         }
 
-        pingServer(serverUrl);
+        pingServer(serverUrl, true, connectDisplayName);
     };
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
@@ -298,33 +311,39 @@ const Server = ({
 
     // If the URL has a path (e.g. a pasted channel URL), retry with the last path
     // segment stripped so we fall back to the server's base URL.
-    const retryWithBaseUrl = (currentUrl: string) => {
+    const retryWithBaseUrl = (currentUrl: string, serverDisplayName?: string) => {
         if (urlParse(currentUrl).pathname === '/') {
             return false;
         }
-        pingServer(currentUrl.substring(0, currentUrl.lastIndexOf('/')));
+        pingServer(currentUrl.substring(0, currentUrl.lastIndexOf('/')), true, serverDisplayName);
         return true;
     };
 
-    const pingServer = async (pingUrl: string, retryWithHttp = true) => {
+    const pingServer = async (pingUrl: string, retryWithHttp = true, serverDisplayName?: string) => {
         let canceled = false;
+        const finishPing = () => {
+            cancelPing = undefined;
+            setConnecting(false);
+        };
         setConnecting(true);
         cancelPing = () => {
             canceled = true;
-            setConnecting(false);
-            cancelPing = undefined;
+            finishPing();
         };
 
         const headRequest = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp, preauthSecret.trim() || undefined);
+        if (canceled) {
+            return;
+        }
+
         if (!headRequest.url) {
             cancelPing();
             if (retryWithHttp) {
                 const nurl = pingUrl.replace('https:', 'http:');
-                pingServer(nurl, false);
+                pingServer(nurl, false, serverDisplayName);
             } else {
                 setUrlError(getErrorMessage(headRequest.error, intl));
                 setButtonDisabled(true);
-                setConnecting(false);
             }
             return;
         }
@@ -350,7 +369,7 @@ const Server = ({
                 setUrlError(getErrorMessage(result.error, intl));
             }
             setButtonDisabled(true);
-            setConnecting(false);
+            finishPing();
             return;
         }
 
@@ -371,46 +390,55 @@ const Server = ({
         }
 
         if (data.error) {
-            if (retryWithBaseUrl(headRequest.url)) {
+            if (retryWithBaseUrl(headRequest.url, serverDisplayName)) {
                 return;
             }
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error, intl));
-            setConnecting(false);
+            finishPing();
             return;
         }
 
         if (!data.config?.DiagnosticId) {
-            if (retryWithBaseUrl(headRequest.url)) {
+            if (retryWithBaseUrl(headRequest.url, serverDisplayName)) {
                 return;
             }
             setUrlError(formatMessage({
                 id: 'mobile.diagnostic_id.empty',
                 defaultMessage: 'A DiagnosticId value is missing for this server. Contact your system admin to review this value and restart the server.',
             }));
-            setConnecting(false);
+            finishPing();
             return;
         }
 
         if (data.config.MobileJailbreakProtection === 'true') {
             const isJailbroken = await SecurityManager.isDeviceJailbroken(headRequest.url, data.config.SiteName);
+            if (canceled) {
+                return;
+            }
             if (isJailbroken) {
-                setConnecting(false);
+                finishPing();
                 return;
             }
         }
 
         if (data.config.MobileEnableBiometrics === 'true') {
             const biometricsResult = await SecurityManager.authenticateWithBiometrics(headRequest.url, data.config.SiteName);
+            if (canceled) {
+                return;
+            }
             if (!biometricsResult) {
-                setConnecting(false);
+                finishPing();
                 return;
             }
         }
 
         const server = await getServerByIdentifier(data.config.DiagnosticId);
         const credentials = await getServerCredentials(headRequest.url);
-        setConnecting(false);
+        if (canceled) {
+            return;
+        }
+        finishPing();
 
         if (server && server.lastActiveAt > 0 && credentials?.token) {
             setButtonDisabled(true);
@@ -421,7 +449,7 @@ const Server = ({
             return;
         }
 
-        displayLogin(headRequest.url, data.config!, data.license!);
+        displayLogin(headRequest.url, data.config!, data.license!, serverDisplayName || displayName);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
         // LoginScreen has FULLY settled. We use setTimeout (not
