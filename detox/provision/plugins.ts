@@ -6,6 +6,8 @@
 import https from 'node:https';
 import path from 'node:path';
 
+import {ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+
 import {
     AGENTS_PLUGIN_ID,
     AGENTS_PLUGIN_ASSET_NAME,
@@ -410,7 +412,15 @@ export async function installRequiredPlugin(
     }
 
     if (fixtureFilename) {
-        // CI downloads the fixture; local runs fall back to the pinned URL when it is absent.
+        if (pluginId === DEMO_PLUGIN_ID) {
+            try {
+                await ensureDemoPluginFixture();
+            } catch (err) {
+                const detail = err instanceof Error ? err.message : String(err);
+                logWarn(`Could not place demo plugin fixture on the runner: ${detail}`);
+            }
+        }
+
         const fixturePath = path.resolve(__dirname, `../e2e/support/fixtures/${fixtureFilename}`);
         logInfo(`Installing ${pluginId} from fixture: ${fixturePath}`);
         const installResult = await installPluginFromFile(client, token, pluginId, fixturePath, {force: true});
@@ -419,6 +429,11 @@ export async function installRequiredPlugin(
             return;
         }
         logWarn(`Fixture install failed for ${pluginId}: ${installResult.message}`);
+
+        if (pluginId === DEMO_PLUGIN_ID) {
+            logWarn('Not falling back to install_from_url for the demo plugin (Cloudflare 524 while origin fetches GitHub).');
+            return;
+        }
     }
 
     if (pluginUrl) {
