@@ -133,6 +133,7 @@ describe('fetchAccessControlAttributeFields', () => {
 
         expect(result).toEqual({});
         expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+        expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
     });
 
     it('should clear stale classification data when feature flag is turned off', async () => {
@@ -145,6 +146,22 @@ describe('fetchAccessControlAttributeFields', () => {
 
         expect(await getStoredFields(database)).toHaveLength(0);
         expect(await getStoredValues(database, CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID)).toHaveLength(0);
+        expect(EphemeralStore.shouldFetchClassificationBanner(serverUrl)).toBe(true);
+    });
+
+    it('should refetch after a flag is turned back on because a disabled fetch is not cached', async () => {
+        setConfig({FeatureFlagClassificationMarkings: 'false'});
+        await fetchAccessControlAttributeFields(serverUrl);
+        expect(mockClient.getPropertyFields).not.toHaveBeenCalled();
+
+        setConfig({FeatureFlagClassificationMarkings: 'true'});
+        mockClient.getPropertyFields.mockResolvedValueOnce([systemField]);
+        mockClient.getPropertyFields.mockResolvedValueOnce([]);
+        mockClient.getSystemPropertyValues.mockResolvedValueOnce([systemValue]);
+
+        await fetchAccessControlAttributeFields(serverUrl);
+
+        expect(mockClient.getPropertyFields).toHaveBeenCalled();
     });
 
     it('should clear stale classification data when API returns zero fields', async () => {

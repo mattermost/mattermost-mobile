@@ -4,6 +4,17 @@
 import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 
+const FLAG_PATCH_ATTEMPTS = 3;
+
+const observedFlagValues = async (baseUrl: string) => {
+    const {config: serverConfig} = await System.apiGetConfig(baseUrl);
+    const {config: clientConfig} = await System.apiGetClientConfigOld(baseUrl);
+    return {
+        server: serverConfig?.FeatureFlags?.ChannelAttributes,
+        client: clientConfig?.FeatureFlagChannelAttributes,
+    };
+};
+
 /**
  * Attempt to disable the ChannelAttributes feature flag on the server.
  *
@@ -26,7 +37,7 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
         baseUrl,
         'FeatureFlagChannelAttributes',
         'false',
-        {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+        {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
     );
     if (!disabled) {
         const {config, error} = await System.apiGetConfig(baseUrl);
@@ -45,54 +56,60 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
             baseUrl,
             'FeatureFlagChannelAttributes',
             'false',
-            {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
         );
     }
 
     return disabled;
 };
 
-export const enableChannelAttributes = async (baseUrl: string): Promise<void> => {
-    const patchResult = await System.apiPatchConfig(baseUrl, {
-        FeatureFlags: {
-            ChannelAttributes: true,
-        },
-    });
-    if (patchResult.error) {
-        throw new Error(`enableChannelAttributes: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
-    }
+/**
+ * Attempt to enable the ChannelAttributes feature flag.
+ *
+ * Returns true when the client config reports the flag as true. Returns false
+ * when the server license, Split, or `MM_FEATUREFLAGS_CHANNELATTRIBUTES` keeps
+ * it off — callers that require the flag on should skip rather than fail the
+ * whole suite. Throws only on transport / API errors.
+ */
+export const enableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
+    let lastObserved: {server?: unknown; client?: unknown} = {};
 
-    let enabled = await System.waitForClientConfigFlag(
-        baseUrl,
-        'FeatureFlagChannelAttributes',
-        'true',
-        {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
-    );
-    if (!enabled) {
-        const {config, error} = await System.apiGetConfig(baseUrl);
-        if (error || !config) {
-            throw new Error(`enableChannelAttributes: failed to read server config: ${JSON.stringify(error)}`);
+    /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
+    for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
+        const patchResult = await System.apiPatchConfig(baseUrl, {
+            FeatureFlags: {
+                ChannelAttributes: true,
+            },
+        });
+        if (patchResult.error) {
+            throw new Error(`enableChannelAttributes: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
         }
 
-        config.FeatureFlags = config.FeatureFlags ?? {};
-        config.FeatureFlags.ChannelAttributes = true;
-        const replaceResult = await System.apiReplaceConfig(baseUrl, config);
-        if (replaceResult.error) {
-            throw new Error(`enableChannelAttributes: failed to replace server config: ${JSON.stringify(replaceResult.error)}`);
-        }
-
-        enabled = await System.waitForClientConfigFlag(
+        const enabled = await System.waitForClientConfigFlag(
             baseUrl,
             'FeatureFlagChannelAttributes',
             'true',
-            {maxAttempts: 60, pollMs: timeouts.ONE_SEC},
+            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
         );
-    }
+        if (enabled) {
+            return true;
+        }
 
-    if (!enabled) {
-        throw new Error(
-            'enableChannelAttributes: FeatureFlagChannelAttributes did not become true; ' +
-            'the server license or server configuration may block this feature flag',
+        lastObserved = await observedFlagValues(baseUrl);
+
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[enableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
+            `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
     }
+    /* eslint-enable no-await-in-loop */
+
+    // eslint-disable-next-line no-console
+    console.warn(
+        'enableChannelAttributes: FeatureFlagChannelAttributes did not become true. ' +
+        `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)}. ` +
+        'Cloud Spinwick installations may need MM_FEATUREFLAGS_CHANNELATTRIBUTES=true in Matterwick PriorityEnv.',
+    );
+    return false;
 };

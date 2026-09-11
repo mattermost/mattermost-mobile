@@ -104,15 +104,19 @@ export async function fetchAccessControlAttributeFields(serverUrl: string, force
             }
 
             logDebug('fetchAccessControlAttributeFields', 'No access control fields returned');
+
+            // Authoritative empty result: stamp the cache so we do not refetch
+            // empty for the rest of the TTL.
+            await removeStoredFields(serverUrl);
+            EphemeralStore.setClassificationBannerFetched(serverUrl);
+            return {};
         }
 
-        // Both features disabled, or no active fields returned: remove any locally
-        // stored definitions. The stored fields are re-submitted stamped with a
-        // non-zero delete_at, which handlePropertyFields treats as a deletion and
-        // cascades to each field's values in a single batch.
+        // Features off: drop local rows so chips/banner go away, but do not stamp
+        // the fetch cache. Stamping here would skip the next mount after a flag is
+        // turned back on — reload resets the flagChanged ref in the banner container.
+        logDebug('fetchAccessControlAttributeFields', 'Access control features disabled; skipping fetch');
         await removeStoredFields(serverUrl);
-
-        EphemeralStore.setClassificationBannerFetched(serverUrl);
         return {};
     } catch (error) {
         logError('fetchAccessControlAttributeFields', 'Failed to fetch access control attribute fields', getFullErrorMessage(error));
