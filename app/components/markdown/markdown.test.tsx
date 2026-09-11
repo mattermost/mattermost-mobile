@@ -21,6 +21,18 @@ jest.mock('@screens/navigation', () => ({
     navigateToRoot: jest.fn(),
 }));
 
+jest.mock('./markdown_link', () => {
+    const MockReact = require('react');
+    const {Text} = require('react-native');
+
+    return {
+        __esModule: true,
+        default: ({href, children}: {href: string; children: React.ReactNode}) => (
+            MockReact.createElement(Text, {testID: 'markdown_link', href}, children)
+        ),
+    };
+});
+
 describe('Markdown', () => {
     const baseProps: React.ComponentProps<typeof Markdown> = {
         baseTextStyle: {},
@@ -253,33 +265,48 @@ describe('Markdown', () => {
     });
 
     describe('phone number autolinking', () => {
-        it('should autolink phone numbers when links are enabled', () => {
-            const spy = jest.spyOn(Transforms, 'autolinkPhoneNumbers');
+        beforeEach(() => {
+            jest.restoreAllMocks();
+        });
 
+        it('should autolink phone numbers when links are enabled', () => {
             renderWithIntl(
                 <Markdown
                     {...baseProps}
-                    value='This is a test'
+                    value='Call 555-123-4567'
                 />,
             );
 
-            expect(spy).toHaveBeenCalled();
-            spy.mockRestore();
+            const links = screen.getAllByTestId('markdown_link');
+            expect(links).toHaveLength(1);
+            expect(links[0].props.href).toBe('tel:5551234567');
+            expect(screen.getByText('555-123-4567')).toBeVisible();
         });
 
         it('should not autolink phone numbers when links are disabled', () => {
-            const spy = jest.spyOn(Transforms, 'autolinkPhoneNumbers');
-
             renderWithIntl(
                 <Markdown
                     {...baseProps}
                     disableLinks={true}
-                    value='This is a test'
+                    value='Call 555-123-4567'
                 />,
             );
 
-            expect(spy).not.toHaveBeenCalled();
-            spy.mockRestore();
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText('Call 555-123-4567')).toBeVisible();
+        });
+
+        it('should not autolink phone numbers when the post has unsafe links', () => {
+            renderWithIntl(
+                <Markdown
+                    {...baseProps}
+                    isUnsafeLinksPost={true}
+                    value='Call 555-123-4567'
+                />,
+            );
+
+            expect(screen.queryAllByTestId('markdown_link')).toHaveLength(0);
+            expect(screen.getByText('Call 555-123-4567')).toBeVisible();
         });
     });
 });

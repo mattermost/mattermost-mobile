@@ -88,7 +88,33 @@ describe('findPhoneNumbers', () => {
     });
 
     it('should not include trailing sentence punctuation', () => {
-        expect(findPhoneNumbers('Call 555-123-4567.')[0].raw).toBe('555-123-4567');
+        const matches = findPhoneNumbers('Call 555-123-4567.');
+        expect(matches).toHaveLength(1);
+        expect(matches[0].raw).toBe('555-123-4567');
+    });
+
+    it('should not match an overlong number continued by a separator', () => {
+        expect(findPhoneNumbers('+123456789012345-6')).toEqual([]);
+        expect(findPhoneNumbers('+1234567890123456')).toEqual([]);
+    });
+
+    it('should not match a grouped number with a numeric prefix', () => {
+        expect(findPhoneNumbers('99-555-123-4567')).toEqual([]);
+        expect(findPhoneNumbers('2-555-123-4567')).toEqual([]);
+    });
+
+    it('should still match a number before a parenthesized second number', () => {
+        const matches = findPhoneNumbers('555-123-4567 (555) 987-6543');
+        expect(matches).toHaveLength(2);
+        expect(matches[0].href).toBe('tel:5551234567');
+        expect(matches[1].href).toBe('tel:5559876543');
+    });
+
+    it('should match two space-separated numbers', () => {
+        const matches = findPhoneNumbers('555-123-4567 555-987-6543');
+        expect(matches).toHaveLength(2);
+        expect(matches[0].href).toBe('tel:5551234567');
+        expect(matches[1].href).toBe('tel:5559876543');
     });
 
     it('should not match a bare digit run', () => {

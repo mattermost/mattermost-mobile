@@ -3479,7 +3479,7 @@ describe('Components.Markdown.transform', () => {
 
     describe('autolinkPhoneNumbers', () => {
         const tests = [{
-            name: 'grouped national number',
+            name: 'should autolink a grouped national number',
             input: 'Call me at 555-123-4567',
             expected: {
                 type: 'document',
@@ -3500,7 +3500,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'E.164 number',
+            name: 'should autolink an E.164 number',
             input: 'Call +15551234567',
             expected: {
                 type: 'document',
@@ -3521,7 +3521,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'tel URI with plus that the parser does not autolink',
+            name: 'should autolink a tel URI with plus that the parser does not autolink',
             input: 'Call tel:+15551234567',
             expected: {
                 type: 'document',
@@ -3542,7 +3542,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'multiple numbers',
+            name: 'should autolink multiple numbers',
             input: '555-123-4567 or 1-800-555-1234',
             expected: {
                 type: 'document',
@@ -3571,7 +3571,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'does not match inside an existing markdown link',
+            name: 'should not match inside an existing markdown link',
             input: '[Call 555-123-4567](https://example.com)',
             expected: {
                 type: 'document',
@@ -3589,7 +3589,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'does not match inside an existing tel markdown link',
+            name: 'should not match inside an existing tel markdown link',
             input: '[Call](tel:+15551234567)',
             expected: {
                 type: 'document',
@@ -3607,7 +3607,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'does not match inside a code span',
+            name: 'should not match inside a code span',
             input: 'Use `555-123-4567`',
             expected: {
                 type: 'document',
@@ -3623,7 +3623,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'does not match a bare digit run',
+            name: 'should not match a bare digit run',
             input: 'Ticket 1234567890',
             expected: {
                 type: 'document',
@@ -3636,7 +3636,7 @@ describe('Components.Markdown.transform', () => {
                 }],
             },
         }, {
-            name: 'links a number inside emphasis',
+            name: 'should autolink a number inside emphasis',
             input: 'Call **555-123-4567**',
             expected: {
                 type: 'document',
