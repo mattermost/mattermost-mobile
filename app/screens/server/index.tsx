@@ -186,7 +186,7 @@ const Server = ({
         };
     });
 
-    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
+    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense, serverDisplayName = displayName) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
         const passProps = {
             config,
@@ -195,7 +195,7 @@ const Server = ({
             launchError,
             launchType,
             license,
-            serverDisplayName: displayName,
+            serverDisplayName,
             serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
@@ -272,7 +272,7 @@ const Server = ({
             return;
         }
 
-        pingServer(serverUrl);
+        pingServer(serverUrl, true, connectDisplayName);
     };
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
@@ -311,15 +311,15 @@ const Server = ({
 
     // If the URL has a path (e.g. a pasted channel URL), retry with the last path
     // segment stripped so we fall back to the server's base URL.
-    const retryWithBaseUrl = (currentUrl: string) => {
+    const retryWithBaseUrl = (currentUrl: string, serverDisplayName?: string) => {
         if (urlParse(currentUrl).pathname === '/') {
             return false;
         }
-        pingServer(currentUrl.substring(0, currentUrl.lastIndexOf('/')));
+        pingServer(currentUrl.substring(0, currentUrl.lastIndexOf('/')), true, serverDisplayName);
         return true;
     };
 
-    const pingServer = async (pingUrl: string, retryWithHttp = true) => {
+    const pingServer = async (pingUrl: string, retryWithHttp = true, serverDisplayName?: string) => {
         let canceled = false;
         const finishPing = () => {
             cancelPing = undefined;
@@ -340,7 +340,7 @@ const Server = ({
             cancelPing();
             if (retryWithHttp) {
                 const nurl = pingUrl.replace('https:', 'http:');
-                pingServer(nurl, false);
+                pingServer(nurl, false, serverDisplayName);
             } else {
                 setUrlError(getErrorMessage(headRequest.error, intl));
                 setButtonDisabled(true);
@@ -390,7 +390,7 @@ const Server = ({
         }
 
         if (data.error) {
-            if (retryWithBaseUrl(headRequest.url)) {
+            if (retryWithBaseUrl(headRequest.url, serverDisplayName)) {
                 return;
             }
             setButtonDisabled(true);
@@ -400,7 +400,7 @@ const Server = ({
         }
 
         if (!data.config?.DiagnosticId) {
-            if (retryWithBaseUrl(headRequest.url)) {
+            if (retryWithBaseUrl(headRequest.url, serverDisplayName)) {
                 return;
             }
             setUrlError(formatMessage({
@@ -449,7 +449,7 @@ const Server = ({
             return;
         }
 
-        displayLogin(headRequest.url, data.config!, data.license!);
+        displayLogin(headRequest.url, data.config!, data.license!, serverDisplayName || displayName);
 
         // Fire the push-proxy verification alert AFTER the RNN transition to
         // LoginScreen has FULLY settled. We use setTimeout (not

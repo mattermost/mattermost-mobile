@@ -5,9 +5,11 @@ import {act} from '@testing-library/react-native';
 import {type ComponentProps} from 'react';
 
 import {doPing} from '@actions/remote/general';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {DeepLink, Launch, Preferences} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import {getServerByDisplayName} from '@queries/app/servers';
+import {navigateToScreen} from '@screens/navigation';
 import {renderWithIntl, waitFor} from '@test/intl-test-helper';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
@@ -58,7 +60,14 @@ jest.mock('@managers/security_manager', () => ({
         isDeviceJailbroken: jest.fn(),
     },
 }));
+jest.mock('@screens/navigation', () => ({
+    navigateBack: jest.fn(),
+    navigateToScreen: jest.fn(),
+}));
 jest.mock('@screens/background', () => jest.fn(() => null));
+jest.mock('@utils/push_proxy', () => ({
+    canReceiveNotifications: jest.fn(),
+}));
 jest.mock('@utils/url', () => ({
     ...jest.requireActual('@utils/url'),
     getServerUrlAfterRedirect: jest.fn(),
@@ -238,7 +247,11 @@ describe('Server', () => {
 
     it('should look up the new display name when the deep-link request changes', async () => {
         jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: serverUrl});
-        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+        jest.mocked(doPing).mockResolvedValue({canReceiveNotifications: 'ok'});
+        jest.mocked(fetchConfigAndLicense).mockResolvedValue({
+            config: {DiagnosticId: 'diag-1'} as ClientConfig,
+            license: {} as ClientLicense,
+        });
 
         const {rerender} = renderWithIntl(
             <Server
@@ -248,7 +261,12 @@ describe('Server', () => {
             />,
         );
         await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledWith('Old Server'));
-        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(1));
+        await waitFor(() => {
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({serverDisplayName: 'Old Server'}),
+            );
+        });
 
         rerender(
             <Server
@@ -259,6 +277,11 @@ describe('Server', () => {
         );
 
         await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledWith('New Server'));
-        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(2));
+        await waitFor(() => {
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({serverDisplayName: 'New Server'}),
+            );
+        });
     });
 });
