@@ -134,7 +134,7 @@ const Server = ({
 
         if (serverUrl && serverName && autoconnect) {
             // Connect automatically when the server comes from managed config, local config, or a deep link.
-            handleConnect(serverUrl);
+            handleConnect(serverUrl, serverName);
         }
 
         // We only want to handle connect when a smaller set of variables change
@@ -222,7 +222,7 @@ const Server = ({
         setUrl(serverUrl);
     };
 
-    const handleConnect = async (manualUrl?: string) => {
+    const handleConnect = async (manualUrl?: string, connectDisplayName?: string) => {
         if (buttonDisabled && !manualUrl) {
             return;
         }
@@ -257,7 +257,7 @@ const Server = ({
         }
 
         const generation = ++connectGeneration.current;
-        const server = await getServerByDisplayName(displayName);
+        const server = await getServerByDisplayName(connectDisplayName || displayName);
         const credentials = await getServerCredentials(serverUrl);
         if (generation !== connectGeneration.current) {
             return;

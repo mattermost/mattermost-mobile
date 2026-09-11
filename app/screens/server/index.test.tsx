@@ -235,4 +235,30 @@ describe('Server', () => {
         await waitFor(() => expect(getServerUrlAfterRedirect).toHaveBeenCalledTimes(1));
         expect(getServerUrlAfterRedirect).toHaveBeenCalledWith('https://server-two.com', false, undefined);
     });
+
+    it('should look up the new display name when the deep-link request changes', async () => {
+        jest.mocked(getServerUrlAfterRedirect).mockResolvedValue({url: serverUrl});
+        jest.mocked(doPing).mockResolvedValue({error: new Error('stop after connection attempt')});
+
+        const {rerender} = renderWithIntl(
+            <Server
+                {...props}
+                displayName='Old Server'
+                deepLinkRequestId={1}
+            />,
+        );
+        await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledWith('Old Server'));
+        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(1));
+
+        rerender(
+            <Server
+                {...props}
+                displayName='New Server'
+                deepLinkRequestId={2}
+            />,
+        );
+
+        await waitFor(() => expect(getServerByDisplayName).toHaveBeenCalledWith('New Server'));
+        await waitFor(() => expect(doPing).toHaveBeenCalledTimes(2));
+    });
 });
