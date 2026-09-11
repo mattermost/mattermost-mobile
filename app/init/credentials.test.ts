@@ -6,6 +6,7 @@ import * as KeyChain from 'react-native-keychain';
 
 import {
     getAllServerCredentials,
+    getPreauthSecret,
     getServerCredentials,
     setServerCredentials,
     removeServerCredentials,
@@ -27,6 +28,7 @@ jest.mock('react-native-keychain', () => ({
     resetInternetCredentials: jest.fn(),
     setGenericPassword: jest.fn(),
     getGenericPassword: jest.fn(),
+    hasGenericPassword: jest.fn(),
     resetGenericPassword: jest.fn(),
     getAllInternetPasswordServers: jest.fn(),
     getAllGenericPasswordServices: jest.fn(),
@@ -59,6 +61,7 @@ describe('credentials', () => {
             service: mockServerUrl,
             storage: 'keychain',
         } as any);
+        jest.mocked(KeyChain.hasGenericPassword).mockResolvedValue(true);
         jest.mocked(KeyChain.resetGenericPassword).mockResolvedValue(true);
     });
 
@@ -260,6 +263,51 @@ describe('credentials', () => {
             const result = await getServerCredentials(mockServerUrl);
 
             expect(result).toBeNull();
+        });
+    });
+
+    describe('getPreauthSecret', () => {
+        beforeEach(() => {
+            Platform.OS = 'android';
+        });
+
+        it('should skip decryption when Android metadata proves the secret is absent', async () => {
+            jest.mocked(KeyChain.hasGenericPassword).mockResolvedValue(false);
+
+            const result = await getPreauthSecret(mockServerUrl);
+
+            expect(result).toBeUndefined();
+            expect(KeyChain.getGenericPassword).not.toHaveBeenCalled();
+        });
+
+        it('should decrypt the secret when Android metadata reports it is present', async () => {
+            jest.mocked(KeyChain.hasGenericPassword).mockResolvedValue(true);
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue({
+                username: 'preshared_secret',
+                password: mockPreauthSecret,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+
+            const result = await getPreauthSecret(mockServerUrl);
+
+            expect(result).toBe(mockPreauthSecret);
+            expect(KeyChain.getGenericPassword).toHaveBeenCalledWith({server: mockServerUrl});
+        });
+
+        it('should securely fall back to decryption when Android metadata fails', async () => {
+            jest.mocked(KeyChain.hasGenericPassword).mockRejectedValue(new Error('Metadata error'));
+            jest.mocked(KeyChain.getGenericPassword).mockResolvedValue({
+                username: 'preshared_secret',
+                password: mockPreauthSecret,
+                service: mockServerUrl,
+                storage: 'keychain' as any,
+            });
+
+            const result = await getPreauthSecret(mockServerUrl);
+
+            expect(result).toBe(mockPreauthSecret);
+            expect(KeyChain.getGenericPassword).toHaveBeenCalledWith({server: mockServerUrl});
         });
     });
 
