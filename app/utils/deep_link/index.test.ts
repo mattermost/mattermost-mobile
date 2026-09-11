@@ -189,6 +189,34 @@ describe('parseAndHandleDeepLink', () => {
         expect(result).toEqual({error: false});
     });
 
+    it('should assign distinct deepLinkRequestIds when the same saved-server link is handled twice in the same millisecond', async () => {
+        const savedServer = {
+            displayName: 'Existing Server',
+            lastActiveAt: 0,
+            url: 'https://existingserver.com',
+        } as ServersModel;
+        const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('').mockResolvedValueOnce('');
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce(undefined).mockReturnValueOnce(undefined);
+        jest.mocked(getAllServers).mockResolvedValueOnce([savedServer]).mockResolvedValueOnce([savedServer]);
+        jest.mocked(NavigationStore.getVisibleScreen).mockReturnValueOnce(Screens.SERVER).mockReturnValueOnce(Screens.SERVER);
+
+        try {
+            await parseAndHandleDeepLink('mattermost://existingserver.com', intl, undefined, true);
+            await parseAndHandleDeepLink('mattermost://existingserver.com', intl, undefined, true);
+        } finally {
+            nowSpy.mockRestore();
+        }
+
+        expect(updateParams).toHaveBeenCalledTimes(2);
+        const firstId = jest.mocked(updateParams).mock.calls[0][0].deepLinkRequestId;
+        const secondId = jest.mocked(updateParams).mock.calls[1][0].deepLinkRequestId;
+        expect(firstId).toEqual(expect.any(Number));
+        expect(secondId).toEqual(expect.any(Number));
+        expect(firstId).not.toEqual(secondId);
+        expect(addNewServer).not.toHaveBeenCalled();
+    });
+
     it('should handle existing server and switch to home screen', async () => {
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://currentserver.com');
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');

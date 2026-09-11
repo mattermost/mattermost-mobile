@@ -43,6 +43,8 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
+let nextDeepLinkRequestId = 0;
+
 export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: IntlShape, location?: string) {
     try {
         if (deepLink.type === DeepLink.Invalid || !deepLink.data || !deepLink.data.serverUrl) {
@@ -63,7 +65,7 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 const theme = EphemeralStore.getTheme() || getDefaultThemeByAppearance();
                 if (NavigationStore.getVisibleScreen() === Screens.SERVER) {
                     updateParams({
-                        deepLinkRequestId: Date.now(),
+                        deepLinkRequestId: ++nextDeepLinkRequestId,
                         displayName: savedServer.displayName,
                         extra: deepLink,
                         launchType: Launch.DeepLink,
