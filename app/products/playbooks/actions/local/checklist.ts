@@ -9,7 +9,12 @@ import {getCurrentTeamId, setCurrentTeamAndChannelId} from '@queries/servers/sys
 import {addChannelToTeamHistory} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
-export async function updateChecklistItem(serverUrl: string, itemId: string, state: ChecklistItemState) {
+export async function updateChecklistItem(
+    serverUrl: string,
+    itemId: string,
+    state: ChecklistItemState,
+    requirements?: TaskRequirement[],
+) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const item = await getPlaybookChecklistItemById(database, itemId);
@@ -20,6 +25,9 @@ export async function updateChecklistItem(serverUrl: string, itemId: string, sta
         await database.write(async () => {
             item.update((i) => {
                 i.state = state;
+                if (requirements) {
+                    i.requirements = requirements;
+                }
             });
         });
 

@@ -1,4 +1,4 @@
-# Server Database - Schema Version 20
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -242,6 +242,7 @@ command string
 command_last_run number
 due_date number
 task_actions string # stringified array of TaskAction
+requirements string NULL # stringified array of TaskRequirement ({id, label, value})
 condition_action string # condition action for the checklist item (values should be '' or 'hidden')
 condition_reason string # condition reason for the checklist item (default empty string meaning there is no condition affecting)
 order number

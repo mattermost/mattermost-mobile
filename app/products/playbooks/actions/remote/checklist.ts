@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import DatabaseManager from '@database/manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {
@@ -14,6 +15,7 @@ import {
     updateChecklistItemTitleAndDescription as localUpdateChecklistItemTitleAndDescription,
 } from '@playbooks/actions/local/checklist';
 import {handlePlaybookRuns} from '@playbooks/actions/local/run';
+import {getPlaybookChecklistItemById} from '@playbooks/database/queries/item';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
@@ -24,12 +26,28 @@ export const updateChecklistItem = async (
     checklistNumber: number,
     itemNumber: number,
     state: ChecklistItemState,
+    requirementValues?: Record<string, string>,
 ) => {
     try {
         const client = NetworkManager.getClient(serverUrl);
 
-        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state);
-        await localUpdateChecklistItem(serverUrl, itemId, state);
+        await client.setChecklistItemState(playbookRunId, checklistNumber, itemNumber, state, requirementValues);
+
+        let requirements: TaskRequirement[] | undefined;
+        if (requirementValues) {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const item = await getPlaybookChecklistItemById(database, itemId);
+            requirements = item?.requirements.map((req) => ({
+                id: req.id,
+                label: req.label,
+                value: requirementValues[req.id] ?? req.value,
+            }));
+        }
+
+        const localResult = await localUpdateChecklistItem(serverUrl, itemId, state, requirements);
+        if (localResult.error) {
+            return {error: localResult.error};
+        }
         return {data: true};
     } catch (error) {
         logDebug('error on updateChecklistItem', getFullErrorMessage(error));
