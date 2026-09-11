@@ -6,7 +6,7 @@ import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/c
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
-import {getAccessChannelPolicyEnabled} from '@queries/servers/features';
+import {getChannelReadAccessPolicyEnabled} from '@queries/servers/features';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM} from '@utils/channel';
@@ -79,7 +79,7 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!(await getAccessChannelPolicyEnabled(database))) {
+        if (!(await getChannelReadAccessPolicyEnabled(database))) {
             return {};
         }
 

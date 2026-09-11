@@ -75,10 +75,10 @@ export const observeCustomProfileAttributesEnabled = (database: Database) => {
 // Access Channel policies need both the umbrella flag and their own sub-flag, mirroring the
 // server's accessChannelEnforcementActive(). Kept separate from ChannelPermissionPolicies
 // because denying access_channel hides a whole channel, not just an attachment.
-export const getAccessChannelPolicyEnabled = async (database: Database) => {
+export const getChannelReadAccessPolicyEnabled = async (database: Database) => {
     const [umbrella, flag, license] = await Promise.all([
         getConfigValue(database, 'FeatureFlagPermissionPolicies'),
-        getConfigValue(database, 'FeatureFlagAccessChannelABACPermission'),
+        getConfigValue(database, 'FeatureFlagChannelReadAccessABACPermission'),
         getLicense(database),
     ]);
     return umbrella === 'true' && flag === 'true' && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);

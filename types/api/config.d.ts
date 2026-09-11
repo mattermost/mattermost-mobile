@@ -126,7 +126,7 @@ interface ClientConfig {
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
-    FeatureFlagAccessChannelABACPermission?: string;
+    FeatureFlagChannelReadAccessABACPermission?: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
