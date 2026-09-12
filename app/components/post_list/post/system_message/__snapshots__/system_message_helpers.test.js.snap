@@ -119,7 +119,95 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
         }
         testID="markdown_text"
       >
-         updated the channel header from: old header to: new header
+         updated the channel header
+      </Text>
+      <Text
+        testID="markdown_break"
+      >
+        
+
+      </Text>
+      <Text
+        selectable={false}
+        style={
+          [
+            {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            [
+              {
+                "fontFamily": "OpenSans-SemiBold",
+                "fontWeight": "600",
+              },
+            ],
+          ]
+        }
+        testID="markdown_text"
+      >
+        From:
+      </Text>
+      <Text
+        selectable={false}
+        style={
+          {
+            "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          }
+        }
+        testID="markdown_text"
+      >
+         old header
+      </Text>
+      <Text
+        testID="markdown_break"
+      >
+        
+
+      </Text>
+      <Text
+        selectable={false}
+        style={
+          [
+            {
+              "color": "rgba(63,67,80,0.6)",
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            [
+              {
+                "fontFamily": "OpenSans-SemiBold",
+                "fontWeight": "600",
+              },
+            ],
+          ]
+        }
+        testID="markdown_text"
+      >
+        To:
+      </Text>
+      <Text
+        selectable={false}
+        style={
+          {
+            "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          }
+        }
+        testID="markdown_text"
+      >
+         new header
       </Text>
     </Text>
   </View>
