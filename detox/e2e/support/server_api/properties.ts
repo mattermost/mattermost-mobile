@@ -71,6 +71,23 @@ export const apiCreatePropertyField = async (baseUrl: string, groupName: string,
 };
 
 /**
+ * Patch a property field. `attrs` is merged into the field's existing attrs
+ * rather than replacing them (server-side PropertyField.Patch with
+ * mergeAttrs=true), so only the given keys change.
+ */
+export const apiPatchPropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string, patch: {attrs?: Record<string, unknown>}) => {
+    try {
+        const response = await client.patch(
+            `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/fields/${fieldId}`,
+            patch,
+        );
+        return {field: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Delete a property field.
  */
 export const apiDeletePropertyField = async (baseUrl: string, groupName: string, objectType: string, fieldId: string) => {
@@ -351,6 +368,15 @@ type ChannelAttributeFieldOptions = {
     options: PropertyFieldOption[];
     actions?: string[];
     required?: boolean;
+
+    // Governs which value moves the server will accept once a value is set. Omitted
+    // means 'any'; a directional policy also refuses a clear.
+    changePolicy?: 'any' | 'raise_only' | 'lower_only' | 'never';
+
+    // The channel field's permission tier. Defaults to 'admin', which is what the
+    // System Console writes; 'sysadmin' is how a tier the caller cannot satisfy is
+    // set up, and 'none' makes the field permanently read-only.
+    permissionValues?: 'none' | 'sysadmin' | 'admin' | 'member';
 };
 
 /**
@@ -368,7 +394,7 @@ export const apiSetupChannelAttributeField = async (
     baseUrl: string,
     opts: ChannelAttributeFieldOptions,
 ) => {
-    const {fieldName, displayName, options, actions = [], required = false} = opts;
+    const {fieldName, displayName, options, actions = [], required = false, changePolicy, permissionValues = ADMIN_PERMISSION} = opts;
 
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: fieldName,
@@ -396,6 +422,15 @@ export const apiSetupChannelAttributeField = async (
     if (displayName) {
         channelFieldAttrs.display_name = displayName;
     }
+    if (changePolicy) {
+        channelFieldAttrs.change_policy = changePolicy;
+
+        // The System Console writes editable alongside a never policy; without it a
+        // field created before change_policy existed would read as editable.
+        if (changePolicy === 'never') {
+            channelFieldAttrs.editable = false;
+        }
+    }
 
     const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
         name: fieldName,
@@ -403,6 +438,7 @@ export const apiSetupChannelAttributeField = async (
         target_type: CHANNEL_TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
+        permission_values: permissionValues,
         attrs: channelFieldAttrs,
     });
 
@@ -444,6 +480,23 @@ export const apiSetupChannelAttributeField = async (
 };
 
 /**
+ * Marks an existing channel attribute field required (or not) after the fact.
+ *
+ * The server enforces required attributes at channel-creation time for whoever
+ * can set them, so a test that wants both "required" and "channel already
+ * exists with no value" has to create the channel first, while the field is
+ * still optional, and only then flip it required — exactly the real-world
+ * sequence an admin making an existing field mandatory would produce.
+ */
+export const apiSetChannelAttributeFieldRequired = async (baseUrl: string, fieldId: string, required: boolean) => {
+    const result = await apiPatchPropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, fieldId, {attrs: {required}});
+    if ('error' in result) {
+        throw new Error(`apiSetChannelAttributeFieldRequired: ${JSON.stringify(result.error)}`);
+    }
+    return result;
+};
+
+/**
  * Set (or replace) a channel attribute value for a specific channel.
  */
 export const apiSetChannelAttributeValue = async (
@@ -459,6 +512,27 @@ export const apiSetChannelAttributeValue = async (
         throw new Error(`apiSetChannelAttributeValue: ${JSON.stringify((result as any).error)}`);
     }
     return result;
+};
+
+/**
+ * The value the server holds for one channel attribute, or undefined when unset.
+ *
+ * This is what proves an edit made in the app actually reached the server, rather
+ * than only having repainted the row.
+ */
+export const apiGetChannelAttributeValue = async (
+    baseUrl: string,
+    channelId: string,
+    fieldId: string,
+): Promise<unknown> => {
+    const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId) as {
+        values?: Array<{field_id: string; value: unknown}>;
+        error?: unknown;
+    };
+    if (result.error || !result.values) {
+        throw new Error(`apiGetChannelAttributeValue: ${JSON.stringify(result.error ?? result)}`);
+    }
+    return result.values.find((value) => value.field_id === fieldId)?.value;
 };
 
 /**
@@ -485,29 +559,49 @@ export const apiCleanupChannelAttributeFields = async (baseUrl: string, fieldNam
         [CHANNEL_OBJECT_TYPE, CHANNEL_TARGET_TYPE],
         [LINKED_OBJECT_TYPE, TARGET_TYPE],
     ];
+    let firstError: Error | undefined;
 
     for (const [objectType, targetType] of objectTypePairs) {
         // eslint-disable-next-line no-await-in-loop
-        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, targetType) as {fields?: any[]};
+        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, targetType) as {
+            fields?: Array<{id: string; name: string; delete_at: number}>;
+            error?: unknown;
+        };
         if (!fieldsResult.fields) {
+            firstError ??= new Error(`apiCleanupChannelAttributeFields: list ${objectType} fields failed: ${JSON.stringify(fieldsResult.error ?? fieldsResult)}`);
             continue;
         }
         for (const field of fieldsResult.fields) {
             if (nameSet.has(field.name) && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id);
+                const deleteResult = await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id) as {error?: unknown};
+                if (deleteResult.error) {
+                    firstError ??= new Error(`apiCleanupChannelAttributeFields: delete ${objectType} field failed: ${JSON.stringify(deleteResult.error)}`);
+                }
             }
         }
     }
 
-    const templateResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
+    const templateResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {
+        fields?: Array<{id: string; name: string; delete_at: number}>;
+        error?: unknown;
+    };
     if (templateResult.fields) {
         for (const field of templateResult.fields) {
             if (nameSet.has(field.name) && field.delete_at === 0) {
                 // eslint-disable-next-line no-await-in-loop
-                await apiDeletePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, field.id);
+                const deleteResult = await apiDeletePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, field.id) as {error?: unknown};
+                if (deleteResult.error) {
+                    firstError ??= new Error(`apiCleanupChannelAttributeFields: delete template field failed: ${JSON.stringify(deleteResult.error)}`);
+                }
             }
         }
+    } else {
+        firstError ??= new Error(`apiCleanupChannelAttributeFields: list template fields failed: ${JSON.stringify(templateResult.error ?? templateResult)}`);
+    }
+
+    if (firstError) {
+        throw firstError;
     }
 };
 
@@ -515,6 +609,7 @@ export const Properties = {
     CLASSIFICATION_LEVEL_IDS,
     apiGetPropertyFields,
     apiCreatePropertyField,
+    apiPatchPropertyField,
     apiDeletePropertyField,
     apiGetPropertyValues,
     apiPatchPropertyValues,
@@ -523,7 +618,9 @@ export const Properties = {
     apiSetupClassificationWithBanner,
     apiCleanupClassification,
     apiSetupChannelAttributeField,
+    apiSetChannelAttributeFieldRequired,
     apiSetChannelAttributeValue,
+    apiGetChannelAttributeValue,
     apiCleanupChannelAttributeFields,
 };
 

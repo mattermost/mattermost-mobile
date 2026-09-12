@@ -231,11 +231,6 @@ const Header = ({
                             {titleCompanion}
                         </View>
                         }
-                        {!isLargeTitle && Boolean(subtitleComponent) &&
-                        <View style={styles.subtitleContainer}>
-                            {subtitleComponent}
-                        </View>
-                        }
                         {!isLargeTitle && !subtitleComponent && Boolean(subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
@@ -251,6 +246,11 @@ const Header = ({
                         }
                     </View>
                 </TouchableWithFeedback>
+                {!isLargeTitle && Boolean(subtitleComponent) &&
+                <View style={styles.subtitleContainer}>
+                    {subtitleComponent}
+                </View>
+                }
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
                 {rightComponent}

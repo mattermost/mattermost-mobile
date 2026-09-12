@@ -3,7 +3,7 @@
 
 import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
-import {Text} from 'react-native';
+import {Pressable, Text} from 'react-native';
 
 import {Preferences} from '@constants';
 
@@ -26,6 +26,30 @@ describe('Header', () => {
         props.subtitleComponent = <Text testID='custom-subtitle'>{subtitleText}</Text>;
         const {getByTestId} = render(<Header {...props}/>);
         expect(getByTestId('custom-subtitle')).toBeOnTheScreen();
+    });
+
+    it('keeps an interactive subtitle independent from the title action', () => {
+        const props = getBaseProps();
+        const onTitlePress = jest.fn();
+        const onSubtitlePress = jest.fn();
+        const subtitleText = 'Attributes';
+        props.onTitlePress = onTitlePress;
+        props.title = 'Town Square';
+        props.subtitleComponent = (
+            <Pressable
+                onPress={onSubtitlePress}
+                style={({pressed}) => ({opacity: pressed ? 0.72 : 1})}
+                testID='custom-subtitle'
+            >
+                <Text>{subtitleText}</Text>
+            </Pressable>
+        );
+        const {getByTestId} = render(<Header {...props}/>);
+
+        fireEvent.press(getByTestId('custom-subtitle'));
+
+        expect(onSubtitlePress).toHaveBeenCalledTimes(1);
+        expect(onTitlePress).not.toHaveBeenCalled();
     });
 
     it('falls back to subtitle text when subtitleComponent is absent', () => {

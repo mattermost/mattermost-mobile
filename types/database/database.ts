@@ -317,11 +317,19 @@ export type HandleCustomProfileAttributesArgs = PrepareOnly & {
 export type HandlePropertyFieldsArgs = PrepareOnly & {
   fields?: PropertyField[];
   groupId?: string;
+
+  // Restricts groupId-driven pruning to fields whose object_type is in this
+  // list. The access_control group also holds user/session fields owned by
+  // other features; a groupId-only prune would delete those too whenever a
+  // caller's fetch only covers a subset of object types. Optional so callers
+  // that genuinely fetch every object type in the group are unaffected.
+  objectTypes?: PropertyFieldObjectType[];
 };
 
 export type HandlePropertyValuesArgs = PrepareOnly & {
   values?: PropertyValue[];
   targetId?: string;
+  groupId?: string;
 };
 
 export type LoginArgs = {

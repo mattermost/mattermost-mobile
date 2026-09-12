@@ -271,6 +271,27 @@ export const apiViewChannel = async (baseUrl: string, userId: string, channelId:
 };
 
 /**
+ * Update a channel member's scheme roles (promote to or demote from channel admin).
+ * See https://api.mattermost.com/#operation/UpdateChannelMemberSchemeRoles
+ * @param {string} baseUrl - the base server URL
+ * @param {string} userId - The user ID
+ * @param {string} channelId - The channel ID
+ * @param {boolean} schemeAdmin - true to grant channel admin; false to revoke
+ * @return {Object} returns {} on success or {error, status} on error
+ */
+export const apiUpdateChannelMemberSchemeRoles = async (baseUrl: string, userId: string, channelId: string, schemeAdmin: boolean): Promise<any> => {
+    try {
+        await client.put(
+            `${baseUrl}/api/v4/channels/${channelId}/members/${userId}/schemeRoles`,
+            {scheme_admin: schemeAdmin, scheme_user: true},
+        );
+        return {};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Share channel with a remote (connected workspace).
  * POST /api/v4/remotecluster/{remoteId}/channels/{channelId}/invite
  * @param {string} baseUrl - the base server URL
@@ -318,6 +339,7 @@ export const Channel = {
     apiRestoreChannel,
     apiRemoveUserFromChannel,
     apiShareChannelWithRemote,
+    apiUpdateChannelMemberSchemeRoles,
     apiViewChannel,
     generateRandomChannel,
 };

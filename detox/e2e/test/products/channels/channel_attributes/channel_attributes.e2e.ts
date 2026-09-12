@@ -139,22 +139,40 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
             return;
         }
 
+        let cleanupError: unknown;
+
         // Delete the per-test channel so attribute fields on it do not leak into the next test.
         if (testChannel) {
-            await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+            if (testChannel.type !== 'D') {
+                const result = await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
+                if (result.error) {
+                    cleanupError = new Error(`Failed to delete test channel: ${JSON.stringify(result.error)}`);
+                }
+            }
             testChannel = null;
         }
-        await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        try {
+            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+        } catch (error) {
+            cleanupError ??= error;
+        }
 
-        if (canControlFlag) {
-            await disableChannelAttributes(siteOneUrl);
+        try {
+            if (canControlFlag) {
+                await disableChannelAttributes(siteOneUrl);
+            }
+        } catch (error) {
+            cleanupError ??= error;
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
     it('MM-T6300_1 - should not render attribute chips in the header when ChannelAttributes flag is off', async () => {
         if (!canControlFlag) {
-            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-            return;
+            throw new Error('MM-T6300_1 requires a server where ChannelAttributes can be disabled');
         }
 
         // # Create a header-designated attribute field.
@@ -384,6 +402,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
 
+        // Channel Info shows required-but-unset attributes only to channel admins (same gate the
+        // server applies when deciding who must supply missing values). Promote testUser so the
+        // "Not set" row is visible in the app without a system-admin login.
+        await Channel.apiUpdateChannelMemberSchemeRoles(siteOneUrl, testUser.id, channel.id, true);
+
         // # Now create the required field (no value set on the channel).
         await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
@@ -480,8 +503,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
 
     it('MM-T6309_1 - should not show channel attribute banner when the flag is off', async () => {
         if (!canControlFlag) {
-            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-            return;
+            throw new Error('MM-T6309_1 requires a server where ChannelAttributes can be disabled');
         }
 
         // # ChannelAttributes flag is off. Create field and channel, then PATCH the value
@@ -561,8 +583,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
 
     it('MM-T6311_1 - should not show attribute chips when ChannelAttributes is off even if ClassificationMarkings is on', async () => {
         if (!canControlFlag) {
-            // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-            return;
+            throw new Error('MM-T6311_1 requires a server where ChannelAttributes can be disabled');
         }
 
         // # Enable classification markings only; channel attributes flag stays off.
