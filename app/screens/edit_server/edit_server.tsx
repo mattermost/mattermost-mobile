@@ -11,12 +11,14 @@ import {doPing} from '@actions/remote/general';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {getServerCredentials, setServerCredentials} from '@init/credentials';
+import {getServerCredentials, removePreauthSecret, setPreauthSecret as storePreauthSecret} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {navigateBack} from '@screens/navigation';
-import {getErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
@@ -87,18 +89,24 @@ const EditServer = ({server, theme}: ServerProps) => {
         setButtonDisabled(Boolean(!displayName));
     }, [displayName]);
 
-    // Validate server connection with preauth secret
+    // Candidate secret must be applied to the live client before ping: the cached session would
+    // otherwise keep answering with the previous secret. Concurrent traffic may briefly use the
+    // candidate; handleUpdate rolls it back when validation fails.
+    const applyPreauthSecretHeader = useCallback(async (secret: string) => {
+        try {
+            await NetworkManager.getClient(server.url).setPreauthSecretHeader(secret);
+        } catch {
+            // No client cached for this server yet; nothing to update.
+        }
+    }, [server.url]);
+
     const validateServer = useCallback(async (): Promise<boolean> => {
-        // Only validate if preauth secret has changed
         setValidating(true);
 
         try {
             const trimmedSecret = preauthSecret.trim();
-
-            // Test with the actual preauth secret value (or undefined if empty)
             const secretForValidation = trimmedSecret || undefined;
 
-            // First try HEAD request
             const headRequest = await getServerUrlAfterRedirect(server.url, true, secretForValidation);
             if (!headRequest.url) {
                 setPreauthSecretError(getErrorMessage(headRequest.error, intl));
@@ -106,12 +114,21 @@ const EditServer = ({server, theme}: ServerProps) => {
                 return false;
             }
 
-            // Then try ping request - use doPing without client to avoid client pollution
+            // Passing the live client also stops doPing invalidating a session that is still in use.
+            await applyPreauthSecretHeader(trimmedSecret);
+            let pingClient;
+            try {
+                pingClient = NetworkManager.getClient(server.url);
+            } catch {
+                pingClient = undefined;
+            }
+
             const result = await doPing(
                 headRequest.url, // serverUrl
                 true, // verifyPushProxy
                 undefined, // timeoutInterval
                 secretForValidation, // preauthSecret
+                pingClient, // client
             );
             if (result.error) {
                 if (result.isPreauthError) {
@@ -132,14 +149,14 @@ const EditServer = ({server, theme}: ServerProps) => {
             // Handle any unexpected errors during validation
             setPreauthSecretError(formatMessage({
                 id: 'mobile.server.validation.error',
-                defaultMessage: 'Unable to validate server. Please try again.',
+                defaultMessage: 'Unable to validate server. Please check your connection and try again.',
             }));
             setShowAdvancedOptions(true);
             return false;
         } finally {
             setValidating(false);
         }
-    }, [server.url, preauthSecret, formatMessage, intl]);
+    }, [server.url, preauthSecret, applyPreauthSecretHeader, formatMessage, intl]);
 
     const handleUpdate = useCallback(async () => {
         if (buttonDisabled) {
@@ -173,6 +190,8 @@ const EditServer = ({server, theme}: ServerProps) => {
         if (preauthSecretChanged) {
             const isValidServer = await validateServer();
             if (!isValidServer) {
+                // Validation put the candidate secret on the live client, so put the stored one back.
+                await applyPreauthSecretHeader(initialPreauthSecret.trim());
                 setSaving(false);
                 return;
             }
@@ -181,19 +200,49 @@ const EditServer = ({server, theme}: ServerProps) => {
         // Save display name
         await DatabaseManager.updateServerDisplayName(server.url, displayName);
 
-        // Save preauth secret to credentials (or remove if empty)
-        const credentials = await getServerCredentials(server.url);
-        setServerCredentials(server.url, credentials?.token || '', preauthSecret.trim() || undefined);
+        if (preauthSecretChanged) {
+            const trimmedSecret = preauthSecret.trim();
+            if (trimmedSecret) {
+                const stored = await storePreauthSecret(server.url, trimmedSecret);
+                if (!stored) {
+                    await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                    setPreauthSecretError(formatMessage({
+                        id: 'mobile.server.preauth_secret.save_failed',
+                        defaultMessage: 'Unable to save authentication secret. Please try again.',
+                    }));
+                    setShowAdvancedOptions(true);
+                    setSaving(false);
+                    return;
+                }
+            } else {
+                await removePreauthSecret(server.url);
+            }
 
-        // Create and cache new client if preauth secret changed
-        try {
-            await NetworkManager.createClient(server.url, credentials?.token, preauthSecret.trim() || undefined);
-        } catch (error) {
-            // Client creation failed, but credentials are saved - continue with modal dismissal
+            const credentials = await getServerCredentials(server.url);
+
+            // validateServer already applied this to the live client; this covers the case where
+            // no client existed then, and is a no-op otherwise.
+            try {
+                NetworkManager.getClient(server.url);
+                await applyPreauthSecretHeader(trimmedSecret);
+            } catch {
+                await NetworkManager.createClient(server.url, credentials?.token, trimmedSecret || undefined);
+            }
+
+            try {
+                // WebsocketManager.initializeClient reuses the existing client and never re-reads
+                // the keychain, so the client has to be rebuilt for the new secret to be used.
+                if (credentials?.token) {
+                    await WebsocketManager.createClient(server.url, credentials.token, trimmedSecret || undefined);
+                    await WebsocketManager.initializeClient(server.url);
+                }
+            } catch (error) {
+                logWarning('EditServer.handleUpdate: could not rebuild the WebSocket client', getFullErrorMessage(error));
+            }
         }
 
         navigateBack();
-    }, [buttonDisabled, displayName, displayNameError, preauthSecretError, server.url, preauthSecret, initialPreauthSecret, formatMessage, validateServer]);
+    }, [buttonDisabled, displayName, displayNameError, preauthSecretError, server.url, preauthSecret, initialPreauthSecret, applyPreauthSecretHeader, formatMessage, validateServer]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);

@@ -135,7 +135,8 @@ public class Keychain: NSObject {
     }
 
     private func getPreauthSecret(for serverUrl: String) throws -> String? {
-        var attributes = try buildGenericPasswordAttributes(for: serverUrl, account: "preshared_secret")
+        // Must stay in lockstep with PREAUTH_SECRET_ACCOUNT in app/init/credentials.ts.
+        var attributes = try buildGenericPasswordAttributes(for: serverUrl, account: "preauth_secret")
         attributes[kSecMatchLimit] = kSecMatchLimitOne
         attributes[kSecReturnData] = kCFBooleanTrue
 

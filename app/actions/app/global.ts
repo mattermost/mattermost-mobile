@@ -24,6 +24,10 @@ export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly
     }
 };
 
+export const storePreauthSecretMigrationDone = async () => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.PREAUTH_SECRET_MIGRATION, true);
+};
+
 export const storeDeviceToken = async (token: string, prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.DEVICE_TOKEN, token, prepareRecordsOnly);
 };

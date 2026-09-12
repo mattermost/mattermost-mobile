@@ -14,7 +14,7 @@ import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
-import {Screens, Launch, DeepLink} from '@constants';
+import {Launch, DeepLink} from '@constants';
 import useDidMount from '@hooks/did_mount';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getServerCredentials} from '@init/credentials';
@@ -26,7 +26,7 @@ import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
-import {loginOptions} from '@utils/server';
+import {getLoginScreen, loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 
@@ -184,7 +184,8 @@ const Server = ({
     });
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+        const {enabledSSOs, hasLoginForm, ssoOptions} = loginOptions(config, license);
+        const {screen, ssoType} = getLoginScreen(enabledSSOs, hasLoginForm);
         const passProps = {
             config,
             extra,
@@ -196,16 +197,10 @@ const Server = ({
             serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
+            ssoType,
             theme,
             isModal,
         };
-
-        const redirectSSO = !hasLoginForm && numberSSOs === 1;
-        const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
-        if (redirectSSO) {
-            // @ts-expect-error ssoType not in definition
-            passProps.ssoType = enabledSSOs[0];
-        }
 
         // if deeplink is of type server removing the deeplink info on new login
         if (extra?.type === DeepLink.Server) {

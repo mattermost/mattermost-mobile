@@ -137,6 +137,50 @@ describe('Server Utils', () => {
                 numberSSOs: 5,
             });
         });
+
+        it('should only count the enabled SSO providers', async () => {
+            jest.mocked(isMinimumServerVersion).mockReturnValue(true);
+
+            const config = {
+                EnableSaml: 'true',
+                EnableSignUpWithGitLab: 'false',
+                EnableSignUpWithGoogle: 'false',
+                EnableSignUpWithOffice365: 'false',
+                EnableSignUpWithOpenId: 'false',
+                EnableLdap: 'false',
+                EnableSignInWithEmail: 'false',
+                EnableSignInWithUsername: 'false',
+                Version: '5.0.0',
+            } as ClientConfig;
+            const license = {IsLicensed: 'true', SAML: 'true'} as ClientLicense;
+
+            const result = loginOptions(config, license);
+
+            expect(result.enabledSSOs).toEqual([Sso.SAML]);
+            expect(result.numberSSOs).toBe(1);
+            expect(result.hasLoginForm).toBe(false);
+        });
+
+        it('should report no SSO providers when none are enabled', async () => {
+            jest.mocked(isMinimumServerVersion).mockReturnValue(true);
+
+            const config = {
+                EnableSaml: 'false',
+                EnableSignUpWithGitLab: 'false',
+                EnableSignUpWithGoogle: 'false',
+                EnableSignUpWithOffice365: 'false',
+                EnableSignUpWithOpenId: 'false',
+                EnableLdap: 'false',
+                EnableSignInWithEmail: 'true',
+                EnableSignInWithUsername: 'false',
+                Version: '5.0.0',
+            } as ClientConfig;
+
+            const result = loginOptions(config, {IsLicensed: 'false'} as ClientLicense);
+
+            expect(result.enabledSSOs).toEqual([]);
+            expect(result.numberSSOs).toBe(0);
+        });
     });
 
     describe('loginToServer', () => {
@@ -167,14 +211,36 @@ describe('Server Utils', () => {
             expect(navigateToScreen).toHaveBeenCalledWith(Screens.LOGIN, expect.any(Object));
         });
 
-    /* Commented out for now as the test is failing potentially due to incorrect logic in the function
+        it('should navigate straight to SSO when there is no login form and a single provider', async () => {
+            const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
 
-    it('should call showModal with SSO screen if redirectSSO is true', async () => {
-        const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
-        await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license);
+            await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license);
 
-        expect(showModal).toHaveBeenCalledWith(Screens.SSO, '', expect.any(Object), expect.any(Object));
-    });*/
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.SSO,
+                expect.objectContaining({ssoType: Sso.SAML}),
+            );
+        });
+
+        it('should forward the pre-auth secret on the login path', async () => {
+            await loginToServer(theme, serverUrl, displayName, config, license, 'secret-a');
+
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.LOGIN,
+                expect.objectContaining({serverPreauthSecret: 'secret-a'}),
+            );
+        });
+
+        it('should forward the pre-auth secret on the SSO redirect path', async () => {
+            const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
+
+            await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license, 'secret-a');
+
+            expect(navigateToScreen).toHaveBeenCalledWith(
+                Screens.SSO,
+                expect.objectContaining({serverPreauthSecret: 'secret-a', ssoType: Sso.SAML}),
+            );
+        });
     });
 
     describe('editServer', () => {
