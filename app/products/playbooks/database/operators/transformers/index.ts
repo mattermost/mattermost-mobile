@@ -48,6 +48,7 @@ export const transformPlaybookRunRecord = ({action, database, value}: Transforme
         run.activeStage = raw.active_stage ?? record?.activeStage ?? 0;
         run.activeStageTitle = raw.active_stage_title ?? record?.activeStageTitle ?? '';
         run.participantIds = raw.participant_ids ?? record?.participantIds ?? [];
+        run.timelineEvents = raw.timeline_events ?? record?.timelineEvents ?? [];
         run.summary = raw.summary ?? record?.summary ?? '';
         run.currentStatus = raw.current_status ?? record?.currentStatus ?? 'InProgress';
         run.lastStatusUpdateAt = raw.last_status_update_at ?? record?.lastStatusUpdateAt ?? 0;

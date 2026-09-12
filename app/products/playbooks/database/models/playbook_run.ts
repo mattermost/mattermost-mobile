@@ -27,6 +27,40 @@ const {
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST} = PLAYBOOK_TABLES;
 
+// Timeline events are JSON objects. The shared string-array sanitizer is used by
+// the run's ID arrays, but would intentionally discard these object values. Validate
+// the fields the task-activity resolver relies on so malformed entries are dropped
+// rather than surfacing as a false TimelineEvent to consumers. `id` is checked even
+// though the resolver never reads it: the incremental merge keys events by id, so an
+// id-less event would collapse onto a shared key that timeline_event_deletes can never name.
+const isTimelineEvent = (value: unknown): value is TimelineEvent => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return false;
+    }
+
+    const event = value as Partial<TimelineEvent>;
+    return typeof event.id === 'string' &&
+        typeof event.event_type === 'string' &&
+        typeof event.event_at === 'number' &&
+        typeof event.details === 'string' &&
+        typeof event.subject_user_id === 'string';
+};
+
+// Only task_state_modified events are read (by getTaskActivity), but a run's timeline also carries
+// status updates, participant changes and property changes. Since the whole array lives in one JSON
+// column that is rewritten on every incremental update and handed to every checklist row, keeping
+// events nothing consumes makes the blob grow without bound for no benefit. Widen this if another
+// consumer appears — and rename the column if it stops meaning "task state changes".
+const CONSUMED_EVENT_TYPES = new Set<string>(['task_state_modified']);
+
+export const safeParseTimelineEvents = (value: unknown): TimelineEvent[] => {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.filter((event) => isTimelineEvent(event) && CONSUMED_EVENT_TYPES.has(event.event_type));
+};
+
 /**
  * The PlaybookRun model represents a playbook run in the Mattermost app.
  */
@@ -93,6 +127,17 @@ export default class PlaybookRunModel extends Model implements PlaybookRunModelI
 
     /** participant_ids : An array of user IDs that participate in the run */
     @json('participant_ids', safeParseJSONStringArray) participantIds!: string[];
+
+    /**
+     * timeline_events : The run's task state change events. Other timeline event types are dropped on
+     * the way in, so this is not the full server-side timeline.
+     *
+     * Memoized on the stored JSON string: the events are handed to `withObservables` as a trigger
+     * prop by the checklist items, so a fresh array on every read would tear down and recreate every
+     * item's observables on every render of the run screen. The cache key is the raw column value,
+     * so a refreshed run still yields a new array and keeps the consumers reactive.
+     */
+    @json('timeline_events', safeParseTimelineEvents, {memo: true}) timelineEvents!: TimelineEvent[];
 
     /** summary : Summary of the playbook run */
     @field('summary') summary!: string;

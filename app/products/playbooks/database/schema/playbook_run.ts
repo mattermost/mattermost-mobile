@@ -23,6 +23,7 @@ export default tableSchema({
         {name: 'active_stage', type: 'number'},
         {name: 'active_stage_title', type: 'string'},
         {name: 'participant_ids', type: 'string'}, // JSON string
+        {name: 'timeline_events', type: 'string', isOptional: true}, // JSON string
         {name: 'summary', type: 'string'},
         {name: 'current_status', type: 'string', isIndexed: true},
         {name: 'last_status_update_at', type: 'number'},
