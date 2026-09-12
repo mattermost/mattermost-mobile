@@ -51,6 +51,17 @@ type DialogSubmission = {
     cancelled: boolean;
 };
 
+type ExecuteDialogActionRequest = {
+    url: string;
+    context?: Record<string, string>;
+    channel_id: string;
+    team_id: string;
+};
+
+type ExecuteDialogActionResponse = {
+    trigger_id: string;
+};
+
 type DialogOption = {
     text: string;
     value: string;
@@ -82,6 +93,12 @@ type DialogElement = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Action button fields
+    action_button?: {
+        url: string;
+        context?: Record<string, string>;
+    };
 };
 
 type InteractiveDialogConfig = {
@@ -138,5 +155,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'date' | 'datetime' | 'action_button'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
