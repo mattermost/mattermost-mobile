@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as bookmark from '@actions/local/channel_bookmark';
+import {reconcileChannelAccess} from '@actions/remote/channel_access';
 import * as burnOnRead from '@actions/websocket/burn_on_read';
 import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
@@ -38,6 +39,7 @@ jest.mock('./group');
 jest.mock('@actions/local/channel_bookmark');
 jest.mock('@actions/websocket/scheduled_post');
 jest.mock('@actions/websocket/burn_on_read');
+jest.mock('@actions/remote/channel_access');
 jest.mock('@playbooks/actions/websocket/events');
 
 describe('handleWebSocketEvent', () => {
@@ -544,6 +546,18 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.BURN_ON_READ_ALL_REVEALED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(burnOnRead.handleBoRPostAllRevealed).toHaveBeenCalledWith(serverUrl, msg);
+    });
+
+    it('should handle CHANNEL_ACCESS_CONTROL_UPDATED event', async () => {
+        msg.event = WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should handle PERMISSION_POLICY_UPDATED event', async () => {
+        msg.event = WebsocketEvents.PERMISSION_POLICY_UPDATED;
+        await handleWebSocketEvent(serverUrl, msg);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
     });
 
     it('all messages should go through the playbooks handler', async () => {

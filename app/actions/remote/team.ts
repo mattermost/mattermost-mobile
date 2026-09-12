@@ -5,6 +5,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
+import {reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchScheduledPosts} from '@actions/remote/scheduled_post';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
@@ -435,6 +436,9 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (currentTeamId === teamId) {
         return {};
     }
+
+    // Switching teams can both regain and lose channels for this session.
+    reconcileChannelAccess(serverUrl);
 
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);
