@@ -255,6 +255,117 @@ describe('checkDialogElementForError', () => {
     });
 });
 
+describe('checkDialogElementForError - checkbox_group', () => {
+    const checkboxGroupElement: DialogElement = {
+        name: 'checkbox_group_field',
+        type: 'checkbox_group',
+        optional: false,
+        options: [
+            {text: 'Option A', value: 'optA'},
+            {text: 'Option B', value: 'optB'},
+        ],
+        display_name: 'Checkbox Group Field',
+        placeholder: '',
+        help_text: '',
+        default: '',
+        min_length: 0,
+        max_length: 0,
+        data_source: '',
+    };
+
+    it('should return required error for undefined value on required field', () => {
+        expect(checkDialogElementForError(checkboxGroupElement, undefined, makeIntl())).toBe('This field is required.');
+    });
+
+    it('should return required error for empty array on required field', () => {
+        expect(checkDialogElementForError(checkboxGroupElement, [], makeIntl())).toBe('This field is required.');
+    });
+
+    it('should allow empty array for optional field', () => {
+        const optionalElement = {...checkboxGroupElement, optional: true};
+        expect(checkDialogElementForError(optionalElement, [], makeIntl())).toBeNull();
+    });
+
+    it('should return invalid option error when a selected value is not in options', () => {
+        expect(checkDialogElementForError(checkboxGroupElement, ['optA', 'invalid'], makeIntl())).toBe('Must be a valid option');
+    });
+
+    it('should return null for valid selections', () => {
+        expect(checkDialogElementForError(checkboxGroupElement, ['optA', 'optB'], makeIntl())).toBeNull();
+    });
+});
+
+describe('checkDialogElementForError - checkbox_matrix', () => {
+    const checkboxMatrixElement: DialogElement = {
+        name: 'checkbox_matrix_field',
+        type: 'checkbox_matrix',
+        optional: false,
+        options: [],
+        display_name: 'Checkbox Matrix Field',
+        placeholder: '',
+        help_text: '',
+        default: '',
+        min_length: 0,
+        max_length: 0,
+        data_source: '',
+        matrix_config: {
+            rows: [
+                {text: 'Row 1', value: 'row1'},
+                {text: 'Row 2', value: 'row2'},
+            ],
+            columns: [
+                {text: 'Col 1', value: 'col1'},
+                {text: 'Col 2', value: 'col2'},
+            ],
+            row_selection: 'multiple',
+        },
+    };
+
+    it('should return required error for undefined value on required field', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, undefined, makeIntl())).toBe('This field is required.');
+    });
+
+    it('should return required error for empty array on required field', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, [], makeIntl())).toBe('This field is required.');
+    });
+
+    it('should return null for a valid matrix selection', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['row1:col1,col2', 'row2:col1'], makeIntl())).toBeNull();
+    });
+
+    it('should return invalid format error for a malformed entry with no colon', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['row1col1'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
+    it('should return invalid format error for an unknown row value', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['unknownRow:col1'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
+    it('should return invalid format error for an unknown column value', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['row1:unknownCol'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
+    it('should return invalid format error for a duplicate row', () => {
+        expect(checkDialogElementForError(checkboxMatrixElement, ['row1:col1', 'row1:col2'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
+    it('should reject more than one column when row_selection is single', () => {
+        const singleSelectionElement = {
+            ...checkboxMatrixElement,
+            matrix_config: {...checkboxMatrixElement.matrix_config!, row_selection: 'single' as const},
+        };
+        expect(checkDialogElementForError(singleSelectionElement, ['row1:col1,col2'], makeIntl())).toBe('Invalid matrix selection format');
+    });
+
+    it('should allow a single column when row_selection is single', () => {
+        const singleSelectionElement = {
+            ...checkboxMatrixElement,
+            matrix_config: {...checkboxMatrixElement.matrix_config!, row_selection: 'single' as const},
+        };
+        expect(checkDialogElementForError(singleSelectionElement, ['row1:col1'], makeIntl())).toBeNull();
+    });
+});
+
 describe('checkIfErrorsMatchElements', () => {
     it('should return false if no dialog elements', () => {
         const errors = {field1: 'error'};

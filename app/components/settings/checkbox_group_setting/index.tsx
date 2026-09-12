@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
-import {Pressable, Text, View} from 'react-native';
+import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -11,16 +10,9 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import Footer from '../footer';
 import Label from '../label';
 
-import RadioEntry from './radio_entry';
+import CheckboxEntry from './checkbox_entry';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-
-const messages = defineMessages({
-    clearSelection: {
-        id: 'interactive_dialog.radio.clear_selection',
-        defaultMessage: 'Clear selection',
-    },
-});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -31,68 +23,68 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
-        clearButton: {
-            paddingHorizontal: 15,
-            paddingVertical: 8,
-        },
-        clearButtonText: {
-            color: theme.buttonBg,
-            fontSize: 14,
-        },
     };
 });
 
 type Props = {
     label: string;
     options?: DialogOption[];
-    onChange: (value: string) => void;
+    onChange: (value: string[]) => void;
     helpText?: string;
     errorText?: string;
-    optional?: boolean;
-    value?: string;
+    value?: string[];
     testID: string;
     location: AvailableScreens;
     labelPosition?: 'before' | 'after';
+    disabled?: boolean;
+    optional?: boolean;
 }
-function RadioSetting({
+
+function CheckboxGroupSetting({
     label,
     options,
     onChange,
     helpText = '',
     errorText = '',
-    optional = false,
     testID,
     value,
     location,
     labelPosition,
+    disabled = false,
+    optional = false,
 }: Props) {
     const theme = useTheme();
-    const intl = useIntl();
     const style = getStyleSheet(theme);
 
-    const handleClear = useCallback(() => onChange(''), [onChange]);
+    const handleChange = useCallback((entryValue: string, checked: boolean) => {
+        const current = value || [];
+        const next = checked ? [...current, entryValue] : current.filter((v) => v !== entryValue);
+        onChange(next);
+    }, [onChange, value]);
 
     const optionsRender = useMemo(() => {
         if (!options) {
             return [];
         }
+        const selected = value || [];
         const elements = [];
         for (const [i, {value: entryValue, text}] of options.entries()) {
             elements.push(
-                <RadioEntry
-                    handleChange={onChange}
+                <CheckboxEntry
+                    handleChange={handleChange}
                     isLast={i === options.length - 1}
-                    isSelected={value === entryValue}
+                    isSelected={selected.includes(entryValue)}
                     text={text}
                     value={entryValue}
                     key={entryValue}
-                    testID={`${testID}.radio.${entryValue}.button`}
+                    testID={`${testID}.checkbox.${entryValue}.button`}
                     labelPosition={labelPosition}
+                    disabled={disabled}
                 />,
             );
         }
         return elements;
-    }, [value, onChange, options, testID, labelPosition]);
+    }, [value, handleChange, options, testID, labelPosition, disabled]);
 
     return (
         <View>
@@ -105,17 +97,8 @@ function RadioSetting({
             <View style={style.items}>
                 {optionsRender}
             </View>
-            {optional && value ? (
-                <Pressable
-                    onPress={handleClear}
-                    style={style.clearButton}
-                    testID={`${testID}.clear`}
-                >
-                    <Text style={style.clearButtonText}>{intl.formatMessage(messages.clearSelection)}</Text>
-                </Pressable>
-            ) : null}
             <Footer
-                disabled={false}
+                disabled={disabled}
                 errorText={errorText}
                 helpText={helpText}
                 location={location}
@@ -124,4 +107,4 @@ function RadioSetting({
     );
 }
 
-export default RadioSetting;
+export default CheckboxGroupSetting;
