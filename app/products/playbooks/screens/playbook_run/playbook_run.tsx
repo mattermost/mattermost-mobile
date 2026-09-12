@@ -548,6 +548,12 @@ export default function PlaybookRun({
                         </View>
                         <ChecklistList
                             checklists={checklists}
+
+                            // Only for a run that is not in the database, where these are the sole
+                            // source of task activity. A persisted run's rows observe it directly, and
+                            // passing the events here as well would churn a `withObservables` trigger
+                            // prop on every task change and blank every row in the checklist.
+                            timelineEvents={'timelineEvents' in playbookRun ? undefined : playbookRun.timeline_events}
                             channelId={channelId}
                             playbookRunId={playbookRun.id}
                             playbookRunName={playbookRun.name}
