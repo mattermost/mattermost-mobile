@@ -342,6 +342,175 @@ export const apiCleanupClassification = async (baseUrl: string) => {
     }
 };
 
+const CHANNEL_OBJECT_TYPE = 'channel';
+const CHANNEL_TARGET_TYPE = 'system';
+
+type ChannelAttributeFieldOptions = {
+    fieldName: string;
+    displayName?: string;
+    options: PropertyFieldOption[];
+    actions?: string[];
+    required?: boolean;
+};
+
+/**
+ * Create a template field and a linked channel-scoped field for channel attributes E2E testing.
+ *
+ * Mirrors apiSetupClassificationWithBanner for channel-object fields. Polls until the channel
+ * field and its propagated options are visible on the GET endpoint before returning, so that an
+ * immediately-following apiSetChannelAttributeValue call does not race the write on CI.
+ *
+ * @param {string} baseUrl - the base server URL
+ * @param {ChannelAttributeFieldOptions} opts - field name, options, actions, display metadata
+ * @returns Object with templateFieldId, channelFieldId, and optionIdsByName (name to id map)
+ */
+export const apiSetupChannelAttributeField = async (
+    baseUrl: string,
+    opts: ChannelAttributeFieldOptions,
+) => {
+    const {fieldName, displayName, options, actions = [], required = false} = opts;
+
+    const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
+        name: fieldName,
+        type: 'rank',
+        target_type: TARGET_TYPE,
+        target_id: '',
+        attrs: {
+            options: options.map((o) => ({id: o.id, name: o.name, color: o.color, rank: o.rank})),
+        },
+        permission_field: ADMIN_PERMISSION,
+        permission_values: ADMIN_PERMISSION,
+        permission_options: ADMIN_PERMISSION,
+    });
+
+    const templateResult_ = templateResult as {field?: any; error?: unknown};
+    if (!templateResult_.field) {
+        throw new Error(`apiSetupChannelAttributeField: failed to create template: ${JSON.stringify(templateResult_.error ?? templateResult)}`);
+    }
+    const templateField = templateResult_.field;
+
+    const channelFieldAttrs: Record<string, unknown> = {
+        actions,
+        required,
+    };
+    if (displayName) {
+        channelFieldAttrs.display_name = displayName;
+    }
+
+    const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
+        name: fieldName,
+        type: 'rank',
+        target_type: CHANNEL_TARGET_TYPE,
+        target_id: '',
+        linked_field_id: templateField.id,
+        attrs: channelFieldAttrs,
+    });
+
+    const channelResult_ = channelResult as {field?: any; error?: unknown};
+    if (!channelResult_.field) {
+        throw new Error(`apiSetupChannelAttributeField: failed to create channel field: ${JSON.stringify(channelResult_.error ?? channelResult)}`);
+    }
+    const channelField = channelResult_.field;
+
+    const templateOptions: PropertyFieldOption[] = templateField.attrs?.options ?? [];
+    const optionIdsByName = Object.fromEntries(templateOptions.map((o) => [o.name, o.id]));
+
+    // Poll until the channel field is visible and has options propagated from the template
+    // (mirrors pollLinkedVisible in apiSetupClassificationWithBanner). Without this guard an
+    // immediately-following apiSetChannelAttributeValue races the write on a loaded CI server.
+    const pollChannelFieldVisible = async (maxAttempts = 20) => {
+        let lastError = '';
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            // eslint-disable-next-line no-await-in-loop
+            const verify = await apiGetPropertyFields(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, CHANNEL_TARGET_TYPE) as {fields?: any[]; error?: unknown};
+            const found = (verify.fields ?? []).find(
+                (f: any) => f.id === channelField.id && f.delete_at === 0,
+            );
+            if (found && (found.attrs?.options as any[] | undefined)?.length) {
+                return;
+            }
+            lastError = `channel field ${channelField.id} not visible or missing options after create. Response: ${JSON.stringify(verify)}`;
+            if (attempt < maxAttempts - 1) {
+                // eslint-disable-next-line no-await-in-loop
+                await wait(timeouts.TWO_SEC);
+            }
+        }
+        throw new Error(`apiSetupChannelAttributeField: ${lastError}`);
+    };
+
+    await pollChannelFieldVisible();
+
+    return {templateFieldId: templateField.id, channelFieldId: channelField.id, optionIdsByName};
+};
+
+/**
+ * Set (or replace) a channel attribute value for a specific channel.
+ */
+export const apiSetChannelAttributeValue = async (
+    baseUrl: string,
+    channelId: string,
+    fieldId: string,
+    optionId: string,
+) => {
+    const result = await apiPatchPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId, [
+        {field_id: fieldId, value: optionId},
+    ]);
+    if ('error' in result) {
+        throw new Error(`apiSetChannelAttributeValue: ${JSON.stringify((result as any).error)}`);
+    }
+    return result;
+};
+
+/**
+ * Delete all non-deleted channel attribute fields with the given names, plus their templates.
+ *
+ * Channel-linked fields are deleted first (server enforces dependency ordering: linked before
+ * template). Both the channel object type and the system-linked object type are queried with
+ * target_type=system (CHANNEL_TARGET_TYPE and TARGET_TYPE are both 'system'); the two entries
+ * in objectTypePairs differ only by object_type ('channel' vs 'system').
+ *
+ * @param {string} baseUrl - the base server URL
+ * @param {string[]} fieldNames - field names to delete from all object types
+ */
+export const apiCleanupChannelAttributeFields = async (baseUrl: string, fieldNames: string[]) => {
+    const {error: loginError} = await User.apiAdminLogin(baseUrl);
+    if (loginError) {
+        throw new Error(`apiCleanupChannelAttributeFields: admin login failed: ${JSON.stringify(loginError)}`);
+    }
+    const nameSet = new Set(fieldNames);
+
+    // Both pairs use target_type=system (CHANNEL_TARGET_TYPE === TARGET_TYPE === 'system');
+    // they differ only by object_type. Delete channel-scoped fields first (server enforces dependency order).
+    const objectTypePairs: Array<[string, string]> = [
+        [CHANNEL_OBJECT_TYPE, CHANNEL_TARGET_TYPE],
+        [LINKED_OBJECT_TYPE, TARGET_TYPE],
+    ];
+
+    for (const [objectType, targetType] of objectTypePairs) {
+        // eslint-disable-next-line no-await-in-loop
+        const fieldsResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, objectType, targetType) as {fields?: any[]};
+        if (!fieldsResult.fields) {
+            continue;
+        }
+        for (const field of fieldsResult.fields) {
+            if (nameSet.has(field.name) && field.delete_at === 0) {
+                // eslint-disable-next-line no-await-in-loop
+                await apiDeletePropertyField(baseUrl, GROUP_NAME, objectType, field.id);
+            }
+        }
+    }
+
+    const templateResult = await apiGetPropertyFields(baseUrl, GROUP_NAME, OBJECT_TYPE, TARGET_TYPE) as {fields?: any[]};
+    if (templateResult.fields) {
+        for (const field of templateResult.fields) {
+            if (nameSet.has(field.name) && field.delete_at === 0) {
+                // eslint-disable-next-line no-await-in-loop
+                await apiDeletePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, field.id);
+            }
+        }
+    }
+};
+
 export const Properties = {
     CLASSIFICATION_LEVEL_IDS,
     apiGetPropertyFields,
@@ -353,6 +522,9 @@ export const Properties = {
     apiPatchSystemPropertyValues,
     apiSetupClassificationWithBanner,
     apiCleanupClassification,
+    apiSetupChannelAttributeField,
+    apiSetChannelAttributeValue,
+    apiCleanupChannelAttributeFields,
 };
 
 export default Properties;

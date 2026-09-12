@@ -34,6 +34,7 @@ import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
+import {fetchChannelAttributeValues} from './classification';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
@@ -1189,6 +1190,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
     fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
+    fetchChannelAttributeValues(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId, groupLabel);
     markChannelAsRead(serverUrl, channelId, false, groupLabel);

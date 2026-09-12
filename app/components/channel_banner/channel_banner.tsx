@@ -1,22 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
-import {fetchChannelClassificationValue} from '@actions/remote/classification';
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
-import {useServerUrl} from '@context/server';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {typography} from '@utils/typography';
 
-import type {ChannelClassificationBannerState} from '@utils/classification';
+import type {ChannelAttributeBannerState} from '@utils/channel_attributes';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
@@ -54,24 +53,19 @@ const getStyleSheet = (bannerTextColor: string) => ({
 });
 
 type Props = {
-    channelId: string;
     bannerInfo?: ChannelBannerInfo;
-    channelClassification: ChannelClassificationBannerState;
+    attributeBanner: ChannelAttributeBannerState;
     isTopItem?: boolean;
     skipHeaderOffset?: boolean;
 }
 
-export function ChannelBanner({channelId, bannerInfo, channelClassification, isTopItem, skipHeaderOffset}: Props) {
+export function ChannelBanner({bannerInfo, attributeBanner, isTopItem, skipHeaderOffset}: Props) {
     const intl = useIntl();
-    const serverUrl = useServerUrl();
 
-    useEffect(() => {
-        fetchChannelClassificationValue(serverUrl, channelId);
-    }, [serverUrl, channelId]);
-
-    const effectiveBanner = channelClassification.hasClassification
-        ? channelClassification.classificationBanner
-        : bannerInfo;
+    // A designated attribute takes priority over the channel's own banner. The
+    // values it reads are fetched on channel switch, not here: the chips and the
+    // Channel Info section need them on channels that render no banner at all.
+    const effectiveBanner = attributeBanner.hasBanner ? attributeBanner.banner : bannerInfo;
 
     const bannerTextColor = getContrastingSimpleColor(effectiveBanner?.background_color || '');
 
@@ -86,9 +80,7 @@ export function ChannelBanner({channelId, bannerInfo, channelClassification, isT
         ...(skipHeaderOffset ? undefined : {top: defaultHeight, zIndex: 1}),
     }), [effectiveBanner?.background_color, defaultHeight, skipHeaderOffset, style.container]);
 
-    const handlePress = useCallback(() => {
-        // set snap point based on text length, with a defined
-        // minimum and maximum height for the text container
+    const handlePress = usePreventDoubleTap(useCallback(() => {
         const length = (effectiveBanner?.text?.length ?? 0) / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
@@ -106,7 +98,7 @@ export function ChannelBanner({channelId, bannerInfo, channelClassification, isT
         );
 
         bottomSheet(renderContent, [1, snapPoint]);
-    }, [effectiveBanner, intl]);
+    }, [effectiveBanner, intl]));
 
     // banner info will be complete when this component renders,
     // but this check is still here to avoid having to use non-null assertion everywhere.
@@ -115,10 +107,13 @@ export function ChannelBanner({channelId, bannerInfo, channelClassification, isT
     }
 
     return (
-        <View style={[containerStyle, isTopItem && style.containerTopItem]}>
-            <TouchableOpacity
+        <View
+            style={[containerStyle, isTopItem && style.containerTopItem]}
+            testID='channel.banner'
+        >
+            <Pressable
                 onPress={handlePress}
-                style={style.bannerTextContainer}
+                style={({pressed}) => [style.bannerTextContainer, pressed && {opacity: 0.8}]}
             >
                 <Text
                     ellipsizeMode='tail'
@@ -130,7 +125,7 @@ export function ChannelBanner({channelId, bannerInfo, channelClassification, isT
                         baseStyle={style.baseTextStyle}
                     />
                 </Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 }
