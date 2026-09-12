@@ -66,12 +66,10 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
 /**
  * Attempt to enable the ChannelAttributes feature flag.
  *
- * Returns true when the client config reports the flag as true. Returns false
- * when the server license, Split, or `MM_FEATUREFLAGS_CHANNELATTRIBUTES` keeps
- * it off — callers that require the flag on should skip rather than fail the
- * whole suite. Throws only on transport / API errors.
+ * Throws when the server license, Split, or
+ * `MM_FEATUREFLAGS_CHANNELATTRIBUTES` keeps it off.
  */
-export const enableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
+export const enableChannelAttributes = async (baseUrl: string): Promise<void> => {
     let lastObserved: {server?: unknown; client?: unknown} = {};
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
@@ -92,7 +90,7 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<boolean>
             {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
         );
         if (enabled) {
-            return true;
+            return;
         }
 
         lastObserved = await observedFlagValues(baseUrl);
@@ -105,11 +103,9 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<boolean>
     }
     /* eslint-enable no-await-in-loop */
 
-    // eslint-disable-next-line no-console
-    console.warn(
+    throw new Error(
         'enableChannelAttributes: FeatureFlagChannelAttributes did not become true. ' +
         `Last observed server=${String(lastObserved.server)} client=${String(lastObserved.client)}. ` +
         'Cloud Spinwick installations may need MM_FEATUREFLAGS_CHANNELATTRIBUTES=true in Matterwick PriorityEnv.',
     );
-    return false;
 };

@@ -72,21 +72,11 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     // themselves when this is false.
     let canControlFlag = false;
 
-    // False when the server cannot turn ChannelAttributes on (Split / env / older
-    // server). Tests that require the flag to be on skip themselves when this is false.
-    let canEnableFlag = false;
     let testUser: any;
     let testTeam: any;
 
     // Set per-test; cleared and deleted in afterEach. null = no regular channel created this test.
     let testChannel: any = null;
-
-    const enableAttributesOrSkip = async () => {
-        if (!canEnableFlag) {
-            return false;
-        }
-        return enableChannelAttributes(siteOneUrl);
-    };
 
     beforeAll(async () => {
         // Share the classification lock: this suite mutates FeatureFlags and the
@@ -100,7 +90,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         // Defensive cleanup — a prior interrupted run may have left required attribute fields that
         // would block channel creation. Do this before any channel is created.
         await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
-        canEnableFlag = await enableChannelAttributes(siteOneUrl);
+        await enableChannelAttributes(siteOneUrl);
         canControlFlag = await disableChannelAttributes(siteOneUrl);
 
         // Create a shared team and user. Channels are created per-test so that each test can
@@ -196,9 +186,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6301_1 - should render an attribute chip in the channel header when a value is set and the flag is on', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         // # Create a header-designated attribute field.
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
@@ -233,9 +221,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6302_1 - should not render a chip for an unset optional attribute', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         // # Create an optional header-designated field.
         await Properties.apiSetupChannelAttributeField(
@@ -264,9 +250,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6303_1 - should render both chips inline when exactly 2 attributes are designated for the header', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         // # Create two header-designated fields.
         const {channelFieldId: field1Id, optionIdsByName: opts1} = await Properties.apiSetupChannelAttributeField(
@@ -315,9 +299,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6304_1 - should not render attribute chips on a DM channel', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
@@ -356,9 +338,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6305_1 - should show the attribute row in Channel Info when designated for display_label_info', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
@@ -395,9 +375,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         // # Create the channel BEFORE the required attribute field exists. The server enforces
         // # required attribute values only at channel creation time. Creating the field after the
@@ -434,9 +412,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6307_1 - should not show optional unset attribute row in Channel Info', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         // # Create an optional info-designated field.
         await Properties.apiSetupChannelAttributeField(
@@ -469,9 +445,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6308_1 - should render the channel attribute banner when designated with display_banner_top', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
@@ -541,9 +515,7 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     });
 
     it('MM-T6310_1 - should update the chip when the attribute value changes', async () => {
-        if (!await enableAttributesOrSkip()) {
-            return;
-        }
+        await enableChannelAttributes(siteOneUrl);
 
         const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
