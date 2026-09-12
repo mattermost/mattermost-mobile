@@ -5,6 +5,7 @@ import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
+import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -32,6 +33,7 @@ jest.mock('expo-image', () => ({
     },
 }));
 jest.mock('@actions/app/global');
+jest.mock('@actions/local/ephemeral_mode/audit_queue');
 jest.mock('@database/manager', () => ({
     getServerDatabaseAndOperator: jest.fn(),
     getActiveServerDatabase: jest.fn(),
@@ -302,6 +304,12 @@ describe('session actions', () => {
             await terminateSession(mockServerUrl, true);
 
             expect(clearCookiesForServer).toHaveBeenCalledWith(mockServerUrl);
+        });
+
+        it('should prune session-bound audit events on a session expiry without removing the server', async () => {
+            await terminateSession(mockServerUrl, false);
+
+            expect(pruneAuditQueueOnSessionEnd).toHaveBeenCalledWith(mockServerUrl, false);
         });
 
         it('should clear image cache with URL-safe encoded server URL', async () => {

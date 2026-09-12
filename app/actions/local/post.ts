@@ -424,9 +424,9 @@ export async function deletePostsInChannelsByCutoff(
     channelIds: string[],
     cutoff: number,
     excludedPostIds: Set<string> = new Set(),
-): Promise<{error: unknown}> {
+): Promise<{error: unknown; deletedCount: number}> {
     if (channelIds.length === 0) {
-        return {error: undefined};
+        return {error: undefined, deletedCount: 0};
     }
 
     try {
@@ -446,6 +446,13 @@ export async function deletePostsInChannelsByCutoff(
         const postCondition = `channel_id IN (${channelPlaceholders}) AND create_at < ${cutoff} AND NOT ${hasActiveReply} AND NOT ${hasDraft}${exclusionClause}`;
         const postConditionArgs = [...channelIds, ...excludedIds];
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
+
+        // Upper-bound count: unlike the delete below, it doesn't exclude thread roots an active reply keeps alive.
+        const deletedCount = await database.get<PostModel>(POST).query(
+            Q.where('channel_id', Q.oneOf(channelIds)),
+            Q.where('create_at', Q.lt(cutoff)),
+            ...(excludedPostIds.size > 0 ? [Q.where('id', Q.notIn([...excludedPostIds]))] : []),
+        ).fetchCount();
 
         // Scopes PostsInThread trimming to roots in these channels.
         const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channelPlaceholders}))`;
@@ -504,9 +511,9 @@ export async function deletePostsInChannelsByCutoff(
             await operator.batchRecords(prepared, 'deletePostsInChannelsByCutoff.reconcile');
         }
 
-        return {error: undefined};
+        return {error: undefined, deletedCount};
     } catch (error) {
-        return {error};
+        return {error, deletedCount: 0};
     }
 }
 
