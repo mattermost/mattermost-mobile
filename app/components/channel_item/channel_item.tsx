@@ -8,7 +8,7 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
-import {General, Preferences} from '@constants';
+import {General} from '@constants';
 import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -82,7 +82,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderColor: theme.centerChannelBg,
     },
     urgentBadge: {
-        color: Preferences.THEMES.denim.buttonColor,
+        color: theme.buttonColor,
         backgroundColor: theme.dndIndicator,
     },
     mutedBadge: {

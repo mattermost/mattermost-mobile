@@ -7,6 +7,7 @@ import {StyleSheet} from 'react-native';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {ThemeContext} from '@context/theme';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -91,25 +92,33 @@ describe('components/channel_list/categories/body/channel_item', () => {
     });
 
     it('should use the urgent badge colors for urgent mentions', () => {
+        const theme = {
+            ...Preferences.THEMES.denim,
+            buttonColor: '#abcdef',
+            dndIndicator: '#fedcba',
+        };
+
         const {getByTestId} = renderWithIntlAndTheme(
-            <ChannelItem
-                channel={{displayName: 'Hello!', type: 'O', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
-                hasDraft={false}
-                isActive={false}
-                membersCount={0}
-                isMuted={false}
-                currentUserId='id'
-                testID='channel_item'
-                onPress={() => undefined}
-                isUnread={true}
-                mentionsCount={2}
-                urgentMentionCount={1}
-                hasCall={false}
-            />,
+            <ThemeContext.Provider value={theme}>
+                <ChannelItem
+                    channel={{displayName: 'Hello!', type: 'O', shared: false, name: 'hello', deleteAt: 0} as ChannelModel}
+                    hasDraft={false}
+                    isActive={false}
+                    membersCount={0}
+                    isMuted={false}
+                    currentUserId='id'
+                    testID='channel_item'
+                    onPress={() => undefined}
+                    isUnread={true}
+                    mentionsCount={2}
+                    urgentMentionCount={1}
+                    hasCall={false}
+                />
+            </ThemeContext.Provider>,
         );
 
         const badgeStyle = StyleSheet.flatten(getByTestId('channel_item.hello.badge').props.style);
-        expect(badgeStyle.backgroundColor).toBe(Preferences.THEMES.denim.dndIndicator);
-        expect(badgeStyle.color).toBe('#ffffff');
+        expect(badgeStyle.backgroundColor).toBe(theme.dndIndicator);
+        expect(badgeStyle.color).toBe(theme.buttonColor);
     });
 });
