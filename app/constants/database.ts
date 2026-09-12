@@ -21,6 +21,7 @@ export const MM_TABLES = {
         CUSTOM_PROFILE_FIELD: 'CustomProfileField',
         CUSTOM_PROFILE_ATTRIBUTE: 'CustomProfileAttribute',
         DRAFT: 'Draft',
+        DRAFT_OUTBOX: 'DraftOutbox',
         FILE: 'File',
         GROUP: 'Group',
         GROUP_CHANNEL: 'GroupChannel',

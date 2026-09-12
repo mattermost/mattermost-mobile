@@ -18,6 +18,7 @@ import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
 import {exportedForTest} from './post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator/index';
+import type DraftModel from '@typings/database/models/servers/draft';
 import type PostModel from '@typings/database/models/servers/post';
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
@@ -262,6 +263,29 @@ describe('*** Operator: Post Handlers tests ***', () => {
             tableName: 'Draft',
             prepareRecordsOnly: false,
         }, 'handleDraft');
+    });
+
+    it('=> HandleDraft: keeps all drafts sharing a channel but differing by root_id', async () => {
+        expect.assertions(2);
+
+        const channelId = 'sharedchanneldraftid00000000';
+        const drafts: Draft[] = [
+            {channel_id: channelId, root_id: '', message: 'channel draft', update_at: 1},
+            {channel_id: channelId, root_id: 'rootpostoneidxxxxxxxxxxxxxx', message: 'reply one', update_at: 2},
+            {channel_id: channelId, root_id: 'rootposttwoidxxxxxxxxxxxxxx', message: 'reply two', update_at: 3},
+        ];
+
+        await operator.handleDraft({drafts, prepareRecordsOnly: false});
+
+        const stored = await database.get<DraftModel>(MM_TABLES.SERVER.DRAFT).query(Q.where('channel_id', channelId)).fetch();
+        expect(stored.length).toBe(3);
+
+        const keys = stored.map((d) => `${d.channelId}-${d.rootId || 'root'}`).sort();
+        expect(keys).toEqual([
+            `${channelId}-root`,
+            `${channelId}-rootpostoneidxxxxxxxxxxxxxx`,
+            `${channelId}-rootposttwoidxxxxxxxxxxxxxx`,
+        ]);
     });
 
     it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {

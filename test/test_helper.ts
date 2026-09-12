@@ -36,6 +36,7 @@ import type ChannelMembershipModel from '@typings/database/models/servers/channe
 import type CustomProfileAttributeModel from '@typings/database/models/servers/custom_profile_attribute';
 import type CustomProfileFieldModel from '@typings/database/models/servers/custom_profile_field';
 import type DraftModel from '@typings/database/models/servers/draft';
+import type DraftOutboxModel from '@typings/database/models/servers/draft_outbox';
 import type FileModel from '@typings/database/models/servers/file';
 import type GroupModel from '@typings/database/models/servers/group';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -698,6 +699,27 @@ class TestHelperSingleton {
             metadata: {},
             updateAt: 0,
             type: '',
+            serverUpdateAt: null,
+            props: null,
+            fileIds: [],
+            ...overwrite,
+        };
+    };
+
+    fakeDraftOutboxModel = (overwrite?: Partial<DraftOutboxModel>): DraftOutboxModel => {
+        return {
+            ...this.fakeModel(),
+            channelId: this.generateId(),
+            rootId: '',
+            teamId: this.generateId(),
+            operation: 'upsert',
+            generation: 1,
+            keepLocal: false,
+            attemptCount: 0,
+            nextAttemptAt: 0,
+            status: 'pending',
+            lastErrorCode: null,
+            deletedFingerprint: null,
             ...overwrite,
         };
     };

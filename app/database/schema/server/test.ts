@@ -26,6 +26,7 @@ const {
     CUSTOM_PROFILE_FIELD,
     CUSTOM_PROFILE_ATTRIBUTE,
     DRAFT,
+    DRAFT_OUTBOX,
     FILE,
     GROUP,
     GROUP_CHANNEL,
@@ -60,7 +61,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -374,6 +375,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         metadata: {name: 'metadata', type: 'string', isOptional: true},
                         update_at: {name: 'update_at', type: 'number'},
                         type: {name: 'type', type: 'string', isOptional: true},
+                        server_update_at: {name: 'server_update_at', type: 'number', isOptional: true},
+                        props: {name: 'props', type: 'string', isOptional: true},
+                        file_ids: {name: 'file_ids', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
@@ -383,6 +387,39 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'metadata', type: 'string', isOptional: true},
                         {name: 'update_at', type: 'number'},
                         {name: 'type', type: 'string', isOptional: true},
+                        {name: 'server_update_at', type: 'number', isOptional: true},
+                        {name: 'props', type: 'string', isOptional: true},
+                        {name: 'file_ids', type: 'string', isOptional: true},
+                    ],
+                },
+                [DRAFT_OUTBOX]: {
+                    name: DRAFT_OUTBOX,
+                    unsafeSql: undefined,
+                    columns: {
+                        channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
+                        root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        team_id: {name: 'team_id', type: 'string', isIndexed: true},
+                        operation: {name: 'operation', type: 'string'},
+                        generation: {name: 'generation', type: 'number'},
+                        keep_local: {name: 'keep_local', type: 'boolean'},
+                        attempt_count: {name: 'attempt_count', type: 'number'},
+                        next_attempt_at: {name: 'next_attempt_at', type: 'number'},
+                        status: {name: 'status', type: 'string'},
+                        last_error_code: {name: 'last_error_code', type: 'string', isOptional: true},
+                        deleted_fingerprint: {name: 'deleted_fingerprint', type: 'string', isOptional: true},
+                    },
+                    columnArray: [
+                        {name: 'channel_id', type: 'string', isIndexed: true},
+                        {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'team_id', type: 'string', isIndexed: true},
+                        {name: 'operation', type: 'string'},
+                        {name: 'generation', type: 'number'},
+                        {name: 'keep_local', type: 'boolean'},
+                        {name: 'attempt_count', type: 'number'},
+                        {name: 'next_attempt_at', type: 'number'},
+                        {name: 'status', type: 'string'},
+                        {name: 'last_error_code', type: 'string', isOptional: true},
+                        {name: 'deleted_fingerprint', type: 'string', isOptional: true},
                     ],
                 },
                 [FILE]: {

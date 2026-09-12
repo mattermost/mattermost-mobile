@@ -12,6 +12,7 @@ export {default as CustomEmojiModel} from './custom_emoji';
 export {default as CustomProfileFieldModel} from './custom_profile_field';
 export {default as CustomProfileAttributeModel} from './custom_profile_attribute';
 export {default as DraftModel} from './draft';
+export {default as DraftOutboxModel} from './draft_outbox';
 export {default as FileModel} from './file';
 export {default as GroupModel} from './group';
 export {default as GroupChannelModel} from './group_channel';

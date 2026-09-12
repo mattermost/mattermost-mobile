@@ -11,6 +11,7 @@ export {default as CustomEmojiSchema} from './custom_emoji';
 export {default as CustomProfileFieldSchema} from './custom_profile_field';
 export {default as CustomProfileAttributeSchema} from './custom_profile_attribute';
 export {default as DraftSchema} from './draft';
+export {default as DraftOutboxSchema} from './draft_outbox';
 export {default as FileSchema} from './file';
 export {default as GroupSchema} from './group';
 export {default as GroupChannelSchema} from './group_channel';
