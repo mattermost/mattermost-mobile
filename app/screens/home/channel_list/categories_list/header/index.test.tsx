@@ -90,6 +90,56 @@ describe('ChannelListHeader Index', () => {
         });
     });
 
+    it('reflects the ephemeral mode config of the current server', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'MobileEphemeralModeEnabled', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(getByTestId('channel-list-header').props.ephemeralModeEnabled).toBe(true);
+        });
+    });
+
+    describe('isZeroPersistenceMode', () => {
+        it('is true when ephemeral mode is enabled with zero cache cleanup days', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+            await waitFor(() => {
+                expect(getByTestId('channel-list-header').props.isZeroPersistenceMode).toBe(true);
+            });
+        });
+
+        it('is false when ephemeral mode is enabled with a non-zero cache cleanup days', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '7'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+            await waitFor(() => {
+                expect(getByTestId('channel-list-header').props.isZeroPersistenceMode).toBe(false);
+            });
+        });
+    });
+
     it('renders ChannelListHeader component with team and user data', async () => {
         const team = TestHelper.fakeTeam({
             id: currentTeamId,

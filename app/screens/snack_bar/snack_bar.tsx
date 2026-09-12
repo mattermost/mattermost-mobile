@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessage, useIntl} from 'react-intl';
 import {
+    Pressable,
     Text,
     TouchableOpacity,
     type StyleProp,
@@ -20,16 +21,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import {scheduleOnRN} from 'react-native-worklets';
 
+import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Screens} from '@constants';
 import {MESSAGE_TYPE, SNACK_BAR_CONFIG} from '@constants/snack_bar';
 import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useWindowDimensions} from '@hooks/device';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {CompassIconName} from '@components/compass_icon';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ShowSnackBarArgs} from '@utils/snack_bar';
 
@@ -45,20 +46,31 @@ const SNACK_BAR_BOTTOM_RATIO = 0.04;
 const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES, Screens.CODE];
 
 const DEFAULT_ICON: CompassIconName = 'alert-outline';
+const AUTO_DISMISS_DURATION_MS = 3000;
+const PRESSED_STYLE = {opacity: 0.72};
+const CLOSE_BUTTON_HIT_SLOP = {top: 10, bottom: 10, left: 10, right: 10};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         text: {
             color: theme.centerChannelBg,
         },
+        description: {
+            color: changeOpacity(theme.centerChannelBg, 0.75),
+        },
         undo: {
             color: theme.centerChannelBg,
             ...typography('Body', 100, 'SemiBold'),
+        },
+        closeButton: {
+            marginLeft: 10,
         },
         gestureRoot: {
             flex: 1,
             width: '100%',
             position: 'absolute',
+        },
+        gestureRootHeight: {
             height: SNACK_BAR_HEIGHT,
         },
         toast: {
@@ -66,11 +78,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             opacity: 1,
             backgroundColor: theme.centerChannelColor,
         },
+        toastHeight: {
+            height: TOAST_HEIGHT,
+        },
         mobile: {
             backgroundColor: theme.centerChannelColor,
             width: `${SNACK_BAR_WIDTH}%`,
             opacity: 1,
-            height: TOAST_HEIGHT,
             alignSelf: 'center' as const,
             borderRadius: 9,
             shadowColor: '#1F000000',
@@ -93,11 +107,14 @@ const defaultMessage = defineMessage({
 const SnackBar = ({
     barType,
     messageValues,
+    descriptionValues,
     onAction,
     onDismiss,
     sourceScreen,
     customMessage,
+    customDescription,
     type,
+    isPersistent,
 }: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -116,11 +133,17 @@ const SnackBar = ({
     } else {
         config = {
             message: defaultMessage,
+            description: undefined,
             iconName: DEFAULT_ICON,
             canUndo: false,
             type,
+            isPersistent: undefined,
         };
     }
+
+    const isPersistentSnackBar = isPersistent ?? config.isPersistent ?? false;
+    const message = customMessage || intl.formatMessage(config.message, messageValues);
+    const description = customDescription || (config.description && intl.formatMessage(config.description, descriptionValues));
 
     const styles = getStyleSheet(theme);
     const gestureRootStyle = useMemo(() => {
@@ -164,9 +187,10 @@ const SnackBar = ({
 
         return [
             styles.mobile,
+            !description && styles.toastHeight,
             isTablet && tabletStyle,
         ] as StyleProp<ViewStyle>;
-    }, [windowWidth, styles.mobile, isTablet, sourceScreen]);
+    }, [windowWidth, styles.mobile, styles.toastHeight, description, isTablet, sourceScreen]);
 
     const toastStyle = useMemo(() => {
         let backgroundColor: string;
@@ -229,14 +253,17 @@ const SnackBar = ({
         animateHiding(false);
     };
 
-    // This effect hides the snack bar after 3 seconds
+    // This effect hides the snack bar after 3 seconds, unless it is persistent
     useEffect(() => {
         mounted.current = true;
-        baseTimer.current = setTimeout(() => {
-            if (!isPanned.value) {
-                animateHiding(false);
-            }
-        }, 3000);
+
+        if (!isPersistentSnackBar) {
+            baseTimer.current = setTimeout(() => {
+                if (!isPanned.value) {
+                    animateHiding(false);
+                }
+            }, AUTO_DISMISS_DURATION_MS);
+        }
 
         return () => {
             stopTimers();
@@ -246,6 +273,10 @@ const SnackBar = ({
         // only run on mount/unmount
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const onClosePressHandler = useCallback(() => {
+        animateHiding(false);
+    }, [animateHiding]);
 
     // This effect calls onDismiss after we have hidden the snack bar
     useEffect(() => {
@@ -257,15 +288,15 @@ const SnackBar = ({
         }
     }, [showSnackBar, onAction, onDismiss]);
 
-    const message = customMessage || intl.formatMessage(config.message, messageValues);
-
     return (
-        <GestureHandlerRootView style={[styles.gestureRoot, gestureRootStyle]}>
+        <GestureHandlerRootView style={[styles.gestureRoot, !description && styles.gestureRootHeight, gestureRootStyle]}>
             <GestureDetector gesture={gesture}>
                 <Animated.View style={animatedMotion}>
                     <Animated.View entering={FadeIn.duration(300)}>
                         <Toast
                             animatedStyle={snackBarStyle}
+                            description={description}
+                            descriptionStyle={styles.description}
                             iconName={config.iconName}
                             message={message}
                             style={toastStyle}
@@ -281,6 +312,20 @@ const SnackBar = ({
                                         })}
                                     </Text>
                                 </TouchableOpacity>
+                            )}
+                            {isPersistentSnackBar && (
+                                <Pressable
+                                    hitSlop={CLOSE_BUTTON_HIT_SLOP}
+                                    onPress={onClosePressHandler}
+                                    style={({pressed}) => [styles.closeButton, pressed && PRESSED_STYLE]}
+                                    testID='snack_bar.close_button'
+                                >
+                                    <CompassIcon
+                                        color={theme.centerChannelBg}
+                                        name='close'
+                                        size={18}
+                                    />
+                                </Pressable>
                             )}
                         </Toast>
                     </Animated.View>

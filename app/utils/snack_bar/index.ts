@@ -12,9 +12,12 @@ export type ShowSnackBarArgs = {
     onAction?: () => void;
     sourceScreen?: AvailableScreens;
     messageValues?: Record<string, PrimitiveType>;
+    descriptionValues?: Record<string, PrimitiveType>;
     customMessage?: string;
+    customDescription?: string;
     type?: SnackBarConfig['type'];
     actionText?: string;
+    isPersistent?: SnackBarConfig['isPersistent'];
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
