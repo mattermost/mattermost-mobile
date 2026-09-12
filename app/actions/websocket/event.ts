@@ -226,6 +226,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.CALLS_SCREEN_OFF:
             calls.handleCallScreenOff(serverUrl, msg);
             break;
+        case WebsocketEvents.CALLS_USER_VIDEO_ON:
+            calls.handleCallUserVideoOn(msg);
+            break;
+        case WebsocketEvents.CALLS_USER_VIDEO_OFF:
+            calls.handleCallUserVideoOff(msg);
+            break;
         case WebsocketEvents.CALLS_USER_RAISE_HAND:
             calls.handleCallUserRaiseHand(serverUrl, msg);
             break;

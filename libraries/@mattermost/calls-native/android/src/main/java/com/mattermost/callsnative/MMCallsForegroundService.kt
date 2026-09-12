@@ -11,11 +11,13 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 
 /**
- * Keeps the microphone alive while the user is in a Mattermost call and the
- * app is in the background. Android requires any process holding the mic in
- * background to run inside a foreground service with FOREGROUND_SERVICE_MICROPHONE
+ * Keeps the microphone (and, during a video call, the camera) alive while
+ * the user is in a Mattermost call and the app is in the background.
+ * Android requires any process holding the mic/camera in background to run
+ * inside a foreground service declaring the matching FOREGROUND_SERVICE_*
  * type since API 34.
  *
  * Title/body/channel strings come from the JS layer via the Intent extras
@@ -30,6 +32,7 @@ class MMCallsForegroundService : Service() {
         const val EXTRA_CHANNEL_DESCRIPTION = "channelDescription"
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
+        const val EXTRA_WITH_CAMERA = "withCamera"
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -40,17 +43,30 @@ class MMCallsForegroundService : Service() {
         val channelDescription = intent?.getStringExtra(EXTRA_CHANNEL_DESCRIPTION) ?: ""
         val title = intent?.getStringExtra(EXTRA_TITLE) ?: "Mattermost"
         val text = intent?.getStringExtra(EXTRA_TEXT) ?: ""
+        val withCamera = intent?.getBooleanExtra(EXTRA_WITH_CAMERA, false) ?: false
 
         ensureChannel(channelId, channelName, channelDescription)
 
         val notification = buildNotification(channelId, title, text)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+            // Only request the camera type while video is actually on (and the
+            // permission has actually been granted) so audio-only calls don't
+            // hold a permission they don't use.
+            var type = ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+            if (withCamera && hasCameraPermission()) {
+                type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
+            }
+            startForeground(NOTIFICATION_ID, notification, type)
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
         return START_NOT_STICKY
+    }
+
+    private fun hasCameraPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
     }
 
     private fun ensureChannel(channelId: String, channelName: String, description: String) {

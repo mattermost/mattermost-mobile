@@ -32,13 +32,18 @@ export type OutgoingCallParams = Readonly<{
 }>
 
 // Configuration for the Android foreground-service notification that keeps
-// the microphone alive during a call.
+// the microphone (and, while video is on, the camera) alive during a call.
 export type ForegroundNotificationConfig = Readonly<{
   channelId: string;
   channelName: string;
   channelDescription: string;
   title: string;
   text: string;
+
+  // Whether the service should also hold the camera FGS type. Only true
+  // while video is actually on, so audio-only calls don't hold a
+  // permission they don't use.
+  withCamera: boolean;
 }>
 
 // JS → native call-end reasons. The native side maps these to the matching
