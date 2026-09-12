@@ -1,4 +1,4 @@
-# Server Database - Schema Version 20
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -176,6 +176,7 @@ last_post_at number
 last_viewed_at number
 manually_unread boolean
 mentions_count number
+urgent_mention_count number
 message_count number
 roles string
 viewed_at number
