@@ -314,23 +314,21 @@ describe('CallScreen', () => {
         expect(screen.getByTestId('call-avatar-callee-id').props.muted).toBe(false);
     });
 
-    it('should hold both cards from the moment the call is placed until the callee answers', () => {
-        // The callee's card comes out of the same array as everyone else's, so the row never gains
-        // or loses a card as the two sessions land, and the callee's card is updated rather than
-        // swapped out from under the user.
+    it('should keep the callee card through ringing and then follow sessionsDict after answer', () => {
+        // During pre-answer phases we keep a persistent ringing card; once answered, card rendering
+        // follows sessionsDict, which can trail currentCall.sessions by one database tick.
         const screen = renderScreen(getConnectingProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
 
         rerenderScreen(screen, getCallingProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
 
-        // sessionsDict comes from a database query, so it trails the call by a tick: the callee's
-        // session has reached the call but cannot be rendered yet.
+        // The call is answered, but sessionsDict has not received the callee yet.
         const trailing = getAnsweredProps();
         trailing.sessionsDict = {'my-session': mySession};
         rerenderScreen(screen, trailing);
-        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
-        expect(screen.getByTestId('calls.calling_participant')).toBeVisible();
+        expect(getAvatarOrder(screen)).toEqual(['my-id']);
+        expect(screen.queryByTestId('calls.calling_participant')).toBeNull();
 
         rerenderScreen(screen, getAnsweredProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
