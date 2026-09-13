@@ -106,6 +106,13 @@ describe('CallScreen', () => {
         return renderWithIntlAndTheme(<CallScreen {...props}/>);
     };
 
+    // The transitions matter as much as each phase does, so they are driven through the same tree
+    // the user is looking at rather than by rendering a second one.
+    const rerenderScreen = (screen: ReturnType<typeof renderScreen>, props: ComponentProps<typeof CallScreen>) => {
+        jest.mocked(useCurrentCall).mockReturnValue(props.currentCall);
+        screen.rerender(<CallScreen {...props}/>);
+    };
+
     const getAvatarOrder = (screen: ReturnType<typeof renderScreen>) => {
         return screen.getAllByTestId(/^call-avatar-/).
             map((avatar) => avatar.props.userModel?.id).
@@ -152,6 +159,20 @@ describe('CallScreen', () => {
         };
     }
 
+    // The callee has answered, so both of us have a session in the call.
+    function getAnsweredProps(): ComponentProps<typeof CallScreen> {
+        const props = getBaseProps();
+        const sessions = {'my-session': mySession, 'callee-session': calleeSession};
+
+        return {
+            ...props,
+            isDM: true,
+            dmCallee: callee,
+            currentCall: {...props.currentCall!, sessions},
+            sessionsDict: sessions,
+        };
+    }
+
     // Placing the call: we're on the call screen before either of us has a session in the call.
     function getConnectingProps(): ComponentProps<typeof CallScreen> {
         return {
@@ -185,18 +206,17 @@ describe('CallScreen', () => {
     it('should hide the host badge in DM cards both while placing the call and once our session lands', () => {
         // Everything about the card has to match across the two phases, or it visibly changes
         // under the user: the avatar remounts, the mic badge flips, the host badge shifts it.
-        const placing = renderScreen(getConnectingProps());
+        const screen = renderScreen(getConnectingProps());
 
-        expect(placing.getByTestId('call-avatar-my-id').props.muted).toBe(false);
-        expect(placing.getByText(/me \(you\)/)).toBeVisible();
-        expect(placing.queryByText('host')).toBeNull();
-        placing.unmount();
+        expect(screen.getByTestId('call-avatar-my-id').props.muted).toBe(false);
+        expect(screen.getByText(/me \(you\)/)).toBeVisible();
+        expect(screen.queryByText('host')).toBeNull();
 
-        const inTheCall = renderScreen(getCallingProps());
+        rerenderScreen(screen, getCallingProps());
 
-        expect(inTheCall.getByTestId('call-avatar-my-id').props.muted).toBe(false);
-        expect(inTheCall.getByText(/me \(you\)/)).toBeVisible();
-        expect(inTheCall.queryByText('host')).toBeNull();
+        expect(screen.getByTestId('call-avatar-my-id').props.muted).toBe(false);
+        expect(screen.getByText(/me \(you\)/)).toBeVisible();
+        expect(screen.queryByText('host')).toBeNull();
     });
 
     it('should hide the host badge in DM calls even when the other participant is the host', () => {
@@ -220,27 +240,22 @@ describe('CallScreen', () => {
     });
 
     it('should keep DM participant order stable from ringing to answered even when activity state changes', () => {
-        const ringing = renderScreen(getCallingProps());
-        expect(getAvatarOrder(ringing)).toEqual(['my-id', 'callee-id']);
-        ringing.unmount();
+        const screen = renderScreen(getCallingProps());
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
 
-        const answeredProps = getBaseProps();
-        answeredProps.isDM = true;
-        answeredProps.currentCall = {
-            ...answeredProps.currentCall!,
-            sessions: {
-                'my-session': {...mySession, muted: true},
-                'callee-session': {...calleeSession, muted: false},
-            },
-        };
-        answeredProps.sessionsDict = {
+        // Muted sessions sort behind unmuted ones, which must not reorder the DM cards.
+        const answeredProps = getAnsweredProps();
+        const sessions = {
             'my-session': {...mySession, muted: true},
             'callee-session': {...calleeSession, muted: false},
         };
+        answeredProps.currentCall = {...answeredProps.currentCall!, sessions};
+        answeredProps.sessionsDict = sessions;
 
-        const answered = renderScreen(answeredProps);
-        expect(getAvatarOrder(answered)).toEqual(['my-id', 'callee-id']);
-        expect(answered.queryByText('host')).toBeNull();
+        rerenderScreen(screen, answeredProps);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+        expect(screen.queryByText('host')).toBeNull();
     });
 
     it('should keep our card on screen while the rendered sessions trail the call by a database tick', () => {
@@ -282,10 +297,44 @@ describe('CallScreen', () => {
         expect(leaveCallConfirmation).not.toHaveBeenCalled();
     });
 
-    it('should show a loading card for the callee while ringing', () => {
+    it('should show a card for the callee while ringing', () => {
         const {getByTestId} = renderScreen(getCallingProps());
 
         expect(getByTestId('calls.calling_participant')).toHaveTextContent('callee');
+    });
+
+    it('should show no mic state for the callee until they answer', () => {
+        // They have no session yet, so they have no mic to report on.
+        const screen = renderScreen(getCallingProps());
+
+        expect(screen.getByTestId('call-avatar-callee-id').props.muted).toBeUndefined();
+
+        rerenderScreen(screen, getAnsweredProps());
+
+        expect(screen.getByTestId('call-avatar-callee-id').props.muted).toBe(false);
+    });
+
+    it('should hold both cards from the moment the call is placed until the callee answers', () => {
+        // The callee's card comes out of the same array as everyone else's, so the row never gains
+        // or loses a card as the two sessions land, and the callee's card is updated rather than
+        // swapped out from under the user.
+        const screen = renderScreen(getConnectingProps());
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+
+        rerenderScreen(screen, getCallingProps());
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+
+        // sessionsDict comes from a database query, so it trails the call by a tick: the callee's
+        // session has reached the call but cannot be rendered yet.
+        const trailing = getAnsweredProps();
+        trailing.sessionsDict = {'my-session': mySession};
+        rerenderScreen(screen, trailing);
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+        expect(screen.getByTestId('calls.calling_participant')).toBeVisible();
+
+        rerenderScreen(screen, getAnsweredProps());
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+        expect(screen.queryByTestId('calls.calling_participant')).toBeNull();
     });
 
     it('should show Calling in the header instead of a duration while ringing', () => {
@@ -295,7 +344,7 @@ describe('CallScreen', () => {
         expect(queryByText('01:05')).toBeNull();
     });
 
-    it('should drop the loading card and count from the answer once the callee joins', () => {
+    it('should drop the ringing state and count from the answer once the callee joins', () => {
         const props = getBaseProps();
         props.isDM = true;
 
