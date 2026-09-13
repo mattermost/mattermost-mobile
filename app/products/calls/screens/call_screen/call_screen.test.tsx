@@ -199,6 +199,26 @@ describe('CallScreen', () => {
         expect(inTheCall.queryByText('host')).toBeNull();
     });
 
+    it('should hide the host badge in DM calls even when the other participant is the host', () => {
+        const props = getBaseProps();
+        props.isDM = true;
+        props.currentCall = {
+            ...props.currentCall!,
+            hostId: 'callee-id',
+            sessions: {
+                'my-session': mySession,
+                'callee-session': calleeSession,
+            },
+        };
+        props.sessionsDict = {
+            'my-session': mySession,
+            'callee-session': calleeSession,
+        };
+
+        const {queryByText} = renderScreen(props);
+        expect(queryByText('host')).toBeNull();
+    });
+
     it('should keep DM participant order stable from ringing to answered even when activity state changes', () => {
         const ringing = renderScreen(getCallingProps());
         expect(getAvatarOrder(ringing)).toEqual(['my-id', 'callee-id']);
