@@ -48,7 +48,7 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
-import {getHandsRaised, hasOtherUserJoined, makeCallsTheme, sortSessions} from '@calls/utils';
+import {getHandsRaised, hasOtherUserJoined, makeCallsTheme, sortDMSessions, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -611,7 +611,9 @@ const CallScreen = ({
     }
 
     const raisedHands = getHandsRaised(sessionsDict);
-    const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
+    const sessions = isDM ?
+        sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :
+        sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
     const cards = mySession ? sessions : [pendingMySession, ...sessions];
     const calleeHaveNotJoinedYet = (isDMCalling || isDMConnecting) && !hasOtherUserJoined(sessionsDict, currentCall.myUserId);
 
@@ -637,6 +639,7 @@ const CallScreen = ({
                                 session={sess}
                                 smallerAvatar={smallerAvatar}
                                 teammateNameDisplay={teammateNameDisplay}
+                                showHostBadge={!isDM}
                                 onPress={onShortPress(sess)}
                                 onLongPress={onLongPress(sess)}
                             />

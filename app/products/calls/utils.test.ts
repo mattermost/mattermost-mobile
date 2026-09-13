@@ -16,6 +16,7 @@ import {
     getCallCardState,
     getNumUsersInCall,
     getCallPropsFromPost,
+    sortDMSessions,
     sortSessions,
     getHandsRaised,
     getHandsRaisedNames,
@@ -212,6 +213,101 @@ describe('sortSessions', () => {
 
         const sorted = sortSessions(locale, teammateNameDisplay, sessions);
         expect(sorted.map((s) => s.userModel?.username)).toEqual(['b', 'a']);
+    });
+});
+
+describe('sortDMSessions', () => {
+    const locale = 'en';
+    const teammateNameDisplay = 'username';
+
+    it('returns empty array for undefined sessions', () => {
+        expect(sortDMSessions(locale, teammateNameDisplay, 'my-id', undefined)).toEqual([]);
+    });
+
+    it('keeps the current user first even when activity state would reorder cards', () => {
+        const sessions = {
+            mySession: {
+                sessionId: 'my-session',
+                userId: 'my-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'me'}),
+            },
+            calleeSession: {
+                sessionId: 'callee-session',
+                userId: 'callee-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'callee'}),
+            },
+        };
+
+        const sorted = sortDMSessions(locale, teammateNameDisplay, 'my-id', sessions);
+        expect(sorted.map((s) => s.userModel?.username)).toEqual(['me', 'callee']);
+    });
+});
+
+describe('sortByCurrentUser (through sortDMSessions)', () => {
+    const locale = 'en';
+    const teammateNameDisplay = 'username';
+
+    it('keeps non-current users in their pre-existing order after moving current user to the front', () => {
+        const sessions = {
+            aSession: {
+                sessionId: 'a-session',
+                userId: 'a-id',
+                muted: true,
+                raisedHand: 1000,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
+            },
+            bSession: {
+                sessionId: 'b-session',
+                userId: 'b-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
+            },
+            cSession: {
+                sessionId: 'c-session',
+                userId: 'c-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'carol'}),
+            },
+            mySession: {
+                sessionId: 'my-session',
+                userId: 'my-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'me'}),
+            },
+        };
+
+        const sorted = sortDMSessions(locale, teammateNameDisplay, 'my-id', sessions, 'b-session');
+        expect(sorted.map((s) => s.userId)).toEqual(['my-id', 'b-id', 'a-id', 'c-id']);
+    });
+
+    it('does not change ordering when the current user has no session', () => {
+        const sessions = {
+            aSession: {
+                sessionId: 'a-session',
+                userId: 'a-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'alice'}),
+            },
+            bSession: {
+                sessionId: 'b-session',
+                userId: 'b-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({username: 'bob'}),
+            },
+        };
+
+        const expected = sortSessions(locale, teammateNameDisplay, sessions, 'b-session').map((s) => s.userId);
+        const actual = sortDMSessions(locale, teammateNameDisplay, 'missing-user-id', sessions, 'b-session').map((s) => s.userId);
+        expect(actual).toEqual(expected);
     });
 });
 

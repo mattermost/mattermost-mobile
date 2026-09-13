@@ -21,6 +21,7 @@ type Props = {
     session: CallSession;
     smallerAvatar: boolean;
     teammateNameDisplay: string;
+    showHostBadge: boolean;
     onPress: () => void;
     onLongPress: () => void;
 }
@@ -54,7 +55,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     },
 }));
 
-export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, onPress, onLongPress}: Props) => {
+export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, showHostBadge, onPress, onLongPress}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const currentCall = useCurrentCall();
@@ -101,7 +102,7 @@ export const ParticipantCard = ({session, smallerAvatar, teammateNameDisplay, on
                             ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                         }
                     </Text>
-                    {session.userId === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
+                    {showHostBadge && session.userId === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
                 </View>
             )}
         </Pressable>

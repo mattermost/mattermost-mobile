@@ -83,6 +83,13 @@ describe('CallScreen', () => {
         raisedHand: 0,
         userModel: TestHelper.fakeUserModel({id: 'my-id', username: 'me'}),
     };
+    const calleeSession: CallSession = {
+        sessionId: 'callee-session',
+        userId: 'callee-id',
+        muted: false,
+        raisedHand: 0,
+        userModel: callee,
+    };
 
     beforeEach(() => {
         jest.useFakeTimers({doNotFake: ['nextTick']});
@@ -97,6 +104,12 @@ describe('CallScreen', () => {
     const renderScreen = (props: ComponentProps<typeof CallScreen>) => {
         jest.mocked(useCurrentCall).mockReturnValue(props.currentCall);
         return renderWithIntlAndTheme(<CallScreen {...props}/>);
+    };
+
+    const getAvatarOrder = (screen: ReturnType<typeof renderScreen>) => {
+        return screen.getAllByTestId(/^call-avatar-/).
+            map((avatar) => avatar.props.userModel?.id).
+            filter((id): id is string => Boolean(id));
     };
 
     function getBaseProps(): ComponentProps<typeof CallScreen> {
@@ -169,21 +182,45 @@ describe('CallScreen', () => {
         expect(queryByText('00:00')).toBeNull();
     });
 
-    it('should show our own card the same way while placing the call and once our session lands', () => {
+    it('should hide the host badge in DM cards both while placing the call and once our session lands', () => {
         // Everything about the card has to match across the two phases, or it visibly changes
         // under the user: the avatar remounts, the mic badge flips, the host badge shifts it.
         const placing = renderScreen(getConnectingProps());
 
         expect(placing.getByTestId('call-avatar-my-id').props.muted).toBe(false);
         expect(placing.getByText(/me \(you\)/)).toBeVisible();
-        expect(placing.getByText('host')).toBeVisible();
+        expect(placing.queryByText('host')).toBeNull();
         placing.unmount();
 
         const inTheCall = renderScreen(getCallingProps());
 
         expect(inTheCall.getByTestId('call-avatar-my-id').props.muted).toBe(false);
         expect(inTheCall.getByText(/me \(you\)/)).toBeVisible();
-        expect(inTheCall.getByText('host')).toBeVisible();
+        expect(inTheCall.queryByText('host')).toBeNull();
+    });
+
+    it('should keep DM participant order stable from ringing to answered even when activity state changes', () => {
+        const ringing = renderScreen(getCallingProps());
+        expect(getAvatarOrder(ringing)).toEqual(['my-id', 'callee-id']);
+        ringing.unmount();
+
+        const answeredProps = getBaseProps();
+        answeredProps.isDM = true;
+        answeredProps.currentCall = {
+            ...answeredProps.currentCall!,
+            sessions: {
+                'my-session': {...mySession, muted: true},
+                'callee-session': {...calleeSession, muted: false},
+            },
+        };
+        answeredProps.sessionsDict = {
+            'my-session': {...mySession, muted: true},
+            'callee-session': {...calleeSession, muted: false},
+        };
+
+        const answered = renderScreen(answeredProps);
+        expect(getAvatarOrder(answered)).toEqual(['my-id', 'callee-id']);
+        expect(answered.queryByText('host')).toBeNull();
     });
 
     it('should keep our card on screen while the rendered sessions trail the call by a database tick', () => {
@@ -269,5 +306,11 @@ describe('CallScreen', () => {
         fireEvent.press(getByText('People'));
 
         expect(navigateToScreen).toHaveBeenCalledWith(Screens.CALL_PARTICIPANTS);
+    });
+
+    it('should show the host badge in non-DM participant cards', () => {
+        const {getByText} = renderScreen(getBaseProps());
+
+        expect(getByText('host')).toBeVisible();
     });
 });
