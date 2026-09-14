@@ -13,7 +13,10 @@ let auditQueueChain: Promise<unknown> = Promise.resolve();
 const updateAuditQueue = (serverUrl: string, update: (events: EphemeralModeAuditEvent[]) => EphemeralModeAuditEvent[]) => {
     const next = auditQueueChain.then(async () => {
         const existing = await getEphemeralModeAuditEvents(serverUrl);
-        return replaceEphemeralModeAuditEvents(serverUrl, update(existing));
+        const result = await replaceEphemeralModeAuditEvents(serverUrl, update(existing));
+        if ('error' in result && result.error) {
+            throw result.error;
+        }
     });
     auditQueueChain = next.catch(() => undefined);
     return next;
