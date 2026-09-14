@@ -188,7 +188,7 @@
     "e2e:android": "cd detox && npm run e2e:android-build && npm run e2e:android-test && cd ..",
     "e2e:ios": "cd detox && npm run e2e:ios-test && cd ..",
     "fix": "npm run lint -- --fix",
-    "i18n-clean-empty": "npm run mmjstool -- i18n clean-empty --mobile-dir .",
+    "i18n-clean-empty": "npm run mmjstool -- i18n clean-empty-mobile --mobile-dir .",
     "i18n-extract": "npm run mmjstool -- i18n extract-mobile",
     "ios": "react-native run-ios",
     "ios-gems": "bundle install",

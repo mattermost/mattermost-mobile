@@ -90,11 +90,16 @@ describe('Search - Result Interactions', () => {
         const postCount = 20;
         const postIds: string[] = [];
 
+        // retryOnTransportFailure: this test only needs a list long enough to scroll, so a post
+        // duplicated by a replayed request is harmless here. Without it a single dropped
+        // connection in the middle of the loop fails the test outright.
+        // "apiCreatePost failed: read ECONNRESET" partway through the 20.
         /* eslint-disable no-await-in-loop */
         for (let i = 0; i < postCount; i++) {
             const {post} = await Post.apiCreatePost(siteOneUrl, {
                 channelId: testChannel.id,
                 message: `${commonWord} post number ${i}`,
+                retryOnTransportFailure: true,
             });
             postIds.push(post.id);
         }
@@ -212,14 +217,6 @@ describe('Search - Result Interactions', () => {
         // # Open search, search for term, and save the result
         await SearchMessagesScreen.open();
 
-        // Clear BEFORE focusing. This spec runs several searches in a row against the same
-        // screen and the results list keeps rendering the previous term's rows until the new
-        // response is applied -- MM-T372_1 failed in CI with the header reading "1 search
-        // result" while the single row shown was "Message jumptest..." from MM-T380_1 above.
-        // The clear tap also blurs the input, so it has to happen before the focus tap:
-        // clearing afterwards leaves tapReturnKey() landing on an unfocused field and the
-        // search is never submitted at all. Order here matches the spec's own submitSearch
-        // helper, which the passing tests in this file use.
         try {
             await SearchMessagesScreen.searchClearButton.tap();
             await wait(timeouts.ONE_SEC);

@@ -192,9 +192,6 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         await ChannelInfoScreen.openChannelSettings();
         await ChannelSettingsScreen.toBeVisible();
         await ChannelSettingsScreen.archivePublicChannel({confirm: true});
-
-        // Mobile still shows "Removed from channel" and pops to the list when it
-        // cannot view archived channels (CI testFnFailure.png). Dismiss and reopen.
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         try {
@@ -223,8 +220,28 @@ describe('Channels - Channel Bookmarks Permissions', () => {
                 withAncestor(by.id(ChannelInfoScreen.testID.bookmarksList)),
         );
         await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
-        await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
-        await wait(timeouts.ONE_SEC);
+
+        const reopenChannelInfo = async () => {
+            await openArchivedChannel(channelT5725.name, sentinel, postId);
+            await ChannelInfoScreen.open();
+            await waitFor(archiveBookmarkEl).toExist().withTimeout(timeouts.TEN_SEC);
+        };
+
+        const pressAndGateSheet = async () => {
+            await archiveBookmarkEl.longPress(timeouts.FOUR_SEC);
+            await waitFor(ChannelBookmarkScreen.optionsSheet).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        };
+
+        try {
+            await pressAndGateSheet();
+        } catch (sheetError) {
+            const dismissed = await Alert.dismissChannelRemoveOrArchiveAlert(timeouts.TWO_SEC);
+            if (!dismissed) {
+                throw sheetError;
+            }
+            await reopenChannelInfo();
+            await pressAndGateSheet();
+        }
 
         // Archived sheet is Copy Link / Share only — no Edit/Delete.
         await expect(ChannelBookmarkScreen.editOption).not.toExist();
