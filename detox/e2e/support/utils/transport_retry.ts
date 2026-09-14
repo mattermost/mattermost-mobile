@@ -24,7 +24,9 @@ export const isTransportFailure = (result: ApiResult): boolean => {
     return normalizedMessage.includes('timeout') ||
         normalizedMessage.includes('524') ||
         normalizedMessage.includes('aggregateerror') ||
-        normalizedMessage.includes('no response from server');
+        normalizedMessage.includes('no response from server') ||
+        normalizedMessage.includes('socket hang up') ||
+        normalizedMessage.includes('econnreset');
 };
 
 export const TRANSPORT_RETRY_BUDGET_MS = 120_000;
