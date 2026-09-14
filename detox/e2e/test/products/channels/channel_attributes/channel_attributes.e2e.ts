@@ -36,10 +36,19 @@ const TEST_FIELD_OPTIONS = [
 
 // Second field for multi-chip tests (2 fields = MAX_VISIBLE_CHIPS boundary; no overflow).
 const SECOND_FIELD_NAME = 'classification2';
+const BANNER_MULTI_FIELD_NAME = 'banner_multi';
+const BANNER_SELECT_FIELD_NAME = 'banner_select';
+const BANNER_TEXT_FIELD_NAME = 'banner_text';
 
 // All test field names in one place so cleanup calls stay consistent if a new
 // field is ever added to the suite.
-const ALL_TEST_FIELD_NAMES = [TEST_FIELD_NAME, SECOND_FIELD_NAME] as const;
+const ALL_TEST_FIELD_NAMES = [
+    TEST_FIELD_NAME,
+    SECOND_FIELD_NAME,
+    BANNER_MULTI_FIELD_NAME,
+    BANNER_SELECT_FIELD_NAME,
+    BANNER_TEXT_FIELD_NAME,
+] as const;
 const SECOND_FIELD_OPTIONS = [
     {id: 'attropt2high00000000000000', name: 'HIGH2', color: '#CC0000', rank: 1}, // 12+14=26
 ];
@@ -447,20 +456,48 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
     it('MM-T6308_1 - should render the channel attribute banner when designated with display_banner_top', async () => {
         await enableChannelAttributes(siteOneUrl);
 
-        const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
+        const multi = await Properties.apiSetupChannelAttributeField(
             siteOneUrl,
             {
-                fieldName: TEST_FIELD_NAME,
+                fieldName: BANNER_MULTI_FIELD_NAME,
+                fieldType: 'multiselect',
                 options: TEST_FIELD_OPTIONS,
                 actions: ['display_banner_top'],
             },
         );
+        const select = await Properties.apiSetupChannelAttributeField(
+            siteOneUrl,
+            {
+                fieldName: BANNER_SELECT_FIELD_NAME,
+                fieldType: 'select',
+                options: SECOND_FIELD_OPTIONS,
+                actions: ['display_banner_top'],
+            },
+        );
+        const text = await Properties.apiSetupChannelAttributeField(
+            siteOneUrl,
+            {
+                fieldName: BANNER_TEXT_FIELD_NAME,
+                fieldType: 'text',
+                actions: ['display_banner_top'],
+            },
+        );
 
-        // # Create the channel with the attribute value at creation time.
+        // # Create the channel with mixed banner attribute values and no classification.
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
             prefix: 'channel',
-            propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'HIGH')}],
+            propertyValues: [
+                {
+                    field_id: multi.channelFieldId,
+                    value: [
+                        requireOption(multi.optionIdsByName, 'HIGH'),
+                        requireOption(multi.optionIdsByName, 'MEDIUM'),
+                    ],
+                },
+                {field_id: select.channelFieldId, value: requireOption(select.optionIdsByName, 'HIGH2')},
+                {field_id: text.channelFieldId, value: 'operational note'},
+            ],
         });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
@@ -469,11 +506,9 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await ChannelListScreen.toBeVisible();
         await openChannel(channel.name);
 
-        // * Channel-level banner is mounted (testID='channel.banner' added to channel_banner.tsx)
-        // * and the option name is visible (RemoveMarkdown strips the **bold** markers from the
-        // * default "**HIGH**" text, so by.text('HIGH') matches the rendered output).
+        // * Every designated attribute contributes in field order.
         await waitFor(element(by.id('channel.banner'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.text('HIGH'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(element(by.text('HIGH, MEDIUM · HIGH2 · operational note'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelScreen.back();
     });

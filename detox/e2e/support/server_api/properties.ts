@@ -99,7 +99,7 @@ export const apiGetPropertyValues = async (baseUrl: string, groupName: string, o
 /**
  * Upsert property values for a target.
  */
-export const apiPatchPropertyValues = async (baseUrl: string, groupName: string, objectType: string, targetId: string, values: Array<{field_id: string; value: string}>) => {
+export const apiPatchPropertyValues = async (baseUrl: string, groupName: string, objectType: string, targetId: string, values: Array<{field_id: string; value: unknown}>) => {
     try {
         const response = await client.patch(
             `${baseUrl}/api/v4/properties/groups/${groupName}/${objectType}/values/${targetId}`,
@@ -348,7 +348,8 @@ const CHANNEL_TARGET_TYPE = 'system';
 type ChannelAttributeFieldOptions = {
     fieldName: string;
     displayName?: string;
-    options: PropertyFieldOption[];
+    fieldType?: 'text' | 'select' | 'multiselect' | 'rank';
+    options?: PropertyFieldOption[];
     actions?: string[];
     required?: boolean;
 };
@@ -368,16 +369,16 @@ export const apiSetupChannelAttributeField = async (
     baseUrl: string,
     opts: ChannelAttributeFieldOptions,
 ) => {
-    const {fieldName, displayName, options, actions = [], required = false} = opts;
+    const {fieldName, displayName, fieldType = 'rank', options = [], actions = [], required = false} = opts;
 
     const templateResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, OBJECT_TYPE, {
         name: fieldName,
-        type: 'rank',
+        type: fieldType,
         target_type: TARGET_TYPE,
         target_id: '',
-        attrs: {
+        attrs: options.length > 0 ? {
             options: options.map((o) => ({id: o.id, name: o.name, color: o.color, rank: o.rank})),
-        },
+        } : {},
         permission_field: ADMIN_PERMISSION,
         permission_values: ADMIN_PERMISSION,
         permission_options: ADMIN_PERMISSION,
@@ -399,7 +400,7 @@ export const apiSetupChannelAttributeField = async (
 
     const channelResult = await apiCreatePropertyField(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, {
         name: fieldName,
-        type: 'rank',
+        type: fieldType,
         target_type: CHANNEL_TARGET_TYPE,
         target_id: '',
         linked_field_id: templateField.id,
@@ -426,7 +427,7 @@ export const apiSetupChannelAttributeField = async (
             const found = (verify.fields ?? []).find(
                 (f: any) => f.id === channelField.id && f.delete_at === 0,
             );
-            if (found && (found.attrs?.options as any[] | undefined)?.length) {
+            if (found && (options.length === 0 || (found.attrs?.options as any[] | undefined)?.length)) {
                 return;
             }
             lastError = `channel field ${channelField.id} not visible or missing options after create. Response: ${JSON.stringify(verify)}`;
@@ -450,10 +451,10 @@ export const apiSetChannelAttributeValue = async (
     baseUrl: string,
     channelId: string,
     fieldId: string,
-    optionId: string,
+    value: unknown,
 ) => {
     const result = await apiPatchPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId, [
-        {field_id: fieldId, value: optionId},
+        {field_id: fieldId, value},
     ]);
     if ('error' in result) {
         throw new Error(`apiSetChannelAttributeValue: ${JSON.stringify((result as any).error)}`);

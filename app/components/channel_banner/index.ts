@@ -19,15 +19,10 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const channel = observeChannel(database, channelId);
     const bannerInfo = channel.pipe(switchMap((c) => of$(c?.bannerInfo)));
 
-    // The channel's own banner_info supplies both the text and the authored
-    // color: a designated attribute renders text composed per channel, and the
-    // color chosen alongside it wins over the option's.
-    //
-    // The color is only honoured while that banner is enabled. A disabled banner
-    // can still hold a stale color, and letting it through would paint the
-    // attribute banner with a color nobody chose for it.
+    // Attribute-driven banners use banner_info as template/config storage even
+    // while its native enabled flag is false.
     const attributeBanner = bannerInfo.pipe(
-        switchMap((bi) => observeChannelAttributeBanner(database, channelId, bi?.text, bi?.enabled ? bi.background_color : undefined)),
+        switchMap((bi) => observeChannelAttributeBanner(database, channelId, bi?.text, bi?.background_color)),
     );
 
     return {

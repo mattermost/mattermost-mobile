@@ -226,8 +226,10 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
     return [
         attribute.field.id,
         attribute.field.name,
+        attribute.field.type,
         attribute.displayValue,
         attribute.option?.color ?? '',
+        attribute.unresolvedOptionIds?.join(',') ?? '',
         actions,
         attrs?.required === true ? '1' : '0',
         attrs?.display_name ?? '',

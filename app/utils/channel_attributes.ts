@@ -13,7 +13,7 @@ import type {PropertyFieldModel, PropertyValueModel} from '@database/models/serv
 // payloads satisfy, so the same pure helpers serve the observers and the tests.
 // Selection by group, object_type and delete_at happens in the scoped queries in
 // @queries/servers/properties; these helpers only project what was selected.
-export type ChannelAttributeField = Pick<PropertyFieldModel, 'id' | 'name' | 'attrs'>;
+export type ChannelAttributeField = Pick<PropertyFieldModel, 'id' | 'name' | 'type' | 'attrs'>;
 export type ChannelAttributeValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
 
 export type ResolvedChannelAttribute = {
@@ -28,6 +28,9 @@ export type ResolvedChannelAttribute = {
 
     // Display string, empty when the attribute is unset.
     displayValue: string;
+
+    // Option ids that no longer resolve on an options-bearing field.
+    unresolvedOptionIds?: string[];
 };
 
 export type ChannelAttributeBannerState = {
@@ -42,6 +45,10 @@ const EMPTY_RESOLVED: ResolvedChannelAttribute[] = [];
 // Ranks a field for display. Absent sort_order sorts last rather than first, so
 // an unconfigured field never jumps ahead of a configured one.
 const NO_SORT_ORDER = Number.MAX_SAFE_INTEGER;
+
+const DEFAULT_BANNER_COLOR = '#DDDDDD';
+
+const OPTION_BACKED_TYPES = new Set<PropertyFieldType>(['select', 'multiselect', 'rank']);
 
 function getFieldOptions(field: ChannelAttributeField): PropertyFieldOption[] {
     return field.attrs?.options ?? [];
@@ -162,16 +169,27 @@ export function compareChannelAttributeFields(a: ChannelAttributeField, b: Chann
     return a.name.localeCompare(b.name, 'en');
 }
 
-function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<ResolvedChannelAttribute, 'option' | 'displayValue'> {
+function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<ResolvedChannelAttribute, 'option' | 'displayValue' | 'unresolvedOptionIds'> {
     if (!isPropertyValueSet(raw)) {
         return {displayValue: ''};
     }
 
     const options = getFieldOptions(field);
+    const optionsBearing = OPTION_BACKED_TYPES.has(field.type as PropertyFieldType);
 
     if (Array.isArray(raw)) {
-        const names = raw.map((id) => options.find((option) => option.id === id)?.name ?? String(id));
-        return {displayValue: names.join(', ')};
+        const unresolvedOptionIds: string[] = [];
+        const names = raw.map((id) => {
+            const name = options.find((option) => option.id === id)?.name;
+            if (name === undefined && optionsBearing) {
+                unresolvedOptionIds.push(String(id));
+            }
+            return name ?? String(id);
+        });
+        return {
+            displayValue: names.join(', '),
+            unresolvedOptionIds: unresolvedOptionIds.length > 0 ? unresolvedOptionIds : undefined,
+        };
     }
 
     if (typeof raw !== 'string') {
@@ -186,7 +204,10 @@ function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<R
     // Text fields store the display string directly. A select field whose option
     // was deleted lands here too and renders the raw id, which is wrong but
     // visible — better than silently dropping a marking.
-    return {displayValue: raw};
+    return {
+        displayValue: raw,
+        unresolvedOptionIds: optionsBearing ? [raw] : undefined,
+    };
 }
 
 /**
@@ -280,7 +301,7 @@ function hasNoDisplayConfiguration(field: ChannelAttributeField): boolean {
 }
 
 /**
- * Resolves the channel banner from whichever attribute designates one.
+ * Resolves one channel banner from every attribute designated for that surface.
  *
  * Falls back to the classification field while that field carries no display
  * configuration at all, which is how an install that upgraded before an
@@ -295,9 +316,7 @@ function hasNoDisplayConfiguration(field: ChannelAttributeField): boolean {
  *
  * @param fields channel-object fields in the access_control group, any order
  * @param values every property value on this channel
- * @param nativeBannerText the channel's own banner_info.text, already resolved
- *        server-side. Mobile renders it verbatim and implements no template
- *        renderer; unresolved tokens are stripped by the caller's guard.
+ * @param nativeBannerText the channel's own banner_info.text template
  * @param authoredColor the channel's own banner_info.background_color
  */
 export function deriveChannelAttributeBanner(
@@ -315,8 +334,9 @@ export function deriveChannelAttributeBanner(
     // so a configured-but-disabled attribute cannot take over the channel banner.
     const candidates = attributesEnabled ? ordered : ordered.filter((field) => field.name === CLASSIFICATIONS_FIELD_NAME);
 
-    const designated = candidates.find(hasBannerAction);
-    const fallback = designated ? undefined : candidates.find(
+    const designatedFields = candidates.filter(hasBannerAction);
+    const designated = designatedFields[0];
+    const fallback = designatedFields.length > 0 ? undefined : candidates.find(
         (field) => field.name === CLASSIFICATIONS_FIELD_NAME && hasNoDisplayConfiguration(field),
     );
 
@@ -325,39 +345,54 @@ export function deriveChannelAttributeBanner(
         return NO_BANNER;
     }
 
-    // Matched by field_id. Taking values[0] was correct only while classification
-    // was the single channel attribute; with two, it renders whichever value the
-    // query happened to return first.
-    const value = values.find((candidate) => candidate.fieldId === bannerField.id);
-    const optionId = value?.value;
-    if (typeof optionId !== 'string' || !optionId) {
+    const resolvedAttributes = resolveChannelAttributes(ordered, values);
+
+    if (designatedFields.length === 0) {
+        const resolved = resolvedAttributes.find((attribute) => attribute.field.id === bannerField.id);
+        if (!resolved?.option?.name || resolved.unresolvedOptionIds?.length) {
+            return NO_BANNER;
+        }
+
+        const text = nativeBannerText ?
+            renderBannerTemplate(nativeBannerText, resolvedAttributes) :
+            `**${resolved.option.name}**`;
+        if (!text) {
+            return NO_BANNER;
+        }
+
+        return {
+            hasBanner: true,
+            banner: {
+                enabled: true,
+                text,
+                background_color: resolved.option.color || DEFAULT_BANNER_COLOR,
+            },
+        };
+    }
+
+    const contributions = designatedFields.
+        map((field) => resolvedAttributes.find((attribute) => attribute.field.id === field.id)).
+        filter((attribute): attribute is ResolvedChannelAttribute => Boolean(
+            attribute?.displayValue && !attribute.unresolvedOptionIds?.length,
+        ));
+
+    if (contributions.length === 0) {
         return NO_BANNER;
     }
 
-    const option = getFieldOptions(bannerField).find((candidate) => candidate.id === optionId);
-
-    // A deleted option renders nothing rather than an unresolvable banner.
-    if (!option?.name) {
+    const text = nativeBannerText ?
+        renderBannerTemplate(nativeBannerText, resolvedAttributes) :
+        contributions.map((attribute) => attribute.displayValue).join(' · ');
+    if (!text) {
         return NO_BANNER;
     }
 
-    // Absent banner_info.text reproduces today's output exactly, which is what
-    // keeps an existing classification banner byte-identical. The nullish check
-    // is deliberate: an empty authored string stays empty rather than falling
-    // back to the option name, matching the behaviour being replaced.
-    const text = nativeBannerText === undefined || nativeBannerText === null ?
-        `**${option.name}**` :
-        stripUnresolvedTokens(nativeBannerText);
+    const classificationDesignated = designatedFields.some((field) => field.name === CLASSIFICATIONS_FIELD_NAME);
+    const classificationContribution = contributions.find((attribute) => attribute.field.name === CLASSIFICATIONS_FIELD_NAME);
+    const backgroundColor = classificationDesignated ?
+        classificationContribution?.option?.color || DEFAULT_BANNER_COLOR :
+        authoredColor || (contributions.length === 1 ? contributions[0].option?.color : undefined) || DEFAULT_BANNER_COLOR;
 
-    // Option colour is the canonical visual identity of the level (e.g. red for
-    // SECRET). It always wins when present. The channel's authored background_color
-    // is a fallback only for text-type attributes that designate a banner but carry
-    // no option colour.
-    const backgroundColor = option.color || authoredColor;
-
-    // An unrenderable banner still reports hasBanner, so it continues to suppress
-    // the channel's own banner exactly as the classification path does today. The
-    // component's own guard is what decides not to draw it.
     return {
         hasBanner: true,
         banner: {
@@ -373,7 +408,20 @@ export function deriveChannelAttributeBanner(
 // rewrite what the author wrote.
 const SEPARATORS = '·|';
 
-const TOKEN_PATTERN = /\{\{\s*[a-zA-Z0-9_]+\s*\}\}/g;
+const TOKEN_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+
+export function renderBannerTemplate(template: string, attributes: ResolvedChannelAttribute[]): string {
+    if (!template || !template.includes('{{')) {
+        return template;
+    }
+
+    const byName = new Map(attributes.map((attribute) => [attribute.field.name, attribute]));
+    const substituted = template.replace(TOKEN_PATTERN, (_full, name: string) => {
+        return byName.get(name)?.displayValue ?? '';
+    });
+
+    return tidySeparators(substituted);
+}
 
 /**
  * Removes unresolved `{{token}}` spans and tidies the punctuation they strand.
@@ -391,11 +439,15 @@ export function stripUnresolvedTokens(text: string): string {
 
     const stripped = text.replace(TOKEN_PATTERN, '');
 
+    return tidySeparators(stripped);
+}
+
+function tidySeparators(text: string): string {
     const run = new RegExp(`(?:\\s*[${SEPARATORS}]\\s*){2,}`, 'g');
     const leading = new RegExp(`^[\\s${SEPARATORS}]+`);
     const trailing = new RegExp(`[\\s${SEPARATORS}]+$`);
 
-    return stripped.
+    return text.
         replace(run, (match) => ` ${match.trim().charAt(0)} `).
         replace(leading, '').
         replace(trailing, '').
