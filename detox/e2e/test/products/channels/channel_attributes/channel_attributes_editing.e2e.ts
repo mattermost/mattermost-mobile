@@ -413,14 +413,13 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
 
     it('MM-T6322_2 - should never offer editing for a none-tier field', async () => {
         // A none-tier field's value can never be set through the ordinary API, by
-        // design — the server refuses even a sysadmin session, unconditionally. So
-        // there is no seeded value to show here: required is what keeps the row on
-        // screen at all for an attribute nobody can ever set.
+        // design — the server refuses even a sysadmin session, unconditionally.
+        // Required-but-unset fields are shown only when the viewer can fill them,
+        // so this field is omitted while its editable sibling remains available.
         await setupChannelWithAttribute({permissionValues: 'none', required: true, withEditableSibling: true});
 
-        await waitFor(ChannelInfoAttributes.getNotSet(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(ChannelInfoAttributes.getEditableRow(FIELD_NAME)).not.toExist();
-        await waitFor(ChannelInfoAttributes.getLockReason(FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelInfoAttributes.getRow(FIELD_NAME)).not.toExist();
+        await waitFor(ChannelInfoAttributes.getEditableRow(SIBLING_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await ChannelInfoScreen.close();
         await ChannelScreen.back();

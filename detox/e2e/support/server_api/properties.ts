@@ -536,13 +536,13 @@ export const apiGetChannelAttributeValue = async (
     fieldId: string,
 ): Promise<unknown> => {
     const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId) as {
-        values?: Array<{field_id: string; value: unknown}>;
+        values?: Array<{field_id: string; value: unknown}> | null;
         error?: unknown;
     };
-    if (result.error || !result.values) {
+    if (result.error || result.values === undefined) {
         throw new Error(`apiGetChannelAttributeValue: ${JSON.stringify(result.error ?? result)}`);
     }
-    return result.values.find((value) => value.field_id === fieldId)?.value;
+    return result.values?.find((value) => value.field_id === fieldId)?.value;
 };
 
 /**
