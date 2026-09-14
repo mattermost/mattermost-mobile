@@ -71,6 +71,7 @@ describe('enqueueAuditEvent', () => {
 
         const events = await getEphemeralModeAuditEvents(serverUrl);
 
+        expect(events).toHaveLength(1);
         expect(events[0].id).toBe(id);
     });
 });
@@ -120,6 +121,7 @@ describe('attachAuditEventErrorReason', () => {
 
         const events = await getEphemeralModeAuditEvents(serverUrl);
 
+        expect(events).toHaveLength(1);
         expect(events[0].errorReason).toBeUndefined();
     });
 });
