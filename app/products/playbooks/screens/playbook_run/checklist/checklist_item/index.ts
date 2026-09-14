@@ -5,6 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$, switchMap} from 'rxjs';
 
 import {General} from '@constants';
+import {observeIsTaskRequirementsEnabled} from '@playbooks/database/queries/settings';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
@@ -23,6 +24,7 @@ const enhanced = withObservables(['item', 'channelId'], ({item, database, channe
     const teammateNameDisplay = observeTeammateNameDisplay(database);
     const currentUserId = observeCurrentUserId(database);
     const channelType = observeChannel(database, channelId).pipe(switchMap((c) => of$(c?.type || General.OPEN_CHANNEL)));
+    const taskRequirementsEnabled = observeIsTaskRequirementsEnabled(database);
 
     if ('observe' in item) {
         const observedItem = item.observe();
@@ -44,6 +46,7 @@ const enhanced = withObservables(['item', 'channelId'], ({item, database, channe
             teammateNameDisplay,
             currentUserId,
             channelType,
+            taskRequirementsEnabled,
         };
     }
 
@@ -55,6 +58,7 @@ const enhanced = withObservables(['item', 'channelId'], ({item, database, channe
         teammateNameDisplay,
         currentUserId,
         channelType,
+        taskRequirementsEnabled,
     };
 });
 

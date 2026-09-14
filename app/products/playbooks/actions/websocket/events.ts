@@ -9,6 +9,7 @@ import {
     handlePlaybookRunUpdated,
     handlePlaybookRunUpdatedIncremental,
 } from './runs';
+import {handlePlaybooksSettingsChanged} from './settings';
 import {handlePlaybookPluginDisabled, handlePlaybookPluginEnabled} from './version';
 
 export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMessage) {
@@ -27,6 +28,9 @@ export async function handlePlaybookEvents(serverUrl: string, msg: WebSocketMess
             break;
         case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOK_RUN_UPDATED_INCREMENTAL:
             handlePlaybookRunUpdatedIncremental(serverUrl, msg);
+            break;
+        case WEBSOCKET_EVENTS.WEBSOCKET_PLAYBOOKS_SETTINGS_CHANGED:
+            handlePlaybooksSettingsChanged(serverUrl, msg);
             break;
         default:
             break;

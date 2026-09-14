@@ -1450,6 +1450,7 @@ class TestHelperSingleton {
             sync: 'synced',
             lastSyncAt: 0,
             taskActions: [],
+            requirements: [],
             conditionAction: '',
             conditionReason: '',
             checklist: this.fakeRelation(),

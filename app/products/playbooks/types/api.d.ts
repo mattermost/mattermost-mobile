@@ -20,6 +20,12 @@ type TaskAction = {
     actions: TriggerAction[];
 }
 
+type TaskRequirement = {
+    id: string;
+    label: string;
+    value: string;
+}
+
 type PlaybookChecklistItem = {
     id: string;
     title: string;
@@ -32,10 +38,16 @@ type PlaybookChecklistItem = {
     command_last_run: number;
     due_date: number;
     task_actions?: TaskAction[];
+    requirements?: TaskRequirement[];
     condition_action?: ConditionAction;
     condition_reason?: string;
     completed_at: number;
     update_at: number;
+}
+
+type PlaybooksGlobalSettings = {
+    enable_experimental_features: boolean;
+    enable_task_requirements: boolean;
 }
 
 type ChecklistItemInput = {
