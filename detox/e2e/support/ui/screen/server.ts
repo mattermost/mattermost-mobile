@@ -113,16 +113,24 @@ class ServerScreen {
         while (Date.now() < deadline) {
             // First: dismiss the alert if it's up (alert window steals Espresso
             // focus, so this matcher resolves against the alert window directly).
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(POLL);
+            let alertUp = false;
+            for (const title of [Alert.notificationsCannotBeReceivedTitle, Alert.notificationsCannotBeReceivedErrorTitle]) {
+                try {
+                    await waitFor(title).toExist().withTimeout(POLL);
+                    alertUp = true;
+                    break;
+                } catch {
+                    // try the other push proxy alert variant
+                }
+            }
+
+            if (alertUp) {
                 try {
                     await okayButton.tap();
                 } catch {
                     // OKAY may have animated out between detection and tap — re-loop.
                 }
                 continue;
-            } catch {
-                // No alert — proceed to check the login form.
             }
 
             // Alert is not up. Try to find usernameInput now.

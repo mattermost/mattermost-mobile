@@ -156,7 +156,10 @@ const PlaybackRateMenu: React.FC<PlaybackSpeedMenuProps> = ({
                         defaultMessage='Playback Speed'
                     />
                 </Text>
-                <Pressable onPress={onClose}>
+                <Pressable
+                    testID='gallery.video.speed_menu.done.button'
+                    onPress={onClose}
+                >
                     <Text style={styles.iosDone}>
                         <FormattedMessage
                             id='video.done'
@@ -170,6 +173,7 @@ const PlaybackRateMenu: React.FC<PlaybackSpeedMenuProps> = ({
 
     return (
         <Animated.View
+            testID='gallery.video.speed_menu'
             onLayout={onLayout}
             style={[Platform.select({android: styles.androidMenu, ios: styles.iosMenu}), animatedStyle]}
         >

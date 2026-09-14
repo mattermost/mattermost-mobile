@@ -654,6 +654,43 @@ jest.mock('react-native-worklets', () => {
 require('@shopify/flash-list/jestSetup');
 
 require('react-native-reanimated').setUpTests();
+
+jest.mock('react-native-video', () => {
+    const {createElement, forwardRef, useImperativeHandle, useRef} = require('react');
+    const {View} = require('react-native');
+    const actual = jest.requireActual('react-native-video');
+
+    // Surfaces the imperative handle's spies back through props (__seekSpy et al) so tests
+    // can assert what the renderer asked the player to do, and forwards every prop through
+    // so callbacks like onLoad/onProgress/onEnd can be fired off the rendered element.
+    const Video = forwardRef((props: any, ref: any) => {
+        const handle = useRef({
+            seek: jest.fn(),
+            pause: jest.fn(),
+            resume: jest.fn(),
+            presentFullscreenPlayer: jest.fn(),
+            dismissFullscreenPlayer: jest.fn(),
+        });
+
+        // eslint-disable-next-line max-nested-callbacks
+        useImperativeHandle(ref, () => handle.current);
+
+        return createElement(View, {
+            ...props,
+            __seekSpy: handle.current.seek,
+            __pauseSpy: handle.current.pause,
+            __resumeSpy: handle.current.resume,
+        });
+    });
+    Video.displayName = 'Video';
+
+    return {
+        __esModule: true,
+        ...actual,
+        default: Video,
+    };
+});
+
 jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 jest.mock('react-native-haptic-feedback', () => ({

@@ -197,13 +197,16 @@ class ChannelScreen {
     };
 
     open = async (category: string, channelName: any) => {
-        // # Open channel screen
-        await wait(timeouts.FOUR_SEC);
+        // # Open channel screen. No fixed settle wait: the sidebar helpers below already
+        // poll for the channel to be present, so sleeping first only added latency to the
+        // common case where it is ready immediately.
         const name = typeof channelName === 'string' ? channelName : String(channelName);
         if (category === 'channels') {
             await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
         } else {
-            await ChannelListScreen.getChannelItemDisplayName(category, name).tap();
+            const item = ChannelListScreen.getChannelItemDisplayName(category, name);
+            await waitForElementToExist(item, timeouts.HALF_MIN);
+            await item.tap();
         }
         await this.dismissScheduledPostTooltip();
         return this.toBeVisible();
