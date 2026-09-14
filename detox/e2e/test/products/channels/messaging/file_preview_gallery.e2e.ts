@@ -55,10 +55,7 @@ describe('Messaging - File Preview Gallery', () => {
 
     afterEach(async () => {
         // Recover from mid-test failures so the next test starts clean.
-        try {
-            await waitFor(element(by.id(GalleryScreen.testID.closeButton))).toExist().withTimeout(timeouts.ONE_SEC);
-            await GalleryScreen.close();
-        } catch { /* gallery not open */ }
+        await GalleryScreen.closeIfOpen();
 
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.ONE_SEC);

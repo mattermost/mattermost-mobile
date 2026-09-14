@@ -112,6 +112,18 @@ class GalleryScreen {
         await waitForElementToNotExist(element(by.id(this.testID.closeButton)), timeouts.TEN_SEC);
     };
 
+    // For cleanup after a test that may have failed mid-gallery. Only the probe is
+    // optional: a gallery that is open but will not close must still fail.
+    closeIfOpen = async () => {
+        try {
+            await waitForElementToExist(element(by.id(this.testID.closeButton)), timeouts.ONE_SEC);
+        } catch {
+            return;
+        }
+
+        await this.close();
+    };
+
     TOGGLE_TIMEOUT = SETTLE_MS + timeouts.TWO_SEC;
 
     AUTO_HIDE_TIMEOUT = AUTO_HIDE_MS + SETTLE_MS + timeouts.TWO_SEC;

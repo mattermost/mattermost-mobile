@@ -60,10 +60,7 @@ describe('Messaging - Video Playback', () => {
     });
 
     afterEach(async () => {
-        try {
-            await waitFor(element(by.id(GalleryScreen.testID.closeButton))).toExist().withTimeout(timeouts.ONE_SEC);
-            await GalleryScreen.close();
-        } catch { /* gallery not open */ }
+        await GalleryScreen.closeIfOpen();
     });
 
     afterAll(async () => {
