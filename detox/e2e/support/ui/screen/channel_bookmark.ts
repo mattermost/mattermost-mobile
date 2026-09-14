@@ -56,6 +56,7 @@ class ChannelBookmarkScreen {
     };
 
     // Edit options (long press on bookmark)
+    optionsSheet = element(by.id(this.testID.optionsSheet));
     editOption = element(by.id(this.testID.editOption));
     deleteOption = element(by.text('Delete'));
     copyLinkOption = element(by.text('Copy Link'));
@@ -69,7 +70,7 @@ class ChannelBookmarkScreen {
      * Dismiss the bookmark options bottom sheet (generic_bottom_sheet route).
      */
     dismissOptionsSheet = async () => {
-        const sheet = element(by.id(this.testID.optionsSheet));
+        const sheet = this.optionsSheet;
         if (isAndroid()) {
             await device.pressBack();
         } else {
