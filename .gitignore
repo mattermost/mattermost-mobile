@@ -153,3 +153,6 @@ detox/maestro/.maestro-test-env*.sh
 detox/maestro/.maestro-test-env*.bak
 
 .e2e-debug/
+# Maestro takeScreenshot output when a flow is run locally without
+# --test-output-dir; the name is the flow's own label, so match any of them.
+detox/maestro/*.png
