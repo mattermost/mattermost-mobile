@@ -165,11 +165,21 @@ export default function PostInput({
 
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
+    const nativeOwnedInitialValue = useRef(value);
 
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
     const maxHeight = isTablet ? 150 : 88;
+    const useNativeOwnedIosInput = Platform.select({ios: true, default: false});
+    const platformInputValueProps = Platform.select({
+        ios: {
+            defaultValue: nativeOwnedInitialValue.current,
+        },
+        default: {
+            value,
+        },
+    });
     const pasteInputStyle = useMemo(() => {
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
@@ -356,7 +366,8 @@ export default function PostInput({
         const listener = DeviceEventEmitter.addListener(Events.SEND_TO_POST_DRAFT, ({text, location}: {text: string; location: string}) => {
             const sourceScreen = channelId && rootId ? Screens.THREAD : Screens.CHANNEL;
             if (location === sourceScreen) {
-                const draft = value ? `${value} ${text} ` : `${text} `;
+                const currentValue = lastNativeValue.current;
+                const draft = currentValue ? `${currentValue} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
                 inputRef.current?.focus();
@@ -369,16 +380,24 @@ export default function PostInput({
 
     // - updateValue and updateCursorPosition are stable setState/hook functions
     // - inputRef is a ref (stable reference, doesn't need to be in deps)
-    // - serverUrl, value, lastNativeValue are either stable or we want their latest values when event fires
+    // - serverUrl and lastNativeValue are either stable or we want their latest values when event fires
     // - We need to recreate the listener when channelId/rootId changes to check the correct source screen
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateValue, channelId, rootId, inputRef]);
+    }, [updateValue, channelId, rootId, inputRef, useNativeOwnedIosInput]);
 
     useEffect(() => {
-        if (value !== lastNativeValue.current) {
-            lastNativeValue.current = value;
+        if (useNativeOwnedIosInput && value !== lastNativeValue.current) {
+            inputRef.current?.setNativeProps({
+                selection: {
+                    start: cursorPosition,
+                    end: cursorPosition,
+                },
+                text: value,
+            });
         }
-    }, [value]);
+
+        lastNativeValue.current = value;
+    }, [value, cursorPosition, inputRef, useNativeOwnedIosInput]);
 
     const events = useMemo(() => ({
         onEnterPressed: handleHardwareEnterPress,
@@ -389,6 +408,7 @@ export default function PostInput({
     return (
         <Animated.View style={pulsingAnimatedStyle}>
             <PasteableTextInput
+                {...platformInputValueProps}
                 allowFontScaling={true}
                 disableCopyPaste={disableCopyAndPaste}
                 disableFullscreenUI={true}
@@ -408,7 +428,6 @@ export default function PostInput({
                 testID={testID}
                 underlineColorAndroid='transparent'
                 textContentType='none'
-                value={value}
                 autoCapitalize='sentences'
                 nativeID={testID}
             />
