@@ -4,8 +4,9 @@
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
+import License from '@constants/license';
 import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, GM_AS_DM_VERSION} from '@constants/versions';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {isMinimumLicenseTier, isMinimumServerVersion} from '@utils/helpers';
 
 import {getConfigValue, getLicense, observeConfigValue, observeLicense} from './system';
 
@@ -69,4 +70,17 @@ export const getChannelBookmarksEnabled = async (database: Database) => {
 
 export const observeCustomProfileAttributesEnabled = (database: Database) => {
     return observeFeatureFlagWithVersion(database, 'FeatureFlagCustomProfileAttributes', CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, true);
+};
+
+// Channel Read Access policies need both the umbrella flag and their own sub-flag, plus an
+// Enterprise Advanced license, mirroring the server's channelReadAccessEnforcementActive().
+// Kept separate from ChannelPermissionPolicies because denying channel_read_access hides a
+// whole channel, not just an attachment.
+export const getChannelReadAccessPolicyEnabled = async (database: Database) => {
+    const [umbrella, flag, license] = await Promise.all([
+        getConfigValue(database, 'FeatureFlagPermissionPolicies'),
+        getConfigValue(database, 'FeatureFlagChannelAccessABACPermission'),
+        getLicense(database),
+    ]);
+    return umbrella === 'true' && flag === 'true' && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 };
