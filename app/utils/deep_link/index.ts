@@ -87,7 +87,8 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
         switch (deepLink.type) {
             case DeepLink.Channel: {
                 const deepLinkData = deepLink.data as DeepLinkChannel;
-                joinIfNeededAndSwitchToChannel(existingServerUrl, {name: deepLinkData.channelName}, {name: deepLinkData.teamName}, errorBadChannel, intl);
+                const channelInfo = isValidId(deepLinkData.channelName) ? {id: deepLinkData.channelName} : {name: deepLinkData.channelName};
+                joinIfNeededAndSwitchToChannel(existingServerUrl, channelInfo, {name: deepLinkData.teamName}, errorBadChannel, intl);
                 break;
             }
             case DeepLink.DirectMessage: {

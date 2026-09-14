@@ -164,6 +164,15 @@ describe('parseAndHandleDeepLink', () => {
         expect(result).toEqual({error: false});
     });
 
+    it('should switch to channel by ID for Channel deep link', async () => {
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
+        const channelId = '7b35c77a645e1906e03a2c330f';
+        const result = await parseAndHandleDeepLink(`https://existingserver.com/team/channels/${channelId}`, intl);
+        expect(joinIfNeededAndSwitchToChannel).toHaveBeenCalledWith('https://existingserver.com', {id: channelId}, {name: 'team'}, errorBadChannel, intl);
+        expect(result).toEqual({error: false});
+    });
+
     it('should create direct message for DirectMessage deep link', async () => {
         jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
         jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
