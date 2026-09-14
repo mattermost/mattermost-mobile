@@ -77,5 +77,5 @@ describe('RecentSearches', () => {
         await waitFor(async () => {
             expect(await getTeamSearchHistoryById(database, recentSearch.id)).toBeUndefined();
         }, {timeout: 10000, interval: 50});
-    }, 15000);
+    });
 });
