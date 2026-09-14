@@ -251,13 +251,8 @@ class ServerScreen {
         if (isAndroid()) {
             await this.tapConnectButton();
 
-            // Dismiss "Notifications cannot be received from this server" dialog if it appears.
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('Okay')).tap();
-            } catch {
-                // Dialog did not appear — proceed normally
-            }
+            // Handles both wordings of the push-proxy alert.
+            await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         }
         if (isIos()) {
             await this.tapConnectButton();

@@ -5,6 +5,7 @@ import {fireEvent, screen} from '@testing-library/react-native';
 import React from 'react';
 import {Platform, View} from 'react-native';
 
+import useDidMount from '@hooks/did_mount';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import {ViewPositionProvider, useViewPosition} from './context';
@@ -20,11 +21,9 @@ jest.mock('@utils/gallery', () => ({
 const SeedViewPosition = () => {
     const {setViewPosition} = useViewPosition();
 
-    React.useEffect(() => {
+    useDidMount(() => {
         setViewPosition({ref: React.createRef<View>(), x: 100, y: 40, width: 44, height: 44});
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     return null;
 };

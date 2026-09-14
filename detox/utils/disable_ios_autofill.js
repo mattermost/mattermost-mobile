@@ -358,12 +358,18 @@ async function main() {
         console.log(`Using simulator: ${selectedSimulator.name} (${selectedSimulator.os})`);
     }
 
-    // Apply the settings. Both layers matter: the restriction keys cover the AutoFill
-    // keyboard toolbar, the WebUI key covers the credential-save modal.
+    // Both layers matter: the restriction keys cover the AutoFill keyboard toolbar, the
+    // WebUI key covers the credential-save modal. Only the first works while shut down,
+    // which is the state this script is invoked in, so only the first can gate the exit.
     const autofillDisabled = disablePasswordAutofill(selectedSimulator.udid);
-    const promptDisabled = disableCredentialSavePrompt(selectedSimulator.udid);
 
-    process.exit(autofillDisabled && promptDisabled ? 0 : 1);
+    if (selectedSimulator.state === 'Booted') {
+        disableCredentialSavePrompt(selectedSimulator.udid);
+    } else {
+        console.log('\nSkipping com.apple.WebUI write: simulator is not booted.');
+    }
+
+    process.exit(autofillDisabled ? 0 : 1);
 }
 
 main();

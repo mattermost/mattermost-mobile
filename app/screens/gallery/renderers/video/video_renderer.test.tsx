@@ -320,7 +320,6 @@ describe('VideoRenderer', () => {
 
     describe('cleanup', () => {
         it('should not update state after unmounting with pending debounced work', async () => {
-            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
             const {unmount} = renderVideo();
             await readyForDisplay();
             await load(60);
@@ -330,14 +329,14 @@ describe('VideoRenderer', () => {
                 player().props.onPlaybackStateChanged({isPlaying: false});
             });
 
+            hideHeaderAndFooter.mockClear();
             unmount();
 
             await act(async () => {
                 await advanceTimers(PROGRESS_DEBOUNCE + PLAYBACK_STATE_DEBOUNCE);
             });
 
-            expect(errorSpy).not.toHaveBeenCalled();
-            errorSpy.mockRestore();
+            expect(hideHeaderAndFooter).not.toHaveBeenCalled();
         });
     });
 });
