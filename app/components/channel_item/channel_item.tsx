@@ -37,6 +37,7 @@ type Props = {
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
     isOnHome?: boolean;
+    urgentMentionCount?: number;
 }
 
 export const ROW_HEIGHT = 40;
@@ -80,6 +81,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         borderColor: theme.centerChannelBg,
     },
+    urgentBadge: {
+        color: theme.buttonColor,
+        backgroundColor: theme.dndIndicator,
+    },
     mutedBadge: {
         opacity: 0.32,
     },
@@ -120,6 +125,7 @@ const ChannelItem = ({
     isOnCenterBg = false,
     showChannelName = false,
     isOnHome = false,
+    urgentMentionCount = 0,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -202,10 +208,15 @@ const ChannelItem = ({
                 />
                 <View style={styles.filler}/>
                 <Badge
+                    testID={`${channelItemTestId}.badge`}
                     visible={mentionsCount > 0}
                     value={mentionsCount}
-                    style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
-                    testID={`${channelItemTestId}.badge`}
+                    style={[
+                        styles.badge,
+                        isMuted && styles.mutedBadge,
+                        isOnCenterBg && styles.badgeOnCenterBg,
+                        urgentMentionCount > 0 && styles.urgentBadge,
+                    ]}
                 />
                 {hasCall &&
                 <CompassIcon
