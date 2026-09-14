@@ -9,7 +9,7 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import {isAppSelectOption} from '@utils/dialog_utils';
+import {convertAppFormValuesToDialogSubmission, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
@@ -17,6 +17,14 @@ import {logDebug} from '@utils/log';
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
 };
+
+type Props = DialogRouterProps & {
+    channelId: string;
+};
+
+function dialogOptionToLookupSelectOption(opt: DialogOption): AppSelectOption {
+    return {label: opt.text || '', value: opt.value || ''};
+}
 
 /**
  * Converts error to user-friendly message based on error type
@@ -49,8 +57,9 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
     }, {error: error.message});
 }
 
-export const DialogRouter = React.memo<DialogRouterProps>(({
+export const DialogRouter = React.memo<Props>(({
     config,
+    channelId,
 }) => {
     const navigation = useNavigation();
     const serverUrl = useServerUrl();
@@ -62,35 +71,28 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
-    // Helper to convert select options array to comma-separated string
-    const convertSelectOptionsToString = (optionsArray: AppSelectOption[]): string => {
-        return optionsArray.map((opt) => opt.value || '').join(',');
-    };
+    // Element definitions from the multiform steps already completed.
+    //
+    // Needed for correctness: convertAppFormValuesToDialogSubmission looks every value
+    // up by element name and DROPS any it cannot find. Each step's server response
+    // replaces dialog.elements wholesale, so converting the accumulated values against
+    // only the final step's elements silently discarded every earlier step's answers.
+    const [accumulatedElements, setAccumulatedElements] = useState<DialogElement[]>([]);
 
-    // Memoized value conversion function for better performance
-    const convertAppFormValuesToSubmission = useCallback((values: AppFormValues): {[key: string]: string} => {
-        const submission: {[key: string]: string} = {};
-
-        for (const [fieldName, value] of Object.entries(values)) {
-            if (value === null || value === undefined) {
-                continue; // Skip null/undefined values
-            }
-
-            if (typeof value === 'boolean') {
-                submission[fieldName] = value ? 'true' : 'false';
-            } else if (typeof value === 'number') {
-                submission[fieldName] = String(value);
-            } else if (isAppSelectOption(value)) {
-                submission[fieldName] = value.value || '';
-            } else if (Array.isArray(value) && value.length > 0 && isAppSelectOption(value[0])) {
-                submission[fieldName] = convertSelectOptionsToString(value);
-            } else {
-                submission[fieldName] = String(value || '');
+    // Union of element definitions, later steps winning on a name collision so the most
+    // recent declaration of a field decides how its value is converted.
+    const mergeElements = useCallback((previous: DialogElement[], next: DialogElement[]) => {
+        const byName = new Map<string, DialogElement>();
+        for (const element of [...previous, ...next]) {
+            if (element?.name) {
+                byName.set(element.name, element);
             }
         }
-
-        return submission;
+        return Array.from(byName.values());
     }, []);
+
+    // Per-field FILE values from earlier multiform steps (field name → comma-joined IDs).
+    const [accumulatedFileFields, setAccumulatedFileFields] = useState<Record<string, string>>({});
 
     // Update modal title when dialog config changes
     useEffect(() => {
@@ -127,18 +129,39 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             const isMultiform = Object.keys(accumulatedValues).length > 0;
 
             if (isMultiform) {
-                // This is a multiform submission - include ALL accumulated values
-                const multiformSubmission = convertAppFormValuesToSubmission(allValues);
+                // This is a multiform submission - include ALL accumulated values.
+                // Delegate to the type-aware converter (same one used by the
+                // single-step path via InteractiveDialogAdapter.convertValuesToSubmission)
+                // instead of maintaining a second, divergent implementation.
+                const {submission: multiformSubmission, errors: conversionErrors} = convertAppFormValuesToDialogSubmission(
+                    allValues,
+                    mergeElements(accumulatedElements, currentConfig.dialog.elements || []),
+                );
+
+                if (conversionErrors.length > 0) {
+                    logDebug('[DialogRouter.handleSubmit] multiform conversion errors', conversionErrors);
+                }
+
+                const {submission: stepSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                const mergedFileFields = mergeFileFieldValues(accumulatedFileFields, stepSubmission as {[x: string]: string}, currentConfig.dialog.elements);
+                const fileIds = flattenFileFieldValues(mergedFileFields);
 
                 legacySubmission = {
                     url: currentConfig.url || '',
                     callback_id: currentConfig.dialog.callback_id || '',
                     state: currentConfig.dialog.state || '',
-                    submission: multiformSubmission,
+
+                    // Cast as in InteractiveDialogAdapter.convertValuesToSubmission: the
+                    // shared converter can emit non-string values, and this branch's
+                    // DialogSubmission still types submission as string-only. The
+                    // checkbox_group branch widens that type, at which point the cast
+                    // here becomes unnecessary.
+                    submission: multiformSubmission as {[x: string]: string},
                     user_id: '', // Will be populated by mobile action
                     channel_id: '', // Will be populated by mobile action
                     team_id: '', // Will be populated by mobile action
                     cancelled: false,
+                    ...(fileIds.length > 0 && {file_ids: fileIds}),
                 };
             } else {
                 // Single-step dialog - use normal conversion
@@ -154,9 +177,16 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             // Get the raw dialog data from server response to preserve callback_id and state
                 const rawDialogData = result.data.form as any;
 
-                // Accumulate values from this step for the next step
+                // Accumulate values from this step for the next step, along with the
+                // element definitions that describe them — the next step's response
+                // replaces dialog.elements, so this is the only remaining record of how
+                // these values must be converted at final submit.
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
+                setAccumulatedElements(mergeElements(accumulatedElements, currentConfig.dialog.elements || []));
+
+                const {submission: stepSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, stepSubmission as {[x: string]: string}, currentConfig.dialog.elements));
 
                 // Use the raw dialog data from server - it's already in the correct format!
                 const newDialogConfig: InteractiveDialogConfig = {
@@ -171,8 +201,10 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
 
                 setCurrentConfig(newDialogConfig);
             } else {
-            // Clear accumulated values since dialog is completing
+            // Clear accumulated state since dialog is completing
                 setAccumulatedValues({});
+                setAccumulatedElements([]);
+                setAccumulatedFileFields({});
             }
 
             return result;
@@ -189,7 +221,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, accumulatedValues, convertAppFormValuesToSubmission]);
+    }, [currentConfig, serverUrl, intl, accumulatedValues, accumulatedElements, mergeElements, accumulatedFileFields]);
 
     // Memoize form conversion to avoid recalculation on every render
     const appForm = useMemo(() => {
@@ -242,7 +274,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             if (result?.data && typeof result.data === 'object' && 'items' in result.data) {
                 const responseData = result.data as {items: DialogOption[]};
                 if (Array.isArray(responseData.items)) {
-                    return {data: {type: 'ok', data: {items: responseData.items.map((opt: DialogOption) => ({label: opt.text || '', value: opt.value || ''}))}}};
+                    return {data: {type: 'ok', data: {items: responseData.items.map(dialogOptionToLookupSelectOption)}}};
                 }
             }
 
@@ -290,6 +322,9 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 const newAccumulatedValues = {...accumulatedValues, ...values};
                 setAccumulatedValues(newAccumulatedValues);
 
+                const {submission: refreshedSubmission} = convertAppFormValuesToDialogSubmission(values, currentConfig.dialog.elements || []);
+                setAccumulatedFileFields(mergeFileFieldValues(accumulatedFileFields, refreshedSubmission as {[x: string]: string}, currentConfig.dialog.elements));
+
                 // Update the dialog config state with new form data
                 const newConfig = {
                     ...currentConfig,
@@ -333,7 +368,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
                 },
             };
         }
-    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues]);
+    }, [currentConfig, serverUrl, intl, setCurrentConfig, accumulatedValues, accumulatedFileFields]);
 
     if (!appForm || !appForm.fields) {
         return null;
@@ -359,6 +394,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
             submit={handleSubmit}
             performLookupCall={performLookupCall}
             refreshOnSelect={refreshOnSelect}
+            channelId={channelId}
         />
     );
 });

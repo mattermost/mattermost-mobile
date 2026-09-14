@@ -9,6 +9,7 @@ import {
     downloadProfileImage,
     uploadFile,
     fetchPublicLink,
+    fetchFilesInfo,
     buildFileUrl,
     buildAbsoluteUrl,
     buildFilePreviewUrl,
@@ -28,6 +29,7 @@ describe('actions/remote/file', () => {
         getProfilePictureUrl: jest.fn(),
         uploadAttachment: jest.fn(),
         getFilePublicLink: jest.fn(),
+        getFileInfo: jest.fn(),
         getFileUrl: jest.fn(),
         getAbsoluteUrl: jest.fn(),
         getFilePreviewUrl: jest.fn(),
@@ -247,6 +249,42 @@ describe('actions/remote/file', () => {
             expect(buildAbsoluteUrl(serverUrl, relativePath)).toBe('');
             expect(buildFilePreviewUrl(serverUrl, fileId)).toBe('');
             expect(buildFileThumbnailUrl(serverUrl, fileId)).toBe('');
+        });
+    });
+
+    describe('fetchFilesInfo', () => {
+        it('returns info for each requested file id, preserving order', async () => {
+            const fileA = {id: 'a', name: 'a.png'} as FileInfo;
+            const fileB = {id: 'b', name: 'b.png'} as FileInfo;
+            mockClient.getFileInfo.
+                mockResolvedValueOnce(fileA).
+                mockResolvedValueOnce(fileB);
+
+            const result = await fetchFilesInfo(serverUrl, ['a', 'b']);
+
+            expect(result.files).toEqual([fileA, fileB]);
+            expect(mockClient.getFileInfo).toHaveBeenCalledTimes(2);
+        });
+
+        it('skips files that fail to fetch (e.g. deleted) and keeps the rest', async () => {
+            const fileA = {id: 'a', name: 'a.png'} as FileInfo;
+            mockClient.getFileInfo.
+                mockResolvedValueOnce(fileA).
+                mockRejectedValueOnce(new Error('not found'));
+
+            const result = await fetchFilesInfo(serverUrl, ['a', 'missing']);
+
+            expect(result.files).toEqual([fileA]);
+        });
+
+        it('returns empty files when the client cannot be created', async () => {
+            (NetworkManager.getClient as jest.Mock).mockImplementationOnce(() => {
+                throw new Error('no client');
+            });
+
+            const result = await fetchFilesInfo(serverUrl, ['a']);
+
+            expect(result.files).toEqual([]);
         });
     });
 });

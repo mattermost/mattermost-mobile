@@ -16,6 +16,45 @@ export interface ConversionResult {
 }
 
 /**
+ * Collects file IDs from FILE-type dialog elements in a converted submission.
+ * Shared by the single-step (adapter) and multi-step (dialog_router) submit paths
+ * so uploaded file IDs aren't dropped on either. FILE values are comma-joined IDs.
+ */
+export function collectFileIds(submission: {[key: string]: string}, elements: DialogElement[] = []): string[] {
+    const fileIds: string[] = [];
+    elements.forEach((element) => {
+        if (element.type === 'file' && submission[element.name]) {
+            fileIds.push(...String(submission[element.name]).split(',').map((id) => id.trim()).filter(Boolean));
+        }
+    });
+    return [...new Set(fileIds)];
+}
+
+/** Merge FILE field values from a step into accumulated per-field state (replace, not append). */
+export function mergeFileFieldValues(
+    accumulated: Record<string, string>,
+    submission: Record<string, string>,
+    elements: DialogElement[] = [],
+): Record<string, string> {
+    const merged = {...accumulated};
+    elements.forEach((element) => {
+        if (element.type === 'file' && Object.prototype.hasOwnProperty.call(submission, element.name)) {
+            merged[element.name] = submission[element.name];
+        }
+    });
+    return merged;
+}
+
+/** Flatten per-field comma-joined FILE values into a deduplicated file_ids array. */
+export function flattenFileFieldValues(byField: Record<string, string>): string[] {
+    const fileIds: string[] = [];
+    Object.values(byField).forEach((value) => {
+        fileIds.push(...String(value).split(',').map((id) => id.trim()).filter(Boolean));
+    });
+    return [...new Set(fileIds)];
+}
+
+/**
  * Converts AppForm values back to legacy DialogSubmission format
  * Used when submitting converted dialogs through legacy endpoints
  */
@@ -80,6 +119,11 @@ export function convertAppFormValuesToDialogSubmission(
                 submission[fieldName] = Boolean(value);
                 break;
 
+            case DialogElementTypes.FILE:
+                // File elements store uploaded file IDs as a comma-separated string
+                submission[fieldName] = String(value || '');
+                break;
+
             default:
                 submission[fieldName] = String(value || '');
         }
@@ -121,6 +165,10 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         if (element.type === DialogElementTypes.SELECT && element.multiselect) {
             appField.multiselect = element.multiselect;
         }
+    }
+
+    if (element.type === DialogElementTypes.FILE && element.allow_multiple) {
+        appField.allow_multiple = true;
     }
 
     if (element.default) {
