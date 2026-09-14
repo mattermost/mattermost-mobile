@@ -447,11 +447,12 @@ export async function deletePostsInChannelsByCutoff(
         const postConditionArgs = [...channelIds, ...excludedIds];
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
 
-        // Upper-bound count: unlike the delete below, it doesn't exclude thread roots an active reply keeps alive.
         const deletedCount = await database.get<PostModel>(POST).query(
             Q.where('channel_id', Q.oneOf(channelIds)),
             Q.where('create_at', Q.lt(cutoff)),
             ...(excludedPostIds.size > 0 ? [Q.where('id', Q.notIn([...excludedPostIds]))] : []),
+            Q.unsafeSqlExpr(`NOT ${hasActiveReply}`),
+            Q.unsafeSqlExpr(`NOT ${hasDraft}`),
         ).fetchCount();
 
         // Scopes PostsInThread trimming to roots in these channels.
