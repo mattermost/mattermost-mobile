@@ -260,13 +260,13 @@ describe('consecutive post layout', () => {
             expect(Header).not.toHaveBeenCalled();
         });
 
-        const spacer = getAllByType(View).find((view) => {
+        const spacers = getAllByType(View).filter((view) => {
             const style = StyleSheet.flatten(view.props.style);
             return style?.width === PROFILE_PICTURE_SIZE && style?.marginRight === 10;
         });
 
-        expect(spacer).toBeDefined();
-        expect(StyleSheet.flatten(spacer?.props.style)).toEqual(
+        expect(spacers).toHaveLength(1);
+        expect(StyleSheet.flatten(spacers[0].props.style)).toEqual(
             expect.objectContaining({
                 width: PROFILE_PICTURE_SIZE,
                 marginRight: 10,
