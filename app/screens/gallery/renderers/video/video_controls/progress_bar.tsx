@@ -170,6 +170,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         <View style={styles.container}>
             <GestureDetector gesture={combinedGesture}>
                 <View
+                    testID='gallery.video.progress_bar'
                     ref={progressRef}
                     style={styles.touchArea}
                     onLayout={(event) => {

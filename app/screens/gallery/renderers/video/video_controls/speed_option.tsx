@@ -97,6 +97,7 @@ const SpeedOption: React.FC<SpeedOptionProps> = ({rate, onSpeedChange, isSelecte
 
     return (
         <Pressable
+            testID={`gallery.video.speed_option.${rate}`}
             style={optionStyle}
             onPress={handleSpeedSelect}
         >

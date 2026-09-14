@@ -156,7 +156,10 @@ const VideoError = ({cacheKey, canDownloadFiles, enableSecureFilePreview, filena
             onPress={onPress}
             style={styles.container}
         >
-            <Animated.View style={styles.container}>
+            <Animated.View
+                testID='gallery.video.error'
+                style={styles.container}
+            >
                 {poster}
                 <Text
                     numberOfLines={2}
