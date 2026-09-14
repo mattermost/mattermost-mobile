@@ -72,13 +72,14 @@ export const observeCustomProfileAttributesEnabled = (database: Database) => {
     return observeFeatureFlagWithVersion(database, 'FeatureFlagCustomProfileAttributes', CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, true);
 };
 
-// Access Channel policies need both the umbrella flag and their own sub-flag, mirroring the
-// server's accessChannelEnforcementActive(). Kept separate from ChannelPermissionPolicies
-// because denying access_channel hides a whole channel, not just an attachment.
+// Channel Read Access policies need both the umbrella flag and their own sub-flag, plus an
+// Enterprise Advanced license, mirroring the server's channelReadAccessEnforcementActive().
+// Kept separate from ChannelPermissionPolicies because denying channel_read_access hides a
+// whole channel, not just an attachment.
 export const getChannelReadAccessPolicyEnabled = async (database: Database) => {
     const [umbrella, flag, license] = await Promise.all([
         getConfigValue(database, 'FeatureFlagPermissionPolicies'),
-        getConfigValue(database, 'FeatureFlagChannelReadAccessABACPermission'),
+        getConfigValue(database, 'FeatureFlagChannelAccessABACPermission'),
         getLicense(database),
     ]);
     return umbrella === 'true' && flag === 'true' && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);

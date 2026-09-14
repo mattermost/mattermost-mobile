@@ -73,7 +73,7 @@ const enableFeature = async () => {
     await operator.handleConfigs({
         configs: [
             {id: 'FeatureFlagPermissionPolicies', value: 'true'},
-            {id: 'FeatureFlagChannelReadAccessABACPermission', value: 'true'},
+            {id: 'FeatureFlagChannelAccessABACPermission', value: 'true'},
         ],
         configsToDelete: [],
         prepareRecordsOnly: false,

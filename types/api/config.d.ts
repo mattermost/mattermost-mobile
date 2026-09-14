@@ -126,11 +126,11 @@ interface ClientConfig {
     ExperimentalTownSquareIsReadOnly: string;
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
-    FeatureFlagChannelReadAccessABACPermission?: string;
     FeatureFlagAppsEnabled?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;
+    FeatureFlagChannelAccessABACPermission?: string;
     FeatureFlagChannelBookmarks?: string;
     FeatureFlagCustomProfileAttributes?: string;
     FeatureFlagMmBlocksEnabled?: string;

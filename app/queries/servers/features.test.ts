@@ -106,7 +106,7 @@ describe('getChannelBookmarksEnabled (async variant)', () => {
 describe('getChannelReadAccessPolicyEnabled', () => {
     const setFlags = (umbrella?: string, sub?: string) => setConfigs([
         {id: 'FeatureFlagPermissionPolicies', value: umbrella ?? 'false'},
-        {id: 'FeatureFlagChannelReadAccessABACPermission', value: sub ?? 'false'},
+        {id: 'FeatureFlagChannelAccessABACPermission', value: sub ?? 'false'},
     ]);
 
     it('is disabled when neither flag is set', async () => {
