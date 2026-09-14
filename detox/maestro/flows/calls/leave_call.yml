@@ -18,6 +18,9 @@
 #   - calls.current_call_bar.leave
 #   - mute-unmute
 #   - leave
+#   - channel.post_draft.post.input
+#   - tab_bar.home.tab
+#   - channel_list.category_header.channels.display_name
 tags:
   - MM-T4833
 appId: ${MAESTRO_APP_ID}
@@ -50,50 +53,63 @@ appId: ${MAESTRO_APP_ID}
     timeout: 10000
 - takeScreenshot: calls-leave-full-screen-after-leave
 
-# # Path 2: re-anchor on Home before re-entering the channel for the call-bar leave.
-# CI bc6df62 Android (maestro-android): Path 1 leave succeeded and landed on the
-# channel list (calls-leave-full-screen-after-leave), then navigate_to_channel
-# timed out on channel.post_draft.post.input (30s).
+# * After leave, the usual landing is the channel (composer visible). Do not fail
+# if this wait times out — CI has also landed on the channel list instead.
 - extendedWaitUntil:
     visible:
-      id: "tab_bar.home.tab"
-    timeout: 20000
-- tapOn:
-    id: "tab_bar.home.tab"
-- waitForAnimationToEnd:
-    timeout: 3000
+      id: "channel.post_draft.post.input"
+    timeout: 10000
+    optional: true
 
-# # Recover the sidebar only if the CHANNELS category header is missing.
-# Anchor on the category header, not the channel item: the item is also absent when
-# the CHANNELS category is merely collapsed, and navigate_to_channel already expands
-# it. Keying off the item would relaunch the app for a healthy sidebar and re-enter
-# the cold-start login path this suite is trying to avoid.
+# # Path 2 starts a second call from the test channel. Stay put when the composer
+# is already visible. Channel-list landing (no composer): re-anchor on Home,
+# recover the sidebar only when its CHANNELS header is missing, then open the channel.
+# Do not treat a missing CHANNELS header as a broken sidebar while still on the
+# channel — that header is not on this screen, and relaunching would drop Path 2.
 - runFlow:
     when:
       notVisible:
-        id: "channel_list.category_header.channels.display_name"
+        id: "channel.post_draft.post.input"
     commands:
-      # # iOS: stopApp:true is safe. Android: stopApp:false — stopApp:true sets the
-      # force-stopped flag and Maestro's subsequent launch intent can fail.
-      - runFlow:
-          when:
-            platform: iOS
-          commands:
-            - launchApp:
-                stopApp: true
-                clearState: false
-      - runFlow:
-          when:
-            platform: Android
-          commands:
-            - launchApp:
-                stopApp: false
-                clearState: false
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 20000
+      - tapOn:
+          id: "tab_bar.home.tab"
       - waitForAnimationToEnd:
-          timeout: 30000
-      # # A cold relaunch lands on loading/login, so re-anchor on Home before navigating.
-      - runFlow: ../../subflows/waits/wait_for_home_tab.yml
-- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+          timeout: 3000
+      # # Recover the sidebar only if the CHANNELS category header is missing.
+      # Anchor on the category header, not the channel item: the item is also absent when
+      # the CHANNELS category is merely collapsed, and navigate_to_channel already expands
+      # it. Keying off the item would relaunch the app for a healthy sidebar and re-enter
+      # the cold-start login path this suite is trying to avoid.
+      - runFlow:
+          when:
+            notVisible:
+              id: "channel_list.category_header.channels.display_name"
+          commands:
+            # # iOS: stopApp:true is safe. Android: stopApp:false — stopApp:true sets the
+            # force-stopped flag and Maestro's subsequent launch intent can fail.
+            - runFlow:
+                when:
+                  platform: iOS
+                commands:
+                  - launchApp:
+                      stopApp: true
+                      clearState: false
+            - runFlow:
+                when:
+                  platform: Android
+                commands:
+                  - launchApp:
+                      stopApp: false
+                      clearState: false
+            - waitForAnimationToEnd:
+                timeout: 30000
+            # # A cold relaunch lands on loading/login, so re-anchor on Home before navigating.
+            - runFlow: ../../subflows/waits/wait_for_home_tab.yml
+      - runFlow: ../../subflows/navigation/navigate_to_channel.yml
 
 # # Start a second call and open its full screen
 - runFlow: ../../subflows/calls/join_channel_call.yml

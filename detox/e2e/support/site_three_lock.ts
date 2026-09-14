@@ -7,9 +7,10 @@
  * SITE_3 is a single instance shared by the iOS and Android jobs, and the suites that use it
  * are not independent: `custom_terms_of_service` turns on server-wide custom ToS, which puts
  * a modal in front of every login on that server — including `server_list`'s login to the
- * third server. Both suites therefore hold this lock for as long as they are using SITE_3.
+ * third server. `login_mfa` also patches server-wide MFA on this site. Those suites therefore
+ * hold this lock for as long as they are using SITE_3.
  *
- * Shared from one module so the two callers cannot drift onto different lock names, which
+ * Shared from one module so callers cannot drift onto different lock names, which
  * would silently stop serialising them.
  */
 

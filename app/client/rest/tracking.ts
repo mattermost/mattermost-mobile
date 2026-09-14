@@ -14,6 +14,7 @@ import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
+import {cleanUrlForLogging} from '@utils/url';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -393,6 +394,7 @@ export default class ClientTracking {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
             const response_error = error as ClientError;
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
+            logDebug('doFetchWithTracking: request failed', 'method', method, 'status_code', status_code, 'url', cleanUrlForLogging(this.apiClient.baseUrl, url));
             throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Received invalid response from the server.',
                 intl: defineMessage({

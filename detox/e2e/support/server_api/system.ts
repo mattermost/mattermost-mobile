@@ -103,16 +103,27 @@ export const waitForClientConfigFlag = async (
     baseUrl: string,
     flagKey: string,
     expectedValue: string,
-    options: {maxAttempts?: number; pollMs?: number} = {},
+    options: {maxAttempts?: number; pollMs?: number; acceptAbsentAsEnabled?: boolean} = {},
 ): Promise<boolean> => {
     const maxAttempts = options.maxAttempts ?? 60;
     const pollMs = options.pollMs ?? timeouts.ONE_SEC;
+    const acceptAbsentAsEnabled = options.acceptAbsentAsEnabled === true && expectedValue === 'true';
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
         // eslint-disable-next-line no-await-in-loop -- client config propagation is asynchronous
-        const {config} = await apiGetClientConfigOld(baseUrl);
-        if (String(config?.[flagKey]) === expectedValue) {
-            return true;
+        const {config, error} = await apiGetClientConfigOld(baseUrl);
+        if (!error && config) {
+            const value = config[flagKey];
+            if (String(value) === expectedValue) {
+                return true;
+            }
+
+            // Mobile treats a missing ExperimentalViewArchivedChannels as enabled
+            // (only explicit 'false' turns the feature off). Failed fetches are
+            // not "absent" — keep polling until a successful payload arrives.
+            if (acceptAbsentAsEnabled && (value === undefined || value === null || value === '')) {
+                return true;
+            }
         }
 
         if (attempt < maxAttempts - 1) {
