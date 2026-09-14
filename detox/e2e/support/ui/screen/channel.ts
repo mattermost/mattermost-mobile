@@ -38,6 +38,34 @@ async function dismissErrorAlertIfPresent(): Promise<boolean> {
     }
 }
 
+// iOS bottom sheets cover the channel header and tab bar. ChannelScreen.back()
+// only spends this scan when the back button is already missing.
+const COVERING_SHEET_IDS: readonly string[] = [
+    'channel.quick_actions.ask_agents',
+    'channel.quick_actions.channel_info.action',
+    'agents.channel_summary.option.unreads',
+    'post_options.screen',
+];
+
+async function dismissCoveringSheets(): Promise<void> {
+    if (!isIos()) {
+        return;
+    }
+
+    /* eslint-disable no-await-in-loop -- sequential overlay probes */
+    for (const overlayId of COVERING_SHEET_IDS) {
+        const overlay = element(by.id(overlayId));
+        try {
+            await waitFor(overlay).toExist().withTimeout(timeouts.HALF_SEC);
+            await overlay.swipe('down', 'fast');
+            await waitFor(overlay).not.toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Overlay not present or already dismissed.
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+}
+
 class ChannelScreen {
     testID = {
         channelScreenPrefix: 'channel.',
@@ -246,8 +274,8 @@ class ChannelScreen {
 
     back = async () => {
         await wait(isIos() ? timeouts.TWO_SEC : timeouts.ONE_SEC);
-        let navigated = false;
-        try {
+
+        const tapBackButton = async () => {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
 
             // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
@@ -259,14 +287,29 @@ class ChannelScreen {
             } else {
                 await NavigationHeader.tapBackButton(0);
             }
+        };
+
+        let navigated = false;
+        try {
+            await tapBackButton();
             navigated = true;
         } catch {
-            // Back button not in hierarchy — fall through to tab/native back.
+            // Back button not in hierarchy — leftover sheet may be covering it.
+        }
+        if (!navigated && isIos()) {
+            await dismissCoveringSheets();
+            try {
+                await tapBackButton();
+                navigated = true;
+            } catch {
+                // Still no back button — fall through to the home tab.
+            }
         }
         if (!navigated) {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
             }
         }
