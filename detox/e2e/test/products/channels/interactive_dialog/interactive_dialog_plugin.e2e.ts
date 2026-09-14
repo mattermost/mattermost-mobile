@@ -291,8 +291,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     let testChannel: any;
     let testTeam: any;
     let testUser: any;
+    let setupFailed = false;
 
-    beforeAll(async () => {
+    const setUpSuite = async () => {
         const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testTeam = team;
@@ -390,6 +391,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
                 await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
             }
         } catch { /* leave recovery to afterEach */ }
+    };
+
+    beforeAll(async () => {
+        try {
+            await setUpSuite();
+        } catch (error) {
+            setupFailed = true;
+            throw error;
+        }
     });
 
     afterAll(async () => {
@@ -406,6 +416,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterEach(async () => {
+        if (setupFailed) {
+            return;
+        }
         await dismissErrorAlert();
 
         // Only clean up the integration selector when it is actually on screen. Both
@@ -1267,11 +1280,17 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
         // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
         await wait(1000);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post, error: lastPostError} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
-        // list, so \s* would cross the newline and capture the next item's "-" bullet.
-        // That is how an empty field previously reported itself as "got: -".
+        // The helper returns {error} instead of throwing when every poll failed (CI 34290629488:
+        // a Cloudflare challenge answered the posts endpoint for two minutes, and this read as
+        // "Cannot read properties of undefined (reading 'message')" — a code bug's signature).
+        if (lastPostError || !post) {
+            throw new Error(`Could not read the submission post from channel ${testChannel.id}: ${JSON.stringify(lastPostError ?? 'no post returned')}`);
+        }
+
+        // Match to end of line, not \s*(\S+): the payload renders as a markdown list, so \s*
+        // would cross the newline and capture the next bullet (an empty field read "-").
         const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
         const submitted = match?.[1]?.trim() ?? '';
         if (!submitted) {

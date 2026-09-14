@@ -187,12 +187,24 @@ class ChannelScreen {
         }
     };
 
-    // The channel intro is the post list's ListFooterComponent, so it only mounts once the
-    // initial post batch has rendered. open() resolves as soon as channel.screen exists,
-    // which on a loaded CI simulator happens while the post list is still loading — tapping
-    // the intro action straight after open() then fails with "No elements found".
-    tapIntroChannelInfoAction = async () => {
-        await waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN);
+    waitForIntro = async (waitFn: () => Promise<void>, reopen?: {category: string; channelName: string}) => {
+        try {
+            await waitFn();
+        } catch (error) {
+            if (!reopen) {
+                throw error;
+            }
+            await this.back();
+            await this.open(reopen.category, reopen.channelName);
+            await waitFn();
+        }
+    };
+
+    tapIntroChannelInfoAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introChannelInfoAction.tap();
     };
 
