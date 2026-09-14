@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {type ComponentProps} from 'react';
+import {StyleSheet, View} from 'react-native';
 
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
 import {PostTypes} from '@constants/post';
+import {PROFILE_PICTURE_SIZE} from '@constants/view';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {getPostById} from '@queries/servers/post';
@@ -191,5 +193,84 @@ describe('ephemeral post header', () => {
         });
         expect(Header).not.toHaveBeenCalled();
         expect(Avatar).not.toHaveBeenCalled();
+    });
+});
+
+describe('consecutive post layout', () => {
+    let database: Database;
+    let post: PostModel;
+
+    function getBaseProps(): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location: Screens.CHANNEL,
+            post,
+            isLastPost: false,
+            isChannelAutotranslated: false,
+        };
+    }
+
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeEach(async () => {
+        const client = await NetworkManager.createClient(serverUrl);
+        expect(client).toBeTruthy();
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        post = (await getPostById(database, TestHelper.basicPost!.id))!;
+        jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should render avatar and header when post is not consecutive', async () => {
+        const props = {
+            ...getBaseProps(),
+            isConsecutivePost: false,
+        };
+
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(Avatar).toHaveBeenCalled();
+            expect(Header).toHaveBeenCalled();
+        });
+    });
+
+    it('should omit avatar and header and render spacer with PROFILE_PICTURE_SIZE width when post is consecutive', async () => {
+        const props = {
+            ...getBaseProps(),
+            isConsecutivePost: true,
+        };
+
+        const {UNSAFE_getAllByType: getAllByType} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(Avatar).not.toHaveBeenCalled();
+            expect(Header).not.toHaveBeenCalled();
+        });
+
+        const spacer = getAllByType(View).find((view) => {
+            const style = StyleSheet.flatten(view.props.style);
+            return style?.width === PROFILE_PICTURE_SIZE && style?.marginRight === 10;
+        });
+
+        expect(spacer).toBeDefined();
+        expect(StyleSheet.flatten(spacer?.props.style)).toEqual(
+            expect.objectContaining({
+                width: PROFILE_PICTURE_SIZE,
+                marginRight: 10,
+            }),
+        );
     });
 });
