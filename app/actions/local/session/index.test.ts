@@ -312,6 +312,12 @@ describe('session actions', () => {
             expect(pruneAuditQueueOnSessionEnd).toHaveBeenCalledWith(mockServerUrl, false);
         });
 
+        it('should prune all audit events when the server is removed', async () => {
+            await terminateSession(mockServerUrl, true);
+
+            expect(pruneAuditQueueOnSessionEnd).toHaveBeenCalledWith(mockServerUrl, true);
+        });
+
         it('should clear image cache with URL-safe encoded server URL', async () => {
             await terminateSession(mockServerUrl, true);
 
