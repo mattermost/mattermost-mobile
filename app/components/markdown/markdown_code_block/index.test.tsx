@@ -78,4 +78,33 @@ describe('MarkdownCodeBlock', () => {
             textStyle,
         }));
     });
+
+    it('should pass an unresolved language through so the highlighter can auto-detect', async () => {
+        const content = 'fmt.Println("hello")';
+        const textStyle = {};
+        const {getByTestId} = renderWithIntlAndTheme(
+            <MarkdownCodeBlock
+                content={content}
+                language='unknown'
+                textStyle={textStyle}
+                theme={Preferences.THEMES.denim}
+            />,
+        );
+
+        expect(mockSyntaxHighlighter).toHaveBeenCalledWith(expect.objectContaining({
+            code: content,
+            language: '',
+        }));
+
+        await act(async () => {
+            fireEvent.press(getByTestId('markdown_code_block'));
+            await advanceTimers(20);
+        });
+
+        expect(navigateToScreen).toHaveBeenCalledWith(Screens.CODE, expect.objectContaining({
+            code: content,
+            language: '',
+            textStyle,
+        }));
+    });
 });
