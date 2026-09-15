@@ -24,10 +24,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {waitFor} from 'detox';
-
-const itNotIos = isIos() ? it.skip : it;
 
 describe('Smoke Test - Autocomplete', () => {
     const serverOneDisplayName = 'Server 1';
@@ -90,7 +88,7 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.hasPostMessage(post.id, `@${testUser.username}`);
     });
 
-    itNotIos('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
+    it('MM-T4886_2 - should be able to select and post channel mention suggestion', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();
@@ -99,11 +97,9 @@ describe('Smoke Test - Autocomplete', () => {
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains associated channel suggestion
-        const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
+        const {channelMentionItem, channelMentionItemChannelDisplayName} = Autocomplete.getChannelMentionItem(testChannel.name);
         await waitFor(channelMentionItem).toExist().withTimeout(timeouts.TEN_SEC);
-
-        // # Select the row
-        await channelMentionItem.tap();
+        await Autocomplete.tapSuggestion(channelMentionItem, channelMentionItemChannelDisplayName);
         await ChannelScreen.sendButton.tap();
 
         // * Verify channel mention suggestion is posted

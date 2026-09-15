@@ -37,6 +37,7 @@ import type {NavigationButtonProps} from '@components/navigation_button';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
+    canCallDMUser: boolean;
     channelId: string;
     channelType: ChannelType;
     currentUserId: string;
@@ -90,6 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelHeader = ({
     canAddBookmarks,
+    canCallDMUser,
     channelId,
     channelType,
     currentUserId,
@@ -226,7 +228,7 @@ const ChannelHeader = ({
             });
         }
 
-        if (isDM && callsAvailable && navigationHeaderCallButton) {
+        if (isDM && callsAvailable && canCallDMUser && navigationHeaderCallButton) {
             buttons.push(navigationHeaderCallButton);
         }
 
@@ -238,7 +240,7 @@ const ChannelHeader = ({
         });
 
         return buttons;
-    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns, isDM, callsAvailable, navigationHeaderCallButton]);
+    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns, isDM, callsAvailable, canCallDMUser, navigationHeaderCallButton]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
