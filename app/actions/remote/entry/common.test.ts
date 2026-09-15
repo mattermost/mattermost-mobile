@@ -6,6 +6,7 @@ import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchMyPreferences} from '@actions/remote/preference';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
@@ -25,6 +26,7 @@ import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, han
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
+jest.mock('@actions/remote/role');
 jest.mock('@actions/remote/systems');
 jest.mock('@actions/remote/team');
 jest.mock('@actions/remote/user');
@@ -129,6 +131,7 @@ describe('actions/remote/entry/common', () => {
                 meData: mockUser,
                 isCRTEnabled: false,
             });
+            expect(fetchRoles).toHaveBeenCalled();
 
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
