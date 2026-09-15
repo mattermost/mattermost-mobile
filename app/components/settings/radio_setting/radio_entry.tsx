@@ -45,6 +45,7 @@ type Props = {
     isLast: boolean;
     isSelected: boolean;
     testID?: string;
+    labelPosition?: 'before' | 'after';
 }
 function RadioEntry({
     handleChange,
@@ -53,12 +54,25 @@ function RadioEntry({
     isLast,
     isSelected,
     testID,
+    labelPosition,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const onPress = useCallback(() => {
         handleChange(value);
     }, [handleChange, value]);
+
+    const textEl = (
+        <View style={style.rowContainer}>
+            <Text style={style.text}>{text}</Text>
+        </View>
+    );
+    const checkmarkEl = isSelected && (
+        <CompassIcon
+            name='check'
+            style={style.checkmark}
+        />
+    );
 
     return (
         <TouchableOpacity
@@ -67,14 +81,16 @@ function RadioEntry({
             testID={testID}
         >
             <View style={style.container}>
-                <View style={style.rowContainer}>
-                    <Text style={style.text}>{text}</Text>
-                </View>
-                {isSelected && (
-                    <CompassIcon
-                        name='check'
-                        style={style.checkmark}
-                    />
+                {labelPosition === 'after' ? (
+                    <>
+                        {checkmarkEl}
+                        {textEl}
+                    </>
+                ) : (
+                    <>
+                        {textEl}
+                        {checkmarkEl}
+                    </>
                 )}
             </View>
             {!isLast && (

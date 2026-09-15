@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
+import {act, render} from '@testing-library/react-native';
 import React from 'react';
 import {IntlProvider} from 'react-intl';
 
@@ -292,6 +292,137 @@ describe('DialogRouter', () => {
                     <DialogRouter config={invalidConfig}/>,
                 );
             }).not.toThrow();
+        });
+    });
+
+    describe('multiform accumulation', () => {
+        // Each step's server response REPLACES dialog.elements, and the submission
+        // converter looks every value up by element name and drops what it cannot find.
+        // So without accumulating element definitions across steps, every answer from an
+        // earlier step is silently discarded from the final submission.
+        const textElement = (name: string): DialogElement => ({
+            name,
+            type: 'text',
+            display_name: name,
+            optional: false,
+            default: '',
+            placeholder: '',
+            help_text: '',
+            min_length: 0,
+            max_length: 100,
+            data_source: '',
+            options: [],
+        });
+
+        const stepOneConfig: InteractiveDialogConfig = {
+            ...mockConfig,
+            dialog: {
+                ...mockConfig.dialog,
+                elements: [textElement('first_name'), textElement('nickname')],
+            },
+        };
+
+        // Step 2 declares a DIFFERENT field set — first_name is absent.
+        const stepTwoElements = [
+            {
+                name: 'confirmed',
+                type: 'bool',
+                display_name: 'Confirmed',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            },
+        ];
+
+        it('keeps earlier steps values in the final submission', async () => {
+            // Step 1 submit returns a new form (multiform continues).
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {
+                    type: 'form',
+                    form: {
+                        callback_id: 'test-callback',
+                        title: 'Step 2',
+                        elements: stepTwoElements,
+                    },
+                },
+            } as any);
+
+            // Step 2 submit completes the dialog.
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {type: 'ok'},
+            } as any);
+
+            renderWithIntl(<DialogRouter config={stepOneConfig}/>);
+
+            // act() is required: the step-1 submit sets accumulated state, and without
+            // flushing it the handler grabbed below is still step 1's closure (with
+            // empty accumulatedValues), which silently takes the single-step path.
+            const stepOneSubmit = mockAppsFormComponent.mock.calls[0][0].submit;
+            await act(async () => {
+                await stepOneSubmit({first_name: 'Ada'});
+            });
+
+            // The component re-rendered with step 2's form; grab its submit handler.
+            const stepTwoSubmit = mockAppsFormComponent.mock.calls[mockAppsFormComponent.mock.calls.length - 1][0].submit;
+            await act(async () => {
+                await stepTwoSubmit({confirmed: true});
+            });
+
+            // The final request must carry BOTH steps' answers. Before element
+            // accumulation this was {confirmed: true} only, losing first_name entirely.
+            const finalCall = mockSubmitInteractiveDialog.mock.calls[mockSubmitInteractiveDialog.mock.calls.length - 1];
+            expect(finalCall[1].submission).toEqual({
+                first_name: 'Ada',
+                confirmed: true,
+            });
+        });
+
+        it('uses the latest declaration when a field is redeclared in a later step', async () => {
+            // Step 2 redeclares first_name as a bool, so the accumulated string value
+            // must convert using the NEWER element definition.
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {
+                    type: 'form',
+                    form: {
+                        callback_id: 'test-callback',
+                        title: 'Step 2',
+                        elements: [
+                            {...stepTwoElements[0], name: 'first_name'},
+                        ],
+                    },
+                },
+            } as any);
+            mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
+                data: {type: 'ok'},
+            } as any);
+
+            renderWithIntl(<DialogRouter config={stepOneConfig}/>);
+
+            const stepOneSubmit = mockAppsFormComponent.mock.calls[0][0].submit;
+            await act(async () => {
+                await stepOneSubmit({first_name: 'Ada', nickname: 'Adie'});
+            });
+
+            const stepTwoSubmit = mockAppsFormComponent.mock.calls[mockAppsFormComponent.mock.calls.length - 1][0].submit;
+            await act(async () => {
+                await stepTwoSubmit({});
+            });
+
+            const finalCall = mockSubmitInteractiveDialog.mock.calls[mockSubmitInteractiveDialog.mock.calls.length - 1];
+
+            // first_name: bool conversion of the truthy string 'Ada' -> true, proving the
+            // LATER declaration won the name collision (an earlier-wins merge would emit
+            // the string 'Ada'). nickname exists only in step 1, so it also proves the
+            // accumulation itself is happening.
+            expect(finalCall[1].submission).toEqual({
+                first_name: true,
+                nickname: 'Adie',
+            });
         });
     });
 });

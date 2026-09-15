@@ -32,6 +32,10 @@ const messages = defineMessages({
         id: 'interactive_dialog.error.invalid_option',
         defaultMessage: 'Must be a valid option',
     },
+    invalidFormat: {
+        id: 'interactive_dialog.error.invalid_format',
+        defaultMessage: 'Invalid matrix selection format',
+    },
 });
 
 export function checkDialogElementForError(elem: DialogElement, value: any, intl: IntlShape): string | undefined | null {
@@ -118,6 +122,52 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
         // Required boolean fields must be true
         if (!elem.optional && (typeof value === 'undefined' || value !== true)) {
             return fieldRequiredError;
+        }
+    } else if (type === DialogElementTypes.CHECKBOX_GROUP) {
+        if (!elem.optional && (typeof value === 'undefined' || (Array.isArray(value) && value.length === 0))) {
+            return fieldRequiredError;
+        }
+
+        if (Array.isArray(value) && Array.isArray(elem.options)) {
+            for (const singleValue of value) {
+                if (!elem.options.some((option) => option.value === singleValue)) {
+                    return intl.formatMessage(messages.invalidOption);
+                }
+            }
+        }
+    } else if (type === DialogElementTypes.CHECKBOX_MATRIX) {
+        if (!elem.optional && (typeof value === 'undefined' || (Array.isArray(value) && value.length === 0))) {
+            return fieldRequiredError;
+        }
+
+        if (Array.isArray(value) && elem.matrix_config) {
+            const validRows = new Set(elem.matrix_config.rows.map((row) => row.value));
+            const validColumns = new Set(elem.matrix_config.columns.map((column) => column.value));
+            const seenRows = new Set<string>();
+
+            for (const entry of value as string[]) {
+                const colonIndex = typeof entry === 'string' ? entry.indexOf(':') : -1;
+                if (colonIndex <= 0) {
+                    return intl.formatMessage(messages.invalidFormat);
+                }
+
+                const rowValue: string = entry.slice(0, colonIndex);
+                const columns: string[] = entry.slice(colonIndex + 1).split(',').map((col: string) => col.trim()).filter(Boolean);
+
+                if (columns.length === 0 || !validRows.has(rowValue) || seenRows.has(rowValue)) {
+                    return intl.formatMessage(messages.invalidFormat);
+                }
+
+                if (elem.matrix_config.row_selection === 'single' && columns.length > 1) {
+                    return intl.formatMessage(messages.invalidFormat);
+                }
+
+                if (columns.some((col: string) => !validColumns.has(col))) {
+                    return intl.formatMessage(messages.invalidFormat);
+                }
+
+                seenRows.add(rowValue);
+            }
         }
     } else if (type === DialogElementTypes.DATE || type === DialogElementTypes.DATETIME) {
         // Required date/datetime fields must have a value

@@ -11,7 +11,7 @@ export interface ConversionContext {
 }
 
 export interface ConversionResult {
-    submission: {[key: string]: string | number | boolean};
+    submission: {[key: string]: string | number | boolean | string[]};
     errors: string[];
 }
 
@@ -23,7 +23,7 @@ export function convertAppFormValuesToDialogSubmission(
     values: AppFormValues,
     elements: DialogElement[],
 ): ConversionResult {
-    const submission: {[key: string]: string | number | boolean} = {};
+    const submission: {[key: string]: string | number | boolean | string[]} = {};
     const errors: string[] = [];
 
     // Early return if no values to process
@@ -80,6 +80,11 @@ export function convertAppFormValuesToDialogSubmission(
                 submission[fieldName] = Boolean(value);
                 break;
 
+            case DialogElementTypes.CHECKBOX_GROUP:
+            case DialogElementTypes.CHECKBOX_MATRIX:
+                submission[fieldName] = Array.isArray(value) ? value as string[] : [];
+                break;
+
             default:
                 submission[fieldName] = String(value || '');
         }
@@ -111,7 +116,7 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         }
     }
 
-    if (element.type === DialogElementTypes.RADIO || element.type === DialogElementTypes.SELECT) {
+    if (element.type === DialogElementTypes.RADIO || element.type === DialogElementTypes.SELECT || element.type === DialogElementTypes.CHECKBOX_GROUP) {
         appField.options = element.options?.map((option) => ({
             label: option.text,
             value: option.value,
@@ -123,8 +128,30 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
         }
     }
 
-    if (element.default) {
+    if (element.type === DialogElementTypes.CHECKBOX_MATRIX && element.matrix_config) {
+        appField.matrix_config = {
+            rows: element.matrix_config.rows.map((option) => ({label: option.text, value: option.value})),
+            columns: element.matrix_config.columns.map((option) => ({label: option.text, value: option.value})),
+            row_selection: element.matrix_config.row_selection ?? 'multiple',
+        };
+    }
+
+    if (element.type === DialogElementTypes.CHECKBOX_GROUP) {
+        appField.value = String(element.default ?? '').
+            split(',').
+            map((token) => token.trim()).
+            filter(Boolean);
+    } else if (element.type === DialogElementTypes.CHECKBOX_MATRIX) {
+        appField.value = String(element.default ?? '').
+            split(';').
+            map((token) => token.trim()).
+            filter(Boolean);
+    } else if (element.default) {
         appField.value = element.default;
+    }
+
+    if (element.label_position === 'before' || element.label_position === 'after') {
+        appField.label_position = element.label_position;
     }
 
     if (element.placeholder) {

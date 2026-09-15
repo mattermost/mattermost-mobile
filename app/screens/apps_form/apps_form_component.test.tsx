@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React from 'react';
 
 import DatabaseManager from '@database/manager';
@@ -49,7 +50,7 @@ function getProps(form: Partial<AppForm> = {}) {
     };
 }
 
-function lastHeaderRight(): undefined | (() => React.ReactElement<{text: string; disabled: boolean; testID: string}>) {
+function lastHeaderRight(): undefined | (() => React.ReactElement<{text: string; disabled: boolean; testID: string; onPress: () => void}>) {
     const lastCall = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1];
     return lastCall?.[0]?.headerRight;
 }
@@ -123,5 +124,52 @@ describe('AppsFormComponent navigation header', () => {
 
         const headerRight = lastHeaderRight();
         expect(headerRight?.().props.text).toBe('Triage');
+    });
+
+    describe('checkbox_matrix validation on submit', () => {
+        // Exercises the PRODUCTION path: values are validated against elements built by
+        // fieldsAsElements(), and checkDialogElementForError's matrix format checks are
+        // guarded on matrix_config. When fieldsAsElements omitted matrix_config the whole
+        // block was unreachable and malformed row:col entries submitted verbatim. Tests
+        // that hand-build DialogElements cannot catch that, which is how it shipped.
+        const matrixForm = (value: string[]): Partial<AppForm> => ({
+            fields: [{
+                name: 'permissions',
+                type: 'checkbox_matrix',
+                is_required: false,
+                value,
+                matrix_config: {
+                    rows: [{label: 'Posts', value: 'posts'}],
+                    columns: [{label: 'View', value: 'view'}],
+                    row_selection: 'multiple',
+                },
+            }] as AppField[],
+        });
+
+        const pressSubmit = async () => {
+            await act(async () => {
+                lastHeaderRight()?.().props.onPress();
+            });
+        };
+
+        it('blocks submit when a matrix entry references an unknown row', async () => {
+            const props = getProps(matrixForm(['nope:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await pressSubmit();
+
+            expect(props.submit).not.toHaveBeenCalled();
+        });
+
+        // Control: proves the block above is caused by the malformed value and not by
+        // submission being broken in this harness for some unrelated reason.
+        it('allows submit when the matrix entry is valid', async () => {
+            const props = getProps(matrixForm(['posts:view']));
+            renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+            await pressSubmit();
+
+            expect(props.submit).toHaveBeenCalled();
+        });
     });
 });
