@@ -75,6 +75,7 @@ class EditServerScreen {
         }
 
         await this.toggleAdvancedOptions();
+
         // Height animation (~250ms) must finish before the field is hittable on iOS.
         await waitFor(input).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await wait(timeouts.ONE_SEC);
