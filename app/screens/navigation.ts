@@ -112,12 +112,20 @@ export async function dismissToStackRoot() {
     }
 }
 
-export function bottomSheet(renderContent: () => React.ReactNode, snapPoints: Array<string | number>, footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode) {
+export function bottomSheet(
+    renderContent: () => React.ReactNode,
+    snapPoints: Array<string | number>,
+    footerComponent?: (props: BottomSheetFooterProps) => React.ReactNode,
+    keyboardBehavior?: 'extend' | 'fillParent' | 'interactive',
+) {
     DeviceEventEmitter.emit(Events.BLUR_AND_DISMISS_KEYBOARD);
     BottomSheetStore.setSnapPoints(snapPoints);
     BottomSheetStore.setRenderContentCallback(renderContent);
     if (footerComponent) {
         BottomSheetStore.setFooterComponent(footerComponent);
+    }
+    if (keyboardBehavior) {
+        BottomSheetStore.setKeyboardBehavior(keyboardBehavior);
     }
 
     navigateToScreen(Screens.GENERIC_BOTTOM_SHEET);

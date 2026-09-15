@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Pressable, View} from 'react-native';
+import {Pressable, Text, useWindowDimensions, View} from 'react-native';
 
 import AttributeChip from '@components/attribute_chip';
 import CompassIcon from '@components/compass_icon';
@@ -11,16 +12,18 @@ import FloatingTextInput from '@components/floating_input/floating_text_input_la
 import FormattedText from '@components/formatted_text';
 import {PROPERTY_TEXT_VALUE_MAX_LENGTH} from '@constants/channel_attributes';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {usePreventDoubleTap} from '@hooks/utils';
-import BottomSheetContent from '@screens/bottom_sheet/content';
+import BottomSheetButton from '@screens/bottom_sheet/button';
+import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET} from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
 import {getPropertyFieldLabel, isPropertyFieldRequired, reachableOptions, type ResolvedChannelAttribute} from '@utils/channel_attributes';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {ChannelAttributeValueInput} from '@actions/remote/channel_attributes';
+import {OPTION_ROW_HEIGHT, SAVE_BUTTON_BOTTOM_PADDING, TEXT_INPUT_MARGIN_BOTTOM} from './utils';
 
-export const OPTION_ROW_HEIGHT = 48;
+import type {ChannelAttributeValueInput} from '@actions/remote/channel_attributes';
 
 const messages = defineMessages({
     title: {
@@ -42,6 +45,30 @@ const messages = defineMessages({
 });
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+
+    // Mirrors screens/bottom_sheet/content.tsx's own container/title/separator
+    // styling. That component cannot be reused here: it renders the title as a
+    // fixed sibling above whatever it's given as children, so a title long
+    // enough to matter cannot scroll with the rest of the sheet. Rendering the
+    // title inside our own scroll area is what lets it wrap to any number of
+    // lines without pushing Save out of the sheet the way a fixed header would.
+    container: {
+        flexGrow: 1,
+    },
+    titleContainer: {
+        marginTop: 4,
+        marginBottom: 12,
+    },
+    titleText: {
+        color: theme.centerChannelColor,
+        ...typography('Heading', 600, 'SemiBold'),
+    },
+    separator: {
+        height: 1,
+        right: 20,
+        borderTopWidth: 1,
+        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+    },
     row: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -65,7 +92,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.dndIndicator,
     },
     inputContainer: {
-        marginBottom: 12,
+        marginBottom: TEXT_INPUT_MARGIN_BOTTOM,
+    },
+
+    // flex: 1, not a fixed height: this fills whatever space the sheet's current
+    // snap point leaves after the title and Save row, and scrolls instead of
+    // clipping when the options (or a wrapped title above them) don't fit it.
+    scrollArea: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingBottom: 4,
+    },
+    saveButtonWrapper: {
+        paddingBottom: SAVE_BUTTON_BOTTOM_PADDING,
     },
 }));
 
@@ -159,6 +199,10 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
+    const {width: windowWidth} = useWindowDimensions();
+    const separatorWidth = Math.max(windowWidth, 450);
+    const separatorMarginBottom = isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN;
 
     const {field, rawValue} = attribute;
     const label = getPropertyFieldLabel(field);
@@ -222,69 +266,95 @@ const ChannelAttributeEditor = ({attribute, clearable, unlockOptions = false, on
     const isRequired = isPropertyFieldRequired(field);
     const textEmptied = isRequired && text.trim() === '';
 
-    if (isText) {
-        return (
-            <BottomSheetContent
-                showButton={true}
-                showTitle={true}
-                titleSeparator={true}
-                title={intl.formatMessage(messages.title, {attribute: label})}
-                buttonText={intl.formatMessage(messages.save)}
-                disableButton={!textChanged || textEmptied}
-                onPress={handleSaveText}
-                testID={`channel_attribute_editor.${field.name}`}
-            >
-                <View style={styles.inputContainer}>
-                    <FloatingTextInput
-                        label={label}
-                        value={text}
-                        onChangeText={setText}
-                        maxLength={PROPERTY_TEXT_VALUE_MAX_LENGTH}
-                        autoFocus={true}
-                        theme={theme}
-                        testID={`channel_attribute_editor.${field.name}.input`}
-                    />
-                </View>
-            </BottomSheetContent>
-        );
-    }
+    const hasSaveButton = isText || isMultiselect;
 
     return (
-        <BottomSheetContent
-            showButton={isMultiselect}
-            showTitle={true}
-            titleSeparator={true}
-            title={intl.formatMessage(messages.title, {attribute: label})}
-            buttonText={isMultiselect ? intl.formatMessage(messages.save) : undefined}
-            disableButton={!multiselectChanged || (isRequired && selection.length === 0)}
-            onPress={handleSaveMultiselect}
-            testID={`channel_attribute_editor.${field.name}`}
+        <View
+            style={styles.container}
+            testID={`channel_attribute_editor.${field.name}.screen`}
         >
-            {options.map((option) => (
-                <OptionRow
-                    key={option.id}
-                    fieldName={field.name}
-                    label={label}
-                    option={option}
-                    selected={selection.includes(option.id)}
-                    onPress={handleSelect}
-                />
-            ))}
+            {/*
+              Title and separator are inside the same scroll area as the rest of
+              the content, not fixed above it: a title long enough to wrap
+              several lines then scrolls along with everything below it instead
+              of consuming fixed space that Save — laid out after this scroll
+              area, never inside it — would otherwise be pushed out of.
+            */}
+            <BottomSheetScrollView
+                style={styles.scrollArea}
+                contentContainerStyle={styles.scrollContent}
+            >
+                <View style={styles.titleContainer}>
+                    <Text
+                        style={styles.titleText}
+                        testID={`channel_attribute_editor.${field.name}.title`}
+                    >
+                        {intl.formatMessage(messages.title, {attribute: label})}
+                    </Text>
+                </View>
+                <View style={[styles.separator, {width: separatorWidth, marginBottom: separatorMarginBottom}]}/>
 
-            {clearable && (
-                <Pressable
-                    onPress={handleClear}
-                    style={({pressed}) => [styles.row, pressed && styles.pressed]}
-                    accessibilityRole='button'
-                    testID={`channel_attribute_editor.${field.name}.clear`}
-                >
-                    <FormattedText
-                        {...messages.clear}
-                        style={styles.clearText}
+                {isText ? (
+                    <View style={styles.inputContainer}>
+                        <FloatingTextInput
+                            bottomSheetInput={true}
+                            label={label}
+                            value={text}
+                            onChangeText={setText}
+                            maxLength={PROPERTY_TEXT_VALUE_MAX_LENGTH}
+                            autoFocus={true}
+                            theme={theme}
+                            testID={`channel_attribute_editor.${field.name}.input`}
+                        />
+                    </View>
+                ) : (
+                    <>
+                        {options.map((option) => (
+                            <OptionRow
+                                key={option.id}
+                                fieldName={field.name}
+                                label={label}
+                                option={option}
+                                selected={selection.includes(option.id)}
+                                onPress={handleSelect}
+                            />
+                        ))}
+
+                        {clearable && (
+                            <Pressable
+                                onPress={handleClear}
+                                style={({pressed}) => [styles.row, pressed && styles.pressed]}
+                                accessibilityRole='button'
+                                testID={`channel_attribute_editor.${field.name}.clear`}
+                            >
+                                <FormattedText
+                                    {...messages.clear}
+                                    style={styles.clearText}
+                                />
+                            </Pressable>
+                        )}
+                    </>
+                )}
+            </BottomSheetScrollView>
+
+            {hasSaveButton && (
+
+                // BottomSheetButton's own bottom padding is the device safe-area
+                // inset, which Android reports as 0 while a keyboard is up (real
+                // or, as with a hardware/passthrough keyboard, merely believed to
+                // be) — the text editor autofocuses its input, so it hits this on
+                // open; the option editors never focus anything, so they never
+                // do. This fixed cushion holds regardless of that inset.
+                <View style={styles.saveButtonWrapper}>
+                    <BottomSheetButton
+                        text={intl.formatMessage(messages.save)}
+                        disabled={isText ? (!textChanged || textEmptied) : (!multiselectChanged || (isRequired && selection.length === 0))}
+                        onPress={isText ? handleSaveText : handleSaveMultiselect}
+                        testID={`channel_attribute_editor.${field.name}.save.button`}
                     />
-                </Pressable>
+                </View>
             )}
-        </BottomSheetContent>
+        </View>
     );
 };
 

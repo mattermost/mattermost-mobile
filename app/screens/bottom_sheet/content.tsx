@@ -28,7 +28,8 @@ type Props = {
 const TITLE_MARGIN_TOP = 4;
 const TITLE_MARGIN_BOTTOM = 12;
 
-export const TITLE_HEIGHT = TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM + 30; // typography 600 line height
+export const TITLE_LINE_HEIGHT = 30; // typography Heading 600 line height
+export const TITLE_HEIGHT = TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM + TITLE_LINE_HEIGHT;
 export const TITLE_SEPARATOR_MARGIN = 12;
 export const TITLE_SEPARATOR_MARGIN_TABLET = 20;
 
