@@ -11,7 +11,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 // Hard character cap per chip. Values longer than this are truncated with an
-// ellipsis so one long label cannot consume the whole header row.
+// ellipsis so one long label cannot consume the whole header row. The 'option'
+// variant opts out: in a picker the whole option name has to be readable, since
+// two markings can share their first fifteen characters.
 const MAX_CHARS = 15;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -25,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 
     // Neutral chip for the dark channel header: solid light-gray so it reads
-    // clearly on any sidebarBg colour. Text is dark to contrast the light background.
+    // clearly on any sidebarBg color. Text is dark to contrast the light background.
     neutralContainerHeader: {
         backgroundColor: NEUTRAL_CHIP_HEADER_BG,
     },
@@ -59,9 +61,10 @@ type Props = {
     announceLabel?: boolean;
 
     // 'header' for chips inside the dark channel header; 'info' (default) for
-    // chips on a light surface such as Channel Info or the overflow sheet.
-    // Only affects the neutral fallback colours — option colours are unchanged.
-    variant?: 'header' | 'info';
+    // chips on a light surface such as Channel Info or the overflow sheet;
+    // 'option' for a chip in a picker, which renders the value in full.
+    // Only affects the neutral fallback colors — option colors are unchanged.
+    variant?: 'header' | 'info' | 'option';
 
     testID?: string;
 };
@@ -69,7 +72,7 @@ type Props = {
 /**
  * One channel attribute value, as a chip.
  *
- * The value is always rendered as text: colour must never be the only carrier of
+ * The value is always rendered as text: color must never be the only carrier of
  * meaning. The background is administrator-chosen, so the foreground is derived
  * from its luminance with getContrastingSimpleColor, the same helper the channel
  * banner uses.
@@ -101,7 +104,7 @@ const AttributeChip = ({label, value, color, announceLabel = true, variant = 'in
         };
     }, [color, variant, styles]);
 
-    const displayValue = value.length > MAX_CHARS ? `${value.slice(0, MAX_CHARS)}…` : value;
+    const displayValue = variant !== 'option' && value.length > MAX_CHARS ? `${value.slice(0, MAX_CHARS)}…` : value;
 
     return (
         <View
@@ -110,8 +113,8 @@ const AttributeChip = ({label, value, color, announceLabel = true, variant = 'in
         >
             <Text
                 style={textStyle}
-                numberOfLines={1}
-                ellipsizeMode='tail'
+                numberOfLines={variant === 'option' ? undefined : 1}
+                ellipsizeMode={variant === 'option' ? undefined : 'tail'}
                 accessibilityLabel={announceLabel ? `${label}: ${value}` : value}
                 testID={testID ? `${testID}.value` : undefined}
             >

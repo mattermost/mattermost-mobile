@@ -19,12 +19,15 @@ export default function GenericBottomSheetRoute() {
         snapPoints[1] += (isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN);
     }
 
+    const keyboardBehavior = BottomSheetStore.getKeyboardBehavior();
+
     return (
         <BottomSheet
             screen={Screens.GENERIC_BOTTOM_SHEET}
             renderContent={renderContent!}
             footerComponent={BottomSheetStore.getFooterComponent()}
             snapPoints={snapPoints}
+            keyboardBehavior={keyboardBehavior}
         />
     );
 }

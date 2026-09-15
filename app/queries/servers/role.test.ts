@@ -18,6 +18,7 @@ import {
     observeCanManageChannelSettings,
     observeCanManageChannelAutotranslations,
     observeCanManageSharedChannel,
+    observeCanManageSystem,
 } from './role';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -670,6 +671,51 @@ describe('Role Queries', () => {
             result.subscribe({next: subscriptionNext});
 
             expect(subscriptionNext).toHaveBeenCalledWith(false);
+        });
+    });
+
+    describe('observeCanManageSystem', () => {
+        it('should emit true when the user holds manage_system via a system role', async () => {
+            const mockUser = TestHelper.fakeUserModel({
+                id: 'user1',
+                roles: 'system_admin',
+            });
+
+            await operator.handleRole({
+                roles: [{
+                    id: 'system_admin',
+                    name: 'system_admin',
+                    permissions: [Permissions.MANAGE_SYSTEM],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const canManage = await firstValueFrom(observeCanManageSystem(database, mockUser));
+            expect(canManage).toBe(true);
+        });
+
+        it('should emit false when the user has no role granting manage_system', async () => {
+            const mockUser = TestHelper.fakeUserModel({
+                id: 'user1',
+                roles: 'system_user',
+            });
+
+            await operator.handleRole({
+                roles: [{
+                    id: 'system_user',
+                    name: 'system_user',
+                    permissions: [Permissions.CREATE_POST],
+                }],
+                prepareRecordsOnly: false,
+            });
+
+            const canManage = await firstValueFrom(observeCanManageSystem(database, mockUser));
+            expect(canManage).toBe(false);
+        });
+
+        it('should emit false when there is no user', async () => {
+            const canManage = await firstValueFrom(observeCanManageSystem(database, undefined));
+            expect(canManage).toBe(false);
         });
     });
 });
