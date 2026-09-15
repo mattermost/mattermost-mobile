@@ -447,19 +447,20 @@ export async function deletePostsInChannelsByCutoff(
         const postConditionArgs = [...channelIds, ...excludedIds];
         const postSubquery = `SELECT id FROM ${POST} WHERE ${postCondition}`;
 
-        const deletedCount = await database.get<PostModel>(POST).query(
-            Q.where('channel_id', Q.oneOf(channelIds)),
-            Q.where('create_at', Q.lt(cutoff)),
-            ...(excludedPostIds.size > 0 ? [Q.where('id', Q.notIn([...excludedPostIds]))] : []),
-            Q.unsafeSqlExpr(`NOT ${hasActiveReply}`),
-            Q.unsafeSqlExpr(`NOT ${hasDraft}`),
-        ).fetchCount();
-
         // Scopes PostsInThread trimming to roots in these channels.
         const rootInChannelsExists = `EXISTS (SELECT 1 FROM ${POST} WHERE ${POST}.id = ${POSTS_IN_THREAD}.root_id AND ${POST}.channel_id IN (${channelPlaceholders}))`;
 
-        await database.write(() => {
-            return database.adapter.unsafeExecute({
+        const deletedCount = await database.write(async () => {
+            // fetch count inside the write transaction to ensure exact count is returned.
+            const count = await database.get<PostModel>(POST).query(
+                Q.where('channel_id', Q.oneOf(channelIds)),
+                Q.where('create_at', Q.lt(cutoff)),
+                ...(excludedPostIds.size > 0 ? [Q.where('id', Q.notIn([...excludedPostIds]))] : []),
+                Q.unsafeSqlExpr(`NOT ${hasActiveReply}`),
+                Q.unsafeSqlExpr(`NOT ${hasDraft}`),
+            ).fetchCount();
+
+            await database.adapter.unsafeExecute({
                 sqls: [
                     [`DELETE FROM ${REACTION} WHERE post_id IN (${postSubquery})`, postConditionArgs],
                     [`DELETE FROM ${FILE} WHERE post_id IN (${postSubquery})`, postConditionArgs],
@@ -481,6 +482,8 @@ export async function deletePostsInChannelsByCutoff(
                     [`UPDATE ${MY_CHANNEL} SET last_fetched_at = 0 WHERE id IN (${channelPlaceholders}) AND last_fetched_at > 0 AND NOT EXISTS (SELECT 1 FROM ${POSTS_IN_CHANNEL} WHERE channel_id = ${MY_CHANNEL}.id)`, channelIds],
                 ],
             });
+
+            return count;
         });
 
         // Re-apply the raw-SQL bookkeeping through the model layer so cached rows and
