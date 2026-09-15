@@ -165,4 +165,55 @@ describe('SnackBar', () => {
 
         expect(baseProps.onDismiss).toHaveBeenCalled();
     });
+
+    test('auto-dismisses after switching from a persistent bar to a non-persistent one', async () => {
+        enableFakeTimers();
+
+        const {rerender} = renderWithIntlAndTheme(
+            <SnackBar
+                {...baseProps}
+                barType={SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING}
+                messageValues={{minutes: 1}}
+            />,
+        );
+
+        rerender(
+            <SnackBar
+                {...baseProps}
+                barType={SNACK_BAR_TYPE.CODE_COPIED}
+            />,
+        );
+
+        await act(async () => {
+            jest.advanceTimersByTime(3000);
+        });
+
+        expect(baseProps.onDismiss).toHaveBeenCalled();
+
+        disableFakeTimers();
+    });
+
+    test('does not auto-dismiss after switching from a non-persistent bar to a persistent one', async () => {
+        enableFakeTimers();
+
+        const {rerender} = renderWithIntlAndTheme(
+            <SnackBar {...baseProps}/>,
+        );
+
+        rerender(
+            <SnackBar
+                {...baseProps}
+                barType={SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING}
+                messageValues={{minutes: 1}}
+            />,
+        );
+
+        await act(async () => {
+            jest.advanceTimersByTime(3000);
+        });
+
+        expect(baseProps.onDismiss).not.toHaveBeenCalled();
+
+        disableFakeTimers();
+    });
 });

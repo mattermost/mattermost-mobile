@@ -253,7 +253,7 @@ const SnackBar = ({
         animateHiding(false);
     };
 
-    // This effect hides the snack bar after 3 seconds, unless it is persistent
+    // Hides the bar after AUTO_DISMISS_DURATION_MS unless persistent, re-arms when persistence flips
     useEffect(() => {
         mounted.current = true;
 
@@ -269,10 +269,7 @@ const SnackBar = ({
             stopTimers();
             mounted.current = false;
         };
-
-        // only run on mount/unmount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isPersistentSnackBar, animateHiding, isPanned]);
 
     const onClosePressHandler = useCallback(() => {
         animateHiding(false);
@@ -292,7 +289,10 @@ const SnackBar = ({
         <GestureHandlerRootView style={[styles.gestureRoot, !description && styles.gestureRootHeight, gestureRootStyle]}>
             <GestureDetector gesture={gesture}>
                 <Animated.View style={animatedMotion}>
-                    <Animated.View entering={FadeIn.duration(300)}>
+                    <Animated.View
+                        entering={FadeIn.duration(300)}
+                        key={barType ?? 'default'}
+                    >
                         <Toast
                             animatedStyle={snackBarStyle}
                             description={description}
