@@ -258,6 +258,35 @@ describe('CallScreen', () => {
         expect(screen.queryByText('host')).toBeNull();
     });
 
+    it('should leave our card in activity order in a non-DM call, where only DM cards are pinned', () => {
+        // Pinning ourselves first is a DM-only rule. A group call keeps the shared ordering, so
+        // an unmuted participant still sorts ahead of our muted card.
+        const props = getBaseProps();
+        const sessions = {
+            'my-session': {...mySession, muted: true},
+            'alice-session': {
+                sessionId: 'alice-session',
+                userId: 'alice-id',
+                muted: false,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({id: 'alice-id', username: 'alice'}),
+            },
+            'bob-session': {
+                sessionId: 'bob-session',
+                userId: 'bob-id',
+                muted: true,
+                raisedHand: 0,
+                userModel: TestHelper.fakeUserModel({id: 'bob-id', username: 'bob'}),
+            },
+        };
+        props.currentCall = {...props.currentCall!, sessions};
+        props.sessionsDict = sessions;
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['alice-id', 'bob-id', 'my-id']);
+    });
+
     it('should keep our card on screen while the rendered sessions trail the call by a database tick', () => {
         // sessionsDict comes from a database query, so it lands after currentCall.sessions. Our card
         // has to come from the same place it is rendered from, or it drops out for that tick. Here
