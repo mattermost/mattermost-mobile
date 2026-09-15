@@ -322,14 +322,9 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
 };
 
 /**
- * Get the public (unauthenticated) link for a file.
+ * Get the public (unauthenticated) link for a file. Requires the file to be attached to a
+ * post and `FileSettings.EnablePublicLink` to be true.
  * See https://api.mattermost.com/#operation/GetFileLink
- *
- * The file must already be attached to a post -- the server rejects a public link
- * for a dangling upload -- and `FileSettings.EnablePublicLink` must be true.
- *
- * A public link is the only server-hosted image URL that the server itself can
- * fetch while building `post.metadata.images`, because that fetch is anonymous.
  * @param {string} baseUrl - the base server URL
  * @param {string} fileId - the file ID
  * @return {Object} returns {link} on success or {error, status} on error

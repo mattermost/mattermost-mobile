@@ -51,10 +51,7 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
         allowDuplicateWrites: !user,
         label: 'apiCreateUser',
 
-        // Axios times out at 45s. HALF_MIN is shorter than one stall, so a hung
-        // POST /users never retries. ONE_MIN leaves room for the 2s backoff and
-        // a second attempt. Keep POST+ECONNRESET off the axios interceptor —
-        // that layer cannot tell whether the server committed.
+        // Axios times out at 45s, so HALF_MIN could not fit one stall plus a retry.
         budgetMs: timeouts.ONE_MIN,
     });
 };

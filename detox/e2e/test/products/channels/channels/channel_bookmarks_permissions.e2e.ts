@@ -74,9 +74,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        // Channel bookmarks arrive enabled from the provisioned server, not from this
-        // harness — see channel_bookmarks_search.e2e.ts for which key gates it per version.
-        // Create regular user for MM-T5615_1.
+        // Bookmarks arrive enabled from the provisioned server. Create regular user for MM-T5615_1.
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');

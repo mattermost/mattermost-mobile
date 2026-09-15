@@ -25,35 +25,9 @@ import {
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
-/**
- * Why these two tests kept timing out on `markdown_image`, and why the URL matters.
- *
- * Markdown.renderImage (app/components/markdown/markdown.tsx) starts with
- * `if (!imagesMetadata || isUnsafeLinksPost) { return null; }`, and Message passes
- * `post.metadata?.images ?? undefined` (app/components/post_list/post/body/message/message.tsx).
- * So when the server did not preload the image, MarkdownImage is never mounted at all and
- * `testID='markdown_image'` cannot exist -- the failure surfaces as
- * "Timed out while waiting for expectation: TOEXIST ... markdown_image", with no image error
- * and no broken-image icon. Every past fix that treated this as "the image failed to load"
- * was chasing the wrong layer.
- *
- * The server only adds an entry to `post.metadata.images` for a URL it can fetch **anonymously**
- * while building post metadata. Measured against a real server:
- *
- *   ![x](/api/v4/files/{id})                  -> images: null   (needs a session)
- *   ![x](http://<site>/api/v4/files/{id})     -> images: null   (needs a session)
- *   ![x](https://docs.mattermost.com/...)     -> images: null   (404)
- *   ![x](https://mattermost.com/...png)       -> images: {701x701}  (reachable third party)
- *   ![x](/files/{id}/public?h=...)            -> images: {1250x833} (public link, no session)
- *
- * A third-party host is what made this flaky on main: the *test server* has to reach it while
- * creating the post, so any egress hiccup or upstream 404 silently drops the metadata and the
- * test fails in the UI 10s later. A public link to a file we uploaded ourselves is served by the
- * same server under test, needs no session, and pins the exact bytes -- no outbound internet.
- *
- * image.png is 1250x833, under the 4096 ANDROID_MAX_WIDTH/HEIGHT cap in MarkdownImage, which is
- * a separate early return that would also drop the testID.
- */
+// Markdown.renderImage returns null when post.metadata.images is absent, so
+// markdown_image is never mounted. The server only populates that metadata for URLs it can
+// fetch anonymously -- hence a public file link, not /api/v4/files/{id}. See PR #10161.
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
@@ -126,13 +100,9 @@ describe('Messaging - Markdown Image', () => {
     });
 });
 
-/**
- * Public links must be on, and the post-metadata fetcher must be allowed to connect to the
- * server's own host. That fetcher applies SSRF protection, so on a loopback or private-IP
- * site (local runs, docker) it refuses the request and the image is dropped from the metadata
- * even though the link itself serves fine. Both patches are additive and idempotent, and are
- * deliberately not reverted -- shards share a server, so an afterAll revert would race.
- */
+// The metadata fetcher's SSRF guard blocks loopback/private hosts, so the site's own host
+// must be allowlisted. Both patches are additive and idempotent; shards share a server, so
+// they are deliberately not reverted.
 async function enablePublicLinksForOwnHost(): Promise<void> {
     const {config, error} = await System.apiGetConfig(siteOneUrl);
     if (error || !config) {
@@ -161,10 +131,7 @@ async function enablePublicLinksForOwnHost(): Promise<void> {
     }
 }
 
-/**
- * Upload the fixture, attach it to a post (the server rejects a public link for a dangling
- * upload), then return the link as a server-relative path.
- */
+// The server rejects a public link for a dangling upload, so attach the file to a post first.
 async function createPublicImageLink(channelId: string): Promise<string> {
     const {fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, channelId);
 
@@ -177,10 +144,8 @@ async function createPublicImageLink(channelId: string): Promise<string> {
     return `${pathname}${search}`;
 }
 
-/**
- * Fail in setup, with the reason, rather than 10s later on an unexplained missing testID:
- * no metadata entry means renderImage returns null and the test can never pass.
- */
+// No metadata entry means renderImage returns null, so fail here with the reason rather than
+// 10s later on an unexplained missing testID.
 async function requireServerPreloadsImage(channelId: string, imageUrl: string): Promise<void> {
     // apiCreatePost throws on failure, so a returned post is always a real one.
     const {post} = await Post.apiCreatePost(siteOneUrl, {

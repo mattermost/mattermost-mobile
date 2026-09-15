@@ -489,65 +489,6 @@ jobs:
           path: detox/artifacts/
           overwrite: true
 
-  identify-missing-android-shards:
-    name: Identify missing Android shards
-    if: always() && needs.generate-specs.result == 'success'
-    # Deliberately NOT continue-on-error — see the iOS template for the reasoning.
-    # A failure leaves has_missing empty (retry skipped, stub still reports the
-    # gap, gate unaffected because generate-report runs with always()), but it
-    # stays visible instead of hiding a broken retry path.
-    runs-on: ubuntu-24.04
-    needs:
-      - generate-specs
-      - e2e-android
-    permissions:
-      contents: read
-      actions: read
-    outputs:
-      has_missing: ${{ steps.identify.outputs.has_missing }}
-      missing_count: ${{ steps.identify.outputs.missing_count }}
-      missing_specs: ${{ steps.identify.outputs.missing_specs }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Identify missing shards
-        id: identify
-        uses: ./.github/actions/identify-missing-shards
-        with:
-          specs: ${{ needs.generate-specs.outputs.specs }}
-          workflow_hash: ${{ needs.generate-specs.outputs.workflow_hash }}
-          results_prefix: android-results
-          github-token: ${{ github.token }}
-
-  e2e-android-retry:
-    name: Detox E2E Android (retry missing shards)
-    needs:
-      - generate-specs
-      - identify-missing-android-shards
-    if: always() && needs.identify-missing-android-shards.outputs.has_missing == 'true'
-    uses: ./.github/workflows/e2e-android-shard-matrix.yml
-    permissions:
-      contents: read
-      actions: read
-    with:
-      specs: ${{ needs.identify-missing-android-shards.outputs.missing_specs }}
-      workflow_hash: ${{ needs.generate-specs.outputs.workflow_hash }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-      MM_TEST_USER_NAME: ${{ inputs.MM_TEST_USER_NAME }}
-      MM_TEST_PASSWORD: ${{ inputs.MM_TEST_PASSWORD }}
-      run-type: ${{ inputs.run-type }}
-      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      android_avd_name: ${{ inputs.android_avd_name }}
-      android_api_level: ${{ inputs.android_api_level }}
-      artifact_run_id: ${{ inputs.artifact_run_id }}
-    secrets: inherit
-
   generate-report:
     # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
     name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
@@ -556,8 +497,6 @@ jobs:
     needs:
       - generate-specs
       - e2e-android
-      - identify-missing-android-shards
-      - e2e-android-retry
     permissions:
       contents: read
       # test-system-io-report-upload authenticates via the workflow's OIDC
@@ -659,7 +598,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
-            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
+            --expected-specs '${{ needs.generate-specs.outputs.specs }}' \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed — skipping TSIO upload."

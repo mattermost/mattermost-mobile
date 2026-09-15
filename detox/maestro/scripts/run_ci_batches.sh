@@ -335,10 +335,14 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
+# True when the driver died before driving the app. Android writes JUnit with
+# time="0.0" in that case, so require sub-second times to avoid matching a real
+# assertion (gRPC/tcp text also appears in ordinary Maestro-over-adb failures).
 driver_startup_failed() {
-  local batch_log=$1
-  local batch_xml=$2
-  node "$REPO_ROOT/detox/utils/maestro-driver-failed.js" "$batch_log" "$batch_xml"
+  local batch_log=$1 batch_xml=${2:-}
+  { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
+  [[ -s "$batch_xml" ]] || return 0
+  ! grep -qE '<testcase\b[^>]*\btime="([1-9][0-9]*|0*[1-9])' "$batch_xml"
 }
 
 ensure_android_driver_healthy() {
@@ -347,55 +351,26 @@ ensure_android_driver_healthy() {
 
   echo "==> Reconnecting adb after Maestro driver loss"
   adb start-server >/dev/null 2>&1 || true
-  # `adb wait-for-device` blocks forever when no device ever comes back, and
-  # `|| true` cannot save us because it never returns — that would hang the whole
-  # batch loop past the job timeout, so neither the retry nor the skipped-report
-  # path would ever run. Bound it and let the boot poll below decide.
-  timeout 60 adb wait-for-device || echo "==> adb wait-for-device did not return within 60s — continuing"
-  local attempt boot
-  for attempt in $(seq 1 30); do
-    boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-    if [[ "$boot" == "1" ]]; then
-      echo "==> adb back online after ${attempt} poll(s)"
-      break
-    fi
-    sleep 2
-  done
+  # Never returns when no device comes back, and `|| true` cannot help, so bound it.
+  timeout 60 adb wait-for-device || echo "==> adb wait-for-device timed out — continuing"
   reset_android_app_state
   ensure_android_app_launchable
 }
 
-xml_escape() {
-  printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
-}
-
-# One <testcase> per flow in the batch, not one for the batch. A batch carries several
-# flows, so collapsing them into a single entry would drop the others from the report
-# entirely and TSIO would show a smaller, greener suite than the one we asked for.
+# One <testcase> per flow, not one per batch: collapsing them would drop the other
+# flows and report a smaller, greener suite than the one we asked for.
 write_skipped_driver_junit() {
   local batch_xml=$1
   shift
-  local flows=("$@")
-  [[ ${#flows[@]} -eq 0 ]] && flows=(unknown_flow)
-
-  local msg="Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure"
-  local msg_xml
-  msg_xml="$(xml_escape "$msg")"
-
+  local msg='Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure'
   {
     printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
-    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="0" errors="0" skipped="%d" time="0">\n' \
-      "${#flows[@]}" "${#flows[@]}"
-    local flow flow_base flow_id flow_label_xml flow_id_xml
-    for flow in "${flows[@]}"; do
-      flow_base="${flow##*/}"
-      flow_id="${flow_base%.yml}"
-      flow_label_xml="$(xml_escape "$flow")"
-      flow_id_xml="$(xml_escape "$flow_id")"
-      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' \
-        "$flow_id_xml" "$flow_id_xml" "$flow_label_xml" "$flow_label_xml"
-      printf '      <skipped message="%s"/>\n' "$msg_xml"
-      printf '    </testcase>\n'
+    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="0" errors="0" skipped="%d" time="0">\n' "$#" "$#"
+    local flow base id
+    for flow in "$@"; do
+      base="${flow##*/}"; id="${base%.yml}"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' "$id" "$id" "$flow" "$flow"
+      printf '      <skipped message="%s"/>\n    </testcase>\n' "$msg"
     done
     printf '  </testsuite>\n</testsuites>\n'
   } > "$batch_xml"
@@ -495,8 +470,8 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
 
-  # Retry once when the driver never started (iOS timeout, Android gRPC UNAVAILABLE
-  # with 0s JUnit). A genuine assertion writes elapsed time >= 1s and is left as-is.
+  # Retry once when the driver never drove the app. A flow that ran and failed writes
+  # real elapsed times and is reported as-is.
   if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
     echo "==> Batch ${batch_idx}: Maestro driver never drove the app. Recovering and retrying this batch once."
     if [[ "$PLATFORM" == "ios" ]]; then
@@ -512,7 +487,7 @@ for batch_paths in "${BATCHES[@]}"; do
     echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
 
     if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
-      echo "==> Batch ${batch_idx}: driver still unavailable after retry — recording ${#path_arr[@]} flow(s) as skipped (not an assertion)"
+      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as skipped"
       write_skipped_driver_junit "$batch_xml" "${path_arr[@]}"
       [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
       [[ "$PLATFORM" == "android" ]] && ensure_android_driver_healthy

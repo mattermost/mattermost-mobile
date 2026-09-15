@@ -24,25 +24,9 @@ import {expect, waitFor} from 'detox';
 
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
-/**
- * Run a best-effort sidebar scroll without Detox's idle gate.
- *
- * Detox *actions* carry no timeout, so one that never completes hangs until the
- * per-test cap and, because invocations are serialised, takes every later test
- * in the file with it. Seen on main 0869dc8 (run 34878744032, iOS machine-7):
- * `scrollTo('top')` on channel_list.flat_list was dispatched into a healthy app,
- * the main run loop then stopped reporting idle ("1 work item pending on Main
- * Queue", "Runloop Perform Block") and never recovered. testFnFailure.png shows
- * a completely settled channel list with the target channel on screen, so this
- * is Detox's idleness accounting, not a frozen UI. Cost: 4 failures and 35 of
- * the shard's 58 minutes, from one wedge.
- *
- * These scrolls are already optional — every call site swallows the error and
- * falls through to a bounded matcher. Dispatching them unsynchronized keeps a
- * stuck idle gate from turning "the list was already at its boundary" into a
- * six-minute silent hang; the following matchers have their own timeouts and
- * fail with a real message. This does not make the app idle again.
- */
+// Detox actions carry no timeout, so one that never completes hangs until the per-test cap
+// and takes the rest of the file with it (main 0869dc8: 4 failures, 35 min, from one stuck
+// idle gate). These scrolls are optional, so dispatch them unsynchronized.
 async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
     try {
         await withSynchronizationDisabled(scroll);
