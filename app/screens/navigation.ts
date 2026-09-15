@@ -123,9 +123,13 @@ export function bottomSheet(
     BottomSheetStore.setRenderContentCallback(renderContent);
     if (footerComponent) {
         BottomSheetStore.setFooterComponent(footerComponent);
+    } else {
+        BottomSheetStore.removeFooterComponent();
     }
     if (keyboardBehavior) {
         BottomSheetStore.setKeyboardBehavior(keyboardBehavior);
+    } else {
+        BottomSheetStore.removeKeyboardBehavior();
     }
 
     navigateToScreen(Screens.GENERIC_BOTTOM_SHEET);

@@ -103,14 +103,40 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
             return;
         }
 
+        let cleanupError: unknown;
         try {
-            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
-            if (canControlFlag) {
-                await disableChannelAttributes(siteOneUrl);
+            try {
+                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+            } catch (error) {
+                cleanupError ??= error;
             }
-            await HomeScreen.logout();
+
+            if (canControlFlag) {
+                try {
+                    const disabled = await disableChannelAttributes(siteOneUrl);
+                    if (!disabled) {
+                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes editing afterAll cleanup');
+                    }
+                } catch (error) {
+                    cleanupError ??= error;
+                }
+            }
+
+            try {
+                await HomeScreen.logout();
+            } catch (error) {
+                cleanupError ??= error;
+            }
         } finally {
-            await releaseClassificationLock(siteOneUrl, lockOwner);
+            try {
+                await releaseClassificationLock(siteOneUrl, lockOwner);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -138,7 +164,10 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         }
         if (canControlFlag) {
             try {
-                await disableChannelAttributes(siteOneUrl);
+                const disabled = await disableChannelAttributes(siteOneUrl);
+                if (!disabled) {
+                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes editing cleanup');
+                }
             } catch (error) {
                 cleanupError ??= error;
             }
@@ -497,6 +526,9 @@ describe('Channel Attributes - Setting values from Channel Info', () => {
         });
 
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        if (!channel) {
+            throw new Error('MM-T6324_1 failed to create its channel');
+        }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await Properties.apiSetChannelAttributeValue(siteOneUrl, channel.id, channelFieldId, OPTION_IDS.medium);
@@ -555,14 +587,40 @@ describe('Channel Attributes - Member view (read-only)', () => {
             return;
         }
 
+        let cleanupError: unknown;
         try {
-            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
-            if (canControlFlag) {
-                await disableChannelAttributes(siteOneUrl);
+            try {
+                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [MEMBER_FIELD_NAME]);
+            } catch (error) {
+                cleanupError ??= error;
             }
-            await HomeScreen.logout();
+
+            if (canControlFlag) {
+                try {
+                    const disabled = await disableChannelAttributes(siteOneUrl);
+                    if (!disabled) {
+                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes member view afterAll cleanup');
+                    }
+                } catch (error) {
+                    cleanupError ??= error;
+                }
+            }
+
+            try {
+                await HomeScreen.logout();
+            } catch (error) {
+                cleanupError ??= error;
+            }
         } finally {
-            await releaseClassificationLock(siteOneUrl, lockOwner);
+            try {
+                await releaseClassificationLock(siteOneUrl, lockOwner);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -590,7 +648,10 @@ describe('Channel Attributes - Member view (read-only)', () => {
         }
         if (canControlFlag) {
             try {
-                await disableChannelAttributes(siteOneUrl);
+                const disabled = await disableChannelAttributes(siteOneUrl);
+                if (!disabled) {
+                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes member view cleanup');
+                }
             } catch (error) {
                 cleanupError ??= error;
             }

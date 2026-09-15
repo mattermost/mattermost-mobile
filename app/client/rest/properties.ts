@@ -10,7 +10,7 @@ export interface ClientPropertiesMix {
     getPropertyFields: (groupName: string, objectType: string, targetType: string, targetId?: string, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
     searchPropertyFields: (groupName: string, options: PropertyFieldSearchOpts, groupLabel?: RequestGroupLabel) => Promise<PropertyField[]>;
     getSystemPropertyValues: <T>(groupName: string, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
-    patchPropertyValues: <T>(groupName: string, objectType: string, targetId: string, items: Array<PropertyValuePatchItem<T>>, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T>>>;
+    patchPropertyValues: <T>(groupName: string, objectType: string, targetId: string, items: Array<PropertyValuePatchItem<T>>, groupLabel?: RequestGroupLabel) => Promise<Array<PropertyValue<T | null>>>;
 }
 
 const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -46,7 +46,7 @@ const ClientProperties = <TBase extends Constructor<ClientBase>>(superclass: TBa
     // has to chunk. Every caller today sends a single item.
     patchPropertyValues = async <T>(groupName: string, objectType: string, targetId: string, items: Array<PropertyValuePatchItem<T>>, groupLabel?: RequestGroupLabel) => {
         const url = `${this.urlVersion}/properties/groups/${groupName}/${objectType}/values/${targetId}`;
-        return safeArrayCast<PropertyValue<T>>(await this.doFetch(url, {method: 'patch', body: items, groupLabel}));
+        return safeArrayCast<PropertyValue<T | null>>(await this.doFetch(url, {method: 'patch', body: items, groupLabel}));
     };
 };
 
