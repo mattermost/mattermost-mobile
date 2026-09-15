@@ -65,7 +65,11 @@ describe('Channels - Channel Bookmarks Search', () => {
         testTeam = team;
         testUser = user;
 
-        // FeatureFlags.ChannelBookmarks set in setup.ts (see channel_bookmarks.e2e.ts for rationale).
+        // Channel bookmarks come enabled from the provisioned server — nothing in this
+        // harness turns them on (setup.ts does not touch config at all). The gate moved
+        // between versions: FeatureFlags.ChannelBookmarks (default true) up to v11.11,
+        // ServiceSettings.EnableChannelBookmarks on server main, which Matterwick sets via
+        // MM_SERVICESETTINGS_ENABLECHANNELBOOKMARKS. So do not assert on either key by name.
 
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
@@ -115,7 +119,9 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     afterAll(async () => {
-        // Do not unset FeatureFlags.ChannelBookmarks — would clobber other shards.
+        // Nothing to restore: this spec never enabled bookmarks. Do not add a teardown
+        // that disables them either — shards share a server, so it would clobber the
+        // other bookmark suites running in parallel.
         await HomeScreen.logout();
     });
 
