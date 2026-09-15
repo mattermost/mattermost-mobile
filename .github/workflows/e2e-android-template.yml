@@ -492,7 +492,10 @@ jobs:
   identify-missing-android-shards:
     name: Identify missing Android shards
     if: always() && needs.generate-specs.result == 'success'
-    continue-on-error: true
+    # Deliberately NOT continue-on-error — see the iOS template for the reasoning.
+    # A failure leaves has_missing empty (retry skipped, stub still reports the
+    # gap, gate unaffected because generate-report runs with always()), but it
+    # stays visible instead of hiding a broken retry path.
     runs-on: ubuntu-24.04
     needs:
       - generate-specs

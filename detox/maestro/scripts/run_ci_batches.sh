@@ -347,7 +347,11 @@ ensure_android_driver_healthy() {
 
   echo "==> Reconnecting adb after Maestro driver loss"
   adb start-server >/dev/null 2>&1 || true
-  adb wait-for-device || true
+  # `adb wait-for-device` blocks forever when no device ever comes back, and
+  # `|| true` cannot save us because it never returns — that would hang the whole
+  # batch loop past the job timeout, so neither the retry nor the skipped-report
+  # path would ever run. Bound it and let the boot poll below decide.
+  timeout 60 adb wait-for-device || echo "==> adb wait-for-device did not return within 60s — continuing"
   local attempt boot
   for attempt in $(seq 1 30); do
     boot=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')

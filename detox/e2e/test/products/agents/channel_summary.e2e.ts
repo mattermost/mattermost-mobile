@@ -26,6 +26,8 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {device, expect, waitFor} from 'detox';
 
+import {logDebug} from '../../../../provision/log';
+
 describe('Agents - Channel Summary', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -60,8 +62,7 @@ describe('Agents - Channel Summary', () => {
             await waitFor(ChannelScreen.askAgentsQuickAction).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             askAgentsAvailable = true;
         } catch {
-            // eslint-disable-next-line no-console
-            console.warn('Ask Agents quick action not visible — tests remain skipped');
+            logDebug('Agents - Channel Summary beforeAll: Ask Agents quick action not visible — tests remain skipped');
         }
 
         // Dismiss via a control that is always on the sheet (Channel Info), never

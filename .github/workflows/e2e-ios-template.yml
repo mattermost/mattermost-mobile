@@ -823,7 +823,12 @@ jobs:
   identify-missing-ios-shards:
     name: Identify missing iOS shards
     if: always() && needs.generate-specs.result == 'success'
-    continue-on-error: true
+    # Deliberately NOT continue-on-error. A failure here (artifact listing, JSON
+    # parse, missing-shards.js) leaves has_missing empty, so e2e-ios-retry is
+    # skipped and the merge-jest-results stub reports the gap — the gate is still
+    # correct because generate-report runs with always(). But swallowing the
+    # failure would make a permanently broken retry path invisible, which defeats
+    # the point of a mechanism that exists to catch infra failures.
     runs-on: ubuntu-24.04
     needs:
       - generate-specs
