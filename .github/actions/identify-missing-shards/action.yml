@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Identify missing Detox shards
+description: >
+  Compare generate-specs matrix runIds against uploaded *-results-* artifacts.
+  A runner that dies in "Set up job" never uploads, so generate-report used to
+  stub a synthetic failure. This action selects those runIds for a retry matrix.
+
+inputs:
+  specs:
+    description: generate-specs matrix JSON ({"include":[{runId,...}]})
+    required: true
+  workflow_hash:
+    description: Artifact name infix from generate-specs
+    required: true
+  results_prefix:
+    description: Artifact name prefix before the hash (ios-results or android-results)
+    required: true
+  github-token:
+    description: Token used to list artifacts on the current workflow run
+    required: true
+
+outputs:
+  has_missing:
+    description: >
+      "true" when a retry is worth running: at least one expected runId has no artifact,
+      and the miss is small enough to look like runner deaths rather than a systemic
+      failure. See MAX_MISSING_SHARE in detox/utils/missing-shards.js.
+    value: ${{ steps.select.outputs.has_missing }}
+  missing_count:
+    description: Number of shards to retry
+    value: ${{ steps.select.outputs.missing_count }}
+  missing_specs:
+    description: Compact matrix JSON ({"include":[...]}) for strategy.matrix
+    value: ${{ steps.select.outputs.missing_specs }}
+
+runs:
+  using: composite
+  steps:
+    - name: List uploaded shard artifacts
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const names = [];
+          for (let page = 1; ; page++) {
+            const {data} = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              per_page: 100,
+              page,
+            });
+            for (const artifact of data.artifacts || []) {
+              names.push(artifact.name);
+            }
+            if (!data.artifacts || data.artifacts.length < 100) {
+              break;
+            }
+          }
+          fs.writeFileSync('artifact-names.txt', names.join('\n') + (names.length ? '\n' : ''));
+          core.info(`identify-missing-shards: listed ${names.length} artifacts for run ${context.runId}`);
+
+    - name: Select missing shards
+      id: select
+      env:
+        SPECS: ${{ inputs.specs }}
+        WORKFLOW_HASH: ${{ inputs.workflow_hash }}
+        RESULTS_PREFIX: ${{ inputs.results_prefix }}
+      shell: bash
+      run: |
+        printf '%s' "$SPECS" > expected-specs.json
+        PREFIX="${RESULTS_PREFIX}-${WORKFLOW_HASH}-"
+        node detox/utils/missing-shards.js \
+          --prefix "$PREFIX" \
+          --expected-specs expected-specs.json \
+          --artifact-names artifact-names.txt \
+          --output missing-shards.json

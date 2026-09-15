@@ -1,7 +1,68 @@
-name: Detox iOS E2E Tests Template
+name: Detox iOS shard matrix
+
+# Called from e2e-ios-template.yml to retry shards that never uploaded
+# ios-results-*. Nested one level under the iOS template
+# (PR → Detox E2E → iOS template → this file). First-wave shards stay inlined
+# in the template so the common path is unchanged.
 
 on:
   workflow_call:
+    inputs:
+      specs:
+        description: GitHub matrix JSON ({"include":[{runId,specs,...}]})
+        required: true
+        type: string
+      workflow_hash:
+        description: Artifact name infix from generate-specs
+        required: true
+        type: string
+      MOBILE_VERSION:
+        required: false
+        default: ""
+        type: string
+      MM_TEST_SERVER_URL:
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_2:
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_3:
+        required: false
+        type: string
+      MM_TEST_USER_NAME:
+        required: false
+        type: string
+      MM_TEST_PASSWORD:
+        required: false
+        type: string
+      run-type:
+        required: false
+        type: string
+        default: "PR"
+      record_tests_in_zephyr:
+        required: false
+        type: boolean
+        default: false
+      low_bandwidth_mode:
+        required: false
+        type: boolean
+        default: false
+      detox_config:
+        required: false
+        type: string
+        default: "ios.sim.debug"
+      ios_device_name:
+        required: false
+        type: string
+        default: "iPhone 17 Pro"
+      ios_device_os_name:
+        required: false
+        type: string
+        default: "iOS 26.2"
+      artifact_run_id:
+        required: false
+        type: string
+        default: ""
     secrets:
       MM_MOBILE_E2E_ADMIN_EMAIL:
         required: false
@@ -15,127 +76,10 @@ on:
         required: false
       MM_MOBILE_E2E_WEBHOOK_URL:
         required: false
-      # Channel-notify routing for the per-job TSIO finalize step. Callers that use
-      # an explicit `secrets:` block must forward these or notify silently no-ops.
-      MM_E2E_MASTER_HEALTH_WEBHOOK_URL:
-        required: false
-      MM_E2E_RELEASE_WEBHOOK_URL:
-        required: false
-      MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID:
-        required: false
-      MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY:
-        required: false
-      # Webhook sidecar. Unset means mm_blocks specs fall back to trycloudflare.
       MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
         required: false
       MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
         required: false
-    inputs:
-      MM_TEST_SERVER_URL:
-        description: "The test server URL (SITE_1)"
-        required: false
-        type: string
-      MM_TEST_SERVER_URL_2:
-        description: "The second test server URL (SITE_2); optional, no automatic fallback"
-        required: false
-        type: string
-      MM_TEST_SERVER_URL_3:
-        description: "The third test server URL (SITE_3); optional, no automatic fallback"
-        required: false
-        type: string
-      MM_TEST_USER_NAME:
-        description: "The admin username of the test instance"
-        required: false
-        type: string
-      MM_TEST_PASSWORD:
-        description: "The admin password of the test instance"
-        required: false
-        type: string
-      MOBILE_VERSION:
-        description: "The mobile version to test"
-        required: false
-        default: ""
-        type: string
-      run-type:
-        type: string
-        required: false
-        default: "PR"
-      record_tests_in_zephyr:
-        description: "Record test results in Zephyr, typically for release and main runs"
-        required: false
-        type: boolean
-        default: false
-      ios_device_name:
-        description: "iPhone simulator name"
-        required: false
-        type: string
-        default: "iPhone 17 Pro"
-      ios_device_os_name:
-        description: "iPhone simulator OS version"
-        required: false
-        type: string
-        default: "iOS 26.2"
-      low_bandwidth_mode:
-        description: "Enable low bandwidth mode"
-        required: false
-        type: boolean
-        default: false
-      search_path:
-        description: "Path to search for test specs (use for smoke test subset)"
-        required: false
-        type: string
-        default: "detox/e2e/test"
-      parallelism:
-        description: "Number of parallel test shards"
-        required: false
-        type: string
-        default: "28"
-      detox_config:
-        description: "Detox configuration name to use (e.g. ios.sim.debug, ios.ipad.debug)"
-        required: false
-        type: string
-        default: "ios.sim.debug"
-      artifact_run_id:
-        description: "Run ID of the workflow that uploaded ios-build-simulator-* (defaults to caller run)"
-        required: false
-        type: string
-        default: ""
-      tsio-config:
-        description: >
-          TSIO reporting config: {"composite_identity":{...},"total_reports_expected":N}.
-          Empty disables TSIO upload for this platform.
-        required: false
-        type: string
-        default: ""
-      tsio-shard-name:
-        description: "Display name for this shard in TSIO (e.g. detox-ios-Server_11.9.0-rc3)"
-        required: false
-        type: string
-        default: ""
-      durations_key:
-        description: >
-          Spec-duration manifest key (e.g. detox-ios, detox-ipad). Enables
-          duration-aware shard packing. Empty keeps the even alphabetical split.
-        required: false
-        type: string
-        default: ""
-    outputs:
-      STATUS:
-        value: ${{ jobs.generate-report.outputs.STATUS }}
-      TARGET_URL:
-        value: ${{ jobs.generate-report.outputs.TARGET_URL }}
-      FAILURES:
-        value: ${{ jobs.generate-report.outputs.FAILURES }}
-      PASSES:
-        value: ${{ jobs.generate-report.outputs.PASSES }}
-      TOTAL:
-        value: ${{ jobs.generate-report.outputs.TOTAL }}
-      SKIPPED:
-        value: ${{ jobs.generate-report.outputs.SKIPPED }}
-      ERRORS:
-        value: ${{ jobs.generate-report.outputs.ERRORS }}
-      PERCENTAGE:
-        value: ${{ jobs.generate-report.outputs.PERCENTAGE }}
 
 env:
   AWS_REGION: "us-east-1"
@@ -160,65 +104,15 @@ env:
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
   WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
   FAILURE_MESSAGE: "Something has failed"
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
   IOS: "true"
   RUNNING_E2E: "true"
-  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id || github.run_id }}
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
-  generate-specs:
-    runs-on: ubuntu-24.04
-    outputs:
-      specs: ${{ steps.generate-specs.outputs.specs }}
-      shard_count: ${{ steps.generate-specs.outputs.shard_count }}
-      build_id: ${{ steps.resolve-device.outputs.BUILD_ID }}
-      mobile_sha: ${{ steps.resolve-device.outputs.MOBILE_SHA }}
-      mobile_ref: ${{ steps.resolve-device.outputs.MOBILE_REF }}
-      workflow_hash: ${{ steps.resolve-device.outputs.WORKFLOW_HASH }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Set Build ID
-        id: resolve-device
-        run: |
-          BUILD_ID="${{ github.run_id }}-${{ env.DEVICE_NAME }}-${{ env.DEVICE_OS_VERSION}}"
-          WORKFLOW_HASH=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
-
-          ## We need that hash to separate the artifacts
-          echo "WORKFLOW_HASH=${WORKFLOW_HASH}" >> ${GITHUB_OUTPUT}
-
-          echo "BUILD_ID=$(echo ${BUILD_ID} | sed 's/ /_/g')" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_SHA=$(git rev-parse HEAD)" >> ${GITHUB_OUTPUT}
-          echo "MOBILE_REF=$(git rev-parse --abbrev-ref HEAD)" >> ${GITHUB_OUTPUT}
-
-      # Duration history from the last main-push run; absent → even split.
-      # continue-on-error: this job gates the entire test matrix, and shard packing
-      # is an optimization — a missing manifest or an AWS hiccup must not stop the
-      # run, it must fall back to the even split.
-      - name: Restore spec-duration manifest
-        if: inputs.durations_key != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          mode: restore
-
-      - name: Generate Test Specs
-        id: generate-specs
-        uses: ./.github/actions/generate-specs
-        with:
-          parallelism: ${{ inputs.parallelism }}
-          search_path: ${{ inputs.search_path }}
-          device_name: ${{ env.DEVICE_NAME }}
-          device_os_version: ${{ env.DEVICE_OS_VERSION }}
-          durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
-
   e2e-ios:
     name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
@@ -230,11 +124,9 @@ jobs:
     timeout-minutes: ${{ inputs.low_bandwidth_mode && 240 || 180 }}
     env:
       IOS: true
-    needs:
-      - generate-specs
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-specs.outputs.specs) }}
+      matrix: ${{ fromJSON(inputs.specs) }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -783,7 +675,7 @@ jobs:
         if: ${{ inputs.low_bandwidth_mode }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ios-mitmdump-flow-output-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: ios-mitmdump-flow-output-${{ inputs.workflow_hash }}-${{ matrix.runId }}
           path: |
             /Users/runner/work/mattermost-mobile/mattermost-mobile/flow-output.csv
             /Users/runner/work/mattermost-mobile/mattermost-mobile/mitmdump.log
@@ -800,377 +692,14 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: ios-results-${{ inputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
 
       - name: Upload iOS Test Report (retry)
         if: always() && steps.upload-ios-report.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          name: ios-results-${{ inputs.workflow_hash }}-${{ matrix.runId }}
           path: detox/artifacts/
           overwrite: true
 
-  identify-missing-ios-shards:
-    name: Identify missing iOS shards
-    if: always() && needs.generate-specs.result == 'success'
-    continue-on-error: true
-    runs-on: ubuntu-24.04
-    needs:
-      - generate-specs
-      - e2e-ios
-    permissions:
-      contents: read
-      actions: read
-    outputs:
-      has_missing: ${{ steps.identify.outputs.has_missing }}
-      missing_count: ${{ steps.identify.outputs.missing_count }}
-      missing_specs: ${{ steps.identify.outputs.missing_specs }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: Identify missing shards
-        id: identify
-        uses: ./.github/actions/identify-missing-shards
-        with:
-          specs: ${{ needs.generate-specs.outputs.specs }}
-          workflow_hash: ${{ needs.generate-specs.outputs.workflow_hash }}
-          results_prefix: ios-results
-          github-token: ${{ github.token }}
-
-  e2e-ios-retry:
-    name: Detox E2E iOS (retry missing shards)
-    needs:
-      - generate-specs
-      - identify-missing-ios-shards
-    if: always() && needs.identify-missing-ios-shards.outputs.has_missing == 'true'
-    uses: ./.github/workflows/e2e-ios-shard-matrix.yml
-    permissions:
-      contents: read
-      actions: read
-    with:
-      specs: ${{ needs.identify-missing-ios-shards.outputs.missing_specs }}
-      workflow_hash: ${{ needs.generate-specs.outputs.workflow_hash }}
-      MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-      MM_TEST_SERVER_URL: ${{ inputs.MM_TEST_SERVER_URL }}
-      MM_TEST_SERVER_URL_2: ${{ inputs.MM_TEST_SERVER_URL_2 }}
-      MM_TEST_SERVER_URL_3: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-      MM_TEST_USER_NAME: ${{ inputs.MM_TEST_USER_NAME }}
-      MM_TEST_PASSWORD: ${{ inputs.MM_TEST_PASSWORD }}
-      run-type: ${{ inputs.run-type }}
-      record_tests_in_zephyr: ${{ inputs.record_tests_in_zephyr }}
-      low_bandwidth_mode: ${{ inputs.low_bandwidth_mode }}
-      detox_config: ${{ inputs.detox_config }}
-      ios_device_name: ${{ inputs.ios_device_name }}
-      ios_device_os_name: ${{ inputs.ios_device_os_name }}
-      artifact_run_id: ${{ inputs.artifact_run_id }}
-    secrets: inherit
-
-  generate-report:
-    # TSIO displays gh-job-name as the shard label — keep it aligned with tsio-shard-name.
-    name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-    if: always()
-    runs-on: ubuntu-24.04
-    needs:
-      - generate-specs
-      - e2e-ios
-      - identify-missing-ios-shards
-      - e2e-ios-retry
-    permissions:
-      contents: read
-      # test-system-io-report-upload authenticates via the workflow's OIDC
-      # token and resolves gh_job_id via the GitHub API.
-      id-token: write
-      actions: read
-      # Per-job TSIO finalize posts detox-ios|ipad (or CMT <shard>).
-      statuses: write
-      # Finalize re-reads the PR labels so a result landing after E2E/Override was
-      # applied reports success instead of re-blocking the merge.
-      issues: read
-    outputs:
-      TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-      STATUS: ${{ steps.determine-status.outputs.STATUS }}
-      FAILURES: ${{ steps.summary.outputs.FAILURES }}
-      PASSES: ${{ steps.summary.outputs.PASSES }}
-      TOTAL: ${{ steps.summary.outputs.TOTAL }}
-      SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-      ERRORS: ${{ steps.summary.outputs.ERRORS }}
-      PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ inputs.MOBILE_VERSION }}
-
-      - name: ci/prepare-node-deps
-        uses: ./.github/actions/prepare-node-deps
-
-      - name: Download iOS Artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          path: detox/artifacts/
-          pattern: ios-results-${{ needs.generate-specs.outputs.workflow_hash }}-*
-        continue-on-error: true
-
-      - name: Generate Report Path
-        id: s3
-        env:
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          MOBILE_SHA: ${{ needs.generate-specs.outputs.mobile_sha }}
-          MOBILE_REF: ${{ needs.generate-specs.outputs.mobile_ref }}
-        run: |
-          path="${BUILD_ID}-${MOBILE_SHA}-${MOBILE_REF}"
-          echo "path=$(echo "${path}" | sed 's/\./-/g')" >> "$GITHUB_OUTPUT"
-
-      # ── Spec durations for the next run's shard packing ────────────────────
-      # Must run before e2e:save-report, which deletes the ios-results-* dirs the
-      # per-shard jest-results.json live in. Only main-push publishes (a PR must
-      # not steer how other branches shard); PR runs still compute it so the step
-      # is exercised on every PR that touches this workflow.
-      # Re-fetch the published manifest here: this is a different runner from
-      # generate-specs, so without it the EWMA would have no history to smooth
-      # against and the manifest would collapse to "last run only".
-      - name: Restore previous spec-duration manifest
-        if: always() && inputs.durations_key != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          mode: restore
-
-      - name: Build spec-duration manifest
-        if: always() && inputs.durations_key != ''
-        continue-on-error: true
-        env:
-          DURATIONS_KEY: ${{ inputs.durations_key }}
-        run: |
-          node detox/utils/spec-durations.js \
-            --dir detox/artifacts \
-            --previous detox/artifacts/spec-durations.json \
-            --output detox/artifacts/spec-durations.next.json \
-            --key "$DURATIONS_KEY" \
-            --repo-root "$GITHUB_WORKSPACE"
-
-      # spec-durations.js merges the restored manifest into the new one, so the
-      # freshly built manifest already carries every valid entry of the previously
-      # published one — there is nothing to fall back to. (Entries the restored
-      # manifest had that were malformed or non-positive are dropped on purpose.)
-      # An empty/zero manifest is rejected by
-      # the action's `validate` guard rather than published (publishing one would
-      # poison duration packing for every branch until main rewrote it).
-      - name: Publish spec-duration manifest
-        if: always() && inputs.durations_key != '' && (inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && hashFiles('detox/artifacts/spec-durations.next.json') != ''
-        continue-on-error: true
-        uses: ./.github/actions/s3-spec-durations
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-        with:
-          key: ${{ inputs.durations_key }}
-          bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
-          manifest-path: detox/artifacts/spec-durations.next.json
-          mode: save
-
-      # Merge before report generation so TSIO and summary.json use the same results.
-      - name: Merge per-shard Jest JSON
-        if: always()
-        id: tsio-merge
-        run: |
-          set +e
-          # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
-          # name + assertionResults). Convert while merging shard JSON files.
-          if ! node detox/utils/merge-jest-results-for-tsio.js \
-            --dir detox/artifacts \
-            --repo-root "${GITHUB_WORKSPACE}" \
-            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
-            --output detox/artifacts/jest-results-merged.json; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "No jest-results.json found or merge failed."
-            exit 0
-          fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-
-      - name: Write TSIO failure stub when Detox JSON is missing
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-merge.outputs.skip == 'true'
-        env:
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-        run: |
-          node detox/utils/write-tsio-failure-stub.mjs \
-            --format jest \
-            --output detox/artifacts/jest-results-merged.json \
-            --job-name "$TSIO_SHARD_NAME" \
-            --reason "Detox job failed or was cancelled before jest-results.json was written"
-
-      - name: Resolve per-job TSIO config
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
-        id: tsio-cfg
-        env:
-          TSIO_CONFIG: ${{ inputs.tsio-config }}
-          TSIO_SHARD_NAME: ${{ inputs.tsio-shard-name }}
-        run: |
-          CFG=$(bash detox/utils/resolve-tsio-job-config.sh)
-          {
-            echo "config<<EOF"
-            echo "$CFG"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Resolved TSIO job: $(echo "$CFG" | jq -r '.composite_identity.name') context=$(echo "$CFG" | jq -r '.status_context')"
-
-      - name: Upload report to Test System IO
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('detox/artifacts/jest-results-merged.json') != '' && steps.tsio-cfg.outputs.config != ''
-        uses: mattermost/mattermost-test-system-io/.github/actions/test-system-io-report-upload@0661accd8cc9ab9dde6ec93f6f5ad40d06deb0d3 # release-0.14.0 / main@0661acc (#93 unique release tags per run)
-        with:
-          composite-identity: ${{ toJSON(fromJSON(steps.tsio-cfg.outputs.config).composite_identity) }}
-          total-reports-expected: ${{ fromJSON(steps.tsio-cfg.outputs.config).total_reports_expected }}
-          framework: detox
-          github-token: ${{ github.token }}
-          gh-job-name: ${{ inputs.tsio-shard-name != '' && inputs.tsio-shard-name || 'generate-report' }}
-          json-path: detox/artifacts/jest-results-merged.json
-          screenshots-dir: detox/artifacts/
-
-      # Resolved here rather than inside tsio-report-status.js so the GitHub API
-      # call stays in the Actions layer and the reporter acts on its inputs.
-      - name: Check E2E/Override on the PR
-        id: e2e-override
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
-        uses: ./.github/actions/e2e-override-label
-        with:
-          pr_number: ${{ fromJSON(steps.tsio-cfg.outputs.config).composite_identity.gh_pr_number }}
-
-      - name: Post per-job TSIO commit status
-        if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && steps.tsio-cfg.outputs.config != ''
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
-          E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
-          SPECS_RESULT: ${{ needs.generate-specs.result }}
-          E2E_RESULT: ${{ needs.e2e-ios.result }}
-          JOB_STATUS: ${{ job.status }}
-          MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
-          MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
-          MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
-        run: |
-          set +e
-          UPSTREAM="true"
-          # This job runs with always(), so job.status stays success when an upstream
-          # job is cancelled — read the needs results to detect that.
-          if [ "$SPECS_RESULT" = "cancelled" ] ||
-             [ "$E2E_RESULT" = "cancelled" ] ||
-             [ "$JOB_STATUS" = "cancelled" ]; then
-            UPSTREAM="false"
-          fi
-          IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
-          CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-ios"')
-          TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
-          node detox/utils/tsio-report-status.js \
-            --composite-identity="$IDENTITY" \
-            --total-reports-expected="$TOTAL" \
-            --github-token="$GITHUB_TOKEN" \
-            --context="$CONTEXT" \
-            --upstream-succeeded="$UPSTREAM" \
-            --e2e-override="$E2E_OVERRIDE" \
-            --poll-attempts=24
-          RC=$?
-          echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
-          if [ "$RC" -ne 0 ] && [ "$UPSTREAM" = "true" ]; then
-            echo "::error::TSIO reported test failures for $CONTEXT"
-            exit 1
-          fi
-          exit 0
-
-      - name: Save report Detox Dependencies
-        id: report-link
-        if: always()
-        continue-on-error: true
-        run: |
-          cd detox
-          npm ci
-          npm run e2e:save-report
-        env:
-          DETOX_AWS_ACCESS_KEY_ID: ${{ secrets.MM_MOBILE_DETOX_AWS_ACCESS_KEY_ID }}
-          DETOX_AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_MOBILE_DETOX_AWS_SECRET_ACCESS_KEY }}
-          BUILD_ID: ${{ needs.generate-specs.outputs.build_id }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
-          ## These are needed for the MM Webhook report
-          COMMIT_HASH: ${{ needs.generate-specs.outputs.mobile_sha }}
-          BRANCH: ${{ needs.generate-specs.outputs.mobile_ref }}
-
-      - name: Calculate failures
-        id: summary
-        if: always()
-        run: |
-          if [ -f detox/artifacts/summary.json ]; then
-            echo "FAILURES=$(cat detox/artifacts/summary.json | jq .stats.failures)" >> ${GITHUB_OUTPUT}
-            echo "PASSES=$(cat detox/artifacts/summary.json | jq .stats.passes)" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=$(cat detox/artifacts/summary.json | jq .stats.skipped)" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=$(cat detox/artifacts/summary.json | jq .stats.tests)" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=$(cat detox/artifacts/summary.json | jq .stats.errors)" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=$(cat detox/artifacts/summary.json | jq .stats.passPercent)" >> ${GITHUB_OUTPUT}
-          else
-            echo "⚠️ No summary.json found — all test machines likely failed before producing results"
-            echo "FAILURES=-1" >> ${GITHUB_OUTPUT}
-            echo "PASSES=0" >> ${GITHUB_OUTPUT}
-            echo "SKIPPED=0" >> ${GITHUB_OUTPUT}
-            echo "TOTAL=0" >> ${GITHUB_OUTPUT}
-            echo "ERRORS=0" >> ${GITHUB_OUTPUT}
-            echo "PERCENTAGE=0" >> ${GITHUB_OUTPUT}
-          fi
-
-      - name: Set Target URL
-        id: set-url
-        if: always()
-        env:
-          S3_BUCKET: ${{ env.DETOX_AWS_S3_BUCKET }}
-          REPORT_PATH: ${{ steps.s3.outputs.path }}
-        run: |
-          echo "TARGET_URL=https://${S3_BUCKET}.s3.amazonaws.com/${REPORT_PATH}/jest-stare/ios-report.html" >> "$GITHUB_OUTPUT"
-
-      - name: Determine Status
-        id: determine-status
-        if: always()
-        env:
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-        run: |
-          # Fail on missing/empty reports (infra died before tests) and on real failures.
-          if [[ "$FAILURES" == "-1" || "$FAILURES" -gt 0 || "${ERRORS:-0}" -gt 0 || "${TOTAL:-0}" -eq 0 ]]; then
-            echo "STATUS=failure" >> ${GITHUB_OUTPUT}
-          else
-            echo "STATUS=success" >> ${GITHUB_OUTPUT}
-          fi
-
-      - name: Generate Summary
-        if: always()
-        env:
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          PASSES: ${{ steps.summary.outputs.PASSES }}
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          SKIPPED: ${{ steps.summary.outputs.SKIPPED }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-          PERCENTAGE: ${{ steps.summary.outputs.PERCENTAGE }}
-          TARGET_URL: ${{ steps.set-url.outputs.TARGET_URL }}
-        run: |
-          echo "| Tests | Passed :white_check_mark: | Failed :x: | Skipped :fast_forward: | Errors :warning: | " >> ${GITHUB_STEP_SUMMARY}
-          echo "|:---:|:---:|:---:|:---:|:---:|" >> ${GITHUB_STEP_SUMMARY}
-          echo "| ${TOTAL} | ${PASSES} | ${FAILURES} | ${SKIPPED} | ${ERRORS} |" >> ${GITHUB_STEP_SUMMARY}
-          echo "" >> ${GITHUB_STEP_SUMMARY}
-          echo "You can check the full report [here](${TARGET_URL})" >> ${GITHUB_STEP_SUMMARY}
-          echo "There was **${PERCENTAGE}%** success rate." >> ${GITHUB_STEP_SUMMARY}
-
-      - name: Fail job on test failures
-        if: always() && steps.determine-status.outputs.STATUS == 'failure'
-        env:
-          FAILURES: ${{ steps.summary.outputs.FAILURES }}
-          TOTAL: ${{ steps.summary.outputs.TOTAL }}
-          ERRORS: ${{ steps.summary.outputs.ERRORS }}
-        run: |
-          echo "::error::Detox reported test failures (FAILURES=${FAILURES}, TOTAL=${TOTAL}, ERRORS=${ERRORS})"
-          exit 1

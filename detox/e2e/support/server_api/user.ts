@@ -46,9 +46,16 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
         }
     }, {
         idempotent: false,
+
+        // Random users are safe to recreate; a caller-supplied body is not.
         allowDuplicateWrites: !user,
         label: 'apiCreateUser',
-        budgetMs: timeouts.HALF_MIN,
+
+        // Axios times out at 45s. HALF_MIN is shorter than one stall, so a hung
+        // POST /users never retries. ONE_MIN leaves room for the 2s backoff and
+        // a second attempt. Keep POST+ECONNRESET off the axios interceptor —
+        // that layer cannot tell whether the server committed.
+        budgetMs: timeouts.ONE_MIN,
     });
 };
 

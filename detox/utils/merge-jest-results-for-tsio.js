@@ -141,7 +141,9 @@ function mergeJestResultsForTsio(inputPaths, opts = {}) {
 /**
  * When CI shards fail before uploading jest-results.json, TSIO otherwise shows
  * only the shards that reported — CMT looks like "Android didn't run tests".
- * Append a failed stub so the missing machines are visible.
+ * Append a failed stub so the missing machines are visible. Callers retry dead
+ * shards first; this stub remains the last resort if the retry also produces
+ * no artifact.
  *
  * @param {{testResults: object[]}} merged
  * @param {number} foundCount

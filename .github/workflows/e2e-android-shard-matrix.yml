@@ -1,0 +1,375 @@
+name: Detox Android shard matrix
+
+# Called from e2e-android-template.yml to retry shards that never uploaded
+# android-results-*. Nested one level under the Android template.
+# First-wave shards stay inlined in the template so the common path is unchanged.
+
+on:
+  workflow_call:
+    inputs:
+      specs:
+        description: GitHub matrix JSON ({"include":[{runId,specs,...}]})
+        required: true
+        type: string
+      workflow_hash:
+        description: Artifact name infix from generate-specs
+        required: true
+        type: string
+      MOBILE_VERSION:
+        required: false
+        default: ""
+        type: string
+      MM_TEST_SERVER_URL:
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_2:
+        required: false
+        type: string
+      MM_TEST_SERVER_URL_3:
+        required: false
+        type: string
+      MM_TEST_USER_NAME:
+        required: false
+        type: string
+      MM_TEST_PASSWORD:
+        required: false
+        type: string
+      run-type:
+        required: false
+        type: string
+        default: "PR"
+      record_tests_in_zephyr:
+        required: false
+        type: boolean
+        default: false
+      android_avd_name:
+        required: false
+        type: string
+        default: "detox_pixel_8"
+      android_api_level:
+        required: false
+        type: string
+        default: "35"
+      artifact_run_id:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      MM_MOBILE_E2E_ADMIN_EMAIL:
+        required: false
+      MM_MOBILE_E2E_ADMIN_USERNAME:
+        required: false
+      MM_MOBILE_E2E_ADMIN_PASSWORD:
+        required: false
+      MM_MOBILE_E2E_ZEPHYR_API_KEY:
+        required: false
+      MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_URL:
+        required: false
+      MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL:
+        required: false
+      MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN:
+        required: false
+
+env:
+  AWS_REGION: "us-east-1"
+  ADMIN_EMAIL: ${{ secrets.MM_MOBILE_E2E_ADMIN_EMAIL }}
+  ADMIN_USERNAME: ${{ inputs.MM_TEST_USER_NAME || secrets.MM_MOBILE_E2E_ADMIN_USERNAME }}
+  ADMIN_PASSWORD: ${{ inputs.MM_TEST_PASSWORD || secrets.MM_MOBILE_E2E_ADMIN_PASSWORD }}
+  BRANCH: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+  COMMIT_HASH: ${{ github.sha }}
+  DEVICE_NAME: ${{ inputs.android_avd_name }}
+  DEVICE_OS_VERSION: ${{ inputs.android_api_level }}
+  DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  HEADLESS: "true"
+  TYPE: ${{ inputs.run-type }}
+  PULL_REQUEST: "https://github.com/mattermost/mattermost-mobile/pull/${{ github.event.number }}"
+  SITE_1_URL: ${{ inputs.MM_TEST_SERVER_URL }}
+  SITE_2_URL: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+  SITE_3_URL: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+  ZEPHYR_ENABLE: ${{ inputs.record_tests_in_zephyr }}
+  JIRA_PROJECT_KEY: "MM"
+  ZEPHYR_API_KEY: ${{ secrets.MM_MOBILE_E2E_ZEPHYR_API_KEY }}
+  ZEPHYR_FOLDER_ID: "3233873"
+  TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_MOBILE_E2E_TEST_CYCLE_LINK_PREFIX }}
+  WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
+  FAILURE_MESSAGE: "Something has failed"
+  IOS: "false"
+  RUNNING_E2E: "true"
+  AVD_NAME: ${{ inputs.android_avd_name }}
+  SDK_VERSION: ${{ inputs.android_api_level }}
+  ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  e2e-android:
+    name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
+    runs-on: ubuntu-latest-8-cores
+    continue-on-error: true
+    timeout-minutes: 150
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.specs) }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ inputs.MOBILE_VERSION }}
+
+      - name: Rotate logical test sites by shard
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+          SHARD_ID: ${{ matrix.runId }}
+        run: |
+          # Single-server topologies leave SERVER_B unset; without this the even
+          # shards would export an empty SITE_1_URL and test_config would silently
+          # fall back to localhost instead of the provisioned server.
+          SERVER_B="${SERVER_B:-$SERVER_A}"
+          if (( 10#$SHARD_ID % 2 == 1 )); then
+            SITE_1_URL="$SERVER_A"
+            SITE_2_URL="$SERVER_B"
+          else
+            SITE_1_URL="$SERVER_B"
+            SITE_2_URL="$SERVER_A"
+          fi
+          {
+            echo "SITE_1_URL=$SITE_1_URL"
+            echo "SITE_2_URL=$SITE_2_URL"
+            echo "SITE_3_URL=$SERVER_SHARED"
+          } >> "$GITHUB_ENV"
+
+      # Only libpulse0 is a real dependency here — the Android emulator needs it for
+      # audio. xvfb is already in the runner image (apt reports "already the newest
+      # version"), and it is listed only so a future image change fails loudly.
+      - name: Install Dependencies
+        timeout-minutes: 6
+        run: |
+          APT_OPTS=(-o Acquire::Retries=3 -o Acquire::http::Timeout=15 -o DPkg::Lock::Timeout=120)
+          PACKAGES=(libpulse0 xvfb)
+          sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}" || {
+            sudo apt-get "${APT_OPTS[@]}" update
+            sudo apt-get "${APT_OPTS[@]}" install -y "${PACKAGES[@]}"
+          }
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: ci/prepare-node-deps
+        uses: ./.github/actions/prepare-node-deps
+
+      - name: Cache detox node_modules
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: detox/node_modules
+          key: ${{ runner.os }}-detox-deps-${{ hashFiles('detox/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-detox-deps-
+
+      - name: Install Detox Dependencies
+        run: |
+          cd detox
+          npm install
+
+      - name: Set .env with RUNNING_E2E=true
+        run: |
+          cat > .env <<EOF
+          RUNNING_E2E=true
+          EOF
+  
+      # Must precede the download: download-artifact consumes ARTIFACT_RUN_ID and
+      # fails with an opaque API error when it is empty.
+      - name: Verify artifact_run_id was passed by the parent workflow
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
+        run: |
+          if [ -z "${ARTIFACT_RUN_ID}" ]; then
+            echo "❌ ARTIFACT_RUN_ID is empty — parent workflow must pass artifact_run_id from build-android-apk"
+            exit 1
+          fi
+
+      - name: Download Detox Android build from parent workflow
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: android-build-files-${{ env.ARTIFACT_RUN_ID }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.ARTIFACT_RUN_ID }}
+          github-token: ${{ github.token }}
+          path: android/app/build
+
+      - name: Verify Detox Android app from parent build
+        run: |
+          APP_APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          TEST_APK="android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+          if [ ! -f "$APP_APK" ]; then
+            echo "❌ Missing ${APP_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          if [ ! -f "$TEST_APK" ]; then
+            echo "❌ Missing ${TEST_APK} from android-build-files-${ARTIFACT_RUN_ID}"
+            find android/app/build -name '*.apk' 2>/dev/null || true
+            exit 1
+          fi
+          echo "✅ Detox will use Android APKs from parent workflow run ${ARTIFACT_RUN_ID}:"
+          ls -lh "$APP_APK" "$TEST_APK"
+        env:
+          ARTIFACT_RUN_ID: ${{ env.ARTIFACT_RUN_ID }}
+
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$PATH
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          yes | sdkmanager --licenses > sdk_licenses_output.txt || true
+      
+          # Check if "All SDK package licenses accepted" appears in output
+          if grep -q "All SDK package licenses accepted" sdk_licenses_output.txt; then
+            echo "✅ All licenses accepted successfully."
+          else
+            echo "❌ Licenses not fully accepted."
+            cat sdk_licenses_output.txt
+            exit 1
+          fi
+
+      # Cache SDK under the workspace (not /usr/local) — tar restore into system
+      # SDK dirs often fails with exit code 2 when paths already exist on the image.
+      - name: Cache Android SDK components
+        id: android-sdk-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: .android-sdk-cache
+          key: android-sdk-${{ inputs.android_api_level }}-google-apis-x86_64-v2
+
+      - name: Apply cached Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit == 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+        run: |
+          for component in platform-tools emulator; do
+            if [ -d ".android-sdk-cache/${component}" ]; then
+              rm -rf "${ANDROID_HOME:?}/${component}"
+              cp -a ".android-sdk-cache/${component}" "${ANDROID_HOME}/"
+            fi
+          done
+          if [ -d ".android-sdk-cache/platforms/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/platforms/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/platforms"
+            cp -a ".android-sdk-cache/platforms/android-${API_LEVEL}" "${ANDROID_HOME}/platforms/"
+          fi
+          if [ -d ".android-sdk-cache/system-images/android-${API_LEVEL}" ]; then
+            rm -rf "${ANDROID_HOME}/system-images/android-${API_LEVEL}"
+            mkdir -p "${ANDROID_HOME}/system-images"
+            cp -a ".android-sdk-cache/system-images/android-${API_LEVEL}" "${ANDROID_HOME}/system-images/"
+          fi
+
+      - name: Install Android SDK components
+        if: steps.android-sdk-cache.outputs.cache-hit != 'true'
+        env:
+          API_LEVEL: ${{ inputs.android_api_level }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: |
+          if ! [[ "$API_LEVEL" =~ ^[0-9]+$ ]]; then
+            echo "Invalid android_api_level: $API_LEVEL"
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            echo "SDK install attempt $attempt..."
+            if yes | sdkmanager --install "platform-tools" "emulator" "platforms;android-${API_LEVEL}" "system-images;android-${API_LEVEL};google_apis;x86_64"; then
+              echo "SDK install succeeded on attempt $attempt"
+              break
+            fi
+            echo "Attempt $attempt failed, retrying..."
+            if [ "$attempt" = "3" ]; then
+              echo "SDK install failed after 3 attempts"
+              exit 1
+            fi
+            sleep 10
+          done
+          mkdir -p .android-sdk-cache/platforms .android-sdk-cache/system-images
+          cp -a "${ANDROID_HOME}/platform-tools" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/emulator" .android-sdk-cache/
+          cp -a "${ANDROID_HOME}/platforms/android-${API_LEVEL}" .android-sdk-cache/platforms/
+          cp -a "${ANDROID_HOME}/system-images/android-${API_LEVEL}" .android-sdk-cache/system-images/
+
+      # CI AVDs live under detox/.android/avd (see create_android_emulator.sh), not ~/.android/avd.
+      - name: Cache Android Emulator & AVD
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            detox/.android
+            detox/${{ env.AVD_NAME }}_api_${{ inputs.android_api_level }}
+          key: android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-v3
+          restore-keys: |
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-${{ env.AVD_NAME }}-api-${{ inputs.android_api_level }}-
+            android-emulator-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Start mm_blocks webhook sidecar
+        if: contains(matrix.specs, 'mm_blocks_')
+        continue-on-error: true
+        env:
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          WEBHOOK_PUBLIC_BASE_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_PUBLIC_BASE_URL }}
+          CLOUDFLARED_TUNNEL_TOKEN: ${{ secrets.MM_MOBILE_E2E_CLOUDFLARED_TUNNEL_TOKEN }}
+        run: bash detox/scripts/start_webhook_sidecar.sh
+
+      - name: Create and run Android Emulator
+        env:
+          MATRIX_SPECS: ${{ matrix.specs }}
+          SITE_1_URL: ${{ env.SITE_1_URL }}
+          SITE_2_URL: ${{ env.SITE_2_URL }}
+          SITE_3_URL: ${{ env.SITE_3_URL }}
+          MAX_ATTEMPTS: "2"
+          ATTEMPT_TIMEOUT_MIN: "60"
+        shell: bash
+        # Attempt 2 retries failed/unrun files only. Cold-boots only if the emulator is dead.
+        run: |
+          chmod +x detox/scripts/run_android_ci_shard.sh detox/create_android_emulator.sh
+          # Split on whitespace into an array, then expand quoted: an unquoted
+          # $MATRIX_SPECS is also subject to pathname expansion, so a spec path
+          # containing a glob character would silently become a different argument
+          # list (or vanish). Matches the iOS template's read -ra handling.
+          read -ra specs <<< "$MATRIX_SPECS"
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
+        continue-on-error: true # We want to run all the tests
+
+      # Second attempt for the same reason as the iOS template: losing this upload to a
+      # transient ETIMEDOUT reports the shard as having produced no results at all.
+      - name: Upload Android Test Report
+        id: upload-android-report
+        if: always() && hashFiles('detox/artifacts/**') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-results-${{ inputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+
+      - name: Upload Android Test Report (retry)
+        if: always() && steps.upload-android-report.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-results-${{ inputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/
+          overwrite: true
+

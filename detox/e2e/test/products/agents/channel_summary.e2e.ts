@@ -52,41 +52,23 @@ describe('Agents - Channel Summary', () => {
         // # Wait for WebSocket to connect and agents status to be fetched
         await wait(timeouts.TEN_SEC);
 
-        // # On Android, verify the Ask Agents UI element actually appears in quick actions.
-        // device.pressBack() is Android-only — iOS dismisses the sheet with a swipe.
-        if (isAndroid()) {
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await wait(timeouts.ONE_SEC);
-            await ChannelScreen.channelQuickActionsButton.tap();
-            try {
-                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                askAgentsAvailable = true;
-            } catch {
-                // eslint-disable-next-line no-console
-                console.warn('Ask Agents quick action not visible on Android — tests remain skipped');
-            }
-            await device.pressBack();
-            await ChannelScreen.back();
-        } else {
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, testChannel.name);
-            await wait(timeouts.ONE_SEC);
-            await ChannelScreen.channelQuickActionsButton.tap();
-            try {
-                await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
-                askAgentsAvailable = true;
-            } catch {
-                // eslint-disable-next-line no-console
-                console.warn('Ask Agents quick action not visible on iOS — tests remain skipped');
-            }
-            try {
-                await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
-            } catch {
-                // Sheet may already be closed if ask_agents was not visible.
-            }
-            await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await wait(timeouts.ONE_SEC);
+        await ChannelScreen.openQuickActions();
+        try {
+            await waitFor(ChannelScreen.askAgentsQuickAction).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            askAgentsAvailable = true;
+        } catch {
+            // eslint-disable-next-line no-console
+            console.warn('Ask Agents quick action not visible — tests remain skipped');
         }
+
+        // Dismiss via a control that is always on the sheet (Channel Info), never
+        // ask_agents — that option is absent when agents are disabled and the
+        // swipe used to no-op, leaving the sheet covering tab_bar.home.tab.
+        await ChannelScreen.closeQuickActions();
+        await ChannelScreen.back();
     });
 
     beforeEach(async () => {
@@ -122,17 +104,12 @@ describe('Agents - Channel Summary', () => {
 
         // # Open quick actions by tapping the quick actions button
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.channelQuickActionsButton.tap();
+        await ChannelScreen.openQuickActions();
 
         // * Verify Ask Agents option is visible
-        await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelScreen.askAgentsQuickAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Close the bottom sheet — pressBack is Android-only
-        if (isAndroid()) {
-            await device.pressBack();
-        } else {
-            await element(by.id('channel.quick_actions.ask_agents')).swipe('down', 'fast');
-        }
+        await ChannelScreen.closeQuickActions();
         await ChannelScreen.back();
     });
 
@@ -142,11 +119,11 @@ describe('Agents - Channel Summary', () => {
 
         // # Open quick actions by tapping the quick actions button
         await wait(timeouts.ONE_SEC);
-        await ChannelScreen.channelQuickActionsButton.tap();
+        await ChannelScreen.openQuickActions();
 
         // # Wait for and tap Ask Agents option to open the summary sheet
-        await waitFor(element(by.id('channel.quick_actions.ask_agents'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await element(by.id('channel.quick_actions.ask_agents')).tap();
+        await waitFor(ChannelScreen.askAgentsQuickAction).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelScreen.askAgentsQuickAction.tap();
 
         // * Verify summary options are visible
         await waitFor(element(by.id('agents.channel_summary.option.unreads'))).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -174,7 +151,7 @@ describe('Agents - Channel Summary', () => {
         // # Go back from Date Picker
         await element(by.id('agents.channel_summary.date_picker.back')).tap();
 
-        // # Close the bottom sheet — pressBack is Android-only
+        // # Close the summary sheet, then the channel
         await wait(timeouts.ONE_SEC);
         if (isAndroid()) {
             await device.pressBack();

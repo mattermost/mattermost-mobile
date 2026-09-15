@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -43,6 +43,8 @@ class ChannelScreen {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
+        quickActions: 'channel.quick_actions',
+        askAgentsQuickAction: 'channel.quick_actions.ask_agents',
         quickCallButton: 'channel_header.quick_call.button',
         favoriteQuickAction: 'channel.quick_actions.favorite.action',
         unfavoriteQuickAction: 'channel.quick_actions.unfavorite.action',
@@ -98,6 +100,8 @@ class ChannelScreen {
     postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
+    quickActions = element(by.id(this.testID.quickActions));
+    askAgentsQuickAction = element(by.id(this.testID.askAgentsQuickAction));
     quickCallButton = element(by.id(this.testID.quickCallButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
     unfavoriteQuickAction = element(by.id(this.testID.unfavoriteQuickAction));
@@ -169,6 +173,36 @@ class ChannelScreen {
         await waitForElementToExist(this.channelScreen, timeout);
 
         return this.channelScreen;
+    };
+
+    openQuickActions = async () => {
+        await this.channelQuickActionsButton.tap();
+        await waitForElementToExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
+    };
+
+    closeQuickActions = async () => {
+        try {
+            await waitForElementToExist(this.channelInfoQuickAction, timeouts.TWO_SEC);
+        } catch {
+            return;
+        }
+
+        if (isAndroid()) {
+            await device.pressBack();
+            try {
+                await waitFor(this.channelInfoQuickAction).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
+        } else {
+            try {
+                await this.quickActions.swipe('down', 'fast');
+            } catch {
+                await this.channelInfoQuickAction.swipe('down', 'fast');
+            }
+        }
+
+        await waitForElementToNotExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
     };
 
     dismissScheduledPostTooltip = async () => {
@@ -267,6 +301,10 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
+                // Wait for the tab before tapping it: when a sheet is still covering the
+                // header the tab bar is not in the hierarchy yet, and a bare tap fails with
+                // "tab_bar.home.tab not found" instead of waiting the sheet out.
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
             }
         }

@@ -321,6 +321,30 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
     return {post, fileId};
 };
 
+/**
+ * Get the public (unauthenticated) link for a file.
+ * See https://api.mattermost.com/#operation/GetFileLink
+ *
+ * The file must already be attached to a post -- the server rejects a public link
+ * for a dangling upload -- and `FileSettings.EnablePublicLink` must be true.
+ *
+ * A public link is the only server-hosted image URL that the server itself can
+ * fetch while building `post.metadata.images`, because that fetch is anonymous.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} fileId - the file ID
+ * @return {Object} returns {link} on success or {error, status} on error
+ */
+export const apiGetFilePublicLink = async (baseUrl: string, fileId: string): Promise<any> => {
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.get(`${baseUrl}/api/v4/files/${fileId}/link`);
+            return {link: response.data?.link};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiGetFilePublicLink'});
+};
+
 export const apiGetFlaggedPosts = async (baseUrl: string, userId: string): Promise<{order: string[]; posts: Record<string, any>; error?: any}> => {
     try {
         const response = await client.get(`${baseUrl}/api/v4/users/${userId}/posts/flagged`);
@@ -499,6 +523,7 @@ export const Post = {
     apiPostIncomingWebhook,
     apiSearchPosts,
     apiUploadFileToChannel,
+    apiGetFilePublicLink,
     apiGetFlaggedPosts,
     waitForPostFlagged,
     waitForPostMessage,
