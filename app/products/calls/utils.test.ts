@@ -141,6 +141,7 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 0,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'charlie'}),
             },
             2: {
@@ -148,6 +149,7 @@ describe('sortSessions', () => {
                 userId: 'user2',
                 muted: true,
                 raisedHand: 0,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'alice'}),
             },
             3: {
@@ -155,6 +157,7 @@ describe('sortSessions', () => {
                 userId: 'user3',
                 muted: true,
                 raisedHand: 0,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'bob'}),
             },
         };
@@ -170,6 +173,7 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 0,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'a'}),
             },
             2: {
@@ -177,6 +181,7 @@ describe('sortSessions', () => {
                 userId: 'user2',
                 muted: false,
                 raisedHand: 0,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'b'}),
             },
             3: {
@@ -184,6 +189,7 @@ describe('sortSessions', () => {
                 userId: 'user3',
                 muted: true,
                 raisedHand: 1000,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'c'}),
             },
         };
@@ -199,6 +205,7 @@ describe('sortSessions', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 2000, // Raised hand second
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'a'}),
             },
             2: {
@@ -206,6 +213,7 @@ describe('sortSessions', () => {
                 userId: 'user2',
                 muted: true,
                 raisedHand: 1000, // Raised hand first
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'b'}),
             },
         };
@@ -223,18 +231,21 @@ describe('getHandsRaised', () => {
                 userId: 'user1',
                 muted: true,
                 raisedHand: 0,
+                video: false,
             },
             2: {
                 sessionId: '2',
                 userId: 'user2',
                 muted: true,
                 raisedHand: 1000,
+                video: false,
             },
             3: {
                 sessionId: '3',
                 userId: 'user3',
                 muted: true,
                 raisedHand: 2000,
+                video: false,
             },
         };
 
@@ -245,12 +256,12 @@ describe('getHandsRaised', () => {
 });
 
 describe('hasOtherUserJoined', () => {
-    const mySession = {sessionId: '1', userId: 'me', muted: true, raisedHand: 0};
+    const mySession = {sessionId: '1', userId: 'me', muted: true, raisedHand: 0, video: false};
 
     it('should return false when only the same user has multiple sessions in the call', () => {
         const sessions = {
             1: mySession,
-            2: {sessionId: '2', userId: 'me', muted: true, raisedHand: 0},
+            2: {sessionId: '2', userId: 'me', muted: true, raisedHand: 0, video: false},
         };
 
         expect(hasOtherUserJoined(sessions, 'me')).toBe(false);
@@ -259,7 +270,7 @@ describe('hasOtherUserJoined', () => {
     it('should return true when another user is in the call', () => {
         const sessions = {
             1: mySession,
-            2: {sessionId: '2', userId: 'user2', muted: true, raisedHand: 0},
+            2: {sessionId: '2', userId: 'user2', muted: true, raisedHand: 0, video: false},
         };
 
         expect(hasOtherUserJoined(sessions, 'me')).toBe(true);
@@ -302,6 +313,7 @@ describe('getHandsRaisedNames', () => {
                 sessionId: '1',
                 userId: 'user1',
                 raisedHand: 2000,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'alice'}),
                 muted: false,
             },
@@ -309,6 +321,7 @@ describe('getHandsRaisedNames', () => {
                 sessionId: '2',
                 userId: 'user2',
                 raisedHand: 1000,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'bob'}),
                 muted: false,
             },
@@ -324,6 +337,7 @@ describe('getHandsRaisedNames', () => {
                 sessionId: '1',
                 userId: 'user1',
                 raisedHand: 1000,
+                video: false,
                 userModel: TestHelper.fakeUserModel({username: 'alice'}),
                 muted: false,
             },
@@ -615,7 +629,7 @@ describe('getCallCardState', () => {
 });
 
 describe('getNumUsersInCall', () => {
-    const session = (sessionId: string, userId: string): CallSession => ({sessionId, userId, muted: false, raisedHand: 0});
+    const session = (sessionId: string, userId: string): CallSession => ({sessionId, userId, muted: false, raisedHand: 0, video: false});
 
     it('should count a user connected from more than one client once', () => {
         const call = {

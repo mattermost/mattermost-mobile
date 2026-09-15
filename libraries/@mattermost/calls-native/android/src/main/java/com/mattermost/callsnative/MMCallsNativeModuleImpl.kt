@@ -89,6 +89,7 @@ class MMCallsNativeModuleImpl(private val context: ReactApplicationContext) {
             putExtra(MMCallsForegroundService.EXTRA_CHANNEL_DESCRIPTION, config.getString("channelDescription"))
             putExtra(MMCallsForegroundService.EXTRA_TITLE, config.getString("title"))
             putExtra(MMCallsForegroundService.EXTRA_TEXT, config.getString("text"))
+            putExtra(MMCallsForegroundService.EXTRA_WITH_CAMERA, config.hasKey("withCamera") && config.getBoolean("withCamera"))
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent)

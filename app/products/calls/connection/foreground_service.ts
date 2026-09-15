@@ -27,7 +27,7 @@ const messages = defineMessages({
     },
 });
 
-export const foregroundServiceStart = (intl: IntlShape) => {
+export const foregroundServiceStart = (intl: IntlShape, withCamera = false) => {
     if (Platform.OS !== 'android') {
         return;
     }
@@ -37,6 +37,7 @@ export const foregroundServiceStart = (intl: IntlShape) => {
         channelDescription: intl.formatMessage(messages.channelDescription),
         title: intl.formatMessage(messages.title),
         text: intl.formatMessage(messages.text),
+        withCamera,
     });
 };
 

@@ -183,6 +183,11 @@ jest.mock('react-native-webrtc', () => {
         MediaStream: jest.fn(),
         MediaStreamTrack: jest.fn(),
         RTCSessionDescription: jest.fn(),
+
+        // A host component name rather than a jest.fn(): screens that render
+        // video (the call screen's self view, grid and screen share) need
+        // something React can actually mount.
+        RTCView: 'RTCView',
         registerGlobals: jest.fn(),
     };
 });
