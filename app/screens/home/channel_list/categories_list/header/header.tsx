@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {type Insets, Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -39,6 +41,8 @@ type Props = {
     displayName?: string;
     hasMoreThanOneTeam: boolean;
     iconPad?: boolean;
+    ephemeralModeEnabled: boolean;
+    isZeroPersistenceMode: boolean;
     pushProxyStatus: string;
 }
 
@@ -73,13 +77,46 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         height: PLUS_BUTTON_SIZE,
         width: PLUS_BUTTON_SIZE,
         borderRadius: PLUS_BUTTON_SIZE / 2,
-        marginTop: PLUS_BUTTON_SIZE / 4,
         justifyContent: 'center',
         alignItems: 'center',
     },
     plusIcon: {
         color: changeOpacity(theme.sidebarText, 0.8),
         fontSize: 18,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        flexShrink: 0,
+        gap: 8,
+        marginTop: PLUS_BUTTON_SIZE / 4,
+    },
+    ephemeralModeButton: {
+        backgroundColor: changeOpacity(theme.sidebarTextActiveBorder, 0.16),
+        height: PLUS_BUTTON_SIZE,
+        width: PLUS_BUTTON_SIZE,
+        borderRadius: PLUS_BUTTON_SIZE / 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    ephemeralModePressed: {
+        opacity: 0.72,
+    },
+    ephemeralModeIcon: {
+        color: theme.sidebarTextActiveBorder,
+        fontSize: 16,
+    },
+    ephemeralModeTooltip: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowRadius: 2,
+        shadowOpacity: 0.16,
+    },
+    ephemeralModeTooltipContent: {
+        backgroundColor: theme.centerChannelBg,
+    },
+    ephemeralModeTooltipText: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 75),
     },
     pushAlert: {
         marginLeft: 5,
@@ -105,6 +142,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     firstBox: {
         width: '85%', // ratio derived from the design
+        flexShrink: 1,
     },
 }));
 
@@ -120,10 +158,13 @@ const ChannelListHeader = ({
     displayName,
     hasMoreThanOneTeam,
     iconPad,
+    ephemeralModeEnabled,
+    isZeroPersistenceMode,
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
+    const [ephemeralModeTooltipVisible, setEphemeralModeTooltipVisible] = useState(false);
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
@@ -201,6 +242,18 @@ const ChannelListHeader = ({
         return [styles.teamPressable, pressed && hasTeamMenuItems && styles.teamPressed];
     }, [hasTeamMenuItems, styles.teamPressable, styles.teamPressed]);
 
+    const ephemeralModePressableStyle = useCallback(({pressed}: PressableStateCallbackType): StyleProp<ViewStyle> => {
+        return [styles.ephemeralModeButton, pressed && styles.ephemeralModePressed];
+    }, [styles.ephemeralModeButton, styles.ephemeralModePressed]);
+
+    const onEphemeralModePress = useCallback(() => {
+        setEphemeralModeTooltipVisible(true);
+    }, []);
+
+    const onEphemeralModeTooltipClose = useCallback(() => {
+        setEphemeralModeTooltipVisible(false);
+    }, []);
+
     let header;
     if (displayName) {
         header = (
@@ -258,18 +311,57 @@ const ChannelListHeader = ({
                         <LoadingUnreads/>
                     </View>
                 </View>
-                <TouchableWithFeedback
-                    hitSlop={hitSlop}
-                    onPress={onPress}
-                    style={styles.plusButton}
-                    testID='channel_list_header.plus.button'
-                    type='opacity'
-                >
-                    <CompassIcon
-                        style={styles.plusIcon}
-                        name={'plus'}
-                    />
-                </TouchableWithFeedback>
+                <View style={styles.headerActions}>
+                    {ephemeralModeEnabled && (
+                        <Tooltip
+                            isVisible={ephemeralModeTooltipVisible}
+                            placement='bottom'
+                            content={
+                                isZeroPersistenceMode ? (
+                                    <FormattedText
+                                        id='channel_list_header.zero_persistence.tooltip'
+                                        defaultMessage='Zero Persistence is on'
+                                        style={styles.ephemeralModeTooltipText}
+                                    />
+                                ) : (
+                                    <FormattedText
+                                        id='channel_list_header.ephemeral_mode.tooltip'
+                                        defaultMessage='Ephemeral mode is on'
+                                        style={styles.ephemeralModeTooltipText}
+                                    />
+                                )
+                            }
+                            onClose={onEphemeralModeTooltipClose}
+                            contentStyle={styles.ephemeralModeTooltipContent}
+                            tooltipStyle={styles.ephemeralModeTooltip}
+                            showChildInTooltip={false}
+                            backgroundColor='transparent'
+                        >
+                            <Pressable
+                                onPress={onEphemeralModePress}
+                                style={ephemeralModePressableStyle}
+                                testID='channel_list_header.ephemeral_mode'
+                            >
+                                <CompassIcon
+                                    style={styles.ephemeralModeIcon}
+                                    name='shield-lock-outline'
+                                />
+                            </Pressable>
+                        </Tooltip>
+                    )}
+                    <TouchableWithFeedback
+                        hitSlop={hitSlop}
+                        onPress={onPress}
+                        style={styles.plusButton}
+                        testID='channel_list_header.plus.button'
+                        type='opacity'
+                    >
+                        <CompassIcon
+                            style={styles.plusIcon}
+                            name={'plus'}
+                        />
+                    </TouchableWithFeedback>
+                </View>
             </View>
         );
     } else {

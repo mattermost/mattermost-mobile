@@ -24,6 +24,9 @@ jest.mock('@utils/file', () => ({
     deleteFileCacheByDir: jest.fn(),
 }));
 jest.mock('@utils/log');
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
+}));
 
 describe('wipeServerDatabaseWithRetry', () => {
     const serverUrl = 'https://server.test';
