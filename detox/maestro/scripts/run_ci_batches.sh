@@ -335,14 +335,15 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
-# True when the driver died before driving the app. Android writes JUnit with
-# time="0.0" in that case, so require sub-second times to avoid matching a real
-# assertion (gRPC/tcp text also appears in ordinary Maestro-over-adb failures).
+# True when the driver died before driving the app. Android writes JUnit with time="0.0"
+# in that case, so require every recorded time to be zero — gRPC/tcp text also appears in
+# ordinary Maestro-over-adb failures, and a flow that ran records a non-zero duration.
+# Any digit 1-9 in the value means non-zero, so "0"/"0.0"/"0.00" are zero and "0.5" is not.
 driver_startup_failed() {
   local batch_log=$1 batch_xml=${2:-}
   { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
   [[ -s "$batch_xml" ]] || return 0
-  ! grep -qE '<testcase\b[^>]*\btime="([1-9][0-9]*|0*[1-9])' "$batch_xml"
+  ! grep -qE '<testcase\b[^>]*\btime="[0-9.]*[1-9]' "$batch_xml"
 }
 
 ensure_android_driver_healthy() {
@@ -357,19 +358,27 @@ ensure_android_driver_healthy() {
   ensure_android_app_launchable
 }
 
+# Flow paths come from the filesystem, so `&`, `<` or `"` in a name would otherwise
+# emit XML the report parser cannot read.
+xml_escape() {
+  printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
+}
+
 # One <testcase> per flow, not one per batch: collapsing them would drop the other
 # flows and report a smaller, greener suite than the one we asked for.
 write_skipped_driver_junit() {
   local batch_xml=$1
   shift
-  local msg='Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure'
+  local msg
+  msg="$(xml_escape 'Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure')"
   {
     printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
     printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="0" errors="0" skipped="%d" time="0">\n' "$#" "$#"
-    local flow base id
+    local flow base id flow_xml id_xml
     for flow in "$@"; do
       base="${flow##*/}"; id="${base%.yml}"
-      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' "$id" "$id" "$flow" "$flow"
+      flow_xml="$(xml_escape "$flow")"; id_xml="$(xml_escape "$id")"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' "$id_xml" "$id_xml" "$flow_xml" "$flow_xml"
       printf '      <skipped message="%s"/>\n    </testcase>\n' "$msg"
     done
     printf '  </testsuite>\n</testsuites>\n'
@@ -503,9 +512,6 @@ for batch_paths in "${BATCHES[@]}"; do
       flow_label="${path_arr[0]:-unknown_flow}"
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
-      xml_escape() {
-        printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
-      }
       flow_label_xml="$(xml_escape "$flow_label")"
       flow_id_xml="$(xml_escape "$flow_id")"
       cat > "$batch_xml" <<EOF
