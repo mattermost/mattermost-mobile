@@ -5,6 +5,7 @@ import NetInfo from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
+import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import loopInStore from '@agents/store/loop_in_store';
 import streamingStore from '@agents/store/streaming_store';
@@ -138,6 +139,11 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     await safeExecute('removeServerCredentials', async () => {
         await removeServerCredentials(serverUrl);
     });
+
+    // Prune the audit queue (non-critical): session-attributed events can no longer be reported truthfully
+    await safeExecute('auditQueue', async () => {
+        await pruneAuditQueueOnSessionEnd(serverUrl, removeServer);
+    }, false);
 
     // Remove push notifications (synchronous, no error handling needed)
     PushNotifications.removeServerNotifications(serverUrl);

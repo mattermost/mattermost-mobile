@@ -4,9 +4,11 @@
 import {AppState, type AppStateStatus} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
+import {attachAuditEventErrorReason, enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
@@ -14,11 +16,16 @@ import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache} from '@utils/file';
+import {logError} from '@utils/log';
 
 import EphemeralModeManager from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
+jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
+    enqueueAuditEvent: jest.fn().mockResolvedValue('audit-evt-1'),
+    attachAuditEventErrorReason: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
     wipeServerFiles: jest.fn().mockReturnValue({success: true}),
@@ -748,6 +755,90 @@ describe('EphemeralModeManager', () => {
 
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
         });
+
+        describe('offline-purge audit event', () => {
+            it('enqueues one offlinePurge event with the full expected shape', async () => {
+                await triggerWipeForServerA();
+
+                expect(enqueueAuditEvent).toHaveBeenCalledWith(serverA, {
+                    kind: EphemeralModeAuditEventKind.OfflinePurge,
+                    occurredAt: expect.any(Number),
+                    offlineTimeMinutes: 60,
+                });
+            });
+
+            it('enqueues the event before wipeServerDatabaseWithRetry runs, while the server database is still intact', async () => {
+                await triggerWipeForServerA();
+
+                const enqueueOrder = jest.mocked(enqueueAuditEvent).mock.invocationCallOrder[0];
+                const wipeOrder = jest.mocked(wipeServerDatabaseWithRetry).mock.invocationCallOrder[0];
+                expect(enqueueOrder).toBeLessThan(wipeOrder);
+            });
+
+            it('lets the wipe complete when enqueueAuditEvent rejects', async () => {
+                jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+
+                await triggerWipeForServerA();
+
+                expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
+                expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverA, 'wiped');
+            });
+        });
+
+        describe('offline-purge audit event failure reason', () => {
+            it('logs and attaches an unexpected-error reason when the wipe artifacts fail after retries', async () => {
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+                await triggerWipeForServerA();
+
+                expect(logError).toHaveBeenCalledWith('EphemeralModeManager.runWipe', 'wipe artifacts failed after retries');
+                expect(attachAuditEventErrorReason).toHaveBeenCalledWith(serverA, 'audit-evt-1', 'unexpected error during wipe');
+            });
+
+            it('never calls attachAuditEventErrorReason when the wipe succeeds', async () => {
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+            });
+
+            it('lets addServer run when attachAuditEventErrorReason rejects', async () => {
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+                jest.mocked(attachAuditEventErrorReason).mockRejectedValueOnce(new Error('write failed'));
+
+                await triggerWipeForServerA();
+
+                expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
+            });
+
+            it('never calls attachAuditEventErrorReason when the initial enqueueAuditEvent also rejected', async () => {
+                jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+            });
+
+            it('attaches an unexpected-error reason when an unhandled exception interrupts the wipe after the audit event is created', async () => {
+                updatePersistenceFlagSpy.mockImplementationOnce(() => {
+                    throw new Error('disk full');
+                });
+
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).toHaveBeenCalledWith(serverA, 'audit-evt-1', 'unexpected error during wipe');
+            });
+
+            it('restores tracking for the server when an unhandled exception interrupts the wipe after subscriptions were paused', async () => {
+                jest.mocked(wipeServerFiles).mockImplementationOnce(() => {
+                    throw new Error('fs error');
+                });
+
+                await triggerWipeForServerA();
+
+                expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
+            });
+        });
     });
 
     describe('init wipe-resumption', () => {
@@ -774,6 +865,51 @@ describe('EphemeralModeManager', () => {
 
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
             expect(wipeServerFiles).not.toHaveBeenCalled();
+        });
+
+        it('logs when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(logError).toHaveBeenCalledWith(
+                'EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data',
+                serverA,
+            );
+        });
+
+        it('enqueues an offlinePurge audit event with an error reason when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).toHaveBeenCalledWith(serverA, {
+                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                occurredAt: expect.any(Number),
+                offlineTimeMinutes: 0,
+                errorReason: 'resumed wipe failed after retries, server re-added with stale data',
+            });
+        });
+
+        it('does not enqueue an audit event when a resumed wipe succeeds', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
+        });
+
+        it('still re-adds the server when enqueueing the resumed-wipe-failure audit event rejects', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+            jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
         });
     });
 
@@ -863,6 +999,30 @@ describe('EphemeralModeManager', () => {
             EphemeralModeManager.removeServer(serverA);
 
             expect(appStateRemoveSpies[0]).toHaveBeenCalled();
+        });
+    });
+
+    describe('isEphemeralModeEnabled', () => {
+        it('returns false for a server never passed to init', () => {
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(false);
+        });
+
+        it('returns true for a tracked mem server', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(true);
+        });
+
+        it('returns true for a tracked zpm server', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(true);
         });
     });
 });

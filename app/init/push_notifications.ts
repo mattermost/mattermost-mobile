@@ -19,21 +19,25 @@ import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
+import {enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {updateThread} from '@actions/local/thread';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {isCallsStartedMessage} from '@calls/utils';
 import {Device, Events, PushNotification, Screens} from '@constants';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
+import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import InAppNotificationStore from '@store/in_app_notification_store';
 import {NavigationStore} from '@store/navigation_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
-import {logDebug, logInfo, logWarning} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 const messages = defineMessages({
@@ -210,8 +214,32 @@ class PushNotificationsSingleton {
             if (notification.userInteraction) {
                 DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
             } else {
-                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+                const auditEventId = await this.enqueueSessionWipeAuditEvent(serverUrl, notification.payload?.signature);
+                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, auditEventId});
             }
+        }
+    };
+
+    enqueueSessionWipeAuditEvent = async (serverUrl: string, signature?: string): Promise<string | undefined> => {
+        if (!EphemeralModeManager.isEphemeralModeEnabled(serverUrl)) {
+            logDebug('enqueueSessionWipeAuditEvent: ephemeral mode not enabled for', serverUrl);
+            return undefined;
+        }
+
+        if (!signature) {
+            logDebug('enqueueSessionWipeAuditEvent: no signature for', serverUrl);
+            return undefined;
+        }
+
+        try {
+            return await enqueueAuditEvent(serverUrl, {
+                kind: EphemeralModeAuditEventKind.SessionWipe,
+                signature,
+                occurredAt: Date.now(),
+            });
+        } catch (error) {
+            logError('enqueueSessionWipeAuditEvent', getFullErrorMessage(error));
+            return undefined;
         }
     };
 

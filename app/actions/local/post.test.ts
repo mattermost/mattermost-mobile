@@ -505,6 +505,27 @@ describe('deletePostsInChannelsByCutoff', () => {
         expect(error).toBeTruthy();
     });
 
+    it('returns the number of posts matched by the cutoff', async () => {
+        jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        const oldPosts = [
+            TestHelper.fakePost({channel_id: channelId, create_at: OLD}),
+            TestHelper.fakePost({channel_id: channelId, create_at: OLD}),
+        ];
+        const recentPost = TestHelper.fakePost({channel_id: channelId, create_at: RECENT});
+
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [oldPosts[0].id, oldPosts[1].id, recentPost.id],
+            posts: [...oldPosts, recentPost],
+            prepareRecordsOnly: false,
+        });
+
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeUndefined();
+        expect(deletedCount).toBe(2);
+    });
+
     // A cached model whose earliest advances has to go through the model layer (fires observers)
     it('advances the cached PostsInChannel earliest through the model layer', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
@@ -573,13 +594,28 @@ describe('deletePostsInChannelsByCutoff', () => {
         });
     });
 
-    it('returns an error when the underlying transaction fails', async () => {
+    it('returns an error and no deleted count when the underlying transaction fails', async () => {
         const database = operator.database;
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.reject(new Error('fail')));
 
-        const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
 
         expect(error).toBeTruthy();
+        expect(deletedCount).toBe(0);
+    });
+
+    it('returns an error without deleting anything when counting matched posts fails', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => {
+            callback({error: new Error('count failed')});
+        });
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute');
+
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeTruthy();
+        expect(deletedCount).toBe(0);
+        expect(unsafeExecuteSpy).not.toHaveBeenCalled();
     });
 
     it('scopes the post delete and its dependent subqueries to exclude the given post IDs', async () => {
