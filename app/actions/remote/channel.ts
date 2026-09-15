@@ -1493,8 +1493,6 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
             await setCurrentChannelId(operator, '');
         }
 
-        // Emitted last: navigateToRoot and the tablet fallback both dismiss overlays, so a
-        // listener opening a bottom sheet any earlier would have it torn down.
         if (displayName != null) {
             DeviceEventEmitter.emit(event, displayName);
         }
@@ -1515,8 +1513,6 @@ export const handleChannelAccessDenied = async (serverUrl: string, channelId: st
             return {};
         }
 
-        // Kick first: it reads the channel's display name for the notice, and the purge
-        // below destroys that row.
         if (channelId === await getCurrentChannelId(database)) {
             await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ACCESS_REVOKED);
         }

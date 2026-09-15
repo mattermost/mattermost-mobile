@@ -17,8 +17,6 @@ import {fetchAllMyChannelsForAllTeams, handleKickFromChannel} from './channel';
 
 import type {Model} from '@nozbe/watermelondb';
 
-// Policy events arrive in bursts, and permission_policy_updated is a global broadcast, so a
-// run in progress absorbs the rest of the burst into a single trailing re-run.
 const inFlight = new Set<string>();
 const queued = new Set<string>();
 
@@ -28,16 +26,12 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 
     const {channels, memberships, categories, error} = await fetchAllMyChannelsForAllTeams(serverUrl, 0, isCRTEnabled, true);
 
-    // Dropping local state on a failed or empty response would hide channels the policy
-    // still allows.
     if (error || !channels?.length || !memberships?.length) {
         return {error};
     }
 
     await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled);
     if (categories?.length) {
-        // prepareDeleteChannel destroys the categoryChannel row, and nothing else recreates
-        // it, so a regained channel stays invisible in the sidebar without this.
         await storeCategories(serverUrl, categories, true);
     }
 
@@ -47,9 +41,6 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
         return {};
     }
 
-    // A channel absent from the response only means "denied" if the response could have
-    // carried it: DMs and GMs are exempt server-side, and the list omits archived channels
-    // whatever the policy says.
     const denied = (await queryChannelsById(database, missingIds).fetch()).filter((c) => !isDMorGM(c) && c.deleteAt === 0);
     if (!denied.length) {
         return {};
