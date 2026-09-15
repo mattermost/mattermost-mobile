@@ -24,6 +24,33 @@ import {expect, waitFor} from 'detox';
 
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
+/**
+ * Run a best-effort sidebar scroll without Detox's idle gate.
+ *
+ * Detox *actions* carry no timeout, so one that never completes hangs until the
+ * per-test cap and, because invocations are serialised, takes every later test
+ * in the file with it. Seen on main 0869dc8 (run 34878744032, iOS machine-7):
+ * `scrollTo('top')` on channel_list.flat_list was dispatched into a healthy app,
+ * the main run loop then stopped reporting idle ("1 work item pending on Main
+ * Queue", "Runloop Perform Block") and never recovered. testFnFailure.png shows
+ * a completely settled channel list with the target channel on screen, so this
+ * is Detox's idleness accounting, not a frozen UI. Cost: 4 failures and 35 of
+ * the shard's 58 minutes, from one wedge.
+ *
+ * These scrolls are already optional — every call site swallows the error and
+ * falls through to a bounded matcher. Dispatching them unsynchronized keeps a
+ * stuck idle gate from turning "the list was already at its boundary" into a
+ * six-minute silent hang; the following matchers have their own timeouts and
+ * fail with a real message. This does not make the app idle again.
+ */
+async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
+    try {
+        await withSynchronizationDisabled(scroll);
+    } catch {
+        // List not scrollable, already at the boundary, or not mounted yet.
+    }
+}
+
 class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
@@ -101,11 +128,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        try {
-            await this.channelList.scrollTo('top');
-        } catch {
-            // The list may already be at its boundary.
-        }
+        await bestEffortScroll(() => this.channelList.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -133,11 +156,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            try {
-                await this.channelList.scroll(280, 'down', 0.5, 0.45);
-            } catch {
-                // List not scrollable or already at the end.
-            }
+            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -180,11 +199,8 @@ class ChannelListScreen {
                     await expect(label).toBeVisible(40);
                     break;
                 } catch {
-                    try {
-                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
-                    } catch {
-                        // The final assertion reports if the list edge still clips the row.
-                    }
+                    // The final assertion reports if the list edge still clips the row.
+                    await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -201,11 +217,8 @@ class ChannelListScreen {
                 await expect(label).toBeVisible(15);
                 break;
             } catch {
-                try {
-                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
-                } catch {
-                    // List edge reached — the taps below still report if it stays clipped.
-                }
+                // List edge reached — the taps below still report if it stays clipped.
+                await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
             }
         }
         /* eslint-enable no-await-in-loop */
