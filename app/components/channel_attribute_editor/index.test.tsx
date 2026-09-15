@@ -15,6 +15,18 @@ jest.mock('@screens/navigation', () => ({
     dismissBottomSheet: jest.fn().mockResolvedValue(undefined),
 }));
 
+// BottomSheetScrollView throws when rendered outside a real BottomSheet
+// ('Scrollable' cannot be used out of the BottomSheet!), which these tests are:
+// they render the editor's content standalone, the way the sheet's own
+// renderContent callback does, without mounting Gorhom's sheet around it.
+jest.mock('@gorhom/bottom-sheet', () => {
+    const {ScrollView, TextInput} = require('react-native');
+    return {
+        BottomSheetScrollView: ScrollView,
+        BottomSheetTextInput: TextInput,
+    };
+});
+
 const OPTIONS = [
     {id: 'level-public', name: 'Public', color: '#00FF00', rank: 1},
     {id: 'level-secret', name: 'Secret', color: '#FF0000', rank: 2},

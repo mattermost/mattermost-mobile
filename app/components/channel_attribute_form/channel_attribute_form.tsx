@@ -3,15 +3,17 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Pressable, Text, View, type LayoutChangeEvent} from 'react-native';
+import {Pressable, Text, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import AttributeChip from '@components/attribute_chip';
-import ChannelAttributeEditor, {OPTION_ROW_HEIGHT} from '@components/channel_attribute_editor';
+import ChannelAttributeEditor from '@components/channel_attribute_editor';
+import {getChannelAttributeEditorSnapPoints} from '@components/channel_attribute_editor/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
-import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
 import {
     getPropertyFieldLabel,
@@ -20,15 +22,10 @@ import {
     type ChannelAttributeField,
     type ResolvedChannelAttribute,
 } from '@utils/channel_attributes';
-import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {ChannelAttributeValueInput} from '@actions/remote/channel_attributes';
-
-// Past this the sheet takes a percentage snap point and scrolls, rather than
-// growing to a height that would cover the screen. Mirrors PR A's editor sheet.
-const SHEET_MAX_ROWS = 5;
 
 const messages = defineMessages({
     heading: {
@@ -168,6 +165,9 @@ type Props = {
 const ChannelAttributeForm = ({type, fields, values, onChange, onLayout}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+    const {height: windowHeight} = useWindowDimensions();
 
     const valuesList = useMemo(
         () => fields.map((field) => ({fieldId: field.id, value: values[field.id]})),
@@ -191,15 +191,16 @@ const ChannelAttributeForm = ({type, fields, values, onChange, onLayout}: Props)
         );
 
         const {field} = attribute;
-        const sheetRows = field.type === 'text' ? 1 : reachableOptions(field, undefined).length + 1;
-        const height = bottomSheetSnapPoint(Math.min(sheetRows, SHEET_MAX_ROWS), OPTION_ROW_HEIGHT) + (2 * TITLE_HEIGHT);
-        const snapPoints: Array<string | number> = [1, height];
-        if (sheetRows > SHEET_MAX_ROWS) {
-            snapPoints.push('80%');
-        }
+        const totalRows = field.type === 'text' ? 1 : reachableOptions(field, undefined).length + 1;
+        const snapPoints = getChannelAttributeEditorSnapPoints({totalRows, fieldType: field.type, bottomInset: bottom, isTablet, windowHeight});
 
-        bottomSheet(renderContent, snapPoints);
-    }, [resolved, onChange]);
+        // 'interactive' grows the sheet by exactly the keyboard's height instead
+        // of 'extend''s default of jumping straight to the tallest configured
+        // snap point — only the text field's editor shows a keyboard, but this
+        // is harmless to pass for every field type since it only changes
+        // anything while a keyboard is visible.
+        bottomSheet(renderContent, snapPoints, undefined, 'interactive');
+    }, [bottom, isTablet, resolved, onChange, windowHeight]);
 
     // DM/GM never reach this form on mobile (no channel-attribute UI is offered
     // there); O/P are the only channel types the create screen ever produces.
