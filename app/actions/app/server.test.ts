@@ -162,10 +162,10 @@ describe('switchToServerAndLogin', () => {
         await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
         expect(canReceiveNotifications).toHaveBeenCalledWith('serverUrl', undefined, intl);
-        expect(callback).toHaveBeenCalledWith({config, license}, undefined);
+        expect(callback).toHaveBeenCalledWith({config, license});
     });
 
-    it('should hand the stored pre-auth secret back to the callback', async () => {
+    it('should use the stored pre-auth secret for ping when reconnecting', async () => {
         const server = {url: 'serverUrl', displayName: 'Server'} as ServersModel;
         const config = {DiagnosticId: 'diagId', MobileEnableBiometrics: 'true', SiteName: 'Site'} as ClientConfig;
         const license = {} as ClientLicense;
@@ -179,7 +179,8 @@ describe('switchToServerAndLogin', () => {
         const callback = jest.fn();
         await Actions.switchToServerAndLogin('serverUrl', intl, callback);
 
-        expect(callback).toHaveBeenCalledWith({config, license}, 'secret-a');
+        expect(doPing).toHaveBeenCalledWith('serverUrl', true, 5000, 'secret-a');
+        expect(callback).toHaveBeenCalledWith({config, license});
     });
 
     it('should not proceed if device is jailbroken', async () => {

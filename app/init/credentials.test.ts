@@ -431,7 +431,7 @@ describe('credentials', () => {
 
     describe('removePreauthSecret', () => {
         it('should remove the pre-auth secret for that server only', async () => {
-            await removePreauthSecret(mockServerUrl);
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(true);
 
             expect(KeyChain.resetGenericPassword).toHaveBeenCalledWith(iosPreauthOptions);
         });
@@ -439,15 +439,21 @@ describe('credentials', () => {
         it('should use the prefixed service on Android', async () => {
             Platform.OS = 'android';
 
-            await removePreauthSecret(mockServerUrl);
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(true);
 
             expect(KeyChain.resetGenericPassword).toHaveBeenCalledWith(androidPreauthOptions);
         });
 
-        it('should gracefully handle errors when pre-auth secret does not exist', async () => {
+        it('should report false when Keychain refuses the reset without throwing', async () => {
+            jest.mocked(KeyChain.resetGenericPassword).mockResolvedValue(false);
+
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(false);
+        });
+
+        it('should report false when the reset throws', async () => {
             jest.mocked(KeyChain.resetGenericPassword).mockRejectedValue(new Error('Not found'));
 
-            await expect(removePreauthSecret(mockServerUrl)).resolves.not.toThrow();
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(false);
 
             expect(KeyChain.resetGenericPassword).toHaveBeenCalledWith(iosPreauthOptions);
         });
@@ -692,7 +698,7 @@ describe('credentials', () => {
             await loadCache();
             jest.mocked(KeyChain.setInternetCredentials).mockResolvedValue(false);
 
-            await setServerCredentials(mockServerUrl, 'new-token');
+            await expect(setServerCredentials(mockServerUrl, 'new-token')).rejects.toThrow('failed to store credentials');
 
             await expect(getServerCredentials(mockServerUrl)).resolves.toEqual({
                 serverUrl: mockServerUrl,
@@ -726,7 +732,7 @@ describe('credentials', () => {
         it('should clear the cached preauthSecret after a successful reset', async () => {
             await loadCache(mockPreauthSecret);
 
-            await removePreauthSecret(mockServerUrl);
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(true);
 
             await expect(getServerCredentials(mockServerUrl)).resolves.toMatchObject({preauthSecret: undefined});
         });
@@ -735,7 +741,7 @@ describe('credentials', () => {
             await loadCache(mockPreauthSecret);
             jest.mocked(KeyChain.resetGenericPassword).mockRejectedValue(new Error('Keystore error'));
 
-            await removePreauthSecret(mockServerUrl);
+            await expect(removePreauthSecret(mockServerUrl)).resolves.toBe(false);
 
             await expect(getServerCredentials(mockServerUrl)).resolves.toMatchObject({preauthSecret: mockPreauthSecret});
         });

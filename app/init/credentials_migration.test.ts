@@ -116,7 +116,15 @@ describe('migrateLegacyPreauthSecret', () => {
         expect(storePreauthSecretMigrationDone).not.toHaveBeenCalled();
     });
 
-    it('should not throw when the flag write fails', async () => {
+    it('should not mark the migration done when the flag write returns an error', async () => {
+        jest.mocked(storePreauthSecretMigrationDone).mockResolvedValue({error: new Error('DB error')});
+
+        await expect(migrateLegacyPreauthSecret([activeUrl])).resolves.not.toThrow();
+
+        expect(removeLegacyPreauthSecret).toHaveBeenCalled();
+    });
+
+    it('should not throw when the flag write rejects', async () => {
         jest.mocked(storePreauthSecretMigrationDone).mockRejectedValue(new Error('DB error'));
 
         await expect(migrateLegacyPreauthSecret([activeUrl])).resolves.not.toThrow();

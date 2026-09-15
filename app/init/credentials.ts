@@ -140,6 +140,7 @@ export const setServerCredentials = async (serverUrl: string, token: string) => 
         replaceCachedCredential(serverUrl, {serverUrl, userId: token, token, preauthSecret: existing?.preauthSecret});
     } catch (e) {
         logWarning('setServerCredentials: could not set credentials', getFullErrorMessage(e));
+        throw e;
     }
 };
 
@@ -175,12 +176,17 @@ export const removeServerCredentials = async (serverUrl: string) => {
     replaceCachedCredential(serverUrl, null);
 };
 
-export const removePreauthSecret = async (serverUrl: string) => {
+export const removePreauthSecret = async (serverUrl: string): Promise<boolean> => {
     try {
-        await KeyChain.resetGenericPassword(getPreauthSecretOptions(serverUrl));
+        const reset = await KeyChain.resetGenericPassword(getPreauthSecretOptions(serverUrl));
+        if (reset === false) {
+            return false;
+        }
         updateCachedPreauthSecret(serverUrl, undefined);
+        return true;
     } catch (e) {
         logWarning('removePreauthSecret: could not remove preauth secret', getFullErrorMessage(e));
+        return false;
     }
 };
 

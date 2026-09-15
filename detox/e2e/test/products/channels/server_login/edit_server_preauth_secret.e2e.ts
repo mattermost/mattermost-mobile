@@ -12,6 +12,7 @@ import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     ChannelListScreen,
     EditServerScreen,
+    HomeScreen,
     LoginScreen,
     ServerListScreen,
     ServerScreen,
@@ -57,6 +58,10 @@ describe('Server Login - Edit Server Preauth Secret', () => {
         await ChannelListScreen.toBeVisible();
     });
 
+    afterAll(async () => {
+        await HomeScreen.logout();
+    });
+
     it('MM-T5000_4 - should survive changing the pre-auth secret on a connected server', async () => {
         // Changing the secret rebuilds the REST and WebSocket clients. Tearing the native session
         // down while requests were in flight used to abort the process, so the assertion that
@@ -91,9 +96,8 @@ describe('Server Login - Edit Server Preauth Secret', () => {
 
     // NOT COVERED HERE, deliberately:
     // - Rejecting a wrong secret: the default e2e server is a plain Mattermost with no pre-auth
-    //   proxy, so it ignores the header and any value validates as good.
+    //   proxy, so it ignores the header and any value validates as good (manual / proxy only).
     // - Asserting the stored value round-trips into the field: it is secureTextEntry, so the
     //   value is masked and not readable through the accessibility tree.
-    // Both are covered by unit tests in app/init/credentials.test.ts and by manual verification
-    // against a pre-auth-enforcing proxy; see MM-70605.
+    // Keychain persistence is covered by app/init/credentials.test.ts; see MM-70605.
 });

@@ -12,9 +12,9 @@ import {logDebug, logWarning} from '@utils/log';
  *
  * Every server used to share one keychain entry, so the stored value belongs to whichever server
  * wrote it last, which is not knowable afterwards. It is therefore adopted only when a single server
- * makes ownership unambiguous; with more than one, the entry is discarded and every server
- * re-prompts. Guessing an owner would send one operator's secret to a host it was never meant for,
- * which is the bug being fixed.
+ * makes ownership unambiguous; with more than one, the entry is discarded. Users must re-enter
+ * the secret when a server next requires it. Guessing an owner would send one operator's secret
+ * to a host it was never meant for, which is the bug being fixed.
  *
  * Runs in the Android share extension too, which is harmless: it shares the process, alias space and
  * app database with the main app, and the iOS share and notification extensions are native readers
@@ -33,7 +33,7 @@ export async function migrateLegacyPreauthSecret(activeServerUrls: string[]): Pr
         // Throws on keychain errors; the outer catch leaves the flag unset so we retry later.
         const legacySecret = await getLegacyPreauthSecret();
         if (!legacySecret) {
-            await storePreauthSecretMigrationDone();
+            await markMigrationDone();
             return;
         }
 
@@ -47,7 +47,7 @@ export async function migrateLegacyPreauthSecret(activeServerUrls: string[]): Pr
         if (activeServerUrls.length > 1) {
             logDebug('migrateLegacyPreauthSecret: discarding an unattributable secret', {servers: activeServerUrls.length});
             await removeLegacyPreauthSecret();
-            await storePreauthSecretMigrationDone();
+            await markMigrationDone();
             return;
         }
 
@@ -64,10 +64,17 @@ export async function migrateLegacyPreauthSecret(activeServerUrls: string[]): Pr
         }
 
         await removeLegacyPreauthSecret();
-        await storePreauthSecretMigrationDone();
+        await markMigrationDone();
         logDebug('migrateLegacyPreauthSecret: migrated');
     } catch (e) {
         // Leaving the flag unset retries the migration on the next launch.
-        logWarning('migrateLegacyPreauthSecret failed', getFullErrorMessage(e));
+        logWarning('migrateLegacyPreauthSecret: failed', getFullErrorMessage(e));
+    }
+}
+
+async function markMigrationDone() {
+    const result = await storePreauthSecretMigrationDone();
+    if (result && typeof result === 'object' && 'error' in result && result.error) {
+        throw result.error;
     }
 }

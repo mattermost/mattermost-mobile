@@ -103,6 +103,7 @@ mattermost-license.txt
 detox/artifacts
 detox/detox_pixel_*
 detox/e2e/support/fixtures/*.tar.gz
+mobile-artifacts/
 
 # Bundle artifact
 *.jsbundle
@@ -153,3 +154,4 @@ detox/maestro/.maestro-test-env*.sh
 detox/maestro/.maestro-test-env*.bak
 
 .e2e-debug/
+.xcodebuildmcp/

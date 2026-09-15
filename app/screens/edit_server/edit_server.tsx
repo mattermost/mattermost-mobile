@@ -93,12 +93,24 @@ const EditServer = ({server, theme}: ServerProps) => {
     // otherwise keep answering with the previous secret. Concurrent traffic may briefly use the
     // candidate; handleUpdate rolls it back when validation fails.
     const applyPreauthSecretHeader = useCallback(async (secret: string) => {
+        let client;
         try {
-            await NetworkManager.getClient(server.url).setPreauthSecretHeader(secret);
+            client = NetworkManager.getClient(server.url);
         } catch {
             // No client cached for this server yet; nothing to update.
+            return;
         }
+        await client.setPreauthSecretHeader(secret);
     }, [server.url]);
+
+    const showPreauthSaveError = useCallback(() => {
+        setPreauthSecretError(formatMessage({
+            id: 'mobile.server.preauth_secret.save_failed',
+            defaultMessage: 'Unable to save authentication secret. Please try again.',
+        }));
+        setShowAdvancedOptions(true);
+        setSaving(false);
+    }, [formatMessage]);
 
     const validateServer = useCallback(async (): Promise<boolean> => {
         setValidating(true);
@@ -191,7 +203,11 @@ const EditServer = ({server, theme}: ServerProps) => {
             const isValidServer = await validateServer();
             if (!isValidServer) {
                 // Validation put the candidate secret on the live client, so put the stored one back.
-                await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                try {
+                    await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                } catch (error) {
+                    logWarning('EditServer.handleUpdate: could not restore preauth header', getFullErrorMessage(error));
+                }
                 setSaving(false);
                 return;
             }
@@ -205,28 +221,63 @@ const EditServer = ({server, theme}: ServerProps) => {
             if (trimmedSecret) {
                 const stored = await storePreauthSecret(server.url, trimmedSecret);
                 if (!stored) {
-                    await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                    try {
+                        await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                    } catch (error) {
+                        logWarning('EditServer.handleUpdate: could not restore preauth header', getFullErrorMessage(error));
+                    }
+                    showPreauthSaveError();
+                    return;
+                }
+            } else {
+                const removed = await removePreauthSecret(server.url);
+                if (!removed) {
+                    try {
+                        await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                    } catch (error) {
+                        logWarning('EditServer.handleUpdate: could not restore preauth header', getFullErrorMessage(error));
+                    }
+                    showPreauthSaveError();
+                    return;
+                }
+            }
+
+            const credentials = await getServerCredentials(server.url);
+
+            // Re-apply if a client exists; otherwise create one with the new secret.
+            let hasClient = true;
+            try {
+                NetworkManager.getClient(server.url);
+            } catch {
+                hasClient = false;
+            }
+
+            if (hasClient) {
+                try {
+                    await applyPreauthSecretHeader(trimmedSecret);
+                } catch (error) {
+                    logWarning('EditServer.handleUpdate: could not update preauth header', getFullErrorMessage(error));
                     setPreauthSecretError(formatMessage({
-                        id: 'mobile.server.preauth_secret.save_failed',
-                        defaultMessage: 'Unable to save authentication secret. Please try again.',
+                        id: 'mobile.server.validation.error',
+                        defaultMessage: 'Unable to validate server. Please check your connection and try again.',
                     }));
                     setShowAdvancedOptions(true);
                     setSaving(false);
                     return;
                 }
             } else {
-                await removePreauthSecret(server.url);
-            }
-
-            const credentials = await getServerCredentials(server.url);
-
-            // validateServer already applied this to the live client; this covers the case where
-            // no client existed then, and is a no-op otherwise.
-            try {
-                NetworkManager.getClient(server.url);
-                await applyPreauthSecretHeader(trimmedSecret);
-            } catch {
-                await NetworkManager.createClient(server.url, credentials?.token, trimmedSecret || undefined);
+                try {
+                    await NetworkManager.createClient(server.url, credentials?.token, trimmedSecret || undefined);
+                } catch (error) {
+                    logWarning('EditServer.handleUpdate: could not create client', getFullErrorMessage(error));
+                    setPreauthSecretError(formatMessage({
+                        id: 'mobile.server.validation.error',
+                        defaultMessage: 'Unable to validate server. Please check your connection and try again.',
+                    }));
+                    setShowAdvancedOptions(true);
+                    setSaving(false);
+                    return;
+                }
             }
 
             try {
@@ -242,7 +293,7 @@ const EditServer = ({server, theme}: ServerProps) => {
         }
 
         navigateBack();
-    }, [buttonDisabled, displayName, displayNameError, preauthSecretError, server.url, preauthSecret, initialPreauthSecret, applyPreauthSecretHeader, formatMessage, validateServer]);
+    }, [buttonDisabled, displayName, displayNameError, preauthSecretError, server.url, preauthSecret, initialPreauthSecret, applyPreauthSecretHeader, formatMessage, showPreauthSaveError, validateServer]);
 
     const handleDisplayNameTextChanged = useCallback((text: string) => {
         setDisplayName(text);

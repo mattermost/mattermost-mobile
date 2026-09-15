@@ -42,7 +42,7 @@ export async function switchToServer(serverUrl: string, callback?: () => void) {
     callback?.();
 }
 
-export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest, preauthSecret?: string) => void) {
+export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape, callback: (data?: ConfigAndLicenseRequest) => void) {
     const server = await getServer(serverUrl);
     if (!server) {
         logError(`Switch to Server with url ${serverUrl} not found`);
@@ -89,8 +89,8 @@ export async function switchToServerAndLogin(serverUrl: string, intl: IntlShape,
     if (authenticated) {
         canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
 
-        // Forward so login/SSO can build clients without another keychain round-trip.
-        callback(data, preauthSecret);
+        // Login/SSO resolve the pre-auth secret from the keychain by serverUrl.
+        callback(data);
         return;
     }
 

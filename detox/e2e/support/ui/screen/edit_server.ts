@@ -68,19 +68,29 @@ class EditServerScreen {
         const input = this.getPreauthSecretInputElement();
 
         try {
-            await waitFor(input).toExist().withTimeout(timeouts.TWO_SEC);
+            await waitFor(input).toBeVisible().withTimeout(timeouts.TWO_SEC);
             return;
         } catch {
             // Collapsed, so open it below.
         }
 
         await this.toggleAdvancedOptions();
-        await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
+        // Height animation (~250ms) must finish before the field is hittable on iOS.
+        await waitFor(input).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await wait(timeouts.ONE_SEC);
     };
 
     enterPreauthSecret = async (preauthSecret: string) => {
         const input = this.getPreauthSecretInputElement();
         await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Empty FloatingTextInput keeps its label over the TextInput until focused, so a
+        // direct tap/replaceText on the preauth field fails iOS hittability. Display Name
+        // already has a value (label floated) and, with Advanced Options open, its return
+        // key focuses the preauth field via onDisplayNameSubmit — then typing is safe.
+        await this.serverDisplayNameInput.tap();
+        await this.serverDisplayNameInput.tapReturnKey();
+        await wait(timeouts.ONE_SEC);
         await input.replaceText(preauthSecret);
     };
 
@@ -90,6 +100,7 @@ class EditServerScreen {
         await this.showAdvancedOptions();
         await this.enterPreauthSecret(preauthSecret);
         await this.saveButton.tap();
+        await waitFor(this.editServerScreen).not.toExist().withTimeout(timeouts.TWENTY_SEC);
     };
 }
 

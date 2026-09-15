@@ -12,6 +12,7 @@ import {Screens, Sso} from '@constants';
 import License from '@constants/license';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
+import {getPreauthSecret} from '@init/credentials';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
@@ -134,7 +135,10 @@ const SSO = ({
     }, [serverUrl, serverDisplayName, config.DiagnosticId, config.IntuneScope, goToHome, onLoadEndError]);
 
     const doSSOLogin = useCallback(async (bearerToken: string, csrfToken: string) => {
-        const result: LoginActionResponse = await ssoLogin(serverUrl, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, serverPreauthSecret);
+        // Add-server may pass the secret via nav props before it is persisted; re-login resolves
+        // from the keychain so the secret is never serialized into Expo Router params.
+        const preauthSecret = serverPreauthSecret ?? await getPreauthSecret(serverUrl);
+        const result: LoginActionResponse = await ssoLogin(serverUrl, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, preauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;
@@ -143,7 +147,8 @@ const SSO = ({
     }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverPreauthSecret, serverUrl]);
 
     const doSSOCodeExchange = useCallback(async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
-        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, serverPreauthSecret);
+        const preauthSecret = serverPreauthSecret ?? await getPreauthSecret(serverUrl);
+        const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, preauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;

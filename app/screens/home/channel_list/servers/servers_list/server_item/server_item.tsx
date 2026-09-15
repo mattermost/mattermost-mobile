@@ -268,11 +268,11 @@ const ServerItem = ({
             await switchToServer(server.url);
             return;
         }
-        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest, preauthSecret?: string) => {
+        await switchToServerAndLogin(server.url, intl, async (data?: ConfigAndLicenseRequest) => {
             setSwitching(false);
             await dismissBottomSheet();
             if (data?.config && data.license) {
-                loginToServer(theme, server.url, server.displayName, data.config, data.license, preauthSecret);
+                loginToServer(theme, server.url, server.displayName, data.config, data.license);
             }
         });
     }, [intl, isActive, server.displayName, server.lastActiveAt, server.url, theme]);

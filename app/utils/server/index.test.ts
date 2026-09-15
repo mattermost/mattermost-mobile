@@ -222,23 +222,12 @@ describe('Server Utils', () => {
             );
         });
 
-        it('should forward the pre-auth secret on the login path', async () => {
-            await loginToServer(theme, serverUrl, displayName, config, license, 'secret-a');
+        it('should not serialize the pre-auth secret into navigation params', async () => {
+            await loginToServer(theme, serverUrl, displayName, config, license);
 
             expect(navigateToScreen).toHaveBeenCalledWith(
                 Screens.LOGIN,
-                expect.objectContaining({serverPreauthSecret: 'secret-a'}),
-            );
-        });
-
-        it('should forward the pre-auth secret on the SSO redirect path', async () => {
-            const configWithSingleSSO = {...config, EnableSignInWithEmail: 'false', EnableSignInWithUsername: 'false'};
-
-            await loginToServer(theme, serverUrl, displayName, configWithSingleSSO, license, 'secret-a');
-
-            expect(navigateToScreen).toHaveBeenCalledWith(
-                Screens.SSO,
-                expect.objectContaining({serverPreauthSecret: 'secret-a', ssoType: Sso.SAML}),
+                expect.not.objectContaining({serverPreauthSecret: expect.anything()}),
             );
         });
     });
