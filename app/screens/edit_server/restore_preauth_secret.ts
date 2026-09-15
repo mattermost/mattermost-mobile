@@ -12,10 +12,10 @@ import {logWarning} from '@utils/log';
  * @returns whether the keychain write/clear succeeded.
  */
 export async function restorePreviousPreauthSecret(serverUrl: string, previousSecret: string): Promise<boolean> {
-    const previous = previousSecret.trim();
     try {
-        if (previous) {
-            return setPreauthSecret(serverUrl, previous);
+        // Do not trim: rollback must restore the exact previously stored value.
+        if (previousSecret) {
+            return setPreauthSecret(serverUrl, previousSecret);
         }
         return removePreauthSecret(serverUrl);
     } catch (error) {

@@ -23,18 +23,25 @@ describe('restorePreviousPreauthSecret', () => {
         jest.mocked(removePreauthSecret).mockResolvedValue(true);
     });
 
-    it('should restore a non-empty previous secret into the keychain', async () => {
+    it('should restore the previous secret into the keychain unchanged', async () => {
         await expect(restorePreviousPreauthSecret(serverUrl, '  old-secret  ')).resolves.toBe(true);
 
-        expect(setPreauthSecret).toHaveBeenCalledWith(serverUrl, 'old-secret');
+        expect(setPreauthSecret).toHaveBeenCalledWith(serverUrl, '  old-secret  ');
         expect(removePreauthSecret).not.toHaveBeenCalled();
     });
 
     it('should clear the keychain when the previous secret was empty', async () => {
-        await expect(restorePreviousPreauthSecret(serverUrl, '   ')).resolves.toBe(true);
+        await expect(restorePreviousPreauthSecret(serverUrl, '')).resolves.toBe(true);
 
         expect(removePreauthSecret).toHaveBeenCalledWith(serverUrl);
         expect(setPreauthSecret).not.toHaveBeenCalled();
+    });
+
+    it('should restore whitespace-only secrets instead of clearing them', async () => {
+        await expect(restorePreviousPreauthSecret(serverUrl, '   ')).resolves.toBe(true);
+
+        expect(setPreauthSecret).toHaveBeenCalledWith(serverUrl, '   ');
+        expect(removePreauthSecret).not.toHaveBeenCalled();
     });
 
     it('should return false when restoring a previous secret fails', async () => {
