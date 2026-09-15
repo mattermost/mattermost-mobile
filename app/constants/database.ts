@@ -99,6 +99,7 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
     CACHE_MIGRATION: 'cacheMigration',
+    PREAUTH_SECRET_MIGRATION: 'preauthSecretMigration',
     PUSH_SIGNING_KEY: 'pushSigningKey',
 };
 

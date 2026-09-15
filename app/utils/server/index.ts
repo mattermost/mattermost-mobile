@@ -76,7 +76,7 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
         [Sso.OFFICE365]: {enabled: o365Enabled},
         [Sso.OPENID]: {enabled: openIdEnabled, text: config.OpenIdButtonText},
     };
-    const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
+    const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key].enabled);
     const numberSSOs = enabledSSOs.length;
 
     return {
@@ -87,9 +87,26 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     };
 }
 
+/**
+ * With no login form and a single SSO provider there is nothing to choose, so the login screen is
+ * skipped. Shared so the add-server and re-login flows cannot disagree.
+ */
+export function getLoginScreen(enabledSSOs: string[], hasLoginForm: boolean) {
+    if (!hasLoginForm && enabledSSOs.length === 1) {
+        return {screen: Screens.SSO, ssoType: enabledSSOs[0]};
+    }
+
+    return {screen: Screens.LOGIN, ssoType: undefined};
+}
+
 export async function loginToServer(theme: Theme, serverUrl: string, displayName: string, config: ClientConfig, license: ClientLicense) {
-    const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
-    const props = {
+    const {enabledSSOs, hasLoginForm, ssoOptions} = loginOptions(config, license);
+    const {screen, ssoType} = getLoginScreen(enabledSSOs, hasLoginForm);
+
+    // Re-login secrets stay in the keychain; login/SSO screens resolve them by serverUrl instead of
+    // serializing into Expo Router params. Add-server still passes serverPreauthSecret from the
+    // server screen because that value is not persisted until a session exists.
+    navigateToScreen(screen, {
         config,
         hasLoginForm,
         launchType: Launch.AddServer,
@@ -97,19 +114,11 @@ export async function loginToServer(theme: Theme, serverUrl: string, displayName
         serverDisplayName: displayName,
         serverUrl,
         ssoOptions,
+        ssoType,
         theme,
         isModal: true,
         isStackRoot: true,
-    };
-
-    const redirectSSO = !hasLoginForm && numberSSOs === 1;
-    const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
-    if (redirectSSO) {
-        // @ts-expect-error ssoType not in definition
-        props.ssoType = enabledSSOs[0];
-    }
-
-    navigateToScreen(screen, props);
+    });
 }
 
 export async function editServer(theme: Theme, serverId: string) {

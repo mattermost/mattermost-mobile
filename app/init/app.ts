@@ -5,6 +5,7 @@ import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import CallsNative from '@init/calls_native';
 import {getAllServerCredentials} from '@init/credentials';
+import {migrateLegacyPreauthSecret} from '@init/credentials_migration';
 import ManagedApp from '@init/managed_app';
 import PushNotifications from '@init/push_notifications';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -45,6 +46,10 @@ export async function initialize() {
 
             // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
             const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
+
+            // Must precede getAllServerCredentials, which caches the secrets for the whole session.
+            await migrateLegacyPreauthSecret(activeUrls);
+
             serverCredentials = await getAllServerCredentials(activeUrls);
 
             await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
