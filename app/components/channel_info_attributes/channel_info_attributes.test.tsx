@@ -326,6 +326,46 @@ describe('ChannelInfoAttributes', () => {
             expect(mockedSetValue).toHaveBeenLastCalledWith(serverUrl, channelId, 'cf-1', 'level-secret');
         });
 
+        it('should revalidate a queued same-field write after permissions are revoked', async () => {
+            let resolveFirst: (result: {error?: string}) => void = () => {};
+            const firstSave = new Promise<{error?: string}>((resolve) => {
+                resolveFirst = resolve;
+            });
+            mockedSetValue.mockImplementationOnce(() => firstSave);
+
+            const currentAttribute = attribute();
+            const result = render([currentAttribute]);
+
+            fireEvent.press(result.getByTestId('channel_info.attributes.classification.edit'));
+            let firstSubmit: void;
+            await act(async () => {
+                firstSubmit = sheetPropsAt(0).onSubmit('cf-1', 'level-public');
+                await Promise.resolve();
+            });
+
+            fireEvent.press(result.getByTestId('channel_info.attributes.classification.edit'));
+            let secondSubmit: void;
+            act(() => {
+                secondSubmit = sheetPropsAt(1).onSubmit('cf-1', 'level-secret');
+            });
+
+            result.rerender(
+                <ChannelInfoAttributes
+                    channelId={channelId}
+                    attributes={[currentAttribute]}
+                    permissions={permissions({canManageChannelProperties: false})}
+                />,
+            );
+
+            await act(async () => {
+                resolveFirst({});
+                await firstSubmit;
+                await secondSubmit;
+            });
+
+            expect(mockedSetValue).toHaveBeenCalledTimes(1);
+        });
+
         it('should not offer a clear under a directional policy, which the server would refuse', () => {
             const raiseOnly = field({attrs: {options: OPTIONS, actions: ['display_label_info'], change_policy: 'raise_only'}});
             const {getByTestId} = render([attribute({field: raiseOnly, rawValue: 'level-public', option: OPTIONS[0], displayValue: 'Public'})]);

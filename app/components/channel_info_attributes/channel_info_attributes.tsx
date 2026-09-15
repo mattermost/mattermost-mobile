@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -185,8 +185,11 @@ const ChannelInfoAttributes = ({channelId, attributes, permissions}: Props) => {
     }, [attributes]);
     const byFieldIdRef = useRef(byFieldId);
     const permissionsRef = useRef(permissions);
-    byFieldIdRef.current = byFieldId;
-    permissionsRef.current = permissions;
+
+    useLayoutEffect(() => {
+        byFieldIdRef.current = byFieldId;
+        permissionsRef.current = permissions;
+    }, [byFieldId, permissions]);
 
     // Editability is resolved for the whole section in one pass, because whether a
     // permission lock is worth explaining depends on the other rows.

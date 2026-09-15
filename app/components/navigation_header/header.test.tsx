@@ -20,7 +20,7 @@ describe('Header', () => {
         theme: Preferences.THEMES.denim,
     });
 
-    it('renders subtitleComponent when provided', () => {
+    it('should render subtitleComponent when provided', () => {
         const props = getBaseProps();
         const subtitleText = 'Custom Subtitle';
         props.subtitleComponent = <Text testID='custom-subtitle'>{subtitleText}</Text>;
@@ -28,7 +28,7 @@ describe('Header', () => {
         expect(getByTestId('custom-subtitle')).toBeOnTheScreen();
     });
 
-    it('keeps an interactive subtitle independent from the title action', () => {
+    it('should keep an interactive subtitle independent from the title action', () => {
         const props = getBaseProps();
         const onTitlePress = jest.fn();
         const onSubtitlePress = jest.fn();
@@ -52,7 +52,7 @@ describe('Header', () => {
         expect(onTitlePress).not.toHaveBeenCalled();
     });
 
-    it('falls back to subtitle text when subtitleComponent is absent', () => {
+    it('should fall back to subtitle text when subtitleComponent is absent', () => {
         const props = getBaseProps();
         props.subtitle = 'Legacy subtitle';
         const {getByTestId, queryByTestId} = render(<Header {...props}/>);
@@ -60,7 +60,7 @@ describe('Header', () => {
         expect(queryByTestId('custom-subtitle')).toBeNull();
     });
 
-    it('does not render the subtitle area when neither subtitleComponent nor subtitle is provided', () => {
+    it('should not render the subtitle area when neither subtitleComponent nor subtitle is provided', () => {
         const props = getBaseProps();
         const {queryByTestId} = render(<Header {...props}/>);
         expect(queryByTestId('navigation.header.subtitle')).toBeNull();

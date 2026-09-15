@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isEdgeToEdge} from '@constants/device';
-import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {BUTTON_HEIGHT} from '@screens/bottom_sheet/button';
 import {TITLE_HEIGHT, TITLE_LINE_HEIGHT, TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET} from '@screens/bottom_sheet/content';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -77,12 +75,13 @@ export function getChannelAttributeEditorSnapPoints({
 
     const maxHeight = windowHeight * MAX_SHEET_HEIGHT_RATIO;
 
-    // GenericBottomSheetRoute adds this same margin to index 1 (and only index
-    // 1) after this function returns, to give every sheet a bottom cushion. A
-    // third point too close to the second would end up smaller than the second
-    // once that addition lands, leaving Gorhom an unordered array — so a third
-    // point is only offered when it clears the second by more than that.
-    const routeMargin = isEdgeToEdge ? bottomInset : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
+    // GenericBottomSheetRoute adds this same margin (the safe-area bottom inset)
+    // to index 1 (and only index 1) after this function returns, to give every
+    // sheet a bottom cushion. A third point too close to the second would end up
+    // smaller than the second once that addition lands, leaving Gorhom an
+    // unordered array — so a third point is only offered when it clears the
+    // second by more than that.
+    const routeMargin = bottomInset;
 
     // Capped at maxHeight - routeMargin, not maxHeight itself: the route adds
     // routeMargin to this point after this function returns, so capping at

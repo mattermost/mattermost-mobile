@@ -90,6 +90,15 @@ describe('ClientProperties', () => {
             expect(result).toEqual(data);
         });
 
+        it('should return a null-valued row after clearing a value', async () => {
+            const data = [{id: 'v1', field_id: 'field_id_1', value: null}];
+            (client.doFetch as jest.Mock).mockResolvedValueOnce(data);
+
+            const result = await client.patchPropertyValues<string>('access_control', 'channel', 'channel_id_1', [{field_id: 'field_id_1', value: null}]);
+
+            expect(result).toEqual(data);
+        });
+
         it('should propagate a rejection, so a 403 from a change policy reaches the caller', async () => {
             (client.doFetch as jest.Mock).mockRejectedValueOnce({status_code: 403, message: 'change policy does not permit this change'});
 

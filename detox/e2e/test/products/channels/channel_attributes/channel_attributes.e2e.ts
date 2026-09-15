@@ -122,18 +122,43 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
             return;
         }
 
+        let cleanupError: unknown;
         try {
-            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+            try {
+                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+
             if (canControlFlag) {
-                await disableChannelAttributes(siteOneUrl);
+                try {
+                    const disabled = await disableChannelAttributes(siteOneUrl);
+                    if (!disabled) {
+                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes afterAll cleanup');
+                    }
+                } catch (error) {
+                    cleanupError ??= error;
+                }
             }
 
             // ClassificationMarkings is deliberately NOT unset here. It is server-global
             // and ~10 shards share each provisioned server. See the invariant in
             // global_classification_banner.e2e.ts.
-            await HomeScreen.logout();
+            try {
+                await HomeScreen.logout();
+            } catch (error) {
+                cleanupError ??= error;
+            }
         } finally {
-            await releaseClassificationLock(siteOneUrl, lockOwner);
+            try {
+                await releaseClassificationLock(siteOneUrl, lockOwner);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -168,7 +193,10 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
 
         try {
             if (canControlFlag) {
-                await disableChannelAttributes(siteOneUrl);
+                const disabled = await disableChannelAttributes(siteOneUrl);
+                if (!disabled) {
+                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes cleanup');
+                }
             }
         } catch (error) {
             cleanupError ??= error;

@@ -79,14 +79,40 @@ describe('Channel Attributes - Setting values at channel creation', () => {
             return;
         }
 
+        let cleanupError: unknown;
         try {
-            await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
-            if (canControlFlag) {
-                await disableChannelAttributes(siteOneUrl);
+            try {
+                await Properties.apiCleanupChannelAttributeFields(siteOneUrl, ALL_FIELD_NAMES);
+            } catch (error) {
+                cleanupError ??= error;
             }
-            await HomeScreen.logout();
+
+            if (canControlFlag) {
+                try {
+                    const disabled = await disableChannelAttributes(siteOneUrl);
+                    if (!disabled) {
+                        cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes creation afterAll cleanup');
+                    }
+                } catch (error) {
+                    cleanupError ??= error;
+                }
+            }
+
+            try {
+                await HomeScreen.logout();
+            } catch (error) {
+                cleanupError ??= error;
+            }
         } finally {
-            await releaseClassificationLock(siteOneUrl, lockOwner);
+            try {
+                await releaseClassificationLock(siteOneUrl, lockOwner);
+            } catch (error) {
+                cleanupError ??= error;
+            }
+        }
+
+        if (cleanupError) {
+            throw cleanupError;
         }
     });
 
@@ -114,7 +140,10 @@ describe('Channel Attributes - Setting values at channel creation', () => {
         }
         if (canControlFlag) {
             try {
-                await disableChannelAttributes(siteOneUrl);
+                const disabled = await disableChannelAttributes(siteOneUrl);
+                if (!disabled) {
+                    cleanupError ??= new Error('Failed to disable ChannelAttributes during channel attributes creation cleanup');
+                }
             } catch (error) {
                 cleanupError ??= error;
             }
