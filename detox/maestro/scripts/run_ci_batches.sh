@@ -335,10 +335,45 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
+# True when the driver died before driving the app. Android writes JUnit with
+# time="0.0" in that case, so require sub-second times to avoid matching a real
+# assertion (gRPC/tcp text also appears in ordinary Maestro-over-adb failures).
 driver_startup_failed() {
-  local batch_log=$1
-  [[ -f "$batch_log" ]] || return 1
-  grep -q "IOSDriverTimeoutException\|iOS driver not ready in time" "$batch_log"
+  local batch_log=$1 batch_xml=${2:-}
+  { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
+  [[ -s "$batch_xml" ]] || return 0
+  ! grep -qE '<testcase\b[^>]*\btime="([1-9][0-9]*|0*[1-9])' "$batch_xml"
+}
+
+ensure_android_driver_healthy() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Reconnecting adb after Maestro driver loss"
+  adb start-server >/dev/null 2>&1 || true
+  # Never returns when no device comes back, and `|| true` cannot help, so bound it.
+  timeout 60 adb wait-for-device || echo "==> adb wait-for-device timed out — continuing"
+  reset_android_app_state
+  ensure_android_app_launchable
+}
+
+# One <testcase> per flow, not one per batch: collapsing them would drop the other
+# flows and report a smaller, greener suite than the one we asked for.
+write_skipped_driver_junit() {
+  local batch_xml=$1
+  shift
+  local msg='Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure'
+  {
+    printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
+    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="0" errors="0" skipped="%d" time="0">\n' "$#" "$#"
+    local flow base id
+    for flow in "$@"; do
+      base="${flow##*/}"; id="${base%.yml}"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' "$id" "$id" "$flow" "$flow"
+      printf '      <skipped message="%s"/>\n    </testcase>\n' "$msg"
+    done
+    printf '  </testsuite>\n</testsuites>\n'
+  } > "$batch_xml"
 }
 
 BATCH_XMLS=()
@@ -435,18 +470,29 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
 
-  # Retry once when the driver never started. Restricted to that one signature, and to the
-  # case where no JUnit XML was produced, so a genuine flow failure is never re-run and
-  # never masked -- a flow that ran and failed writes its XML and is reported as-is.
-  if [[ $rc -ne 0 && "$PLATFORM" == "ios" && ! -s "$batch_xml" ]] && driver_startup_failed "${batch_xml%.xml}.log"; then
-    echo "==> Batch ${batch_idx}: Maestro's iOS driver never started (no flow ran). Restarting the simulator and retrying this batch once."
-    ensure_ios_simulator_healthy
+  # Retry once when the driver never drove the app. A flow that ran and failed writes
+  # real elapsed times and is reported as-is.
+  if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+    echo "==> Batch ${batch_idx}: Maestro driver never drove the app. Recovering and retrying this batch once."
+    if [[ "$PLATFORM" == "ios" ]]; then
+      ensure_ios_simulator_healthy
+    else
+      ensure_android_driver_healthy
+    fi
     rm -f "$batch_xml"
     batch_start_epoch=$(date +%s)
     run_maestro_batch "$batch_xml" "${path_arr[@]}"
     rc=$?
     batch_end_epoch=$(date +%s)
     echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+
+    if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as skipped"
+      write_skipped_driver_junit "$batch_xml" "${path_arr[@]}"
+      [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
+      [[ "$PLATFORM" == "android" ]] && ensure_android_driver_healthy
+      rc=0
+    fi
   fi
 
   if [[ $rc -ne 0 ]]; then

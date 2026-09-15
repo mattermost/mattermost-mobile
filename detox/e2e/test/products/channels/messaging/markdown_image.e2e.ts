@@ -8,7 +8,9 @@
 // *******************************************************************
 
 import {
+    Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -23,30 +25,26 @@ import {
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
-/**
- * Both tests below assert that a markdown image *renders*, so the URL has to actually serve an
- * image. When the fetch fails, MarkdownImage sets `failed` and returns a bare broken-image
- * CompassIcon from an early return that never reaches the `testID='markdown_image'` wrapper
- * (app/components/markdown/markdown_image/index.tsx) -- so a dead URL surfaces as
- * "10.0sec timeout expired without matching of given matcher", not as an image error.
- *
- * docs.mattermost.com/_images/icon-76x76.png 404s (CI 33936010053 MM-T4896
- * testFnFailure.png: username row with empty body, no markdown_image). Sphinx rewrites
- * `_images/` paths whenever the docs rebuild, so that host is not a safe place to pin an
- * asset. This mattermost.com upload is the same asset file_preview_gallery.e2e.ts uses,
- * and at 701x701 it stays under the 4096 ANDROID_MAX_WIDTH/HEIGHT cap, which is a second
- * early return that would likewise drop the testID.
- */
-const MARKDOWN_IMAGE_URL = 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png';
+// Markdown.renderImage returns null when post.metadata.images is absent, so
+// markdown_image is never mounted. The server only populates that metadata for URLs it can
+// fetch anonymously -- hence a public file link, not /api/v4/files/{id}. See PR #10161.
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
 
+    // Server-relative so it stays correct whichever SITE_1_URL this shard was handed.
+    // MarkdownImage resolves a leading "/" against the connected server URL.
+    let markdownImageUrl = '';
+
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+
+        await enablePublicLinksForOwnHost();
+        markdownImageUrl = await createPublicImageLink(testChannel.id);
+        await requireServerPreloadsImage(testChannel.id, markdownImageUrl);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -65,7 +63,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_1 - should be able to display markdown image', async () => {
         // # Open a channel screen and post a markdown image
-        const markdownImage = `![Mattermost](${MARKDOWN_IMAGE_URL})`;
+        const markdownImage = `![Mattermost](${markdownImageUrl})`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify markdown image is displayed
@@ -84,7 +82,7 @@ describe('Messaging - Markdown Image', () => {
 
     it('MM-T4896_2 - should be able to display markdown image with link', async () => {
         // # Open a channel screen and post a markdown image with link
-        const markdownImage = `[![Mattermost](${MARKDOWN_IMAGE_URL})](https://github.com/mattermost/mattermost-server)`;
+        const markdownImage = `[![Mattermost](${markdownImageUrl})](https://github.com/mattermost/mattermost-server)`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify markdown image with link is displayed
@@ -101,3 +99,67 @@ describe('Messaging - Markdown Image', () => {
         await ChannelScreen.back();
     });
 });
+
+// The metadata fetcher's SSRF guard blocks loopback/private hosts, so the site's own host
+// must be allowlisted. Both patches are additive and idempotent; shards share a server, so
+// they are deliberately not reverted.
+async function enablePublicLinksForOwnHost(): Promise<void> {
+    const {config, error} = await System.apiGetConfig(siteOneUrl);
+    if (error || !config) {
+        throw new Error(`markdown image setup: could not read server config: ${JSON.stringify(error)}`);
+    }
+
+    const host = new URL(siteOneUrl).hostname;
+    const allowed = String(config.ServiceSettings?.AllowedUntrustedInternalConnections ?? '').split(/\s+/).filter(Boolean);
+    const needsHost = !allowed.includes(host);
+    const needsPublicLink = config.FileSettings?.EnablePublicLink !== true;
+    if (!needsHost && !needsPublicLink) {
+        return;
+    }
+
+    const patch: any = {};
+    if (needsPublicLink) {
+        patch.FileSettings = {EnablePublicLink: true};
+    }
+    if (needsHost) {
+        patch.ServiceSettings = {AllowedUntrustedInternalConnections: [...allowed, host].join(' ')};
+    }
+
+    const {error: patchError} = await System.apiPatchConfig(siteOneUrl, patch);
+    if (patchError) {
+        throw new Error(`markdown image setup: could not enable public links: ${JSON.stringify(patchError)}`);
+    }
+}
+
+// The server rejects a public link for a dangling upload, so attach the file to a post first.
+async function createPublicImageLink(channelId: string): Promise<string> {
+    const {fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, channelId);
+
+    const {link, error} = await Post.apiGetFilePublicLink(siteOneUrl, fileId);
+    if (error || !link) {
+        throw new Error(`markdown image setup: no public link for file ${fileId}: ${JSON.stringify(error)}`);
+    }
+
+    const {pathname, search} = new URL(link);
+    return `${pathname}${search}`;
+}
+
+// No metadata entry means renderImage returns null, so fail here with the reason rather than
+// 10s later on an unexplained missing testID.
+async function requireServerPreloadsImage(channelId: string, imageUrl: string): Promise<void> {
+    // apiCreatePost throws on failure, so a returned post is always a real one.
+    const {post} = await Post.apiCreatePost(siteOneUrl, {
+        channelId,
+        message: `markdown image metadata probe ${Date.now()}\n![probe](${imageUrl})`,
+    });
+
+    const images = post.metadata?.images ?? {};
+    if (!images[imageUrl]) {
+        throw new Error(
+            `markdown image setup: server did not preload ${imageUrl} into post.metadata.images ` +
+            `(got ${JSON.stringify(Object.keys(images))}). Markdown.renderImage returns null without it, ` +
+            'so markdown_image would never render. Check FileSettings.EnablePublicLink and ' +
+            'ServiceSettings.AllowedUntrustedInternalConnections for this host.',
+        );
+    }
+}

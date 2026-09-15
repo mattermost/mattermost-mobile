@@ -929,7 +929,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
-            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
+            --expected-specs '${{ needs.generate-specs.outputs.specs }}' \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed."

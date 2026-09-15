@@ -24,6 +24,17 @@ import {expect, waitFor} from 'detox';
 
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
+// Detox actions carry no timeout, so one that never completes hangs until the per-test cap
+// and takes the rest of the file with it (main 0869dc8: 4 failures, 35 min, from one stuck
+// idle gate). These scrolls are optional, so dispatch them unsynchronized.
+async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
+    try {
+        await withSynchronizationDisabled(scroll);
+    } catch {
+        // List not scrollable, already at the boundary, or not mounted yet.
+    }
+}
+
 class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
@@ -101,11 +112,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        try {
-            await this.channelList.scrollTo('top');
-        } catch {
-            // The list may already be at its boundary.
-        }
+        await bestEffortScroll(() => this.channelList.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -133,11 +140,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            try {
-                await this.channelList.scroll(280, 'down', 0.5, 0.45);
-            } catch {
-                // List not scrollable or already at the end.
-            }
+            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -180,11 +183,8 @@ class ChannelListScreen {
                     await expect(label).toBeVisible(40);
                     break;
                 } catch {
-                    try {
-                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
-                    } catch {
-                        // The final assertion reports if the list edge still clips the row.
-                    }
+                    // The final assertion reports if the list edge still clips the row.
+                    await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -201,11 +201,8 @@ class ChannelListScreen {
                 await expect(label).toBeVisible(15);
                 break;
             } catch {
-                try {
-                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
-                } catch {
-                    // List edge reached — the taps below still report if it stays clipped.
-                }
+                // List edge reached — the taps below still report if it stays clipped.
+                await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
             }
         }
         /* eslint-enable no-await-in-loop */

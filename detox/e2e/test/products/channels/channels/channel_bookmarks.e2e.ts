@@ -225,8 +225,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.open();
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
-        // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (bare expect raced Config changed).
+        // waitFor — the server's bookmark gate and canAddBookmarks may still be settling
+        // after the beforeAll reload (a bare expect raced "Config changed").
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
