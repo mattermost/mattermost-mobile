@@ -55,6 +55,7 @@ describe('ChannelHeader', () => {
             groupCallsAllowed: false,
             isBookmarksEnabled: false,
             canAddBookmarks: false,
+            canCallDMUser: true,
             hasBookmarks: false,
             shouldRenderBookmarks: false,
             isCustomStatusEnabled: false,
@@ -103,6 +104,17 @@ describe('ChannelHeader', () => {
         props.channelType = General.DM_CHANNEL;
         enableCalls(props);
         props.callsEnabledInChannel = false;
+
+        const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
+
+        expect(getQuickCallButton(getByTestId('navigation-header'))).toBeUndefined();
+    });
+
+    it('should not show the quick call button when the DM user cannot be called', () => {
+        const props = getBaseProps();
+        props.channelType = General.DM_CHANNEL;
+        enableCalls(props);
+        props.canCallDMUser = false;
 
         const {getByTestId} = renderWithIntl(<ChannelHeader {...props}/>);
 

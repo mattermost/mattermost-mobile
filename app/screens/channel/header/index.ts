@@ -20,7 +20,9 @@ import {selectAttributesForAction, type ResolvedChannelAttribute} from '@utils/c
 import {
     getUserCustomStatus,
     getUserIdFromChannelName,
+    isBot,
     isCustomStatusExpired as checkCustomStatusIsExpired,
+    isDeactivated,
 } from '@utils/user';
 
 import ChannelHeader from './header';
@@ -57,6 +59,12 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     const isOwnDirectMessage = currentUserId.pipe(
         combineLatestWith(dmUser),
         switchMap(([userId, dm]) => of$(userId === dm?.id)),
+    );
+
+    const canCallDMUser = currentUserId.pipe(
+        combineLatestWith(dmUser),
+        switchMap(([userId, dm]) => of$(Boolean(dm && dm.id !== userId && !isBot(dm) && !isDeactivated(dm)))),
+        distinctUntilChanged(),
     );
 
     const customStatus = dmUser.pipe(
@@ -133,6 +141,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     return {
         canAddBookmarks,
         channelAttributes,
+        canCallDMUser,
         channelType,
         currentUserId,
         customStatus,
