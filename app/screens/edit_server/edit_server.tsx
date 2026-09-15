@@ -24,6 +24,7 @@ import {getServerUrlAfterRedirect} from '@utils/url';
 
 import Form from './form';
 import Header from './header';
+import {restorePreviousPreauthSecret} from './restore_preauth_secret';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
@@ -252,17 +253,32 @@ const EditServer = ({server, theme}: ServerProps) => {
                 hasClient = false;
             }
 
+            // Keychain already has the new value; put the previous one back so a later save that
+            // thinks nothing changed cannot leave the wrong secret stored.
+            const failClientSync = async (context: string) => {
+                const rolledBack = await restorePreviousPreauthSecret(server.url, initialPreauthSecret);
+                if (!rolledBack) {
+                    logWarning(`EditServer.handleUpdate: could not roll back preauth secret after ${context}`);
+                }
+                try {
+                    await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                } catch (restoreError) {
+                    logWarning('EditServer.handleUpdate: could not restore preauth header', getFullErrorMessage(restoreError));
+                }
+                setPreauthSecretError(formatMessage({
+                    id: 'mobile.server.validation.error',
+                    defaultMessage: 'Unable to validate server. Please check your connection and try again.',
+                }));
+                setShowAdvancedOptions(true);
+                setSaving(false);
+            };
+
             if (hasClient) {
                 try {
                     await applyPreauthSecretHeader(trimmedSecret);
                 } catch (error) {
                     logWarning('EditServer.handleUpdate: could not update preauth header', getFullErrorMessage(error));
-                    setPreauthSecretError(formatMessage({
-                        id: 'mobile.server.validation.error',
-                        defaultMessage: 'Unable to validate server. Please check your connection and try again.',
-                    }));
-                    setShowAdvancedOptions(true);
-                    setSaving(false);
+                    await failClientSync('header failure');
                     return;
                 }
             } else {
@@ -270,12 +286,7 @@ const EditServer = ({server, theme}: ServerProps) => {
                     await NetworkManager.createClient(server.url, credentials?.token, trimmedSecret || undefined);
                 } catch (error) {
                     logWarning('EditServer.handleUpdate: could not create client', getFullErrorMessage(error));
-                    setPreauthSecretError(formatMessage({
-                        id: 'mobile.server.validation.error',
-                        defaultMessage: 'Unable to validate server. Please check your connection and try again.',
-                    }));
-                    setShowAdvancedOptions(true);
-                    setSaving(false);
+                    await failClientSync('createClient failure');
                     return;
                 }
             }
