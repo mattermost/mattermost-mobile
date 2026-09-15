@@ -40,7 +40,6 @@ import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {useHostMenus, usePermissionsChecker} from '@calls/hooks';
 import {HeaderCenter} from '@calls/screens/call_screen/header_center';
 import {ParticipantCard} from '@calls/screens/call_screen/participant_card';
-import {ParticipantLoadingCard} from '@calls/screens/call_screen/participant_loading_card';
 import {
     setCallQualityAlertDismissed,
     setMicPermissionsErrorDismissed,
@@ -48,7 +47,7 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
-import {getHandsRaised, hasOtherUserJoined, makeCallsTheme, sortSessions} from '@calls/utils';
+import {getHandsRaised, hasOtherUserJoined, makeCallsTheme, sortDMSessions, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -66,6 +65,8 @@ import {displayUsername} from '@utils/user';
 import type UserModel from '@typings/database/models/servers/user';
 
 const MY_CARD_KEY = 'my-session';
+const CALLEE_CARD_KEY = 'dm-callee';
+const PENDING_CALLEE_SESSION_ID = 'dm-callee-pending';
 
 export const avatarL = 96;
 export const avatarM = 72;
@@ -354,6 +355,57 @@ const CallScreen = ({
         raisedHand: 0,
         userModel: currentUser,
     }), [currentCall?.mySessionId, currentCall?.myUserId, currentCall?.startUnmuted, currentUser]);
+    const pendingCalleeSession: CallSession = useMemo(() => ({
+        sessionId: PENDING_CALLEE_SESSION_ID,
+        userId: dmCallee?.id ?? '',
+        muted: false,
+        raisedHand: 0,
+        userModel: dmCallee,
+    }), [dmCallee]);
+
+    const cards = useMemo(() => {
+        if (!currentCall) {
+            return [];
+        }
+
+        if (isDM && (isDMConnecting || isDMCalling)) {
+            const dmPreAnswerCardItems = [];
+
+            if (mySession) {
+                dmPreAnswerCardItems.push({key: MY_CARD_KEY, session: mySession, isRinging: false});
+            } else {
+                // During Connecting state, our own session is not in the call yet.
+                dmPreAnswerCardItems.push({key: MY_CARD_KEY, session: pendingMySession, isRinging: false});
+            }
+
+            if (!hasOtherUserJoined(currentCall.sessions, currentCall.myUserId)) {
+                // During pre answer states for a DM, Callee's session is not in the call yet.
+                dmPreAnswerCardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: true});
+            }
+
+            return dmPreAnswerCardItems;
+        }
+
+        const cardItems = [];
+
+        const sessions = isDM ?
+            sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :
+            sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
+
+        // When we do have sessions, iterate over then so we can add same consistent Keys to avoid remounting cards.
+        for (const session of sessions) {
+            let key = session.sessionId;
+            if (session.sessionId === currentCall.mySessionId) {
+                key = MY_CARD_KEY;
+            } else if (isDM && session.userId === dmCallee?.id) {
+                key = CALLEE_CARD_KEY;
+            }
+
+            cardItems.push({key, session, isRinging: false});
+        }
+
+        return cardItems;
+    }, [currentCall, isDM, intl.locale, teammateNameDisplay, sessionsDict, mySession, isDMConnecting, isDMCalling, pendingMySession, pendingCalleeSession, dmCallee?.id]);
 
     const controlsDisabled = !currentCall?.connected;
 
@@ -364,7 +416,7 @@ const CallScreen = ({
     const smallerAvatar = isLandscape || screenShareOn || showCC || contentOverflow;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
 
-    const numSessions = Object.keys(sessionsDict).length + (mySession ? 0 : 1) + (isDMCalling || isDMConnecting ? 1 : 0);
+    const numSessions = cards.length;
     const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
@@ -610,11 +662,6 @@ const CallScreen = ({
         );
     }
 
-    const raisedHands = getHandsRaised(sessionsDict);
-    const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
-    const cards = mySession ? sessions : [pendingMySession, ...sessions];
-    const calleeHaveNotJoinedYet = (isDMCalling || isDMConnecting) && !hasOtherUserJoined(sessionsDict, currentCall.myUserId);
-
     let usersList = null;
     if (!screenShareOn || !isLandscape) {
         usersList = (
@@ -631,24 +678,18 @@ const CallScreen = ({
                         onPress={toggleControlsInLandscape}
                         style={style.users}
                     >
-                        {cards.map((sess) => (
+                        {cards.map(({key, session, isRinging}) => (
                             <ParticipantCard
-                                key={sess.sessionId === currentCall.mySessionId ? MY_CARD_KEY : sess.sessionId}
-                                session={sess}
+                                key={key}
+                                session={session}
+                                isRinging={isRinging}
                                 smallerAvatar={smallerAvatar}
                                 teammateNameDisplay={teammateNameDisplay}
-                                onPress={onShortPress(sess)}
-                                onLongPress={onLongPress(sess)}
+                                showHostBadge={!isDM}
+                                onPress={onShortPress(session)}
+                                onLongPress={onLongPress(session)}
                             />
                         ))}
-                        {calleeHaveNotJoinedYet &&
-                            <ParticipantLoadingCard
-                                callee={dmCallee}
-                                smallerAvatar={smallerAvatar}
-                                teammateNameDisplay={teammateNameDisplay}
-                                serverUrl={currentCall.serverUrl}
-                            />
-                        }
                     </Pressable>
                 </ScrollView>
             </View>
@@ -667,6 +708,8 @@ const CallScreen = ({
             defaultMessage={'Unmute'}
             style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
+
+    const raisedHands = getHandsRaised(sessionsDict);
 
     const header = (
         <View
