@@ -25,6 +25,8 @@ import {selectKeyboardType} from '@utils/integrations';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import AppsFormActionButton from './apps_form_action_button';
+
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;
 
@@ -309,6 +311,14 @@ const AppsFormFieldComponent = React.memo(({
                         theme={theme}
                     />
                 </View>
+            );
+        }
+        case AppFieldTypes.ACTION_BUTTON: {
+            return (
+                <AppsFormActionButton
+                    field={field}
+                    testID={testID}
+                />
             );
         }
         case AppFieldTypes.DATE:
