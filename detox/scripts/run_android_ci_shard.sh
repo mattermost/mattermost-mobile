@@ -44,16 +44,25 @@ promote_jest_stare_results() {
     return 1
 }
 
+# Runs once, on EXIT, so it sees the shard's final report — after every attempt
+# and after any between-attempt promotion.
 write_missing_results_stub() {
-    if promote_jest_stare_results; then
-        return
+    if ! promote_jest_stare_results; then
+        echo "==> Detox left no jest-results.json — writing shard stub"
+        node "${DETOX_DIR}/utils/write-tsio-failure-stub.mjs" \
+            --format jest \
+            --output "$RESULTS" \
+            --job-name "${AVD_NAME:-android-shard}" \
+            --reason "Detox exited before writing jest-results.json (specs: ${SHARD_SPECS[*]})"
     fi
-    echo "==> Detox left no jest-results.json — writing shard stub"
-    node "${DETOX_DIR}/utils/write-tsio-failure-stub.mjs" \
-        --format jest \
-        --output "$RESULTS" \
-        --job-name "${AVD_NAME:-android-shard}" \
-        --reason "Detox exited before writing jest-results.json (specs: ${SHARD_SPECS[*]})"
+
+    # A promoted jest-stare report only holds the suites that finished before the
+    # kill, and it is a valid artifact — so without this the specs that never ran
+    # are silently absent and the gate goes green on a smaller suite.
+    node "${DETOX_DIR}/utils/backfill-unreported-specs.js" \
+        --results "$RESULTS" \
+        --specs "${SHARD_SPECS[*]}" \
+        --job-name "${AVD_NAME:-android-shard}" || true
 }
 trap write_missing_results_stub EXIT
 

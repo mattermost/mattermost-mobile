@@ -619,6 +619,12 @@ jobs:
                 --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
             fi
           fi
+          # Keep in step with e2e-ios-template.yml: a promoted jest-stare report is
+          # partial, so mark any assigned spec that never reported as failed.
+          node utils/backfill-unreported-specs.js \
+            --results artifacts/jest-results.json \
+            --specs "${MATRIX_SPECS}" \
+            --job-name "machine-${{ matrix.runId }}"
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}

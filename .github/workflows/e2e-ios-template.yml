@@ -727,6 +727,15 @@ jobs:
                 --reason "Detox exited ${DETOX_EXIT_CODE} before writing jest-results.json (specs: ${MATRIX_SPECS})"
             fi
           fi
+          # jest-stare writes incrementally, so a promoted report holds only the
+          # suites that finished before the kill. It is still a valid artifact, so
+          # nothing downstream notices the shortfall and the gate goes green on a
+          # smaller suite (main d943628: 560/582, three specs gone). Mark whatever
+          # never reported as failed so the count stays honest.
+          node utils/backfill-unreported-specs.js \
+            --results artifacts/jest-results.json \
+            --specs "${MATRIX_SPECS}" \
+            --job-name "machine-${{ matrix.runId }}"
           exit "${DETOX_EXIT_CODE:-1}"
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
