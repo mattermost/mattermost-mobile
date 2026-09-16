@@ -15,6 +15,7 @@ import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
+import {clearChannelWriteAccess} from '@store/channel_write_access_store';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -366,8 +367,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
 
         // Access control policies
         case WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED:
+            reconcileChannelAccess(serverUrl);
+            clearChannelWriteAccess(msg.broadcast.channel_id);
+            break;
         case WebsocketEvents.PERMISSION_POLICY_UPDATED:
             reconcileChannelAccess(serverUrl);
+            clearChannelWriteAccess();
             break;
 
         // File access control

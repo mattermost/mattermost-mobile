@@ -4,11 +4,14 @@
 import {storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/channel';
 import {Events} from '@constants';
+import {ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS, ACCESS_CONTROL_RESOURCE_CHANNEL} from '@constants/permissions';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
 import {queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
-import {getChannelReadAccessPolicyEnabled} from '@queries/servers/features';
+import {getChannelAccessPolicyEnabled} from '@queries/servers/features';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getChannelWriteAccessGeneration, setChannelWriteDenied} from '@store/channel_write_access_store';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -70,7 +73,7 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!(await getChannelReadAccessPolicyEnabled(database))) {
+        if (!(await getChannelAccessPolicyEnabled(database))) {
             return {};
         }
 
@@ -90,6 +93,41 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
         }
     } catch (error) {
         logDebug('error on reconcileChannelAccess', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
+const inFlightWrite = new Map<string, Promise<void>>();
+
+async function fetchWriteDecision(serverUrl: string, channelId: string) {
+    const startedAt = getChannelWriteAccessGeneration();
+    const client = NetworkManager.getClient(serverUrl);
+    const response = await client.searchAccessControlDecisionActions(ACCESS_CONTROL_RESOURCE_CHANNEL, channelId, [ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS]);
+    const decision = response.decisions?.[ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS];
+
+    // An invalidation landed while this was in flight, so the answer is already stale.
+    if (getChannelWriteAccessGeneration() === startedAt) {
+        setChannelWriteDenied(channelId, Boolean(decision?.evaluated && !decision.allowed));
+    }
+}
+
+export async function fetchChannelWriteAccess(serverUrl: string, channelId: string): Promise<{error?: unknown}> {
+    const key = `${serverUrl}-${channelId}`;
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!(await getChannelAccessPolicyEnabled(database))) {
+            return {};
+        }
+
+        let pending = inFlightWrite.get(key);
+        if (!pending) {
+            pending = fetchWriteDecision(serverUrl, channelId).finally(() => inFlightWrite.delete(key));
+            inFlightWrite.set(key, pending);
+        }
+        await pending;
+        return {};
+    } catch (error) {
+        logDebug('error on fetchChannelWriteAccess', getFullErrorMessage(error));
         return {error};
     }
 }
