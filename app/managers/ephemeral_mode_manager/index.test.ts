@@ -12,6 +12,7 @@ import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
+import {getOfflineSince} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache} from '@utils/file';
@@ -49,6 +50,13 @@ jest.mock('@queries/app/servers', () => {
     return {
         getServer: jest.fn(actual.getServer),
         getServerDisplayName: jest.fn(),
+    };
+});
+jest.mock('@queries/servers/system', () => {
+    const actual = jest.requireActual('@queries/servers/system');
+    return {
+        ...actual,
+        getOfflineSince: jest.fn(actual.getOfflineSince),
     };
 });
 jest.mock('@screens/navigation', () => ({
@@ -806,6 +814,41 @@ describe('EphemeralModeManager', () => {
 
             await advanceTimers(2000);
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
+        });
+
+        it('should not wipe when disabled while a re-evaluation is mid-flight', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+
+            let resolveOfflineSince!: (value: number | undefined) => void;
+            jest.mocked(getOfflineSince).mockImplementationOnce(() => new Promise((resolve) => {
+                resolveOfflineSince = resolve;
+            }));
+
+            await updateConfig(serverA, {purgeHours: 2});
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            // untrack runs synchronously outside the eval queue while the above is suspended.
+            await updateConfig(serverA, {enabled: false});
+            await advanceTimers(0);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+
+            resolveOfflineSince(Date.now() - 1000);
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            await advanceTimers(2 * ONE_HOUR_MS);
+
+            expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         });
 
         it('a foreground after the wipe does not re-fire it', async () => {

@@ -513,7 +513,7 @@ class EphemeralModeManagerSingleton {
     };
 
     private runWipe = async (serverUrl: string) => {
-        if (this.wipeInProgress.has(serverUrl)) {
+        if (this.wipeInProgress.has(serverUrl) || this.trackedServers.get(serverUrl)?.kind !== 'mem') {
             return;
         }
         this.wipeInProgress.add(serverUrl);
