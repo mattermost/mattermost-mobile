@@ -1,28 +1,35 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Alert} from '@support/ui/component';
 import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {ChannelListScreen} from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
+const TUTORIAL_DISMISS_POINT = {x: 40, y: 140};
+
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
         serverListTitle: 'server_list.title',
+        serverList: 'server_list.flat_list',
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
         tutorialSwipeLeft: 'tutorial_swipe_left',
+        tutorialScrim: 'tutorial_highlight.scrim',
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
     serverListTitle = element(by.id(this.testID.serverListTitle));
+    serverList = element(by.id(this.testID.serverList));
 
     // Footer label is what CI actually finds. The footer testID is not
     // visible on Android (MM-T4691_7 / MM-T4675_2 on 21ea481).
     addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
+    tutorialScrim = element(by.id(this.testID.tutorialScrim));
 
     toServerItemTestIdPrefix = (serverDisplayName: string) => {
         return `server_list.server_item.${serverDisplayName.replace(/ /g, '_').toLocaleLowerCase()}`;
@@ -58,7 +65,32 @@ class ServerListScreen {
 
     toBeVisible = async () => {
         if (isIos()) {
-            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+            await waitForElementToExist(this.serverListScreen, timeouts.TEN_SEC);
+
+            /* eslint-disable no-await-in-loop -- bounded retry: only re-throw when something known is genuinely blocking */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    await waitForElementToBeVisible(this.serverListTitle, timeouts.FOUR_SEC);
+                    return this.serverListScreen;
+                } catch (error) {
+                    // Only retry when something known-blocking was actually there and went
+                    // away: the first-run tutorial, or the native "Logout not complete" alert
+                    // raised when a server-side logout request fails (MM-T4691_6). Any other
+                    // reason the sheet is not visible is a real failure and is rethrown with
+                    // its original message.
+                    //
+                    // Both checks only run once the sheet has already failed to be visible, so
+                    // a passing run pays nothing for them. A short alert poll is enough: the
+                    // four-second visibility wait above has already given a late alert time to
+                    // land, and three attempts give it two more chances.
+                    const recovered = (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.ONE_SEC)) ||
+                        (await this.dismissTutorialIfPresent());
+                    if (attempt === 2 || !recovered) {
+                        throw error;
+                    }
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         }
 
         return this.serverListScreen;
@@ -66,6 +98,30 @@ class ServerListScreen {
 
     open = async () => {
         await dismissKnownModals(2);
+
+        try {
+            await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
+            return this.serverListScreen;
+        } catch {
+            // Sheet is closed, or open but covered — both are handled below.
+        }
+
+        // A "Logout not complete" alert left behind by a previous test's failed logout is a
+        // native alert, so dismissKnownModals above cannot touch it. Left up it dims the sheet
+        // below its visibility threshold and blocks every hit-test, including the server icon
+        // tap further down (MM-T4691_7 inherited it from MM-T4691_6). Only reached once the
+        // sheet has already failed to be visible, and the alert is either on screen by now or
+        // not coming, so this costs a passing run nothing and a closed sheet half a second.
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.HALF_SEC)) {
+            try {
+                // The sheet was open behind the alert, as in MM-T4691_7 — nothing left to open.
+                await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
+                return this.serverListScreen;
+            } catch {
+                // The alert was not the only thing missing — open the sheet below.
+            }
+        }
+
         const iconTimeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitForElementToExist(ChannelListScreen.serverIcon, iconTimeout);
 
@@ -87,21 +143,65 @@ class ServerListScreen {
     };
 
     close = async () => {
-        if (isIos()) {
-            await this.serverListScreen.swipe('down');
-        } else {
-            await device.pressBack();
+        try {
+            await expect(this.serverListScreen).toExist();
+        } catch {
+            return;
         }
-        await wait(timeouts.ONE_SEC);
-        await expect(this.serverListScreen).not.toBeVisible();
-        await wait(timeouts.ONE_SEC);
+
+        try {
+            if (isIos()) {
+                await this.serverListScreen.swipe('down');
+            } else {
+                await device.pressBack();
+            }
+        } catch {
+            // The sheet may have completed its own dismissal after the existence check.
+        }
+        await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+    };
+
+    dismissTutorialIfPresent = async (): Promise<boolean> => {
+        try {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Not shown on this install, or already watched — storeMultiServerTutorial()
+            // persists the flag on first dismissal.
+            return false;
+        }
+
+        // The scrim is HighlightItem's root <Svg>, which owns the overlay's onPress and is
+        // the view that wins the hit-test at those pixels. Tapping the Modal
+        // ('tutorial_highlight') is the historical target and fails its hittability
+        // precondition on iOS, so it is kept only as a last resort for a build that predates
+        // the scrim testID.
+        const attempts: Array<() => Promise<void>> = [
+            () => this.tutorialScrim.tap(TUTORIAL_DISMISS_POINT),
+            () => this.tutorialScrim.tap(),
+            () => this.tutorialHighlight.tap(TUTORIAL_DISMISS_POINT),
+            () => this.tutorialHighlight.tap(),
+        ];
+
+        /* eslint-disable no-await-in-loop -- bounded fallback chain: each dismiss target must run before the next */
+        for (const attempt of attempts) {
+            try {
+                await attempt();
+                await waitFor(this.tutorialHighlight).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                return true;
+            } catch {
+                // Try the next dismiss target.
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        return false;
     };
 
     closeTutorial = async () => {
         if (isIos()) {
-            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-            await this.tutorialSwipeLeft.tap();
-            await expect(this.tutorialHighlight).not.toExist();
+            // open() dismisses the tutorial as part of its visibility wait, so by the time
+            // a spec calls this the Modal is usually already gone. Absence is not failure.
+            await this.dismissTutorialIfPresent();
             return;
         }
         await wait(timeouts.ONE_SEC);
@@ -111,8 +211,19 @@ class ServerListScreen {
 
     scrollServerListIntoView = async () => {
         if (isIos()) {
-            await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
-            return;
+            /* eslint-disable no-await-in-loop -- retry the swipe around tutorial dismissal */
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    await this.serverListTitle.swipe('up', 'fast', 0.3, 0.5, 0.5);
+                    return;
+                } catch (error) {
+                    if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                        throw error;
+                    }
+                    await wait(timeouts.ONE_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
         }
         if (isAndroid()) {
             await waitForElementToBeVisible(this.serverListTitle, timeouts.TWO_SEC);
@@ -120,34 +231,163 @@ class ServerListScreen {
         }
     };
 
+    tapAddServerButton = async () => {
+        /* eslint-disable no-await-in-loop -- retry the tap around tutorial dismissal */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                await this.addServerButton.tap();
+                return;
+            } catch (error) {
+                if (attempt === 2 || !(await this.dismissTutorialIfPresent())) {
+                    throw error;
+                }
+                await wait(timeouts.ONE_SEC);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
+    scrollServerItemIntoView = async (item: Detox.NativeElement) => {
+        const maxScrolls = isIos() ? 10 : 5;
+        const scrollAmount = isIos() ? 40 : 120;
+        const visibilityThreshold = 75;
+        let lastError: unknown;
+        try {
+            await this.serverList.scrollTo('top');
+        } catch {
+            // The list may already be at its boundary.
+        }
+
+        try {
+            await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TEN_SEC);
+            return;
+        } catch (error) {
+            lastError = error;
+        }
+
+        /* eslint-disable no-await-in-loop -- bounded scan of the server FlatList */
+        for (let attempt = 0; attempt < maxScrolls; attempt++) {
+            try {
+                await waitFor(item).toBeVisible(visibilityThreshold).withTimeout(timeouts.TWO_SEC);
+                return;
+            } catch (error) {
+                lastError = error;
+            }
+
+            if (attempt < maxScrolls - 1) {
+                try {
+                    // iOS reports the list's full 464pt frame even when the collapsed
+                    // sheet exposes only its top ~114pt. A 40pt gesture beginning 10%
+                    // down stays inside that visible slice.
+                    await this.serverList.scroll(scrollAmount, 'down', 0.5, isIos() ? 0.1 : 0.5);
+                } catch {
+                    // The list may already be at its boundary.
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+
+        throw lastError;
+    };
+
+    getServerItem = async (serverDisplayName: string) => {
+        const inactive = this.getServerItemInactive(serverDisplayName).atIndex(0);
+        try {
+            await expect(inactive).toExist();
+            return inactive;
+        } catch {
+            const active = this.getServerItemActive(serverDisplayName).atIndex(0);
+            await waitForElementToExist(active, timeouts.FOUR_SEC);
+            return active;
+        }
+    };
+
+    isOptionHittable = async (option: Detox.NativeElement) => {
+        try {
+            const attributes = await option.getAttributes();
+            if (!('visible' in attributes) || !attributes.visible) {
+                return false;
+            }
+            if (isIos()) {
+                return 'hittable' in attributes && attributes.hittable;
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
     swipeRevealOption = async (
-        row: {atIndex: (index: number) => Detox.NativeElement},
+        serverDisplayName: string,
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        await row.atIndex(0).swipe('left', 'slow');
         const revealed = option.atIndex(0);
-        await waitForElementToExist(revealed, timeouts.TEN_SEC);
-        return revealed;
+        if (await this.isOptionHittable(revealed)) {
+            return revealed;
+        }
+
+        /* eslint-disable no-await-in-loop -- a row press can win the iOS swipe gesture */
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await this.toBeVisible();
+
+            try {
+                if (await this.isOptionHittable(revealed)) {
+                    return revealed;
+                }
+
+                const target = await this.getServerItem(serverDisplayName);
+                await this.scrollServerItemIntoView(target);
+                await target.swipe('left', 'fast', 0.5, 0.9, 0.5);
+                await expect(this.serverListScreen).toBeVisible();
+                if (await this.isOptionHittable(revealed)) {
+                    return revealed;
+                }
+                throw new Error('Server option remained unhittable after swipe');
+            } catch (error) {
+                if (attempt === 2) {
+                    throw new Error(`Server list swipe did not reveal the action option for "${serverDisplayName}": ${(error as Error)?.message ?? error}`);
+                }
+                await this.open();
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        throw new Error(`Server list swipe did not reveal the action option for "${serverDisplayName}"`);
     };
 
     swipeRevealAndTapOption = async (
-        row: {atIndex: (index: number) => Detox.NativeElement},
+        serverDisplayName: string,
         option: {atIndex: (index: number) => Detox.NativeElement},
     ) => {
-        const revealed = await this.swipeRevealOption(row, option);
-        await revealed.tap({x: 1, y: 1});
+        const revealed = await this.swipeRevealOption(serverDisplayName, option);
+        if (isIos()) {
+            if (!await this.isOptionHittable(revealed)) {
+                throw new Error('Server option became unhittable before tap');
+            }
+        } else {
+            await waitForElementToBeVisible(revealed, timeouts.TEN_SEC);
+        }
+        await revealed.tap();
     };
 
     switchToServer = async (serverDisplayName: string) => {
-        const inactive = this.getServerItemInactive(serverDisplayName);
-        const active = this.getServerItemActive(serverDisplayName);
+
         try {
-            await waitForElementToExist(inactive, timeouts.FOUR_SEC);
-            await inactive.atIndex(0).tap();
+            await this.scrollServerListIntoView();
         } catch {
-            await waitForElementToExist(active, timeouts.FOUR_SEC);
-            await active.atIndex(0).tap();
+            // Sheet already expanded, or the drag did not take; carry on and let
+            // scrollServerItemIntoView decide.
         }
+
+        const target = await this.getServerItem(serverDisplayName);
+        await this.scrollServerItemIntoView(target);
+        await target.tap({x: 36, y: 36});
+
+        try {
+            await waitFor(this.serverListScreen).not.toExist().withTimeout(timeouts.FOUR_SEC);
+        } catch {
+            await this.close();
+        }
+
         await waitFor(ChannelListScreen.headerServerDisplayName).
             toHaveText(serverDisplayName).
             withTimeout(timeouts.HALF_MIN);

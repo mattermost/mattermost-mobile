@@ -7,7 +7,7 @@ import {Pressable, Text, View} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchProfilesInChannel} from '@actions/remote/user';
-import {dismissIncomingCall} from '@calls/actions/calls';
+import {dismissIncomingCall, joinCallAndOpenCallScreen} from '@calls/actions/calls';
 import {playIncomingCallsRinging, removeIncomingCall} from '@calls/state';
 import {ChannelType, type IncomingCallNotification} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
@@ -19,6 +19,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {useAppState} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import {usePreventDoubleTap} from '@hooks/utils';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServerDisplayName} from '@queries/app/servers';
 import ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -66,6 +67,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 2,
         borderColor: changeOpacity(theme.buttonColor, 0.16),
         backgroundColor: changeOpacity('#000', 0.12),
+    },
+    pressed: {
+        opacity: 0.72,
     },
     profileContainer: {
         width: 32,
@@ -159,13 +163,17 @@ export const CallNotification = ({
         }
     }, [moreThanOneServer, incomingCall.serverUrl]);
 
-    const onContainerPress = useCallback(async () => {
+    const handleContainerPress = useCallback(async () => {
         if (incomingCall.serverUrl !== serverUrl) {
             await DatabaseManager.setActiveServerDatabase(incomingCall.serverUrl);
             await WebsocketManager.initializeClient(incomingCall.serverUrl, 'Server Switch');
         }
-        switchToChannelById(incomingCall.serverUrl, incomingCall.channelID);
-    }, [incomingCall, serverUrl]);
+
+        await switchToChannelById(incomingCall.serverUrl, incomingCall.channelID);
+
+        await joinCallAndOpenCallScreen(intl, incomingCall.serverUrl, incomingCall.channelID);
+    }, [incomingCall, serverUrl, intl]);
+    const onContainerPress = usePreventDoubleTap(handleContainerPress);
 
     const onDismissPress = useCallback(() => {
         removeIncomingCall(serverUrl, incomingCall.callID, incomingCall.channelID);
@@ -207,7 +215,8 @@ export const CallNotification = ({
     return (
         <View style={[style.outerContainer, moreThanOneServer && style.outerContainerServerName]}>
             <Pressable
-                style={[style.innerContainer, onCallsScreen && style.innerOnCallsScreen]}
+                testID='calls.call_notification.answer'
+                style={({pressed}) => [style.innerContainer, onCallsScreen && style.innerOnCallsScreen, pressed && style.pressed]}
                 onPress={onContainerPress}
             >
                 <View style={style.profileContainer}>
@@ -226,7 +235,10 @@ export const CallNotification = ({
                         </Text>
                     }
                 </View>
-                <Pressable onPress={onDismissPress}>
+                <Pressable
+                    testID='calls.call_notification.dismiss'
+                    onPress={onDismissPress}
+                >
                     <View style={style.dismissContainer}>
                         <CompassIcon
                             name='close'

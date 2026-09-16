@@ -84,6 +84,7 @@ export const SYSTEM_IDENTIFIERS = {
     PLAYBOOKS_VERSION: 'playbooks_version',
     AGENTS_VERSION: 'agents_version',
     LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
+    LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
 };
 
 export const GLOBAL_IDENTIFIERS = {

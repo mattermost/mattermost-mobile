@@ -4,7 +4,7 @@
 import {isTransportFailure} from '@support/utils/transport_retry';
 
 import Channel from './channel';
-import {isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
+import {isHtmlInterstitialError, isTransientHttpStatus, MAX_RETRY_AFTER_SEC} from './client';
 import Team from './team';
 import User from './user';
 
@@ -19,6 +19,13 @@ const isTransientServerError = (error: any): boolean => {
     if (error.cloudflare_error === true || error.error_code === 524) {
         return true;
     }
+
+    // The edge answered with an HTML interstitial (cloud cold start, or a Cloudflare bot
+    // challenge) and the client's own retries were not enough. The request never reached
+    // Mattermost, so replaying it here is side-effect-free.
+    if (isHtmlInterstitialError(error)) {
+        return true;
+    }
     if (isTransientHttpStatus(statusCode)) {
         return true;
     }
@@ -29,6 +36,18 @@ const isTransientServerError = (error: any): boolean => {
     return (
         detail.includes('there is already a query being processed') ||
         detail.includes('context deadline exceeded')
+    );
+};
+
+// A fixture name collided with one already on the server. apiCreateTeam / apiCreateChannel /
+// apiCreateUser each build a *fresh* random name on every call
+const isNameCollisionError = (error: any): boolean => {
+    const id = String(error?.id || '');
+    return (
+        id === 'store.sql_team.save_team.existing.app_error' ||
+        id === 'store.sql_channel.save_channel.exists.app_error' ||
+        id === 'store.sql_user.save.username_exists.app_error' ||
+        id === 'store.sql_user.save.email_exists.app_error'
     );
 };
 
@@ -55,6 +74,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     const err = result.error;
     const transient = Boolean(err) && (
         isTransientServerError(err) ||
+        isNameCollisionError(err) ||
         isTransientHttpStatus(result.status) ||
         isTransportFailure({error: err, status: result.status})
     );

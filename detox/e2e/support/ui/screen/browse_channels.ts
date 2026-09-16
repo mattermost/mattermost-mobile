@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class BrowseChannelsScreen {
@@ -64,7 +64,26 @@ class BrowseChannelsScreen {
 
         // # Open browse channels screen from the channel list header plus button.
         await ChannelListScreen.openPlusMenu();
-        await ChannelListScreen.browseChannelsItem.tap();
+
+        // openPlusMenu disables synchronization for the plus tap on Android precisely because
+        // the app is busy there, but re-enables it in its own finally -- so this tap, one line
+        // later, met the same busy app with sync back on. Detox then waits for idle before
+        // dispatching, and MM-T1719_1 timed out with both RN loopers ("mqt_v_js",
+        // "mqt_v_native") executing and this exact invocation unanswered:
+        //   matcherForTestId("plus_menu_item.browse_channels") ... click
+        // Extend the same Android-only window over the menu-item tap. withSynchronizationDisabled
+        // is depth-counted, so it nests safely.
+        //
+        // NOTE: unverified against MM-T1719_1 -- that failure does not reproduce locally, clean
+        // or under CPU load. This closes a real gap in sync coverage and matches the treatment
+        // the adjacent tap already gets, but it is not confirmed to be the cause.
+        if (isAndroid()) {
+            await withSynchronizationDisabled(async () => {
+                await ChannelListScreen.browseChannelsItem.tap();
+            });
+        } else {
+            await ChannelListScreen.browseChannelsItem.tap();
+        }
         await wait(timeouts.ONE_SEC);
 
         // openPlusMenu disables sync on Android; wait for the screen before returning.

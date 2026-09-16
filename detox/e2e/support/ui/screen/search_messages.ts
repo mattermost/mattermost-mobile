@@ -11,8 +11,8 @@ import {
     HomeScreen,
     PostOptionsScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {isAndroid, isIos, longPressWithRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {expect, waitFor, device} from 'detox';
 
 class SearchMessagesScreen {
     testID = {
@@ -116,6 +116,16 @@ class SearchMessagesScreen {
         return this.toBeVisible();
     };
 
+    submitSearch = async () => {
+        await device.disableSynchronization();
+        try {
+            await this.searchInput.tapReturnKey();
+            await wait(timeouts.TWO_SEC);
+        } finally {
+            await safeEnableSynchronization();
+        }
+    };
+
     close = async () => {
         await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.TEN_SEC);
         await HomeScreen.channelListTab.tap();
@@ -124,9 +134,6 @@ class SearchMessagesScreen {
 
     openPostOptionsFor = async (postId: string, text: string) => {
         const {postListPostItem} = this.getPostListPostItem(postId, text);
-
-        // Dismiss keyboard first so the 75%-visibility check in waitForElementToBeVisible
-        // doesn't fail on Android when the keyboard is still covering the bottom of the list.
         const flatList = this.postList.getFlatList();
         try {
             await flatList.scroll(100, 'down');
@@ -134,8 +141,6 @@ class SearchMessagesScreen {
             // List too short to scroll — keyboard already dismissed or not open
         }
         await wait(timeouts.ONE_SEC);
-
-        // Poll for the post to become visible without waiting for idle bridge
         await waitForElementToExist(postListPostItem, timeouts.TEN_SEC);
         try {
             await waitForElementToBeVisible(postListPostItem, timeouts.FIVE_SEC);
@@ -147,9 +152,8 @@ class SearchMessagesScreen {
             ? element(by.id(`${this.testID.searchResultsScreenPrefix}post_list.post.${postId}`))
             : postListPostItem;
 
-        await longPressWithScrollRetry(
+        await longPressWithRetry(
             longPressTarget,
-            by.id(this.postList.testID.flatList),
             PostOptionsScreen.postOptionsScreen,
         );
         await wait(timeouts.TWO_SEC);
