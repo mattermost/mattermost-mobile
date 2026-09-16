@@ -12,7 +12,7 @@ import path from 'node:path';
  * CI and local fetch the tarball onto the runner, then multipart-upload it.
  */
 export const DEMO_PLUGIN_ID = 'com.mattermost.demo-plugin';
-export const DEMO_PLUGIN_VERSION = '0.11.1';
+export const DEMO_PLUGIN_VERSION = '0.11.2';
 export const DEMO_PLUGIN_FIXTURE_FILENAME = `mattermost-plugin-demo-v${DEMO_PLUGIN_VERSION}-linux-amd64.tar.gz`;
 export const DEMO_PLUGIN_DOWNLOAD_URL =
     `https://github.com/mattermost/mattermost-plugin-demo/releases/download/v${DEMO_PLUGIN_VERSION}/${DEMO_PLUGIN_FIXTURE_FILENAME}`;
