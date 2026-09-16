@@ -92,6 +92,27 @@ export const apiGetClientConfigOld = async (baseUrl: string): Promise<any> => {
 };
 
 /**
+ * Max post length in runes. The server computes this from the posts.message column and
+ * publishes it ONLY in the client config — `ServiceSettings.MaxPostSize` does not exist,
+ * so reading it from the admin config silently yields undefined. Throws rather than
+ * defaulting: a hard-coded fallback is what hid this from three specs until the E2E
+ * servers moved to master, where the floor rose from 16383 to 262144.
+ * @param {string} baseUrl - the base server URL
+ * @return {number} the server's MaxPostSize
+ */
+export const apiGetMaxPostSize = async (baseUrl: string): Promise<number> => {
+    const {config, error} = await apiGetClientConfigOld(baseUrl);
+    if (error) {
+        throw new Error(`apiGetMaxPostSize: could not read client config: ${JSON.stringify(error)}`);
+    }
+    const maxPostSize = Number(config?.MaxPostSize);
+    if (!Number.isInteger(maxPostSize) || maxPostSize <= 0) {
+        throw new Error(`apiGetMaxPostSize: client config MaxPostSize is ${JSON.stringify(config?.MaxPostSize)}`);
+    }
+    return maxPostSize;
+};
+
+/**
  * Wait for a client configuration flag to reach the expected value.
  * @param {string} baseUrl - the base server URL
  * @param {string} flagKey - client configuration key
@@ -507,6 +528,7 @@ export const System = {
     apiEnsureAtLeastOneConfirmedRemoteCluster,
     apiEmailTest,
     apiGetClientConfigOld,
+    apiGetMaxPostSize,
     apiGetClientLicense,
     apiGetConfig,
     apiGetRemoteClusters,
