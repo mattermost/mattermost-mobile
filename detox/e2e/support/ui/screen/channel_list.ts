@@ -25,8 +25,9 @@ import {expect, waitFor} from 'detox';
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
 // Detox actions carry no timeout, so one that never completes hangs until the per-test cap
-// and takes the rest of the file with it (main 0869dc8: 4 failures, 35 min, from one stuck
-// idle gate). These scrolls are optional, so dispatch them unsynchronized.
+// and takes the rest of the file with it (main 0869dc8: scrollTo('top') wedged, 4 failures,
+// 35 min). Only for scrolls followed by a bounded matcher — a scroll whose result is asserted
+// immediately must stay synchronized so the list settles.
 async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
     try {
         await withSynchronizationDisabled(scroll);
@@ -183,8 +184,13 @@ class ChannelListScreen {
                     await expect(label).toBeVisible(40);
                     break;
                 } catch {
-                    // The final assertion reports if the list edge still clips the row.
-                    await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
+                    try {
+                        // Synchronized on purpose: the next loop iteration asserts visibility,
+                        // so the list has to settle first.
+                        await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                    } catch {
+                        // The final assertion reports if the list edge still clips the row.
+                    }
                 }
             }
             /* eslint-enable no-await-in-loop */
@@ -201,8 +207,11 @@ class ChannelListScreen {
                 await expect(label).toBeVisible(15);
                 break;
             } catch {
-                // List edge reached — the taps below still report if it stays clipped.
-                await bestEffortScroll(() => this.channelList.scroll(100, 'down', 0.5, 0.3));
+                try {
+                    await this.channelList.scroll(100, 'down', 0.5, 0.3);
+                } catch {
+                    // List edge reached — the taps below still report if it stays clipped.
+                }
             }
         }
         /* eslint-enable no-await-in-loop */

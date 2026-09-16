@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -306,6 +306,16 @@ class ChannelScreen {
                 // "tab_bar.home.tab not found" instead of waiting the sheet out.
                 await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
+
+                // A tablet keeps the sidebar and the channel on screen together, so the home
+                // tab already *is* the channels view and tapping it never dismisses the
+                // channel — "channel.screen is gone" can never come true down this path.
+                // Assert we reached the list instead. The back-button path above still gets
+                // the strict check, which is what the ipad_post_message specs exercise.
+                if (isIpad()) {
+                    await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
+                    return;
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
