@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import type {ApiResp} from '@calls/types/calls';
+import type {RTCIceServer} from '@livekit/react-native-webrtc';
 import type {CallChannelState, CallJobState, CallsConfig, CallsVersionInfo} from '@mattermost/calls/lib/types';
-import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;

@@ -22,11 +22,11 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '@utils/types';
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type {RTCIceServer} from '@livekit/react-native-webrtc';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
-import type {RTCIceServer} from 'react-native-webrtc';
 
 export function sortSessions(locale: string, teammateNameDisplay: string, sessions?: Dictionary<CallSession>, presenterID?: string): CallSession[] {
     if (!sessions) {

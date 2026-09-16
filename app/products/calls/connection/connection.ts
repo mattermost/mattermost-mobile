@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from '@livekit/react-native-webrtc';
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {hasDCSignalingLockSupport} from '@mattermost/calls/lib/utils';
 import CallsNative from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
 import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
-import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';

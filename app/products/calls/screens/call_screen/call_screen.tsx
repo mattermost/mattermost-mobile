@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 /* eslint max-lines: off */
 
+import {RTCView} from '@livekit/react-native-webrtc';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
@@ -18,7 +19,6 @@ import {
     View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {RTCView} from 'react-native-webrtc';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {leaveCallConfirmation, startCallRecording, stopCallRecording, switchToCallThread} from '@calls/actions/calls';

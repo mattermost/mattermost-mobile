@@ -172,7 +172,7 @@ jest.mock('@mattermost/calls-native', () => ({
     },
 }));
 
-jest.mock('react-native-webrtc', () => {
+jest.mock('@livekit/react-native-webrtc', () => {
     const getTracks = jest.fn(() => []);
     const getUserMedia = jest.fn(() => Promise.resolve({getTracks}));
     return {
@@ -183,6 +183,7 @@ jest.mock('react-native-webrtc', () => {
         MediaStream: jest.fn(),
         MediaStreamTrack: jest.fn(),
         RTCSessionDescription: jest.fn(),
+        RTCView: jest.fn(),
         registerGlobals: jest.fn(),
     };
 });

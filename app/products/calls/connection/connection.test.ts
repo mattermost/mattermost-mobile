@@ -13,7 +13,7 @@ import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 jest.mock('./websocket_client');
 jest.mock('@mattermost/calls/lib');
-jest.mock('react-native-webrtc', () => ({
+jest.mock('@livekit/react-native-webrtc', () => ({
     registerGlobals: jest.fn(),
     mediaDevices: {
         getUserMedia: jest.fn().mockResolvedValue({
@@ -356,7 +356,7 @@ describe('newConnection', () => {
     });
 
     it('voice track', async () => {
-        const getUserMedia = require('react-native-webrtc').mediaDevices.getUserMedia;
+        const getUserMedia = require('@livekit/react-native-webrtc').mediaDevices.getUserMedia;
 
         const connection = await newConnection(
             'http://localhost:8065',
