@@ -90,7 +90,7 @@ describe('ChannelListHeader Index', () => {
         });
     });
 
-    it('reflects the ephemeral mode config of the current server', async () => {
+    it('should reflect ephemeral mode config of current server', async () => {
         await operator.handleConfigs({
             configs: [{id: 'MobileEphemeralModeEnabled', value: 'true'}],
             configsToDelete: [],
@@ -105,7 +105,7 @@ describe('ChannelListHeader Index', () => {
     });
 
     describe('isZeroPersistenceMode', () => {
-        it('is true when ephemeral mode is enabled with zero cache cleanup days', async () => {
+        it('should be true when cleanup days is zero', async () => {
             await operator.handleConfigs({
                 configs: [
                     {id: 'MobileEphemeralModeEnabled', value: 'true'},
@@ -122,7 +122,7 @@ describe('ChannelListHeader Index', () => {
             });
         });
 
-        it('is false when ephemeral mode is enabled with a non-zero cache cleanup days', async () => {
+        it('should be false when cleanup days is non-zero', async () => {
             await operator.handleConfigs({
                 configs: [
                     {id: 'MobileEphemeralModeEnabled', value: 'true'},

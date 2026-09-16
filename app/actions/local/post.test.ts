@@ -505,7 +505,7 @@ describe('deletePostsInChannelsByCutoff', () => {
         expect(error).toBeTruthy();
     });
 
-    it('returns the number of posts matched by the cutoff', async () => {
+    it('should return count of posts matched by cutoff', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
         const oldPosts = [
             TestHelper.fakePost({channel_id: channelId, create_at: OLD}),

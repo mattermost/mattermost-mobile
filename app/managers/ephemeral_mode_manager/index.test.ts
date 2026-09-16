@@ -650,6 +650,7 @@ describe('EphemeralModeManager', () => {
                 barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
                 messageValues: {minutes: 1},
             });
+            expect(showSnackBar).toHaveBeenCalledTimes(3);
 
             await advanceTimers(60_000);
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
