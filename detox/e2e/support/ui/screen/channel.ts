@@ -307,11 +307,8 @@ class ChannelScreen {
                 await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
 
-                // A tablet keeps the sidebar and the channel on screen together, so the home
-                // tab already *is* the channels view and tapping it never dismisses the
-                // channel — "channel.screen is gone" can never come true down this path.
-                // Assert we reached the list instead. The back-button path above still gets
-                // the strict check, which is what the ipad_post_message specs exercise.
+                // A tablet shows sidebar and channel together, so the home tab already *is* the
+                // channels view and never dismisses the channel. Assert we reached the list.
                 if (isIpad()) {
                     await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
                     return;

@@ -335,10 +335,8 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
-# True when the driver died before driving the app. Android writes JUnit with time="0.0"
-# in that case, so require every recorded time to be zero — gRPC/tcp text also appears in
-# ordinary Maestro-over-adb failures, and a flow that ran records a non-zero duration.
-# Any digit 1-9 in the value means non-zero, so "0"/"0.0"/"0.00" are zero and "0.5" is not.
+# True when the driver died before driving the app: Android then writes JUnit with every
+# time="0.0". Any digit 1-9 means non-zero, so "0.0" is zero and "0.5" is not.
 driver_startup_failed() {
   local batch_log=$1 batch_xml=${2:-}
   { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
@@ -364,8 +362,7 @@ xml_escape() {
   printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
 }
 
-# One <testcase> per flow, not one per batch: collapsing them would drop the other
-# flows and report a smaller, greener suite than the one we asked for.
+# One <testcase> per flow, not per batch — collapsing them reports a smaller, greener suite.
 write_skipped_driver_junit() {
   local batch_xml=$1
   shift

@@ -92,11 +92,8 @@ export const apiGetClientConfigOld = async (baseUrl: string): Promise<any> => {
 };
 
 /**
- * Max post length in runes. The server computes this from the posts.message column and
- * publishes it ONLY in the client config — `ServiceSettings.MaxPostSize` does not exist,
- * so reading it from the admin config silently yields undefined. Throws rather than
- * defaulting: a hard-coded fallback is what hid this from three specs until the E2E
- * servers moved to master, where the floor rose from 16383 to 262144.
+ * Max post length in runes. Computed by the server and published only in the client config —
+ * `ServiceSettings.MaxPostSize` does not exist, so never read it from the admin config.
  * @param {string} baseUrl - the base server URL
  * @return {number} the server's MaxPostSize
  */

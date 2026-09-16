@@ -74,12 +74,9 @@ describe('Share with connected workspaces', () => {
         await User.apiAdminLogin(siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
 
-        // Provisioning already enables both ConnectedWorkspacesSettings flags server-wide, and
-        // the remote-cluster service only starts at server boot — so patching them here never
-        // made the probe answer, while the "reset to clean state" afterwards deterministically
-        // disabled shared channels for every other shard on this shared server. Three global
-        // config saves also blew the 360s hook budget in run 35064545839. The probe alone
-        // decides availability.
+        // Provisioning already enables both ConnectedWorkspacesSettings flags, and the
+        // remote-cluster service only starts at boot — patching them here never made the probe
+        // answer, and resetting them afterwards disabled shared channels for every other shard.
         if (license?.SharedChannels === 'true') {
             const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
             sharedChannelsAvailable = !rcError;
@@ -106,10 +103,8 @@ describe('Share with connected workspaces', () => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
 
-        // Hand the shared server back in the state provisioning left it: autotranslation off
-        // (this suite turned it on) and the workspace flags on. TC-MOB-02 has to switch them
-        // off mid-suite, so leaving them as-is would strand every later shard with shared
-        // channels disabled — which is what the old `false` reset here did on every run.
+        // Hand the shared server back as provisioning left it. TC-MOB-02 switches the workspace
+        // flags off mid-suite, so leaving them would strand later shards without shared channels.
         await System.apiPatchConfig(siteOneUrl, {
             AutoTranslationSettings: {
                 Enable: false,

@@ -128,12 +128,8 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Android cannot host an over-limit draft since MaxPostSize became 262144 on server main.
-    // Putting 262145 runes in the input ANRs the app: the main thread sits in
-    // LineBreaker.nComputeLineBreaks -> DynamicLayout.reflow -> TextView.onPreDraw for >5s and
-    // Detox reports "app has unexpectedly disconnected" (run 35064545839, android shard 4,
-    // device.log DetoxANRHandler). That is an app-side limit, not a test timing problem, so the
-    // over-limit assertions run on iOS only until the app bounds draft text measurement.
+    // 262145 runes in the input ANRs Android (LineBreaker.nComputeLineBreaks on the main thread),
+    // so the over-limit assertions run on iOS only until the app bounds text measurement.
     const itNotAndroid = isAndroid() ? it.skip : it;
 
     itNotAndroid('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {

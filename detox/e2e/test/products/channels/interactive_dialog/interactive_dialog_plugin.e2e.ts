@@ -244,13 +244,9 @@ const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
         pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
 };
 
-/**
- * Provisioning already applies DIALOG_PLUGIN_CONFIG (detox/provision/server-config.ts), so
- * re-sending it only re-enters the server's plugin-activation path — which outran the client's
- * 45s timeout and failed all 19 dialog tests on both platforms in run 35064545839.
- * Patch only when the state is actually wrong, and gate on the config read-back rather than
- * the write's ACK, since a save that times out in transit is often still applied.
- */
+// Provisioning already applies this config, and re-sending it re-enters the server's
+// plugin-activation path, which outran the client's 45s timeout. Patch only when the state is
+// actually wrong, and gate on the read-back — a save that times out in transit often landed.
 const ensureDialogOnlyMode = async () => {
     if (await isDialogOnlyModeConfigured()) {
         return;
@@ -1014,12 +1010,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
 
-        // The minutes are the signal: manual entry preserves the typed :30, where the rounded
-        // picker would submit :00. Seconds are zeroed but milliseconds are not —
-        // date_time_selector.tsx commitManualTime() calls .second(0) with no .millisecond(0) —
-        // so the value carries the picker's wall-clock ms (run 35095465913 submitted
-        // 2026-09-16T18:30:00.273Z). Pinning .000Z here could only pass on a whole-second
-        // boundary, roughly one run in a thousand.
+        // The minutes are the signal: manual entry keeps the typed :30, the rounded picker gives
+        // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
         if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }

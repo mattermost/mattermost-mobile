@@ -24,10 +24,9 @@ import {expect, waitFor} from 'detox';
 
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
-// Detox actions carry no timeout, so one that never completes hangs until the per-test cap
-// and takes the rest of the file with it (main 0869dc8: scrollTo('top') wedged, 4 failures,
-// 35 min). Only for scrolls followed by a bounded matcher — a scroll whose result is asserted
-// immediately must stay synchronized so the list settles.
+// Detox actions carry no timeout, so one that never completes takes the whole file with it
+// (main 0869dc8). Only for optional scrolls — if the result is asserted right after, the
+// scroll must stay synchronized so the list settles.
 async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
     try {
         await withSynchronizationDisabled(scroll);

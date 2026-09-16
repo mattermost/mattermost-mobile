@@ -170,11 +170,8 @@ describe('Channels - Browse Channels', () => {
     });
 
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
-        // Provisioning enables this server-wide (detox/provision/server-config.ts), so assert it
-        // rather than set-and-restore it. siteOne is shared by every shard and the other platform,
-        // and the restore was the only write of an explicit `false` anywhere in the suite — every
-        // other archived-channel spec writes `true` and never puts it back.
-        // App semantics: missing flag === enabled. Accept 'true' OR absent (not 'false').
+        // Provisioning enables this server-wide, so assert it rather than set-and-restore it on a
+        // server every shard shares. Missing flag means enabled, so accept 'true' or absent.
         const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
             maxAttempts: 10,
             acceptAbsentAsEnabled: true,

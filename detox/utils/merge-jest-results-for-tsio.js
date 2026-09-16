@@ -156,10 +156,8 @@ function parseExpectedSpecs(specsJson) {
 }
 
 /**
- * Every spec generate-specs handed out must come back with a result. A shard that
- * uploaded nothing, or whose Jest was killed mid-run leaving a partial report, otherwise
- * just shrinks the suite and the gate goes green — main d943628 published "560 passed,
- * 100%" with 3 specs and 22 tests silently absent.
+ * Every spec generate-specs handed out must come back with a result, or a shard that
+ * uploaded nothing just shrinks the suite and the gate goes green (main d943628).
  *
  * @param {{testResults: object[]}} merged
  * @param {string[]} expectedSpecs  repo-relative paths
@@ -257,9 +255,8 @@ function main() {
     };
     const expectedSpecs = parseExpectedSpecs(args['expected-specs']);
 
-    // Exiting here would leave TSIO with no report at all, so the commit status stays
-    // pending forever instead of failing. Fall through and let appendUnreportedSpecs
-    // below produce the failure rows.
+    // Exiting here would leave TSIO with no report, so the status stays pending forever.
+    // Fall through and let appendUnreportedSpecs produce the failure rows.
     if (inputPaths.length === 0 && expectedSpecs.length === 0) {
         console.error('merge-jest-results-for-tsio: no jest-results.json found and no expected spec list');
         process.exit(1);

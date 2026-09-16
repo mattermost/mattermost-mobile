@@ -25,9 +25,8 @@ import {
 } from '@support/ui/screen';
 import {timeouts} from '@support/utils';
 
-// Markdown.renderImage returns null when post.metadata.images is absent, so
-// markdown_image is never mounted. The server only populates that metadata for URLs it can
-// fetch anonymously -- hence a public file link, not /api/v4/files/{id}. See PR #10161.
+// renderImage returns null without post.metadata.images, which the server only populates for
+// URLs it can fetch anonymously -- hence a public file link, not /api/v4/files/{id}.
 
 describe('Messaging - Markdown Image', () => {
     const serverOneDisplayName = 'Server 1';
@@ -100,9 +99,8 @@ describe('Messaging - Markdown Image', () => {
     });
 });
 
-// The metadata fetcher's SSRF guard blocks loopback/private hosts, so the site's own host
-// must be allowlisted. Both patches are additive and idempotent; shards share a server, so
-// they are deliberately not reverted.
+// The metadata fetcher's SSRF guard blocks private hosts, so allowlist the site's own host.
+// Both patches are additive and idempotent, and deliberately not reverted on a shared server.
 async function enablePublicLinksForOwnHost(): Promise<void> {
     const {config, error} = await System.apiGetConfig(siteOneUrl);
     if (error || !config) {
@@ -144,8 +142,7 @@ async function createPublicImageLink(channelId: string): Promise<string> {
     return `${pathname}${search}`;
 }
 
-// No metadata entry means renderImage returns null, so fail here with the reason rather than
-// 10s later on an unexplained missing testID.
+// Fail here with the reason rather than 10s later on an unexplained missing testID.
 async function requireServerPreloadsImage(channelId: string, imageUrl: string): Promise<void> {
     // apiCreatePost throws on failure, so a returned post is always a real one.
     const {post} = await Post.apiCreatePost(siteOneUrl, {
