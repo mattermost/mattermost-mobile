@@ -176,6 +176,12 @@ const ChannelListHeader = ({
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad, marginLeft]);
 
+    useEffect(() => {
+        if (!ephemeralModeEnabled) {
+            setEphemeralModeTooltipVisible(false);
+        }
+    }, [ephemeralModeEnabled]);
+
     const hasTeamMenuItems = canJoinOtherTeams || hasMoreThanOneTeam;
 
     const onPress = usePreventDoubleTap(useCallback(() => {
