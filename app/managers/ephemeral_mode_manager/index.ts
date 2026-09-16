@@ -18,7 +18,7 @@ import {navigateToScreen} from '@screens/navigation';
 import {toMilliseconds} from '@utils/datetime';
 import {deleteFileCache} from '@utils/file';
 import {logDebug, logError} from '@utils/log';
-import {showSnackBar} from '@utils/snack_bar';
+import {showSnackBar, type ShowSnackBarArgs} from '@utils/snack_bar';
 
 type ServerEntry =
     | {kind: 'zpm'}
@@ -83,13 +83,15 @@ class EphemeralModeManagerSingleton {
     // Runs once per cold start (not on foreground) so users are reminded of the
     // device's persistence mode every time the app launches, not just when it changes.
     private notifyIfEphemeralModeActiveOnStart = async (serverUrl: string, server: Awaited<ReturnType<typeof getServer>>) => {
-        const activeUrl = await DatabaseManager.getActiveServerUrl();
-        if (serverUrl !== activeUrl) {
-            return;
-        }
-
         if (server?.persistenceFlag === 'zero-persistence') {
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+        }
+    };
+
+    private showSnackBarForActiveServer = async (serverUrl: string, args: ShowSnackBarArgs) => {
+        const activeUrl = await DatabaseManager.getActiveServerUrl();
+        if (serverUrl === activeUrl) {
+            showSnackBar(args);
         }
     };
 
@@ -194,12 +196,12 @@ class EphemeralModeManagerSingleton {
 
         if (nextEnabled && !wasActive) {
             this.track(serverUrl, nextThresholdMs, nextPurgeThresholdMs, nextCleanupDays);
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
         if (!nextEnabled && wasActive) {
             await this.untrack(serverUrl);
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED});
             return;
         }
 
@@ -211,7 +213,7 @@ class EphemeralModeManagerSingleton {
                     await this.evaluatePurge(serverUrl);
                 }
             });
-            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
+            await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED, descriptionValues: {hours: nextPurgeHours, days: nextCleanupDays}});
             return;
         }
 
@@ -391,7 +393,7 @@ class EphemeralModeManagerSingleton {
             return;
         }
 
-        showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
+        await this.showSnackBarForActiveServer(serverUrl, {barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
 
         let database;
         try {
@@ -486,11 +488,14 @@ class EphemeralModeManagerSingleton {
         for (const threshold of WIPE_WARNING_THRESHOLDS_MS) {
             if (threshold < remainingMs) {
                 timers.push(setTimeout(() => {
-                    showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING, messageValues: {minutes: threshold / 60_000}});
+                    this.showSnackBarForActiveServer(serverUrl, {
+                        barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                        messageValues: {minutes: threshold / 60_000},
+                    });
                 }, remainingMs - threshold));
             } else if (!firedImmediateWarning) {
                 firedImmediateWarning = true;
-                showSnackBar({
+                this.showSnackBarForActiveServer(serverUrl, {
                     barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
                     messageValues: {minutes: Math.max(1, Math.ceil(remainingMs / 60_000))},
                 });

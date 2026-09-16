@@ -168,6 +168,7 @@ describe('EphemeralModeManager', () => {
         appStateRemoveSpies = [];
 
         await DatabaseManager.init([serverA, serverB]);
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
 
         (WebsocketManager.observeWebsocketState as jest.Mock) = jest.fn((url: string) => {
             if (!wsStates[url]) {
@@ -257,6 +258,16 @@ describe('EphemeralModeManager', () => {
 
         it('does not show any ephemeral mode snackbar on init when ephemeral mode is disabled and the server is not in zero persistence mode', async () => {
             await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+
+        it('does not show the ephemeral mode enabled snackbar when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 5, cleanupDays: 7});
 
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
@@ -539,6 +550,37 @@ describe('EphemeralModeManager', () => {
         expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
     });
 
+    describe('disconnected notification', () => {
+        it('shows the disconnected snackbar when the affected server is active', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+
+            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
+        });
+
+        it('does not show the disconnected snackbar when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+    });
+
     describe('purge timer', () => {
         const ONE_HOUR_MS = 3600_000;
 
@@ -639,6 +681,24 @@ describe('EphemeralModeManager', () => {
                 messageValues: {minutes: 5},
             });
             expect(showSnackBar).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not show wipe warnings when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            jest.mocked(showSnackBar).mockClear();
+
+            await advanceTimers(30 * 60_000);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
         });
 
         it('firing the purge is synchronous when the threshold is zero', async () => {
@@ -791,6 +851,21 @@ describe('EphemeralModeManager', () => {
 
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {purgeHours: 5});
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+
+        it('does not show the settings updated snackbar when the purge threshold changes for a non-active server', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1, cleanupDays: 7});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
             jest.mocked(showSnackBar).mockClear();
 
             await updateConfig(serverA, {purgeHours: 5});
