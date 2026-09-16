@@ -224,6 +224,49 @@ async function dismissErrorAlert() {
 
 const itNotIos = isIos() ? it.skip : it;
 
+const DIALOG_PLUGIN_CONFIG = {
+    PluginSettings: {
+        PluginStates: {
+            [DemoPlugin.id]: {Enable: true},
+        },
+        Plugins: {
+            [DemoPlugin.id]: {
+                DialogOnlyMode: true,
+            },
+        },
+    },
+};
+
+const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
+    const {config} = await System.apiGetConfig(siteOneUrl);
+    const pluginSettings = config?.PluginSettings;
+    return pluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable === true &&
+        pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
+};
+
+/**
+ * Provisioning already applies DIALOG_PLUGIN_CONFIG (detox/provision/server-config.ts), so
+ * re-sending it only re-enters the server's plugin-activation path — which outran the client's
+ * 45s timeout and failed all 19 dialog tests on both platforms in run 35064545839.
+ * Patch only when the state is actually wrong, and gate on the config read-back rather than
+ * the write's ACK, since a save that times out in transit is often still applied.
+ */
+const ensureDialogOnlyMode = async () => {
+    if (await isDialogOnlyModeConfigured()) {
+        return;
+    }
+
+    const {error} = await System.apiUpdateConfig(siteOneUrl, DIALOG_PLUGIN_CONFIG);
+    for (let attempt = 0; attempt < 15; attempt++) {
+        if (await isDialogOnlyModeConfigured()) {
+            return;
+        }
+        await wait(timeouts.TWO_SEC);
+    }
+
+    throw new Error(`Failed to configure demo plugin for dialog tests: ${error ? (error.message || JSON.stringify(error)) : 'config never reported DialogOnlyMode'}`);
+};
+
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -237,21 +280,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
+        await ensureDialogOnlyMode();
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {

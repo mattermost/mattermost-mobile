@@ -73,22 +73,16 @@ describe('Share with connected workspaces', () => {
 
         await User.apiAdminLogin(siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
-        const hasSharedChannelsLicense = license?.SharedChannels === 'true';
 
-        if (hasSharedChannelsLicense) {
-            await System.apiPatchConfig(siteOneUrl, {
-                ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
-            });
+        // Provisioning already enables both ConnectedWorkspacesSettings flags server-wide, and
+        // the remote-cluster service only starts at server boot — so patching them here never
+        // made the probe answer, while the "reset to clean state" afterwards deterministically
+        // disabled shared channels for every other shard on this shared server. Three global
+        // config saves also blew the 360s hook budget in run 35064545839. The probe alone
+        // decides availability.
+        if (license?.SharedChannels === 'true') {
             const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
             sharedChannelsAvailable = !rcError;
-
-            // Reset to clean state regardless of outcome.
-            await System.apiPatchConfig(siteOneUrl, {
-                ConnectedWorkspacesSettings: {
-                    EnableSharedChannels: false,
-                    EnableRemoteClusterService: false,
-                },
-            });
         }
 
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
@@ -111,13 +105,18 @@ describe('Share with connected workspaces', () => {
     afterAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
+
+        // Hand the shared server back in the state provisioning left it: autotranslation off
+        // (this suite turned it on) and the workspace flags on. TC-MOB-02 has to switch them
+        // off mid-suite, so leaving them as-is would strand every later shard with shared
+        // channels disabled — which is what the old `false` reset here did on every run.
         await System.apiPatchConfig(siteOneUrl, {
             AutoTranslationSettings: {
                 Enable: false,
             },
             ConnectedWorkspacesSettings: {
-                EnableSharedChannels: false,
-                EnableRemoteClusterService: false,
+                EnableSharedChannels: true,
+                EnableRemoteClusterService: true,
             },
         });
         await HomeScreen.logout();
