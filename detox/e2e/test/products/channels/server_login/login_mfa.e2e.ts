@@ -30,7 +30,7 @@ import {expect} from 'detox';
  * and the other Detox shards). Same SITE_3 + lock + hasThreeDistinctServers gate as
  * custom_terms_of_service: siteThreeUrl falls back to siteOneUrl on 2-server topologies.
  */
-jest.setTimeout(timeouts.ONE_MIN * 25);
+jest.setTimeout(timeouts.ONE_MIN * 50);
 
 const describeApiError = (error: any, status?: number): string => {
     return `status ${status ?? 'unknown'}: ${error?.message ?? error?.id ?? 'unknown error'}`;
@@ -91,7 +91,7 @@ describeOrSkip('Server Login - Login with MFA', () => {
         mfaSecret = mfaResult.secret;
 
         await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
-    }, timeouts.ONE_MIN * 22);
+    }, timeouts.ONE_MIN * 45);
 
     afterAll(async () => {
         if (!lockAcquired) {

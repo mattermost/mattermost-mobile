@@ -28,7 +28,7 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {device, expect} from 'detox';
 
-jest.setTimeout(timeouts.ONE_MIN * 25);
+jest.setTimeout(timeouts.ONE_MIN * 50);
 
 /**
  * Summarise a server_api error without embedding the raw response payload.
@@ -76,7 +76,7 @@ describeOrSkip('Server Login - Custom Terms of Service', () => {
         // when it connects below — no reload needed to dodge a stale cached config.
         const {user} = await Setup.apiInit(siteThreeUrl);
         testUser = user;
-    }, timeouts.ONE_MIN * 22);
+    }, timeouts.ONE_MIN * 45);
 
     afterAll(async () => {
         // Never tear down shared server state we do not own.

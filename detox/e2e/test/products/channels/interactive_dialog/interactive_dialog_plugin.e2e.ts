@@ -1013,7 +1013,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (!submitted) {
             throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+
+        // The minutes are the signal: manual entry preserves the typed :30, where the rounded
+        // picker would submit :00. Seconds are zeroed but milliseconds are not —
+        // date_time_selector.tsx commitManualTime() calls .second(0) with no .millisecond(0) —
+        // so the value carries the picker's wall-clock ms (run 35095465913 submitted
+        // 2026-09-16T18:30:00.273Z). Pinning .000Z here could only pass on a whole-second
+        // boundary, roughly one run in a thousand.
+        if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });
