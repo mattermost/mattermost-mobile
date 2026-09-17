@@ -160,6 +160,7 @@ it('should isolate harmless label events but serialize Override/Verified with he
 it('should never mutate origin refs and should load local actions only from the default branch', () => {
     assert.equal(workflow.jobs['mirror-fork-head'], undefined);
     assert.equal(workflow.jobs['delete-fork-mirror'], undefined);
+    assert.equal(workflow.jobs['e2e-label-manager'].if, "github.event.pull_request.base.ref == 'main'");
     for (const job of Object.values(workflow.jobs)) {
         assert.notEqual(job.permissions?.contents, 'write');
         for (const step of job.steps || []) {

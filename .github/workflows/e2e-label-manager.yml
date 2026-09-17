@@ -561,6 +561,7 @@ jobs:
             });
 
   e2e-label-manager:
+    if: github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
