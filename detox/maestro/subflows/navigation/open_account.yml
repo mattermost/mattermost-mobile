@@ -38,3 +38,9 @@ appId: ${MAESTRO_APP_ID}
 # from an earlier snapshot, so an unsettled screen lands the tap on Your Profile, not Settings.
 - waitForAnimationToEnd:
     timeout: 5000
+
+# # Leave the subflow on a screen the caller can act on. Callers tap this row straight after.
+- extendedWaitUntil:
+    visible:
+      id: "account.settings.option"
+    timeout: 15000
