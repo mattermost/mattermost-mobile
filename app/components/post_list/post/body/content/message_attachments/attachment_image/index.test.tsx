@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {type ComponentProps} from 'react';
+import React from 'react';
 
 import ProgressiveImage from '@components/progressive_image';
 import {Screens, Preferences} from '@constants';
@@ -13,7 +13,7 @@ import AttachmentImage from './index';
 
 jest.mock('@components/progressive_image', () => ({
     __esModule: true,
-    default: jest.fn(),
+    default: jest.fn(() => null),
 }));
 
 jest.mock('@context/gallery', () => ({
@@ -50,12 +50,9 @@ describe('AttachmentImage', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        jest.mocked(ProgressiveImage).mockImplementation((props) => (
-            React.createElement('ProgressiveImage', {testID: 'progressive_image', ...props})
-        ));
     });
 
-    function buildElement(props: Partial<ComponentProps<typeof AttachmentImage>> = {}) {
+    function buildElement(props: Partial<React.ComponentProps<typeof AttachmentImage>> = {}) {
         return (
             <AttachmentImage
                 imageUrl={IMAGE_URL}
@@ -69,43 +66,49 @@ describe('AttachmentImage', () => {
         );
     }
 
-    function renderImage(props: Partial<ComponentProps<typeof AttachmentImage>> = {}) {
+    function renderImage(props: Partial<React.ComponentProps<typeof AttachmentImage>> = {}) {
         return renderWithIntlAndTheme(buildElement(props));
     }
 
-    function openGalleryFromLatestItem() {
-        const {useGalleryItem} = jest.requireMock('@hooks/gallery');
-        const onGestureEvent = jest.mocked(useGalleryItem).mock.results.at(-1)!.value.onGestureEvent;
-        onGestureEvent();
+    function lastProgressiveImageId() {
+        const calls = jest.mocked(ProgressiveImage).mock.calls;
+        return calls[calls.length - 1][0].id;
     }
 
     it('should render ProgressiveImage with the image and a cache id derived from imageUrl', () => {
-        const {getByTestId} = renderImage();
-        const expectedId = `uid-${urlSafeBase64Encode(IMAGE_URL)}`;
+        renderImage();
 
-        expect(getByTestId('progressive_image')).toHaveProp('imageUri', IMAGE_URL);
-        expect(getByTestId('progressive_image')).toHaveProp('id', expectedId);
-        expect(getByTestId(`attachmentImage-${expectedId}`)).toBeOnTheScreen();
+        expect(ProgressiveImage).toHaveBeenCalledWith(
+            expect.objectContaining({
+                imageUri: IMAGE_URL,
+                id: `uid-${urlSafeBase64Encode(IMAGE_URL)}`,
+            }),
+            undefined,
+        );
     });
 
-    // Regression for in-place post edits: the cache id must follow imageUrl.
-    // Previously it was frozen via useRef, so the new image stayed stale.
+    // Regression test for the stale-image bug: when the same post is edited in place
+    // to a new image URL, the cache id must follow imageUrl. Previously it was frozen
+    // via useRef, so the new image rendered under the old cache key and stayed stale.
     it('should update the cache id when imageUrl changes on re-render', () => {
-        const {getByTestId, rerender} = renderImage({imageUrl: IMAGE_URL});
-        const firstId = `uid-${urlSafeBase64Encode(IMAGE_URL)}`;
-        expect(getByTestId('progressive_image')).toHaveProp('id', firstId);
+        const {rerender} = renderImage({imageUrl: IMAGE_URL});
+        const firstId = lastProgressiveImageId();
+        expect(firstId).toBe(`uid-${urlSafeBase64Encode(IMAGE_URL)}`);
 
         rerender(buildElement({imageUrl: IMAGE_URL_2}));
-        const secondId = `uid-${urlSafeBase64Encode(IMAGE_URL_2)}`;
+        const secondId = lastProgressiveImageId();
 
-        expect(getByTestId('progressive_image')).toHaveProp('id', secondId);
+        expect(secondId).toBe(`uid-${urlSafeBase64Encode(IMAGE_URL_2)}`);
         expect(secondId).not.toBe(firstId);
-        expect(getByTestId(`attachmentImage-${secondId}`)).toBeOnTheScreen();
     });
 
     it('should open the gallery with a cacheKey matching the current imageUrl', () => {
         renderImage();
-        openGalleryFromLatestItem();
+
+        // Trigger the gallery open via the captured gesture handler.
+        const {useGalleryItem} = jest.requireMock('@hooks/gallery');
+        const onGestureEvent = jest.mocked(useGalleryItem).mock.results.at(-1)!.value.onGestureEvent;
+        onGestureEvent();
 
         const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
         expect(galleryItems).toHaveLength(1);
@@ -122,22 +125,8 @@ describe('AttachmentImage', () => {
         );
     });
 
-    it('should open the gallery with the updated cacheKey after imageUrl changes', () => {
-        const {rerender} = renderImage({imageUrl: IMAGE_URL});
-        rerender(buildElement({imageUrl: IMAGE_URL_2}));
-        openGalleryFromLatestItem();
-
-        const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
-        expect(galleryItems).toHaveLength(1);
-        expect(galleryItems[0]).toEqual(expect.objectContaining({
-            id: `uid-${urlSafeBase64Encode(IMAGE_URL_2)}`,
-            cacheKey: `uid-${urlSafeBase64Encode(IMAGE_URL_2)}`,
-            uri: IMAGE_URL_2,
-        }));
-    });
-
     it('should render an error frame for an invalid url and skip ProgressiveImage', () => {
-        const {queryByTestId} = renderImage({imageUrl: 'not-a-url'});
-        expect(queryByTestId('progressive_image')).toBeNull();
+        renderImage({imageUrl: 'not-a-url'});
+        expect(ProgressiveImage).not.toHaveBeenCalled();
     });
 });

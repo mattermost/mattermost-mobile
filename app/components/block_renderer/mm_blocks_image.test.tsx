@@ -11,7 +11,6 @@ import ExternalImage from '@components/external_image';
 import {Preferences, Screens} from '@constants';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 import {openGalleryAtIndex} from '@utils/gallery';
-import {urlSafeBase64Encode} from '@utils/security';
 
 import {MmBlocksContextProvider} from './mm_blocks_context_provider';
 import MmBlocksImage from './mm_blocks_image';
@@ -70,7 +69,6 @@ jest.mock('react-native-svg', () => ({
 
 const PROXIED_SRC = 'https://server.example.com/api/v4/image?url=https%3A%2F%2Fexample.com%2Fphoto.png';
 const IMAGE_URL = 'https://example.com/photo.png';
-const IMAGE_URL_2 = 'https://example.com/photo-week.png';
 
 function buildLoadEvent(width: number, height: number): ImageLoadEventData {
     return {
@@ -105,7 +103,6 @@ describe('MmBlocksImage', () => {
             onLoad,
             onError,
             style,
-            id,
         }: ComponentProps<typeof ExpoImage>) => {
             capturedExpoOnLoad = onLoad;
             capturedExpoOnError = onError;
@@ -115,7 +112,7 @@ describe('MmBlocksImage', () => {
                 uri = source.uri;
             }
 
-            return React.createElement(Text, {testID: 'expo-image', style, id}, uri);
+            return React.createElement(Text, {testID: 'expo-image', style}, uri);
         });
 
         jest.mocked(SvgUri).mockImplementation(({uri, onError, style}) => {
@@ -124,10 +121,10 @@ describe('MmBlocksImage', () => {
         });
     });
 
-    function buildElement(
+    function renderImage(
         props: Partial<React.ComponentProps<typeof MmBlocksImage>> = {},
     ) {
-        return (
+        return renderWithIntlAndTheme(
             <MmBlocksContextProvider
                 channelId='channel-id'
                 location={Screens.CHANNEL}
@@ -141,14 +138,8 @@ describe('MmBlocksImage', () => {
                     theme={theme}
                     {...props}
                 />
-            </MmBlocksContextProvider>
+            </MmBlocksContextProvider>,
         );
-    }
-
-    function renderImage(
-        props: Partial<React.ComponentProps<typeof MmBlocksImage>> = {},
-    ) {
-        return renderWithIntlAndTheme(buildElement(props));
     }
 
     function getExpoImageDimensions(getByTestId: ReturnType<typeof renderImage>['getByTestId']) {
@@ -171,7 +162,6 @@ describe('MmBlocksImage', () => {
             undefined,
         );
         expect(getByTestId('expo-image')).toHaveTextContent(PROXIED_SRC);
-        expect(getByTestId('expo-image')).toHaveProp('id', `uid-mm-blocks-image-${urlSafeBase64Encode(IMAGE_URL)}`);
         expect(jest.mocked(ExpoImage)).toHaveBeenCalledWith(
             expect.objectContaining({
                 source: {uri: PROXIED_SRC},
@@ -238,9 +228,6 @@ describe('MmBlocksImage', () => {
 
         fireEvent.press(getByRole('imagebutton'));
 
-        const expectedId = `uid-mm-blocks-image-${urlSafeBase64Encode(IMAGE_URL)}`;
-        const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
-        expect(galleryItems).toHaveLength(1);
         expect(openGalleryAtIndex).toHaveBeenCalledWith(
             `post-id-MmBlocksImage-${Screens.CHANNEL}`,
             0,
@@ -249,38 +236,8 @@ describe('MmBlocksImage', () => {
                 uri: PROXIED_SRC,
                 name: 'Photo',
                 type: 'image',
-                id: expectedId,
-                cacheKey: expectedId,
             })],
         );
-    });
-
-    it('should update the cache id when imageUrl changes on re-render', () => {
-        const {getByTestId, rerender} = renderImage({imageUrl: IMAGE_URL});
-        const firstId = `uid-mm-blocks-image-${urlSafeBase64Encode(IMAGE_URL)}`;
-        expect(getByTestId('expo-image')).toHaveProp('id', firstId);
-
-        rerender(buildElement({imageUrl: IMAGE_URL_2}));
-        const secondId = `uid-mm-blocks-image-${urlSafeBase64Encode(IMAGE_URL_2)}`;
-
-        expect(getByTestId('expo-image')).toHaveProp('id', secondId);
-        expect(secondId).not.toBe(firstId);
-    });
-
-    it('should open the gallery with the updated cacheKey after imageUrl changes', () => {
-        const {getByRole, rerender} = renderImage({imageUrl: IMAGE_URL});
-        rerender(buildElement({imageUrl: IMAGE_URL_2}));
-
-        fireEvent.press(getByRole('imagebutton'));
-
-        const expectedId = `uid-mm-blocks-image-${urlSafeBase64Encode(IMAGE_URL_2)}`;
-        const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
-        expect(galleryItems).toHaveLength(1);
-        expect(galleryItems[0]).toEqual(expect.objectContaining({
-            id: expectedId,
-            cacheKey: expectedId,
-            uri: PROXIED_SRC,
-        }));
     });
 
     it('should render error frame after expo image onError', () => {

@@ -67,7 +67,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
 
     const onPress = () => {
         const item: GalleryItemType = {
-            id: fileId,
+            id: fileId || '',
             postId,
             uri: imageUrl,
             width: imageMetadata.width,
@@ -76,7 +76,7 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
             mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
             lastPictureUpdate: 0,
-            cacheKey: fileId,
+            cacheKey: fileId || '',
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };
