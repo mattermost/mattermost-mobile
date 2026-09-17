@@ -1,9 +1,9 @@
 ---
 name: build-pr
-# pull_request_target so fork PRs receive signing/S3 secrets. The trigger is
-# a maintainer-only label (fork authors cannot label origin PRs). Checkout is
-# the PR SHA with persist-credentials: false; Fastlane still runs PR-tree
-# code, so the label is the trust gate — same as ok-to-test.
+# Applying a build label authorizes execution of the reviewed PR SHA with
+# signing/S3 secrets. The guard requires code write access: triage users can
+# also apply labels, but cannot authorize privileged code execution. Workflow
+# code comes from the default branch; build scripts come from the approved SHA.
 on:
   pull_request_target:
     types:
@@ -20,9 +20,57 @@ env:
   BRANCH_TO_BUILD: ${{ github.event.pull_request.head.repo.full_name != github.repository && format('pr-{0}', github.event.pull_request.number) || github.event.pull_request.head.ref }}
 
 jobs:
+  authorize-build:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
+    permissions:
+      pull-requests: read
+    steps:
+      # No checkout or PR-authored code may run before this authorization check.
+      - name: Authorize the labeling actor and reviewed head
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const event = context.payload;
+            const sender = event.sender?.login;
+            if (!sender) {
+              core.setFailed('Cannot authorize a build without a labeling actor.');
+              return;
+            }
+
+            const {data: access} = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner, repo, username: sender,
+            });
+            const canPush = access.user?.permissions?.push === true ||
+              ['push', 'write', 'maintain', 'admin'].includes(access.permission);
+            if (!canPush) {
+              core.setFailed('Build labels require a reviewer with repository write access.');
+              return;
+            }
+
+            const {data: pr} = await github.rest.pulls.get({
+              owner, repo, pull_number: event.pull_request.number,
+            });
+            if (pr.state !== 'open') {
+              core.setFailed('The pull request is no longer open.');
+              return;
+            }
+            if (pr.head.sha !== event.pull_request.head.sha) {
+              core.setFailed('The PR head has changed. Review the new SHA and reapply the build label.');
+              return;
+            }
+            if (!pr.labels.some((label) => label.name === event.label.name)) {
+              core.setFailed('The build label has been removed.');
+              return;
+            }
+            core.info(`Authorized ${sender} to build PR #${event.pull_request.number} at ${pr.head.sha}.`);
+
   test:
     runs-on: ubuntu-22.04
     if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android' }}
+    needs:
+      - authorize-build
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -37,6 +85,7 @@ jobs:
     runs-on: macos-15-large
     if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' }}
     needs:
+      - authorize-build
       - test
     steps:
       - name: ci/checkout-repo
@@ -95,6 +144,7 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android' }}
     needs:
+      - authorize-build
       - test
     steps:
       - name: ci/checkout-repo

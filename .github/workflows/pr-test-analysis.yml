@@ -1,12 +1,11 @@
 ---
 name: PR Test Analysis
 
-# pull_request_target: the workflow file and secrets come from the base
-# branch, so fork PRs can be analyzed. The reusable toolkit workflow only
-# takes a PR number, fetches pull/<n>/head as a git diff, and does not
-# npm-install or execute PR code. pull_request cannot do this: GitHub
-# withholds this repo's secrets from fork pull_request runs even after
-# "Approve and run workflows".
+# pull_request_target loads trusted default-branch workflow code. Automatic
+# fork analysis remains blocked until the reusable workflow isolates its AI
+# workspace from credentials: the reviewed version persists GH_TOKEN in
+# .git/config, which its Read tool can access. A diff-only checkout is not
+# sufficient protection against prompt injection in PR descriptions/diffs.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -41,13 +40,13 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    # Drafts are not ready. workflow_dispatch is always allowed (secrets
-    # come from this repo, so a fork PR number can be passed manually).
+    # Dispatch is a writer-authorized diagnostic, not proof of fork safety.
+    # Re-enable automatic forks only after the toolkit boundary is hardened.
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.pull_request.draft == false
-    # Pin to a commit SHA once the reusable workflow is stable. Using @main during initial rollout.
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/pr-test-analysis.yml@main
+      (github.event.pull_request.draft == false &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/pr-test-analysis.yml@b51a481e3fe6332053be09800d59da1a8c3e3e2e
     with:
       pr_number: ${{ github.event.pull_request.number || inputs.pr_number }}
       target_repo: mattermost/mattermost-mobile

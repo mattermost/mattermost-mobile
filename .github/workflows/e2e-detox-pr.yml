@@ -21,6 +21,12 @@
 #   run-detox-ios / run-detox-android → e2e-detox.yml
 #   run-maestro-ios / run-maestro-android → e2e-maestro-pr.yml (downloads phase-1 artifacts via artifact_run_id)
 name: E2E
+# Cancellation and label cleanup use this identity; the run API's head_sha is
+# the dispatch workflow commit, which may be main when the tested code is a PR.
+run-name: >-
+  ${{ (inputs.run_type == 'PR' || inputs.run_type == '') && inputs.pr_number != ''
+    && format('E2E PR #{0} @ {1}', inputs.pr_number, inputs.MOBILE_VERSION)
+    || format('E2E {0} version={1} @ {2}', inputs.run_type || 'PR', inputs.version_name || github.ref_name, inputs.MOBILE_VERSION) }}
 
 on:
   workflow_dispatch:
@@ -103,10 +109,10 @@ env:
   # binaries built under the previous INTUNE setting will be served.
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
-  # Fork SHAs are not origin branches. GitHub keeps every PR (including forks)
-  # at refs/pull/<n>/head. MAIN/MASTER dispatches omit pr_number and check out
-  # MOBILE_VERSION on origin.
-  E2E_CHECKOUT_REF: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || inputs.MOBILE_VERSION }}
+  # GitHub's repository network lets origin fetch a fork PR commit by SHA.
+  # Keep builds, fingerprints, tests and reports on that exact dispatched commit,
+  # even if the PR head advances while jobs are queued.
+  E2E_CHECKOUT_REF: ${{ inputs.MOBILE_VERSION }}
 
 jobs:
   # Compute content fingerprints for S3 build caching.
@@ -926,6 +932,8 @@ jobs:
     # (leave the label so the suite can be re-triggered).
     if: |
       !cancelled() &&
+      (inputs.run_type == 'PR' || inputs.run_type == '') &&
+      inputs.pr_number != '' &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
@@ -942,89 +950,41 @@ jobs:
             const repo = context.repo.repo;
             const runLabels = ['E2E/Run', 'E2E/Run-iOS', 'E2E/Run-Android'];
 
-            let prNumber = parseInt(process.env.PR_NUMBER, 10);
-            if (!Number.isFinite(prNumber) && process.env.MOBILE_VERSION) {
-              const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                owner,
-                repo,
-                commit_sha: process.env.MOBILE_VERSION,
-              });
-              const openPr = prs.find((pr) => pr.state === 'open');
-              if (openPr) {
-                prNumber = openPr.number;
-                console.log(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
-              }
-            }
-            if (!Number.isFinite(prNumber)) {
-              const branch = process.env.BRANCH;
-              if (branch) {
-                const {data: prs} = await github.rest.pulls.list({
-                  owner,
-                  repo,
-                  head: `${owner}:${branch}`,
-                  state: 'open',
-                  per_page: 1,
-                });
-                if (prs.length > 0) {
-                  prNumber = prs[0].number;
-                }
-              }
-            }
-            if (!Number.isFinite(prNumber)) {
-              core.warning('No PR found — skipping label removal');
+            if (!/^[1-9]\d*$/.test(process.env.PR_NUMBER || '')) {
+              core.warning('No explicit PR number — skipping label removal');
               return;
             }
+            const prNumber = Number(process.env.PR_NUMBER);
 
-            const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
-            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
-            if (e2eWorkflow) {
-              // Cache PR lookups per head_sha to avoid quadratic API calls.
-              const prsForSha = new Map();
-              const lookupPRsForSha = async (sha) => {
-                if (!sha) return [];
-                if (prsForSha.has(sha)) return prsForSha.get(sha);
-                try {
-                  const {data} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                    owner,
-                    repo,
-                    commit_sha: sha,
-                  });
-                  const numbers = (data || []).map((p) => p.number);
-                  prsForSha.set(sha, numbers);
-                  return numbers;
-                } catch (err) {
-                  core.warning(`listPullRequestsAssociatedWithCommit failed for ${sha}: ${err.message}`);
-                  prsForSha.set(sha, []);
-                  return [];
+            // The dispatch branch/SHA and associated PRs do not identify what was
+            // tested. Only the explicit run-name contract identifies a PR run.
+            // Legacy runs without that identity cannot be assigned to a PR.
+            for (const status of ['queued', 'in_progress', 'waiting', 'requested', 'pending']) {
+              const activeRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner,
+                repo,
+                workflow_id: 'e2e-detox-pr.yml',
+                status,
+                per_page: 100,
+              });
+              for (const run of activeRuns) {
+                if (run.id === context.runId) {
+                  continue;
                 }
-              };
-
-              for (const status of ['queued', 'in_progress', 'waiting']) {
-                const {data: activeRuns} = await github.rest.actions.listWorkflowRuns({
-                  owner,
-                  repo,
-                  workflow_id: e2eWorkflow.id,
-                  status,
-                  branch: process.env.BRANCH,
-                });
-                for (const run of activeRuns.workflow_runs) {
-                  if (run.id === context.runId) {
-                    continue;
-                  }
-                  // Fall back to per-SHA PR lookup when run.pull_requests is empty (fork PRs / webhook timing).
-                  let belongsToPR;
-                  if (run.pull_requests?.length) {
-                    belongsToPR = run.pull_requests.some((pr) => pr.number === prNumber);
-                  } else {
-                    const numbers = await lookupPRsForSha(run.head_sha);
-                    belongsToPR = numbers.includes(prNumber);
-                  }
-                  if (belongsToPR) {
-                    core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${run.id}).`);
-                    return;
-                  }
+                const identity = /^E2E PR #(\d+) @ ([a-f0-9]{40})$/.exec(run.display_title || '');
+                if (identity && Number(identity[1]) === prNumber) {
+                  core.info(`PR #${prNumber} has another active E2E run — skipping label removal (run ${run.id}).`);
+                  return;
                 }
               }
+            }
+
+            // Re-read immediately before mutation: an older run must not remove
+            // a label that now belongs to a newer PR head.
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
+            if (pr.head.sha !== process.env.MOBILE_VERSION) {
+              core.info(`PR #${prNumber} has advanced since this run — skipping label removal.`);
+              return;
             }
 
             console.log(`Removing E2E labels from PR #${prNumber} (workflow conclusion: ${process.env.WORKFLOW_CONCLUSION || 'unknown'})`);
@@ -1046,7 +1006,6 @@ jobs:
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
-          BRANCH: ${{ github.ref_name }}
           WORKFLOW_CONCLUSION: ${{ job.status }}
 
   # Per-platform TSIO commit statuses are finalized inside each Detox/Maestro
