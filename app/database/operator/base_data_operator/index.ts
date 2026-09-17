@@ -26,7 +26,7 @@ export interface BaseDataOperatorType {
     database: Database;
     handleRecords: <T extends Model, R extends RawValue>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleRecordsArgs<T, R>, description: string) => Promise<Model[]>;
     processRecords: <T extends Model, R extends RawValue>({createOrUpdateRawValues, deleteRawValues, tableName, buildKeyRecordBy, fieldName}: ProcessRecordsArgs<R>) => Promise<ProcessRecordResults<T, R>>;
-    batchRecords: (models: Model[], description: string) => Promise<void>;
+    batchRecords: (models: Model[], description: string, propagateError?: boolean) => Promise<void>;
     prepareRecords: <T extends Model, R extends RawValue>({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs<T, R>) => Promise<Model[]>;
 }
 
@@ -188,7 +188,7 @@ export default class BaseDataOperator {
      * @param {Array} models
      * @returns {Promise<void>}
      */
-    async batchRecords(models: Model[], description: string): Promise<void> {
+    async batchRecords(models: Model[], description: string, propagateError = false): Promise<void> {
         try {
             if (models.length > 0) {
                 await this.database.write(async (writer) => {
@@ -203,6 +203,9 @@ export default class BaseDataOperator {
                     error: e,
                     source: description,
                 });
+            }
+            if (propagateError) {
+                throw e;
             }
         }
     }
