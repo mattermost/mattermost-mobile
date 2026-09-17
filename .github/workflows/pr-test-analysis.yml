@@ -20,7 +20,7 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      result: ${{ steps.analyze.outputs.result }}
+      result: ${{ steps.analyze.outputs.analysis }}
     steps:
       - name: Read only the reviewed fork probe
         id: collect
@@ -91,7 +91,7 @@ jobs:
             if (!['PASS', 'PASS_NOT_NEEDED', 'FAIL_MISSING', 'FAIL_INSUFFICIENT'].includes(result.verdict) || typeof result.summary !== 'string') {
               throw new Error('Invalid analysis result.');
             }
-            core.setOutput('result', JSON.stringify({
+            core.setOutput('analysis', JSON.stringify({
               pr_number: input.pr_number, head_sha: input.head_sha,
               verdict: result.verdict, summary: result.summary.slice(0, 1500),
             }));
