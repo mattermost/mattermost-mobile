@@ -15,6 +15,7 @@ import {useScreenTransitionAnimation} from '@hooks/screen_transition_animation';
 import {getPreauthSecret} from '@init/credentials';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {getIntuneErrorMessage} from '@utils/intune_errors';
@@ -31,7 +32,6 @@ export interface SSOProps extends LaunchProps {
     license: Partial<ClientLicense>;
     ssoType: string;
     serverDisplayName: string;
-    serverPreauthSecret?: string;
     theme: Theme;
 }
 
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
 const SSO = ({
     isModal, config, extra,
     launchError, launchType, license, serverDisplayName,
-    serverPreauthSecret, serverUrl, ssoType, theme,
+    serverUrl, ssoType, theme,
 }: SSOProps) => {
     const intl = useIntl();
     const [loginError, setLoginError] = useState<string>('');
@@ -135,26 +135,28 @@ const SSO = ({
     }, [serverUrl, serverDisplayName, config.DiagnosticId, config.IntuneScope, goToHome, onLoadEndError]);
 
     const doSSOLogin = useCallback(async (bearerToken: string, csrfToken: string) => {
-        // Add-server may pass the secret via nav props before it is persisted; re-login resolves
-        // from the keychain so the secret is never serialized into Expo Router params.
-        const preauthSecret = serverPreauthSecret ?? await getPreauthSecret(serverUrl);
+        // Add-server keeps the candidate in EphemeralStore until a session exists; re-login
+        // resolves from the keychain so the secret is never serialized into Expo Router params.
+        const preauthSecret = EphemeralStore.getPendingPreauthSecret(serverUrl) ?? await getPreauthSecret(serverUrl);
         const result: LoginActionResponse = await ssoLogin(serverUrl, serverDisplayName, config.DiagnosticId!, bearerToken, csrfToken, preauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;
         }
+        EphemeralStore.clearPendingPreauthSecret(serverUrl);
         goToHome(result.error);
-    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverPreauthSecret, serverUrl]);
+    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverUrl]);
 
     const doSSOCodeExchange = useCallback(async (loginCode: string, samlChallenge: {codeVerifier: string; state: string}) => {
-        const preauthSecret = serverPreauthSecret ?? await getPreauthSecret(serverUrl);
+        const preauthSecret = EphemeralStore.getPendingPreauthSecret(serverUrl) ?? await getPreauthSecret(serverUrl);
         const result: LoginActionResponse = await ssoLoginWithCodeExchange(serverUrl, serverDisplayName, config.DiagnosticId!, loginCode, samlChallenge, preauthSecret);
         if (result?.error && result.failed) {
             onLoadEndError(result.error);
             return;
         }
+        EphemeralStore.clearPendingPreauthSecret(serverUrl);
         goToHome(result.error);
-    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverPreauthSecret, serverUrl]);
+    }, [config.DiagnosticId, goToHome, onLoadEndError, serverDisplayName, serverUrl]);
 
     const animatedStyles = useScreenTransitionAnimation(!isModal);
 

@@ -165,6 +165,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
         await DatabaseManager.setActiveServerDatabase(serverUrl);
+        EphemeralStore.clearPendingPreauthSecret(serverUrl);
         return {error, failed: false};
     } catch (error) {
         return {error, failed: false};

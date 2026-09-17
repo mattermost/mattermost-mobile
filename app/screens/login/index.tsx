@@ -33,7 +33,6 @@ export interface LoginOptionsProps extends LaunchProps {
     isModal?: boolean;
     license: ClientLicense;
     serverDisplayName: string;
-    serverPreauthSecret?: string;
     serverUrl: string;
     ssoOptions: SsoWithOptions;
     theme: Theme;
@@ -84,7 +83,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoginOptions = ({
     config, extra,
     hasLoginForm, isModal, launchType, launchError, license,
-    serverDisplayName, serverPreauthSecret, serverUrl, ssoOptions, theme,
+    serverDisplayName, serverUrl, ssoOptions, theme,
 }: LoginOptionsProps) => {
     const styles = getStyles(theme);
     const dimensions = useWindowDimensions();
@@ -130,8 +129,8 @@ const LoginOptions = ({
     }, [hasLoginForm, numberSSOs, styles.subheader]);
 
     const goToSso = usePreventDoubleTap(useCallback((ssoType: string) => {
-        navigateToScreen(Screens.SSO, {config, extra, isModal, launchError, launchType, license, theme, ssoType, serverDisplayName, serverPreauthSecret, serverUrl});
-    }, [config, extra, isModal, launchError, launchType, license, serverDisplayName, serverPreauthSecret, serverUrl, theme]));
+        navigateToScreen(Screens.SSO, {config, extra, isModal, launchError, launchType, license, theme, ssoType, serverDisplayName, serverUrl});
+    }, [config, extra, isModal, launchError, launchType, license, serverDisplayName, serverUrl, theme]));
 
     const optionsSeparator = hasLoginForm && Boolean(numberSSOs) && (
         <LoginOptionsSeparator

@@ -72,12 +72,21 @@ describe('migrateLegacyPreauthSecret', () => {
         expect(storePreauthSecretMigrationDone).not.toHaveBeenCalled();
     });
 
-    it('should defer without deleting when there is no active server', async () => {
+    it('should defer without deleting when there are no servers', async () => {
         await migrateLegacyPreauthSecret([]);
 
         expect(setPreauthSecret).not.toHaveBeenCalled();
         expect(removeLegacyPreauthSecret).not.toHaveBeenCalled();
         expect(storePreauthSecretMigrationDone).not.toHaveBeenCalled();
+    });
+
+    it('should discard when inactive servers make ownership ambiguous even if only one is active', async () => {
+        // Callers pass every DB server URL; soft-logged-out hosts still count.
+        await migrateLegacyPreauthSecret([activeUrl, otherUrl]);
+
+        expect(setPreauthSecret).not.toHaveBeenCalled();
+        expect(removeLegacyPreauthSecret).toHaveBeenCalled();
+        expect(storePreauthSecretMigrationDone).toHaveBeenCalled();
     });
 
     it('should not overwrite a secret the target server already has', async () => {

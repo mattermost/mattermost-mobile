@@ -103,9 +103,8 @@ export async function loginToServer(theme: Theme, serverUrl: string, displayName
     const {enabledSSOs, hasLoginForm, ssoOptions} = loginOptions(config, license);
     const {screen, ssoType} = getLoginScreen(enabledSSOs, hasLoginForm);
 
-    // Re-login secrets stay in the keychain; login/SSO screens resolve them by serverUrl instead of
-    // serializing into Expo Router params. Add-server still passes serverPreauthSecret from the
-    // server screen because that value is not persisted until a session exists.
+    // Re-login and add-server both resolve pre-auth secrets outside nav params (keychain or
+    // EphemeralStore) so they are never JSON-serialized into Expo Router.
     navigateToScreen(screen, {
         config,
         hasLoginForm,

@@ -24,7 +24,7 @@ import {getServerUrlAfterRedirect} from '@utils/url';
 
 import Form from './form';
 import Header from './header';
-import {restorePreviousPreauthSecret} from './restore_preauth_secret';
+import {clientSecretAfterPreauthRollback, restorePreviousPreauthSecret} from './restore_preauth_secret';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
@@ -260,8 +260,15 @@ const EditServer = ({server, theme}: ServerProps) => {
                 if (!rolledBack) {
                     logWarning(`EditServer.handleUpdate: could not roll back preauth secret after ${context}`);
                 }
+                const credentialsAfterRollback = rolledBack ? undefined : await getServerCredentials(server.url);
+                const secretForClient = clientSecretAfterPreauthRollback(
+                    rolledBack,
+                    initialPreauthSecret,
+                    credentialsAfterRollback?.preauthSecret,
+                    trimmedSecret,
+                );
                 try {
-                    await applyPreauthSecretHeader(initialPreauthSecret.trim());
+                    await applyPreauthSecretHeader(secretForClient.trim());
                 } catch (restoreError) {
                     logWarning('EditServer.handleUpdate: could not restore preauth header', getFullErrorMessage(restoreError));
                 }

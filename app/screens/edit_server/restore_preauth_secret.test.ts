@@ -3,7 +3,7 @@
 
 import {removePreauthSecret, setPreauthSecret} from '@init/credentials';
 
-import {restorePreviousPreauthSecret} from './restore_preauth_secret';
+import {clientSecretAfterPreauthRollback, restorePreviousPreauthSecret} from './restore_preauth_secret';
 
 jest.mock('@init/credentials', () => ({
     setPreauthSecret: jest.fn(),
@@ -54,5 +54,19 @@ describe('restorePreviousPreauthSecret', () => {
         jest.mocked(removePreauthSecret).mockResolvedValue(false);
 
         await expect(restorePreviousPreauthSecret(serverUrl, '')).resolves.toBe(false);
+    });
+});
+
+describe('clientSecretAfterPreauthRollback', () => {
+    it('should use the previous secret when keychain rollback succeeded', () => {
+        expect(clientSecretAfterPreauthRollback(true, '  old  ', 'new', 'fallback')).toBe('  old  ');
+    });
+
+    it('should use the remaining stored secret when keychain rollback failed', () => {
+        expect(clientSecretAfterPreauthRollback(false, 'old', 'new-stored', 'fallback')).toBe('new-stored');
+    });
+
+    it('should fall back when rollback failed and storage could not be read', () => {
+        expect(clientSecretAfterPreauthRollback(false, 'old', undefined, 'new-fallback')).toBe('new-fallback');
     });
 });

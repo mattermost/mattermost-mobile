@@ -24,6 +24,7 @@ import SecurityManager from '@managers/security_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {getErrorMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {getLoginScreen, loginOptions} from '@utils/server';
@@ -186,6 +187,13 @@ const Server = ({
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, ssoOptions} = loginOptions(config, license);
         const {screen, ssoType} = getLoginScreen(enabledSSOs, hasLoginForm);
+        const trimmedSecret = preauthSecret.trim();
+        if (trimmedSecret) {
+            // Not persisted until a session exists — keep out of Expo Router params.
+            EphemeralStore.setPendingPreauthSecret(serverUrl, trimmedSecret);
+        } else {
+            EphemeralStore.clearPendingPreauthSecret(serverUrl);
+        }
         const passProps = {
             config,
             extra,
@@ -194,7 +202,6 @@ const Server = ({
             launchType,
             license,
             serverDisplayName: displayName,
-            serverPreauthSecret: preauthSecret.trim() || undefined,
             serverUrl,
             ssoOptions,
             ssoType,

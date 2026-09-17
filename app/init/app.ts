@@ -15,7 +15,7 @@ import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import SessionManager from '@managers/session_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {queryAllActiveServers} from '@queries/app/servers';
+import {getAllServers, queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 
@@ -47,8 +47,12 @@ export async function initialize() {
             // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
             const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
 
+            // Ownership must consider inactive/soft-logged-out servers too — a sole active host is
+            // not enough to attribute the legacy shared secret safely.
+            const allServerUrls = (await getAllServers()).map((s) => s.url);
+
             // Must precede getAllServerCredentials, which caches the secrets for the whole session.
-            await migrateLegacyPreauthSecret(activeUrls);
+            await migrateLegacyPreauthSecret(allServerUrls);
 
             serverCredentials = await getAllServerCredentials(activeUrls);
 

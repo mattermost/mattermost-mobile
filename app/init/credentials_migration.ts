@@ -11,10 +11,10 @@ import {logDebug, logWarning} from '@utils/log';
  * Moves the pre-MM-70605 pre-auth secret into its per-server entry.
  *
  * Every server used to share one keychain entry, so the stored value belongs to whichever server
- * wrote it last, which is not knowable afterwards. It is therefore adopted only when a single server
- * makes ownership unambiguous; with more than one, the entry is discarded. Users must re-enter
- * the secret when a server next requires it. Guessing an owner would send one operator's secret
- * to a host it was never meant for, which is the bug being fixed.
+ * wrote it last, which is not knowable afterwards. Adopt only when a single server exists in the
+ * app database (active or inactive); with more than one, discard. Soft-logged-out servers still
+ * count — adopting based on the sole *active* host could attach another operator's secret to it.
+ * Users must re-enter the secret when a server next requires it.
  *
  * Runs in the Android share extension too, which is harmless: it shares the process, alias space and
  * app database with the main app, and the iOS share and notification extensions are native readers
@@ -22,9 +22,9 @@ import {logDebug, logWarning} from '@utils/log';
  * main app, because the legacy lookup falls back to the running bundle's identifier there and would
  * mark the migration done against an entry it cannot see.
  *
- * @param activeServerUrls URLs of DB-active servers (empty, one, or many).
+ * @param serverUrls URLs of every server row in the app DB (empty, one, or many).
  */
-export async function migrateLegacyPreauthSecret(activeServerUrls: string[]): Promise<void> {
+export async function migrateLegacyPreauthSecret(serverUrls: string[]): Promise<void> {
     try {
         if (await getPreauthSecretMigrationDone()) {
             return;
@@ -37,21 +37,21 @@ export async function migrateLegacyPreauthSecret(activeServerUrls: string[]): Pr
             return;
         }
 
-        if (!activeServerUrls.length) {
+        if (!serverUrls.length) {
             // No server can own the secret yet. Keep it and retry on a later launch rather than
             // destroying the only copy a user part-way through onboarding has.
-            logDebug('migrateLegacyPreauthSecret: no active server, deferring');
+            logDebug('migrateLegacyPreauthSecret: no servers, deferring');
             return;
         }
 
-        if (activeServerUrls.length > 1) {
-            logDebug('migrateLegacyPreauthSecret: discarding an unattributable secret', {servers: activeServerUrls.length});
+        if (serverUrls.length > 1) {
+            logDebug('migrateLegacyPreauthSecret: discarding an unattributable secret', {servers: serverUrls.length});
             await removeLegacyPreauthSecret();
             await markMigrationDone();
             return;
         }
 
-        const targetServerUrl = activeServerUrls[0];
+        const targetServerUrl = serverUrls[0];
 
         // A deferred run can be followed by the user entering a new secret, which must win.
         const existing = await getPreauthSecret(targetServerUrl);

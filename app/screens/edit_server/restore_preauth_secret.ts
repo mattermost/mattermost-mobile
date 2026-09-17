@@ -23,3 +23,20 @@ export async function restorePreviousPreauthSecret(serverUrl: string, previousSe
         return false;
     }
 }
+
+/**
+ * Secret the live client should use after a keychain rollback attempt.
+ * On success, prefer the restored previous value; on failure, stay aligned with
+ * whatever remains stored (keychain still has the post-save secret).
+ */
+export function clientSecretAfterPreauthRollback(
+    rolledBack: boolean,
+    previousSecret: string,
+    remainingStoredSecret: string | undefined,
+    fallbackSecret: string,
+): string {
+    if (rolledBack) {
+        return previousSecret;
+    }
+    return remainingStoredSecret ?? fallbackSecret;
+}
