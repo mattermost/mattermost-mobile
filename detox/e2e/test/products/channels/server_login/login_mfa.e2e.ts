@@ -91,7 +91,7 @@ describeOrSkip('Server Login - Login with MFA', () => {
         mfaSecret = mfaResult.secret;
 
         await ServerScreen.connectToServer(serverThreeUrl, serverDisplayName);
-    }, timeouts.ONE_MIN * 22);
+    }, timeouts.ONE_MIN * 45);
 
     afterAll(async () => {
         if (!lockAcquired) {

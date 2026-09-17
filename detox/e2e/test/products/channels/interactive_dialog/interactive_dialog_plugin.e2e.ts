@@ -224,6 +224,45 @@ async function dismissErrorAlert() {
 
 const itNotIos = isIos() ? it.skip : it;
 
+const DIALOG_PLUGIN_CONFIG = {
+    PluginSettings: {
+        PluginStates: {
+            [DemoPlugin.id]: {Enable: true},
+        },
+        Plugins: {
+            [DemoPlugin.id]: {
+                DialogOnlyMode: true,
+            },
+        },
+    },
+};
+
+const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
+    const {config} = await System.apiGetConfig(siteOneUrl);
+    const pluginSettings = config?.PluginSettings;
+    return pluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable === true &&
+        pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
+};
+
+// Provisioning already applies this config, and re-sending it re-enters the server's
+// plugin-activation path, which outran the client's 45s timeout. Patch only when the state is
+// actually wrong, and gate on the read-back — a save that times out in transit often landed.
+const ensureDialogOnlyMode = async () => {
+    if (await isDialogOnlyModeConfigured()) {
+        return;
+    }
+
+    const {error} = await System.apiUpdateConfig(siteOneUrl, DIALOG_PLUGIN_CONFIG);
+    for (let attempt = 0; attempt < 15; attempt++) {
+        if (await isDialogOnlyModeConfigured()) {
+            return;
+        }
+        await wait(timeouts.TWO_SEC);
+    }
+
+    throw new Error(`Failed to configure demo plugin for dialog tests: ${error ? (error.message || JSON.stringify(error)) : 'config never reported DialogOnlyMode'}`);
+};
+
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
@@ -237,21 +276,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
+        await ensureDialogOnlyMode();
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
@@ -984,7 +1009,10 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (!submitted) {
             throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+
+        // The minutes are the signal: manual entry keeps the typed :30, the rounded picker gives
+        // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
+        if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });
