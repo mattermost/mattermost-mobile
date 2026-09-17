@@ -72,7 +72,21 @@ describe('AttachmentImage', () => {
 
     function lastProgressiveImageId() {
         const calls = jest.mocked(ProgressiveImage).mock.calls;
-        return calls[calls.length - 1][0].id;
+        const lastCall = calls[calls.length - 1];
+        if (!lastCall?.[0]) {
+            throw new Error('AttachmentImage test did not render ProgressiveImage');
+        }
+        return lastCall[0].id;
+    }
+
+    function openGalleryFromLatestItem() {
+        const {useGalleryItem} = jest.requireMock('@hooks/gallery');
+        const results = jest.mocked(useGalleryItem).mock.results;
+        const latestResult = results[results.length - 1];
+        if (!latestResult || latestResult.type !== 'return') {
+            throw new Error('AttachmentImage test did not initialize useGalleryItem');
+        }
+        latestResult.value.onGestureEvent();
     }
 
     it('should render ProgressiveImage with the image and a cache id derived from imageUrl', () => {
@@ -105,10 +119,7 @@ describe('AttachmentImage', () => {
     it('should open the gallery with a cacheKey matching the current imageUrl', () => {
         renderImage();
 
-        // Trigger the gallery open via the captured gesture handler.
-        const {useGalleryItem} = jest.requireMock('@hooks/gallery');
-        const onGestureEvent = jest.mocked(useGalleryItem).mock.results.at(-1)!.value.onGestureEvent;
-        onGestureEvent();
+        openGalleryFromLatestItem();
 
         const galleryItems = jest.mocked(openGalleryAtIndex).mock.calls[0][2];
         expect(galleryItems).toHaveLength(1);
