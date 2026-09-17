@@ -47,6 +47,7 @@ export interface ClientChannelsMix {
     getChannelStats: (channelId: string, groupLabel?: RequestGroupLabel) => Promise<ChannelStats>;
     getChannelMemberCountsByGroup: (channelId: string, includeTimezones: boolean) => Promise<ChannelMemberCountByGroup[]>;
     getChannelAccessControlAttributes: (channelId: string) => Promise<ChannelAccessControlAttributes>;
+    searchAccessControlDecisionActions: (resourceType: string, resourceId: string, actions: string[]) => Promise<ActionSearchResponse>;
     viewMyChannel: (channelId: string, prevChannelId?: string, groupLabel?: RequestGroupLabel) => Promise<any>;
     autocompleteChannels: (teamId: string, name: string) => Promise<Channel[]>;
     autocompleteChannelsForSearch: (teamId: string, name: string) => Promise<Channel[]>;
@@ -363,6 +364,13 @@ const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/access_control/attributes`,
             {method: 'get'},
+        );
+    };
+
+    searchAccessControlDecisionActions = async (resourceType: string, resourceId: string, actions: string[]) => {
+        return this.doFetch(
+            `${this.getAccessControlRoute()}/decisions/actions/search`,
+            {method: 'post', body: {resource: {type: resourceType, id: resourceId}, actions}},
         );
     };
 

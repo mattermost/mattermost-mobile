@@ -450,6 +450,15 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('searchAccessControlDecisionActions', async () => {
+        const expectedUrl = `${client.getAccessControlRoute()}/decisions/actions/search`;
+        const expectedOptions = {method: 'post', body: {resource: {type: 'channel', id: 'channel1'}, actions: ['channel_write_access']}};
+
+        await client.searchAccessControlDecisionActions('channel', 'channel1', ['channel_write_access']);
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('viewMyChannel', async () => {
         const channelId = 'channel1';
         const prevChannelId = 'channel2';

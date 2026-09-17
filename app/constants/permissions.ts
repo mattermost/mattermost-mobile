@@ -50,7 +50,7 @@ export const iosPermissions = defineMessages({
     },
 });
 
-export default {
+const Permissions = {
     PERMISSIONS_ALL: 'all',
     PERMISSIONS_CHANNEL_ADMIN: 'channel_admin',
     PERMISSIONS_TEAM_ADMIN: 'team_admin',
@@ -167,3 +167,40 @@ export default {
     // Shared channels (connected workspaces)
     MANAGE_SHARED_CHANNELS: 'manage_shared_channels',
 };
+
+export const ACCESS_CONTROL_RESOURCE_CHANNEL = 'channel';
+export const ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS = 'channel_write_access';
+
+export const CHANNEL_WRITE_PERMISSIONS: ReadonlySet<string> = new Set([
+    Permissions.ADD_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.ADD_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.ADD_REACTION,
+    Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE,
+    Permissions.CREATE_POST,
+    Permissions.CREATE_POST_PUBLIC,
+    Permissions.DELETE_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.DELETE_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.DELETE_OTHERS_POSTS,
+    Permissions.DELETE_POST,
+    Permissions.DELETE_PRIVATE_CHANNEL,
+    Permissions.DELETE_PUBLIC_CHANNEL,
+    Permissions.EDIT_BOOKMARK_PRIVATE_CHANNEL,
+    Permissions.EDIT_BOOKMARK_PUBLIC_CHANNEL,
+    Permissions.EDIT_OTHERS_POSTS,
+    Permissions.EDIT_POST,
+    Permissions.MANAGE_CHANNEL_ROLES,
+    Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION,
+    Permissions.MANAGE_PRIVATE_CHANNEL_MEMBERS,
+    Permissions.MANAGE_PRIVATE_CHANNEL_PROPERTIES,
+    Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION,
+    Permissions.MANAGE_PUBLIC_CHANNEL_MEMBERS,
+    Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES,
+    Permissions.REMOVE_OTHERS_REACTIONS,
+    Permissions.REMOVE_REACTION,
+    Permissions.UPLOAD_FILE,
+    Permissions.USE_CHANNEL_MENTIONS,
+    Permissions.USE_GROUP_MENTIONS,
+    Permissions.USE_SLASH_COMMANDS,
+]);
+
+export default Permissions;

@@ -1,11 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {firstValueFrom} from 'rxjs';
+
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import {clearChannelWriteAccess, getChannelWriteAccessGeneration, observeChannelWriteDenied} from '@store/channel_write_access_store';
 
 import {fetchAllMyChannelsForAllTeams, handleKickFromChannel} from './channel';
-import {reconcileChannelAccess} from './channel_access';
+import {fetchChannelWriteAccess, reconcileChannelAccess} from './channel_access';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -223,5 +227,102 @@ describe('reconcileChannelAccess', () => {
         await waitFor(() => mockFetch.mock.calls.length >= 2);
 
         expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('fetchChannelWriteAccess', () => {
+    const channelId = 'channel1';
+    const mockSearch = jest.fn();
+
+    const isDenied = () => firstValueFrom(observeChannelWriteDenied(channelId));
+
+    beforeAll(() => {
+        (NetworkManager.getClient as jest.Mock) = jest.fn(() => ({searchAccessControlDecisionActions: mockSearch}));
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        const serverDatabaseAndOperator = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        database = serverDatabaseAndOperator.database;
+        operator = serverDatabaseAndOperator.operator;
+        mockSearch.mockReset();
+    });
+
+    afterEach(async () => {
+        clearChannelWriteAccess();
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('makes no request while the feature is disabled', async () => {
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(mockSearch).not.toHaveBeenCalled();
+        expect(await isDenied()).toBe(false);
+    });
+
+    it('stores a denial when the policy evaluated and refused', async () => {
+        await enableFeature();
+        mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: true}}});
+
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(mockSearch).toHaveBeenCalledWith('channel', channelId, ['channel_write_access']);
+        expect(await isDenied()).toBe(true);
+    });
+
+    it('stores no denial when the policy allows', async () => {
+        await enableFeature();
+        mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: true, evaluated: true}}});
+
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(await isDenied()).toBe(false);
+    });
+
+    it('stores no denial when the policy was not evaluated', async () => {
+        await enableFeature();
+        mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: false}}});
+
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(await isDenied()).toBe(false);
+    });
+
+    it('leaves the decision untouched when the request fails', async () => {
+        await enableFeature();
+        mockSearch.mockRejectedValue(new Error('network'));
+
+        const {error} = await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(error).toBeDefined();
+        expect(await isDenied()).toBe(false);
+    });
+
+    it('discards a decision invalidated while it was in flight', async () => {
+        await enableFeature();
+        mockSearch.mockImplementation(async () => {
+            clearChannelWriteAccess();
+            return {decisions: {channel_write_access: {allowed: false, evaluated: true}}};
+        });
+
+        const before = getChannelWriteAccessGeneration();
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(getChannelWriteAccessGeneration()).toBe(before + 1);
+        expect(await isDenied()).toBe(false);
+    });
+
+    it('coalesces concurrent requests for the same channel', async () => {
+        await enableFeature();
+        mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: true}}});
+
+        await Promise.all([
+            fetchChannelWriteAccess(serverUrl, channelId),
+            fetchChannelWriteAccess(serverUrl, channelId),
+            fetchChannelWriteAccess(serverUrl, channelId),
+        ]);
+
+        expect(mockSearch).toHaveBeenCalledTimes(1);
+        expect(await isDenied()).toBe(true);
     });
 });
