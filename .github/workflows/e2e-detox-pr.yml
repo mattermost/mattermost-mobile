@@ -83,18 +83,18 @@ permissions:
   id-token: write
   actions: read
 
-# One E2E run per branch for PRs, but per-COMMIT for main/release dispatches:
+# One E2E run per PR, but per-COMMIT for main/release dispatches:
 # Matterwick dispatches MAIN/MASTER runs with ref=main (matterwick
 # server/push_events.go:319), so keying on github.ref alone would make a later
 # merge cancel an earlier commit's still-running E2E — and a cancelled run never
 # writes its build-cache entry, which is the scope PRs read from.
 #
-# For a PR the group stays per-branch (github.ref is the PR head branch, unique
-# per PR), so a newer Matterwick dispatch still supersedes the one already in
-# flight — cancelled by GitHub as the new run is created, which is earlier and
-# simpler than cancelling from a step inside the new run.
+# PR runs key on pr_number, not github.ref. Fork PRs whose head branch is
+# `main` (or any other origin branch) are dispatched with that ref; grouping
+# on github.ref would cancel every other fork-from-main run and any PR that
+# happened to share the name.
 concurrency:
-  group: e2e-${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && inputs.MOBILE_VERSION || github.ref }}
+  group: e2e-${{ (inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') && inputs.MOBILE_VERSION || (inputs.pr_number != '' && format('pr-{0}', inputs.pr_number)) || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -103,6 +103,10 @@ env:
   # binaries built under the previous INTUNE setting will be served.
   INTUNE_ENABLED: 'false'
   DETOX_AWS_S3_BUCKET: "mattermost-detox-report"
+  # Fork SHAs are not origin branches. GitHub keeps every PR (including forks)
+  # at refs/pull/<n>/head. MAIN/MASTER dispatches omit pr_number and check out
+  # MOBILE_VERSION on origin.
+  E2E_CHECKOUT_REF: ${{ inputs.pr_number != '' && format('refs/pull/{0}/head', inputs.pr_number) || inputs.MOBILE_VERSION }}
 
 jobs:
   # Compute content fingerprints for S3 build caching.
@@ -117,7 +121,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
           persist-credentials: false
 
       # Cache trust scope. Only main-push runs write the `main` scope that every
@@ -286,7 +290,7 @@ jobs:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
           persist-credentials: false
           sparse-checkout: |
             detox/utils/build-tsio-job-config.js
@@ -375,7 +379,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
           persist-credentials: false
       - name: Post pending status for each platform job
         env:
@@ -451,7 +455,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
 
       # S3 build cache — skip rebuild when fingerprint matches (test-only PRs hit the cache seeded by main-push runs).
       - name: Check for cached iOS build
@@ -539,7 +543,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
 
       # S3 build cache — skip rebuild when fingerprint matches.
       - name: Check for cached Android Detox build
@@ -635,7 +639,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
 
       # S3 build cache — skip rebuild when fingerprint matches.
       - name: Check for cached Android Maestro build
@@ -705,7 +709,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
           persist-credentials: false
 
       - name: Collect server URLs
@@ -816,7 +820,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
 
       - name: Validate flow header contract
         run: bash detox/maestro/scripts/validate-flow-headers.sh
@@ -1072,7 +1076,7 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ inputs.MOBILE_VERSION }}
+          ref: ${{ env.E2E_CHECKOUT_REF }}
           persist-credentials: false
           sparse-checkout: |
             detox/utils/tsio-channel-notify-rollup.js
