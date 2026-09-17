@@ -63,6 +63,10 @@ describe('dialog_utils', () => {
             expect(mapDialogTypeToAppFieldType(DialogElementTypes.DATETIME)).toBe('datetime');
         });
 
+        it('should map action_button type correctly', () => {
+            expect(mapDialogTypeToAppFieldType(DialogElementTypes.ACTION_BUTTON)).toBe('action_button');
+        });
+
         it('should default to text for unknown types', () => {
             expect(mapDialogTypeToAppFieldType('unknown_type' as any)).toBe('text');
         });
@@ -88,6 +92,10 @@ describe('dialog_utils', () => {
         it('should map date and datetime types correctly', () => {
             expect(mapAppFieldTypeToDialogType('date')).toBe(DialogElementTypes.DATE);
             expect(mapAppFieldTypeToDialogType('datetime')).toBe(DialogElementTypes.DATETIME);
+        });
+
+        it('should map action_button type correctly', () => {
+            expect(mapAppFieldTypeToDialogType('action_button')).toBe(DialogElementTypes.ACTION_BUTTON);
         });
 
         it('should default to text for unknown types', () => {

@@ -387,6 +387,35 @@ describe('dialog_conversion', () => {
             });
             expect(result.errors).toEqual([]);
         });
+
+        it('should exclude action_button elements from the submission', () => {
+            const actionButtonElement: DialogElement = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                action_button: {url: '/plugins/my-plugin/child-dialog'},
+            };
+
+            const values: AppFormValues = {
+                text_field: 'user input text',
+                action_button_field: 'irrelevant',
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [...mockElements, actionButtonElement]);
+
+            expect(result.submission).toEqual({
+                text_field: 'user input text',
+            });
+            expect(result.errors).toEqual([]);
+        });
     });
 
     describe('convertDialogElementToAppField', () => {
@@ -585,6 +614,32 @@ describe('dialog_conversion', () => {
                 position: 0,
                 value: 'true',
             });
+        });
+
+        it('should carry action_button_url and action_button_context for action_button elements', () => {
+            const element: DialogElement = {
+                name: 'action_button_field',
+                type: DialogElementTypes.ACTION_BUTTON,
+                display_name: 'Open Child Dialog',
+                help_text: '',
+                optional: true,
+                default: '',
+                placeholder: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                action_button: {
+                    url: '/plugins/my-plugin/child-dialog',
+                    context: {parent_id: '123'},
+                },
+            };
+
+            const result = convertDialogElementToAppField(element);
+
+            expect(result.type).toBe('action_button');
+            expect(result.action_button_url).toBe('/plugins/my-plugin/child-dialog');
+            expect(result.action_button_context).toEqual({parent_id: '123'});
         });
 
         it('should handle elements without options', () => {

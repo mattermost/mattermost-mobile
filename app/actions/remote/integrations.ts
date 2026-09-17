@@ -45,6 +45,27 @@ export const lookupInteractiveDialog = async (serverUrl: string, submission: Dia
     }
 };
 
+export const executeDialogAction = async (serverUrl: string, url: string, context?: Record<string, string>) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const channelId = await getCurrentChannelId(database);
+        const teamId = await getCurrentTeamId(database);
+
+        const data = await client.executeDialogAction({url, context, channel_id: channelId, team_id: teamId});
+        if (data?.trigger_id) {
+            IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
+        }
+
+        return {data};
+    } catch (error) {
+        logDebug('error on executeDialogAction', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        return {error};
+    }
+};
+
 export const postActionWithCookie = async (
     serverUrl: string,
     postId: string,
