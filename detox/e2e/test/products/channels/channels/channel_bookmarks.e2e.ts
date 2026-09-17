@@ -74,13 +74,13 @@ describe('Channels - Channel Bookmarks', () => {
 
     // apiCreateChannel owns no retry by design (apiInit's retryTransient is the single owner),
     // but these 11 bare calls have nothing above them, so one dropped request failed all 11 tests.
-    // Replays are safe here: the channel name is random per attempt, so a duplicate cannot collide.
+    // Generating the payload once makes the replay idempotent rather than duplicate-tolerant: the
+    // server rejects a second channel with the same name, so a lost response is recovered by
+    // fetching that name instead of leaving an untracked channel behind.
     const createChannel = async () => {
+        const payload = Channel.generateRandomChannel(testTeam.id, 'O', 'channel');
         const {channel, error} = await withTransportRetry(
-            () => Channel.apiCreateChannel(siteOneUrl, {
-                type: 'O',
-                teamId: testTeam.id,
-            }),
+            () => Channel.apiCreateChannel(siteOneUrl, {channel: payload}),
             {
                 idempotent: false,
                 allowDuplicateWrites: true,
@@ -88,11 +88,18 @@ describe('Channels - Channel Bookmarks', () => {
                 budgetMs: timeouts.HALF_MIN,
             },
         );
-        if (!channel?.id) {
+
+        let created = channel;
+        if (!created?.id) {
+            const {channel: existing} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, payload.name);
+            created = existing;
+        }
+        if (!created?.id) {
             throw new Error(`channel_bookmarks: failed to create channel: ${JSON.stringify(error ?? 'no channel in response')}`);
         }
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        return channel;
+
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
+        return created;
     };
 
     // The last sidebar row sits under the tab bar, so it can never satisfy Detox's default 75%
