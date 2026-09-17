@@ -17,12 +17,15 @@ export default function GenericBottomSheetRoute() {
         snapPoints[1] += bottom;
     }
 
+    const keyboardBehavior = BottomSheetStore.getKeyboardBehavior();
+
     return (
         <BottomSheet
             screen={Screens.GENERIC_BOTTOM_SHEET}
             renderContent={renderContent!}
             footerComponent={BottomSheetStore.getFooterComponent()}
             snapPoints={snapPoints}
+            keyboardBehavior={keyboardBehavior}
         />
     );
 }

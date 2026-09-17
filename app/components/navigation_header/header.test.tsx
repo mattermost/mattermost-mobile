@@ -3,7 +3,7 @@
 
 import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
-import {Text} from 'react-native';
+import {Pressable, Text} from 'react-native';
 
 import {Preferences} from '@constants';
 
@@ -20,7 +20,7 @@ describe('Header', () => {
         theme: Preferences.THEMES.denim,
     });
 
-    it('renders subtitleComponent when provided', () => {
+    it('should render subtitleComponent when provided', () => {
         const props = getBaseProps();
         const subtitleText = 'Custom Subtitle';
         props.subtitleComponent = <Text testID='custom-subtitle'>{subtitleText}</Text>;
@@ -28,7 +28,31 @@ describe('Header', () => {
         expect(getByTestId('custom-subtitle')).toBeOnTheScreen();
     });
 
-    it('falls back to subtitle text when subtitleComponent is absent', () => {
+    it('should keep an interactive subtitle independent from the title action', () => {
+        const props = getBaseProps();
+        const onTitlePress = jest.fn();
+        const onSubtitlePress = jest.fn();
+        const subtitleText = 'Attributes';
+        props.onTitlePress = onTitlePress;
+        props.title = 'Town Square';
+        props.subtitleComponent = (
+            <Pressable
+                onPress={onSubtitlePress}
+                style={({pressed}) => ({opacity: pressed ? 0.72 : 1})}
+                testID='custom-subtitle'
+            >
+                <Text>{subtitleText}</Text>
+            </Pressable>
+        );
+        const {getByTestId} = render(<Header {...props}/>);
+
+        fireEvent.press(getByTestId('custom-subtitle'));
+
+        expect(onSubtitlePress).toHaveBeenCalledTimes(1);
+        expect(onTitlePress).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to subtitle text when subtitleComponent is absent', () => {
         const props = getBaseProps();
         props.subtitle = 'Legacy subtitle';
         const {getByTestId, queryByTestId} = render(<Header {...props}/>);
@@ -36,7 +60,7 @@ describe('Header', () => {
         expect(queryByTestId('custom-subtitle')).toBeNull();
     });
 
-    it('does not render the subtitle area when neither subtitleComponent nor subtitle is provided', () => {
+    it('should not render the subtitle area when neither subtitleComponent nor subtitle is provided', () => {
         const props = getBaseProps();
         const {queryByTestId} = render(<Header {...props}/>);
         expect(queryByTestId('navigation.header.subtitle')).toBeNull();
