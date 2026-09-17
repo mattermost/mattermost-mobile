@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
@@ -44,7 +43,7 @@ export default function EmojiQuickAction({
         isEmojiPickerTransition.value = true;
 
         stateMachine.onUserOpenEmoji();
-        if (isAndroidEdgeToEdge) {
+        if (Platform.OS === 'android') {
             requestAnimationFrame(() => {
                 inputRef.current?.blur();
             });
