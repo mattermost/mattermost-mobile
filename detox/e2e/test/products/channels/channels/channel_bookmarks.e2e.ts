@@ -27,6 +27,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -71,11 +72,25 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
 
+    // apiCreateChannel owns no retry by design (apiInit's retryTransient is the single owner),
+    // but these 11 bare calls have nothing above them, so one dropped request failed all 11 tests.
+    // Replays are safe here: the channel name is random per attempt, so a duplicate cannot collide.
     const createChannel = async () => {
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            type: 'O',
-            teamId: testTeam.id,
-        });
+        const {channel, error} = await withTransportRetry(
+            () => Channel.apiCreateChannel(siteOneUrl, {
+                type: 'O',
+                teamId: testTeam.id,
+            }),
+            {
+                idempotent: false,
+                allowDuplicateWrites: true,
+                label: 'channel_bookmarks createChannel',
+                budgetMs: timeouts.HALF_MIN,
+            },
+        );
+        if (!channel?.id) {
+            throw new Error(`channel_bookmarks: failed to create channel: ${JSON.stringify(error ?? 'no channel in response')}`);
+        }
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         return channel;
     };
