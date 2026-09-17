@@ -362,21 +362,22 @@ xml_escape() {
   printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
 }
 
-# One <testcase> per flow, not per batch — collapsing them reports a smaller, greener suite.
-write_skipped_driver_junit() {
+# Failures, not skips: a flow that never ran must not shrink the suite and still pass. One
+# <testcase> per flow, not per batch, so the report names which flows died and why.
+write_driver_failure_junit() {
   local batch_xml=$1
   shift
   local msg
-  msg="$(xml_escape 'Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) after one retry — not an assertion failure')"
+  msg="$(xml_escape 'Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) and did not recover after one retry')"
   {
     printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
-    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="0" errors="0" skipped="%d" time="0">\n' "$#" "$#"
+    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="%d" errors="0" skipped="0" time="0">\n' "$#" "$#"
     local flow base id flow_xml id_xml
     for flow in "$@"; do
       base="${flow##*/}"; id="${base%.yml}"
       flow_xml="$(xml_escape "$flow")"; id_xml="$(xml_escape "$id")"
-      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="SKIPPED">\n' "$id_xml" "$id_xml" "$flow_xml" "$flow_xml"
-      printf '      <skipped message="%s"/>\n    </testcase>\n' "$msg"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="ERROR">\n' "$id_xml" "$id_xml" "$flow_xml" "$flow_xml"
+      printf '      <failure>%s</failure>\n    </testcase>\n' "$msg"
     done
     printf '  </testsuite>\n</testsuites>\n'
   } > "$batch_xml"
@@ -493,11 +494,11 @@ for batch_paths in "${BATCHES[@]}"; do
     echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
 
     if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
-      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as skipped"
-      write_skipped_driver_junit "$batch_xml" "${path_arr[@]}"
+      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as failed"
+      write_driver_failure_junit "$batch_xml" "${path_arr[@]}"
+      # Recover the device for the next batch, but leave rc non-zero so the batch stays red.
       [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
       [[ "$PLATFORM" == "android" ]] && ensure_android_driver_healthy
-      rc=0
     fi
   fi
 

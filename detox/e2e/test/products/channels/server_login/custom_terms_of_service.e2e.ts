@@ -28,7 +28,7 @@ import {
 import {timeouts, wait} from '@support/utils';
 import {device, expect} from 'detox';
 
-jest.setTimeout(timeouts.ONE_MIN * 50);
+jest.setTimeout(timeouts.ONE_MIN * 25);
 
 /**
  * Summarise a server_api error without embedding the raw response payload.
