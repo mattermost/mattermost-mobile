@@ -99,10 +99,16 @@ describe('Channels - Channel Bookmarks', () => {
         }
 
         // openChannel taps the sidebar row, which only exists for a member, so an ignored
-        // failure here resurfaces as a missing row several steps later.
+        // failure here resurfaces as a missing row several steps later. A lost response can
+        // still hide a committed write, so read the membership back rather than replaying the
+        // POST, which would report success without knowing the user was added.
         const membership = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
         if (membership.error || !membership.member) {
-            throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
+            const {channels} = await Channel.apiGetChannelsForUser(siteOneUrl, testUser.id, testTeam.id);
+            const joined = Array.isArray(channels) && channels.some((c: {id: string}) => c.id === created.id);
+            if (!joined) {
+                throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
+            }
         }
 
         return created;
