@@ -98,7 +98,13 @@ describe('Channels - Channel Bookmarks', () => {
             throw new Error(`channel_bookmarks: failed to create channel: ${JSON.stringify(error ?? 'no channel in response')}`);
         }
 
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
+        // openChannel taps the sidebar row, which only exists for a member, so an ignored
+        // failure here resurfaces as a missing row several steps later.
+        const membership = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
+        if (membership.error || !membership.member) {
+            throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
+        }
+
         return created;
     };
 
