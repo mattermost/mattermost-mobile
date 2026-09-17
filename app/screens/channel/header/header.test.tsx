@@ -64,6 +64,7 @@ describe('ChannelHeader', () => {
             shouldRenderChannelBanner: false,
             isPlaybooksEnabled: true,
             isChannelAutotranslated: false,
+            channelAttributes: [],
         };
     }
 
