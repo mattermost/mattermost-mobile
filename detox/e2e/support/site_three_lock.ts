@@ -20,8 +20,7 @@ import {timeouts} from '@support/utils';
 export const siteThreeLock = createServerLock('site_three');
 
 /**
- * Long enough for the other platform's job plus the other suite to finish and release, and
- * comfortably above the 5-minute lease so a live holder is never stolen from.
- * Callers must give their beforeAll hook a larger timeout than this.
+ * A live holder was measured holding for ~24 min, so 20 could not outlast one legitimate
+ * hold. Callers must give their beforeAll hook a larger timeout than this.
  */
-export const SITE_THREE_LOCK_TIMEOUT_MS = timeouts.ONE_MIN * 20;
+export const SITE_THREE_LOCK_TIMEOUT_MS = timeouts.ONE_MIN * 40;

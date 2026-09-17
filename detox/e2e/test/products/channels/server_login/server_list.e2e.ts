@@ -73,7 +73,7 @@ describe('Server Login - Server List', () => {
 
         // The hook gets its own budget so the lock wait above does not have to fit inside the
         // default per-test timeout.
-    }, timeouts.ONE_MIN * 22);
+    }, timeouts.ONE_MIN * 45);
 
     beforeEach(async () => {
         // * Verify on channel list screen
