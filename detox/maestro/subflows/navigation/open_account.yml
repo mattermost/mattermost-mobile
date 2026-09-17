@@ -32,3 +32,9 @@ appId: ${MAESTRO_APP_ID}
           visible:
             id: "account.screen"
           timeout: 15000
+
+# # Settle the layout before the caller taps a row. AccountUserInfo grows ~25px once the
+# ShowFullName config observable emits, moving every row below it. Maestro taps coordinates
+# from an earlier snapshot, so an unsettled screen lands the tap on Your Profile, not Settings.
+- waitForAnimationToEnd:
+    timeout: 5000
