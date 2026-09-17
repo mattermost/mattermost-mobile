@@ -46,9 +46,13 @@ export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = nu
         }
     }, {
         idempotent: false,
+
+        // Random users are safe to recreate; a caller-supplied body is not.
         allowDuplicateWrites: !user,
         label: 'apiCreateUser',
-        budgetMs: timeouts.HALF_MIN,
+
+        // Axios times out at 45s, so HALF_MIN could not fit one stall plus a retry.
+        budgetMs: timeouts.ONE_MIN,
     });
 };
 
