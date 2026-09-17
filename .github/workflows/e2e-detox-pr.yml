@@ -205,27 +205,10 @@ jobs:
         with:
           script: |
             const prInput = parseInt(process.env.PR_NUMBER, 10);
-            let prNumber = Number.isFinite(prInput) ? prInput : null;
-
-            if (!prNumber && process.env.MOBILE_VERSION) {
-              try {
-                const {data: prs} = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  commit_sha: process.env.MOBILE_VERSION,
-                });
-                const openPr = prs.find((pr) => pr.state === 'open');
-                if (openPr) {
-                  prNumber = openPr.number;
-                  core.info(`Resolved PR #${prNumber} from commit ${process.env.MOBILE_VERSION}`);
-                }
-              } catch (err) {
-                core.warning(`Could not resolve PR from commit: ${err.message}`);
-              }
-            }
+            const prNumber = Number.isFinite(prInput) ? prInput : null;
 
             if (!prNumber) {
-              core.info('No PR number available — assuming E2E/Override is not set.');
+              core.info('No PR number available — not inferring Override or skip from another PR.');
               core.setOutput('e2e_override', 'false');
               core.setOutput('skip_reason', '');
               return;

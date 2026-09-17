@@ -93,11 +93,18 @@ it('should add same-repository E2E on open and avoid duplicate labels', async ()
     assert.match(workflow.jobs['add-e2e-run-label'].if, /head\.repo\.full_name == github\.repository/);
 });
 
-it('should preserve explicit Override without dispatching', async () => {
-    const calls = await harness({labels: ['E2E/Override', 'E2E/Run']}).execute('refresh-e2e-run-label');
+it('should preserve same-repository Override without dispatching', async () => {
+    const calls = await harness({fork: false, labels: ['E2E/Override', 'E2E/Run']}).execute('refresh-e2e-run-label');
     assert.deepEqual(calls.removed, ['E2E/Run']);
     assert.deepEqual(calls.added, []);
     assert.equal(calls.output.e2e_override, 'true');
+});
+
+it('should not repost Override success onto a new unreviewed fork SHA', async () => {
+    const calls = await harness({labels: ['E2E/Override', 'E2E/Run']}).execute('refresh-e2e-run-label');
+    assert.deepEqual(calls.removed, ['E2E/Run']);
+    assert.deepEqual(calls.added, []);
+    assert.equal(calls.output.e2e_override, undefined);
 });
 
 it('should ignore superseded and closed PR refresh events', async () => {

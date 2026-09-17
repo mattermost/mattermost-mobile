@@ -368,9 +368,10 @@ jobs:
               return;
             }
             const isFork = currentPr.head.repo.full_name !== `${owner}/${repo}`;
-            if (isFork && !labelNames.includes('E2E/Override')) {
-              // A label on the previous SHA is not approval to execute new fork
-              // code with signing, S3, PAT, and test-server credentials.
+            if (isFork) {
+              // A label on the previous SHA is not approval to execute or waive
+              // required checks on new fork code. Override is not sticky across
+              // fork pushes; same-repo Override may still re-post below.
               for (const name of runLabels.filter((label) => labelNames.includes(label))) {
                 try {
                   await github.rest.issues.removeLabel({owner, repo, issue_number: prNumber, name});

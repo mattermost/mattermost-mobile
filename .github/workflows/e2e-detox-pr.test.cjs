@@ -140,6 +140,33 @@ async function removeLabels({runs = [], currentSha = sha, env = {}, removeError}
     return calls;
 }
 
+it('should not infer Override from a commit-associated PR when pr_number is empty', async () => {
+    const script = workflow.jobs['resolve-e2e-policy'].steps.find((step) => step.id === 'policy').with.script;
+    const output = {};
+    await vm.runInNewContext(`(async () => {${script}\n})()`, {
+        github: {
+            rest: {
+                repos: {
+                    listPullRequestsAssociatedWithCommit: async () => {
+                        assert.fail('empty pr_number must not associate a commit with a PR');
+                    },
+                },
+                pulls: {
+                    get: async () => {
+                        assert.fail('empty pr_number must not load another PR');
+                    },
+                },
+            },
+        },
+        context: {repo: {owner: 'mattermost', repo: 'mattermost-mobile'}},
+        process: {env: {PR_NUMBER: '', MOBILE_VERSION: sha}},
+        core: {info() {}, warning() {}, setOutput: (key, value) => { output[key] = value; }},
+    });
+    assert.equal(output.e2e_override, 'false');
+    assert.equal(output.skip_reason, '');
+    assert.doesNotMatch(script, /listPullRequestsAssociatedWithCommit/);
+});
+
 it('should skip cleanup for non-PR runs even when their SHA belongs to a PR', () => {
     const needs = Object.fromEntries(cleanup.needs.map((key) => [key, {result: 'success', outputs: {e2e_override: 'false'}}]));
     const extra = {needs, cancelled: () => false, fromJSON: JSON.parse, contains: (items, value) => items.includes(value)};
