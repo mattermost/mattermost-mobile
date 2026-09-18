@@ -133,6 +133,9 @@ export type CurrentCall = Call & {
     myUserId: string;
     mySessionId: string;
     screenShareURL: string;
+    videoURLs: Dictionary<string>;
+    myVideoURL: string;
+    videoOn: boolean;
     audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
@@ -152,6 +155,9 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     mySessionId: '',
     screenShareURL: '',
+    videoURLs: {},
+    myVideoURL: '',
+    videoOn: false,
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
@@ -166,6 +172,7 @@ export type CallSession = {
     userId: string;
     muted: boolean;
     raisedHand: number;
+    video: boolean;
     userModel?: UserModel;
     reaction?: UserReactionData;
 }
@@ -187,6 +194,9 @@ export type CallsConnection = {
     initializeVoiceTrack: () => void;
     sendReaction: (emoji: EmojiData) => void;
     setUserSelectedAudioRoute: (route: AudioDeviceType) => void;
+    startVideo: () => Promise<void>;
+    stopVideo: () => void;
+    switchCamera: () => void;
 }
 
 export type CallsConfigState = CallsConfig & {
@@ -217,6 +227,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableLiveCaptions: false,
     HostControlsAllowed: false,
     EnableAV1: false,
+    EnableVideo: false,
     TranscribeAPI: TranscribeAPI.WhisperCPP,
     GroupCallsAllowed: true, // Set to true to keep backward compatibility with older servers.
     EnableDCSignaling: false,

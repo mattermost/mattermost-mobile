@@ -6,14 +6,18 @@
          duplicates in the host app's manifest are deduped by android:name. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application>
-        <!-- Keeps the microphone alive while a Mattermost call is in
-             progress and the app is backgrounded. -->
+        <!-- Keeps the microphone (and, while a video call is active, the
+             camera) alive while a Mattermost call is in progress and the
+             app is backgrounded. The `camera` type is declared here so the
+             service may request it at runtime, but it is only requested
+             while video is actually on -- see MMCallsForegroundService. -->
         <service
             android:name="com.mattermost.callsnative.MMCallsForegroundService"
-            android:foregroundServiceType="microphone"
+            android:foregroundServiceType="microphone|camera"
             android:exported="false" />
     </application>
 </manifest>

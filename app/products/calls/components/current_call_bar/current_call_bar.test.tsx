@@ -65,6 +65,7 @@ describe('CurrentCallBar', () => {
         userId: speaker.id,
         muted: false,
         raisedHand: 0,
+        video: false,
         userModel: speaker,
     };
 
