@@ -11,7 +11,7 @@ import {disableChannelAttributes, enableChannelAttributes} from '@support/channe
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Channel, Post, Properties, Team, User} from '@support/server_api';
-import {serverOneUrl, siteOneUrl} from '@support/test_config';
+import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
@@ -71,7 +71,9 @@ async function openChannel(channelName: string) {
     await ChannelScreen.open('channels', channelName);
 }
 
-describe('Channel Attributes - Header chips and Channel Info section', () => {
+// FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
+// so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
+(hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Header chips and Channel Info section', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
     let lockAcquired = false;
@@ -383,7 +385,14 @@ describe('Channel Attributes - Header chips and Channel Info section', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
+    // Skipped: a required channel attribute is server-global, so while this runs every other
+    // shard's POST /channels fails with missing_required_attributes. The `not_set` rendering it
+    // covered is now held by channel_info_attributes.test.tsx; what is still missing is the
+    // end-to-end path from a server-side required field to that row. Re-homing, not deleting:
+    // site 2 is not a home (server_list.e2e.ts creates channels there), and SITE_3 plus
+    // siteThreeLock is the right shape, but that lock is already contended at a 40-minute budget,
+    // so it belongs in its own PR with device verification.
+    it.skip('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
         await enableChannelAttributes(siteOneUrl);
 
         // # Create the channel BEFORE the required attribute field exists. The server enforces
