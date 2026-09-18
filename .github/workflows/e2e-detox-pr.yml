@@ -1149,10 +1149,6 @@ jobs:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
           base-ref: main
-          # DEMO ONLY — revert before merge. Production does not serve
-          # /reports/history until mattermost/mattermost-test-system-io#116 is
-          # released; staging runs it today with mobile history seeded.
-          tsio-base-url: https://staging-test-io.test.mattermost.com
           lane: ${{ matrix.job-key }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
