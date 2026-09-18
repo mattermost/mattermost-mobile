@@ -1,8 +1,13 @@
 ---
 name: PR Test Analysis
 
+# pull_request_target loads trusted default-branch workflow code. Automatic
+# fork analysis remains blocked until the reusable workflow isolates its AI
+# workspace from credentials: the reviewed version persists GH_TOKEN in
+# .git/config, which its Read tool can access. A diff-only checkout is not
+# sufficient protection against prompt injection in PR descriptions/diffs.
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
@@ -22,6 +27,12 @@ concurrency:
   group: test-analyzer-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+  id-token: write
+
 jobs:
   analyze:
     permissions:
@@ -29,15 +40,13 @@ jobs:
       pull-requests: write
       statuses: write
       id-token: write
-    # pull_request: skip drafts and forks (drafts are not ready for analysis;
-    # fork runs do not receive this repo's Actions secrets).
-    # workflow_dispatch: always allowed — runs in this repo with secrets, so you can pass a fork PR number manually.
+    # Dispatch is a writer-authorized diagnostic, not proof of fork safety.
+    # Re-enable automatic forks only after the toolkit boundary is hardened.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.pull_request.draft == false &&
-       github.event.pull_request.head.repo.full_name == 'mattermost/mattermost-mobile')
-    # Pin to a commit SHA once the reusable workflow is stable. Using @main during initial rollout.
-    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/pr-test-analysis.yml@main
+       github.event.pull_request.head.repo.full_name == github.repository)
+    uses: mattermost/mattermost-test-automation-toolkit/.github/workflows/pr-test-analysis.yml@b51a481e3fe6332053be09800d59da1a8c3e3e2e
     with:
       pr_number: ${{ github.event.pull_request.number || inputs.pr_number }}
       target_repo: mattermost/mattermost-mobile
