@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {encodeMatrixValue, parseMatrixValue} from '@utils/dialog_utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import Footer from '../footer';
 import Label from '../label';
@@ -43,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
         rowLabelText: {
-            fontSize: 12,
+            ...typography('Body', 75, 'Regular'),
             color: theme.centerChannelColor,
         },
         headerRow: {
@@ -58,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 4,
         },
         headerCellText: {
-            fontSize: 12,
+            ...typography('Body', 75, 'Regular'),
             color: changeOpacity(theme.centerChannelColor, 0.64),
             textAlign: 'center',
         },
@@ -145,9 +147,10 @@ type MatrixCellProps = {
 }
 
 function MatrixCell({rowValue, columnValue, checked, isRadio, disabled, onToggle, style, testID}: MatrixCellProps) {
-    const onPress = useCallback(() => {
+    const handlePress = useCallback(() => {
         onToggle(rowValue, columnValue);
     }, [onToggle, rowValue, columnValue]);
+    const onPress = usePreventDoubleTap(handlePress);
 
     const control = isRadio ? (
         <View style={[style.radioRing, checked && style.radioRingSelected, disabled && style.radioRingDisabled]}>
@@ -213,33 +216,40 @@ function CheckboxMatrixSetting({
 
     const selection = useMemo(() => parseMatrixValue(value || []), [value]);
 
+    // Ref keeps handleCellToggle stable (not recreated on every value change) and
+    // provides an optimistic read on rapid taps before React re-renders.
+    const selectionRef = useRef(selection);
+    selectionRef.current = selection;
+
     const updateSelection = useCallback((next: Map<string, Set<string>>) => {
+        selectionRef.current = next;
         onChange(encodeMatrixValue(next));
     }, [onChange]);
 
     const handleCellToggle = useCallback((rowValue: string, columnValue: string) => {
+        const current = selectionRef.current;
         if (isRadio) {
-            const next = new Map(selection);
+            const next = new Map(current);
             next.set(rowValue, new Set([columnValue]));
             updateSelection(next);
             return;
         }
 
-        const nextRow = new Set(selection.get(rowValue));
+        const nextRow = new Set(current.get(rowValue));
         if (nextRow.has(columnValue)) {
             nextRow.delete(columnValue);
         } else {
             nextRow.add(columnValue);
         }
 
-        const next = new Map(selection);
+        const next = new Map(current);
         if (nextRow.size === 0) {
             next.delete(rowValue);
         } else {
             next.set(rowValue, nextRow);
         }
         updateSelection(next);
-    }, [isRadio, selection, updateSelection]);
+    }, [isRadio, updateSelection]);
 
     return (
         <View>

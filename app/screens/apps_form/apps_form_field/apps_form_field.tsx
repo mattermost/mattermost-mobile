@@ -135,6 +135,10 @@ const AppsFormFieldComponent = React.memo(({
         onChange(name, newValue);
     }, [name, onChange]);
 
+    const handleArrayChange = useCallback((newValue: string[]) => {
+        onChange(name, newValue);
+    }, [name, onChange]);
+
     const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
             const emptyValue = field.multiselect ? [] : '';
@@ -304,7 +308,7 @@ const AppsFormFieldComponent = React.memo(({
                     helpText={field.description}
                     errorText={errorText}
                     options={field.options?.map(appSelectOptionToDialogOption)}
-                    onChange={(newValue) => onChange(name, newValue)}
+                    onChange={handleArrayChange}
                     testID={testID}
                     value={Array.isArray(value) ? value as string[] : []}
                     labelPosition={field.label_position}
@@ -326,7 +330,7 @@ const AppsFormFieldComponent = React.memo(({
                     helpText={field.description}
                     errorText={errorText}
                     matrixConfig={field.matrix_config}
-                    onChange={(newValue) => onChange(name, newValue)}
+                    onChange={handleArrayChange}
                     value={Array.isArray(value) ? value as string[] : []}
                     optional={!field.is_required}
                     disabled={field.readonly}

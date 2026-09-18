@@ -137,15 +137,11 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
     }
 
     if (element.type === DialogElementTypes.CHECKBOX_GROUP) {
-        appField.value = String(element.default ?? '').
-            split(',').
-            map((token) => token.trim()).
-            filter(Boolean);
+        appField.value = Array.isArray(element.default) ? element.default :
+            String(element.default ?? '').split(',').map((token) => token.trim()).filter(Boolean);
     } else if (element.type === DialogElementTypes.CHECKBOX_MATRIX) {
-        appField.value = String(element.default ?? '').
-            split(';').
-            map((token) => token.trim()).
-            filter(Boolean);
+        appField.value = Array.isArray(element.default) ? element.default :
+            String(element.default ?? '').split(';').map((token) => token.trim()).filter(Boolean);
     } else if (element.default) {
         appField.value = element.default;
     }

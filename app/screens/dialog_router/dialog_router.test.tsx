@@ -339,7 +339,7 @@ describe('DialogRouter', () => {
             },
         ];
 
-        it('keeps earlier steps values in the final submission', async () => {
+        it('should keep earlier steps values in the final submission', async () => {
             // Step 1 submit returns a new form (multiform continues).
             mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({
                 data: {
@@ -382,7 +382,7 @@ describe('DialogRouter', () => {
             });
         });
 
-        it('uses the latest declaration when a field is redeclared in a later step', async () => {
+        it('should use the latest declaration when a field is redeclared in a later step', async () => {
             // Step 2 redeclares first_name as a bool, so the accumulated string value
             // must convert using the NEWER element definition.
             mockInteractiveDialogAdapter.convertResponseToAppCall.mockReturnValueOnce({

@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -27,12 +28,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 1,
             marginLeft: 15,
         },
+        pressed: {
+            opacity: 0.72,
+        },
         checkmark: {
             fontSize: 12,
             color: theme.linkColor,
         },
         text: {
-            fontSize: 12,
+            ...typography('Body', 75, 'Regular'),
             color: theme.centerChannelColor,
         },
     };
@@ -75,10 +79,10 @@ function RadioEntry({
     );
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={onPress}
-            key={value}
             testID={testID}
+            style={({pressed}) => [pressed && style.pressed]}
         >
             <View style={style.container}>
                 {labelPosition === 'after' ? (
@@ -96,7 +100,7 @@ function RadioEntry({
             {!isLast && (
                 <View style={style.separator}/>
             )}
-        </TouchableOpacity>
+        </Pressable>
     );
 }
 

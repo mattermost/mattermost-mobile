@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {defineMessages, useIntl} from 'react-intl';
-import {Pressable, Text, View} from 'react-native';
+import {defineMessages} from 'react-intl';
+import {Pressable, View} from 'react-native';
 
+import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import Footer from '../footer';
 import Label from '../label';
@@ -35,9 +38,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 15,
             paddingVertical: 8,
         },
+        clearButtonPressed: {
+            opacity: 0.72,
+        },
         clearButtonText: {
             color: theme.buttonBg,
-            fontSize: 14,
+            ...typography('Body', 100, 'Regular'),
         },
     };
 });
@@ -67,10 +73,10 @@ function RadioSetting({
     labelPosition,
 }: Props) {
     const theme = useTheme();
-    const intl = useIntl();
     const style = getStyleSheet(theme);
 
     const handleClear = useCallback(() => onChange(''), [onChange]);
+    const onClear = usePreventDoubleTap(handleClear);
 
     const optionsRender = useMemo(() => {
         if (!options) {
@@ -107,11 +113,15 @@ function RadioSetting({
             </View>
             {optional && value ? (
                 <Pressable
-                    onPress={handleClear}
-                    style={style.clearButton}
+                    onPress={onClear}
+                    style={({pressed}) => [style.clearButton, pressed && style.clearButtonPressed]}
                     testID={`${testID}.clear`}
                 >
-                    <Text style={style.clearButtonText}>{intl.formatMessage(messages.clearSelection)}</Text>
+                    <FormattedText
+                        id={messages.clearSelection.id}
+                        defaultMessage={messages.clearSelection.defaultMessage}
+                        style={style.clearButtonText}
+                    />
                 </Pressable>
             ) : null}
             <Footer

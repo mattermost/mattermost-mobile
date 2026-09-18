@@ -6,7 +6,9 @@ import {Pressable, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -31,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginLeft: 15,
         },
         text: {
-            fontSize: 12,
+            ...typography('Body', 75, 'Regular'),
             color: theme.centerChannelColor,
         },
         rowContainerAfter: {
@@ -92,9 +94,10 @@ function CheckboxEntry({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const onPress = useCallback(() => {
+    const handlePress = useCallback(() => {
         handleChange(value, !isSelected);
     }, [handleChange, value, isSelected]);
+    const onPress = usePreventDoubleTap(handlePress);
 
     const checkboxStyle = [
         style.checkbox,

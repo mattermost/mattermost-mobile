@@ -152,7 +152,7 @@ describe('AppsFormComponent navigation header', () => {
             });
         };
 
-        it('blocks submit when a matrix entry references an unknown row', async () => {
+        it('should block submit when a matrix entry references an unknown row', async () => {
             const props = getProps(matrixForm(['nope:view']));
             renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
@@ -163,7 +163,7 @@ describe('AppsFormComponent navigation header', () => {
 
         // Control: proves the block above is caused by the malformed value and not by
         // submission being broken in this harness for some unrelated reason.
-        it('allows submit when the matrix entry is valid', async () => {
+        it('should allow submit when the matrix entry is valid', async () => {
             const props = getProps(matrixForm(['posts:view']));
             renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 

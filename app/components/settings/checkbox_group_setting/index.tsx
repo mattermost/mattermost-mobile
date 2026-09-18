@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 
 import {useTheme} from '@context/theme';
@@ -56,11 +56,17 @@ function CheckboxGroupSetting({
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
+    // Use a ref so handleChange always sees the latest value without being recreated on every change.
+    // This prevents stale-closure bugs on rapid taps where two presses fire before React re-renders.
+    const valueRef = useRef(value);
+    valueRef.current = value;
+
     const handleChange = useCallback((entryValue: string, checked: boolean) => {
-        const current = value || [];
+        const current = valueRef.current || [];
         const next = checked ? [...current, entryValue] : current.filter((v) => v !== entryValue);
+        valueRef.current = next; // Optimistic update so the next rapid tap reads the right state
         onChange(next);
-    }, [onChange, value]);
+    }, [onChange]);
 
     const optionsRender = useMemo(() => {
         if (!options) {

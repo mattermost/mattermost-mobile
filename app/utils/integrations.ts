@@ -124,11 +124,14 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
             return fieldRequiredError;
         }
     } else if (type === DialogElementTypes.CHECKBOX_GROUP) {
-        if (!elem.optional && (typeof value === 'undefined' || (Array.isArray(value) && value.length === 0))) {
+        if (!Array.isArray(value)) {
+            return elem.optional ? null : fieldRequiredError;
+        }
+        if (!elem.optional && value.length === 0) {
             return fieldRequiredError;
         }
 
-        if (Array.isArray(value) && Array.isArray(elem.options)) {
+        if (Array.isArray(elem.options)) {
             for (const singleValue of value) {
                 if (!elem.options.some((option) => option.value === singleValue)) {
                     return intl.formatMessage(messages.invalidOption);
@@ -136,7 +139,10 @@ export function checkDialogElementForError(elem: DialogElement, value: any, intl
             }
         }
     } else if (type === DialogElementTypes.CHECKBOX_MATRIX) {
-        if (!elem.optional && (typeof value === 'undefined' || (Array.isArray(value) && value.length === 0))) {
+        if (!Array.isArray(value)) {
+            return elem.optional ? null : fieldRequiredError;
+        }
+        if (!elem.optional && value.length === 0) {
             return fieldRequiredError;
         }
 
