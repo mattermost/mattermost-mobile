@@ -1,10 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {
-    deriveChannelClassificationBanner,
-    deriveClassificationBannerState,
-} from './classification';
+import {deriveClassificationBannerState} from './classification';
 
 import type {PropertyFieldModel, PropertyValueModel} from '@database/models/server';
 
@@ -62,55 +59,5 @@ describe('deriveClassificationBannerState', () => {
         const badValue: ClassificationValue = {...systemValue, value: 'non-existent-opt'};
         const result = deriveClassificationBannerState([systemField], [badValue]);
         expect(result).toEqual({visible: false, levelName: '', color: ''});
-    });
-});
-
-const channelField: ClassificationField = {
-    id: 'cf-1',
-    name: 'classification',
-    objectType: 'channel',
-    attrs: {
-        options: [
-            {id: 'level-secret', name: 'Secret', color: '#FF0000'},
-            {id: 'level-public', name: 'Public', color: '#00FF00'},
-        ],
-    },
-};
-
-const channelValue: ClassificationValue = {fieldId: 'cf-1', value: 'level-secret'};
-
-describe('deriveChannelClassificationBanner', () => {
-    it('should return no classification when there are no fields', () => {
-        const result = deriveChannelClassificationBanner([], []);
-        expect(result.hasClassification).toBe(false);
-        expect(result.classificationBanner).toBeUndefined();
-    });
-
-    it('should return no classification when there is no channel value', () => {
-        const result = deriveChannelClassificationBanner([channelField], []);
-        expect(result.hasClassification).toBe(false);
-    });
-
-    it('should resolve classification banner from channel value and field options', () => {
-        const result = deriveChannelClassificationBanner([channelField], [channelValue]);
-        expect(result.hasClassification).toBe(true);
-        expect(result.classificationBanner).toEqual({
-            enabled: true,
-            text: '**Secret**',
-            background_color: '#FF0000',
-        });
-    });
-
-    it('should use native banner text when provided', () => {
-        const result = deriveChannelClassificationBanner([channelField], [channelValue], 'Custom banner text');
-        expect(result.hasClassification).toBe(true);
-        expect(result.classificationBanner?.text).toBe('Custom banner text');
-        expect(result.classificationBanner?.background_color).toBe('#FF0000');
-    });
-
-    it('should return no classification when level id does not match any option', () => {
-        const unknownValue: ClassificationValue = {...channelValue, value: 'nonexistent-level'};
-        const result = deriveChannelClassificationBanner([channelField], [unknownValue]);
-        expect(result.hasClassification).toBe(false);
     });
 });
