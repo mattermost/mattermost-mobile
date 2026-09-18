@@ -1110,13 +1110,19 @@ jobs:
   # report-only posts the sticky PR comment and nothing else; the per-job TSIO
   # statuses above stay exactly as they are. enforce makes the verdict the
   # commit status for that platform's context.
+  #
+  # It runs on main as well as on PRs, where the question changes from "is this
+  # the PR's fault" to "is main noisy or actually broken". Only intermittency
+  # clears a failure there: a test that failed in the previous main run too is a
+  # streak, not a flake, and stays red however often it has flaked before. A main
+  # run has no PR to comment on, so the story lands in the job summary and, under
+  # enforce, in the commit status.
   tsio-triage:
     name: Triage E2E failures (${{ matrix.job-key }})
     runs-on: ubuntu-24.04
     if: >-
       always() &&
-      inputs.run_type == 'PR' &&
-      inputs.pr_number != '' &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.calculate-tsio-identity.result == 'success'
     needs:
@@ -1138,7 +1144,7 @@ jobs:
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@a66bed87b9b8de9353f12334656983f355342f58 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@79ce57a8d54a42d37cd0707d1353b9980ff1a546 # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
