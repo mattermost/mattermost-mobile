@@ -91,7 +91,12 @@ describe('Channels - Channel Bookmarks', () => {
 
         let created = channel;
         if (!created?.id) {
-            const {channel: existing} = await Channel.apiGetChannelByName(siteOneUrl, testTeam.id, payload.name);
+            // This read only runs because the network just failed, so it is the likeliest call to
+            // hit the same blip. It is a GET, so replaying it is free.
+            const {channel: existing} = await withTransportRetry(
+                () => Channel.apiGetChannelByName(siteOneUrl, testTeam.id, payload.name),
+                {idempotent: true, label: 'channel_bookmarks recover created channel', budgetMs: timeouts.HALF_MIN},
+            );
             created = existing;
         }
         if (!created?.id) {
@@ -104,7 +109,10 @@ describe('Channels - Channel Bookmarks', () => {
         // POST, which would report success without knowing the user was added.
         const membership = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
         if (membership.error || !membership.member) {
-            const {channels} = await Channel.apiGetChannelsForUser(siteOneUrl, testUser.id, testTeam.id);
+            const {channels} = await withTransportRetry(
+                () => Channel.apiGetChannelsForUser(siteOneUrl, testUser.id, testTeam.id),
+                {idempotent: true, label: 'channel_bookmarks recover membership', budgetMs: timeouts.HALF_MIN},
+            );
             const joined = Array.isArray(channels) && channels.some((c: {id: string}) => c.id === created.id);
             if (!joined) {
                 throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
