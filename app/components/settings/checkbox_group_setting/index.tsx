@@ -1,29 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {defineMessages} from 'react-intl';
-import {Pressable, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {View} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import {usePreventDoubleTap} from '@hooks/utils';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import Footer from '../footer';
 import Label from '../label';
 
-import RadioEntry from './radio_entry';
+import CheckboxEntry from './checkbox_entry';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
-
-const messages = defineMessages({
-    clearSelection: {
-        id: 'interactive_dialog.radio.clear_selection',
-        defaultMessage: 'Clear selection',
-    },
-});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -34,71 +23,77 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.1),
             borderBottomColor: changeOpacity(theme.centerChannelColor, 0.1),
         },
-        clearButton: {
-            paddingHorizontal: 15,
-            paddingVertical: 8,
-        },
-        clearButtonPressed: {
-            opacity: 0.72,
-        },
-        clearButtonText: {
-            color: theme.buttonBg,
-            ...typography('Body', 100, 'Regular'),
-        },
     };
 });
 
 type Props = {
     label: string;
     options?: DialogOption[];
-    onChange: (value: string) => void;
+    onChange: (value: string[]) => void;
     helpText?: string;
     errorText?: string;
-    optional?: boolean;
-    value?: string;
+    value?: string[];
     testID: string;
     location: AvailableScreens;
     labelPosition?: 'before' | 'after';
+    disabled?: boolean;
+    optional?: boolean;
 }
-function RadioSetting({
+
+function CheckboxGroupSetting({
     label,
     options,
     onChange,
     helpText = '',
     errorText = '',
-    optional = false,
     testID,
     value,
     location,
     labelPosition,
+    disabled = false,
+    optional = false,
 }: Props) {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const handleClear = useCallback(() => onChange(''), [onChange]);
-    const onClear = usePreventDoubleTap(handleClear);
+    // Use a ref so handleChange always sees the latest value without being recreated on every change.
+    // This prevents stale-closure bugs on rapid taps where two presses fire before React re-renders.
+    // Synced in an effect (not during render) to avoid reading uncommitted values in concurrent mode.
+    const valueRef = useRef(value);
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
+
+    const handleChange = useCallback((entryValue: string, checked: boolean) => {
+        const current = valueRef.current || [];
+        const next = checked ? [...current, entryValue] : current.filter((v) => v !== entryValue);
+        valueRef.current = next; // Optimistic update so the next rapid tap reads the right state
+        onChange(next);
+    }, [onChange]);
 
     const optionsRender = useMemo(() => {
         if (!options) {
             return [];
         }
+        const selected = value || [];
         const elements = [];
         for (const [i, {value: entryValue, text}] of options.entries()) {
             elements.push(
-                <RadioEntry
-                    handleChange={onChange}
+                <CheckboxEntry
+                    handleChange={handleChange}
                     isLast={i === options.length - 1}
-                    isSelected={value === entryValue}
+                    isSelected={selected.includes(entryValue)}
                     text={text}
                     value={entryValue}
                     key={entryValue}
-                    testID={`${testID}.radio.${entryValue}.button`}
+                    testID={`${testID}.checkbox.${entryValue}.button`}
                     labelPosition={labelPosition}
+                    disabled={disabled}
                 />,
             );
         }
         return elements;
-    }, [value, onChange, options, testID, labelPosition]);
+    }, [value, handleChange, options, testID, labelPosition, disabled]);
 
     return (
         <View>
@@ -111,21 +106,8 @@ function RadioSetting({
             <View style={style.items}>
                 {optionsRender}
             </View>
-            {optional && value ? (
-                <Pressable
-                    onPress={onClear}
-                    style={({pressed}) => [style.clearButton, pressed && style.clearButtonPressed]}
-                    testID={`${testID}.clear`}
-                >
-                    <FormattedText
-                        id={messages.clearSelection.id}
-                        defaultMessage={messages.clearSelection.defaultMessage}
-                        style={style.clearButtonText}
-                    />
-                </Pressable>
-            ) : null}
             <Footer
-                disabled={false}
+                disabled={disabled}
                 errorText={errorText}
                 helpText={helpText}
                 location={location}
@@ -134,4 +116,4 @@ function RadioSetting({
     );
 }
 
-export default RadioSetting;
+export default CheckboxGroupSetting;
