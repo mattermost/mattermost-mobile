@@ -386,12 +386,12 @@ async function openChannel(channelName: string) {
     });
 
     // Skipped: a required channel attribute is server-global, so while this runs every other
-    // shard's POST /channels fails with missing_required_attributes. This is the only coverage of
-    // the `not_set` row, so it needs re-homing rather than deleting. Site 2 is not a home —
-    // server_list.e2e.ts creates channels there. SITE_3 plus siteThreeLock is the right shape,
-    // since that lock exists to serialise exclusive server-wide work; doing it needs its own team,
-    // user, field setup, cleanup and login on site 3, and the lock is already contended at a
-    // 40-minute budget, so it belongs in its own PR with device verification.
+    // shard's POST /channels fails with missing_required_attributes. The `not_set` rendering it
+    // covered is now held by channel_info_attributes.test.tsx; what is still missing is the
+    // end-to-end path from a server-side required field to that row. Re-homing, not deleting:
+    // site 2 is not a home (server_list.e2e.ts creates channels there), and SITE_3 plus
+    // siteThreeLock is the right shape, but that lock is already contended at a 40-minute budget,
+    // so it belongs in its own PR with device verification.
     it.skip('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
         await enableChannelAttributes(siteOneUrl);
 
