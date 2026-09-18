@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Pressable, ScrollView, Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -218,8 +218,11 @@ function CheckboxMatrixSetting({
 
     // Ref keeps handleCellToggle stable (not recreated on every value change) and
     // provides an optimistic read on rapid taps before React re-renders.
+    // Synced in an effect (not during render) to avoid reading uncommitted values in concurrent mode.
     const selectionRef = useRef(selection);
-    selectionRef.current = selection;
+    useEffect(() => {
+        selectionRef.current = selection;
+    }, [selection]);
 
     const updateSelection = useCallback((next: Map<string, Set<string>>) => {
         selectionRef.current = next;
