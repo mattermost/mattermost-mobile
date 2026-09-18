@@ -129,6 +129,28 @@ describe('EphemeralStore', () => {
         });
     });
 
+    describe('pendingPreauthSecret', () => {
+        const serverUrl = 'https://example.com';
+
+        afterEach(() => {
+            EphemeralStore.clearPendingPreauthSecret(serverUrl);
+        });
+
+        it('should store and return a pending add-server secret', () => {
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBeUndefined();
+
+            EphemeralStore.setPendingPreauthSecret(serverUrl, 'candidate-secret');
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBe('candidate-secret');
+        });
+
+        it('should clear a pending secret for a server', () => {
+            EphemeralStore.setPendingPreauthSecret(serverUrl, 'candidate-secret');
+            EphemeralStore.clearPendingPreauthSecret(serverUrl);
+
+            expect(EphemeralStore.getPendingPreauthSecret(serverUrl)).toBeUndefined();
+        });
+    });
+
     describe('recently unsaved saved posts', () => {
         const serverUrl = 'server-url';
         const otherServerUrl = 'server-url-2';
