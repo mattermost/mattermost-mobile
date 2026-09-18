@@ -64,8 +64,9 @@ describe('AppsFormField timezone indicator', () => {
     });
 });
 
-// Server v12.0 dropped `allow_manual_time_entry` (MM-68396) and sends only `manual_time_entry`;
-// 11.x servers still send the old name. Reading either key alone breaks half the fleet.
+// Servers 11.9 to 11.11 accept either `manual_time_entry` or the deprecated
+// `allow_manual_time_entry`; 12.0 removed the deprecated one (MM-68396). Reading only one name
+// leaves the other half of the fleet showing the time picker instead of the text field.
 describe('AppsFormField manual time entry', () => {
     let database: Database;
 
@@ -90,25 +91,25 @@ describe('AppsFormField manual time entry', () => {
         return rendered;
     };
 
-    it('enables manual time entry from manual_time_entry', () => {
+    it('should enable manual time entry from manual_time_entry', () => {
         const {queryByTestId} = renderAndOpenTimeEntry({manual_time_entry: true});
 
         expect(queryByTestId('AppFormElement.dt.manual_time.input')).toBeTruthy();
     });
 
-    it('enables manual time entry from the deprecated allow_manual_time_entry', () => {
+    it('should enable manual time entry from the deprecated allow_manual_time_entry', () => {
         const {queryByTestId} = renderAndOpenTimeEntry({allow_manual_time_entry: true});
 
         expect(queryByTestId('AppFormElement.dt.manual_time.input')).toBeTruthy();
     });
 
-    it('lets manual_time_entry false win over the deprecated key', () => {
+    it('should let manual_time_entry false win over the deprecated key', () => {
         const {queryByTestId} = renderAndOpenTimeEntry({manual_time_entry: false, allow_manual_time_entry: true});
 
         expect(queryByTestId('AppFormElement.dt.manual_time.input')).toBeNull();
     });
 
-    it('does not render the manual input when neither key is set', () => {
+    it('should not render the manual input when neither key is set', () => {
         const {queryByTestId} = renderAndOpenTimeEntry();
 
         expect(queryByTestId('AppFormElement.dt.manual_time.input')).toBeNull();
