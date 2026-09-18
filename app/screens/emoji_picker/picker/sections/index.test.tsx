@@ -6,6 +6,7 @@ import React from 'react';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
+import DatabaseManager from '@database/manager';
 import {act, renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -37,11 +38,16 @@ const makeEmojis = (count: number, prefix: string): CustomEmoji[] => Array.from(
 }));
 
 describe('EmojiSectionList', () => {
+    const serverUrl = 'https://server.com';
     let database: Database;
 
-    beforeAll(async () => {
-        const server = await TestHelper.setupServerDatabase();
+    beforeEach(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
         database = server.database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
     const renderList = async (customEmojis: CustomEmoji[]) => {
@@ -64,11 +70,12 @@ describe('EmojiSectionList', () => {
 
     const reachEnd = async (list: Awaited<ReturnType<typeof renderList>>) => {
         await act(async () => {
+            // eslint-disable-next-line new-cap
             await list.UNSAFE_getByType(FlashList).props.onEndReached();
         });
     };
 
-    it('fetches the first page even when some custom emojis are already stored locally', async () => {
+    it('should fetch the first page even when some custom emojis are already stored locally', async () => {
         jest.mocked(fetchCustomEmojis).mockResolvedValue({data: []});
 
         // Emojis stored from posts, reactions or searches, not from paging through the list
@@ -79,7 +86,7 @@ describe('EmojiSectionList', () => {
         expect(fetchCustomEmojis).toHaveBeenCalledWith(expect.any(String), 0, EMOJIS_PER_PAGE);
     });
 
-    it('keeps fetching pages until the server returns no more custom emojis', async () => {
+    it('should keep fetching pages until the server returns no more custom emojis', async () => {
         jest.mocked(fetchCustomEmojis).
             mockResolvedValueOnce({data: makeEmojis(EMOJIS_PER_PAGE, 'a_')}).
             mockResolvedValueOnce({data: makeEmojis(10, 'b_')}).
