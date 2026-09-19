@@ -212,6 +212,8 @@ async function serverSetup() {
         );
     }
 
+    process.env.MM_SERVER_VERSION = cfg.Version;
+
     process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES = cfg.FeatureFlagChannelAttributes === undefined ? 'false' : 'true';
     if (process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'false') {
         process.stdout.write(`[globalSetup] FeatureFlagChannelAttributes is absent on ${cfg.Version} — the Channel Attributes suite will be skipped\n`);
