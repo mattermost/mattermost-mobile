@@ -33,6 +33,7 @@ import EditServerScreen from './edit_server';
 import EmailNotificationSettingsScreen from './email_notification_settings';
 import EmojiPickerScreen from './emoji_picker';
 import FindChannelsScreen from './find_channels';
+import GalleryScreen from './gallery';
 import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
 import IntegrationSelectorScreen from './integration_selector';
@@ -92,6 +93,7 @@ export {
     EmailNotificationSettingsScreen,
     EmojiPickerScreen,
     FindChannelsScreen,
+    GalleryScreen,
     GlobalThreadsScreen,
     HomeScreen,
     IntegrationSelectorScreen,
