@@ -3,15 +3,16 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
 import {observePermissionForTeam} from '@queries/servers/role';
-import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
+import {observeConfig, observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {isZeroPersistenceConfig} from '@utils/config';
 
 import ChannelListHeader from './header';
 
@@ -66,6 +67,8 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
 
     const teamsCount = queryMyTeams(database).observeCount(false);
 
+    const config = observeConfig(database);
+
     return {
         canCreateChannels,
         canJoinChannels,
@@ -77,6 +80,14 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         ),
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
+            distinctUntilChanged(),
+        ),
+        ephemeralModeEnabled: config.pipe(
+            map((c) => c?.MobileEphemeralModeEnabled === 'true'),
+            distinctUntilChanged(),
+        ),
+        isZeroPersistenceMode: config.pipe(
+            map((c) => isZeroPersistenceConfig(c)),
             distinctUntilChanged(),
         ),
         hasMoreThanOneTeam: teamsCount.pipe(
