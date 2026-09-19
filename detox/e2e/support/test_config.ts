@@ -71,3 +71,24 @@ export const hasCustomProfileAttributes =
  * global_setup.js. Presence is the signal; the suite still toggles the flag's value itself.
  */
 export const hasChannelAttributes = process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true';
+
+/** Server version reported by the client config, set by global_setup.js (e.g. "12.0.0"). */
+export const serverVersion = process.env.MM_SERVER_VERSION || '';
+
+/**
+ * Whether the server still carries the deprecated `allow_manual_time_entry` dialog key.
+ *
+ * Server 12.0 (MM-68396) removed it, so it is dropped on unmarshal and the app receives an
+ * empty `datetime_config`. Every released mattermost-plugin-demo (<= v0.12.0) still sends only
+ * that key, so on 12.0+ the manual-entry input cannot render no matter what the app reads.
+ * Revisit when the pinned fixture in .github/actions/provision-e2e-servers/action.yml moves to
+ * a release that sends `manual_time_entry`.
+ */
+export const hasDeprecatedDialogManualTimeEntry = (() => {
+    const major = Number.parseInt(serverVersion.split('.')[0] ?? '', 10);
+
+    // global_setup.js throws when the client config has no Version, so an unparseable value here
+    // means the spec ran without it. Run the test and let it fail loudly rather than quarantine
+    // a suite on a version we never actually read.
+    return Number.isInteger(major) ? major < 12 : true;
+})();

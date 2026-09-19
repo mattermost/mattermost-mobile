@@ -30,6 +30,7 @@ export type AcquireLockOptions = {
     ttlMs?: number;
     pollMs?: number;
     renewMs?: number;
+    transportGraceMs?: number;
 };
 
 /**
@@ -59,11 +60,19 @@ export const DEFAULT_RENEW_MS = 45_000;
 export const DEFAULT_POLL_MS = 2_000;
 
 /**
- * Transport faults get a few polls to clear (~8s at DEFAULT_POLL_MS) before we give up.
- * Deliberately much smaller than DEFAULT_TIMEOUT_MS, which exists for lock contention, not
- * for an unreachable server.
+ * How long the server may stay unreachable before we abandon the acquire.
+ *
+ * This used to be a count of 5 consecutive failures, on the assumption that a failed poll costs
+ * ~pollMs and so five of them cost ~8s. That assumption was wrong: a failed attempt costs the
+ * HTTP timeout, not the poll. In CMT run 35367435953 the five attempts were 15s apart, so the
+ * suite abandoned the lock after 75s and lost all 12 channel_attributes tests to one transport
+ * blip against the shared site.
+ *
+ * Bounding it in time makes the tolerance explicit and independent of how long a request takes
+ * to fail. Still far below DEFAULT_TIMEOUT_MS, which exists for lock contention rather than for
+ * an unreachable server, and the acquire deadline bounds this regardless.
  */
-export const MAX_CONSECUTIVE_TRANSPORT_FAILURES = 5;
+export const DEFAULT_TRANSPORT_GRACE_MS = 5 * 60_000;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -203,6 +212,7 @@ export const acquireLock = async (
     const ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
     const pollMs = options.pollMs ?? DEFAULT_POLL_MS;
     const renewMs = options.renewMs ?? DEFAULT_RENEW_MS;
+    const transportGraceMs = options.transportGraceMs ?? DEFAULT_TRANSPORT_GRACE_MS;
 
     // The whole point of a TTL is that a waiter can outlast a dead holder's lease.
     if (timeoutMs <= ttlMs) {
@@ -223,6 +233,17 @@ export const acquireLock = async (
     let lastLock: LockRecord | undefined;
     let lastTransportError: unknown;
     let consecutiveTransportFailures = 0;
+    let firstTransportFailureAt: number | undefined;
+
+    // Any round trip that completes proves the server is reachable, so the run of consecutive
+    // failures ends there — not at the end of the iteration. Otherwise a read that succeeds
+    // between two failed writes leaves the window open and the grace can expire on failures
+    // that were never consecutive.
+    const noteTransportSuccess = () => {
+        lastTransportError = undefined;
+        consecutiveTransportFailures = 0;
+        firstTransportFailureAt = undefined;
+    };
 
     do {
         // A transport fault against the ephemeral test server is the same kind of
@@ -231,29 +252,35 @@ export const acquireLock = async (
         try {
             // eslint-disable-next-line no-await-in-loop -- advisory lock acquisition must be sequential
             lastLock = parseLock(await store.read());
+            noteTransportSuccess();
+
             const now = Date.now();
             if (!lastLock || lastLock.expiresAt <= now || lastLock.owner === owner) {
                 // eslint-disable-next-line no-await-in-loop
                 await store.write(JSON.stringify({owner, expiresAt: now + ttlMs}));
+                noteTransportSuccess();
 
                 // eslint-disable-next-line no-await-in-loop -- confirm ownership after the non-atomic write
                 const confirmedLock = parseLock(await store.read());
+                noteTransportSuccess();
+
                 if (confirmedLock?.owner === owner && confirmedLock.expiresAt > Date.now()) {
                     startHeartbeat(store, owner, ttlMs, renewMs);
                     return;
                 }
                 lastLock = confirmedLock;
             }
-            lastTransportError = undefined;
-            consecutiveTransportFailures = 0;
         } catch (error) {
             lastTransportError = error;
             consecutiveTransportFailures += 1;
+            firstTransportFailureAt ??= Date.now();
 
-            if (consecutiveTransportFailures >= MAX_CONSECUTIVE_TRANSPORT_FAILURES) {
+            const unreachableFor = Date.now() - firstTransportFailureAt;
+            if (unreachableFor >= transportGraceMs) {
                 throw new Error(
-                    `classification lock: ${consecutiveTransportFailures} consecutive transport ` +
-                    `failures reading/writing the lock. Last error: ${formatError(error)}`,
+                    `classification lock: server unreachable for ${unreachableFor}ms across ` +
+                    `${consecutiveTransportFailures} consecutive attempts reading/writing the lock. ` +
+                    `Last error: ${formatError(error)}`,
                 );
             }
         }

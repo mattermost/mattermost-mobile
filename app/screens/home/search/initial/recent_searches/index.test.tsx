@@ -77,5 +77,8 @@ describe('RecentSearches', () => {
         await waitFor(async () => {
             expect(await getTeamSearchHistoryById(database, recentSearch.id)).toBeUndefined();
         }, {timeout: 10000, interval: 50});
-    });
+
+    // Jest's own per-test timeout bounds the waitFor above, so the 10s budget was unreachable
+    // behind the 5s default and the test died at 5s instead of polling (run 35437505117).
+    }, 15000);
 });

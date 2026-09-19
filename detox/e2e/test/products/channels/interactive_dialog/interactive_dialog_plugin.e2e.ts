@@ -19,6 +19,7 @@ import {
     Post,
 } from '@support/server_api';
 import {
+    hasDeprecatedDialogManualTimeEntry,
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
@@ -223,6 +224,10 @@ async function dismissErrorAlert() {
 }
 
 const itNotIos = isIos() ? it.skip : it;
+
+// MM-T2530H additionally needs a server that still carries the deprecated
+// `allow_manual_time_entry` dialog key — see hasDeprecatedDialogManualTimeEntry.
+const itManualTimeEntry = hasDeprecatedDialogManualTimeEntry ? itNotIos : it.skip;
 
 const DIALOG_PLUGIN_CONFIG = {
     PluginSettings: {
@@ -960,7 +965,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // app's WebSocket frames, so whether the server never pushed it or the client dropped it
     // is not determinable from CI artifacts. Not reproducible locally and not observed in the
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
-    itNotIos('MM-T2530H should accept manual time entry on datetime field', async () => {
+    //
+    // Also skipped on every platform against server 12.0+: the server dropped
+    // `allow_manual_time_entry` and the pinned demo plugin (v0.11.1) still sends only that key,
+    // so the manual-entry input cannot render. Reading both keys (#10174) does not help when the
+    // server never forwards either. Proven by main run 35348878584: all five sites 12.0.0, plugin
+    // v0.11.1, this test red on Android with the app-side fix present; green on the 11.x runs
+    // before it. Unblocked by a mattermost-plugin-demo release that sends `manual_time_entry`.
+    itManualTimeEntry('MM-T2530H should accept manual time entry on datetime field', async () => {
         await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
         await ensureDialogOpen();
 
