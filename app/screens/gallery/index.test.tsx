@@ -51,7 +51,8 @@ describe('GalleryScreen', () => {
             />,
         );
 
-        const backHandlerCall = jest.mocked(useAndroidHardwareBackHandler).mock.calls.at(-1);
+        const backHandlerCalls = jest.mocked(useAndroidHardwareBackHandler).mock.calls;
+        const backHandlerCall = backHandlerCalls[backHandlerCalls.length - 1];
         if (!backHandlerCall) {
             throw new Error('useAndroidHardwareBackHandler was not called');
         }
@@ -70,7 +71,8 @@ describe('GalleryScreen', () => {
         expect(navigateBack).not.toHaveBeenCalled();
 
         // The gallery calls onHide once the close animation has finished
-        const onHide = mockGalleryRender.mock.calls.at(-1)?.[0]?.onHide;
+        const galleryRenders = mockGalleryRender.mock.calls;
+        const onHide = galleryRenders[galleryRenders.length - 1]?.[0]?.onHide;
         expect(onHide).toBeInstanceOf(Function);
         act(() => {
             onHide();
