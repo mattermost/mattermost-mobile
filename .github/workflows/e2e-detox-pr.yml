@@ -282,6 +282,7 @@ jobs:
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      job-keys-json: ${{ steps.id.outputs.job-keys-json }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -358,6 +359,7 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          echo "job-keys-json=$(echo "$JOB_CONFIGS" | jq -c 'keys')" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -1098,3 +1100,55 @@ jobs:
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
             --poll-attempts=6 || true
+
+  # Is this red E2E run the PR's fault? For each platform the step asks Test
+  # System IO for the past executions of exactly the tests that failed, applies
+  # history rules (broken on trunk, flaky on trunk, recurring on other PRs,
+  # owned by the PR's own diff), and escalates only what the rules cannot settle
+  # to a second judge that must cite evidence a reviewer can open.
+  #
+  # report-only posts the sticky PR comment and nothing else; the per-job TSIO
+  # statuses above stay exactly as they are. enforce makes the verdict the
+  # commit status for that platform's context.
+  #
+  # It runs on main as well as on PRs, where the question changes from "is this
+  # the PR's fault" to "is main noisy or actually broken". Only intermittency
+  # clears a failure there: a test that failed in the previous main run too is a
+  # streak, not a flake, and stays red however often it has flaked before. A main
+  # run has no PR to comment on, so the story lands in the job summary and, under
+  # enforce, in the commit status.
+  tsio-triage:
+    name: Triage E2E failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    if: >-
+      always() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success'
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
+    steps:
+      # A triage failure must never change the outcome of the E2E run itself.
+      - name: e2e/triage
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@da3ab59c1a9735bc52c81a886d72e65dcd13b34d # actions/e2e-triage
+        with:
+          composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
+          status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
+          lane: ${{ matrix.job-key }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}
