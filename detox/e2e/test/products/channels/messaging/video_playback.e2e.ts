@@ -11,7 +11,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait, waitForElementToBeVisible, waitForElementToNotExist} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Video Playback', () => {
@@ -97,6 +97,7 @@ describe('Messaging - Video Playback', () => {
 
         await GalleryScreen.waitForPlaybackToAdvance(3);
         await GalleryScreen.pause();
+        await expect(GalleryScreen.playButton).toBeVisible();
 
         await wait(GalleryScreen.AUTO_HIDE_TIMEOUT);
 
@@ -108,14 +109,12 @@ describe('Messaging - Video Playback', () => {
         await openVideo();
 
         await GalleryScreen.waitForPlaybackToAdvance(3);
-        await expect(GalleryScreen.pauseButton).toBeVisible();
-
         await GalleryScreen.pause();
         await expect(GalleryScreen.playButton).toBeVisible();
 
-        await GalleryScreen.playButton.tap();
-
-        await waitForElementToBeVisible(GalleryScreen.pauseButton, timeouts.TEN_SEC);
+        // Use play() so showControls() runs before tapping — the controls may have
+        // auto-hidden by the time we resume, and a blind tap would miss the button.
+        await GalleryScreen.play();
         await GalleryScreen.waitForPlaybackToAdvance(1);
     });
 

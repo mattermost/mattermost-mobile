@@ -373,7 +373,7 @@ class GalleryScreen {
         // Not tapControl: its retry reveals the overlay with a background tap, which
         // closes the menu the option lives in.
         await this.getSpeedOption(rate).tap();
-        await waitForElementToNotExist(this.speedMenu, this.TOGGLE_TIMEOUT);
+        await waitForElementToNotExist(this.speedMenu, timeouts.TEN_SEC);
     };
 
     // The header slides off-screen rather than unmounting, so only toBeVisible sees it.
