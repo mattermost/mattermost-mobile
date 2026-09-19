@@ -47,7 +47,7 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
-import {getHandsRaised, hasOtherUserJoined, makeCallsTheme, sortDMSessions, sortSessions} from '@calls/utils';
+import {getHandsRaised, makeCallsTheme, sortDMSessions, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -368,40 +368,39 @@ const CallScreen = ({
             return [];
         }
 
-        if (isDM && (isDMConnecting || isDMCalling)) {
-            const dmPreAnswerCardItems = [];
-
-            if (mySession) {
-                dmPreAnswerCardItems.push({key: MY_CARD_KEY, session: mySession, isRinging: false});
-            } else {
-                // During Connecting state, our own session is not in the call yet.
-                dmPreAnswerCardItems.push({key: MY_CARD_KEY, session: pendingMySession, isRinging: false});
-            }
-
-            if (!hasOtherUserJoined(currentCall.sessions, currentCall.myUserId)) {
-                // During pre answer states for a DM, Callee's session is not in the call yet.
-                dmPreAnswerCardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: true});
-            }
-
-            return dmPreAnswerCardItems;
-        }
-
         const cardItems = [];
 
         const sessions = isDM ?
             sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :
             sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
 
+        if (!mySession) {
+            cardItems.push({key: MY_CARD_KEY, session: pendingMySession, isRinging: false});
+        }
+
         // When we do have sessions, iterate over then so we can add same consistent Keys to avoid remounting cards.
+        let calleeKeyTaken = false;
         for (const session of sessions) {
             let key = session.sessionId;
             if (session.sessionId === currentCall.mySessionId) {
                 key = MY_CARD_KEY;
-            } else if (isDM && session.userId === dmCallee?.id) {
+            } else if (isDM && !calleeKeyTaken && session.userId === dmCallee?.id) {
+                // One user can hold several sessions, so only the first callee session takes the shared key.
                 key = CALLEE_CARD_KEY;
+                calleeKeyTaken = true;
             }
 
             cardItems.push({key, session, isRinging: false});
+        }
+
+        // DM callee gets a placeholder card until their answered session appears; removed once they leave.
+        const calleeIsExpected = isDM && dmCallee?.id && (
+            isDMConnecting ||
+            isDMCalling ||
+            Object.values(currentCall.sessions).some((session) => session.userId === dmCallee.id)
+        );
+        if (calleeIsExpected && !calleeKeyTaken) {
+            cardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: true});
         }
 
         return cardItems;

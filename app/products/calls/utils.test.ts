@@ -220,11 +220,11 @@ describe('sortDMSessions', () => {
     const locale = 'en';
     const teammateNameDisplay = 'username';
 
-    it('returns empty array for undefined sessions', () => {
+    it('should return an empty array for undefined sessions', () => {
         expect(sortDMSessions(locale, teammateNameDisplay, 'my-id', undefined)).toEqual([]);
     });
 
-    it('keeps the current user first even when activity state would reorder cards', () => {
+    it('should keep the current user first even when activity state would reorder cards', () => {
         const sessions = {
             mySession: {
                 sessionId: 'my-session',
@@ -251,7 +251,7 @@ describe('sortByCurrentUser (through sortDMSessions)', () => {
     const locale = 'en';
     const teammateNameDisplay = 'username';
 
-    it('keeps non-current users in their pre-existing order after moving current user to the front', () => {
+    it('should keep non-current users in their pre-existing order after moving the current user to the front', () => {
         const sessions = {
             aSession: {
                 sessionId: 'a-session',
@@ -287,7 +287,7 @@ describe('sortByCurrentUser (through sortDMSessions)', () => {
         expect(sorted.map((s) => s.userId)).toEqual(['my-id', 'b-id', 'a-id', 'c-id']);
     });
 
-    it('does not change ordering when the current user has no session', () => {
+    it('should not change ordering when the current user has no session', () => {
         const sessions = {
             aSession: {
                 sessionId: 'a-session',

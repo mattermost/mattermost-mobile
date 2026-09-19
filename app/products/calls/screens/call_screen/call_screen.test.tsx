@@ -343,25 +343,113 @@ describe('CallScreen', () => {
         expect(screen.getByTestId('call-avatar-callee-id').props.muted).toBe(false);
     });
 
-    it('should keep the callee card through ringing and then follow sessionsDict after answer', () => {
-        // During pre-answer phases we keep a persistent ringing card; once answered, card rendering
-        // follows sessionsDict, which can trail currentCall.sessions by one database tick.
+    it('should hold both cards from the moment the call is placed until the callee answers', () => {
+        // The callee's placeholder carries their card across the whole pre-answer phase, so the row
+        // neither gains nor loses a card as our session and then theirs reach the call.
         const screen = renderScreen(getConnectingProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
 
         rerenderScreen(screen, getCallingProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
 
-        // The call is answered, but sessionsDict has not received the callee yet.
+        // They have answered, but the database has not caught up with their session yet.
         const trailing = getAnsweredProps();
         trailing.sessionsDict = {'my-session': mySession};
         rerenderScreen(screen, trailing);
-        expect(getAvatarOrder(screen)).toEqual(['my-id']);
-        expect(screen.queryByTestId('calls.calling_participant')).toBeNull();
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+        expect(screen.getByTestId('calls.calling_participant')).toBeVisible();
 
         rerenderScreen(screen, getAnsweredProps());
         expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
         expect(screen.queryByTestId('calls.calling_participant')).toBeNull();
+    });
+
+    it('should keep the callee card when they join before our own session reaches the call', () => {
+        // The callee can answer before our user_joined arrives, which leaves us connecting with
+        // their session already in the call. Their card comes from sessionsDict either way.
+        const props = getConnectingProps();
+        props.currentCall = {...props.currentCall!, sessions: {'callee-session': calleeSession}};
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+    });
+
+    it('should show the callee their own session once it is rendered, even while we are connecting', () => {
+        // isDMConnecting only tracks our own session, so the callee can be fully rendered while we
+        // are still connecting. Their card is theirs at that point, not a placeholder.
+        const props = getConnectingProps();
+        props.currentCall = {...props.currentCall!, sessions: {'callee-session': calleeSession}};
+        props.sessionsDict = {'callee-session': calleeSession};
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
+        expect(screen.getByTestId('call-avatar-callee-id').props.muted).toBe(false);
+    });
+
+    it('should keep a card per caller session while ringing, since our own devices do not answer the call', () => {
+        // Our second device does not count as the other party, so the call stays in the ringing
+        // state with two of our sessions in it and the callee still to answer.
+        const props = getCallingProps();
+        const myOtherSession = {...mySession, sessionId: 'my-session-2'};
+        const sessions = {'my-session': mySession, 'my-session-2': myOtherSession};
+        props.currentCall = {...props.currentCall!, sessions};
+        props.sessionsDict = sessions;
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'my-id', 'callee-id']);
+        expect(screen.getByTestId('calls.calling_participant')).toBeVisible();
+    });
+
+    it('should not put the callee back on screen once they have answered and left', () => {
+        // The ringing placeholder is only for a callee we are still waiting on, so it must not
+        // reappear for one who answered and then hung up while we stayed in the call.
+        const props = getAnsweredProps();
+        props.currentCall = {
+            ...props.currentCall!,
+            dmCalleeAnsweredAt: now - 5000,
+            sessions: {'my-session': mySession},
+        };
+        props.sessionsDict = {'my-session': mySession};
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id']);
+        expect(screen.queryByTestId('calls.calling_participant')).toBeNull();
+    });
+
+    it('should give every callee session its own card key when they answer from two devices', () => {
+        // A user can hold several sessions, so the shared callee key can only be handed out once.
+        // React keeps rendering duplicate keys, so the collision only surfaces as an error.
+        const props = getAnsweredProps();
+        const sessions = {
+            'my-session': mySession,
+            'callee-session': calleeSession,
+            'callee-session-2': {...calleeSession, sessionId: 'callee-session-2'},
+        };
+        props.currentCall = {...props.currentCall!, sessions};
+        props.sessionsDict = sessions;
+
+        const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const screen = renderScreen(props);
+        const duplicateKeyErrors = consoleError.mock.calls.filter((args) => String(args[0]).includes('same key'));
+        consoleError.mockRestore();
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id', 'callee-id']);
+        expect(duplicateKeyErrors).toEqual([]);
+    });
+
+    it('should keep our card on screen after the callee answers while our session trails the call', () => {
+        // Our own session reaches the call before the database, and the card count drives the
+        // layout, so our card cannot drop out for that tick.
+        const props = getAnsweredProps();
+        props.sessionsDict = {'callee-session': calleeSession};
+
+        const screen = renderScreen(props);
+
+        expect(getAvatarOrder(screen)).toEqual(['my-id', 'callee-id']);
     });
 
     it('should show Calling in the header instead of a duration while ringing', () => {
