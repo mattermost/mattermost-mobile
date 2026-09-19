@@ -21,7 +21,7 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
+import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
 import InteractiveDialogScreen from './interactive_dialog';
@@ -43,6 +43,8 @@ class ChannelScreen {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
+        quickActions: 'channel.quick_actions',
+        askAgentsQuickAction: 'channel.quick_actions.ask_agents',
         quickCallButton: 'channel_header.quick_call.button',
         favoriteQuickAction: 'channel.quick_actions.favorite.action',
         unfavoriteQuickAction: 'channel.quick_actions.unfavorite.action',
@@ -98,6 +100,8 @@ class ChannelScreen {
     postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
+    quickActions = element(by.id(this.testID.quickActions));
+    askAgentsQuickAction = element(by.id(this.testID.askAgentsQuickAction));
     quickCallButton = element(by.id(this.testID.quickCallButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
     unfavoriteQuickAction = element(by.id(this.testID.unfavoriteQuickAction));
@@ -171,6 +175,36 @@ class ChannelScreen {
         return this.channelScreen;
     };
 
+    openQuickActions = async () => {
+        await this.channelQuickActionsButton.tap();
+        await waitForElementToExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
+    };
+
+    closeQuickActions = async () => {
+        try {
+            await waitForElementToExist(this.channelInfoQuickAction, timeouts.TWO_SEC);
+        } catch {
+            return;
+        }
+
+        if (isAndroid()) {
+            await device.pressBack();
+            try {
+                await waitFor(this.channelInfoQuickAction).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
+        } else {
+            try {
+                await this.quickActions.swipe('down', 'fast');
+            } catch {
+                await this.channelInfoQuickAction.swipe('down', 'fast');
+            }
+        }
+
+        await waitForElementToNotExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
+    };
+
     dismissScheduledPostTooltip = async () => {
         try {
             await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -187,13 +221,32 @@ class ChannelScreen {
         }
     };
 
-    // The channel intro is the post list's ListFooterComponent, so it only mounts once the
-    // initial post batch has rendered. open() resolves as soon as channel.screen exists,
-    // which on a loaded CI simulator happens while the post list is still loading — tapping
-    // the intro action straight after open() then fails with "No elements found".
-    tapIntroChannelInfoAction = async () => {
-        await waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN);
+    waitForIntro = async (waitFn: () => Promise<void>, reopen?: {category: string; channelName: string}) => {
+        try {
+            await waitFn();
+        } catch (error) {
+            if (!reopen) {
+                throw error;
+            }
+            await this.back();
+            await this.open(reopen.category, reopen.channelName);
+            await waitFn();
+        }
+    };
+
+    tapIntroChannelInfoAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introChannelInfoAction.tap();
+    };
+
+    // Same intro-footer race as tapIntroChannelInfoAction (CI 33936010053 MM-T4884
+    // beforeAllFailure.png: spinner still up, set_header.action not in the tree).
+    tapIntroSetHeaderAction = async () => {
+        await waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN);
+        await this.introSetHeaderAction.tap();
     };
 
     open = async (category: string, channelName: any) => {
@@ -234,7 +287,15 @@ class ChannelScreen {
         try {
             await waitForElementToExist(this.backButton, timeouts.THREE_SEC);
 
-            await NavigationHeader.tapBackButton(0);
+            // iOS: tap with synchronization disabled, the same way ChannelInfoScreen.close()
+            // and PinnedMessagesScreen.back() already do.
+            if (isIos()) {
+                await withSynchronizationDisabled(async () => {
+                    await NavigationHeader.tapBackButton(0);
+                });
+            } else {
+                await NavigationHeader.tapBackButton(0);
+            }
             navigated = true;
         } catch {
             // Back button not in hierarchy — fall through to tab/native back.
@@ -243,7 +304,18 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
+                // Wait for the tab before tapping it: when a sheet is still covering the
+                // header the tab bar is not in the hierarchy yet, and a bare tap fails with
+                // "tab_bar.home.tab not found" instead of waiting the sheet out.
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
+
+                // A tablet shows sidebar and channel together, so the home tab already *is* the
+                // channels view and never dismisses the channel. Assert we reached the list.
+                if (isIpad()) {
+                    await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
+                    return;
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -292,14 +364,52 @@ class ChannelScreen {
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
         const longPressTarget = element(by.id(postTestID));
 
-        await longPressWithScrollRetry(
-            longPressTarget,
-            by.id(this.postList.testID.flatList),
-            PostOptionsScreen.postOptionsScreen,
-            8,
-            isIos() ? Date.now() + timeouts.ONE_MIN : undefined,
-        );
-        await wait(timeouts.TWO_SEC);
+        // One iOS budget for the first long-press and the thread-recovery retry.
+        // Recreating Date.now() + ONE_MIN inside attemptOpenPostOptions would let a
+        // failed recovery spend a second minute.
+        const deadline = isIos() ? Date.now() + timeouts.ONE_MIN : undefined;
+
+        // Helper to handle retry logic if long press degrades to tap
+        const attemptOpenPostOptions = async (attempt: number): Promise<void> => {
+            try {
+                await longPressWithScrollRetry(
+                    longPressTarget,
+                    by.id(this.postList.testID.flatList),
+                    PostOptionsScreen.postOptionsScreen,
+                    8,
+                    deadline,
+                );
+                await wait(timeouts.TWO_SEC);
+            } catch (error) {
+                if (attempt > 1) {
+                    throw error;
+                }
+
+                // A long press that degrades into a tap opens the post's thread. The
+                // channel post list item cannot exist there, so every remaining attempt
+                // is doomed and the helper burns its whole budget on a lost cause.
+                let navigatedToThread = false;
+                try {
+                    await ThreadScreen.toBeVisible();
+                    navigatedToThread = true;
+                } catch {
+                    // Still on the channel — the original failure is the real one.
+                }
+
+                if (!navigatedToThread) {
+                    throw error;
+                }
+
+                // Recover to the channel and retry once. Failures from here on are
+                // reported as themselves, not masked by the original error.
+                await ThreadScreen.back();
+                await this.toBeVisible();
+                await wait(timeouts.ONE_SEC);
+                await attemptOpenPostOptions(attempt + 1);
+            }
+        };
+
+        await attemptOpenPostOptions(1);
     };
 
     openReplyThreadFor = async (postId: string, text: string) => {
@@ -364,11 +474,7 @@ class ChannelScreen {
     postMessageAndVerify = async (message: string, channelId: string, siteUrl: string): Promise<{post?: any; error?: any}> => {
         await this.postMessage(message);
 
-        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s). Three reasons over
-        // reading the last post once: a send that was accepted can be slow to ack, and resending on
-        // ack lag alone posts the message twice, which silently breaks any caller that counts posts;
-        // matching on content rather than position cannot be fooled by an unrelated later post; and
-        // `exact` keeps it from latching onto a longer post that merely contains this message.
+        // Look the post up BY MESSAGE, exactly, and let that call poll (~12s).
         let result = await Post.apiFindPostInChannelByMessage(siteUrl, channelId, message, {exact: true});
         if (result.post?.id) {
             return result;
@@ -654,18 +760,10 @@ class ChannelScreen {
         const postItemTestID = locatorTestIDs[locator];
         const postItemElement = `${postItemTestID}.${postId}`;
         const postItemMatcher = by.id(postItemElement);
-
         const escapedMessage = updatedMessage.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-        if (isAndroid()) {
-            const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, 'is');
-            const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
-            await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        } else {
-            const completeTextPattern = new RegExp(`${escapedMessage}.*Edited`, 'i');
-            const completeTextMatcher = by.text(completeTextPattern).withAncestor(postItemMatcher);
-            await waitFor(element(completeTextMatcher)).toExist().withTimeout(timeouts.TEN_SEC);
-        }
+        const combinedPattern = new RegExp(`${escapedMessage}.*Edited`, isAndroid() ? 'is' : 'i');
+        const combinedMatcher = by.text(combinedPattern).withAncestor(postItemMatcher);
+        await waitFor(element(combinedMatcher)).toExist().withTimeout(timeouts.HALF_MIN);
     };
 }
 

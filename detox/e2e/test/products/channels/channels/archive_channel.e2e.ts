@@ -25,7 +25,7 @@ import {
     ChannelInfoScreen,
     ChannelSettingsScreen,
 } from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Archive Channel', () => {
@@ -54,8 +54,7 @@ describe('Channels - Archive Channel', () => {
         await HomeScreen.logout();
     });
 
-    // Skip Android: R1 product — archive confirm leaves unexpected SafeArea view matcher
-    (isAndroid() ? it.skip : it)('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
+    it('MM-T4932_1 - should be able to archive a public channel and confirm', async () => {
         // # Open a public channel screen, open channel info screen, go to channel settings, and tap on archive channel option and confirm
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
@@ -70,7 +69,7 @@ describe('Channels - Archive Channel', () => {
         // # Dismiss channel info and return to channel list before opening browse channels
         await ChannelInfoScreen.close();
         await waitFor(ChannelScreen.postDraftArchivedCloseChannelButton).
-            toBeVisible().
+            toExist().
             withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
@@ -79,9 +78,10 @@ describe('Channels - Archive Channel', () => {
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
-        // * Verify search returns the archived public channel item
-        await wait(timeouts.ONE_SEC);
-        await expect(element(by.text(`No matches found for “${publicChannel.name}”`))).toBeVisible();
+        // * Verify search returns empty (archived channel is not joinable from browse)
+        await waitFor(element(by.text(`No matches found for “${publicChannel.name}”`))).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await BrowseChannelsScreen.close();

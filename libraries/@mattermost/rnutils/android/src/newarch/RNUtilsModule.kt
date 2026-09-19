@@ -77,14 +77,6 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         implementation.endDatabaseActivity(token, promise)
     }
 
-    override fun setSoftKeyboardToAdjustResize() {
-        implementation.setSoftKeyboardToAdjustResize()
-    }
-
-    override fun setSoftKeyboardToAdjustNothing() {
-        implementation.setSoftKeyboardToAdjustNothing()
-    }
-
     override fun createZipFile(paths: ReadableArray, promise: Promise?) {
         val pathList = paths.toArrayList().map { it.toString() }
         implementation.createZipFile(pathList, promise)

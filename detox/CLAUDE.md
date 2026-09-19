@@ -217,8 +217,7 @@ detox/
 │           │   ├── account/       # 15 files
 │           │   ├── threads/       # 6 files
 │           │   └── smoke_test/    # quick suite (CMT older-server subset)
-│           ├── agents/            # AI agent product tests
-│           └── playbooks/         # Playbooks product tests
+│           └── agents/            # AI agent product tests
 ```
 
 ---

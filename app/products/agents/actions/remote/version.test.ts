@@ -29,6 +29,8 @@ beforeAll(() => {
 
 beforeEach(async () => {
     await DatabaseManager.init([serverUrl]);
+    jest.clearAllMocks();
+    (NetworkManager.getClient as jest.Mock).mockImplementation(() => mockClient);
 });
 
 afterEach(async () => {

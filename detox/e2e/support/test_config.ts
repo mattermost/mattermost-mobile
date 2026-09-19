@@ -61,3 +61,13 @@ export const hasStableWebhookIngress = Boolean(
     !(isLoopbackWebhook && process.env.CI === 'true') &&
     process.env.WEBHOOK_CALLBACKS_REACHABLE !== 'false',
 );
+
+/** Custom profile attributes. Spinwick does not set this flag. */
+export const hasCustomProfileAttributes =
+    process.env.MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES === 'true';
+
+/**
+ * Whether the server defines FeatureFlagChannelAttributes at all (v12.0+ only), set by
+ * global_setup.js. Presence is the signal; the suite still toggles the flag's value itself.
+ */
+export const hasChannelAttributes = process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true';

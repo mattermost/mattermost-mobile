@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 20,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -324,6 +324,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         last_fetched_at: {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         last_playbook_runs_fetch_at: {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         autotranslation_disabled: {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        urgent_mention_count: {name: 'urgent_mention_count', type: 'number'},
                     },
                     columnArray: [
                         {name: 'is_unread', type: 'boolean'},
@@ -337,6 +338,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'last_fetched_at', type: 'number', isIndexed: true},
                         {name: 'last_playbook_runs_fetch_at', type: 'number'},
                         {name: 'autotranslation_disabled', type: 'boolean', isOptional: true},
+                        {name: 'urgent_mention_count', type: 'number'},
                     ],
                 },
                 [MY_CHANNEL_SETTINGS]: {

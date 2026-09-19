@@ -19,32 +19,43 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {Object} option.props - A general object property bag to attach to the post
  * @param {string[]} option.fileIds - Array of file IDs to attach to the post (top-level API field)
  * @param {Date} option.createAt - The date the post is created at
+ * @param {boolean} option.retryOnTransportFailure - replay the POST when the connection drops
+ *   before a response arrives. Off by default: a dropped response is ambiguous, so a replay can
+ *   leave a duplicate post behind. Opt in only where a duplicate is harmless for the caller, and
+ *   say why at the call site.
  * @return {Object} returns {post} on success. Throws on error (never returns {error}).
  */
-export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0}: any): Promise<any> => {
-    try {
-        const payload: Record<string, any> = {
-            channel_id: channelId,
-            message,
-            root_id: rootId,
-            props,
-            create_at: createAt,
-        };
-        if (fileIds?.length) {
-            payload.file_ids = fileIds;
-        }
-        const response = await client.post(`${baseUrl}/api/v4/posts`, payload);
+export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0, retryOnTransportFailure = false}: any): Promise<any> => {
+    const attempt = async (): Promise<any> => {
+        try {
+            const payload: Record<string, any> = {
+                channel_id: channelId,
+                message,
+                root_id: rootId,
+                props,
+                create_at: createAt,
+            };
+            if (fileIds?.length) {
+                payload.file_ids = fileIds;
+            }
+            const response = await client.post(`${baseUrl}/api/v4/posts`, payload);
 
-        return {post: response.data};
-    } catch (err) {
-        // Throw rather than return {error}. Almost every call site destructures
-        // {post} without checking `error`, so a transport failure here used to
-        // surface as `TypeError: Cannot read properties of undefined` on whichever
-        // later line first touched the missing post, with nothing about the network
-        // in the report.
-        const error = getResponseFromError(err);
-        throw new Error(`apiCreatePost failed: ${JSON.stringify(error.error)}`);
+            return {post: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    };
+
+    const result = await withTransportRetry(attempt, {
+        idempotent: false,
+        allowDuplicateWrites: retryOnTransportFailure,
+        label: 'apiCreatePost',
+    });
+
+    if (result?.error || !result?.post) {
+        throw new Error(`apiCreatePost failed: ${JSON.stringify(result?.error ?? 'no post returned')}`);
     }
+    return result;
 };
 
 /**
@@ -105,18 +116,6 @@ export const apiGetLastPostInChannel = async (
     return {error: {message: `No posts found in channel ${channelId} after ${maxAttempts} attempts`}};
 };
 
-/**
- * Poll a channel until it contains a post for `message`.
- *
- * `exact` matters once callers use this to confirm their own send: substring matching can return an
- * unrelated post whose text merely contains theirs (`Message abc` inside `Message abc reply`), and a
- * caller that then treats it as "my post" acts on the wrong id. Verification callers pass
- * `exact: true`; the default stays substring so existing content-search callers are unaffected.
- *
- * Relies on apiGetPostsInChannel returning newest-first (it maps the API's `order` array, which is
- * why apiGetLastPostInChannel can take `posts[0]`). So when a suite legitimately posts the same text
- * twice to one channel, this returns the newer one — the one the caller just sent.
- */
 export const apiFindPostInChannelByMessage = async (
     baseUrl: string,
     channelId: string,
@@ -308,9 +307,6 @@ export const apiCreatePostWithAttachment = async (baseUrl: string, channelId: st
         throw new Error(`apiCreatePostWithAttachment(${fixtureName}): upload failed: ${JSON.stringify(uploadError)}`);
     }
 
-    // Creating a post is not idempotent and a duplicate IS observable — it shows up in
-    // the channel and breaks post-count assertions. A timed-out create may already have
-    // committed, so fail and let the caller surface it rather than posting twice.
     const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
         message: '',
@@ -348,6 +344,25 @@ export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelI
  */
 export const apiCreatePostWithVideoAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
     return apiCreatePostWithAttachment(baseUrl, channelId, 'video.mp4', rootId);
+};
+
+/**
+ * Get the public (unauthenticated) link for a file. Requires the file to be attached to a
+ * post and `FileSettings.EnablePublicLink` to be true.
+ * See https://api.mattermost.com/#operation/GetFileLink
+ * @param {string} baseUrl - the base server URL
+ * @param {string} fileId - the file ID
+ * @return {Object} returns {link} on success or {error, status} on error
+ */
+export const apiGetFilePublicLink = async (baseUrl: string, fileId: string): Promise<any> => {
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.get(`${baseUrl}/api/v4/files/${fileId}/link`);
+            return {link: response.data?.link};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiGetFilePublicLink'});
 };
 
 export const apiGetFlaggedPosts = async (baseUrl: string, userId: string): Promise<{order: string[]; posts: Record<string, any>; error?: any}> => {
@@ -530,6 +545,7 @@ export const Post = {
     apiPostIncomingWebhook,
     apiSearchPosts,
     apiUploadFileToChannel,
+    apiGetFilePublicLink,
     apiGetFlaggedPosts,
     waitForPostFlagged,
     waitForPostMessage,

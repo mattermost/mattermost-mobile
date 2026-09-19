@@ -23,7 +23,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks Search', () => {
@@ -64,8 +64,6 @@ describe('Channels - Channel Bookmarks Search', () => {
         const {team, user} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
         testUser = user;
-
-        // FeatureFlags.ChannelBookmarks set in setup.ts (see channel_bookmarks.e2e.ts for rationale).
 
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
@@ -115,12 +113,11 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     afterAll(async () => {
-        // Do not unset FeatureFlags.ChannelBookmarks — would clobber other shards.
+        // Never add a teardown that disables bookmarks — shards share a server.
         await HomeScreen.logout();
     });
 
-    // Skip iOS: R1 product — bookmark not found in channel_info.bookmarks.list after create
-    (isIos() ? it.skip : it)('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
+    it('MM-T5610_2 - should be able to delete a bookmark via channel info', async () => {
         // # Navigate to the channel
         await openChannel(channelDelete);
 
@@ -133,7 +130,10 @@ describe('Channels - Channel Bookmarks Search', () => {
                 id(`channel_bookmark.${bookmarkDelete.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
         );
-        await waitFor(bookmarkEl).toExist().withTimeout(timeouts.HALF_MIN);
+        await ChannelInfoScreen.waitForBookmarkInChannelInfo(
+            by.id(`channel_bookmark.${bookmarkDelete.id}`).withAncestor(by.id('channel_info.bookmarks.list')),
+            {bookmarkId: bookmarkDelete.id, textFallback: 'Delete Bookmark Test'},
+        );
 
         // # Long press on the bookmark to open options
         await bookmarkEl.longPress(timeouts.TWO_SEC);
