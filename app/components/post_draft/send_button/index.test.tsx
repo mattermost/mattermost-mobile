@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {firstValueFrom} from 'rxjs';
+import {filter} from 'rxjs/operators';
 
 import {storeGlobal} from '@actions/app/global';
 import {Tutorial} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {observeTutorialWatched} from '@queries/app/global';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 
 import SendButton from './send_button';
@@ -64,6 +67,14 @@ describe('SendButton', () => {
 
     it('should return true if the scheduled post tutorial is watched', async () => {
         await storeGlobal(Tutorial.SCHEDULED_POST, 'true', false);
+
+        // storeGlobal resolving does not mean observers can see the row yet — the adapter
+        // delivers query.observe() asynchronously, and the HOC renders on its first emission.
+        // Settling the observable here makes that first emission deterministic; otherwise the
+        // component can mount on the pre-write `false` and waitFor's default 1s window has to
+        // out-race the adapter, which it lost on a loaded CI runner (run 35437505117).
+        await firstValueFrom(observeTutorialWatched(Tutorial.SCHEDULED_POST).pipe(filter(Boolean)));
+
         const {getByTestId, unmount: u} = renderWithEverything(<EnhancedSendButton {...defaultProps}/>, {database});
         unmount = u;
 
