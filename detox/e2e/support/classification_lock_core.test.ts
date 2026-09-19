@@ -24,7 +24,9 @@ const RENEW = 25;
 const POLL = 10;
 const TIMEOUT = 1_000;
 
-const GRACE = 120;
+// Wide enough that the recovery case below (8 polls, ~80ms) clears it with room to spare
+// under CI scheduling jitter, while still far under TIMEOUT so the give-up case stays fast.
+const GRACE = 400;
 
 const FAST = {timeoutMs: TIMEOUT, ttlMs: TTL, pollMs: POLL, renewMs: RENEW, transportGraceMs: GRACE} as const;
 
@@ -243,6 +245,24 @@ describe('acquireLock', () => {
 
         assert.ok(attempts > failuresBeforeRecovery, `expected reads past the outage, saw ${attempts}`);
         assert.equal(ownerOf(store), 'owner-a');
+    });
+
+    it('should not spend the grace window on failures separated by a successful round trip', async () => {
+        const store = createStore();
+
+        // Reads always succeed, writes always fail: the server is reachable, so this is
+        // contention-shaped, not an outage, and must not be reported as "unreachable".
+        store.failWrites = true;
+
+        await assert.rejects(
+            () => acquireLock(store, 'owner-a', FAST),
+            (error: Error) => {
+                assert.doesNotMatch(error.message, /server unreachable for/);
+                assert.match(error.message, /gave up after \d+ms of transport failures/);
+                return true;
+            },
+        );
+        assert.ok(store.writes > 5, `expected repeated write attempts, saw ${store.writes}`);
     });
 });
 

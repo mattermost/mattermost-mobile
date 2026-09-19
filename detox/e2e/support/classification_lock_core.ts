@@ -235,6 +235,16 @@ export const acquireLock = async (
     let consecutiveTransportFailures = 0;
     let firstTransportFailureAt: number | undefined;
 
+    // Any round trip that completes proves the server is reachable, so the run of consecutive
+    // failures ends there — not at the end of the iteration. Otherwise a read that succeeds
+    // between two failed writes leaves the window open and the grace can expire on failures
+    // that were never consecutive.
+    const noteTransportSuccess = () => {
+        lastTransportError = undefined;
+        consecutiveTransportFailures = 0;
+        firstTransportFailureAt = undefined;
+    };
+
     do {
         // A transport fault against the ephemeral test server is the same kind of
         // "try again shortly" this loop already exists for, so absorb it here rather
@@ -242,22 +252,24 @@ export const acquireLock = async (
         try {
             // eslint-disable-next-line no-await-in-loop -- advisory lock acquisition must be sequential
             lastLock = parseLock(await store.read());
+            noteTransportSuccess();
+
             const now = Date.now();
             if (!lastLock || lastLock.expiresAt <= now || lastLock.owner === owner) {
                 // eslint-disable-next-line no-await-in-loop
                 await store.write(JSON.stringify({owner, expiresAt: now + ttlMs}));
+                noteTransportSuccess();
 
                 // eslint-disable-next-line no-await-in-loop -- confirm ownership after the non-atomic write
                 const confirmedLock = parseLock(await store.read());
+                noteTransportSuccess();
+
                 if (confirmedLock?.owner === owner && confirmedLock.expiresAt > Date.now()) {
                     startHeartbeat(store, owner, ttlMs, renewMs);
                     return;
                 }
                 lastLock = confirmedLock;
             }
-            lastTransportError = undefined;
-            consecutiveTransportFailures = 0;
-            firstTransportFailureAt = undefined;
         } catch (error) {
             lastTransportError = error;
             consecutiveTransportFailures += 1;
