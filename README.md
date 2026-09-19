@@ -10,7 +10,7 @@ You can download our apps from the [App Store](https://mattermost.com/mattermost
 
 We plan on releasing monthly updates with new features - check the [changelog](https://github.com/mattermost/mattermost-mobile/blob/master/CHANGELOG.md) for what features are currently supported! 
 
-**Important:** If you self-compile the Mattermost Mobile apps you also need to deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy/releases). 
+**Important:** If you self-compile the Mattermost Mobile app, you also need to deploy your own [Mattermost Push Notification Service](https://github.com/mattermost/mattermost-push-proxy/releases). 
 
 # How to Contribute
 
