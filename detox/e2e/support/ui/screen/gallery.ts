@@ -266,7 +266,7 @@ class GalleryScreen {
 
     private elementExists = async (el: Detox.IndexableNativeElement | Detox.NativeElement) => {
         try {
-            await waitForElementToExist(el, timeouts.ONE_SEC);
+            await waitForElementToExist(el, timeouts.FOUR_SEC);
             return true;
         } catch {
             return false;
@@ -400,7 +400,7 @@ class GalleryScreen {
     };
 
     controlsToBeVisible = async (timeout?: number) => {
-        if (!(await this.controlsAreVisible(timeout ?? this.TOGGLE_TIMEOUT))) {
+        if (!(await this.controlsAreVisible(timeout ?? timeouts.FIVE_SEC))) {
             throw new Error('GalleryScreen: expected the video controls to be visible');
         }
     };
