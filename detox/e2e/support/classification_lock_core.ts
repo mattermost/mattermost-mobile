@@ -62,11 +62,8 @@ export const DEFAULT_POLL_MS = 2_000;
 /**
  * How long the server may stay unreachable before we abandon the acquire.
  *
- * This used to be a count of 5 consecutive failures, on the assumption that a failed poll costs
- * ~pollMs and so five of them cost ~8s. That assumption was wrong: a failed attempt costs the
- * HTTP timeout, not the poll. In CMT run 35367435953 the five attempts were 15s apart, so the
- * suite abandoned the lock after 75s and lost all 12 channel_attributes tests to one transport
- * blip against the shared site.
+ * Counting failures instead would measure nothing useful: a failed attempt costs the HTTP
+ * timeout, not pollMs, so the tolerance moved with however long a request took to fail.
  *
  * Bounding it in time makes the tolerance explicit and independent of how long a request takes
  * to fail. Still far below DEFAULT_TIMEOUT_MS, which exists for lock contention rather than for

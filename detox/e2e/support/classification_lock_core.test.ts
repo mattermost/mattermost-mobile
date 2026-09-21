@@ -226,10 +226,8 @@ describe('acquireLock', () => {
         assert.ok(Date.now() - startedAt < TIMEOUT, 'must not burn the whole contention budget');
     });
 
-    // CMT run 35367435953 lost all 12 channel_attributes tests to a 75s blip against the shared
-    // site, because the old rule gave up after 5 consecutive failures however long they took.
-    // Eight failures is past that count but still inside the grace window, so this test only
-    // passes once the give-up rule is measured in time.
+    // Eight failures is past the old count-based limit but still inside the grace window, so
+    // this only passes once the give-up rule is measured in time.
     it('should survive a transport outage shorter than the grace window', async () => {
         const store = createStore();
         const failuresBeforeRecovery = 8;
