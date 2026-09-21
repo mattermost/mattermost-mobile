@@ -13,7 +13,6 @@ import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@react-navigation/native', () => ({
     useIsFocused: () => true,
-    useRoute: () => ({}),
 }));
 
 jest.mock('./thread_content', () => ({
