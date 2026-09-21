@@ -1,0 +1,79 @@
+name: Compute E2E build fingerprint
+description: Compute a content-based fingerprint for E2E builds to enable caching
+
+inputs:
+  platform:
+    description: 'Platform to compute fingerprint for (ios, android-detox, android-maestro)'
+    required: true
+
+outputs:
+  fingerprint:
+    description: 'Computed fingerprint'
+    value: ${{ steps.compute.outputs.fingerprint }}
+
+runs:
+  using: composite
+  steps:
+    - name: Compute fingerprint
+      id: compute
+      shell: bash
+      env:
+        # Manual escape hatch for build inputs that are NOT in the git tree and so
+        # cannot be fingerprinted from it. BUMP THIS when any of these change:
+        #   - the build runner image / label (macos-26, ubuntu-latest-8-cores) or Xcode
+        #   - INTUNE_ENABLED in e2e-detox-pr.yml (switches the whole iOS build path)
+        #   - the build commands inside e2e-detox-pr.yml itself
+        # Mirror comments live next to those knobs in e2e-detox-pr.yml.
+        # Bumping invalidates every cached binary, so the next run of each platform
+        # rebuilds. Cheaper than shipping tests against a stale app.
+        CACHE_VERSION: '1'
+        PLATFORM: ${{ inputs.platform }}
+      run: |
+        # Fingerprint = sha256 of git blob hashes for all binary-impacting paths
+        # listed in paths.json (shared with the label-manager impact filter).
+        # Missing a path causes false cache HITs (wrong binary tested).
+        # Test files live in paths.json triggerExtra, not fingerprint*, so
+        # test-only PRs still hit cache while still running E2E.
+        #
+        # Deliberately NOT fingerprinted: e2e-detox-pr.yml itself. It mixes the
+        # build steps with unrelated orchestration (TSIO, statuses, provisioning),
+        # so including it would invalidate every cache entry on unrelated edits.
+        # Changes to what the build actually does land in the actions/fastlane
+        # paths in paths.json — bump CACHE_VERSION when the workflow's build
+        # commands or runner/INTUNE knobs change.
+        set -eu
+        PATHS_JSON="${GITHUB_ACTION_PATH}/paths.json"
+        PATHS_JS="${GITHUB_ACTION_PATH}/paths.js"
+
+        # Command substitution, not `mapfile < <(node ...)`: process substitution
+        # hides node's exit status even under `set -e`, so a broken paths.js would
+        # surface as "no paths" instead of the actual failure.
+        if ! paths_output=$(node -e "
+          const {loadPaths, fingerprintPathsForPlatform} = require(process.argv[1]);
+          const paths = loadPaths(process.argv[2]);
+          for (const p of fingerprintPathsForPlatform(paths, process.env.PLATFORM)) {
+            console.log(p);
+          }
+        " "$PATHS_JS" "$PATHS_JSON"); then
+          echo "::error::Failed to resolve fingerprint paths for platform '${PLATFORM}' from paths.json"
+          exit 1
+        fi
+        mapfile -t paths <<< "$paths_output"
+
+        # `<<<` on empty output still yields one empty element, hence paths[0].
+        if [ ${#paths[@]} -eq 0 ] || [ -z "${paths[0]}" ]; then
+          echo "::error::paths.json produced no fingerprint paths for platform '${PLATFORM}'"
+          exit 1
+        fi
+
+        tree=$(git ls-tree -r HEAD -- "${paths[@]}" 2>/dev/null)
+
+        # Fall back to commit SHA if ls-tree fails (e.g., shallow clone) so the build still runs.
+        if [ -z "$tree" ]; then
+          fingerprint="nocache-$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+          echo "::warning::git ls-tree produced no output — using fallback fingerprint. S3 cache will miss."
+        else
+          fingerprint=$(printf 'cache-version=%s\n%s\n' "$CACHE_VERSION" "$tree" | sha256sum | cut -d' ' -f1)
+        fi
+        echo "fingerprint=${fingerprint}" >> "$GITHUB_OUTPUT"
+        echo "Computed fingerprint for ${PLATFORM}: ${fingerprint}"

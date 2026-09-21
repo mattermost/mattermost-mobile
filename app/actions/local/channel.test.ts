@@ -9,7 +9,7 @@ import {ActionType, Events, Navigation} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {getPostById} from '@queries/servers/post';
+import {getPostById, queryPostsInChannel} from '@queries/servers/post';
 import {getCommonSystemValues, getTeamHistory} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen} from '@screens/navigation';
@@ -20,12 +20,14 @@ import {
     removeCurrentUserFromChannel,
     setChannelDeleteAt,
     selectAllMyChannelIds,
+    markChannelAsViewed,
     markChannelAsUnread,
     resetMessageCount,
     storeMyChannelsForTeam,
     updateMyChannelFromWebsocket,
     updateChannelInfoFromChannel,
     updateLastPostAt,
+    updateMyChannelLastFetchedAt,
     updateChannelsDisplayName,
     showUnreadChannelsOnly,
     updateDmGmDisplayName,
@@ -616,6 +618,37 @@ describe('selectAllMyChannelIds', () => {
     });
 });
 
+describe('markChannelAsViewed', () => {
+    let operator: ServerDataOperator;
+    const serverUrl = 'baseHandler.test.com';
+    const channelId = 'id1';
+    const channel = TestHelper.fakeChannel({id: channelId});
+    const channelMember = TestHelper.fakeChannelMember({
+        channel_id: channelId,
+        mention_count: 2,
+        urgent_mention_count: 3,
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should reset urgent mention count when viewed', async () => {
+        const {error} = await markChannelAsViewed(serverUrl, channelId);
+        const member = await getMyChannel(operator.database, channelId);
+
+        expect(error).toBeUndefined();
+        expect(member?.mentionsCount).toBe(0);
+        expect(member?.urgentMentionCount).toBe(0);
+    });
+});
+
 describe('markChannelAsUnread', () => {
     let operator: ServerDataOperator;
     const serverUrl = 'baseHandler.test.com';
@@ -632,6 +665,13 @@ describe('markChannelAsUnread', () => {
         channel_id: channelId,
         msg_count: 0,
     } as ChannelMembership;
+    const unreadArgs = {
+        channelId,
+        messageCount: 10,
+        mentionsCount: 1,
+        urgentMentionCount: 2,
+        lastViewed: 123,
+    };
 
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
@@ -643,13 +683,13 @@ describe('markChannelAsUnread', () => {
     });
 
     it('handle not found database', async () => {
-        const {member, error} = await markChannelAsUnread('foo', channelId, 10, 1, 123, false);
+        const {member, error} = await markChannelAsUnread('foo', unreadArgs, false);
         expect(error).toBeTruthy();
         expect(member).toBeUndefined();
     });
 
     it('handle no member', async () => {
-        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
+        const {member, error} = await markChannelAsUnread(serverUrl, unreadArgs, false);
         expect(error).toBe('not a member');
         expect(member).toBeUndefined();
     });
@@ -658,13 +698,14 @@ describe('markChannelAsUnread', () => {
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const {member, error} = await markChannelAsUnread(serverUrl, channelId, 10, 1, 123, false);
+        const {member, error} = await markChannelAsUnread(serverUrl, unreadArgs, false);
         expect(error).toBeUndefined();
         expect(member).toBeDefined();
         expect(member?.viewedAt).toBe(122);
         expect(member?.lastViewedAt).toBe(122);
         expect(member?.messageCount).toBe(10);
         expect(member?.mentionsCount).toBe(1);
+        expect(member?.urgentMentionCount).toBe(2);
     });
 });
 
@@ -1204,13 +1245,27 @@ describe('deletePostsForChannel', () => {
         expect(error).toBeFalsy();
     });
 
-    it('channel with no posts', async () => {
+    it('should clear intervals and reset the watermark for a channel with no posts', async () => {
+        // A PostsInChannel interval that outlived its posts is exactly the state that
+        // renders a channel blank, so this must not early-return.
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel], myChannels: [channelMember], prepareRecordsOnly: false});
+        await updateMyChannelLastFetchedAt(serverUrl, channelId, 900, false);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(900);
 
-        const {models, error} = await deletePostsForChannel(serverUrl, channelId);
-        expect(models).toEqual([]);
+        const gone = TestHelper.fakePost({id: 'gone', channel_id: channelId, create_at: 500});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [gone], prepareRecordsOnly: false});
+
+        // the post is destroyed the way a received deletion destroys it, leaving the interval
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [gone.id], posts: [{...gone, delete_at: 900, update_at: 900}], prepareRecordsOnly: false});
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(1);
+        expect(await getPostById(operator.database, gone.id)).toBeUndefined();
+
+        const {error} = await deletePostsForChannel(serverUrl, channelId);
         expect(error).toBeFalsy();
+
+        expect(await queryPostsInChannel(operator.database, channelId).fetch()).toHaveLength(0);
+        expect((await getMyChannel(operator.database, channelId))?.lastFetchedAt).toBe(0);
     });
 
     it('channel with posts - batch written and event emitted', async () => {

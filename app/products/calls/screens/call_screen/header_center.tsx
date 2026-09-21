@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     raisedHandBannerContainer: {
         display: 'flex',
         flexDirection: 'row',
-        flex: 1,
+        flexShrink: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },

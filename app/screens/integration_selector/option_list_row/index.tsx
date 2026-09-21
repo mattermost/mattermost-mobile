@@ -25,13 +25,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flexDirection: 'row',
-            height: 65,
-            paddingHorizontal: 15,
+            height: 40,
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
         },
         textContainer: {
-            marginLeft: 10,
             justifyContent: 'center',
             flexDirection: 'column',
             flex: 1,

@@ -5,14 +5,16 @@ import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import {refetchCurrentUser} from '@actions/remote/user';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
+import {getServer} from '@queries/app/servers';
 import {getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
-import {getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -67,9 +69,20 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         updateThemeIfNeeded(theme, true);
     }
 
+    const server = await getServer(serverUrl);
+    const isZeroPersistence = server?.persistenceFlag === 'zero-persistence';
+
     // To make the switch faster we determine if we already have the team & channel
     let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
     let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
+
+    if (isZeroPersistence && !myChannel && !myTeam) {
+        // no values in db and zero persistence mode means we probably need to refetch current user id
+        const existingUserId = await getCurrentUserId(database);
+        if (!existingUserId) {
+            await refetchCurrentUser(serverUrl, undefined);
+        }
+    }
 
     if (!myTeam) {
         const resp = await fetchMyTeam(serverUrl, teamId, false, groupLabel);

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {View} from 'react-native';
+import {defineMessages} from 'react-intl';
+import {Pressable, View} from 'react-native';
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {submitToolResult} from '@agents/actions/remote/tool_result';
@@ -12,11 +13,19 @@ import Loading from '@components/loading';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ToolCard from '../tool_card';
+
+const messages = defineMessages({
+    runTools: {
+        id: 'agents.tool_call.run_tools',
+        defaultMessage: 'Run tools',
+    },
+});
 
 interface ToolApprovalSetProps {
     postId: string;
@@ -53,6 +62,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
         },
+        statusTextExpand: {
+            flex: 1,
+        },
+        batchButtons: {
+            flexDirection: 'row',
+            gap: 8,
+        },
+        batchButton: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderRadius: 4,
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+        },
+        batchButtonText: {
+            color: theme.buttonBg,
+            ...typography('Body', 75, 'SemiBold'),
+        },
     };
 });
 
@@ -67,6 +93,9 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
+
+    const isCallStage = approvalStage === ToolApprovalStage.Call;
+    const isResultStage = approvalStage === ToolApprovalStage.Result;
 
     // Reset decisions when approval stage transitions (e.g., Phase 1 → Phase 2)
     const prevStageRef = useRef(approvalStage);
@@ -87,7 +116,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                     tool.status === ToolCallStatus.AutoApproved
                 );
             }
-            return tool.status === ToolCallStatus.Pending;
+
+            // A call that turns auto-executing after the user decided it must
+            // drop that decision, or its id would ride along in the submission.
+            return tool.status === ToolCallStatus.Pending && !tool.would_auto_execute;
         };
 
         const filterActionableDecisions = (decisions: ToolDecision): ToolDecision => {
@@ -112,9 +144,21 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         });
     }, [toolCalls, approvalStage]);
 
+    const pendingToolCalls = useMemo(() => {
+        return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+    }, [toolCalls]);
+
     const actionableTools = useMemo(() => {
+        // Non-requesters can view but not act, so nothing is actionable for
+        // them — this collapses the per-card decision buttons AND the multi-tool
+        // status/batch bar below.
+        if (!canApprove) {
+            return [];
+        }
         if (approvalStage === ToolApprovalStage.Call) {
-            return toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+            // Policy-approved calls run server-side, so the user never decides
+            // them; waiting on them would block the batch from submitting.
+            return pendingToolCalls.filter((call) => !call.would_auto_execute);
         }
         if (approvalStage === ToolApprovalStage.Result) {
             return toolCalls.filter((call) =>
@@ -126,7 +170,14 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
         // 'done' stage — server says no decision remains, render no buttons.
         return [];
-    }, [toolCalls, approvalStage]);
+    }, [toolCalls, pendingToolCalls, approvalStage, canApprove]);
+
+    // A round where every pending call is policy-approved was interrupted
+    // mid-execution: nothing needs a decision, but the server still has to be
+    // told to resume, so the cards stay visible with a resume button.
+    const isInterruptedAutoRound = isCallStage &&
+        pendingToolCalls.length > 0 &&
+        pendingToolCalls.every((call) => call.would_auto_execute);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
@@ -177,6 +228,31 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         handleToolDecision(toolId, false);
     }, [handleToolDecision]);
 
+    // Batch decide every actionable tool in one tap and submit immediately.
+    const handleBatchDecision = useCallback(async (approved: boolean) => {
+        if (isSubmitting) {
+            return;
+        }
+        const decisions: ToolDecision = {};
+        for (const tool of actionableTools) {
+            decisions[tool.id] = approved;
+        }
+        setToolDecisions(decisions);
+        await submitDecisions(decisions);
+    }, [isSubmitting, actionableTools, submitDecisions]);
+
+    const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
+    const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
+
+    // Resuming carries no decisions: the server re-checks the policy for each
+    // marked call, so an empty accepted list is what restarts execution.
+    const handleRunTools = usePreventDoubleTap(useCallback(async () => {
+        if (isSubmitting) {
+            return;
+        }
+        await submitDecisions({});
+    }, [isSubmitting, submitDecisions]));
+
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);
         const isActionableTool = tool ? actionableTools.some((a) => a.id === tool.id) : false;
@@ -197,8 +273,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     }
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
-    const isCallStage = approvalStage === ToolApprovalStage.Call;
-    const isResultStage = approvalStage === ToolApprovalStage.Result;
+    const showResumeControls = isInterruptedAutoRound && canApprove;
 
     const isToolCollapsed = (tool: ToolCall) => {
         // Auto-approved tools default collapsed; the user never interacted with them.
@@ -221,19 +296,28 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             testID='agents.tool_approval_set'
         >
             {toolCalls.map((tool) => {
+                // In a mixed approval batch, policy-approved calls stay hidden
+                // until the user's decisions let the server run them; they
+                // reappear as auto-approved cards once executed. Live calls and
+                // interrupted all-auto rounds remain visible.
+                if (tool.status === ToolCallStatus.Pending && tool.would_auto_execute && isCallStage && !isInterruptedAutoRound) {
+                    return null;
+                }
+
                 const isActionable = actionableIds.has(tool.id);
                 return (
                     <ToolCard
                         key={tool.id}
                         tool={tool}
                         isCollapsed={isToolCollapsed(tool)}
-                        isProcessing={isActionable && isSubmitting}
+                        isProcessing={(isActionable || isInterruptedAutoRound) && isSubmitting}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
-                        onApprove={isActionable && canApprove ? handleApprove : undefined}
-                        onReject={isActionable && canApprove ? handleReject : undefined}
+                        onApprove={isActionable ? handleApprove : undefined}
+                        onReject={isActionable ? handleReject : undefined}
                         approvalStage={approvalStage}
                         canExpand={canExpand}
+                        canApprove={canApprove}
                         showArguments={showArguments}
                         showResults={showResults}
                         isAutoApproved={tool.status === ToolCallStatus.AutoApproved}
@@ -241,7 +325,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 );
             })}
 
-            {actionableTools.length > 1 && isSubmitting && (
+            {(actionableTools.length > 1 || showResumeControls) && isSubmitting && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.submitting'
@@ -267,8 +351,50 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                         id='agents.tool_call.pending_decisions'
                         defaultMessage='{count, plural, =0 {All tools decided} one {# tool needs a decision} other {# tools need decisions}}'
                         values={{count: undecidedCount}}
-                        style={styles.statusText}
+                        style={[styles.statusText, styles.statusTextExpand]}
                     />
+                    <View style={styles.batchButtons}>
+                        <Pressable
+                            onPress={handleAcceptAll}
+                            style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                            testID='agents.tool_approval_set.accept_all'
+                        >
+                            <FormattedText
+                                id='agents.tool_call.accept_all'
+                                defaultMessage='Accept all'
+                                style={styles.batchButtonText}
+                            />
+                        </Pressable>
+                        <Pressable
+                            onPress={handleRejectAll}
+                            style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                            testID='agents.tool_approval_set.reject_all'
+                        >
+                            <FormattedText
+                                id='agents.tool_call.reject_all'
+                                defaultMessage='Reject all'
+                                style={styles.batchButtonText}
+                            />
+                        </Pressable>
+                    </View>
+                </View>
+            )}
+
+            {showResumeControls && !isSubmitting && (
+                <View
+                    style={styles.statusBar}
+                    testID='agents.tool_approval_set.resume'
+                >
+                    <Pressable
+                        onPress={handleRunTools}
+                        style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                        testID='agents.tool_approval_set.run_tools'
+                    >
+                        <FormattedText
+                            {...messages.runTools}
+                            style={styles.batchButtonText}
+                        />
+                    </Pressable>
                 </View>
             )}
         </View>

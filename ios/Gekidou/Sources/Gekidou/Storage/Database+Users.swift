@@ -172,4 +172,17 @@ extension Database {
         
         return setters
     }
+
+    public func queryRingtoneForCurrentUser(_ serverUrl: String) -> String? {
+        guard let row = try? queryCurrentUser(serverUrl),
+              let user = getUserFromRow(row),
+              let data = user.notifyProps.data(using: .utf8),
+              let props = try? JSONSerialization.jsonObject(with: data) as? [String: String]
+        else { return nil }
+
+        guard props["calls_mobile_sound"] == "true" else { return nil }
+
+        let tone = props["calls_mobile_notification_sound"] ?? "Calm"
+        return "calls_" + tone.lowercased()
+    }
 }

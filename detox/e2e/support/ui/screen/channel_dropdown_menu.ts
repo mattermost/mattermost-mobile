@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {BrowseChannelsScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isAndroid, safeEnableSynchronization, timeouts, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelDropdownMenuScreen {
@@ -19,15 +19,26 @@ class ChannelDropdownMenuScreen {
     sharedChannelsItem = element(by.id(this.testID.sharedChannelsItem));
 
     toBeVisible = async () => {
-        await waitFor(this.channelDropdownMenuScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitForElementToExist(this.channelDropdownMenuScreen, timeouts.TEN_SEC);
 
         return this.channelDropdownMenuScreen;
     };
 
     open = async () => {
         // # Open channel dropdown menu screen
-        await waitFor(BrowseChannelsScreen.channelDropdown).toExist().withTimeout(timeouts.TEN_SEC);
-        await BrowseChannelsScreen.channelDropdown.tap();
+        await waitForElementToExist(BrowseChannelsScreen.channelDropdown, timeouts.TEN_SEC);
+
+        const disableSync = isAndroid();
+        if (disableSync) {
+            await device.disableSynchronization();
+        }
+        try {
+            await BrowseChannelsScreen.channelDropdown.tap();
+        } finally {
+            if (disableSync) {
+                await safeEnableSynchronization();
+            }
+        }
 
         return this.toBeVisible();
     };

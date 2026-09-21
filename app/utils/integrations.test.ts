@@ -333,3 +333,58 @@ describe('selectKeyboardType', () => {
         expect(selectKeyboardType('unrecognized')).toBe('default');
     });
 });
+
+describe('checkDialogElementForError - date/datetime fields', () => {
+    const baseElement: DialogElement = {
+        name: 'test_date',
+        type: 'date',
+        display_name: 'Test Date',
+        subtype: undefined,
+        default: '',
+        placeholder: '',
+        help_text: '',
+        optional: false,
+        min_length: 0,
+        max_length: 0,
+        data_source: '',
+        options: [],
+    };
+
+    test('returns required error for empty required date field', () => {
+        const result = checkDialogElementForError(baseElement, '', makeIntl());
+        expect(result).toBe('This field is required.');
+    });
+
+    test('returns required error for undefined required date field', () => {
+        const result = checkDialogElementForError(baseElement, undefined, makeIntl());
+        expect(result).toBe('This field is required.');
+    });
+
+    test('returns required error for null required date field', () => {
+        const result = checkDialogElementForError(baseElement, null, makeIntl());
+        expect(result).toBe('This field is required.');
+    });
+
+    test('returns no error for valid date value', () => {
+        const result = checkDialogElementForError(baseElement, '2026-02-12', makeIntl());
+        expect(result).toBeNull();
+    });
+
+    test('returns no error for optional empty date field', () => {
+        const optionalElement = {...baseElement, optional: true};
+        const result = checkDialogElementForError(optionalElement, '', makeIntl());
+        expect(result).toBeNull();
+    });
+
+    test('returns required error for empty required datetime field', () => {
+        const datetimeElement = {...baseElement, type: 'datetime' as InteractiveDialogElementType};
+        const result = checkDialogElementForError(datetimeElement, '', makeIntl());
+        expect(result).toBe('This field is required.');
+    });
+
+    test('returns no error for valid datetime value', () => {
+        const datetimeElement = {...baseElement, type: 'datetime' as InteractiveDialogElementType};
+        const result = checkDialogElementForError(datetimeElement, '2026-02-12T14:30:00Z', makeIntl());
+        expect(result).toBeNull();
+    });
+});

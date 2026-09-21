@@ -93,28 +93,6 @@ export const observePostAuthor = (database: Database, post: PostModel) => {
     return observeUser(database, post.userId);
 };
 
-const getServerUrlForDatabase = (database: Database) => {
-    // Primary match: direct object-identity comparison (works in all normal call paths).
-    // Secondary match: compare internal WatermelonDB adapter `dbName` as a fallback for
-    // cases where the Database instance is re-wrapped. `dbName` is not part of the public
-    // WatermelonDB API — if the library changes its internals this fallback silently returns
-    // undefined and callers fall back to the non-server-aware observable (no crash, no data
-    // loss — the 2-minute TTL on unsaved posts still self-heals).
-    const databaseName = (database.adapter as {dbName?: string}).dbName;
-
-    return Object.entries(DatabaseManager.serverDatabases).find(([, serverDatabase]) => {
-        if (!serverDatabase) {
-            return false;
-        }
-
-        if (serverDatabase.database === database) {
-            return true;
-        }
-
-        return (serverDatabase.database.adapter as {dbName?: string}).dbName === databaseName;
-    })?.[0];
-};
-
 export const observePostSaved = (database: Database, postId: string, serverUrl?: string) => {
     const savedPreference$ = querySavedPostsPreferences(database, postId).
         observeWithColumns(['value']).pipe(
@@ -124,7 +102,7 @@ export const observePostSaved = (database: Database, postId: string, serverUrl?:
             distinctUntilChanged(),
         );
 
-    const resolvedServerUrl = serverUrl || getServerUrlForDatabase(database);
+    const resolvedServerUrl = serverUrl || DatabaseManager.getServerUrlForDatabase(database);
     if (!resolvedServerUrl) {
         return savedPreference$;
     }
@@ -282,7 +260,7 @@ export const observeSavedPostsByIds = (database: Database, postIds: string[], se
         switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
     );
 
-    const resolvedServerUrl = serverUrl || getServerUrlForDatabase(database);
+    const resolvedServerUrl = serverUrl || DatabaseManager.getServerUrlForDatabase(database);
     if (!resolvedServerUrl) {
         return savedPostIds;
     }
@@ -448,4 +426,26 @@ export const syncPermalinkPreviewsForEditedPost = async (
         logWarning('Error syncing permalink previews for edited post:', error);
         return [];
     }
+};
+
+// Returns the create_at of the nth post in channelId that is strictly older
+// than anchor (sorted descending). Returns undefined when fewer than n such
+// posts exist
+export const createAtOfNthPostOlderThan = async (
+    database: Database,
+    channelId: string,
+    anchor: number,
+    n: number,
+): Promise<number | undefined> => {
+    const posts = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', Q.eq(channelId)),
+        Q.where('create_at', Q.lt(anchor)),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.desc),
+        Q.take(n),
+    ).fetch();
+    if (posts.length < n) {
+        return undefined;
+    }
+    return posts[posts.length - 1].createAt;
 };

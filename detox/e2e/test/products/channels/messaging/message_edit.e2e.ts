@@ -56,15 +56,15 @@ describe('Messaging - Message Edit', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: originalPostListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(originalPostListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        // # Dismiss the keyboard so the just-posted message is not occluded (interactive
+        // dismiss needs a downward drag, not a programmatic scroll).
+        await ChannelScreen.dismissKeyboard();
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
@@ -72,7 +72,7 @@ describe('Messaging - Message Edit', () => {
         // # Wait for the bottom-sheet edit option to fully slide in before tapping
         // (iOS 26.x can leave the row clipped mid-animation and fail with "not hittable").
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();
@@ -80,9 +80,7 @@ describe('Messaging - Message Edit', () => {
         // # Edit post message and tap save button
         const updatedMessage = `${message} edit`;
         await EditPostScreen.messageInput.replaceText(updatedMessage);
-        await EditPostScreen.saveButton.tap();
-
-        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+        await EditPostScreen.save();
 
         // # Dismiss the keyboard — try/catch because empty channel has no scroll overflow.
         // Use toExist below since channel-intro card pushes a single post under 75% visibility.
@@ -104,22 +102,22 @@ describe('Messaging - Message Edit', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
-        // # Scroll the post list (not the post item) to dismiss the keyboard and ensure post is tappable
-        await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
+        // # Dismiss the keyboard so the just-posted message is not occluded (interactive
+        // dismiss needs a downward drag, not a programmatic scroll).
+        await ChannelScreen.dismissKeyboard();
 
         // # Open post options for the message that was just posted and tap edit option
         await ChannelScreen.openPostOptionsFor(post.id, message);
 
         // # Wait for the bottom-sheet edit option to fully slide in before tapping.
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();
@@ -146,8 +144,7 @@ describe('Messaging - Message Edit', () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem: parentPostListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, message);
 
         // # Swipe (not scroll) to dismiss keyboard — only real touch gestures trigger
@@ -174,7 +171,7 @@ describe('Messaging - Message Edit', () => {
 
         // # Wait for the bottom-sheet edit option to fully slide in.
         await waitFor(PostOptionsScreen.editPostOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await PostOptionsScreen.editPostOption.tap();
+        await PostOptionsScreen.editPostOption.tap({x: 1, y: 1});
 
         // * Verify on edit post screen
         await EditPostScreen.toBeVisible();
@@ -182,9 +179,7 @@ describe('Messaging - Message Edit', () => {
         // # Edit reply post message and tap save button
         const updatedReplyMessage = `${replyMessage} edit`;
         await EditPostScreen.messageInput.replaceText(updatedReplyMessage);
-        await EditPostScreen.saveButton.tap();
-
-        await expect(EditPostScreen.editPostScreen).not.toBeVisible();
+        await EditPostScreen.save();
 
         // # Dismiss keyboard (see above for try/catch + toExist rationale).
         try {

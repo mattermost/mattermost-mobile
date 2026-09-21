@@ -23,13 +23,18 @@ type Props = {
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: NavigationButtonProps[];
+    rightComponent?: React.ReactNode;
     scrollValue?: SharedValue<number>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
+
+    // Replaces the subtitle row when provided. See NavigationHeader's Props.
+    subtitleComponent?: React.ReactElement;
     theme: Theme;
     title?: string;
     titleCompanion?: React.ReactElement;
+    titleTestID?: string;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -130,13 +135,16 @@ const Header = ({
     onBackPress,
     onTitlePress,
     rightButtons,
+    rightComponent,
     scrollValue,
     showBackButton = true,
     subtitle,
     subtitleCompanion,
+    subtitleComponent,
     theme,
     title,
     titleCompanion,
+    titleTestID = 'navigation.header.title',
 }: Props) => {
     const styles = getStyleSheet(theme);
     const insets = useSafeAreaInsets();
@@ -174,11 +182,11 @@ const Header = ({
         return {
             marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
             paddingHorizontal: Platform.select({
-                ios: rightButtons?.length === 2 ? 90 : 60,
+                ios: rightButtons?.length === 2 || rightComponent ? 90 : 60,
                 android: 8,
             }),
         };
-    }, [leftComponent, showBackButton, rightButtons]);
+    }, [leftComponent, showBackButton, rightButtons, rightComponent]);
 
     return (
         <Animated.View style={containerStyle}>
@@ -216,14 +224,19 @@ const Header = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 style={[styles.title, opacity]}
-                                testID='navigation.header.title'
+                                testID={titleTestID}
                             >
                                 {title}
                             </Animated.Text>
                             {titleCompanion}
                         </View>
                         }
-                        {!isLargeTitle && Boolean(subtitle || subtitleCompanion) &&
+                        {!isLargeTitle && Boolean(subtitleComponent) &&
+                        <View style={styles.subtitleContainer}>
+                            {subtitleComponent}
+                        </View>
+                        }
+                        {!isLargeTitle && !subtitleComponent && Boolean(subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
                                 ellipsizeMode='tail'
@@ -240,12 +253,17 @@ const Header = ({
                 </TouchableWithFeedback>
             </Animated.View>
             <Animated.View style={styles.rightContainer}>
+                {rightComponent}
                 {Boolean(rightButtons?.length) &&
                 rightButtons?.map((r) => (
                     <NavigationButton
-                        key={r.iconName}
+                        id={r.id}
+                        key={r.id}
+                        accessibilityLabel={r.accessibilityLabel}
                         borderless={r.borderless}
+                        disabled={r.disabled}
                         iconName={r.iconName}
+                        isLoading={r.isLoading}
                         count={r.count}
                         onPress={r.onPress}
                         rippleRadius={r.rippleRadius}

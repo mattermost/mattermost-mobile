@@ -3,6 +3,7 @@
 import {BehaviorSubject} from 'rxjs';
 
 const loadingTeamChannels: {[serverUrl: string]: BehaviorSubject<number>} = {};
+const hasEverStartedSync: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
 export const getLoadingTeamChannelsSubject = (serverUrl: string) => {
     if (!loadingTeamChannels[serverUrl]) {
@@ -11,7 +12,24 @@ export const getLoadingTeamChannelsSubject = (serverUrl: string) => {
     return loadingTeamChannels[serverUrl];
 };
 
+export const getHasEverStartedSyncSubject = (serverUrl: string) => {
+    if (!hasEverStartedSync[serverUrl]) {
+        hasEverStartedSync[serverUrl] = new BehaviorSubject(false);
+    }
+    return hasEverStartedSync[serverUrl];
+};
+
 export const setTeamLoading = (serverUrl: string, loading: boolean) => {
     const subject = getLoadingTeamChannelsSubject(serverUrl);
     subject.next(subject.value + (loading ? 1 : -1));
+    if (loading) {
+        const ever = getHasEverStartedSyncSubject(serverUrl);
+        if (!ever.value) {
+            ever.next(true);
+        }
+    }
+};
+
+export const resetHasEverStartedSync = (serverUrl: string) => {
+    getHasEverStartedSyncSubject(serverUrl).next(false);
 };

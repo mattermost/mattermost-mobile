@@ -46,7 +46,7 @@
   "apps.error.lookup.error_preparing_request": "Ruošiant peržiūros užklausą įvyko klaida: {errorMessage}",
   "apps.error.malformed_binding": "Šis susiejimas nėra tinkamai suformuotas. Susisiekite su programėlės kūrėju.",
   "apps.error.parser": "Analizavimo klaida: {error}",
-  "apps.error.parser.empty_value": "tuščios reikšmės neleidžiamos",
+  "apps.error.parser.empty_value": "Tuščios reikšmės neleidžiamos.",
   "apps.error.parser.execute_non_leaf": "Turite pasirinkti antrinę komandą.",
   "apps.error.parser.missing_binding": "Trūksta komandų sąsajų.",
   "apps.error.parser.missing_field_value": "Trūksta lauko reikšmės.",

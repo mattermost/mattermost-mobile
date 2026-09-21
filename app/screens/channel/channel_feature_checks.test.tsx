@@ -67,4 +67,27 @@ describe('shouldShowChannelBanner', () => {
     it('should return true for valid private channel with complete banner info and enterprise advanced license', () => {
         expect(shouldShowChannelBanner(General.PRIVATE_CHANNEL, validLicense, validBannerInfo)).toBe(true);
     });
+
+    it('should return true when classification markings are enabled even without native banner', () => {
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, undefined, true)).toBe(true);
+    });
+
+    it('should return false when classification is enabled but channel type is DM', () => {
+        expect(shouldShowChannelBanner(General.DM_CHANNEL, validLicense, undefined, true)).toBe(false);
+    });
+
+    it('should return true when channel attributes are enabled without a native banner', () => {
+        // An attribute designated for the banner is the only source on a server
+        // that has channel attributes but not classification markings. Without this
+        // the component never mounts and the banner is unreachable.
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, undefined, false, true)).toBe(true);
+    });
+
+    it('should return false when neither feature is enabled and there is no native banner', () => {
+        expect(shouldShowChannelBanner(General.OPEN_CHANNEL, validLicense, undefined, false, false)).toBe(false);
+    });
+
+    it('should still exclude DMs when channel attributes are enabled', () => {
+        expect(shouldShowChannelBanner(General.DM_CHANNEL, validLicense, undefined, false, true)).toBe(false);
+    });
 });

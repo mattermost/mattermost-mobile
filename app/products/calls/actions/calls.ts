@@ -3,8 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
@@ -17,6 +17,14 @@ import {
     showErrorAlertOnClose,
 } from '@calls/alerts';
 import {
+    endNativeCall,
+    mirrorMuteToNativeCall,
+    registerOutgoingNativeCall,
+    reportNativeCallConnected,
+} from '@calls/native_call';
+import {
+    cancelOutgoingCall,
+    clearStartUnmuted,
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
@@ -28,28 +36,28 @@ import {
     setCalls,
     setChannelEnabled,
     setConfig,
+    setJoiningChannelId,
     setPluginEnabled,
     setScreenShareURL,
-    setSpeakerPhone,
+    startOutgoingCall,
 } from '@calls/state';
-import {type AudioDevice, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
+import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
 import {areGroupCallsAllowed} from '@calls/utils';
-import {General, Preferences, Screens} from '@constants';
+import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
-import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {queryDisplayNamePreferences} from '@queries/servers/preference';
-import {getConfig, getCurrentTeamId, getLicense, setCurrentTeamId} from '@queries/servers/system';
+import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
-import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
-import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
+import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
@@ -226,6 +234,7 @@ export const joinCall = async (
     intl: IntlShape,
     title?: string,
     rootId?: string,
+    opts?: {startedByMe?: boolean; startUnmuted?: boolean},
 ): Promise<{ error?: unknown; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
@@ -238,26 +247,45 @@ export const joinCall = async (
         connection.disconnect();
         connection = null;
     }
-    setSpeakerphoneOn(false);
-    newCurrentCall(serverUrl, channelId, userId);
+    newCurrentCall(serverUrl, channelId, userId, opts);
 
+    // Register with the system call UI so the user gets lock-screen /
+    // control-center controls if they background or lock mid-call. Skip
+    // when a mapping already exists — that means we're inside the
+    // inbound-push flow and the native layer already reported the call.
+    const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
+
+    // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
+    // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
+    // reject long after the user has started or answered a different call. The close callback and
+    // the catch below must act on *this* connection, never on whatever is current by then.
+    let conn: CallsConnection;
     try {
-        connection = await newConnection(serverUrl, channelId, (err?: Error) => {
-            myselfLeftCall();
+        conn = await newConnection(serverUrl, channelId, (err?: Error) => {
+            // Tearing down the call state is only ours to do while we're still the current
+            // connection: an abandoned join closing late would otherwise drop the user out of
+            // the call they moved on to.
+            if (connection === conn) {
+                myselfLeftCall();
+            }
+            endNativeCall(serverUrl, channelId, err ? 'failed' : 'remoteEnded');
             if (err) {
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, title, rootId);
+        }, setScreenShareURL, hasMicPermission, intl, title, rootId);
+        connection = conn;
     } catch (error) {
+        endNativeCall(serverUrl, channelId, 'failed');
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 
     try {
-        const sessionId = await connection.waitForPeerConnection();
+        const sessionId = await conn.waitForPeerConnection();
 
         setCurrentCallConnected(channelId, sessionId);
+        reportNativeCallConnected(ownedNativeUUID);
 
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -279,9 +307,30 @@ export const joinCall = async (
 
         return {data: channelId};
     } catch (e) {
-        connection.disconnect();
-        connection = null;
+        conn.disconnect();
+        if (connection === conn) {
+            connection = null;
+        }
         return {error: `unable to connect to the voice call: ${e}`};
+    }
+};
+
+// Opens call screen immediately; shows 'Connecting' until joined.
+export const openOutgoingCallScreen = (serverUrl: string, channelId: string) => {
+    startOutgoingCall(serverUrl, channelId);
+    navigateToScreen(Screens.CALL);
+};
+
+export const joinCallAndOpenCallScreen = async (intl: IntlShape, serverUrl: string, channelId: string) => {
+    setJoiningChannelId(channelId);
+    try {
+        const joined = await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        if (joined) {
+            navigateToScreen(Screens.CALL);
+        }
+        return joined;
+    } finally {
+        setJoiningChannelId(null);
     }
 };
 
@@ -300,8 +349,18 @@ export const leaveCallConfirmation = async (
     serverUrl: string,
     channelId: string,
     leaveCb?: () => void) => {
-    const showHostControls = (isHost || isAdmin) && otherParticipants;
-    const ret = await endCallConfirmationAlert(intl, showHostControls) as EndCallReturn;
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const channel = database ? await getChannelById(database, channelId) : undefined;
+    const isNotDMChannel = Boolean(channel) && !isDMChannel(channel?.type);
+
+    const showHostControls = isNotDMChannel && (isHost || isAdmin) && otherParticipants;
+    if (!showHostControls) {
+        leaveCall();
+        leaveCb?.();
+        return;
+    }
+
+    const ret = await endCallConfirmationAlert(intl) as EndCallReturn;
     switch (ret) {
         case EndCallReturn.Cancel:
             return;
@@ -318,12 +377,22 @@ export const leaveCallConfirmation = async (
 export const muteMyself = () => {
     if (connection) {
         connection.mute();
+        mirrorMuteToNativeCall(true);
     }
 };
 
 export const unmuteMyself = () => {
-    if (connection) {
-        connection.unmute();
+    if (!connection) {
+        return;
+    }
+
+    const unmuted = connection.unmute();
+    mirrorMuteToNativeCall(false);
+
+    if (!unmuted) {
+        // Nothing left the device, so the server will never tell us we're live. Stop saying we are.
+        logDebug('calls: unmuteMyself had no voice track to unmute');
+        clearStartUnmuted();
     }
 };
 
@@ -351,13 +420,11 @@ export const sendReaction = (emoji: EmojiData) => {
     }
 };
 
-export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
-    InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
-    setSpeakerPhone(speakerphoneOn);
-};
-
-export const setPreferredAudioRoute = async (audio: AudioDevice) => {
-    return InCallManager.chooseAudioRoute(audio);
+export const setPreferredAudioRoute = async (audio: AudioDeviceType, fromUser = false) => {
+    if (fromUser) {
+        connection?.setUserSelectedAudioRoute(audio);
+    }
+    return CallsNative.setAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {
@@ -408,16 +475,10 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
     }, {numParticipants: numSessions, displayName: channel.displayName});
 
     if (channel.type === General.DM_CHANNEL) {
-        const otherID = getUserIdFromChannelName(currentUserId, channel.name);
-        const otherUser = await getUserById(database, otherID);
-        const license = await getLicense(database);
-        const config = await getConfig(database);
-        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
             defaultMessage: 'Are you sure you want to end the call with {displayName}?',
-        }, {displayName: displayUsername(otherUser, intl.locale, displaySetting)});
+        }, {displayName: channel.displayName});
     }
 
     return msg;
@@ -509,7 +570,17 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 };
             }
             const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+
+            const openImmediatelyForDM = channelType === General.DM_CHANNEL && !getCurrentCall();
+            if (openImmediatelyForDM) {
+                openOutgoingCallScreen(serverUrl, channelId);
+            }
+
+            const started = await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
+            if (openImmediatelyForDM && !started) {
+                await cancelOutgoingCall(serverUrl, channelId);
+            }
+
             return {handled: true};
         }
         case 'join': {

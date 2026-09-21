@@ -3,7 +3,7 @@
 
 type logLevel = 'ERROR' | 'WARNING' | 'INFO';
 
-type BaseRequestGroupLabel = 'Login' | 'Cold Start' | 'Notification' | 'DeepLink' | 'WebSocket Reconnect' | 'Server Switch';
+type BaseRequestGroupLabel = 'Login' | 'Cold Start' | 'Notification' | 'DeepLink' | 'WebSocket Reconnect' | 'Server Switch' | 'Database Recovery';
 type RequestGroupLabel = BaseRequestGroupLabel | `${BaseRequestGroupLabel} Deferred`;
 
 type ClientOptions = {

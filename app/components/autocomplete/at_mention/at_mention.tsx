@@ -189,7 +189,6 @@ const AtMention = ({
         return (
             <AtMentionItem
                 user={item}
-                showBadges={true}
                 onPress={completeMention}
                 testID='autocomplete.at_mention_item'
             />

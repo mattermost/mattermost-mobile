@@ -40,9 +40,9 @@ describe('Autocomplete - Edit Channel', () => {
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
 
-        // # Open a channel screen, open channel info screen, and open edit channel screen
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();
+        await ChannelInfoScreen.toBeVisible();
         await CreateOrEditChannelScreen.openEditChannel();
     });
 

@@ -5,9 +5,12 @@ import {
     Alert,
     ProfilePicture,
 } from '@support/ui/component';
+import {dismissKnownModals} from '@support/ui/modal_dismiss';
 import {HomeScreen} from '@support/ui/screen';
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+import {logInfo} from '../../../../provision/log';
 
 class AccountScreen {
     testID = {
@@ -26,12 +29,14 @@ class AccountScreen {
         offlineUserStatusOption: 'user_status.offline.option',
         customStatusFailureMessage: 'account.custom_status.failure_message',
         customStatusClearButton: 'account.custom_status.clear.button',
+        customStatusText: 'account.custom_status.custom_status_text',
     };
 
     accountScreen = element(by.id(this.testID.accountScreen));
     accountScrollView = element(by.id(this.testID.accountScrollView));
     userPresenceOption = element(by.id(this.testID.userPresenceOption));
     setStatusOption = element(by.id(this.testID.setStatusOption));
+    customStatusText = element(by.id(this.testID.customStatusText));
     yourProfileOption = element(by.id(this.testID.yourProfileOption));
     settingsOption = element(by.id(this.testID.settingsOption));
     logoutOption = element(by.id(this.testID.logoutOption));
@@ -63,6 +68,19 @@ class AccountScreen {
         return element(by.id(`user_status.label.${status}`)).atIndex(0);
     };
 
+    selectUserStatus = async (option: Detox.NativeElement) => {
+        await this.userPresenceOption.tap();
+        await waitFor(option).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await option.tap();
+        await waitForElementToNotExist(option, timeouts.TEN_SEC);
+        await this.toBeVisible();
+    };
+
+    waitForUserPresence = async (status: string, label: string) => {
+        await waitFor(this.getUserPresenceIndicator(status)).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(this.getUserPresenceLabel(status)).toHaveText(label).withTimeout(timeouts.TEN_SEC);
+    };
+
     getCustomStatus = (emojiName: string, duration: string) => {
         const accountCustomStatusEmojiMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_emoji.${emojiName}`);
         const accountCustomStatusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`);
@@ -78,32 +96,26 @@ class AccountScreen {
     toBeVisible = async () => {
         const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
         await waitFor(this.accountScreen).toExist().withTimeout(timeout);
-
-        // Detox's `toExist()` only confirms the account drawer view is in the
-        // hierarchy — on iOS 26 the slide-up animation can still be in progress
-        // at that moment, so the immediately-following
-        // `expect(child).toBeVisible()` assertions (e.g. the user-info profile
-        // picture in MM-T4988_1) fail the 75% visibility threshold because the
-        // child's bounds are still being transformed. Wait for a known
-        // always-rendered row (the Log out option) to pass the visibility
-        // threshold instead of sleeping a fixed duration: this is the actual
-        // condition callers depend on, completes as soon as the modal lands,
-        // and fails fast if the drawer never settles.
         await waitFor(this.logoutOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
 
         return this.accountScreen;
     };
 
     open = async () => {
+        await dismissKnownModals(2);
+
+        try {
+            await waitFor(HomeScreen.channelListTab).toExist().withTimeout(timeouts.FIVE_SEC);
+            await HomeScreen.channelListTab.tap();
+            await wait(timeouts.ONE_SEC);
+        } catch { /* tab bar may already show channels */ }
+
         // Dismiss any lingering "Logout not complete" dialog left over from a
         // previous test's logout. This can happen on both platforms when the
         // server was unreachable and the handler in logout() didn't dismiss it.
-        try {
-            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            console.log('[debug:2a0143] AccountScreen.open dismissed lingering "Logout not complete" dialog'); // eslint-disable-line no-console
-            await Alert.continueAnywayButton.tap();
-            await wait(timeouts.HALF_SEC);
-        } catch { /* not present */ }
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TWO_SEC)) {
+            logInfo('AccountScreen.open dismissed lingering "Logout not complete" dialog');
+        }
 
         // Dismiss iOS native dialogs whose backdrop UIView covers the full screen and
         // blocks all hit-tests — these appear after login on iOS 26+ (iPad and iPhone).
@@ -124,13 +136,9 @@ class AccountScreen {
 
         // Dismiss the "Removed from team" alert if a stale WebSocket team-
         // membership-change event from a previous test file's teardown reaches
-        // this session — observed in ios-results-rz4222ls8c-2's MM-T4990_2
-        // testFnFailure.png where a "Removed from team / You have been removed
-        // from team ." dialog overlay sat on top of the channel list and
-        // blocked every hit-test on `tab_bar.account.tab`. The dialog is a
-        // native Alert (see `app/utils/navigation/index.tsx#alertTeamRemove`),
-        // so we first confirm the title is present (avoids tapping an
-        // unrelated OK button) and then dismiss via `Alert.okButton`, whose
+        // this session. The dialog can sit on top of the channel list and
+        // block every hit-test on the account tab. Confirm its title before
+        // dismissing through `Alert.okButton`, whose
         // platform-aware locator handles iOS (`by.label('OK').atIndex(1)`) and
         // Android (`by.text('OK')`) correctly.
         try {
@@ -171,6 +179,69 @@ class AccountScreen {
         }
     };
 
+    // Emoji wrapper Views fail Detox visibility on Android and can be briefly missing on iOS,
+    // so sync on the plain <Text> and only require the emoji/clear button to exist.
+    waitForCustomStatus = async (status: {emoji: string; duration: string; text?: string}) => {
+        const customStatusScreen = element(by.id('custom_status.screen'));
+        await waitForElementToNotExist(customStatusScreen, timeouts.TEN_SEC);
+        await this.toBeVisible();
+
+        const {accountCustomStatusEmoji, accountCustomStatusText} = this.getCustomStatus(status.emoji, status.duration);
+        const timeout = isAndroid() ? timeouts.TWENTY_SEC : timeouts.TEN_SEC;
+
+        if (status.text === undefined) {
+            await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+            await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
+            return;
+        }
+
+        // Android: toHaveText requires visibility, but the status text can exist before it passes
+        // the visibility threshold — match id and text with toExist instead.
+        if (isAndroid()) {
+            const statusTextMatcher = by.id(`${this.testID.customStatusPrefix}custom_status_text`).and(by.text(status.text));
+            await waitFor(element(statusTextMatcher)).toExist().withTimeout(timeout);
+        } else {
+            await waitFor(accountCustomStatusText).toHaveText(status.text).withTimeout(timeout);
+        }
+        await waitFor(accountCustomStatusEmoji).toExist().withTimeout(timeout);
+        await waitFor(this.customStatusClearButton).toExist().withTimeout(timeout);
+    };
+
+    // Wait for the account row to show its unset state.
+    waitForCustomStatusCleared = async (timeout: number = timeouts.TWENTY_SEC) => {
+        // Android: toHaveText requires visibility and the row can exist before it passes the
+        // visibility threshold -- match id and text with toExist, as waitForCustomStatus does.
+        if (isAndroid()) {
+            const clearedMatcher = by.id(this.testID.customStatusText).and(by.text('Set a custom status'));
+            await waitFor(element(clearedMatcher)).toExist().withTimeout(timeout);
+            return;
+        }
+
+        await waitFor(this.customStatusText).toHaveText('Set a custom status').withTimeout(timeout);
+    };
+
+    // Clear the custom status from the account row and wait for the row to show its unset
+    // state.
+    clearCustomStatus = async () => {
+        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await this.customStatusClearButton.tap();
+
+        try {
+            await this.waitForCustomStatusCleared(timeouts.TEN_SEC);
+            return;
+        } catch {
+            // First tap did not take; retry on the control's centre.
+        }
+
+        try {
+            await this.customStatusClearButton.tap({x: 20, y: 20});
+        } catch {
+            // The clear button is only rendered while a status is set, so it is gone if the
+            // first tap landed just after the wait above expired. Fall through to the wait.
+        }
+        await this.waitForCustomStatusCleared(timeouts.TWENTY_SEC);
+    };
+
     logout = async (serverDisplayName: string | null = null) => {
         await this.logoutOption.tap();
         if (serverDisplayName) {
@@ -182,12 +253,8 @@ class AccountScreen {
         // unreachable (offline, slow network). Tap "Continue Anyway" to force
         // the logout to complete instead of leaving the app in a stuck state.
         // Use TEN_SEC because CI environments can be slow to show this dialog.
-        try {
-            await waitFor(Alert.logoutNotCompleteTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            console.log('[debug:2a0143] AccountScreen.logout dismissed "Logout not complete" dialog'); // eslint-disable-line no-console
-            await Alert.continueAnywayButton.tap();
-        } catch {
-            // Dialog didn't appear — normal logout completed successfully
+        if (await Alert.dismissLogoutNotCompleteIfPresent(timeouts.TEN_SEC)) {
+            logInfo('AccountScreen.logout dismissed "Logout not complete" dialog');
         }
 
         await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);

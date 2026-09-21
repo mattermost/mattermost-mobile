@@ -34,7 +34,8 @@ type PostType = PostTypesUserCreatable
     | 'custom_calls_recording'
     | 'custom_run_update'
     | 'custom_llmbot'
-    | 'custom_llm_postback';
+    | 'custom_llm_postback'
+    | 'custom_agent_mention_reminder';
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph' | 'permalink';
 
@@ -140,6 +141,8 @@ type Post = {
 type PostProps = {
     disable_group_highlight?: boolean;
     mentionHighlightDisabled: boolean;
+    ai_generated_by?: string;
+    ai_generated_by_username?: string;
 };
 
 type PostResponse = {

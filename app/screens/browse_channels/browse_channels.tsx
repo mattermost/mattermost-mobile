@@ -4,7 +4,7 @@
 import {useNavigation} from 'expo-router';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {fetchMyChannel, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import Loading from '@components/loading';
@@ -36,7 +36,7 @@ const style = StyleSheet.create({
     },
     searchBar: {
         marginLeft: 12,
-        marginRight: Platform.select({ios: 4, default: 12}),
+        marginRight: 12,
         marginTop: 12,
     },
     loadingContainer: {
@@ -129,9 +129,7 @@ export default function BrowseChannels(props: Props) {
         // requires the channel + membership to be in the local DB via `getMyChannel`,
         // and Browse Channels' API fetch doesn't persist them — it only populates the
         // browse list. Calling `switchToChannelById` directly was a no-op on iOS,
-        // leaving the test waiting for `channel.screen` until the 60s timeout
-        // (CI run 26368981355, all 7 tests in
-        // detox/e2e/test/products/channels/channels/archived_channel_interactions.e2e.ts).
+        // leaving the screen waiting for the channel to open.
         //
         // `fetchMyChannel` pulls channel + membership from the server and persists
         // them via `storeMyChannelsForTeam`, exactly mirroring what joinChannel does

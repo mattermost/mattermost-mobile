@@ -84,18 +84,23 @@ export const SYSTEM_IDENTIFIERS = {
     PLAYBOOKS_VERSION: 'playbooks_version',
     AGENTS_VERSION: 'agents_version',
     LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
+    ACCESS_CONTROL_GROUP_ID: 'accessControlGroupId',
+    LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
 };
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    VOIP_DEVICE_TOKEN: 'voipDeviceToken',
     DONT_ASK_FOR_REVIEW: 'dontAskForReview',
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     ONBOARDING: 'onboarding',
+    LAST_VIEWED_TEAM: 'lastViewedTeam',
     LAST_VIEWED_CHANNEL: 'lastViewedChannel',
     LAST_VIEWED_THREAD: 'lastViewedThread',
     PUSH_DISABLED_ACK: 'pushDisabledAck',
     CACHE_MIGRATION: 'cacheMigration',
+    PUSH_SIGNING_KEY: 'pushSigningKey',
 };
 
 export enum OperationType {

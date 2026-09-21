@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.mattermost.callsnative">
+
+    <!-- Required by the Mattermost Calls foreground service. Declared here
+         so anyone consuming this library inherits them via manifest merge;
+         duplicates in the host app's manifest are deduped by android:name. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <!-- Keeps the microphone alive while a Mattermost call is in
+             progress and the app is backgrounded. -->
+        <service
+            android:name="com.mattermost.callsnative.MMCallsForegroundService"
+            android:foregroundServiceType="microphone"
+            android:exported="false" />
+    </application>
+</manifest>

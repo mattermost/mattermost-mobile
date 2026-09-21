@@ -3,16 +3,18 @@
 
 import {FlashList, type FlashListRef, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, View, type LayoutChangeEvent} from 'react-native';
+import {DeviceEventEmitter, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Events, Screens} from '@constants';
-import {HOME_PADDING} from '@constants/view';
+import {BOTTOM_TAB_HEIGHT, HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsInitialSync} from '@hooks/is_initial_sync';
 import {useTeamSwitch} from '@hooks/team_switch';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {isDMorGM} from '@utils/channel';
@@ -32,6 +34,7 @@ type Props = {
     unreadChannelIds: Set<string>;
     onlyUnreads: boolean;
     isTablet: boolean;
+    listHeight: number;
 };
 
 const ESTIMATED_ITEM_SIZE = 42;
@@ -59,15 +62,24 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: Props) => {
+const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, listHeight}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const insets = useSafeAreaInsets();
     const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
+    const listContentStyle = useMemo(() => {
+        if (isTablet) {
+            return undefined;
+        }
+
+        // Custom tab bar overlays the list; without this the last row cannot scroll above it.
+        return {paddingBottom: BOTTOM_TAB_HEIGHT + insets.bottom};
+    }, [isTablet, insets.bottom]);
     const switchingTeam = useTeamSwitch();
+    const isInitialSync = useIsInitialSync(serverUrl);
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
     const [isChannelScreenActive, setChannelScreenActive] = useState(true);
-    const [listHeight, setListHeight] = useState(0);
     const [hasUnreadsAbove, setHasUnreadsAbove] = useState(false);
     const [hasUnreadsBelow, setHasUnreadsBelow] = useState(false);
 
@@ -128,11 +140,6 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
             />
         );
     }, [styles, onChannelSwitch, isChannelScreenActive]);
-
-    const onListLayout = useCallback((event: LayoutChangeEvent) => {
-        const {height} = event.nativeEvent.layout;
-        setListHeight(height);
-    }, []);
 
     const onViewableItemsChanged = useCallback(({viewableItems}: {viewableItems: Array<ViewToken<FlattenedItem>>}) => {
         if (!viewableItems.length || !unreadChannelIds.size) {
@@ -218,13 +225,15 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
         return undefined;
     }, [showEmptyState, listHeight]);
 
-    if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads) {
+    if (flattenedItems.length === 0 && !switchingTeam && !initialLoad && !onlyUnreads && !isInitialSync) {
         return <LoadCategoriesError/>;
     }
 
+    const showLoading = switchingTeam || initialLoad || (isInitialSync && flattenedItems.length === 0);
+
     return (
         <>
-            {!switchingTeam && !initialLoad && (
+            {!showLoading && (
                 <FlashList<FlattenedItem>
                     ref={listRef}
                     testID='channel_list.flat_list'
@@ -235,13 +244,13 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet}: P
                     drawDistance={ESTIMATED_ITEM_SIZE * 20}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={listContentStyle}
                     ListEmptyComponent={ListEmptyComponent}
-                    onLayout={onListLayout}
                     onViewableItemsChanged={onViewableItemsChanged}
                     viewabilityConfig={VIEWABILITY_CONFIG}
                 />
             )}
-            {(switchingTeam || initialLoad) && (
+            {showLoading && (
                 <View style={styles.loadingView}>
                     <Loading
                         size='large'

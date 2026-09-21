@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useEffect} from 'react';
+import {Platform} from 'react-native';
 import {useSharedValue, withDelay, withTiming, type SharedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {
     InputContainerStateType,
     StateMachineEventType,
@@ -33,6 +33,8 @@ export type KeyboardStateContextReturn = StateContext & {
 };
 
 export const DEFAULT_POST_INPUT_HEIGHT = 95;
+
+const isAndroid = Platform.OS === 'android';
 
 export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): KeyboardStateContextReturn {
     const safeAreaInsets = useSafeAreaInsets();
@@ -180,7 +182,7 @@ export function useKeyboardStateContext(config: UseKeyboardStateContextConfig): 
 
             event.height = adjustedHeight;
 
-            const shouldSkipFakeEventCheck = isAndroidEdgeToEdge || isDraggingKeyboard.value || isEmojiSearchActive.value;
+            const shouldSkipFakeEventCheck = isAndroid || isDraggingKeyboard.value || isEmojiSearchActive.value;
 
             if (!shouldSkipFakeEventCheck) {
                 let currentProgress = event.progress ?? 0;

@@ -27,6 +27,7 @@ type OwnProps = {
 const enhancedWithoutPosts = withObservables(['channelId'], ({database, channelId}: OwnProps) => {
     return {
         appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
+        mmBlocksEnabled: observeConfigBooleanValue(database, 'FeatureFlagMmBlocksEnabled'),
         currentUser: observeCurrentUser(database),
         customEmojiNames: queryAllCustomEmojis(database).observeWithColumns(['name']).pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),

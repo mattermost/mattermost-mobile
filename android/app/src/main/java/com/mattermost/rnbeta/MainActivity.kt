@@ -1,9 +1,9 @@
 package com.mattermost.rnbeta
 
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.WindowCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -11,6 +11,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.mattermost.hardware.keyboard.MattermostHardwareKeyboardImpl
 import com.mattermost.rnutils.helpers.FoldableObserver
+import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory;
 import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
@@ -34,12 +35,13 @@ class MainActivity : ReactActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
         super.onCreate(savedInstanceState)
 
         setHWKeyboardConnected()
         lastOrientation = this.resources.configuration.orientation
         foldableObserver.onCreate()
-        WindowCompat.setDecorFitsSystemWindows(window, Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
     }
 
     override fun onStart() {
@@ -83,6 +85,24 @@ class MainActivity : ReactActivity() {
             }
         }
         return super.dispatchKeyEvent(event)
+    }
+
+    // Prebuilt react-android leaves ReactActivity's back callback disabled after
+    // invokeDefaultOnBackPressed(). Re-enable it so back handling works after resume.
+    // Remove when upgrading to React Native 0.84.0 or later.
+    override fun invokeDefaultOnBackPressed() {
+        super.invokeDefaultOnBackPressed()
+        reactBackPressedCallback?.isEnabled = true
+    }
+
+    private val reactBackPressedCallback: OnBackPressedCallback? by lazy {
+        try {
+            val field = ReactActivity::class.java.getDeclaredField("mBackPressedCallback")
+            field.isAccessible = true
+            field.get(this) as? OnBackPressedCallback
+        } catch (_: ReflectiveOperationException) {
+            null
+        }
     }
 
     private fun setHWKeyboardConnected() {

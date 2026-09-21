@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.mattermost.helpers.database_extension.getDatabaseForServer
+import com.mattermost.helpers.database_extension.isZeroPersistenceServer
 import com.mattermost.helpers.database_extension.saveToDatabase
 import com.mattermost.helpers.push_notification.addToDefaultCategoryIfNeeded
 import com.mattermost.helpers.push_notification.fetchMyChannel
@@ -38,6 +39,10 @@ class PushNotificationDataRunnable {
             mutex.withLock {
                 // for more info see: https://blog.danlew.net/2020/01/28/coroutines-and-java-synchronization-dont-mix/
                 val serverUrl: String = initialData.getString("server_url") ?: return null
+                if (dbHelper.isZeroPersistenceServer(serverUrl)) {
+                    TurboLog.i("ReactNative", "Skipping push notification data fetch for zero-persistence server=$serverUrl")
+                    return null
+                }
                 val db = dbHelper.getDatabaseForServer(context, serverUrl)
                 var result: Bundle? = null
 

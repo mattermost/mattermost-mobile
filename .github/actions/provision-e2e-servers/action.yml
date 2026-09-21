@@ -1,0 +1,98 @@
+# Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+# See LICENSE.txt for license information.
+name: Provision E2E test servers
+description: >-
+  Validate Matterwick server URLs, cache the demo-plugin fixture, and run
+  detox provision (license + plugins) on each unique URL. PR E2E and CMT share
+  this so dialog/plugin specs do not assume a pre-provisioned server.
+
+inputs:
+  server-urls:
+    description: Newline-separated HTTPS Mattermost test server URLs
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate server URLs
+      env:
+        SERVER_URLS: ${{ inputs.server-urls }}
+      run: |
+        set -euo pipefail
+        validate_url() {
+          local url="$1" label="$2"
+          if [ -z "$url" ]; then return 0; fi
+
+          if [[ "$url" =~ [[:space:]] ]]; then
+            echo "::error::$label contains whitespace: $url"
+            exit 1
+          fi
+
+          if [[ ! "$url" =~ ^https:// ]]; then
+            echo "::error::$label must use HTTPS: $url"
+            exit 1
+          fi
+
+          hostname=$(python3 -c 'import sys; from urllib.parse import urlparse; print(urlparse(sys.argv[1]).hostname or "")' "$url" | tr '[:upper:]' '[:lower:]')
+
+          if echo "$hostname" | grep -qE '^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|::1$|::ffff:|fe80:)'; then
+            echo "::error::$label points to a private/internal address: $hostname"
+            exit 1
+          fi
+
+          if ! echo "$hostname" | grep -qE '\.(cloud\.mattermost\.com|test\.mattermost\.cloud|mattermost\.com|mattermost\.cloud)$'; then
+            echo "::error::$label domain not in allowlist: $hostname"
+            exit 1
+          fi
+
+          echo "✓ $label validated: $hostname"
+        }
+
+        index=0
+        while IFS= read -r url; do
+          [ -z "$url" ] && continue
+          index=$((index + 1))
+          validate_url "$url" "SERVER_URL[$index]"
+        done <<< "$SERVER_URLS"
+
+        if [ "$index" -eq 0 ]; then
+          echo "::error::No server URLs provided to provision-e2e-servers"
+          exit 1
+        fi
+      shell: bash
+
+    # Runner (not the Mattermost origin) fetches the tarball. install_from_url
+    # through Cloudflare 524s and wedges config/patch + uploads for the shard.
+    - name: Cache demo plugin fixture
+      id: demo-plugin-cache
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+        key: mattermost-plugin-demo-linux-amd64-v0.11.1
+
+    - name: Download demo plugin fixture
+      if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p detox/e2e/support/fixtures
+        curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
+          "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
+        ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+      shell: bash
+
+    - name: Provision servers (license + plugins)
+      env:
+        SERVER_URLS: ${{ inputs.server-urls }}
+      run: |
+        set -euo pipefail
+        cd detox
+        npm ci --prefer-offline --no-audit --no-fund
+        declare -A provisioned=()
+        while IFS= read -r url; do
+          [ -z "$url" ] && continue
+          if [ -z "${provisioned[$url]+x}" ]; then
+            echo "--- Provisioning $url ---"
+            npm run provision -- "$url"
+            provisioned["$url"]=1
+          fi
+        done <<< "$SERVER_URLS"
+      shell: bash

@@ -13,27 +13,30 @@ struct ServerModel: Identifiable, Codable, Hashable {
   var displayName: String
   var url: String
   var hasChannels: Bool = false
+  var isZeroPersistence: Bool = false
   var maxMessageLength: Int64 = 4000
   var maxFileSize: Int64 = 50 * 1024 * 1024 // 50MB
   var maxImageResolution: Int64 = 7680 * 4320 // 8K, ~33MPX
   var uploadsDisabled: Bool = false
-  
+
   enum ServerKeys: String, CodingKey {
     case id, url
     case displayName = "display_name"
+    case persistenceFlag = "persistence_flag"
   }
-  
+
   init(id: String, displayName: String, url: String) {
     self.id = id
     self.displayName = displayName
     self.url = url
   }
-  
+
   init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: ServerKeys.self)
     id = try container.decode(String.self, forKey: .id)
     displayName = try container.decode(String.self, forKey: .displayName)
     url = try container.decode(String.self, forKey: .url)
+    isZeroPersistence = (try? container.decode(String.self, forKey: .persistenceFlag)) == "zero-persistence"
   }
   
   mutating func updateSettings(_ hasChannels: Bool, _ postSize: Int64?, _ fileSize: Int64?, _ uploadsEnabled: Bool) {

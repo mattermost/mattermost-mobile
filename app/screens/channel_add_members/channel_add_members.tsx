@@ -79,6 +79,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             marginRight: Platform.select({ios: 4, default: 12}),
             marginVertical: 12,
         },
+        listContainer: {
+            flex: 1,
+            marginLeft: 12,
+            marginRight: Platform.select({ios: 4, default: 12}),
+        },
         loadingContainer: {
             alignItems: 'center',
             backgroundColor: theme.centerChannelBg,
@@ -274,17 +279,19 @@ export default function ChannelAddMembers({
                         value={term}
                     />
                 </View>
-                <ServerUserList
-                    handleSelectProfile={handleSelectProfile}
-                    selectedIds={selectedIds}
-                    term={term}
-                    testID={`${TEST_ID}.user_list`}
-                    tutorialWatched={tutorialWatched}
-                    fetchFunction={userFetchFunction}
-                    searchFunction={userSearchFunction}
-                    createFilter={createUserFilter}
-                    location={Screens.CHANNEL_ADD_MEMBERS}
-                />
+                <View style={style.listContainer}>
+                    <ServerUserList
+                        handleSelectProfile={handleSelectProfile}
+                        selectedIds={selectedIds}
+                        term={term}
+                        testID={`${TEST_ID}.user_list`}
+                        tutorialWatched={tutorialWatched}
+                        fetchFunction={userFetchFunction}
+                        searchFunction={userSearchFunction}
+                        createFilter={createUserFilter}
+                        location={Screens.CHANNEL_ADD_MEMBERS}
+                    />
+                </View>
                 <SelectedUsers
                     selectedIds={selectedIds}
                     onRemove={handleRemoveProfile}

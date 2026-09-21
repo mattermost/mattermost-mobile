@@ -1,0 +1,137 @@
+# MM-T67856_2: Enabling the attach-app-logs toggle surfaces the option in the post attachment menu.
+#
+# PRE-CONDITIONS:
+#   - Same server config as MM-T67856_1 (AllowDownloadLogs enabled)
+#   - Any license tier: the report screen opens on unlicensed and Entry servers too
+#   - Toggle may start on or off — flow enables it idempotently
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Enabling the toggle on Report a Problem saves successfully
+#   - After returning to a channel, attachment menu shows "Attach app logs"
+#
+# testIDs:
+#   - tab_bar.account.tab
+#   - account.settings.option
+#   - settings.report_problem.option
+#   - report_problem.screen
+#   - report_problem.enable_log_attachments
+#   - report_problem.enable_log_attachments.toggled.false.button
+#   - report_problem.enable_log_attachments.toggled.true.button
+#   - tab_bar.home.tab
+#   - close.settings.button
+#   - channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}
+#   - channel.post_draft.quick_actions.attachment_action
+#   - file_attachment.attach_logs
+tags:
+  - MM-T67856_2
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in as the test user
+- runFlow: ../../subflows/auth/login.yml
+
+# # Open Account > Settings > Report a Problem.
+# Report a Problem can sit below the fold on small Android viewports.
+- tapOn:
+    id: "tab_bar.account.tab"
+- runFlow: ../../subflows/navigation/open_settings_report_problem.yml
+- tapOn:
+    id: "settings.report_problem.option"
+
+# * Verify the report screen opened.
+# The logs setting arrives with the server config, which can lag on first login.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.screen"
+    timeout: 30000
+
+# # Bring the toggle into view. It is below the fold and assertVisible does not auto-scroll.
+- scrollUntilVisible:
+    element:
+      id: "report_problem.enable_log_attachments"
+    direction: DOWN
+    timeout: 10000
+
+# # Tap the toggle switch to turn it ON. Use optional:true so if the toggle is
+# already ON (from a prior run's saved preference), the tap is skipped.
+- tapOn:
+    id: "report_problem.enable_log_attachments.toggled.false.button"
+    optional: true
+
+# * Verify the toggle confirms "on" state. This also gives the async savePreference
+# call time to complete (API + local DB write) before the app is killed.
+- extendedWaitUntil:
+    visible:
+      id: "report_problem.enable_log_attachments.toggled.true.button"
+    timeout: 10000
+
+# # Give the async DB write a moment to flush.
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# # Leave the report screen, then open the test channel from Home.
+# iOS 26.3: Maestro `back` does not dismiss modal-presented screens, so relaunch
+# (stopApp + clearState:false) until Home is visible. Android restores the report
+# screen across a kill/relaunch, so Home never appears (CI 33924565190). One
+# Android Back returns to Settings — the same frame as attach_logs.yml's
+# report-problem-dismissed.png and attach_logs_toggle_visible.yml's
+# report-problem-toggle-visible-end.png on CI 33933642709: header X, no tab bar.
+# Tap close.settings.button (that X), then Home.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - retry:
+          maxRetries: 3
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: false
+            - waitForAnimationToEnd:
+                timeout: 30000
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 30000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: Back
+      - extendedWaitUntil:
+          visible:
+            id: "settings.report_problem.option"
+          timeout: 10000
+      - takeScreenshot: attach-logs-settings-after-report-back
+      - tapOn:
+          id: "close.settings.button"
+      - extendedWaitUntil:
+          visible:
+            id: "tab_bar.home.tab"
+          timeout: 10000
+      - tapOn:
+          id: "tab_bar.home.tab"
+
+# # Wait for the channel list to render before navigating into the test channel.
+- extendedWaitUntil:
+    visible:
+      id: "channel_list.category.channels.channel_item.${TEST_CHANNEL_NAME}"
+    timeout: 30000
+
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# # Open the post-draft attachment menu. Adjust the id if `inspect_screen`
+# shows a different prefix on your build.
+- tapOn:
+    id: "channel.post_draft.quick_actions.attachment_action"
+
+# * Verify the Attach app logs option is now offered.
+- extendedWaitUntil:
+    visible:
+      id: "file_attachment.attach_logs"
+    timeout: 10000
+
+# # Capture the final state
+- takeScreenshot: attach-app-logs-option-offered

@@ -122,4 +122,20 @@ describe('*** Database Manager tests ***', () => {
         const after = await fetchServer();
         expect(after?.persistenceFlag).toBe('wiped');
     });
+
+    it('=> getServerUrlForDatabase resolves server URL from database instance', () => {
+        const serverUrl = serverUrls[1];
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        expect(DatabaseManager.getServerUrlForDatabase(database)).toBe(serverUrl);
+        expect(DatabaseManager.getServerUrlForDatabase({adapter: {dbName: 'missing'}} as Database)).toBeUndefined();
+    });
+
+    it('=> getServerUrlForDatabase falls back to adapter dbName', () => {
+        const serverUrl = serverUrls[1];
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const dbName = (database.adapter as {dbName?: string}).dbName;
+
+        expect(DatabaseManager.getServerUrlForDatabase({adapter: {dbName}} as Database)).toBe(serverUrl);
+    });
 });

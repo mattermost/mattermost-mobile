@@ -9,6 +9,7 @@ import {BackHandler, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {FadeIn, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {storeLastViewedTeamIdAndServer} from '@actions/app/global';
 import {refetchCurrentUser} from '@actions/remote/user';
 import FloatingCallContainer from '@calls/components/floating_call_container';
 import AnnouncementBanner from '@components/announcement_banner';
@@ -19,6 +20,7 @@ import {HOME_TAB_SCREENS} from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {navigateToScreen} from '@screens/navigation';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
@@ -42,6 +44,7 @@ type ChannelProps = {
     launchType: LaunchType;
     coldStart?: boolean;
     currentUserId?: string;
+    currentTeamId: string;
     hasCurrentUser: boolean;
     showIncomingCalls: boolean;
 };
@@ -135,6 +138,12 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [theme, insets.top]);
 
     useEffect(() => {
+        if (props.currentTeamId) {
+            storeLastViewedTeamIdAndServer(props.currentTeamId);
+        }
+    }, [props.currentTeamId]);
+
+    useDidUpdate(() => {
         if (!props.hasTeams) {
             navigateToScreen(Screens.SELECT_TEAM, undefined, true);
         }

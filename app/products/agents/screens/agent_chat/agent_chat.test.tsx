@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {act, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 
 import {createDirectChannel} from '@actions/remote/channel';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import NetworkManager from '@managers/network_manager';
+import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -54,6 +56,10 @@ jest.mock('@context/server', () => ({
 // --- Network / action mocks ---
 jest.mock('@agents/actions/remote/bots', () => ({
     fetchAIBots: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock('@agents/actions/remote/preference', () => ({
+    saveSelectedAgent: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('@actions/remote/channel', () => ({
@@ -130,6 +136,13 @@ const mockBot = {
     teamIds: [],
 } as unknown as AiBotModel;
 
+const mockBot2 = {
+    ...mockBot,
+    id: 'bot-456',
+    displayName: 'Second Agent',
+    username: 'secondagent',
+} as unknown as AiBotModel;
+
 describe('AgentChat', () => {
     let database: Database;
 
@@ -141,6 +154,7 @@ describe('AgentChat', () => {
         // membership, etc.) so PostDraft's deep observable chain works.
         const channelId = TestHelper.basicChannel!.id;
         (createDirectChannel as jest.Mock).mockResolvedValue({data: {id: channelId}});
+        (saveSelectedAgent as jest.Mock).mockClear();
     });
 
     afterEach(async () => {
@@ -150,7 +164,10 @@ describe('AgentChat', () => {
 
     it('should render PostDraft without error when channel is available', async () => {
         const {getByTestId} = renderWithEverything(
-            <AgentChat bots={[mockBot]}/>,
+            <AgentChat
+                bots={[mockBot]}
+                selectedAgentId=''
+            />,
             {database},
         );
 
@@ -174,7 +191,10 @@ describe('AgentChat', () => {
 
     it('should render intro screen when no bots are available', async () => {
         const {getByTestId, queryByTestId} = renderWithEverything(
-            <AgentChat bots={[]}/>,
+            <AgentChat
+                bots={[]}
+                selectedAgentId=''
+            />,
             {database},
         );
 
@@ -185,6 +205,68 @@ describe('AgentChat', () => {
         expect(queryByTestId('agent_chat.post_draft')).toBeNull();
 
         // Flush any remaining async state updates to prevent act() warnings.
+        await act(async () => {});
+    });
+
+    it('should not persist a selection while auto-resolving the initial bot', async () => {
+        const {getByTestId} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId=''
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+
+        // Auto-resolution is an in-session default; it must never write the preference.
+        expect(saveSelectedAgent).not.toHaveBeenCalled();
+
+        await act(async () => {});
+    });
+
+    it('should honor a non-empty selectedAgentId on first mount', async () => {
+        const {getByTestId} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot2.id}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+
+        expect(createDirectChannel).toHaveBeenCalledWith(SERVER_URL, mockBot2.id);
+        expect(saveSelectedAgent).not.toHaveBeenCalled();
+
+        await act(async () => {});
+    });
+
+    it('should persist the preference when a bot is explicitly selected', async () => {
+        const {getByTestId} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId=''
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+
+        // Open the bot selector sheet, then drive the captured content and pick a bot.
+        fireEvent.press(getByTestId('navigation.header.title'));
+        const renderSheet = (bottomSheet as jest.Mock).mock.calls[0][0];
+        const {getByTestId: getSheetByTestId} = renderWithEverything(renderSheet(), {database});
+        fireEvent.press(getSheetByTestId(`agent_chat.bot_selector.bot_item.${mockBot2.id}`));
+
+        expect(saveSelectedAgent).toHaveBeenCalledWith(SERVER_URL, mockBot2.id);
+
         await act(async () => {});
     });
 });

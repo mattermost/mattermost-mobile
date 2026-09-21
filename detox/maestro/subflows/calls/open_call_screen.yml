@@ -1,0 +1,28 @@
+# Sub-flow: expand the minimized CurrentCallBar into the full call screen.
+# Usage: - runFlow: ../../subflows/calls/open_call_screen.yml
+# Requires: a call is already active (see join_channel_call.yml).
+#
+# A one-shot tap on calls.current_call_bar can land while the bar is still
+# animating in, so nothing expands and the following wait times out.
+# Re-tap the bar until mute-unmute appears.
+appId: ${MAESTRO_APP_ID}
+---
+# # Re-tap the call bar until the full call screen is up
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible:
+              id: "calls.current_call_bar"
+            notVisible:
+              id: "mute-unmute"
+          commands:
+            - tapOn:
+                id: "calls.current_call_bar"
+            - waitForAnimationToEnd:
+                timeout: 3000
+      - extendedWaitUntil:
+          visible:
+            id: "mute-unmute"
+          timeout: 20000

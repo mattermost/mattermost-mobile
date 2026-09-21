@@ -25,7 +25,7 @@ import {
     PermalinkScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Permalink', () => {
@@ -66,7 +66,7 @@ describe('Messaging - Permalink', () => {
 
         // # Wait for the message to be posted and element to become visible (keyboard should dismiss)
         const permalinkElement = element(by.text(permalinkLabel));
-        await waitFor(permalinkElement).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitForElementToBeVisible(permalinkElement, timeouts.TEN_SEC);
 
         // # Tap on permalink
         await permalinkElement.tap();

@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -25,7 +24,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Autocomplete - Edit Post', () => {
     const serverOneDisplayName = 'Server 1';
@@ -44,8 +43,7 @@ describe('Autocomplete - Edit Post', () => {
         // # Open a channel screen, post a message, open post options for message, and open edit post screen
         const message = `Messsage ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, channel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, channel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, channel.id, siteOneUrl);
         await ChannelScreen.openPostOptionsFor(post.id, message);
         await EditPostScreen.open();
     });

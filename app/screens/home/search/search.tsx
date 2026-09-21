@@ -22,6 +22,7 @@ import {ALL_TEAMS_ID} from '@constants/team';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHomeTabBackHandler from '@hooks/android_home_tab_back_handler';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -109,12 +110,15 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     const isPemalinkScreen = currentScreen === Screens.PERMALINK;
     const isGalleryScreen = currentScreen === Screens.GALLERY;
 
+    useAndroidHomeTabBackHandler(Screens.SEARCH);
+
     const stateIndex = nav.getState()?.index;
     const serverUrl = useServerUrl();
     const searchTerm: string = stateIndex === undefined ? '' : (nav.getState()?.routes[stateIndex]?.params as any)?.searchTerm || '';
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
+    const searchRequestRef = useRef<number>(0);
     const searchRef = useRef<SearchRef>(null);
     const processedSearchTermRef = useRef<string>('');
 
@@ -168,6 +172,9 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const resetToInitial = useCallback(() => {
+        // Invalidate any search still in flight so its completion cannot re-open the
+        // results view over the cleared input.
+        searchRequestRef.current += 1;
         setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
@@ -217,14 +224,26 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         hideHeader(true);
         handleLoading(true);
         setLastSearchedValue(term);
+        searchRequestRef.current += 1;
+        const requestId = searchRequestRef.current;
 
-        if (newSearchTeamId !== ALL_TEAMS_ID) {
-            addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
-        }
+        const persistHistory = newSearchTeamId === ALL_TEAMS_ID
+            ? undefined
+            : addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
         const [postResults, {files, channels}] = await Promise.all([
             searchPosts(serverUrl, newSearchTeamId, searchParams),
             searchFiles(serverUrl, newSearchTeamId, searchParams),
+            persistHistory,
         ]);
+
+        if (requestId !== searchRequestRef.current) {
+            // The input was cleared or cancelled, or a newer search started, while this one
+            // was in flight. Applying these results would put the results view back over an
+            // empty input and hide the recent searches list.
+            setLoading(false);
+            setResultsLoading(false);
+            return;
+        }
 
         setFileInfos(files?.length ? files : emptyFileResults);
         if (postResults.order) {

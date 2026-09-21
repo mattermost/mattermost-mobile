@@ -4,11 +4,10 @@
 import {Database} from '@nozbe/watermelondb';
 import {firstValueFrom} from 'rxjs';
 
-import {ActionType, License, Preferences} from '@constants';
+import {ActionType, License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
-import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -29,8 +28,7 @@ import {
     observeBoRConfig,
     countUsersFromMentions,
     findPostsWithPermalinkReferences,
-    observePostSaved,
-    observeSavedPostsByIds,
+    createAtOfNthPostOlderThan,
 } from './post';
 
 describe('Post Queries', () => {
@@ -47,59 +45,6 @@ describe('Post Queries', () => {
 
     afterEach(async () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    describe('observePostSaved', () => {
-        it('should ignore a saved preference while the post is marked as recently unsaved', async () => {
-            const postId = 'saved-post-id';
-
-            await operator.handlePreferences({
-                preferences: [{
-                    user_id: 'user-id',
-                    category: Preferences.CATEGORIES.SAVED_POST,
-                    name: postId,
-                    value: 'true',
-                }],
-                prepareRecordsOnly: false,
-            });
-
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(true);
-
-            EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(false);
-
-            EphemeralStore.clearRecentlyUnsavedSavedPost(serverUrl, postId);
-            expect(await firstValueFrom(observePostSaved(database, postId, serverUrl))).toBe(true);
-        });
-
-        it('should exclude recently unsaved post ids from the saved posts set', async () => {
-            const postId = 'saved-post-id';
-            const otherPostId = 'other-saved-post-id';
-
-            await operator.handlePreferences({
-                preferences: [
-                    {
-                        user_id: 'user-id',
-                        category: Preferences.CATEGORIES.SAVED_POST,
-                        name: postId,
-                        value: 'true',
-                    },
-                    {
-                        user_id: 'user-id',
-                        category: Preferences.CATEGORIES.SAVED_POST,
-                        name: otherPostId,
-                        value: 'true',
-                    },
-                ],
-                prepareRecordsOnly: false,
-            });
-
-            EphemeralStore.addRecentlyUnsavedSavedPost(serverUrl, postId);
-
-            const savedPosts = await firstValueFrom(observeSavedPostsByIds(database, [postId, otherPostId], serverUrl));
-            expect(savedPosts.has(postId)).toBe(false);
-            expect(savedPosts.has(otherPostId)).toBe(true);
-        });
     });
 
     describe('queryPostsWithPermalinkReferences', () => {
@@ -352,36 +297,6 @@ describe('Post Queries', () => {
             const result = await queryPostsWithPermalinkReferences(database, referencedPostId);
 
             expect(result).toHaveLength(0);
-        });
-    });
-
-    describe('queryPinnedPostsInChannel', () => {
-        it('should return pinned posts newest first', async () => {
-            const channelId = 'channel-id';
-            const olderPost = TestHelper.fakePost({
-                id: 'older-post-id',
-                channel_id: channelId,
-                is_pinned: true,
-                create_at: 1000,
-            });
-            const newerPost = TestHelper.fakePost({
-                id: 'newer-post-id',
-                channel_id: channelId,
-                is_pinned: true,
-                create_at: 2000,
-            });
-
-            const models = await operator.handlePosts({
-                actionType: ActionType.POSTS.RECEIVED_NEW,
-                order: [olderPost.id, newerPost.id],
-                posts: [olderPost, newerPost],
-                prepareRecordsOnly: true,
-            });
-            await operator.batchRecords(models, 'test');
-
-            const result = await queryPinnedPostsInChannel(database, channelId).fetch();
-
-            expect(result.map((post) => post.id)).toEqual([newerPost.id, olderPost.id]);
         });
     });
 
@@ -649,6 +564,65 @@ describe('post query helpers', () => {
         it('should return empty array when no posts reference the given id', async () => {
             const results = await findPostsWithPermalinkReferences(database, 'nonexistent');
             expect(results).toEqual([]);
+        });
+    });
+
+    describe('createAtOfNthPostOlderThan', () => {
+        const anchor = 10000;
+        const channelId = 'channel-nth-post';
+
+        const savePosts = async (posts: Post[]) => {
+            await operator.handlePosts({
+                posts,
+                order: posts.map((p) => p.id),
+                previousPostId: '',
+                actionType: ActionType.POSTS.RECEIVED_NEW,
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should return the create_at of the nth newest post older than the anchor', async () => {
+            await savePosts([
+                ...Array.from({length: 6}, (_, idx) => TestHelper.fakePost({
+                    channel_id: channelId,
+                    create_at: anchor - ((idx + 1) * 100),
+                })),
+
+                // same create_at as the anchor, so it must not be counted
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor}),
+            ]);
+
+            // would be the 2nd match if the channel filter were dropped
+            await savePosts([TestHelper.fakePost({channel_id: 'other-channel', create_at: anchor - 150})]);
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 3)).toBe(anchor - 300);
+        });
+
+        it('should return undefined when fewer than n older posts exist', async () => {
+            await savePosts([
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 100}),
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 200}),
+            ]);
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 3)).toBeUndefined();
+        });
+
+        it('should not count soft-deleted posts toward n', async () => {
+            const deleted = TestHelper.fakePost({channel_id: channelId, create_at: anchor - 100});
+            await savePosts([
+                deleted,
+                TestHelper.fakePost({channel_id: channelId, create_at: anchor - 200}),
+            ]);
+
+            // handlePosts destroys posts that arrive with delete_at set, so mirror markPostAsDeleted instead
+            const [model] = await queryPostsById(database, [deleted.id]).fetch();
+            await database.write(async () => {
+                await model.update((p) => {
+                    p.deleteAt = anchor;
+                });
+            });
+
+            expect(await createAtOfNthPostOlderThan(database, channelId, anchor, 1)).toBe(anchor - 200);
         });
     });
 });

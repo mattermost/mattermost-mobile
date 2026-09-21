@@ -63,8 +63,13 @@ class DatabaseManagerSingleton {
         this.databaseDirectory = '';
     }
 
-    public init = async (serverUrls: string[]): Promise<void> => {
-        await this.createAppDatabase();
+    public initAppDatabase = async (): Promise<void> => {
+        if (!this.appDatabase) {
+            await this.createAppDatabase();
+        }
+    };
+
+    public initServerDatabases = async (serverUrls: string[]): Promise<void> => {
         for await (const serverUrl of serverUrls) {
             await this.destroyServerDatabase(serverUrl);
             await this.initServerDatabase(serverUrl);
@@ -77,6 +82,11 @@ class DatabaseManagerSingleton {
             }],
             prepareRecordsOnly: false,
         });
+    };
+
+    public init = async (serverUrls: string[]): Promise<void> => {
+        await this.initAppDatabase();
+        await this.initServerDatabases(serverUrls);
     };
 
     private createAppDatabase = async (): Promise<AppDatabase|undefined> => {
@@ -250,6 +260,22 @@ class DatabaseManagerSingleton {
         return server;
     };
 
+    public getServerUrlForDatabase = (database: Database): string | undefined => {
+        const databaseName = (database.adapter as {dbName?: string} | undefined)?.dbName;
+
+        return Object.entries(this.serverDatabases).find(([, serverDatabase]) => {
+            if (!serverDatabase) {
+                return false;
+            }
+
+            if (serverDatabase.database === database) {
+                return true;
+            }
+
+            return (serverDatabase.database.adapter as {dbName?: string} | undefined)?.dbName === databaseName;
+        })?.[0];
+    };
+
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
         const server = await this.getActiveServer();
         if (server?.url) {
@@ -323,7 +349,7 @@ class DatabaseManagerSingleton {
         }
     };
 
-    private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
+    public deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
 
         if (Platform.OS === 'ios') {
@@ -335,10 +361,24 @@ class DatabaseManagerSingleton {
         // On Android, we'll delete both the *.db file and the *.db-journal file
         const androidFilesDir = `${this.databaseDirectory}databases/`;
         const databaseFile = `${androidFilesDir}${databaseName}.db`;
+        const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
+        const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
         const databaseJournal = `${androidFilesDir}${databaseName}.db-journal`;
 
         try {
             new File(databaseFile).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseShm).delete();
+        } catch {
+            // do nothing
+        }
+
+        try {
+            new File(databaseWal).delete();
         } catch {
             // do nothing
         }

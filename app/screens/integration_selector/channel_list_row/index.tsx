@@ -60,11 +60,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         outerContainer: {
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 15,
             overflow: 'hidden',
         },
         purpose: {
-            marginTop: 7,
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 100, 'Regular'),
         },
@@ -79,22 +77,6 @@ const ChannelListRow = ({
     const onPressRow = useCallback((): void => {
         onPress(channel);
     }, [onPress, channel]);
-
-    const renderPurpose = (channelPurpose: string): React.ReactNode => {
-        if (!channelPurpose) {
-            return null;
-        }
-
-        return (
-            <Text
-                style={style.purpose}
-                ellipsizeMode='tail'
-                numberOfLines={1}
-            >
-                {channel.purpose}
-            </Text>
-        );
-    };
 
     const itemTestID = `${testID}.${id}`;
     const channelDisplayNameTestID = `${testID}.display_name`;
@@ -126,8 +108,6 @@ const ChannelListRow = ({
                             {channel.display_name}
                         </Text>
                     </View>
-
-                    {renderPurpose(channel.purpose)}
                 </View>
             </CustomListRow>
         </View>

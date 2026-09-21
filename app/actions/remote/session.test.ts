@@ -71,6 +71,15 @@ jest.mock('@store/ephemeral_store', () => {
     };
 });
 
+jest.mock('@queries/app/global', () => {
+    const original = jest.requireActual('@queries/app/global');
+    return {
+        ...original,
+        getDeviceToken: jest.fn().mockResolvedValue('apple_rn-v2:standard-token'),
+        getVoIPDeviceToken: jest.fn().mockResolvedValue('apple_rn-v2:voip-token'),
+    };
+});
+
 let mockFetch: jest.Mock;
 jest.mock('@react-native-community/netinfo', () => {
     const original = jest.requireActual('@react-native-community/netinfo');
@@ -534,7 +543,11 @@ describe('Session Actions', () => {
 
             expect(result.failed).toBe(false);
             expect(IntuneManager.login).toHaveBeenCalledWith(serverUrl, [intuneScope]);
-            expect(mockClient.loginByIntune).toHaveBeenCalledWith(mockTokens.accessToken, expect.any(String));
+            expect(mockClient.loginByIntune).toHaveBeenCalledWith(
+                mockTokens.accessToken,
+                'apple_rn-v2:standard-token',
+                'apple_rn-v2:voip-token',
+            );
             expect(mockClient.setCSRFToken).toHaveBeenCalledWith('csrfid');
             expect(IntuneManager.enrollServer).toHaveBeenCalledWith(serverUrl, mockTokens.identity);
         });
@@ -553,7 +566,12 @@ describe('Session Actions', () => {
             expect(result.failed).toBe(false);
             expect(IntuneManager.login).toHaveBeenCalledTimes(2);
             expect(mockClient.loginByIntune).toHaveBeenCalledTimes(2);
-            expect(mockClient.loginByIntune).toHaveBeenNthCalledWith(2, refreshedTokens.accessToken, expect.any(String));
+            expect(mockClient.loginByIntune).toHaveBeenNthCalledWith(
+                2,
+                refreshedTokens.accessToken,
+                'apple_rn-v2:standard-token',
+                'apple_rn-v2:voip-token',
+            );
         });
 
         it('should handle 412 MAM enrollment required', async () => {

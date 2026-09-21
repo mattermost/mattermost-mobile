@@ -22,6 +22,16 @@ export const getDeviceToken = async (): Promise<string> => {
     }
 };
 
+export const getVoIPDeviceToken = async (): Promise<string> => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const tokens = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.VOIP_DEVICE_TOKEN);
+        return tokens?.value || '';
+    } catch {
+        return '';
+    }
+};
+
 export const queryGlobalValue = (key: string) => {
     try {
         const {database} = DatabaseManager.getAppDatabaseAndOperator();
@@ -66,8 +76,11 @@ export const observePushDisabledInServerAcknowledged = (serverDomainString: stri
         return of$(false);
     }
     return query.observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
-        switchMap((v) => of$(Boolean(v))),
+
+        // Map the record's value, not the record. Boolean(model) is always true, so a row
+        // written with a null value (how the remove/reset paths clear these keys) read as set.
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        switchMap((v) => of$(Boolean(v?.value))),
     );
 };
 
@@ -78,6 +91,11 @@ export const getFirstLaunch = async () => {
     }
 
     return records[0].value;
+};
+
+export const getLastViewedTeamIdAndServer = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_VIEWED_TEAM)?.fetch();
+    return records?.[0]?.value;
 };
 
 export const getLastViewedChannelIdAndServer = async () => {
@@ -96,7 +114,10 @@ export const observeTutorialWatched = (tutorial: string) => {
         return of$(false);
     }
     return query.observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
-        switchMap((v) => of$(Boolean(v))),
+
+        // Map the record's value, not the record. Boolean(model) is always true, so a row
+        // written with a null value (how the remove/reset paths clear these keys) read as set.
+        switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+        switchMap((v) => of$(Boolean(v?.value))),
     );
 };

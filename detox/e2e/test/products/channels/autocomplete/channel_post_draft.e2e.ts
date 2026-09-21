@@ -26,22 +26,17 @@ import {expect} from 'detox';
 describe('Autocomplete - Channel Post Draft', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
+    let testChannel: {name: string};
 
     beforeAll(async () => {
         // Force a clean app process. Without this, when a prior spec in the
-        // same shard leaves the app in a wedged state (observed: at-mention
-        // / channel-mention specs running just before this one, sometimes
-        // with a failed logout that left tab_bar.account.tab unreachable),
-        // the next `ServerScreen.connectToServer` here hangs for the full
-        // 360s hook timeout with `Detox can't seem to connect to the test app(s)!`
-        // (run 26368981355, iOS shard 4 — all 8 tests in this spec failed
-        // at line 34 column 28 with the same disconnect error).
-        //
-        // launchApp({newInstance: true}) starts a fresh process; matches the
-        // existing pattern in message_draft.e2e.ts and ipad_post_message.e2e.ts.
+        // same shard leaves the app in a wedged state, the next
+        // `ServerScreen.connectToServer` can hang for the full hook timeout.
+        // launchApp({newInstance: true}) starts a fresh process.
         await device.launchApp({newInstance: true});
 
         const {channel, user} = await Setup.apiInit(siteOneUrl);
+        testChannel = channel;
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -49,12 +44,12 @@ describe('Autocomplete - Channel Post Draft', () => {
 
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
-
-        // # Open a channel screen
-        await ChannelScreen.open(channelsCategory, channel.name);
     });
 
     beforeEach(async () => {
+        await ChannelListScreen.toBeVisible();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
         // # Clear post input
         await ChannelScreen.postInput.clearText();
 
@@ -62,9 +57,13 @@ describe('Autocomplete - Channel Post Draft', () => {
         await Autocomplete.toBeVisible(false);
     });
 
+    afterEach(async () => {
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+    });
+
     afterAll(async () => {
         // # Log out
-        await ChannelScreen.back();
         await HomeScreen.logout();
     });
 

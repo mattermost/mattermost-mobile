@@ -155,7 +155,7 @@ describe('Account - Theme Color Settings', () => {
         // # Wait for channel list to become visible without requiring bridge idle.
         // After reloadReactNative the app syncs with the server (network activity keeps bridge busy).
         // waitForElementToBeVisible polls without waiting for idle so we can proceed once UI is ready.
-        await waitForElementToBeVisible(element(by.id('channel_list.screen')), timeouts.ONE_MIN);
+        await waitForElementToBeVisible(ChannelListScreen.channelListScreen, timeouts.ONE_MIN);
 
         // # Wait for initial network sync to settle before navigating.
         // Without this wait, subsequent bridge-idle-requiring taps timeout while sync is in flight.

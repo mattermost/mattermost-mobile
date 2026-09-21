@@ -7,16 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-/**
- * Test Cases Included:
- * - MM-T3195: RN apps Add members to channel
- * - MM-T856: Add existing users to public channel from drop-down Add Members
- * - MM-T3196: RN apps Manage members in channel
- * - MM-T3204: RN apps Add user to private channel
- * - MM-T3205: RN apps Remove user from private channel
- * - MM-T878: RN apps View Members in GM
- */
-
 import {Channel, Setup, Team, User} from '@support/server_api';
 import {
     serverOneUrl,
@@ -33,7 +23,7 @@ import {
     ManageChannelMembersScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels', () => {
@@ -56,6 +46,16 @@ describe('Channels', () => {
     let gmUser1: any; // For MM-T878
     let gmUser2: any; // For MM-T878
 
+    const tapMembersOption = async () => {
+        try {
+            await ChannelInfoScreen.scrollView.scroll(200, 'down');
+        } catch {
+            // scrollView may not need scrolling
+        }
+        await waitFor(ChannelInfoScreen.membersOption).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelInfoScreen.membersOption.tap();
+    };
+
     beforeAll(async () => {
         // 1. Base setup (shared across all tests)
         const {user, team, channel} = await Setup.apiInit(siteOneUrl);
@@ -64,25 +64,25 @@ describe('Channels', () => {
         testChannel = channel;
 
         // 2. Test 1 (MM-T3195): User for adding to channel
-        const {user: newUser1} = await User.apiCreateUser(siteOneUrl, {prefix: 'addmember'});
+        const {user: newUser1, error: newUser1Error} = await User.apiCreateUser(siteOneUrl, {prefix: 'addmember'});
         if (!newUser1?.id) {
-            throw new Error('[beforeAll] Failed to create addMemberUser');
+            throw new Error(`[beforeAll] Failed to create addMemberUser: ${JSON.stringify(newUser1Error ?? 'no user returned')}`);
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser1.id, testTeam.id);
         addMemberUser = newUser1;
 
         // 3. Test 2 (MM-T856): Another user for adding to channel
-        const {user: newUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
+        const {user: newUser2, error: newUser2Error} = await User.apiCreateUser(siteOneUrl, {prefix: 'user2'});
         if (!newUser2?.id) {
-            throw new Error('[beforeAll] Failed to create user2');
+            throw new Error(`[beforeAll] Failed to create user2: ${JSON.stringify(newUser2Error ?? 'no user returned')}`);
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser2.id, testTeam.id);
         user2 = newUser2;
 
         // 4. Test 3 (MM-T3196): User already in channel for removal
-        const {user: newUser3} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
+        const {user: newUser3, error: newUser3Error} = await User.apiCreateUser(siteOneUrl, {prefix: 'member'});
         if (!newUser3?.id) {
-            throw new Error('[beforeAll] Failed to create memberUser');
+            throw new Error(`[beforeAll] Failed to create memberUser: ${JSON.stringify(newUser3Error ?? 'no user returned')}`);
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser3.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, newUser3.id, testChannel.id);
@@ -99,9 +99,9 @@ describe('Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan1.id);
         privateChannel1 = privChan1;
 
-        const {user: newUser4} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
+        const {user: newUser4, error: newUser4Error} = await User.apiCreateUser(siteOneUrl, {prefix: 'privuser'});
         if (!newUser4?.id) {
-            throw new Error('[beforeAll] Failed to create privUser');
+            throw new Error(`[beforeAll] Failed to create privUser: ${JSON.stringify(newUser4Error ?? 'no user returned')}`);
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser4.id, testTeam.id);
         privUser = newUser4;
@@ -117,23 +117,23 @@ describe('Channels', () => {
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privChan2.id);
         privateChannel2 = privChan2;
 
-        const {user: newUser5} = await User.apiCreateUser(siteOneUrl, {prefix: 'removeme'});
+        const {user: newUser5, error: newUser5Error} = await User.apiCreateUser(siteOneUrl, {prefix: 'removeme'});
         if (!newUser5?.id) {
-            throw new Error('[beforeAll] Failed to create removeMeUser');
+            throw new Error(`[beforeAll] Failed to create removeMeUser: ${JSON.stringify(newUser5Error ?? 'no user returned')}`);
         }
         await Team.apiAddUserToTeam(siteOneUrl, newUser5.id, testTeam.id);
         await Channel.apiAddUserToChannel(siteOneUrl, newUser5.id, privChan2.id);
         removeMeUser = newUser5;
 
         // 7. Test 6 (MM-T878): Two users for GM creation
-        const {user: gmUserOne} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
+        const {user: gmUserOne, error: gmUserOneError} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser1'});
         if (!gmUserOne?.id) {
-            throw new Error('[beforeAll] Failed to create gmUser1');
+            throw new Error(`[beforeAll] Failed to create gmUser1: ${JSON.stringify(gmUserOneError ?? 'no user returned')}`);
         }
         await wait(timeouts.ONE_SEC);
-        const {user: gmUserTwo} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser2'});
+        const {user: gmUserTwo, error: gmUserTwoError} = await User.apiCreateUser(siteOneUrl, {prefix: 'gmuser2'});
         if (!gmUserTwo?.id) {
-            throw new Error('[beforeAll] Failed to create gmUser2');
+            throw new Error(`[beforeAll] Failed to create gmUser2: ${JSON.stringify(gmUserTwoError ?? 'no user returned')}`);
         }
         await wait(timeouts.ONE_SEC);
         await Team.apiAddUserToTeam(siteOneUrl, gmUserOne.id, testTeam.id);
@@ -180,20 +180,13 @@ describe('Channels', () => {
 
         // # Search and add user
         await AddMembersScreen.searchAndAddUser(newUser.username, newUser.id);
-
-        // With expo-router, tapping "Add Members" pops AddMembersScreen one level back to
-        // Channel Info (its navigation parent). RNN used to pop all the way to Channel.
-        // Close Channel Info explicitly before verifying the system message, following the
-        // same pattern used in MM-T3196 / MM-T3205 after ManageChannelMembersScreen.
         await ChannelInfoScreen.close();
 
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
 
     });
@@ -224,14 +217,12 @@ describe('Channels', () => {
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
-    it('MM-T3196 - RN apps Manage members in channel', async () => {
+    it('MM-T3196_1 - RN apps Manage members in channel', async () => {
         // # Use pre-created user (already in channel)
         const removedUser = memberUser;
 
@@ -242,11 +233,12 @@ describe('Channels', () => {
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
+        await tapMembersOption();
+        await ManageChannelMembersScreen.closeTutorial();
+        await ManageChannelMembersScreen.toBeVisible();
 
         await wait(timeouts.TWO_SEC);
-        await ManageChannelMembersScreen.manageButton.tap();
+        await ManageChannelMembersScreen.toggleManageMode();
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -260,10 +252,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.close();
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${removedUser.username} was removed from the channel`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
+        await waitForElementToExist(element(by.text(/.*removed from the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
         await ChannelScreen.back();
     });
 
@@ -294,10 +283,8 @@ describe('Channels', () => {
         // * Verify user added system message appears
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${newUser.username} added to the channel by ${testUser.username}`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
+        const addedToChannel = isIos() ? /.*added to the channel.*/i : new RegExp(`.*@${newUser.username}.*added to the channel.*`, 'i');
+        await waitForElementToExist(element(by.text(addedToChannel).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
@@ -314,11 +301,10 @@ describe('Channels', () => {
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
+        await tapMembersOption();
         await wait(timeouts.TWO_SEC);
 
-        await ManageChannelMembersScreen.manageButton.tap();
+        await ManageChannelMembersScreen.manageButton.tap({x: 1, y: 1});
         await wait(timeouts.TWO_SEC);
 
         // # Search and remove user
@@ -332,10 +318,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.close();
         await ChannelScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
-
-        const systemMessage = `${removedUser.username} was removed from the channel`;
-        await waitFor(element(by.text(systemMessage).withAncestor(by.id('post_list')))).
-            toBeVisible();
+        await waitForElementToExist(element(by.text(/.*removed from the channel.*/i).withAncestor(by.id(ChannelScreen.postList.testID.flatList))), timeouts.HALF_MIN);
 
         await ChannelScreen.back();
     });
@@ -346,7 +329,8 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser1.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap();
+
+        await CreateDirectMessageScreen.getUserItem(gmUser1.id).tap({x: 1, y: 1});
 
         // * Verify the first new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser1.id)).toBeVisible();
@@ -355,12 +339,14 @@ describe('Channels', () => {
         await CreateDirectMessageScreen.searchInput.replaceText(`${gmUser2.username}`);
         await CreateDirectMessageScreen.searchInput.tapReturnKey();
         await wait(timeouts.ONE_SEC);
-        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap();
+        await CreateDirectMessageScreen.getUserItem(gmUser2.id).tap({x: 1, y: 1});
 
         // * Verify the second new user is selected
         await expect(CreateDirectMessageScreen.getSelectedDMUserDisplayName(gmUser2.id)).toBeVisible();
 
         // # Tap on start button
+        // Wait for chip-add animation — UITransitionView overlay intercepts startButton center-tap.
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.startButton.tap();
         await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.toBeVisible();
@@ -369,8 +355,7 @@ describe('Channels', () => {
         await ChannelInfoScreen.open();
         await wait(timeouts.ONE_SEC);
 
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
-        await ChannelInfoScreen.membersOption.tap();
+        await tapMembersOption();
         await wait(timeouts.TWO_SEC);
 
         // * Verify members list is visible

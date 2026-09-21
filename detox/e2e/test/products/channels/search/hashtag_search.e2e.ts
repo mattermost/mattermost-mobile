@@ -27,7 +27,7 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Hashtag Search', () => {
@@ -127,12 +127,14 @@ describe('Search - Hashtag Search', () => {
 
         // # Type the hashtag into the search input and tap search
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);
-        await SearchMessagesScreen.searchInput.tapReturnKey();
-        await wait(timeouts.TWO_SEC);
-
-        // * Verify the root post appears in search results
-        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await device.disableSynchronization();
+        try {
+            await SearchMessagesScreen.searchInput.tapReturnKey();
+            const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(rootPost.id, message);
+            await waitForElementToBeVisible(postListPostItem, timeouts.HALF_MIN);
+        } finally {
+            await device.enableSynchronization();
+        }
 
         // * Verify the reply count indicator appears
         await waitFor(element(by.text('1 reply'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
@@ -144,9 +146,9 @@ describe('Search - Hashtag Search', () => {
         // (channel context view) rather than navigating to the thread directly.
         await PermalinkScreen.toBeVisible();
 
-        // * Verify the root post containing the hashtag is visible in the permalink
+        // * Verify the root post containing the hashtag is visible in the permalink.
         const {postListPostItem: permalinkPostItem} = PermalinkScreen.getPostListPostItem(rootPost.id, message);
-        await expect(permalinkPostItem).toBeVisible();
+        await waitForElementToBeVisible(permalinkPostItem, timeouts.TEN_SEC);
 
         // # Jump to recent messages to dismiss the permalink and open the channel
         await PermalinkScreen.jumpToRecentMessages();
@@ -204,15 +206,14 @@ describe('Search - Hashtag Search', () => {
         // # Dismiss scheduled post tooltip if it appears on channel open
         await ChannelScreen.dismissScheduledPostTooltip();
 
-        await ChannelScreen.postMessage(message);
+        const {post: savedPost} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
 
         // # Dismiss scheduled post tooltip if it appears after sending the message
         await ChannelScreen.dismissScheduledPostTooltip();
 
         // # Get the post ID and save the post via post options
-        const {post: savedPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.openPostOptionsFor(savedPost.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
         await wait(timeouts.TWO_SEC);
 
         // # Go back to channel list screen and open saved messages screen
@@ -223,12 +224,10 @@ describe('Search - Hashtag Search', () => {
         await SavedMessagesScreen.toBeVisible();
 
         // * Verify the saved post with the hashtag is displayed
-        const {postListPostItem} = SavedMessagesScreen.getPostListPostItem(savedPost.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await SavedMessagesScreen.waitForPostInList(savedPost.id, message);
 
-        // Inline hashtag links in post list items are rendered as text spans within a single
-        // paragraph Text node. On both iOS and Android, they are not accessible as separate
-        // elements via by.text(). Verify hashtag search functionality via the search screen.
+        // Inline hashtag links render as text spans inside a single paragraph Text node on both
+        // platforms, so verify hashtag search through the search screen instead.
         await ChannelListScreen.open();
         await SearchMessagesScreen.open();
         await SearchMessagesScreen.searchInput.typeText(`#${hashtagTerm}`);

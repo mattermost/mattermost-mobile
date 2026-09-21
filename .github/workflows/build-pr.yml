@@ -13,11 +13,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      (github.event.label.name == 'Build Apps for PR' ||
-      github.event.label.name == 'Build App for iOS' ||
-      github.event.label.name == 'Build App for Android')
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS' || github.event.label.name == 'Build App for Android') }}
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -28,10 +24,7 @@ jobs:
 
   build-ios-pr:
     runs-on: macos-15-large
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      (github.event.label.name == 'Build Apps for PR' ||
-      github.event.label.name == 'Build App for iOS')
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for iOS') }}
     needs:
       - test
     steps:
@@ -87,10 +80,7 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      (github.event.label.name == 'Build Apps for PR' ||
-      github.event.label.name == 'Build App for Android')
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && (github.event.label.name == 'Build Apps for PR' || github.event.label.name == 'Build App for Android') }}
     needs:
       - test
     steps:

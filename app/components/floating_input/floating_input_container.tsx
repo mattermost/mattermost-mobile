@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RUNNING_E2E} from '@env';
 import React, {
     useMemo,
     useCallback,
 } from 'react';
 import {
     type LayoutChangeEvent,
-    Platform,
     type StyleProp,
     Text,
+    TouchableWithoutFeedback,
     View,
     type ViewStyle,
     Pressable,
@@ -28,6 +29,10 @@ import {getLabelPositions} from './utils';
 
 const BORDER_DEFAULT_WIDTH = 1;
 const BORDER_FOCUSED_WIDTH = 2;
+
+// Expose the input's value/testID to the accessibility tree only in E2E builds so
+// Maestro can read the typed value. Gated so real builds are byte-for-byte unchanged.
+const isRunningE2e = RUNNING_E2E === 'true';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -103,7 +108,6 @@ type Props = {
     wrapChildren?: boolean;
     helpText?: string;
     testID: string;
-    errorTestID?: string;
 }
 const FloatingInputContainer = ({
     children,
@@ -122,7 +126,6 @@ const FloatingInputContainer = ({
     wrapChildren = false,
     helpText,
     testID,
-    errorTestID,
 }: Props) => {
     const styles = getStyleSheet(theme);
     const positions = useMemo(() => getLabelPositions(styles.textInput, styles.bigLabel, styles.smallLabel), [styles]);
@@ -194,48 +197,49 @@ const FloatingInputContainer = ({
     }, [styles, theme, focusedLabel, hasValue, shouldShowError, positions]);
 
     return (
-        <View
+        <TouchableWithoutFeedback
             onLayout={onLayout}
-            style={styles.container}
+            accessible={isRunningE2e ? false : undefined}
         >
-            <Pressable
-                accessible={Platform.select({ios: false})}
-                onPress={handlePressOnContainer}
-                style={({pressed}) => (pressed ? {opacity: 0.72} : undefined)}
-            >
-                <Animated.Text
-                    style={[styles.label, textAnimatedTextStyle]}
-                    suppressHighlighting={true}
-                    numberOfLines={1}
+            <View style={styles.container}>
+                <Pressable
+                    onPress={handlePressOnContainer}
+                    accessible={isRunningE2e ? false : undefined}
                 >
-                    {label}
-                </Animated.Text>
-                <View style={combinedTextInputContainerStyle}>
-                    {children}
-                </View>
-            </Pressable>
-            {Boolean(error) && (
-                <View style={styles.errorContainer}>
-                    {!hideErrorIcon && errorIcon &&
-                    <CompassIcon
-                        name={errorIcon}
-                        style={styles.errorIcon}
-                    />
-                    }
-                    <Text
-                        style={styles.errorText}
-                        testID={errorTestID ? `${errorTestID}.error` : `${testID}.error`}
+                    <Animated.Text
+                        style={[styles.label, textAnimatedTextStyle]}
+                        suppressHighlighting={true}
+                        numberOfLines={1}
                     >
-                        {error}
+                        {label}
+                    </Animated.Text>
+                    <View style={combinedTextInputContainerStyle}>
+                        {children}
+                    </View>
+                </Pressable>
+                {Boolean(error) && (
+                    <View style={styles.errorContainer}>
+                        {!hideErrorIcon && errorIcon &&
+                        <CompassIcon
+                            name={errorIcon}
+                            style={styles.errorIcon}
+                        />
+                        }
+                        <Text
+                            style={styles.errorText}
+                            testID={`${testID}.error`}
+                        >
+                            {error}
+                        </Text>
+                    </View>
+                )}
+                {Boolean(helpText) && (
+                    <Text style={styles.helpText}>
+                        {helpText}
                     </Text>
-                </View>
-            )}
-            {Boolean(helpText) && (
-                <Text style={styles.helpText}>
-                    {helpText}
-                </Text>
-            )}
-        </View>
+                )}
+            </View>
+        </TouchableWithoutFeedback>
     );
 };
 

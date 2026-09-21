@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {User} from '@support/server_api';
 import {Alert} from '@support/ui/component';
 import {isIos, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class ScheduledMessageScreen {
     testID = {
@@ -49,7 +50,7 @@ class ScheduledMessageScreen {
     };
 
     assertScheduledMessageExists = async (scheduledMessageText: string) => {
-        await waitFor(this.scheduledMessageText).toBeVisible().withTimeout(500);
+        await waitFor(this.scheduledMessageText).toBeVisible().withTimeout(timeouts.FIVE_SEC);
         await expect(element(by.text(scheduledMessageText))).toBeVisible();
     };
 
@@ -68,7 +69,46 @@ class ScheduledMessageScreen {
         await this.deleteDraftPost(this.deleteDraft);
     };
 
+    // The spinner is a UIDatePicker on most iOS versions and a UIPickerView on others.
+    private nudgeIosPicker = async (): Promise<boolean> => {
+        try {
+            await element(by.type('UIDatePicker')).swipe('up', 'slow', 0.2);
+            return true;
+        } catch {
+            try {
+                await element(by.type('UIPickerView')).atIndex(0).swipe('up', 'slow', 0.2);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    };
+
     selectDateTime = async () => {
+        await this.selectTimeButton.tap();
+        if (isIos()) {
+            const saveButton = element(by.id('reschedule_draft.save.button'));
+            await waitFor(saveButton).toExist().withTimeout(timeouts.FIVE_SEC);
+
+            /* eslint-disable no-await-in-loop -- swipe the spinner until the save commits */
+            for (let attempt = 0; attempt < 4; attempt++) {
+                if (!await this.nudgeIosPicker()) {
+                    throw new Error('ScheduleMessageScreen.selectDateTime: no iOS date picker was available to swipe');
+                }
+                await wait(timeouts.HALF_SEC);
+                await saveButton.tap();
+                try {
+                    await waitFor(this.customDateTimePickerScreen).not.toExist().withTimeout(timeouts.FIVE_SEC);
+                    return;
+                } catch {
+                    // Still on the picker: the swipe either landed back on the original
+                    // time or canSave was still being recomputed. Swipe again.
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+
+            throw new Error('ScheduleMessageScreen.selectDateTime: the picker was still on screen after 4 swipe-and-save attempts, so the new time never committed');
+        }
         await this.selectDateButton.tap();
         await this.selectTimeButton.tap();
         await this.saveButton.tap();
@@ -90,12 +130,23 @@ class ScheduledMessageScreen {
      * @param expectedText - The text you expect in the element
      */
     assertScheduleTimeTextIsVisible = async (expectedText: string) => {
-        const attr = await this.scheduledDraftTime.getAttributes();
-        const actualText = 'text' in attr ? attr.text : null;
+        const expected = this.normalize(expectedText);
+        let actualText = '';
 
-        if (this.normalize(actualText || '') !== this.normalize(expectedText)) {
-            throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
+        await waitFor(this.scheduledDraftTime).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        const deadline = Date.now() + timeouts.TWENTY_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (Date.now() < deadline) {
+            const attr = await this.scheduledDraftTime.getAttributes();
+            actualText = this.normalize(('text' in attr ? attr.text : null) ?? '');
+            if (actualText === expected) {
+                return;
+            }
+            await wait(timeouts.HALF_SEC);
         }
+        /* eslint-enable no-await-in-loop */
+
+        throw new Error(`Expected text "${expectedText}" but found "${actualText}"`);
     };
 
     getRoundedTime = async (): Promise<Date> => {
@@ -118,22 +169,11 @@ class ScheduledMessageScreen {
     };
 
     nextMonday = async () => {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
+        const {year, month, day} = this.deviceCalendarDate();
+        const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
         const daysUntilNextMonday = (8 - dayOfWeek) % 7 || 7;
 
-        const nextMonday = new Date(today);
-        nextMonday.setDate(today.getDate() + daysUntilNextMonday);
-        nextMonday.setHours(9, 0, 0, 0); // Hardcoded 9:00 AM
-
-        const locale = 'en-US';
-        const dateOptions: Intl.DateTimeFormatOptions = {month: 'short', day: 'numeric'};
-        const timeOptions: Intl.DateTimeFormatOptions = {hour: 'numeric', minute: '2-digit', hour12: true};
-
-        const datePart = nextMonday.toLocaleDateString(locale, dateOptions);
-        const timePart = nextMonday.toLocaleTimeString(locale, timeOptions);
-
-        return this.normalize(`Send on ${datePart}, ${timePart}`);
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + daysUntilNextMonday)}, 9:00 AM`);
     };
 
     currentDay = async () => {
@@ -151,6 +191,82 @@ class ScheduledMessageScreen {
         const timePart = adjustedTime.toLocaleTimeString(locale, timeOptions);
 
         return this.normalize(`Send on ${datePart}, ${timePart}`);
+    };
+
+    deviceTimeZone: string | undefined = undefined;
+
+    /**
+     * Wait for the app to publish the device timezone onto the user record, then adopt it.
+     *
+     * The app pushes it with autoUpdateTimezone(), which is fire-and-forget on ws-connect and
+     * home-mount, so immediately after login the record still holds an empty zone. Reading it
+     * once raced that write, with two consequences: this screen formatted its expected labels
+     * in the Node runner's zone instead of the device's, and the app rendered the scheduled
+     * post header from the same empty zone -- which iOS Hermes turns into the literal string
+     * "Invalid Date" (MM-T5720), while Android's ICU formats anyway. Polling until the write
+     * lands removes both, and keeps the real device zone rather than forcing one.
+     */
+    resolveDeviceTimeZone = async (baseUrl: string, userId: string, timeout = timeouts.HALF_MIN) => {
+        const deadline = Date.now() + timeout;
+
+        /* eslint-disable no-await-in-loop -- poll until the app's timezone write lands */
+        while (Date.now() < deadline) {
+            try {
+                const {user} = await User.apiGetUserById(baseUrl, userId);
+                const zone = user?.timezone?.automaticTimezone || user?.timezone?.manualTimezone;
+                if (zone) {
+                    this.deviceTimeZone = zone;
+                    return this.deviceTimeZone;
+                }
+            } catch {
+                // Transient read failure — keep polling until the deadline.
+            }
+            await wait(timeouts.ONE_SEC);
+        }
+        /* eslint-enable no-await-in-loop */
+
+        // eslint-disable-next-line no-console
+        console.warn(`[ScheduledMessageScreen] user ${userId} still has no timezone after ${timeout}ms; formatting in the runner's zone`);
+        this.deviceTimeZone = undefined;
+        return this.deviceTimeZone;
+    };
+
+    // Calendar date on the device, as {year, month, day}. Uses formatToParts so the values
+    // are taken by type rather than by splitting a locale-dependent formatted string.
+    private deviceCalendarDate = (at: Date = new Date()) => {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: this.deviceTimeZone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).formatToParts(at);
+        const valueOf = (type: Intl.DateTimeFormatPartTypes) => {
+            const part = parts.find((entry) => entry.type === type);
+            return Number(part?.value ?? '');
+        };
+        return {year: valueOf('year'), month: valueOf('month'), day: valueOf('day')};
+    };
+
+    // Formats a device-local calendar date as "Mon D". Built on a UTC instant so the
+    // formatter cannot shift the day back across a zone boundary.
+    private formatCalendarDate = (year: number, month: number, day: number) => {
+        return new Intl.DateTimeFormat('en-US', {
+            timeZone: 'UTC',
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(Date.UTC(year, month - 1, day)));
+    };
+
+    tomorrowAtNineAm = () => {
+        const {year, month, day} = this.deviceCalendarDate();
+        return this.normalize(`Send on ${this.formatCalendarDate(year, month, day + 1)}, 9:00 AM`);
+    };
+
+    expectedLabelForScheduleOption = async (option: 'tomorrow' | 'next_monday' | 'monday') => {
+        if (option === 'tomorrow') {
+            return this.tomorrowAtNineAm();
+        }
+        return this.nextMonday();
     };
 
     /**

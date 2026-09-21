@@ -32,7 +32,7 @@ function getSortedReactions(reactions: ReactionModel[] | undefined, prevSortedRe
 
 const Reactions = ({initialEmoji, location, reactions}: Props) => {
     const [sortedReactions, setSortedReactions] = useState(Array.from(new Set(reactions?.map((r) => getEmojiFirstAlias(r.emojiName)))));
-    const [index, setIndex] = useState(sortedReactions.indexOf(initialEmoji));
+    const [index, setIndex] = useState(() => Math.max(0, sortedReactions.indexOf(initialEmoji)));
 
     const reactionsByName = useMemo(() => {
         return reactions?.reduce((acc, reaction) => {
@@ -54,7 +54,7 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
 
     const renderContent = useCallback(() => {
         const emojiAlias = sortedReactions[index];
-        if (!reactionsByName) {
+        if (!emojiAlias || !reactionsByName) {
             return null;
         }
 

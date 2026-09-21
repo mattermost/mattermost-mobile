@@ -5,6 +5,12 @@ import AboutScreen from './about';
 import AccountScreen from './account';
 import AddMembersScreen from './add_members';
 import AdvancedSettingsScreen from './advanced_settings';
+import {
+    closeArchivedChannel,
+    openArchivedChannel,
+    openArchivedChannelsFilter,
+    postArchivedChannelSentinel,
+} from './archived_channel_navigation';
 import AutoResponderNotificationSettingsScreen from './auto_responder_notification_settings';
 import BrowseChannelsScreen from './browse_channels';
 import ChannelScreen from './channel';
@@ -15,6 +21,7 @@ import ChannelInfoScreen from './channel_info';
 import ChannelListScreen from './channel_list';
 import ChannelSettingsScreen from './channel_settings';
 import ClockDisplaySettingsScreen from './clock_display_settings';
+import CodeScreen from './code';
 import CreateDirectMessageScreen from './create_direct_message';
 import CreateOrEditChannelScreen from './create_or_edit_channel';
 import CustomStatusScreen from './custom_status';
@@ -34,6 +41,7 @@ import Invite from './invite';
 import LoginScreen from './login';
 import ManageChannelMembersScreen from './manage_channel_members';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
+import MfaScreen from './mfa';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
 import PinnedMessagesScreen from './pinned_messages';
@@ -51,6 +59,7 @@ import ServerListScreen from './server_list';
 import SettingsScreen from './settings';
 import TableScreen from './table';
 import TeamDropdownMenuScreen from './team_dropdown_menu';
+import TermsOfServiceScreen from './terms_of_service';
 import ThemeDisplaySettingsScreen from './theme_display_settings';
 import ThreadScreen from './thread';
 import ThreadOptionsScreen from './thread_options';
@@ -72,6 +81,7 @@ export {
     ChannelConfigurationScreen,
     ChannelSettingsScreen,
     ClockDisplaySettingsScreen,
+    CodeScreen,
     CreateDirectMessageScreen,
     CreateOrEditChannelScreen,
     CustomStatusScreen,
@@ -90,6 +100,7 @@ export {
     LoginScreen,
     ManageChannelMembersScreen,
     MentionNotificationSettingsScreen,
+    MfaScreen,
     NotificationSettingsScreen,
     PermalinkScreen,
     PinnedMessagesScreen,
@@ -106,6 +117,7 @@ export {
     SettingsScreen,
     TableScreen,
     TeamDropdownMenuScreen,
+    TermsOfServiceScreen,
     ThemeDisplaySettingsScreen,
     ThreadScreen,
     ThreadOptionsScreen,
@@ -113,4 +125,8 @@ export {
     UserProfileScreen,
     DraftScreen,
     ScheduleMessageScreen,
+    closeArchivedChannel,
+    openArchivedChannel,
+    openArchivedChannelsFilter,
+    postArchivedChannelSentinel,
 };

@@ -190,6 +190,21 @@ type AppField = {
     subtype?: string;
     min_length?: number;
     max_length?: number;
+
+    // Date/DateTime props
+    min_date?: string;
+    max_date?: string;
+    time_interval?: number;
+    datetime_config?: DateTimeConfig;
+};
+
+type DateTimeConfig = {
+    time_interval?: number;
+    location_timezone?: string;
+    manual_time_entry?: boolean;
+
+    /** @deprecated Renamed to `manual_time_entry`; v12.0 stopped emitting it, 11.x still does. */
+    allow_manual_time_entry?: boolean;
 };
 
 type AutocompleteElement = AppField;

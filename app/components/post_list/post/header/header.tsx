@@ -28,6 +28,7 @@ import {
     isCustomStatusExpired,
 } from '@utils/user';
 
+import AiGeneratedIndicator from './ai_generated_indicator';
 import HeaderCommentedOn from './commented_on';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
@@ -42,6 +43,7 @@ type HeaderProps = {
     author?: UserModel;
     commentCount: number;
     currentUser?: UserModel;
+    isAiGenerated: boolean;
     isAutoResponse: boolean;
     isChannelAutotranslated: boolean;
     isCRTEnabled?: boolean;
@@ -86,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
+        author, commentCount = 0, currentUser, isAiGenerated, isAutoResponse, isChannelAutotranslated, isCRTEnabled,
         isEphemeral, isPendingOrFailed, isSystemPost, isWebHook,
         location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton,
     } = props;
@@ -181,6 +183,9 @@ const Header = (props: HeaderProps) => {
                             expiryTime={borExpireAt as number}
                             onExpiry={onBoRPostExpiry}
                         />
+                    )}
+                    {isAiGenerated && (
+                        <AiGeneratedIndicator post={post}/>
                     )}
                     {!isCRTEnabled && showReply && commentCount > 0 && (
                         <HeaderReply

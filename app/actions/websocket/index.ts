@@ -1,9 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
+
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup, expiredBoRPostCleanup} from '@actions/local/systems';
+import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
@@ -20,6 +24,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getLastPostInThread} from '@queries/servers/post';
@@ -62,7 +67,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
     const {database} = operator;
 
+    // Guards against RUNNINGBOARD 0xdead10cc if the app backgrounds mid-sync.
+    const activityToken = await RNUtils.beginDatabaseActivity(serverUrl, 'doReconnect');
+
     try {
+        await SessionAttributesManager.refreshManifest(serverUrl);
+
         const lastFullSync = await getLastFullSync(database);
         const now = Date.now();
 
@@ -74,6 +84,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         if ('error' in entryData) {
             return entryData.error;
         }
+
         const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
@@ -84,7 +95,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
@@ -99,6 +109,17 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
+        fetchAccessControlAttributeFields(serverUrl, true);
+
+        // Values may have changed while the socket was down, and the events that
+        // would have reported it are gone. Dropping the per-channel dedupe makes
+        // the next visit to each channel refetch them — but the channel already on
+        // screen is never re-entered, so it is refetched explicitly or it would
+        // keep showing what it had when the connection dropped.
+        EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+        if (currentChannelId) {
+            fetchChannelAttributeValues(serverUrl, currentChannelId);
+        }
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
@@ -106,14 +127,28 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         openAllUnreadChannels(serverUrl, groupLabel);
 
-        dataRetentionCleanup(serverUrl);
-
-        expiredBoRPostCleanup(serverUrl);
+        doCleanup(serverUrl);
 
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
     } finally {
         setTeamLoading(serverUrl, false);
+        if (activityToken) {
+            RNUtils.endDatabaseActivity(activityToken);
+        }
+    }
+}
+
+async function doCleanup(serverUrl: string) {
+    const dataRetention = await dataRetentionCleanup(serverUrl);
+    const autoCache = await autoCacheCleanup(serverUrl);
+    await expiredBoRPostCleanup(serverUrl);
+
+    const dataRetentionRan = !dataRetention.skipped && !dataRetention.error;
+    const autoCacheRan = !autoCache.skipped && !autoCache.error;
+
+    if (dataRetentionRan || autoCacheRan) {
+        await performVacuum(serverUrl);
     }
 }
 

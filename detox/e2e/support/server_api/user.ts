@@ -2,22 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {adminPassword, adminUsername} from '@support/test_config';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
+
+import {logError} from '../../../provision/log';
 
 import client from './client';
 import {getResponseFromError} from './common';
-
-// ****************************************************************
-// Users
-// See https://api.mattermost.com/#tag/users
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
 
 /**
  * Login to Mattermost server as sysadmin.
@@ -40,18 +31,29 @@ export const apiAdminLogin = (baseUrl: string): any => {
  * @return {Object} returns {user} on success or {error, status} on error
  */
 export const apiCreateUser = async (baseUrl: string, {prefix = 'user', user = null}: any = {}): Promise<any> => {
-    try {
-        const newUser = user || generateRandomUser({prefix});
+    return withTransportRetry(async () => {
+        try {
+            const newUser = user || generateRandomUser({prefix});
 
-        const response = await client.post(
-            `${baseUrl}/api/v4/users`,
-            newUser,
-        );
+            const response = await client.post(
+                `${baseUrl}/api/v4/users`,
+                newUser,
+            );
 
-        return {user: {...response.data, newUser}};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
+            return {user: {...response.data, password: newUser.password, newUser}};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {
+        idempotent: false,
+
+        // Random users are safe to recreate; a caller-supplied body is not.
+        allowDuplicateWrites: !user,
+        label: 'apiCreateUser',
+
+        // Axios times out at 45s, so HALF_MIN could not fit one stall plus a retry.
+        budgetMs: timeouts.ONE_MIN,
+    });
 };
 
 /**
@@ -137,13 +139,23 @@ export const apiGetUserByUsername = async (baseUrl: string, username: string): P
  * @param {string} baseUrl - the base server URL
  * @param {string} user.username - username of a user
  * @param {string} user.password - password of a user
+ * @param {string} user.mfaToken - MFA token (required when MFA is enabled for the user)
  * @return {Object} returns {user, status} on success or {error, status} on error
  */
 export const apiLogin = async (baseUrl: string, user: any): Promise<any> => {
     try {
+        if (!user?.username || !user?.password) {
+            logError(
+                '[apiLogin] refusing to log in with incomplete credentials ' +
+                `(hasUsername=${Boolean(user?.username)}, hasPassword=${Boolean(user?.password)}). ` +
+                'Pass the user returned by apiCreateUser/apiInit, or its .newUser.',
+            );
+            return {error: {message: 'apiLogin called with incomplete credentials'}, status: 0};
+        }
+
         const response = await client.post(
             `${baseUrl}/api/v4/users/login`,
-            {login_id: user.username, password: user.password},
+            {login_id: user.username, password: user.password, ...(user.mfaToken ? {token: user.mfaToken} : {})},
         );
 
         const {data, status} = response;
@@ -245,6 +257,84 @@ export const apiUpdateUserActiveStatus = async (baseUrl: string, userId: string,
     }
 };
 
+type AutocompleteUser = {id: string};
+type AutocompleteUsersResult = {
+    users?: AutocompleteUser[];
+    out_of_channel?: AutocompleteUser[];
+    error?: {message?: string};
+    status?: number;
+};
+
+/**
+ * Autocomplete users in a team/channel.
+ * See https://api.mattermost.com/#operation/AutocompleteUsers
+ * @param {string} baseUrl - the base server URL
+ * @param {string} option.teamId - team ID
+ * @param {string} option.channelId - channel ID (populates out_of_channel)
+ * @param {string} option.name - name prefix to match
+ * @return {Object} returns autocomplete payload on success or {error, status} on error
+ */
+export const apiAutocompleteUsers = async (
+    baseUrl: string,
+    {teamId, channelId, name}: {teamId: string; channelId?: string; name: string},
+): Promise<AutocompleteUsersResult> => {
+    try {
+        const params = new URLSearchParams({in_team: teamId, name});
+        if (channelId) {
+            params.set('in_channel', channelId);
+        }
+        const response = await client.get(`${baseUrl}/api/v4/users/autocomplete?${params.toString()}`);
+        return response.data;
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Wait until a user appears in channel autocomplete out_of_channel results.
+ * Fresh users can miss the first search until the server index catches up.
+ */
+export const waitForUserInAutocomplete = async (
+    baseUrl: string,
+    {
+        teamId,
+        channelId,
+        userId,
+        name,
+        timeoutMs = 30000,
+        intervalMs = 1000,
+    }: {
+        teamId: string;
+        channelId: string;
+        userId: string;
+        name: string;
+        timeoutMs?: number;
+        intervalMs?: number;
+    },
+): Promise<void> => {
+    const deadline = Date.now() + timeoutMs;
+    let lastError = '';
+
+    const poll = async (): Promise<void> => {
+        const result = await apiAutocompleteUsers(baseUrl, {teamId, channelId, name});
+        if ((result.out_of_channel ?? []).some((user) => user.id === userId)) {
+            return;
+        }
+
+        lastError = result.error?.message || `HTTP ${result.status ?? 'ok'}; out_of_channel=${result.out_of_channel?.length ?? 0}`;
+        if (Date.now() >= deadline) {
+            throw new Error(`User ${userId} was not in out_of_channel autocomplete for "${name}" within ${timeoutMs}ms (${lastError}).`);
+        }
+
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, intervalMs);
+        });
+        await poll();
+    };
+
+    await poll();
+};
+
 export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) => {
     const randomId = getRandomId(randomIdLength);
 
@@ -252,12 +342,7 @@ export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) =
         email: `${prefix}${randomId}@sample.mattermost.com`,
         username: `${prefix}${randomId}`,
 
-        // 16 chars to satisfy any server-side PasswordSettings.MinimumLength up
-        // to and including the FIPS-mode minimum of 14
-        // (server/public/model/config.go PasswordFIPSMinimumLength). The old
-        // `P${randomId}!1234` (12 chars) was rejected by local dev servers and
-        // FIPS-enabled cloud test servers, manifesting as cryptic "your account
-        // is locked" / 400 responses during apiInit.
+        // 16-char password satisfies FIPS minimum length on cloud test servers.
         password: `P${randomId}!Test1234`,
         first_name: `F${randomId}`,
         last_name: `L${randomId}`,
@@ -268,6 +353,7 @@ export const generateRandomUser = ({prefix = 'user', randomIdLength = 6} = {}) =
 
 export const User = {
     apiAdminLogin,
+    apiAutocompleteUsers,
     apiCreateUser,
     apiDeactivateUser,
     apiDemoteUserToGuest,
@@ -281,6 +367,7 @@ export const User = {
     apiUpdateUserActiveStatus,
     apiUpdateUserRoles,
     generateRandomUser,
+    waitForUserInAutocomplete,
 };
 
 export default User;

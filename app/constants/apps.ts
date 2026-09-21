@@ -36,6 +36,8 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     CHANNEL: 'channel',
     MARKDOWN: 'markdown',
     RADIO: 'radio',
+    DATE: 'date',
+    DATETIME: 'datetime',
 };
 
 export const SelectableAppFieldTypes = [
@@ -44,6 +46,8 @@ export const SelectableAppFieldTypes = [
     AppFieldTypes.STATIC_SELECT,
     AppFieldTypes.DYNAMIC_SELECT,
 ];
+
+export const DEFAULT_TIME_INTERVAL_MINUTES = 60;
 
 export const COMMAND_SUGGESTION_ERROR = 'error';
 export const COMMAND_SUGGESTION_CHANNEL = 'channel';
@@ -55,6 +59,7 @@ export default {
     AppCallResponseTypes,
     AppExpandLevels,
     AppFieldTypes,
+    DEFAULT_TIME_INTERVAL_MINUTES,
     COMMAND_SUGGESTION_ERROR,
     COMMAND_SUGGESTION_CHANNEL,
     COMMAND_SUGGESTION_USER,

@@ -33,6 +33,7 @@ interface ToolCardProps {
     onReject?: (toolId: string) => void;
     approvalStage: ToolApprovalStage;
     canExpand?: boolean;
+    canApprove?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
     isAutoApproved?: boolean;
@@ -79,9 +80,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 100),
         },
-        autoApprovedLabel: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            ...typography('Body', 75),
+        autoApprovedBadge: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingVertical: 2,
+            paddingHorizontal: 8,
+            borderRadius: 4,
+            backgroundColor: changeOpacity(theme.onlineIndicator, 0.12),
+        },
+        autoApprovedBadgeText: {
+            color: theme.onlineIndicator,
+            ...typography('Body', 75, 'SemiBold'),
         },
         resultContainer: {
             marginLeft: CONTENT_INDENT,
@@ -192,6 +202,7 @@ const ToolCard = ({
     onReject,
     approvalStage,
     canExpand = true,
+    canApprove = true,
     showArguments = true,
     showResults = true,
     isAutoApproved = false,
@@ -205,6 +216,10 @@ const ToolCard = ({
     }, [isCollapsed, chevronRotation]);
 
     const isPending = tool.status === ToolCallStatus.Pending;
+
+    // Accepted is the in-flight state between approval and the result landing;
+    // show the same processing spinner as Pending.
+    const isAccepted = tool.status === ToolCallStatus.Accepted;
     const hasLocalDecision = localDecision !== undefined && localDecision !== null;
     const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
 
@@ -213,6 +228,12 @@ const ToolCard = ({
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
+
+    // A pending call flagged would_auto_execute is executed server-side, so it
+    // must never offer an approval decision — only the result-stage
+    // share/keep-private controls stay available.
+    const showDecisionButtons = Boolean(onApprove && onReject) &&
+        (isResultPhase || (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute));
 
     const displayName = useMemo(() => {
         return tool.name.
@@ -259,7 +280,7 @@ const ToolCard = ({
 
     // Determine icon based on status
     const getStatusIcon = () => {
-        if (isPending) {
+        if (isPending || isAccepted) {
             return (
                 <Loading
                     size='small'
@@ -334,6 +355,23 @@ const ToolCard = ({
                 >
                     {displayName}
                 </Text>
+                {isAutoApprovedStatus && (
+                    <View
+                        style={styles.autoApprovedBadge}
+                        testID={`${testIdPrefix}.auto_approved_badge`}
+                    >
+                        <CompassIcon
+                            name='check-circle'
+                            size={12}
+                            color={theme.onlineIndicator}
+                        />
+                        <FormattedText
+                            id='agents.tool_call.auto_approved_badge'
+                            defaultMessage='Auto-approved'
+                            style={styles.autoApprovedBadgeText}
+                        />
+                    </View>
+                )}
             </Pressable>
 
             {!isCollapsed && (
@@ -380,13 +418,6 @@ const ToolCard = ({
                                     defaultMessage='Response'
                                     style={styles.responseLabelText}
                                 />
-                                {isAutoApprovedStatus && (
-                                    <FormattedText
-                                        id='agents.tool_call.auto_approved'
-                                        defaultMessage='(Auto-approved)'
-                                        style={styles.autoApprovedLabel}
-                                    />
-                                )}
                             </View>
                             <View style={styles.resultContainer}>
                                 <Markdown
@@ -396,7 +427,7 @@ const ToolCard = ({
                                     location={Screens.CHANNEL}
                                 />
                             </View>
-                            {isResultPhase && (
+                            {isResultPhase && canApprove && (
                                 <View
                                     style={styles.warningCallout}
                                     testID={`${testIdPrefix}.warning`}
@@ -460,7 +491,7 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isPending && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isPending && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.buttonContainer}>
                     <Pressable
                         onPress={handleApprove}
@@ -491,7 +522,7 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.resultButtonContainer}>
                     <Pressable
                         onPress={handleApprove}

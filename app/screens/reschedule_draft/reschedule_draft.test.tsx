@@ -6,7 +6,7 @@ import moment from 'moment-timezone';
 import React, {type ComponentProps} from 'react';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -37,7 +37,7 @@ jest.mock('@context/server', () => ({
     useServerUrl: jest.fn(),
 }));
 
-jest.mock('@components/data_time_selector', () => ({
+jest.mock('@components/date_time_selector', () => ({
     __esModule: true,
     default: jest.fn(),
 }));

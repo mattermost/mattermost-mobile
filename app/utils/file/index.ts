@@ -255,6 +255,11 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return true;
     }
 
+    // A draft persisted before its file metadata resolved has neither, despite the types.
+    if (!file.extension && !file.name) {
+        return false;
+    }
+
     const fileExt = extractExtension(file.extension || file.name);
 
     if (!SUPPORTED_IMAGE_FORMAT.includes(fileExt)) {
@@ -263,7 +268,7 @@ export const isImage = (file?: FileInfo | FileModel) => {
 
     let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
     if (!mimeType) {
-        mimeType = lookupMimeType(file.extension) || lookupMimeType(file.name);
+        mimeType = lookupMimeType(fileExt);
     }
 
     return Boolean(mimeType?.startsWith('image/'));

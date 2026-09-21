@@ -146,8 +146,9 @@ extension PushNotification {
     }
     
     public func fetchAndStoreDataForPushNotification(_ notification: UNMutableNotificationContent, withContentHandler contentHandler: @escaping ((UNNotificationContent) -> Void)) {
-        guard let serverUrl =  notification.userInfo["server_url"] as? String,
-              let channelId = notification.userInfo["channel_id"] as? String
+        guard let serverUrl = notification.userInfo["server_url"] as? String,
+              let channelId = notification.userInfo["channel_id"] as? String,
+              !Database.default.isZeroPersistenceServer(serverUrl)
         else {
             contentHandler(notification)
             return

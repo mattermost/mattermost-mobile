@@ -4,13 +4,48 @@
 import {
     TranscribeAPI,
     type CallJobState,
+    type CallPostProps,
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
     type CallsVersionInfo,
 } from '@mattermost/calls/lib/types';
+import {AudioDevice, type AudioDeviceType, type AudioRoute} from '@mattermost/calls-native';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+// The call_status post prop the calls plugin sets on a custom_calls post. It is only stamped as
+// Calling for DM channels, but every terminal transition sets it for all channel types.
+// Mirrors CallPostStatus in the webapp (webapp/src/types/types.ts).
+export const CallPostStatus = {
+    Calling: 'calling',
+    Ended: 'ended',
+    NoAnswer: 'no_answer',
+    CanceledByCaller: 'canceled_by_caller',
+    Declined: 'declined',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type CallPostStatus = typeof CallPostStatus[keyof typeof CallPostStatus];
+
+// CallPostProps comes from calls-common, which has no knowledge of call_status yet.
+export type CallsPostProps = CallPostProps & {
+    call_status: CallPostStatus | '';
+}
+
+// The state the call post card renders, derived from the post props and the live call.
+// Mirrors CallCardState in the webapp (webapp/src/components/custom_post_types/post_type_event.tsx).
+export const CallCardState = {
+    Calling: 'calling',
+    Active: 'active',
+    NoAnswer: 'no_answer',
+    Canceled: 'canceled',
+    Declined: 'declined',
+    Ended: 'ended',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type CallCardState = typeof CallCardState[keyof typeof CallCardState];
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
@@ -87,38 +122,36 @@ export const DefaultCall: Call = {
     dismissed: {},
 };
 
-export enum AudioDevice {
-    Earpiece = 'EARPIECE',
-    Speakerphone = 'SPEAKER_PHONE',
-    Bluetooth = 'BLUETOOTH',
-    WiredHeadset = 'WIRED_HEADSET',
-    None = 'NONE',
-}
-
 export type CurrentCall = Call & {
     connected: boolean;
+    startedByMe: boolean;
+
+    // If true, join call unmuted immediately; typical for 1:1 DMs.
+    // Prevents client-side mute race with server join event.
+    startUnmuted: boolean;
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
     screenShareURL: string;
-    speakerphoneOn: boolean;
-    audioDeviceInfo: AudioDeviceInfo;
+    audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
     callQualityAlert: boolean;
     callQualityAlertDismissed: number;
     captions: Dictionary<LiveCaptionMobile>;
+    dmCalleeAnsweredAt?: number;
 }
 
 export const DefaultCurrentCall: CurrentCall = {
     ...DefaultCall,
     connected: false,
+    startedByMe: false,
+    startUnmuted: false,
     serverUrl: '',
     myUserId: '',
     mySessionId: '',
     screenShareURL: '',
-    speakerphoneOn: false,
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
@@ -139,15 +172,21 @@ export type CallSession = {
 
 export type ChannelsWithCalls = Dictionary<boolean>;
 
+export {AudioDevice};
+export type {AudioDeviceType, AudioRoute};
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
-    unmute: () => void;
+
+    // Returns false when there was no voice track to enable, so the unmute never left the device.
+    unmute: () => boolean;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
     sendReaction: (emoji: EmojiData) => void;
+    setUserSelectedAudioRoute: (route: AudioDeviceType) => void;
 }
 
 export type CallsConfigState = CallsConfig & {
@@ -200,16 +239,6 @@ export type CallsTheme = Theme & {
     callsBg: string;
     callsBgRgb: string;
     callsBadgeBg: string;
-};
-
-export type AudioDeviceInfoRaw = {
-    availableAudioDeviceList: string;
-    selectedAudioDevice: AudioDevice;
-};
-
-export type AudioDeviceInfo = {
-    availableAudioDeviceList: AudioDevice[];
-    selectedAudioDevice: AudioDevice;
 };
 
 export type LiveCaptionMobile = {

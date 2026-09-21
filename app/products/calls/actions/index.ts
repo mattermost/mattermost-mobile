@@ -11,7 +11,6 @@ export {
     unmuteMyself,
     raiseHand,
     unraiseHand,
-    setSpeakerphoneOn,
     handleCallsSlashCommand,
     startCallRecording,
     stopCallRecording,

@@ -1,0 +1,222 @@
+# MM-T5611: Tapping a link bookmark opens the URL in an external browser.
+#
+# PRE-CONDITIONS:
+#   - Channel bookmarks enabled on server
+#   - Logged-in user in test channel
+#
+# REQUIRED ENV VARS:
+#   - MAESTRO_APP_ID, SITE_1_URL, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_CHANNEL_NAME
+#
+# ASSERTIONS:
+#   - Link bookmark can be created from channel info
+#   - Bookmark appears in channel header bar after closing channel info
+#   - Long-pressing the bookmark opens the in-app options sheet (Edit)
+#     on both platforms. iOS does not use Safari: openLink → tryOpenURL
+#     leaves Maestro on a suspended app + external Safari, so breadcrumb
+#     and post-resume header asserts flake.
+#
+# testIDs:
+#   - channel_header.channel_quick_actions.button
+#   - channel.quick_actions.channel_info.action
+#   - channel_info.screen
+#   - channel_info.add_bookmark.button
+#   - channel_bookmark.type.link
+#   - channel_bookmark.screen
+#   - channel_bookmark_add.link.input (CI APK may only expose accessibility label "Link")
+#   - channel_bookmark.add.title.input
+#   - channel_bookmark.edit.save_button
+#   - close.channel_info.button
+#   - channel_header.bookmarks.list
+#   - channel_bookmark.options.sheet
+#   - channel_bookmark.options.edit
+tags:
+  - MM-T5611
+appId: ${MAESTRO_APP_ID}
+---
+# # Log in and navigate to the test channel
+- runFlow: ../../subflows/auth/login.yml
+- runFlow: ../../subflows/navigation/navigate_to_channel.yml
+
+# # Open channel info via the header quick-actions button.
+# navigation.header.title has opacity:0 on iOS 26 when the channel is not scrolled.
+# The intro_options "Info" action only renders when the channel has no posts; the
+# header three-dots → quick_actions bottom sheet always exposes channel_info.
+- tapOn:
+    id: "channel_header.channel_quick_actions.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel.quick_actions.channel_info.action"
+    timeout: 10000
+- tapOn:
+    id: "channel.quick_actions.channel_info.action"
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# # Open the bookmark type picker bottom sheet
+- extendedWaitUntil:
+    visible:
+      id: "channel_info.add_bookmark.button"
+    timeout: 30000
+- tapOn:
+    id: "channel_info.add_bookmark.button"
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.type.link"
+    timeout: 10000
+
+# # Select "Add a link"
+- tapOn:
+    id: "channel_bookmark.type.link"
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.screen"
+    timeout: 10000
+
+# # Enter the bookmark URL.
+# CI APK: FloatingTextInput testID may not be in the accessibility tree; label "Link" is.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Link"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "channel_bookmark_add.link.input"
+- inputText: "https://mattermost.com"
+
+# # Wait for link metadata fetch to complete.
+# The loading indicator (channel_bookmark_add.link.loading) disappears once the server
+# has fetched the Open Graph / page-title metadata and autofilled the title input.
+# Waiting here ensures the autofill is finished before we overwrite the title field.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark_add.link.loading"
+    timeout: 60000
+- extendedWaitUntil:
+    visible:
+      id: "channel_bookmark.add.title.input"
+    timeout: 10000
+
+# # Use OG-autofilled title on CI; overwriting the title field can race metadata fetch.
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# # Save the bookmark.
+# iOS: header NavigationButton testID tap may not fire onPress on CI builds; use label text.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: "Save"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          text: "SAVE"
+
+# * Verify the bookmark screen closed
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.screen"
+    timeout: 30000
+
+# * Verify the bookmark is visible in the channel info bookmark list.
+# iOS: the FlatList container exposes its testID; individual item testIDs are not in the tree.
+# Android: the FlatList container testID is not exposed; individual item testIDs are.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_info.bookmarks.list"
+          timeout: 20000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark\\..+\\.title"
+          timeout: 20000
+
+# # Close channel info and return to the channel screen
+- tapOn:
+    id: "close.channel_info.button"
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_info.screen"
+    timeout: 10000
+
+# * Verify the bookmark bar is visible in the channel header
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.bookmarks.list"
+    timeout: 30000
+
+# # Long-press the bookmark to open the options sheet.
+# openLink → tryOpenURL is unreliable under Maestro: iOS Simulator Safari
+# (breadcrumb / post-resume header) and Android emulators without a browser.
+# handleLongPress is in-app on both platforms.
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      # # iOS merges the bookmark's title Text into its parent Pressable, so
+      # channel_bookmark.<id>.title is absent from the tree while the Pressable's
+      # own testID is present. Match that instead of the display-name text: the
+      # 26-char suffix is the server-generated bookmark id, which is unknown at
+      # authoring time but cannot collide with channel_bookmark.options.*.
+      - longPressOn:
+          id: "channel_bookmark\\.[a-z0-9]{26}"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.options.edit"
+          timeout: 15000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - longPressOn:
+          id: "channel_bookmark\\..+\\.title"
+      - extendedWaitUntil:
+          visible:
+            id: "channel_bookmark.options.edit"
+          timeout: 15000
+- takeScreenshot: bookmark-options-visible
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: "50%, 60%"
+          end: "50%, 95%"
+          duration: 300
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: Back
+
+# * Verify the bookmark options sheet is dismissed.
+- extendedWaitUntil:
+    notVisible:
+      id: "channel_bookmark.options.sheet"
+    timeout: 15000
+
+# * Verify the channel header bookmark bar is still there after the sheet closes.
+- extendedWaitUntil:
+    visible:
+      id: "channel_header.bookmarks.list"
+    timeout: 30000
+- takeScreenshot: bookmark-options-dismissed

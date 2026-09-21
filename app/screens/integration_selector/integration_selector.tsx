@@ -124,7 +124,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
-            marginHorizontal: 10,
+            marginHorizontal: 12,
         },
         searchBar: {
             marginVertical: 5,

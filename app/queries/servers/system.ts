@@ -13,6 +13,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
 
@@ -23,6 +24,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 export type PrepareCommonSystemValuesArgs = {
     lastUnreadChannelId?: string;
     currentChannelId?: string;
+    currentPushVerificationStatus?: string;
     currentTeamId?: string;
     currentUserId?: string;
     license?: ClientLicense;
@@ -435,7 +437,7 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {lastUnreadChannelId, currentChannelId, currentPushVerificationStatus, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
 
         if (license !== undefined) {
@@ -470,6 +472,13 @@ export async function prepareCommonSystemValues(
             systems.push({
                 id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID,
                 value: currentChannelId,
+            });
+        }
+
+        if (currentPushVerificationStatus !== undefined) {
+            systems.push({
+                id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS,
+                value: currentPushVerificationStatus,
             });
         }
 
@@ -519,7 +528,7 @@ export async function setCurrentTeamId(operator: ServerDataOperator, teamId: str
 
         return {currentTeamId: teamId};
     } catch (error) {
-        logError(error);
+        logError('Failed setCurrentTeamId', getFullErrorMessage(error));
         return {error};
     }
 }

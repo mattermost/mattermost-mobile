@@ -34,7 +34,6 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       "opacity": 1,
     }
   }
-  testID="channel_item.hello"
 >
   <View
     style={
@@ -51,6 +50,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
       ]
     }
+    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}
@@ -170,7 +170,6 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       "opacity": 1,
     }
   }
-  testID="channel_item.hello"
 >
   <View
     style={
@@ -187,6 +186,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
       ]
     }
+    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}
@@ -347,7 +347,6 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       "opacity": 1,
     }
   }
-  testID="channel_item.hello"
 >
   <View
     style={
@@ -364,6 +363,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
       ]
     }
+    testID="channel_item.hello"
   >
     <Text
       allowFontScaling={false}

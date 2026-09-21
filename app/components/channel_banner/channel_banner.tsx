@@ -3,16 +3,19 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, Text, View} from 'react-native';
 
 import ExpandedAnnouncementBanner from '@components/announcement_banner/expanded_announcement_banner';
 import RemoveMarkdown from '@components/remove_markdown';
 import {CHANNEL_BANNER_HEIGHT} from '@constants/view';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet} from '@screens/navigation';
 import {getContrastingSimpleColor} from '@utils/general';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {typography} from '@utils/typography';
+
+import type {ChannelAttributeBannerState} from '@utils/channel_attributes';
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
@@ -35,8 +38,6 @@ const getStyleSheet = (bannerTextColor: string) => ({
         borderTopRightRadius: 12,
     },
     baseTextStyle: {
-        borderWidth: 2,
-        borderColor: 'red',
         ...typography('Body', 100, 'Regular'),
         color: bannerTextColor,
     },
@@ -53,13 +54,20 @@ const getStyleSheet = (bannerTextColor: string) => ({
 
 type Props = {
     bannerInfo?: ChannelBannerInfo;
+    attributeBanner: ChannelAttributeBannerState;
     isTopItem?: boolean;
     skipHeaderOffset?: boolean;
 }
 
-export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) {
+export function ChannelBanner({bannerInfo, attributeBanner, isTopItem, skipHeaderOffset}: Props) {
     const intl = useIntl();
-    const bannerTextColor = getContrastingSimpleColor(bannerInfo?.background_color || '');
+
+    // A designated attribute takes priority over the channel's own banner. The
+    // values it reads are fetched on channel switch, not here: the chips and the
+    // Channel Info section need them on channels that render no banner at all.
+    const effectiveBanner = attributeBanner.hasBanner ? attributeBanner.banner : bannerInfo;
+
+    const bannerTextColor = getContrastingSimpleColor(effectiveBanner?.background_color || '');
 
     const style = useMemo(() => {
         return getStyleSheet(bannerTextColor);
@@ -68,14 +76,12 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
     const defaultHeight = useDefaultHeaderHeight();
     const containerStyle = useMemo(() => ({
         ...style.container,
-        backgroundColor: bannerInfo?.background_color,
+        backgroundColor: effectiveBanner?.background_color,
         ...(skipHeaderOffset ? undefined : {top: defaultHeight, zIndex: 1}),
-    }), [bannerInfo?.background_color, defaultHeight, skipHeaderOffset, style.container]);
+    }), [effectiveBanner?.background_color, defaultHeight, skipHeaderOffset, style.container]);
 
-    const handlePress = useCallback(() => {
-        // set snap point based on text length, with a defined
-        // minimum and maximum height for the text container
-        const length = bannerInfo!.text!.length / 100;
+    const handlePress = usePreventDoubleTap(useCallback(() => {
+        const length = (effectiveBanner?.text?.length ?? 0) / 100;
         const snapPoint = SNAP_POINT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 
         const expandedChannelBannerTitle = intl.formatMessage({
@@ -86,25 +92,28 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
         const renderContent = () => (
             <ExpandedAnnouncementBanner
                 allowDismissal={false}
-                bannerText={bannerInfo!.text || ''}
+                bannerText={effectiveBanner?.text ?? ''}
                 headingText={expandedChannelBannerTitle}
             />
         );
 
         bottomSheet(renderContent, [1, snapPoint]);
-    }, [bannerInfo, intl]);
+    }, [effectiveBanner, intl]));
 
     // banner info will be complete when this component renders,
     // but this check is still here to avoid having to use non-null assertion everywhere.
-    if (!bannerInfo || !bannerInfo.enabled || !bannerInfo.text || !bannerInfo.background_color) {
+    if (!effectiveBanner || !effectiveBanner.enabled || !effectiveBanner.text || !effectiveBanner.background_color) {
         return null;
     }
 
     return (
-        <View style={[containerStyle, isTopItem && style.containerTopItem]}>
-            <TouchableOpacity
+        <View
+            style={[containerStyle, isTopItem && style.containerTopItem]}
+            testID='channel.banner'
+        >
+            <Pressable
                 onPress={handlePress}
-                style={style.bannerTextContainer}
+                style={({pressed}) => [style.bannerTextContainer, pressed && {opacity: 0.8}]}
             >
                 <Text
                     ellipsizeMode='tail'
@@ -112,11 +121,11 @@ export function ChannelBanner({bannerInfo, isTopItem, skipHeaderOffset}: Props) 
                     style={style.bannerText}
                 >
                     <RemoveMarkdown
-                        value={bannerInfo.text}
+                        value={effectiveBanner.text}
                         baseStyle={style.baseTextStyle}
                     />
                 </Text>
-            </TouchableOpacity>
+            </Pressable>
         </View>
     );
 }

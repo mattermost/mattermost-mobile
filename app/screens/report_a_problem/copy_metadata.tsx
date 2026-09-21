@@ -69,6 +69,7 @@ const CopyMetadata = ({
                     iconName='content-copy'
                     theme={theme}
                     text={intl.formatMessage({id: 'report_a_problem.metadata.copy', defaultMessage: 'Copy'})}
+                    testID='report_problem.metadata.copy.button'
                 />
             </View>
         </View>

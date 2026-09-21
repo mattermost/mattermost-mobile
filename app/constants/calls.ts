@@ -27,6 +27,10 @@ const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 const CAPTION_TIMEOUT = 5000;
 const RING_LENGTH = 30000;
 
+// How long the caller hears the outbound ringback tone before it auto-stops.
+// The same window the callee's phone rings for, so both ends give up together.
+const RINGBACK_TONE_TIMEOUT = RING_LENGTH;
+
 export enum Ringtone {
     Calm = 'Calm',
     Dynamic = 'Dynamic',
@@ -35,9 +39,6 @@ export enum Ringtone {
 }
 
 const RINGTONE_DEFAULT = Ringtone.Calm;
-
-// 30 seconds of vibration (there is no loop setting)
-const RINGTONE_VIBRATE_PATTERN = [1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000, 1000, 500, 1000, 500, 1000];
 
 export enum MessageBarType {
     Microphone,
@@ -63,6 +64,6 @@ export default {
     JOB_TYPE_TRANSCRIBING,
     JOB_TYPE_CAPTIONING,
     RING_LENGTH,
+    RINGBACK_TONE_TIMEOUT,
     RINGTONE_DEFAULT,
-    RINGTONE_VIBRATE_PATTERN,
 };

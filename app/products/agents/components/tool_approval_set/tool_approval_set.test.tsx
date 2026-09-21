@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act} from '@testing-library/react-native';
 import React from 'react';
 
+import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -40,6 +42,10 @@ function makeTool(overrides: Partial<ToolCall> = {}): ToolCall {
         ...overrides,
     };
 }
+
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
 describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
     it('should show arguments markdown when a completed tool card is tapped open', () => {
@@ -160,5 +166,228 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
 
         expect(getByTestId('agents.tool_card.tu1.approve')).toBeTruthy();
         expect(getByTestId('agents.tool_card.tu1.reject')).toBeTruthy();
+    });
+});
+
+describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)', () => {
+    const pendingTools: ToolCall[] = [
+        makeTool({id: 'a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined}),
+        makeTool({id: 'b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined}),
+    ];
+
+    it('should accept every actionable tool in one tap', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a', 'b']);
+    });
+
+    it('should reject every actionable tool with an empty approved list', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.reject_all'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+    });
+
+    it('should hide policy-approved pending tools while the rest of the batch awaits a decision', async () => {
+        const mixedTools: ToolCall[] = [
+            makeTool({id: 'auto', name: 'auto_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+            makeTool({id: 'manual', name: 'manual_tool', status: ToolCallStatus.Pending, result: undefined}),
+        ];
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={mixedTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        expect(queryByTestId('agents.tool_card.auto')).toBeNull();
+        expect(queryByTestId('agents.tool_approval_set.run_tools')).toBeNull();
+        expect(getByTestId('agents.tool_card.manual')).toBeTruthy();
+
+        // Deciding the one visible tool submits without waiting on the hidden one.
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.manual.approve'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['manual']);
+    });
+
+    it('should drop a local decision when its call turns auto-executing, so it cannot be submitted', async () => {
+        const manualA = makeTool({id: 'manual_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined});
+        const manualB = makeTool({id: 'manual_b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined});
+
+        const renderSet = (toolCalls: ToolCall[]) => (
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={toolCalls}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />
+        );
+
+        const {getByTestId, queryByTestId, rerender} = renderWithIntlAndTheme(renderSet([manualA, manualB]));
+
+        // Decide one tool; the still-undecided one keeps the batch open.
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.manual_a.approve'));
+        });
+        expect(queryByTestId('agents.tool_card.manual_a.approve')).toBeNull();
+        expect(submitToolApproval).not.toHaveBeenCalled();
+
+        // A streaming update marks the decided call as auto-executing; it is
+        // hidden while the rest of the batch awaits a decision.
+        await act(async () => {
+            rerender(renderSet([{...manualA, would_auto_execute: true}, manualB]));
+        });
+        expect(queryByTestId('agents.tool_card.manual_a')).toBeNull();
+
+        // The stale decision is gone: were it retained, the id would ride along
+        // in accepted_tool_ids for a call the user must never decide.
+        await act(async () => {
+            rerender(renderSet([manualA, manualB]));
+        });
+        expect(getByTestId('agents.tool_card.manual_a.approve')).toBeTruthy();
+    });
+
+    it('should resume an interrupted all-auto round with an empty accepted list', async () => {
+        const autoTools: ToolCall[] = [
+            makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+            makeTool({id: 'auto_b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+        ];
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={autoTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        // Cards stay visible but non-interactive.
+        expect(getByTestId('agents.tool_card.auto_a')).toBeTruthy();
+        expect(getByTestId('agents.tool_card.auto_b')).toBeTruthy();
+        expect(queryByTestId('agents.tool_card.auto_a.approve')).toBeNull();
+        expect(queryByTestId('agents.tool_card.auto_b.reject')).toBeNull();
+        expect(queryByTestId('agents.tool_approval_set.pending_decisions')).toBeNull();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.run_tools'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', []);
+    });
+
+    it('should mark the cards as processing and hide the resume button while submitting', async () => {
+        let resolveSubmit: (value: {error?: unknown}) => void = () => undefined;
+        jest.mocked(submitToolApproval).mockReturnValueOnce(new Promise((resolve) => {
+            resolveSubmit = resolve;
+        }));
+
+        const autoTools: ToolCall[] = [
+            makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+        ];
+
+        const {getByTestId, getByText, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={autoTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        fireEvent.press(getByTestId('agents.tool_approval_set.run_tools'));
+
+        expect(queryByTestId('agents.tool_approval_set.run_tools')).toBeNull();
+        expect(getByTestId('agents.tool_approval_set.submitting')).toBeTruthy();
+        expect(getByText('Processing...')).toBeTruthy();
+
+        await act(async () => {
+            resolveSubmit({});
+        });
+    });
+
+    it('should not offer the resume button to a viewer who cannot approve', () => {
+        const autoTools: ToolCall[] = [
+            makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+        ];
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={autoTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={false}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        expect(getByTestId('agents.tool_card.auto_a')).toBeTruthy();
+        expect(queryByTestId('agents.tool_approval_set.run_tools')).toBeNull();
+        expect(queryByTestId('agents.tool_card.auto_a.approve')).toBeNull();
+    });
+
+    it('should suppress the status bar and per-card buttons for a viewer who cannot approve', () => {
+        const {queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={false}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        expect(queryByTestId('agents.tool_approval_set.pending_decisions')).toBeNull();
+        expect(queryByTestId('agents.tool_approval_set.accept_all')).toBeNull();
+        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
+        expect(queryByTestId('agents.tool_card.b.approve')).toBeNull();
     });
 });

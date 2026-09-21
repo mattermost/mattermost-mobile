@@ -7,8 +7,7 @@ exports[`components/integration_selector/option_list_row should match snapshot f
       "alignItems": "center",
       "backgroundColor": "#ffffff",
       "flexDirection": "row",
-      "height": 65,
-      "paddingHorizontal": 15,
+      "height": 40,
     }
   }
 >
@@ -33,7 +32,9 @@ exports[`components/integration_selector/option_list_row should match snapshot f
     accessible={true}
     collapsable={false}
     focusable={true}
+    onBlur={[Function]}
     onClick={[Function]}
+    onFocus={[Function]}
     onResponderGrant={[Function]}
     onResponderMove={[Function]}
     onResponderRelease={[Function]}
@@ -41,13 +42,15 @@ exports[`components/integration_selector/option_list_row should match snapshot f
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      {
-        "alignItems": "center",
-        "flex": 1,
-        "flexDirection": "row",
-        "height": 65,
-        "opacity": 1,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flex": 1,
+          "flexDirection": "row",
+          "height": 48,
+        },
+        false,
+      ]
     }
   >
     <View
@@ -65,7 +68,6 @@ exports[`components/integration_selector/option_list_row should match snapshot f
             "flex": 1,
             "flexDirection": "column",
             "justifyContent": "center",
-            "marginLeft": 10,
           }
         }
       >

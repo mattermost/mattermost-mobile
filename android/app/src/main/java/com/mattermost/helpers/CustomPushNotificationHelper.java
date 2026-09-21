@@ -50,6 +50,8 @@ import okhttp3.Response;
 
 import static com.mattermost.helpers.database_extension.GeneralKt.getDatabaseForServer;
 import static com.mattermost.helpers.database_extension.GeneralKt.getDeviceToken;
+import static com.mattermost.helpers.database_extension.GeneralKt.getZeroPersistenceSigningKey;
+import static com.mattermost.helpers.database_extension.GeneralKt.isZeroPersistenceServer;
 import static com.mattermost.helpers.database_extension.SystemKt.queryConfigServerVersion;
 import static com.mattermost.helpers.database_extension.SystemKt.queryConfigSigningKey;
 import static com.mattermost.helpers.database_extension.UserKt.getLastPictureUpdate;
@@ -218,11 +220,6 @@ public class CustomPushNotificationHelper {
     }
 
     public static void createNotificationChannels(Context context) {
-        // Notification channels are not supported in Android Nougat and below
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
         if (mHighImportanceChannel == null) {
@@ -258,8 +255,24 @@ public class CustomPushNotificationHelper {
 
         WMDatabase db = getDatabaseForServer(dbHelper, context, serverUrl);
         if (db == null) {
-            TurboLog.Companion.i("Mattermost Notifications Signature verification", "Cannot access the server database");
-            return false;
+            boolean isZeroPersistence = isZeroPersistenceServer(dbHelper, serverUrl);
+            if (!isZeroPersistence) {
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Cannot access the server database");
+                return false;
+            }
+
+            if (signature.equals("NO_SIGNATURE")) {
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "Cannot verify unsigned notification for zero-persistence server");
+                return false;
+            }
+
+            String zeroPersistenceSigningKey = getZeroPersistenceSigningKey(dbHelper, serverUrl);
+            if (zeroPersistenceSigningKey == null) {
+                TurboLog.Companion.i("Mattermost Notifications Signature verification", "No signing key stored for zero-persistence server");
+                return false;
+            }
+            
+            return verifyJwt(dbHelper, signature, ackId, zeroPersistenceSigningKey);
         }
 
         if (signature.equals("NO_SIGNATURE")) {
@@ -338,6 +351,10 @@ public class CustomPushNotificationHelper {
             return false;
         }
 
+        return verifyJwt(dbHelper, signature, ackId, signingKey);
+    }
+
+    private static boolean verifyJwt(DatabaseHelper dbHelper, String signature, String ackId, String signingKey) {
         try {
             byte[] encoded = Base64.decode(signingKey, 0);
             KeyFactory kf = KeyFactory.getInstance("EC");
@@ -495,24 +512,15 @@ public class CustomPushNotificationHelper {
         if (conversationTitle != null && !channelName.equals(senderName)) {
             messagingStyle.setConversationTitle(conversationTitle);
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                messagingStyle.setGroupConversation(true);
-            }
+            messagingStyle.setGroupConversation(true);
         }
     }
 
     private static void setNotificationBadgeType(NotificationCompat.Builder notification) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notification.setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE);
-        }
+        notification.setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE);
     }
 
     private static void setNotificationChannel(Context context, NotificationCompat.Builder notification) {
-        // If Android Oreo or above we need to register a channel
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-
         if (mHighImportanceChannel == null) {
             createNotificationChannels(context);
         }

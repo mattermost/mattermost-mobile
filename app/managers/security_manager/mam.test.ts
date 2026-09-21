@@ -25,6 +25,11 @@ import type {ServerDatabase} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    AuthenticationOutcome: {
+        Failed: 'E_AUTH_FAILED',
+        Cancelled: 'E_CANCELLED',
+        Indeterminate: 'E_INDETERMINATE',
+    },
     isDeviceSecured: jest.fn(),
     authenticate: jest.fn(),
     openSecuritySettings: jest.fn(),

@@ -19,7 +19,20 @@ extension Database {
                 return try? result.get(valueCol)
             }
         }
-        
+
+        return nil
+    }
+
+    public func getVoIPDeviceToken() -> String? {
+        if let db = try? openConnection(DEFAULT_DB_PATH) {
+            let idCol = Expression<String>("id")
+            let valueCol = Expression<String>("value")
+            let query = globalTable.select(valueCol).filter(idCol == "voipDeviceToken")
+            if let result = try? db.pluck(query) {
+                return try? result.get(valueCol)
+            }
+        }
+
         return nil
     }
 

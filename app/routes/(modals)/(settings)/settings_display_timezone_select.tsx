@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useLocalSearchParams} from 'expo-router';
 import {useIntl} from 'react-intl';
 
 import {useTheme} from '@context/theme';
 import {getHeaderOptions, useNavigationHeader} from '@hooks/navigation_header';
+import {usePropsFromParams} from '@hooks/props_from_params';
 import SettingsDisplayTimezoneSelectScreen from '@screens/settings/display_timezone_select';
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export default function SettingsDisplayTimezoneSelectRoute() {
-    const {currentTimezone} = useLocalSearchParams<Props>();
+    const {currentTimezone} = usePropsFromParams<Props>();
     const intl = useIntl();
     const theme = useTheme();
 

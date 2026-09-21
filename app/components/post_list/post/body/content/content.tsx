@@ -4,10 +4,12 @@
 import React from 'react';
 
 import {isMessageAttachmentArray} from '@utils/message_attachment';
+import {hasInteractivePostContent} from '@utils/post';
 import {isYoutubeLink} from '@utils/url';
 
 import EmbeddedBindings from './embedded_bindings';
 import ImagePreview from './image_preview';
+import InteractiveMessages from './interactive_messages';
 import MessageAttachments from './message_attachments';
 import Opengraph from './opengraph';
 import PermalinkPreview from './permalink_preview';
@@ -20,6 +22,7 @@ type ContentProps = {
     isReplyPost: boolean;
     layoutWidth?: number;
     location: AvailableScreens;
+    mmBlocksEnabled: boolean;
     post: PostModel;
     theme: Theme;
     showPermalinkPreviews: boolean;
@@ -34,7 +37,18 @@ const contentType: Record<string, string> = {
     youtube: 'youtube',
 };
 
-const Content = ({isReplyPost, layoutWidth, location, post, theme, showPermalinkPreviews}: ContentProps) => {
+const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, theme, showPermalinkPreviews}: ContentProps) => {
+    if (hasInteractivePostContent(post, mmBlocksEnabled)) {
+        return (
+            <InteractiveMessages
+                channelId={post.channelId}
+                location={location}
+                post={post}
+                theme={theme}
+            />
+        );
+    }
+
     let type: string | undefined = post.metadata?.embeds?.[0].type;
 
     const nAppBindings = Array.isArray(post.props?.app_bindings) ? post.props.app_bindings.length : 0;

@@ -27,23 +27,20 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testUser: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testUser = user;
 
-        // # Enable Collapsed Reply Threads so the global threads UI surfaces
-        // are rendered (ThreadsButton in the channel-list sidebar, follow
-        // button in thread navigation, etc.). Without `always_on` the
-        // `channel_list.threads.button` testID is conditionally removed
-        // (see app/screens/home/channel_list/categories_list/categories_list.tsx
-        // — `threadButtonComponent` returns null when `!isCRTEnabled`).
+        // Enable CRT for global threads UI.
         await System.apiUpdateConfig(siteOneUrl, {
             ServiceSettings: {
                 CollapsedThreads: 'always_on',
@@ -70,9 +67,8 @@ describe('Threads - Save and Unsave Thread', () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
 
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(parentPost.id, parentMessage);
         await waitForElementToBeVisible(postListPostItem, timeouts.FOUR_SEC);
 
@@ -84,32 +80,29 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Open thread options for thread, tap on save option, and tap on thread
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.saveThreadOption.tap();
+        await ThreadOptionsScreen.tapSaveThread();
+
+        // SaveOption dismisses the sheet before savePostPreference; wait for the flag.
+        await Post.waitForPostFlagged(siteOneUrl, testUser.id, parentPost.id);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify the thread is saved via the ThreadOverview's unsave (bookmark-filled) button.
-        // The testID `thread.post_list.thread_overview.{un,}save.button` is the same on every
-        // mounted thread.post_list. With expo-router's tab-stack persistence the previous
-        // ThreadScreen (opened from the channel tab) can remain mounted off-screen while the
-        // current one is on the global-threads tab — so the same testID matches twice. The
-        // .atIndex(0) selects the active (topmost) match — Detox's view-hierarchy traversal
-        // returns the active screen first in practice for this app.
-        await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // * Verify the thread is saved via ThreadOverview unsave button (.atIndex(0) for stale off-screen mounts).
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
+        // # Go back to global threads screen, open thread options for thread, tap on unsave option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
-        await ThreadOptionsScreen.unsaveThreadOption.tap();
+        await ThreadOptionsScreen.tapUnsaveThread();
+        await Post.waitForPostUnflagged(siteOneUrl, testUser.id, parentPost.id);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
-        // * Verify the thread is unsaved: the ThreadOverview should now expose the save button
-        // (not the unsave button), reflecting the cleared saved state. See note above on atIndex(0).
-        await waitFor(element(by.id('thread.post_list.thread_overview.save.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).not.toBeVisible();
+        // * Verify the thread is unsaved.
+        await waitFor(ThreadScreen.getThreadOverviewSaveButton()).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ThreadScreen.getThreadOverviewUnsaveButton()).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -120,8 +113,7 @@ describe('Threads - Save and Unsave Thread', () => {
         // # Create a thread, go back to channel list screen, and then go to global threads screen
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -130,15 +122,13 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Tap on thread and tap on thread overview save button
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
         await ThreadScreen.getThreadOverviewSaveButton().tap();
 
-        // * Verify the thread is saved via ThreadOverview's unsave button (the toggled state).
-        // Pre-header text is suppressed on the thread root by design (post_list.tsx:455).
-        // .atIndex(0): see comment block in MM-T4808_1 above for expo-router multi-mount context.
+        // * Verify the thread is saved.
         await waitFor(element(by.id('thread.post_list.thread_overview.unsave.button')).atIndex(0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on thread overview unsave button

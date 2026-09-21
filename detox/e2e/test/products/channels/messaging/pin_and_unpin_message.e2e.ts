@@ -8,8 +8,8 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
+    Post,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -26,47 +26,11 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
+import {getRandomId, safeEnableSynchronization, timeouts, wait, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 async function openChannelPostOptionsForPin(postId: string, message: string) {
-    if (!isAndroid()) {
-        await ChannelScreen.openPostOptionsFor(postId, message);
-        return;
-    }
-
-    const flatList = ChannelScreen.getFlatPostList();
-    const target = element(
-        by.text(message).withAncestor(by.id(`channel.post_list.post.${postId}`)),
-    );
-
-    await waitFor(target).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await flatList.scroll(100, 'down', 0.5, 0.5);
-        } catch {
-            // Ignore scroll failures at list boundaries.
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await wait(timeouts.THREE_SEC);
-        // eslint-disable-next-line no-await-in-loop
-        await target.longPress(timeouts.FIVE_SEC);
-
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            await waitFor(PostOptionsScreen.postOptionsScreen).toExist().withTimeout(timeouts.TEN_SEC);
-            // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.TWO_SEC);
-            return;
-        } catch {
-            if (attempt === 3) {
-                throw new Error(`Post options did not appear for "${message}" after ${attempt} attempts`);
-            }
-        }
-    }
+    await ChannelScreen.openPostOptionsFor(postId, message);
 }
 
 async function expectPinnedPostAbove(upperPostId: string, upperMessage: string, lowerPostId: string, lowerMessage: string) {
@@ -119,30 +83,31 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // Send + verify it landed (retries once on sim -1005 POST drop).
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+
+        // Wait for post to exist (may be off-screen); openChannelPostOptionsForPin scrolls before long-press.
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on pin to channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+
+        // Wait for pin row visibility — post-options sheet overlay can block center-tap on open.
+        await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
-        // On Android the bridge stays busy during bottom sheet dismissal + network
-        // request + DB update + re-render, so a fixed wait() is unreliable.
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on unpin from channel option
         await openChannelPostOptionsForPin(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
@@ -153,29 +118,29 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen, post a message, tap on post to open thread, open post options for message, and tap on pin to channel option
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItem).toBeVisible();
+        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await postListPostItem.tap();
         await wait(timeouts.TWO_SEC);
         await ThreadScreen.toBeVisible();
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.pinPostOption.tap();
+        await waitFor(PostOptionsScreen.pinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is displayed on the post pre-header
-        // Use polling to wait for the pre-header to appear after pin operation.
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
 
         // # Open post options for message and tap on unpin from channel option
         await ThreadScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unpinPostOption.tap();
+
+        // Wait for unpin row visibility — post-options sheet overlay can block center-tap on open.
+        await waitFor(PostOptionsScreen.unpinPostOption).toBeVisible().withTimeout(timeouts.FIVE_SEC);
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify pinned text is not displayed on the post pre-header
-        // Wait for the pre-header element to disappear after unpin operation.
         await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
@@ -187,8 +152,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         // # Open a channel screen and post several messages to populate the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         const olderMessage = `Older message ${getRandomId()}`;
-        await ChannelScreen.postMessage(olderMessage);
-        const {post: olderPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: olderPost} = await ChannelScreen.postMessageAndVerify(olderMessage, testChannel.id, siteOneUrl);
 
         // # Post more messages so the older message scrolls up
         const newerMessage1 = `Newer message A ${getRandomId()}`;
@@ -200,29 +164,47 @@ describe('Messaging - Pin and Unpin Message', () => {
         const {post: newerPost2} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: newerPost2Item} = ChannelScreen.getPostListPostItem(newerPost2.id, newerMessage2);
 
-        // # Long press the older (not the most recent) post and pin it to channel
-        await openChannelPostOptionsForPin(olderPost.id, olderMessage);
-        await PostOptionsScreen.pinPostOption.tap();
-
-        // * Verify the older message shows a Pinned pre-header (it is pinned)
-        // Use polling to wait for the pre-header to appear after pin operation.
-        const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(olderPost.id, olderMessage);
-        await waitFor(postListPostItemPreHeaderText).toHaveText(pinnedText).withTimeout(timeouts.TEN_SEC);
-
-        // * Verify the newer messages are still in the channel below the older pinned message.
-        //   (i.e. the older message was not moved to the bottom of the channel)
-        //   Re-open the channel to reset scroll to newest messages, ensuring newerPost2 is visible.
+        // Re-open so the keyboard is down and the inverted list is anchored at the newest posts.
         await ChannelScreen.back();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // Scroll up slightly to bring newerPost2 into the fully visible area.
-        // After pinning, a system post ("X pinned a message") is added, pushing
-        // newerPost2 down where the message input bar clips it below the 75%
-        // visibility threshold on iOS 26.x (safe area insets reduce visible area).
+        // # Long press the older (not the most recent) post and pin it to channel
+        await openChannelPostOptionsForPin(olderPost.id, olderMessage);
+        await PostOptionsScreen.pinPostOption.tap({x: 1, y: 1});
+
+        // * Verify the older message shows a Pinned pre-header (it is pinned)
+        const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(olderPost.id, olderMessage);
+        await waitForElementToHaveText(postListPostItemPreHeaderText, pinnedText);
+
+        // * Verify the newer messages are still below the older pinned message. Re-open the
+        //   channel to reset scroll to the newest messages so newerPost2 is visible.
+        await ChannelScreen.back();
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+
+        // The "X pinned a message" system post pushes newerPost2 under the input bar on iOS 26.x.
+        // Do not use waitFor(toBeVisible/toExist) here — iOS Detox can ignore withTimeout and
+        // hang until Jest's 300s cap. Bounded scroll, then a single expect so exhaustion fails.
+        await device.disableSynchronization();
         try {
-            await ChannelScreen.getFlatPostList().scroll(100, 'up', 0.5, 0.5);
-        } catch { /* list may be too short */ }
-        await expect(newerPost2Item).toBeVisible();
+            /* eslint-disable no-await-in-loop -- bounded scroll with immediate expect */
+            for (let i = 0; i < 8; i++) {
+                try {
+                    await expect(newerPost2Item).toBeVisible(40);
+                    break;
+                } catch {
+                    try {
+                        await element(by.id('channel.post_list.flat_list')).scroll(100, 'up', 0.5, 0.5);
+                    } catch {
+                        break;
+                    }
+                    await wait(timeouts.HALF_SEC);
+                }
+            }
+            await expect(newerPost2Item).toBeVisible(40);
+            /* eslint-enable no-await-in-loop */
+        } finally {
+            await safeEnableSynchronization();
+        }
 
         // # Open channel info and navigate to pinned messages screen
         await ChannelInfoScreen.open();
@@ -253,7 +235,7 @@ describe('Messaging - Pin and Unpin Message', () => {
 
         // # Unpin the older message from the pinned messages screen
         await PinnedMessagesScreen.openPostOptionsFor(olderPost.id, olderMessage);
-        await PostOptionsScreen.unpinPostOption.tap();
+        await PostOptionsScreen.unpinPostOption.tap({x: 1, y: 1});
 
         // * Verify the unpinned message no longer appears in the pinned messages list
         // Wait for the item to be removed after unpin operation.

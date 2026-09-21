@@ -3,6 +3,7 @@
 
 import Database from '@nozbe/watermelondb/Database';
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import {getPosts} from '@actions/local/post';
 import {ActionType} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -11,12 +12,19 @@ import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 
+jest.mock('@actions/app/global', () => ({
+    removePushSigningKey: jest.fn(),
+    storePushSigningKey: jest.fn(),
+}));
+
 import {
     storeConfig,
     storeConfigAndLicense,
     storeDataRetentionPolicies,
     updateLastDataRetentionRun,
     dataRetentionCleanup,
+    dataRetentionCleanPosts,
+    performVacuum,
     setLastServerVersionCheck,
     setGlobalThreadsTab,
     dismissAnnouncement,
@@ -103,6 +111,133 @@ describe('storeConfigAndLicense', () => {
     });
 });
 
+describe('storeConfig', () => {
+    const zeroPersistenceConfig = {
+        MobileEphemeralModeEnabled: 'true',
+        MobileEphemeralModeAutoCacheCleanupDays: '0',
+        AsymmetricSigningPublicKey: 'key-1',
+    } as ClientConfig;
+
+    describe('storing the signing key', () => {
+        it('mirrors the signing key when the config is zero-persistence', async () => {
+            await storeConfig(serverUrl, zeroPersistenceConfig);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('mirrors the signing key even when only preparing records', async () => {
+            await storeConfig(serverUrl, zeroPersistenceConfig, true);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+        });
+
+        it('does not store the signing key when the config is not zero-persistence', async () => {
+            await storeConfig(serverUrl, {AsymmetricSigningPublicKey: 'key-1'} as ClientConfig);
+
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('mirrors the signing key when entering zero-persistence even if the key is unchanged from the stored config', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'false'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, zeroPersistenceConfig);
+
+            expect(storePushSigningKey).toHaveBeenCalledWith(serverUrl, 'key-1');
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('does not store the signing key when it is unchanged from the stored config', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                    {id: 'AboutLink', value: 'old-link'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {...zeroPersistenceConfig, AboutLink: 'new-link'} as ClientConfig);
+
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('removing the signing key', () => {
+        it('removes the mirrored signing key when the config transitions away from zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {
+                MobileEphemeralModeEnabled: 'false',
+                MobileEphemeralModeAutoCacheCleanupDays: '0',
+                AsymmetricSigningPublicKey: 'key-1',
+            } as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('removes the signing key defensively when prior config is empty and the config is not zero-persistence', async () => {
+            await storeConfig(serverUrl, {AsymmetricSigningPublicKey: 'key-1'} as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('does not remove the signing key when a prior config already confirms the server was not zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'false'},
+                    {id: 'AboutLink', value: 'old-link'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {MobileEphemeralModeEnabled: 'false', AboutLink: 'new-link'} as ClientConfig);
+
+            expect(removePushSigningKey).not.toHaveBeenCalled();
+        });
+
+        it('removes the mirrored signing key when it is dropped from the config while the server remains zero-persistence', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                    {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '0'},
+                    {id: 'AsymmetricSigningPublicKey', value: 'key-1'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            await storeConfig(serverUrl, {
+                MobileEphemeralModeEnabled: 'true',
+                MobileEphemeralModeAutoCacheCleanupDays: '0',
+            } as ClientConfig);
+
+            expect(removePushSigningKey).toHaveBeenCalledWith(serverUrl);
+            expect(storePushSigningKey).not.toHaveBeenCalled();
+        });
+    });
+});
+
 describe('dataRetention', () => {
     it('handle not found database - storeDataRetentionPolicies', async () => {
         const models = await storeDataRetentionPolicies('foo', {} as DataRetentionPoliciesRequest);
@@ -153,10 +288,8 @@ describe('dataRetention', () => {
             prepareRecordsOnly: false,
         });
 
-        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeDefined(); // unsafeExecute loki error
-        spy.mockRestore();
     });
 
     it('retention on - dataRetentionCleanup', async () => {
@@ -181,10 +314,8 @@ describe('dataRetention', () => {
         prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
         const {error} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeDefined(); // LokiJSAdapter doesn't support unsafeSqlQuery
-        spy.mockRestore();
     });
 
     it('already cleaned today - dataRetentionCleanup', async () => {
@@ -210,8 +341,49 @@ describe('dataRetention', () => {
         prepareRecordsOnly: false});
         await operator.handleChannel({channels: [channel], prepareRecordsOnly: false});
 
-        const {error} = await dataRetentionCleanup(serverUrl);
+        const {error, skipped} = await dataRetentionCleanup(serverUrl);
         expect(error).toBeUndefined();
+        expect(skipped).toBe(true);
+    });
+});
+
+describe('dataRetentionCleanPosts', () => {
+    it('should delete every post when the ids span more than one batch', async () => {
+        const database = operator.database;
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+
+        const postIds = Array.from({length: 1500}, (unused, index) => `postid${index}`);
+
+        const {error} = await dataRetentionCleanPosts(serverUrl, postIds);
+
+        expect(error).toBeUndefined();
+
+        const batches = unsafeExecuteSpy.mock.calls.map(([operations]) => {
+            const [[, batch]] = (operations as {sqls: Array<[string, string[]]>}).sqls;
+            return batch;
+        });
+        expect(batches.map((batch) => batch.length).sort((a, b) => b - a)).toEqual([1000, 500]);
+        expect(batches.flat().sort()).toEqual([...postIds].sort());
+    });
+});
+
+describe('performVacuum', () => {
+    it('should vacuum the server database', async () => {
+        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockImplementation(jest.fn());
+
+        await performVacuum(serverUrl);
+
+        expect(spy).toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
+    it('should log and not throw when the vacuum fails', async () => {
+        const spy = jest.spyOn(Database.prototype, 'unsafeVacuum').mockRejectedValue(new Error('vacuum error'));
+
+        await expect(performVacuum(serverUrl)).resolves.toBeUndefined();
+
+        expect(logError).toHaveBeenCalledWith('unsafeVacuum', expect.stringContaining('vacuum error'));
+        spy.mockRestore();
     });
 });
 
@@ -328,16 +500,17 @@ describe('expiredBoRPostCleanup', () => {
 
         await expiredBoRPostCleanup(serverUrl);
 
+        const expiredIds = [borPostExpiredForMe.id, borPostExpiredForAll.id];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM Post where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Reaction where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM File where post_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Draft where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM Thread where id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
-                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpiredForMe.id}','${borPostExpiredForAll.id}')`, []],
+                ['DELETE FROM Post where id IN (?,?)', expiredIds],
+                ['DELETE FROM Reaction where post_id IN (?,?)', expiredIds],
+                ['DELETE FROM File where post_id IN (?,?)', expiredIds],
+                ['DELETE FROM Draft where root_id IN (?,?)', expiredIds],
+                ['DELETE FROM PostsInThread where root_id IN (?,?)', expiredIds],
+                ['DELETE FROM Thread where id IN (?,?)', expiredIds],
+                ['DELETE FROM ThreadParticipant where thread_id IN (?,?)', expiredIds],
+                ['DELETE FROM ThreadsInTeam where thread_id IN (?,?)', expiredIds],
             ],
         });
     });
@@ -481,16 +654,17 @@ describe('expiredBoRPostCleanup', () => {
         await expiredBoRPostCleanup(serverUrl);
 
         // Should only delete the expired post
+        const expiredIds = [borPostExpired.id];
         expect(database.adapter.unsafeExecute).toHaveBeenCalledWith({
             sqls: [
-                [`DELETE FROM Post where id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Reaction where post_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM File where post_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Draft where root_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM PostsInThread where root_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM Thread where id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM ThreadParticipant where thread_id IN ('${borPostExpired.id}')`, []],
-                [`DELETE FROM ThreadsInTeam where thread_id IN ('${borPostExpired.id}')`, []],
+                ['DELETE FROM Post where id IN (?)', expiredIds],
+                ['DELETE FROM Reaction where post_id IN (?)', expiredIds],
+                ['DELETE FROM File where post_id IN (?)', expiredIds],
+                ['DELETE FROM Draft where root_id IN (?)', expiredIds],
+                ['DELETE FROM PostsInThread where root_id IN (?)', expiredIds],
+                ['DELETE FROM Thread where id IN (?)', expiredIds],
+                ['DELETE FROM ThreadParticipant where thread_id IN (?)', expiredIds],
+                ['DELETE FROM ThreadsInTeam where thread_id IN (?)', expiredIds],
             ],
         });
     });

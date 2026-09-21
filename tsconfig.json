@@ -74,6 +74,7 @@
         }
     },
     "include": [
+        "env.d.ts",
         "app/**/*.ts",
         "app/**/*.tsx",
         "share_extension/**/*.ts",

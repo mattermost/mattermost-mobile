@@ -30,6 +30,10 @@ export default class ClientBase extends ClientTracking {
         return this.apiClient.baseUrl || '';
     }
 
+    getAPIRoute() {
+        return `${this.getBaseRoute()}${this.urlVersion}`;
+    }
+
     getAbsoluteUrl(baseUrl?: string) {
         if (typeof baseUrl !== 'string' || !baseUrl.startsWith('/')) {
             return baseUrl;

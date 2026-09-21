@@ -36,7 +36,7 @@ describe('iPad - Account View', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-TIPAD_10 - should open the account screen by tapping the account tab on iPad', async () => {
+    it('MM-T5616_10 - should open the account screen by tapping the account tab on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -51,7 +51,7 @@ describe('iPad - Account View', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-TIPAD_11 - should show the user profile options on the account screen on iPad', async () => {
+    it('MM-T5616_11 - should show the user profile options on the account screen on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -67,7 +67,7 @@ describe('iPad - Account View', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-TIPAD_12 - should show the user presence option on the account screen on iPad', async () => {
+    it('MM-T5616_12 - should show the user presence option on the account screen on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -82,7 +82,7 @@ describe('iPad - Account View', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-TIPAD_13 - should open settings from the account screen on iPad', async () => {
+    it('MM-T5616_13 - should open settings from the account screen on iPad', async () => {
         if (!isIpad()) {
             return;
         }
@@ -99,7 +99,7 @@ describe('iPad - Account View', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-TIPAD_14 - should display user info with correct username on account screen on iPad', async () => {
+    it('MM-T5616_14 - should display user info with correct username on account screen on iPad', async () => {
         if (!isIpad()) {
             return;
         }

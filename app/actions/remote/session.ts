@@ -13,7 +13,7 @@ import DatabaseManager from '@database/manager';
 import IntuneManager from '@managers/intune_manager';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {getDeviceToken} from '@queries/app/global';
+import {getDeviceToken, getVoIPDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
@@ -127,11 +127,13 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     try {
         const client = NetworkManager.getClient(serverUrl);
         deviceToken = await getDeviceToken();
+        const voipDeviceToken = await getVoIPDeviceToken();
         user = await client.login(
             loginId,
             password,
             mfaToken,
             deviceToken,
+            voipDeviceToken,
             ldapOnly,
         );
 
@@ -359,11 +361,12 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
         // Step 2: POST accessToken to /oauth/intune to exchange for session token
         const client = NetworkManager.getClient(serverUrl);
         const deviceToken = await getDeviceToken();
+        const voipDeviceToken = await getVoIPDeviceToken();
         let csrfToken: string;
         let userData: UserProfile | undefined;
 
         try {
-            userData = await client.loginByIntune(accessToken, deviceToken);
+            userData = await client.loginByIntune(accessToken, deviceToken, voipDeviceToken);
             csrfToken = await getCSRFFromCookie(serverUrl);
         } catch (error) {
             if (isErrorWithStatusCode(error)) {
@@ -372,7 +375,7 @@ export const nativeEntraLogin = async (serverUrl: string, serverDisplayName: str
                         // Token expired/invalid - try refreshing
                         logDebug('nativeEntraLogin: Token expired, retrying');
                         const refreshedTokens = await IntuneManager.login(serverUrl, [intuneScope]);
-                        userData = await client.loginByIntune(refreshedTokens.accessToken, deviceToken);
+                        userData = await client.loginByIntune(refreshedTokens.accessToken, deviceToken, voipDeviceToken);
                         csrfToken = await getCSRFFromCookie(serverUrl);
                         break;
                     }
@@ -446,9 +449,10 @@ export const magicLinkLogin = async (serverUrl: string, token: string): Promise<
         const client = await NetworkManager.createClient(serverUrlToUse, undefined);
         const config = await client.getClientConfigOld();
         const deviceId = await getDeviceToken();
+        const voipDeviceId = await getVoIPDeviceToken();
         const serverDisplayName = config.SiteName;
 
-        const user = await client.loginByMagicLinkLogin(token, deviceId);
+        const user = await client.loginByMagicLinkLogin(token, deviceId, voipDeviceId);
 
         const server = await DatabaseManager.createServerDatabase({
             config: {

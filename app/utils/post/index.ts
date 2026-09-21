@@ -18,7 +18,16 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 import type {IntlShape} from 'react-intl';
 
+export function hasAiGeneratedMetadata(post: PostModel | Post): boolean {
+    return Boolean(ensureString(post.props?.ai_generated_by) && ensureString(post.props?.ai_generated_by_username));
+}
+
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel, userLocale: string) {
+    // Caller already excludes AI current posts; break after an AI previous post so the next header shows.
+    if (hasAiGeneratedMetadata(previousPost)) {
+        return false;
+    }
+
     let consecutive = false;
 
     if (post && previousPost) {
@@ -62,6 +71,27 @@ export function isEdited(post: PostModel): boolean {
 
 export function isPostEphemeral(post: PostModel): boolean {
     return post.type === Post.POST_TYPES.EPHEMERAL || post.type === Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL || post.deleteAt > 0;
+}
+
+type EphemeralIdentityFields = {
+    create_at?: number;
+    root_id?: string;
+    user_id?: string;
+};
+
+// Integration update payloads are partial posts (often create_at=0). Preserve identity from the stored post.
+export function restoreEphemeralIdentityFieldsForEdit(incoming: Post, stored: EphemeralIdentityFields): Post {
+    const out: Post = {...incoming};
+    if (!out.create_at && stored.create_at) {
+        out.create_at = stored.create_at;
+    }
+    if (!out.root_id && stored.root_id) {
+        out.root_id = stored.root_id;
+    }
+    if (!out.user_id && stored.user_id) {
+        out.user_id = stored.user_id;
+    }
+    return out;
 }
 
 export function isPostFailed(post: PostModel): boolean {
@@ -297,4 +327,18 @@ export function getPostTranslation(post: Post | PostModel, locale: string): Post
 
 export function getPostTranslatedMessage(originalMessage: string, translation: PostTranslation): string {
     return translation.object?.message ?? originalMessage;
+}
+
+export function hasInteractivePostContent(post: Post | PostModel, mmBlocksEnabled: boolean): boolean {
+    if (!mmBlocksEnabled) {
+        return false;
+    }
+    const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
+    const hasMmBlocksContent = Boolean(
+        (Array.isArray(post.props?.mm_blocks) && post.props.mm_blocks.length) ||
+        (Array.isArray(post.props?.blocks) && post.props.blocks.length) ||
+        (Array.isArray(post.props?.cards) && post.props.cards.length) ||
+        nAttachments,
+    );
+    return hasMmBlocksContent;
 }

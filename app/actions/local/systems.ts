@@ -5,6 +5,7 @@ import {Q} from '@nozbe/watermelondb';
 import deepEqual from 'deep-equal';
 import {DeviceEventEmitter} from 'react-native';
 
+import {removePushSigningKey, storePushSigningKey} from '@actions/app/global';
 import {Events} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PostTypes, BOR_POST_CLEANUP_MIN_RUN_INTERVAL} from '@constants/post';
@@ -24,6 +25,8 @@ import {
 import PostModel from '@typings/database/models/servers/post';
 import SystemModel from '@typings/database/models/servers/system';
 import {isExpiredBoRPost} from '@utils/bor';
+import {isZeroPersistenceConfig} from '@utils/config';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {deletePostsForChannelsWithAutotranslation} from './channel';
@@ -125,7 +128,9 @@ export async function storeConfigAndLicense(serverUrl: string, config: ClientCon
                 DeviceEventEmitter.emit(Events.LICENSE_CHANGED, {serverUrl, license});
             }
 
-            return await storeConfig(serverUrl, config);
+            const result = await storeConfig(serverUrl, config);
+
+            return result;
         }
     } catch (error) {
         logError('An error occurred while saving config & license', error);
@@ -163,6 +168,23 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
                     value: currentConfig[k],
                 });
             }
+        }
+
+        const wasZeroPersistence = isZeroPersistenceConfig(currentConfig);
+        const isZeroPersistence = isZeroPersistenceConfig(config);
+        const signingKeyChanged = currentConfig?.AsymmetricSigningPublicKey !== config.AsymmetricSigningPublicKey;
+        const enteringZeroPersistence = isZeroPersistence && !wasZeroPersistence;
+        const hasNoPriorConfig = Object.keys(currentConfig ?? {}).length === 0;
+
+        // signing key is stored in global storage to be used for push notifications, even when running in zero persistence mode.
+        if (isZeroPersistence && (signingKeyChanged || enteringZeroPersistence)) {
+            if (config.AsymmetricSigningPublicKey) {
+                await storePushSigningKey(serverUrl, config.AsymmetricSigningPublicKey);
+            } else {
+                await removePushSigningKey(serverUrl);
+            }
+        } else if (!isZeroPersistence && (hasNoPriorConfig || wasZeroPersistence)) {
+            await removePushSigningKey(serverUrl);
         }
 
         if (configsToDelete.length || configsToUpdate.length) {
@@ -222,7 +244,16 @@ export async function updateLastDataRetentionRun(serverUrl: string, value?: numb
     }
 }
 
-export async function dataRetentionCleanup(serverUrl: string) {
+export async function performVacuum(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await database.unsafeVacuum();
+    } catch (vacuumError) {
+        logError('unsafeVacuum', getFullErrorMessage(vacuumError));
+    }
+}
+
+export async function dataRetentionCleanup(serverUrl: string): Promise<{error?: unknown; skipped?: boolean}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -231,7 +262,7 @@ export async function dataRetentionCleanup(serverUrl: string) {
 
         // Do not run if clean up is already done today
         if (lastRunAt && lastCleanedToday) {
-            return {error: undefined};
+            return {error: undefined, skipped: true};
         }
 
         const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
@@ -240,8 +271,6 @@ export async function dataRetentionCleanup(serverUrl: string) {
         if (!result.error) {
             await updateLastDataRetentionRun(serverUrl);
         }
-
-        await database.unsafeVacuum();
 
         return result;
     } catch (error) {
@@ -337,7 +366,7 @@ export async function dataRetentionCleanPosts(serverUrl: string, postIds: string
         const batchSize = 1000;
         const deletePromises = [];
         for (let i = 0; i < postIds.length; i += batchSize) {
-            const batch = postIds.slice(i, batchSize);
+            const batch = postIds.slice(i, i + batchSize);
             deletePromises.push(
                 deletePosts(serverUrl, batch),
             );

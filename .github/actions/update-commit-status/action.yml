@@ -1,0 +1,44 @@
+name: update-commit-status
+description: Set a GitHub commit status (Node 24 / github-script v9)
+
+inputs:
+  repository_full_name:
+    description: owner/repo
+    required: true
+  commit_sha:
+    required: true
+  context:
+    required: true
+  description:
+    required: true
+  status:
+    description: success | failure | pending | error
+    required: true
+  target_url:
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        REPOSITORY_FULL_NAME: ${{ inputs.repository_full_name }}
+        COMMIT_SHA: ${{ inputs.commit_sha }}
+        CONTEXT: ${{ inputs.context }}
+        DESCRIPTION: ${{ inputs.description }}
+        STATUS: ${{ inputs.status }}
+        TARGET_URL: ${{ inputs.target_url }}
+      with:
+        script: |
+          const [owner, repo] = process.env.REPOSITORY_FULL_NAME.split('/');
+          const targetUrl = process.env.TARGET_URL?.trim();
+          await github.rest.repos.createCommitStatus({
+            owner,
+            repo,
+            sha: process.env.COMMIT_SHA,
+            state: process.env.STATUS,
+            context: process.env.CONTEXT,
+            description: (process.env.DESCRIPTION || '').substring(0, 140),
+            ...(targetUrl ? {target_url: targetUrl} : {}),
+          });

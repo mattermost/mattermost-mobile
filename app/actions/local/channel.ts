@@ -96,11 +96,11 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                     }
                     DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME, Screens.CHANNEL);
                 } else {
-                    await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
+                    await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL_LIST);
                     await dismissAllRoutesAndPopToScreen(Screens.CHANNEL);
                 }
 
-                logInfo('channel switch to', channel?.displayName, channelId, (Date.now() - dt), 'ms');
+                logInfo('channel switch to', channelId, 'type', channel?.type, (Date.now() - dt), 'ms');
             }
         } else {
             logDebug('failed to navigate to channel because there was no membership, channel id: ', channelId);
@@ -183,6 +183,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
         member.prepareUpdate((m) => {
             m.isUnread = false;
             m.mentionsCount = 0;
+            m.urgentMentionCount = 0;
             m.manuallyUnread = false;
             if (!onlyCounts) {
                 m.viewedAt = member.lastViewedAt;
@@ -201,7 +202,16 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
     }
 }
 
-export async function markChannelAsUnread(serverUrl: string, channelId: string, messageCount: number, mentionsCount: number, lastViewed: number, prepareRecordsOnly = false) {
+type MarkChannelAsUnreadArgs = {
+    channelId: string;
+    messageCount: number;
+    mentionsCount: number;
+    urgentMentionCount: number;
+    lastViewed: number;
+};
+
+export async function markChannelAsUnread(serverUrl: string, args: MarkChannelAsUnreadArgs, prepareRecordsOnly = false) {
+    const {channelId, lastViewed, messageCount, mentionsCount, urgentMentionCount} = args;
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelId);
@@ -214,6 +224,7 @@ export async function markChannelAsUnread(serverUrl: string, channelId: string, 
             m.lastViewedAt = lastViewed - 1;
             m.messageCount = messageCount;
             m.mentionsCount = mentionsCount;
+            m.urgentMentionCount = urgentMentionCount;
             m.manuallyUnread = true;
             m.isUnread = true;
         });
@@ -313,7 +324,7 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
                 m.autotranslationDisabled = channelMember.autotranslation_disabled ?? false;
             });
             if (!prepareRecordsOnly) {
-                operator.batchRecords([member], 'updateMyChannelFromWebsocket');
+                await operator.batchRecords([member], 'updateMyChannelFromWebsocket');
             }
         }
         return {model: member};
@@ -333,7 +344,7 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
         }],
         prepareRecordsOnly: true});
         if (!prepareRecordsOnly) {
-            operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
+            await operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
         }
         return {model: newInfo};
     } catch (error) {
@@ -507,21 +518,18 @@ export async function deletePostsForChannel(serverUrl: string, channelId: string
             return {models: []};
         }
 
+        // Note: intervals are cleared even when there are no posts left. A PostsInChannel
+        // row that no longer contains any post still wins postsInChannel[0] and hides the
+        // channel, so returning early here would leave the channel blank.
         const posts = await channel.posts.fetch();
-        if (!posts.length) {
-            return {models: []};
-        }
 
         const preparedPostsPromises = posts.map((post) => prepareDeletePost(post));
         const preparedPostsArrays = await Promise.all(preparedPostsPromises);
         const preparedModels: Model[] = preparedPostsArrays.flat();
 
-        const postsInChannel = await queryPostsInChannel(database, channelId);
-        if (postsInChannel.length) {
-            for (const postRange of postsInChannel) {
-                const preparedPostRanges = postRange.prepareDestroyPermanently();
-                preparedModels.push(preparedPostRanges);
-            }
+        const postsInChannel = await queryPostsInChannel(database, channelId).fetch();
+        for (const postRange of postsInChannel) {
+            preparedModels.push(postRange.prepareDestroyPermanently());
         }
 
         const threadPromises = posts.filter((post) => post.rootId === '').map((post) => {

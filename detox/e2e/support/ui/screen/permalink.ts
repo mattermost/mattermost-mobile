@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PostList} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {timeouts, waitForElementToNotExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class PermalinkScreen {
@@ -45,10 +45,8 @@ class PermalinkScreen {
         await this.jumpToRecentMessagesButton.tap();
         await expect(this.permalinkScreen).not.toBeVisible();
 
-        // iOS 26.2 liquid-glass dimming overlay takes longer than 1s to clear
-        // after the permalink screen dismisses. Use FOUR_SEC to ensure the
-        // channel_list.screen transition completes before the next assertion.
-        await wait(timeouts.FOUR_SEC);
+        // Wait for permalink modal teardown instead of a fixed sleep (iOS liquid-glass overlay).
+        await waitForElementToNotExist(this.permalinkScreen, timeouts.FOUR_SEC);
     };
 
     hasPostMessage = async (postId: string, postMessage: string) => {

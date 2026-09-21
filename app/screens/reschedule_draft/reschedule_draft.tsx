@@ -9,7 +9,7 @@ import {Keyboard, StyleSheet, View} from 'react-native';
 import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {updateScheduledPost} from '@actions/remote/scheduled_post';
-import DateTimeSelector from '@components/data_time_selector';
+import DateTimeSelector from '@components/date_time_selector';
 import Loading from '@components/loading';
 import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';

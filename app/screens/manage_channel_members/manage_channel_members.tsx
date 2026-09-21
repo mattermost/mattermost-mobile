@@ -53,6 +53,11 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 0,
     },
+    listContainer: {
+        flex: 1,
+        marginLeft: 12,
+        marginRight: Platform.select({ios: 4, default: 12}),
+    },
 });
 
 const messages = defineMessages({
@@ -325,22 +330,23 @@ export default function ManageChannelMembers({
                         value={term}
                     />
                 </View>
-                <UserList
-                    handleSelectProfile={handleSelectProfile}
-                    loading={loading}
-                    manageMode={true} // default true to change row select icon to a dropdown
-                    profiles={data}
-                    channelMembers={channelMembers}
-                    selectedIds={EMPTY_IDS}
-                    showManageMode={canManageAndRemoveMembers && isManageMode}
-                    showNoResults={!loading}
-                    term={searchedTerm}
-                    testID={`${TEST_ID}.user_list`}
-                    tutorialWatched={tutorialWatched}
-                    includeUserMargin={true}
-                    fetchMore={handleReachedBottom}
-                    location={Screens.MANAGE_CHANNEL_MEMBERS}
-                />
+                <View style={styles.listContainer}>
+                    <UserList
+                        handleSelectProfile={handleSelectProfile}
+                        loading={loading}
+                        manageMode={true} // default true to change row select icon to a dropdown
+                        profiles={data}
+                        channelMembers={channelMembers}
+                        selectedIds={EMPTY_IDS}
+                        showManageMode={canManageAndRemoveMembers && isManageMode}
+                        showNoResults={!loading}
+                        term={searchedTerm}
+                        testID={`${TEST_ID}.user_list`}
+                        tutorialWatched={tutorialWatched}
+                        fetchMore={handleReachedBottom}
+                        location={Screens.MANAGE_CHANNEL_MEMBERS}
+                    />
+                </View>
             </TutorialProvider>
         </SafeAreaView>
     );

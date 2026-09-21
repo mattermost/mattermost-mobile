@@ -43,7 +43,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             flexDirection: 'row',
             height: 32,
-            marginBottom: 12,
             marginRight: 6,
             paddingVertical: 4,
             paddingHorizontal: 6,

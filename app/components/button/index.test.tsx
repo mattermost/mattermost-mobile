@@ -6,10 +6,31 @@ import React, {type ComponentProps} from 'react';
 import {View, Text} from 'react-native';
 
 import {Preferences} from '@constants';
+import DatabaseManager from '@database/manager';
+import {renderWithEverything} from '@test/intl-test-helper';
+import TestHelper from '@test/test_helper';
 
 import Button from './index';
 
+import type Database from '@nozbe/watermelondb/Database';
+
 describe('components/button', () => {
+    const serverUrl = 'https://server.com';
+    let database: Database;
+
+    beforeAll(async () => {
+        const server = await TestHelper.setupServerDatabase(serverUrl);
+        database = server.database;
+        await server.operator.handleConfigs({
+            configs: [{id: 'MaxMarkdownNodes', value: '1000'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+    });
+
+    afterAll(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
     const getBaseProps = (): ComponentProps<typeof Button> => ({
         onPress: jest.fn(),
         text: 'Test Button',
@@ -70,6 +91,23 @@ describe('components/button', () => {
 
         // When icon is on the right, it should be the last child
         expect(within(container.children[1] as any).getByTestId('test-button-icon')).toBeVisible();
+    });
+
+    it('should render markdown syntax literally by default', () => {
+        const props = getBaseProps();
+        props.text = '**Test Button**';
+        const {getByText} = render(<Button {...props}/>);
+
+        expect(getByText('**Test Button**')).toBeTruthy();
+    });
+
+    it('should render bold markdown in button text when renderLabelAsMarkdown is true', () => {
+        const props = getBaseProps();
+        props.text = '**Test Button**';
+        props.renderLabelAsMarkdown = true;
+        const {getByText} = renderWithEverything(<Button {...props}/>, {database, serverUrl});
+
+        expect(getByText('Test Button')).toBeTruthy();
     });
 
     it('should render custom icon component', () => {

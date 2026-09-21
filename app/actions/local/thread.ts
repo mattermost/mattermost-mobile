@@ -87,7 +87,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
 
             await navigateToRoot();
-            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
+            await NavigationStore.waitUntilScreenIsTop(Screens.CHANNEL_LIST);
             if (currentTeamId !== teamId && isTabletDevice) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
             }

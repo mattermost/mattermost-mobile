@@ -21,14 +21,18 @@ import {
 import {Alert} from '@support/ui/component';
 import {
     BrowseChannelsScreen,
+    ChannelDropdownMenuScreen,
     ChannelScreen,
     ChannelListScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, safeEnableSynchronization, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isAndroid, timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+// Several tests here call device.reloadReactNative(), which can take 30-90s on iOS CI.
+jest.setTimeout(360000);
 
 describe('Channels - Browse Channels', () => {
     const serverOneDisplayName = 'Server 1';
@@ -50,8 +54,6 @@ describe('Channels - Browse Channels', () => {
 
     beforeEach(async () => {
         // Dismiss any lingering "Removed from channel" or "Archived channel"
-        // dialogs that may appear asynchronously via WebSocket events from
-        // the previous test's channel archival (e.g. MM-T4729_5).
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
         // * Verify on channel list screen
@@ -88,10 +90,12 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
 
         // * Verify search returns the new public channel item
-        await wait(timeouts.ONE_SEC);
+        await waitFor(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).
+            toBeVisible(40).
+            withTimeout(timeouts.TEN_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
-        // # Tap on the new public channel item
+        // # Tap on the new public channel item.
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
         await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.dismissScheduledPostTooltip();
@@ -99,14 +103,16 @@ describe('Channels - Browse Channels', () => {
         // * Verify on newly joined public channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(channel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(channel.display_name);
+        await waitForElementToHaveText(ChannelScreen.introDisplayName, channel.display_name, timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
         await ChannelListScreen.toBeVisible();
 
         // * Verify newly joined public channel is added to channel list
-        await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).toBeVisible();
+        await waitFor(ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name)).
+            toBeVisible(40).
+            withTimeout(timeouts.TEN_SEC);
     });
 
     it('MM-T4729_3 - should display empty search state for browse channels', async () => {
@@ -116,9 +122,6 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for browse channels
-        // On Android edge-to-edge the empty-state text can render with <50% area visible
-        // (status/nav bar insets). Use toExist() on Android — the text is present and
-        // the assertion confirms the correct empty state is shown.
         await wait(timeouts.ONE_SEC);
         if (isAndroid()) {
             await waitForElementToExist(element(by.text(`No matches found for \u201C${searchTerm}\u201D`)), timeouts.HALF_MIN);
@@ -167,55 +170,55 @@ describe('Channels - Browse Channels', () => {
     });
 
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
-        // # Enable archived channel visibility on the server, then reload so the app
-        // picks up the new config (the ChannelDropdown only renders when this is true)
-        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
-        await device.reloadReactNative();
+        // Provisioning enables this server-wide, so assert it rather than set-and-restore it on a
+        // server every shard shares. Missing flag means enabled, so accept 'true' or absent.
+        const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
+            maxAttempts: 10,
+            acceptAbsentAsEnabled: true,
+        });
+        if (!archivedChannelsConfigReady) {
+            throw new Error('ExperimentalViewArchivedChannels is explicitly false on the shared server — re-run Detox provisioning');
+        }
+
+        // Cold-start relaunch (newInstance: true) so app re-reads config via appEntry→determineAuthenticatedRoute.
+        // User session persists in local DB, so we stay logged in without re-login.
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
 
         // # Create a channel, add the test user, then archive it
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
+        await wait(timeouts.FOUR_SEC);
 
         // # Open browse channels screen and switch to archived channels view
         await BrowseChannelsScreen.open();
 
+        // Bounded wait for observable outcome: the archived filter dropdown must appear, proving config propagated.
+        // If config change didn't land on the client, dropdown won't render; fail with a clear message.
         await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
 
-        // Trigger tap with sync enabled so Espresso confirms the modal is stable first.
+        // Keep Detox sync enabled for archived filter tap — disableSynchronization
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-        await waitFor(element(by.id('browse_channels.dropdown_slideup_item.archived_channels'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
+        await wait(timeouts.TWO_SEC);
 
-        if (isAndroid()) {
-            await wait(timeouts.ONE_SEC);
-            await device.disableSynchronization();
-        }
-        try {
-            await element(by.id('browse_channels.dropdown_slideup_item.archived_channels')).tap();
-        } finally {
-            if (isAndroid()) {
-                await safeEnableSynchronization();
-            }
-        }
-        await wait(timeouts.ONE_SEC);
-
-        // # Search for the archived channel by name
+        // Filter by name — product now routes archived browse search through search_archived
+        // (autocomplete omits deleted channels).
         await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
+        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
 
-        // * Verify the archived channel appears in results
-        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-
-        // # Go back to channel list screen and restore server config
         await BrowseChannelsScreen.close();
-        await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: false}});
     });
 
     it('MM-T4729_6 - should not be able to browse a joined public channel', async () => {
         // # Open browse channels screen and search for a joined public channel
         const {channel: joinedPublicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPublicChannel.id);
-        await device.reloadReactNative();
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(joinedPublicChannel.name);
@@ -232,7 +235,7 @@ describe('Channels - Browse Channels', () => {
         const {channel: joinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         const {channel: unjoinedPrivateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, joinedPrivateChannel.id);
-        await device.reloadReactNative();
+        await device.launchApp({newInstance: true});
         await ChannelListScreen.toBeVisible();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(joinedPrivateChannel.name);
@@ -250,7 +253,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.close();
     });
 
-    it('MM-T864 - should be able to search for a public channel, cancel search, and join via browse channels', async () => {
+    it('MM-T864_1 - should be able to search for a public channel, cancel search, and join via browse channels', async () => {
         // # Create an unjoined public channel to search for
         const {channel: unjoinedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
 

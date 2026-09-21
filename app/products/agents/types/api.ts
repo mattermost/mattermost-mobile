@@ -29,6 +29,9 @@ export type Agent = {
     username: string;
     service_type?: string;
     service_id?: string;
+
+    // System-wide default agent flag. Absent on older servers.
+    is_default?: boolean;
 };
 
 /**

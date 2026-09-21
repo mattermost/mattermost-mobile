@@ -25,8 +25,8 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {getRandomId, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Threads - Global Threads', () => {
     const serverOneDisplayName = 'Server 1';
@@ -55,11 +55,13 @@ describe('Threads - Global Threads', () => {
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
+        await ChannelListScreen.toBeVisible();
+        await waitForElementToExist(ChannelListScreen.threadsButton, timeouts.HALF_MIN);
     });
 
     beforeEach(async () => {
-        // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        // # Reset to the channel list even if the previous thread back navigation returned to its channel.
+        await ChannelListScreen.open();
     });
 
     afterAll(async () => {
@@ -85,9 +87,8 @@ describe('Threads - Global Threads', () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
 
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         const replyMessage = `${parentMessage} reply`;
         await ThreadScreen.postMessage(replyMessage);
@@ -105,7 +106,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread started by the current user is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await GlobalThreadsScreen.waitForThreadItem(parentPost.id);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText(testUser.username);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
         try {
@@ -121,10 +122,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -135,16 +133,15 @@ describe('Threads - Global Threads', () => {
         // # Create a thread started by the current user and current user unfollows the thread
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(parentMessage);
         await wait(timeouts.TWO_SEC);
-        const {post: parentPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: parentPost} = await ChannelScreen.postMessageAndVerify(parentMessage, testChannel.id, siteOneUrl);
         await ChannelScreen.openReplyThreadFor(parentPost.id, parentMessage);
         await ThreadScreen.postMessage(`${parentMessage} reply`);
         await wait(timeouts.TWO_SEC);
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -153,7 +150,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread started by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();
@@ -184,7 +181,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await GlobalThreadsScreen.waitForThreadItem(parentPost.id);
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterUserDisplayName(parentPost.id)).toHaveText('admin');
         await expect(GlobalThreadsScreen.getThreadItemThreadStarterChannelDisplayName(parentPost.id)).toHaveText(testChannel.display_name.toUpperCase());
 
@@ -193,10 +190,7 @@ describe('Threads - Global Threads', () => {
 
         // * Verify on thread screen
         await ThreadScreen.toBeVisible();
-
-        // iOS 26: post items can be partially obscured by the input bar,
-        // so toExist() is more reliable than toBeVisible() for the post check.
-        await waitFor(replyPostListPostItem).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(replyPostListPostItem).toBeVisible();
 
         // # Go back to channel list screen
         await ThreadScreen.back();
@@ -217,7 +211,7 @@ describe('Threads - Global Threads', () => {
         await ThreadScreen.followingButton.tap();
 
         // * Verify thread is not followed by the current user
-        await expect(ThreadScreen.followButton).toBeVisible();
+        await waitFor(ThreadScreen.followButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen, then go to global threads screen, and tap on all your threads button
         await ThreadScreen.back();
@@ -226,7 +220,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.headerAllThreadsButton.tap();
 
         // * Verify the thread replied to by the current user is not displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await GlobalThreadsScreen.back();

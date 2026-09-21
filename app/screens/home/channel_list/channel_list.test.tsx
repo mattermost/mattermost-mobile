@@ -36,6 +36,7 @@ function getBaseProps(): ComponentProps<typeof ChannelListScreen> {
         showIncomingCalls: true,
         showToS: false,
         currentUserId: 'someId',
+        currentTeamId: 'someTeamId',
     };
 }
 

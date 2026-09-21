@@ -5,9 +5,11 @@
 import {execSync} from 'child_process';
 import {existsSync} from 'fs';
 
-import {ClaudePromptHandler} from '@support/pilot/ClaudePromptHandler';
 import {System, User} from '@support/server_api';
 import {siteOneUrl} from '@support/test_config';
+import {safeEnableSynchronization} from '@support/utils';
+
+import {logError, logWarn} from '../../provision/log';
 
 const BUNDLE_ID = 'com.mattermost.rnbeta';
 
@@ -101,7 +103,26 @@ function clearIOSAppData(): void {
 // ─── Admin API login ─────────────────────────────────────────────────────────
 
 async function loginAdmin(): Promise<void> {
-    await System.apiCheckSystemHealth(siteOneUrl);
+    // 8 attempts with 3s*n backoff is 84s of sleeping on its own, and each attempt can
+    // additionally spend the API client's whole retry budget. That overruns the 360s
+    // beforeAll before the attempts are even used up, which reports as a bare Jest hook
+    // timeout instead of "the server is not healthy". Bound the total instead.
+    const HEALTH_MAX_ATTEMPTS = 8;
+    const HEALTH_DEADLINE_MS = 150_000;
+    const healthDeadlineAt = Date.now() + HEALTH_DEADLINE_MS;
+    for (let healthAttempt = 1; healthAttempt <= HEALTH_MAX_ATTEMPTS; healthAttempt++) {
+        try {
+            await System.apiCheckSystemHealth(siteOneUrl);
+            break;
+        } catch (error) {
+            const backoffMs = 3000 * healthAttempt;
+            if (healthAttempt === HEALTH_MAX_ATTEMPTS || Date.now() + backoffMs >= healthDeadlineAt) {
+                throw error;
+            }
+            console.warn(`⚠️ System health check attempt ${healthAttempt} failed, retrying...`);
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
+        }
+    }
 
     const MAX_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -125,6 +146,38 @@ async function loginAdmin(): Promise<void> {
         }
         console.warn(`⚠️ Session check failed on attempt ${attempt}, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    }
+}
+
+function recoverAndroidDevice(): void {
+    if (device.getPlatform() !== 'android') {
+        return;
+    }
+
+    const commands = [
+        'adb shell input keyevent KEYCODE_WAKEUP',
+        'adb shell wm dismiss-keyguard',
+        'adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS',
+        'adb shell svc power stayon true',
+    ];
+    for (const command of commands) {
+        try {
+            execSync(command, {stdio: 'pipe', timeout: 5_000});
+        } catch {
+            // Best effort — an unavailable command must not mask the launch error.
+        }
+    }
+
+    // Record what actually holds focus, so a repeat failure is diagnosable from the
+    // job log instead of only from the Espresso view dump.
+    try {
+        const focus = execSync(
+            "adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'",
+            {encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 5_000},
+        );
+        logWarn(`[recoverAndroidDevice] window focus: ${focus.replace(/\s+/g, ' ').trim().slice(0, 300)}`);
+    } catch {
+        logError('[recoverAndroidDevice] could not read window focus from dumpsys');
     }
 }
 
@@ -168,7 +221,7 @@ beforeAll(async () => {
     const isFirstFile = !process.env.DETOX_SETUP_DONE;
     const launchArgs = {detoxDisableSynchronization: 'YES'};
 
-    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 60_000 : 30_000;
+    const APP_READY_TIMEOUT = device.getPlatform() === 'android' ? 90_000 : 30_000;
 
     async function forceAndroidDataClear(): Promise<void> {
         if (device.getPlatform() !== 'android') {
@@ -186,8 +239,24 @@ beforeAll(async () => {
         }
     }
 
+    async function ensureAndroidMetroReverse(): Promise<void> {
+        if (device.getPlatform() !== 'android') {
+            return;
+        }
+        try {
+            execSync('adb reverse tcp:8081 tcp:8081', {stdio: 'pipe'});
+            const reverseList = execSync('adb reverse --list', {encoding: 'utf8'});
+            if (!reverseList.includes('tcp:8081')) {
+                console.warn('[ensureAndroidMetroReverse] tcp:8081 reverse missing after setup');
+            }
+        } catch (e) {
+            console.warn('[ensureAndroidMetroReverse] failed:', String(e).slice(0, 200));
+        }
+    }
+
     async function launchAndVerify(): Promise<void> {
         await grantAndroidNotificationPermission();
+        await ensureAndroidMetroReverse();
 
         await device.launchApp({
             newInstance: true,
@@ -213,6 +282,7 @@ beforeAll(async () => {
                     await forceAndroidDataClear();
 
                     await grantAndroidNotificationPermission();
+                    await ensureAndroidMetroReverse();
                     await device.launchApp({newInstance: true, launchArgs});
                     await waitFor(serverScreenEl).toExist().withTimeout(APP_READY_TIMEOUT);
                 } catch {
@@ -244,7 +314,7 @@ beforeAll(async () => {
         } finally {
             // Always re-enable synchronization so subsequent test operations
             // (tap, typeText, expect) re-enter the normal synchronized path.
-            await device.enableSynchronization();
+            await safeEnableSynchronization();
         }
     }
 
@@ -256,7 +326,7 @@ beforeAll(async () => {
         clearIOSAppData();
     }
 
-    const MAX_LAUNCH_ATTEMPTS = 2;
+    const MAX_LAUNCH_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_LAUNCH_ATTEMPTS; attempt++) {
         try {
             await launchAndVerify();
@@ -273,22 +343,15 @@ beforeAll(async () => {
             if (device.getPlatform() === 'ios') {
                 clearIOSAppData();
             } else if (device.getPlatform() === 'android') {
+                recoverAndroidDevice();
                 await forceAndroidDataClear();
+                await ensureAndroidMetroReverse();
             }
             await new Promise((resolve) => setTimeout(resolve, 3000));
         }
     }
 
     console.info('✅ App launched');
-
-    // Initialize Claude AI prompt handler if available
-    try {
-        if (process.env.ANTHROPIC_API_KEY) {
-            pilot.init(new ClaudePromptHandler(process.env.ANTHROPIC_API_KEY));
-        }
-    } catch (e) {
-        console.warn('Claude init failed:', e);
-    }
 
     await loginAdmin();
 }, 360_000);

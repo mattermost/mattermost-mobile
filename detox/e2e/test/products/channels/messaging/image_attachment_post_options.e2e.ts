@@ -83,7 +83,7 @@ describe('Messaging - Image Attachment Post Options', () => {
         await PostOptionsScreen.toBeVisible();
 
         // * Verify Copy Text option is NOT present in the post options menu
-        await expect(PostOptionsScreen.copyTextOption).not.toBeVisible();
+        await expect(PostOptionsScreen.copyTextOption).not.toExist();
 
         // # Close post options and go back
         await PostOptionsScreen.close();
@@ -124,7 +124,7 @@ describe('Messaging - Image Attachment Post Options', () => {
         await PostOptionsScreen.toBeVisible();
 
         // * Verify Copy Text option is NOT present in the post options menu
-        await expect(PostOptionsScreen.copyTextOption).not.toBeVisible();
+        await expect(PostOptionsScreen.copyTextOption).not.toExist();
 
         // # Close post options, go back to channel, and return to channel list
         await PostOptionsScreen.close();

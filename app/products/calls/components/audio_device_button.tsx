@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
-import {AudioDevice, type CurrentCall} from '@calls/types/calls';
+import {AudioDevice, type AudioDeviceType, type CurrentCall} from '@calls/types/calls';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Device} from '@constants';
@@ -22,6 +22,7 @@ type Props = {
     iconStyle: StyleProp<TextStyle>;
     buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
+    disabled?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -30,7 +31,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall}: Props) => {
+export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall, disabled = false}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -48,8 +49,8 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         if (available.includes(AudioDevice.WiredHeadset)) {
             available = available.filter((d) => d !== AudioDevice.Earpiece);
         }
-        const selectDevice = (device: AudioDevice) => {
-            setPreferredAudioRoute(device);
+        const selectDevice = (device: AudioDeviceType) => {
+            setPreferredAudioRoute(device, true);
             dismissBottomSheet();
         };
 
@@ -129,6 +130,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         <Pressable
             style={pressableStyle}
             onPress={deviceSelector}
+            disabled={disabled}
         >
             <CompassIcon
                 name={icon}

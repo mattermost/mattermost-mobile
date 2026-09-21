@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToExist} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Messaging - Save and Unsave Message', () => {
@@ -59,29 +59,30 @@ describe('Messaging - Save and Unsave Message', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is posted
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
         // # Open post options for message and tap on save option
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
 
         // * Verify saved text is displayed on the post pre-header
         await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
+        if (isAndroid()) {
+            await waitForElementToExist(postListPostItemPreHeaderText, timeouts.TEN_SEC);
+        }
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
         // # Open post options for message and tap on unsave option
         await ChannelScreen.openPostOptionsFor(post.id, message);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
 
         // * Verify saved text is not displayed on the post pre-header
-        await wait(timeouts.ONE_SEC);
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -93,9 +94,8 @@ describe('Messaging - Save and Unsave Message', () => {
         const rootMessage = `Message ${getRandomId()}`;
         const replyMessage = `Reply ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(rootMessage);
 
-        const {post: rootPost} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post: rootPost} = await ChannelScreen.postMessageAndVerify(rootMessage, testChannel.id, siteOneUrl);
         const {postListPostItem: rootItem} = ChannelScreen.getPostListPostItem(rootPost.id, rootMessage);
         await waitFor(rootItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
         await rootItem.tap();
@@ -107,20 +107,22 @@ describe('Messaging - Save and Unsave Message', () => {
 
         // # Open post options on the reply and save it
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
-        await PostOptionsScreen.savePostOption.tap();
+        await PostOptionsScreen.tapSavePost();
 
         // * Verify saved text is displayed on the reply's pre-header
         await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(replyPost.id, replyMessage);
+        if (isAndroid()) {
+            await waitForElementToExist(postListPostItemPreHeaderText, timeouts.TEN_SEC);
+        }
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
         // # Open post options on the reply and unsave it
         await ThreadScreen.openPostOptionsFor(replyPost.id, replyMessage);
-        await PostOptionsScreen.unsavePostOption.tap();
+        await PostOptionsScreen.tapUnsavePost();
 
         // * Verify saved text is not displayed on the reply's pre-header
-        await wait(timeouts.ONE_SEC);
-        await expect(postListPostItemPreHeaderText).not.toBeVisible();
+        await waitFor(postListPostItemPreHeaderText).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ThreadScreen.back();

@@ -4,7 +4,7 @@
 import {router} from 'expo-router';
 import {DeviceEventEmitter} from 'react-native';
 
-import {Events, Screens} from '@constants';
+import {Events, Navigation, Screens} from '@constants';
 import {UNAUTHENTICATED_SCREENS, HOME_TAB_SCREENS, SCREENS_AS_BOTTOM_SHEET, MODAL_SCREENS} from '@constants/screens';
 import BottomSheetStore from '@store/bottom_sheet_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -15,7 +15,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 export function propsToParams(props: any): Record<string, string> {
     return Object.keys(props || {}).reduce((params, key) => {
-        params[key] = typeof props[key] === 'string' ? props[key] : JSON.stringify(props[key]);
+        params[key] = JSON.stringify(props[key]);
         return params;
     }, {} as Record<string, string>);
 }
@@ -96,6 +96,13 @@ export async function navigateBack() {
         router.back();
         await new Promise((resolve) => setTimeout(resolve, 250));
     }
+}
+
+export function navigateToHomeTab(params?: Record<string, unknown>) {
+    DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
+        screen: Screens.CHANNEL_LIST,
+        params,
+    });
 }
 
 export async function dismissToStackRoot() {

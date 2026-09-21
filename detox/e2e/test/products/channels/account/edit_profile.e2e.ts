@@ -19,7 +19,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isIos, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Edit Profile', () => {
@@ -92,11 +92,6 @@ describe('Account - Edit Profile', () => {
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
         await EditProfileScreen.scrollView.scrollTo('bottom');
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
-
-        // Settle any in-flight requests from the rapid text-entry chain above before
-        // tapping Save — observed PATCH /users to fail at the HTTP layer ("Received
-        // invalid response from the server") when fired immediately after.
-        await wait(timeouts.ONE_SEC);
         await EditProfileScreen.saveButton.tap();
 
         // * Verify on account screen and user full name and username are updated

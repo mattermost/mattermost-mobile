@@ -23,8 +23,8 @@ import {
     ServerScreen,
     TableScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
-import {expect} from 'detox';
+import {isIos, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 describe('Messaging - Markdown Table', () => {
     const serverOneDisplayName = 'Server 1';
@@ -104,16 +104,14 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Left header that wraps'))).toBeVisible(50);
         await expect(element(by.text('Center header that wraps'))).toBeVisible(50);
 
-        // Verify the left/center body cells are visible BEFORE scrolling right.
-        // The Android table renders the right column beyond the viewport, so the
-        // scroll-right below pushes the left column off-screen — assert left/center
-        // here first to avoid asserting them after they have been scrolled away.
+        // Assert the left and centre cells before scrolling right — on Android the scroll
+        // can push the left column off-screen. Wrap coverage is these cells.
         await expect(element(by.text('Left text that wraps row'))).toBeVisible(50);
         await expect(element(by.text('Center text that wraps row'))).toBeVisible(50);
 
-        // Right-side columns render beyond the viewport on Android (the table's
-        // minimum column width pushes the third column off-screen). Scroll the
-        // table horizontally until the right header/row become visible.
+        // Right-side columns can sit past the expanded viewport. waitFor succeeds
+        // immediately when they are already on-screen (typical iOS) and scrolls
+        // when they are not (typical Android).
         await waitFor(element(by.text('Right header that wraps'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
         await waitFor(element(by.text('Right text that wraps row'))).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'right');
 
@@ -194,7 +192,7 @@ describe('Messaging - Markdown Table', () => {
         if (isIos()) {
             await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
             await expect(element(by.text('Header VS last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible(50);
+            await waitFor(expectedElement).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(50, 'down');
         } else {
             await expect(expectedElement).toExist();
         }
@@ -204,7 +202,7 @@ describe('Messaging - Markdown Table', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T1442 - should display markdown table with multiple row heights correctly', async () => {
+    it('MM-T1442_1 - should display markdown table with multiple row heights correctly', async () => {
         // # Open a channel screen and post a markdown table with multiple row heights
         const markdownTable =
             '| Header | Header | Header |\n' +
@@ -256,8 +254,22 @@ describe('Messaging - Markdown Table', () => {
         });
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Verify table is displayed with some right columns and bottom rows not visible
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        // * Verify table is displayed with some right columns and bottom rows not visible.
+        // Poll for the post — large table posts can take a moment to persist via API sync.
+        let post: {id: string} | undefined;
+        const postDeadline = Date.now() + timeouts.TEN_SEC;
+        /* eslint-disable no-await-in-loop */
+        while (!post?.id && Date.now() < postDeadline) {
+            const result = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            post = result?.post;
+            if (!post?.id) {
+                await wait(500);
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+        if (!post?.id) {
+            throw new Error('Expected markdown table post to exist in channel');
+        }
         const {postListPostItemTable, postListPostItemTableExpandButton} = ChannelScreen.getPostListPostItem(post.id);
         await expect(postListPostItemTable).toBeVisible(50);
         await expect(element(by.text('Header last'))).not.toBeVisible();
@@ -275,9 +287,11 @@ describe('Messaging - Markdown Table', () => {
         await expect(element(by.text('Right last'))).not.toBeVisible();
         const expectedElement = element(by.text('Right last'));
         if (isIos()) {
-            await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
-            await expect(element(by.text('Header last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible(50);
+            // Full-view tables render every row, so waitFor(toExist) returns before any
+            // scroll. Drive the scroller until the header leaves the viewport, then until
+            // the last cell is actually visible.
+            await waitFor(element(by.text('Header last'))).not.toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
+            await waitFor(expectedElement).toBeVisible(25).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(200, 'down');
         } else {
             await expect(expectedElement).toExist();
         }

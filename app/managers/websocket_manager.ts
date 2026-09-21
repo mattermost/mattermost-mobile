@@ -11,6 +11,7 @@ import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {handleFirstConnect, handleReconnect} from '@actions/websocket';
 import {handleWebSocketEvent} from '@actions/websocket/event';
+import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -268,12 +269,14 @@ class WebsocketManagerSingleton {
 
         const wentBackground = this.previousActiveState && !currentIsActive;
         const switchedNetworks = currentIsConnected && currentNetType !== this.netType && this.netType !== 'none';
+        const previousNetType = this.netType;
 
         this.previousActiveState = currentIsActive;
         this.netConnected = currentIsConnected;
         this.netType = currentNetType;
 
         if (!currentIsConnected) {
+            logDebug('WebSocketManager: closing all connections, network disconnected', 'netType', currentNetType);
             this.closeAll();
             return;
         }
@@ -282,6 +285,7 @@ class WebsocketManagerSingleton {
             // Close all connections when we switch from (for example) vpn to wifi
             // to ensure we are using the right network and doesn't get stuck on
             // retries.
+            logDebug('WebSocketManager: closing all connections, network switched', 'from', previousNetType, 'to', currentNetType);
             this.closeAll();
         }
 
@@ -297,13 +301,33 @@ class WebsocketManagerSingleton {
             return;
         }
 
-        if (wentBackground && !this.isBackgroundTimerRunning) {
-            this.isBackgroundTimerRunning = true;
-            this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
-                this.closeAll();
-                this.isBackgroundTimerRunning = false;
-            }, WAIT_TO_CLOSE);
+        if (wentBackground) {
+            this.startBackgroundCloseTimer();
         }
+    };
+
+    public scheduleBackgroundCloseIfNeeded = () => {
+        if (this.previousActiveState) {
+            return;
+        }
+        this.startBackgroundCloseTimer();
+    };
+
+    private startBackgroundCloseTimer = () => {
+        if (this.isBackgroundTimerRunning) {
+            return;
+        }
+        this.isBackgroundTimerRunning = true;
+        this.backgroundTimerId = BackgroundTimer.setTimeout(() => {
+            this.isBackgroundTimerRunning = false;
+
+            // Skip closing while a native call is active; closeAll would drop
+            // the WS that's carrying call lifecycle events.
+            if (hasActiveNativeCall()) {
+                return;
+            }
+            this.closeAll();
+        }, WAIT_TO_CLOSE);
     };
 
     public getClient = (serverUrl: string): WebSocketClient | undefined => {

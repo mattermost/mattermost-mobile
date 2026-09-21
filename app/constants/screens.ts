@@ -44,7 +44,6 @@ const GLOBAL_DRAFTS = 'global_drafts';
 const GLOBAL_THREADS = 'global_threads';
 const HOME = '(home)';
 const INTEGRATION_SELECTOR = 'integration_selector';
-const INTERACTIVE_DIALOG = 'interactive_dialog';
 const INVITE = 'invite';
 const JOIN_TEAM = 'join_team';
 const LATEX = 'latex';
@@ -82,6 +81,7 @@ const SETTINGS_NOTIFICATION_PUSH = 'settings_notification_push';
 const SETTINGS_NOTIFICATION_CALL = 'settings_notification_call';
 const SSO = 'sso';
 const TABLE = 'table';
+const MM_BLOCKS_CONTENT = 'mm_blocks_content';
 const TEAM_SELECTOR_LIST = 'team_selector_list';
 const TERMS_OF_SERVICE = 'terms_of_service';
 const THREAD = 'thread';
@@ -129,7 +129,6 @@ export default {
     GENERIC_BOTTOM_SHEET,
     HOME,
     INTEGRATION_SELECTOR,
-    INTERACTIVE_DIALOG,
     DIALOG_ROUTER,
     INVITE,
 
@@ -169,6 +168,7 @@ export default {
     SETTINGS_NOTIFICATION_CALL,
     SSO,
     TABLE,
+    MM_BLOCKS_CONTENT,
     TEAM_SELECTOR_LIST,
     TERMS_OF_SERVICE,
     THREAD,
@@ -192,7 +192,7 @@ export const MODAL_SCREENS = new Set<string>([
     EDIT_PROFILE,
     EDIT_SERVER,
     FIND_CHANNELS,
-    INTERACTIVE_DIALOG,
+    INTEGRATION_SELECTOR,
     INVITE,
     MANAGE_CHANNEL_MEMBERS,
     PDF_VIEWER,
