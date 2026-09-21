@@ -526,6 +526,16 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             });
             testChannel = channel;
             await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+
+            // The banner renders only once all three values are on the channel, and values
+            // supplied at creation time are not always readable back straight away. Confirm
+            // the server has them before looking at the UI, so a value that never landed
+            // fails here saying so rather than as an absent banner further down.
+            const bannerFieldIds = [multi.channelFieldId, select.channelFieldId, text.channelFieldId];
+            if (!await Properties.waitForChannelAttributeValues(siteOneUrl, channel.id, bannerFieldIds)) {
+                throw new Error('MM-T6308_1: the banner attribute values were not set on the channel, so the banner cannot render');
+            }
+
             await assertOnReloadedApp(async () => {
                 await openChannel(channel.name);
 
