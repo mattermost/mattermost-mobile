@@ -332,13 +332,17 @@ async function installPluginFromFile(
 
     let res: Awaited<ReturnType<typeof uploadMultipartFile<ApiErrorBody>>>;
     try {
+        // The upload endpoint reads `force` from the multipart form, not the query string
+        // (api4.uploadPlugin), so a query param is silently dropped and the server answers
+        // "A plugin with the same ID is already installed."
         res = await uploadMultipartFile<ApiErrorBody>(
             client,
             'POST',
-            `/api/v4/plugins${force ? '?force=true' : ''}`,
+            '/api/v4/plugins',
             filePath,
             'plugin',
             token,
+            force ? {force: 'true'} : {},
         );
     } catch (err) {
         return {
