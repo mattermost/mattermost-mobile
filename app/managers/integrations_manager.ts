@@ -3,7 +3,10 @@
 
 import {fetchCommands} from '@actions/remote/command';
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
+import {getCurrentChannelId} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
+import {logDebug} from '@utils/log';
 
 const TIME_TO_REFETCH_COMMANDS = 60000; // 1 minute
 class ServerIntegrationsManager {
@@ -52,13 +55,21 @@ class ServerIntegrationsManager {
         }
     }
 
-    private showDialog() {
+    private async showDialog() {
         const config = this.storedDialog;
         if (!config) {
             return;
         }
 
-        navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config});
+        let channelId = '';
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(this.serverUrl);
+            channelId = await getCurrentChannelId(database);
+        } catch (error) {
+            logDebug('integrations_manager.showDialog: could not read channelId', error);
+        }
+
+        navigateToScreen(Screens.DIALOG_ROUTER, {title: config.dialog.title, config, channelId});
     }
 }
 

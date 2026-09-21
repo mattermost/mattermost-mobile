@@ -9,6 +9,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import path from 'path';
+
 import {
     Command,
     DemoPlugin,
@@ -18,10 +20,12 @@ import {
     User,
     Post,
 } from '@support/server_api';
+import {apiSubmitDemoPluginFileUploadDialog} from '@support/server_api/plugin';
 import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {AttachmentOptions} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -34,9 +38,54 @@ import {
 import {wait, isAndroid, isIos, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
+const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, '../../../../support/fixtures/sample.txt');
 const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
 
 // MM-66558: dialog fields use replaceText instead of typeText.
+
+async function dismissAttachmentOptions() {
+    try {
+        await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+        await AttachmentOptions.photoLibrary.swipe('down', 'fast', 0.5);
+        await waitFor(AttachmentOptions.photoLibrary).not.toExist().withTimeout(3000);
+    } catch {}
+}
+
+async function seedFileUploadDialogViaApi(
+    user: any,
+    testChannelId: string,
+    testTeamId: string,
+    fieldName = 'single_file',
+) {
+
+    const loginResult = await User.apiLogin(siteOneUrl, {
+        username: user.username,
+        password: user.newUser.password,
+    });
+    if (loginResult.error) {
+        throw new Error(`Failed to login as test user for file upload seed: ${JSON.stringify(loginResult.error)}`);
+    }
+
+    const {fileId, error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannelId, FILE_UPLOAD_FIXTURE);
+    if (uploadError || !fileId) {
+        throw new Error(`Failed to upload fixture for file upload seed: ${JSON.stringify(uploadError)}`);
+    }
+
+    const submitResult = await apiSubmitDemoPluginFileUploadDialog(siteOneUrl, {
+        userId: user.id,
+        channelId: testChannelId,
+        teamId: testTeamId,
+        submission: {[fieldName]: fileId},
+        fileIds: [fileId],
+    });
+    if (submitResult.error) {
+        throw new Error(`Failed to seed file upload dialog via plugin: ${JSON.stringify(submitResult.error)}`);
+    }
+
+    await User.apiAdminLogin(siteOneUrl);
+
+    return fileId;
+}
 
 // ===== Helper Functions =====
 async function waitForDialogSelectorButton(testId: string) {
@@ -174,6 +223,18 @@ async function selectChannel(channel?: {id: string; display_name: string}, {mult
     throw new Error('selectChannel: could not select a channel row');
 }
 
+// Deliberately not ChannelScreen.postSlashCommand: after tapping send it waits on
+// waitForElementToBeVisible(dialog, HALF_MIN) with Detox synchronization enabled, and the
+// dialog's bottom-sheet animation keeps the app busy so that poll never resolves — it burns
+// the full 30s on every call (measured 30.3s avg vs 5.9s here) and only succeeds via its
+// retry path. ensureDialogOpen() below does the same check with sync disabled in ~0.1s.
+async function postSlashCommandDirect(command: string) {
+    await ChannelScreen.postInput.tap();
+    await ChannelScreen.postInput.replaceText(command);
+    await ChannelScreen.sendButton.tap();
+    await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.FIVE_SEC);
+}
+
 async function ensureDialogClosed() {
     try {
         await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(3000);
@@ -267,16 +328,29 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
+    let testTeam: any;
     let testUser: any;
     let setupFailed = false;
 
     const setUpSuite = async () => {
-        const {channel, user} = await Setup.apiInit(siteOneUrl);
+        const {channel, team, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+        testTeam = team;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
         await ensureDialogOnlyMode();
+        await System.apiUpdateConfig(siteOneUrl, {
+            ServiceSettings: {
+                EnableGifPicker: true,
+                EnableMobileFileUpload: true,
+            },
+            FileSettings: {
+                EnablePublicLink: true,
+                EnableFileAttachments: true,
+            },
+            FeatureFlags: {InteractiveDialogAppsForm: true},
+        });
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
@@ -287,7 +361,30 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
         await ChannelListScreen.toBeVisible();
-        await ChannelScreen.open(channelsCategory, testChannel.name);
+        {
+
+            // The sidebar row can be covered by a UITransitionView while the channel
+            // list is still animating in, which makes the tap fail with "View is not
+            // hittable at its visible point". This runs in beforeAll, so a single
+            // transient miss fails every test in the file — retry before giving up.
+            let lastError: unknown;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    await ChannelScreen.open(channelsCategory, testChannel.name);
+                    lastError = undefined;
+                    break;
+                } catch (error) {
+                    lastError = error;
+                    await wait(timeouts.TWO_SEC);
+                    try {
+                        await ChannelListScreen.toBeVisible();
+                    } catch {}
+                }
+            }
+            if (lastError) {
+                throw lastError;
+            }
+        }
 
         // Warm slash-command / IntegrationsManager state — first /dialog after login
         // can return "Error Executing Command" before commands are ready (CI MM-T4101/4102).
@@ -296,6 +393,28 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await wait(timeouts.TWO_SEC);
             await ChannelScreen.postInput.clearText();
         } catch { /* best-effort */ }
+
+        // The websocket entry() that runs after login finishes asynchronously, and on a
+        // phone its first-load branch does setCurrentTeamAndChannelId(initialTeamId, '')
+        // — clearing the channel and dropping the app back to the channel list. If that
+        // lands after we opened the channel above, the first test starts on the wrong
+        // screen and postInput does not exist. Let it settle, then re-enter if it drifted.
+        // Best-effort only. This runs in beforeAll, so anything that throws here fails
+        // every test in the file; afterEach re-establishes the channel for every test
+        // after the first, so a miss costs one test, not the suite.
+        try {
+            await wait(timeouts.FOUR_SEC);
+            try {
+                await ChannelScreen.dismissKeyboard();
+            } catch {}
+            try {
+                await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await ChannelListScreen.toBeVisible();
+                await ChannelScreen.open(channelsCategory, testChannel.name);
+                await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            }
+        } catch { /* leave recovery to afterEach */ }
     };
 
     beforeAll(async () => {
@@ -309,6 +428,11 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     afterAll(async () => {
         try {
+            // HomeScreen.logout -> AccountScreen.open chains several tooltip waits plus a
+            // 10s account-tab wait and fallbacks. When the tab bar is not reachable (this
+            // spec ends inside a channel) it burns ~45s and still fails, so gate it on the
+            // tab bar actually being there and skip cheaply when it is not.
+            await waitFor(HomeScreen.accountTab).toExist().withTimeout(timeouts.TWO_SEC);
             await HomeScreen.logout();
         } catch {
             // best-effort logout so later specs on this shard start clean
@@ -320,15 +444,30 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             return;
         }
         await dismissErrorAlert();
+
+        // Only clean up the integration selector when it is actually on screen. Both
+        // helpers start with their own waitFor — cancel() 2s, done() 10s — so calling
+        // them unconditionally burned ~12s of pure timeout on every test in this
+        // describe, where the selector is never opened.
         try {
-            await IntegrationSelectorScreen.cancel();
-        } catch {}
-        try {
-            await IntegrationSelectorScreen.done();
-        } catch {}
+            await waitFor(IntegrationSelectorScreen.integrationSelectorScreen).toExist().withTimeout(timeouts.HALF_SEC);
+            try {
+                await IntegrationSelectorScreen.cancel();
+            } catch {}
+            try {
+                await IntegrationSelectorScreen.done();
+            } catch {}
+        } catch { /* selector not open — nothing to clean up */ }
         try {
             await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
             await InteractiveDialogScreen.cancel();
+        } catch {}
+
+        // postSlashCommandDirect taps the composer, which raises the keyboard and can leave
+        // it up. A raised keyboard obscures the composer, so drop it before requiring it —
+        // otherwise the spec only passes when a preceding test happened to dismiss it.
+        try {
+            await ChannelScreen.dismissKeyboard();
         } catch {}
 
         // Android Back from cancel() after the dialog is already closed leaves channel list;
@@ -338,20 +477,23 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         } catch {
             await ChannelListScreen.toBeVisible();
             await ChannelScreen.open(channelsCategory, testChannel.name);
+            try {
+                await ChannelScreen.dismissKeyboard();
+            } catch {}
             await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
         }
         await wait(500);
     });
 
     it('MM-T4101 should open simple interactive dialog (Plugin)', async () => {
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
     });
 
     it('MM-T4102 should submit simple interactive dialog (Plugin)', async () => {
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await ensureDialogClosed();
@@ -361,7 +503,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4103 should fill text field and submit dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog basic');
+        await postSlashCommandDirect('/dialog basic');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'Plugin Test Value');
         await InteractiveDialogScreen.submit();
@@ -372,7 +514,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4104 should handle server error on dialog submission (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog error');
+        await postSlashCommandDirect('/dialog error');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('optional_text', 'This will trigger server error');
         await InteractiveDialogScreen.submit();
@@ -385,7 +527,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4401 should toggle boolean fields and submit (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog boolean');
+        await postSlashCommandDirect('/dialog boolean');
         await ensureDialogOpen();
         await expect(element(by.id('AppFormElement.required_boolean.toggled..button'))).toExist();
         await expect(element(by.id('AppFormElement.optional_boolean.toggled..button'))).toExist();
@@ -401,7 +543,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4402 should handle boolean field validation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog boolean');
+        await postSlashCommandDirect('/dialog boolean');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -416,7 +558,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4498 should open and handle interactive dialog with select fields (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -448,7 +590,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4499 should handle required select field validation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.submit();
         await wait(300);
@@ -476,7 +618,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4500 should handle different selector types (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog selectfields');
+        await postSlashCommandDirect('/dialog selectfields');
         await ensureDialogOpen();
         const engineeringRadioButton = element(by.id('AppFormElement.someradiooptions.radio.engineering.button'));
         await expect(engineeringRadioButton).toExist();
@@ -508,7 +650,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4201 should fill and submit all text field types (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Regular text input');
         await InteractiveDialogScreen.fillTextElement('required_text', 'Required field value');
@@ -524,7 +666,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4202 should validate required text field (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('text_field', 'Optional text');
         await InteractiveDialogScreen.fillTextElement('email_field', 'optional@example.com');
@@ -545,7 +687,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4203 should handle different text input subtypes (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog textfields');
+        await postSlashCommandDirect('/dialog textfields');
         await ensureDialogOpen();
         await InteractiveDialogScreen.fillTextElement('email_field', 'valid.email+test@example.com');
         await InteractiveDialogScreen.fillTextElement('number_field', '12345');
@@ -558,7 +700,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4976 should handle multiselect fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multi-select');
+        await postSlashCommandDirect('/dialog multi-select');
         await ensureDialogOpen();
         const multiselectUsersButton = element(by.id('AppFormElement.multiselect_users.select.button'));
         await expect(multiselectUsersButton).toExist();
@@ -597,7 +739,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4977 should handle dynamic select fields dialog (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog dynamic-select');
+        await postSlashCommandDirect('/dialog dynamic-select');
         await ensureDialogOpen();
         const dynamicProductsButton = element(by.id('AppFormElement.dynamic_products.select.button'));
         await expect(dynamicProductsButton).toExist();
@@ -622,7 +764,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     (isAndroid() ? it.skip : it)('MM-T4980 should complete multistep dialog progression (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multistep');
+        await postSlashCommandDirect('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -661,7 +803,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4981 should handle multistep dialog cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog multistep');
+        await postSlashCommandDirect('/dialog multistep');
         await ensureDialogOpen();
         const individualRadioButton = element(by.id('AppFormElement.user_type.radio.individual.button'));
         await expect(individualRadioButton).toExist();
@@ -683,7 +825,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     itNotIos('MM-T4983 should handle field refresh basic interaction (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog field-refresh');
+        await postSlashCommandDirect('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await expect(projectTypeButton).toExist();
@@ -711,7 +853,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T4986 should handle field refresh changes and cancellation (Plugin)', async () => {
         await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog field-refresh');
+        await postSlashCommandDirect('/dialog field-refresh');
         await ensureDialogOpen();
         const projectTypeButton = element(by.id('AppFormElement.project_type.select.button'));
         await projectTypeButton.tap();
@@ -730,9 +872,178 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await ensureDialogClosed();
     });
 
+    describe('Interactive Dialog - File Upload (Plugin)', () => {
+        beforeEach(async () => {
+
+            // Restore mobile file upload setting in case MM-T6074_1 crashed before cleanup.
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: true},
+            });
+
+            // No KV reset here by design. Mattermost exposes no plugin KV REST API
+            // (there is no /api/v4/plugins/:id/kv route), so the previous call 404'd on
+            // every run and was swallowed — isolation it appeared to provide never
+            // existed. The demo plugin's file-upload-clear command was also removed.
+            //
+            // It is not needed: `/dialog file-upload` always opens empty regardless of
+            // KV, and each hydration test seeds its own KV via
+            // apiSubmitDemoPluginFileUploadDialog before opening `file-upload-prefill`,
+            // which overwrites any prior value. Add a plugin-side clear route if a test
+            // ever needs to assert prefill with *no* stored files.
+        });
+
+        it('MM-T6070_1 - should render file upload dialog, open attachment options, and submit with no files (Plugin)', async () => {
+            await ensureDialogClosed();
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+
+            await expect(element(by.text('File Upload Dialog Demo'))).toExist();
+
+            // 'Single File Upload' and choose buttons are inside AppsFormFileField, which is
+            // wrapped by withObservables (canUploadFiles). Wait for the HOC's first emission.
+            await waitFor(element(by.text('Single File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(element(by.text('Multiple File Upload'))).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('single_file')).toExist().withTimeout(timeouts.THREE_SEC);
+            await waitFor(InteractiveDialogScreen.getFileFieldChooseButton('multi_file')).toExist().withTimeout(timeouts.THREE_SEC);
+
+            await InteractiveDialogScreen.tapFileFieldChooseButton('single_file');
+            await waitFor(AttachmentOptions.photoLibrary).toExist().withTimeout(3000);
+            await expect(AttachmentOptions.attachFile).toExist();
+            await dismissAttachmentOptions();
+
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            let match = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain submission confirmation but got: ${post.message}`);
+            }
+            match = post.message.match(/\*\*Files:\*\* (.+)/);
+            if (!match || !match[1]) {
+                throw new Error(`Expected post to contain Files field but got: ${post.message}`);
+            }
+
+            const filesSubmitted = match[1];
+            if (!/none/.test(filesSubmitted)) {
+                throw new Error(`Expected no files to be submitted but got: ${filesSubmitted}`);
+            }
+        });
+
+        it('MM-T6071_1 - should submit file upload dialog with pre-loaded file and verify success post (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload seed failed: ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+
+            // * Verify seeded file preview appears before submit
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // # Submit the dialog with the pre-loaded file
+            await InteractiveDialogScreen.submit();
+            await ensureDialogClosed();
+
+            // * Verify success post appears and contains the submitted file ID
+            const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+            const submissionMatch = post.message.match(/(.+) submitted a file upload dialog/);
+            if (!submissionMatch) {
+                throw new Error(`Expected submission confirmation post but got: ${post.message}`);
+            }
+            const filesMatch = post.message.match(/\*\*File IDs \(\d+\):\*\* (.+)/);
+            if (!filesMatch || !filesMatch[1]) {
+                throw new Error(`Expected post to contain File IDs field but got: ${post.message}`);
+            }
+            if (!filesMatch[1].includes(fileId)) {
+                throw new Error(`Expected post to contain fileId ${fileId} but got: ${filesMatch[1]}`);
+            }
+        });
+
+        it('MM-T6072_1 - allow_multiple field keeps choose button enabled when file is attached; single-file field disables it (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let multiFileId: string;
+            try {
+                multiFileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id, 'multi_file');
+            } catch (err: any) {
+                throw new Error(`Multi-file seed failed: ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+
+            // * multi_file field has a seeded file but its choose button stays enabled (allow_multiple=true)
+            await InteractiveDialogScreen.expectHydratedFilePreview('multi_file', multiFileId);
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('multi_file');
+
+            // * single_file field has no file and its choose button is enabled
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
+
+        it('MM-T6074_1 - should show upload disabled warning on file fields when mobile upload is disabled (Plugin)', async () => {
+            await ensureDialogClosed();
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: false},
+            });
+            await wait(2000);
+
+            await postSlashCommandDirect('/dialog file-upload');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('single_file');
+            await InteractiveDialogScreen.expectFileFieldUploadDisabledWarning('multi_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+
+            await System.apiUpdateConfig(siteOneUrl, {
+                FileSettings: {EnableMobileUpload: true},
+            });
+            await wait(2000);
+        });
+
+        it('MM-T6075_1 - should hydrate file field from plugin persisted file IDs and re-enable choose button after removal (Plugin)', async () => {
+            await ensureDialogClosed();
+
+            let fileId: string;
+            try {
+                fileId = await seedFileUploadDialogViaApi(testUser, testChannel.id, testTeam.id);
+            } catch (err: any) {
+                throw new Error(`File upload hydration seed failed (check file ownership / plugin file-upload support): ${err.message || err}`);
+            }
+
+            // file-upload always opens empty; file-upload-prefill hydrates from plugin KV.
+            await postSlashCommandDirect('/dialog file-upload-prefill');
+            await ensureDialogOpen();
+            await InteractiveDialogScreen.expectHydratedFilePreview('single_file', fileId);
+
+            // * Choose button should be disabled while a file is attached
+            await InteractiveDialogScreen.expectFileFieldChooseButtonDisabled('single_file');
+
+            // # Remove the file
+            await InteractiveDialogScreen.tapFileFieldRemoveButton('single_file', fileId);
+
+            // * Choose button should be enabled after removal
+            await InteractiveDialogScreen.expectFileFieldChooseButtonEnabled('single_file');
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        });
+    });
+
     it('MM-T2530A should open date/datetime dialog and display fields', async () => {
         // # Open datetime-basic dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify dialog title
@@ -752,7 +1063,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530B should validate required date/datetime fields', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Try to submit without required fields
@@ -771,7 +1082,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530C should select date and display formatted value', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Tap Event Date field to open date picker
@@ -794,7 +1105,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
     it('MM-T2530D should display relative date defaults', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // * Verify Relative Date Example (default="today") field is rendered
@@ -825,7 +1136,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530F should verify UTC conversion for datetime values', async () => {
         // # Open dialog
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await postSlashCommandDirect('/dialog datetime-basic');
         await ensureDialogOpen();
 
         // # Fill required Event Date field
@@ -883,7 +1194,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530G should display timezone indicator and convert to UTC correctly', async () => {
         // # Open datetime-timezone dialog (has Europe/London timezone fields)
-        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await postSlashCommandDirect('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll down past introduction text to reveal fields
@@ -961,7 +1272,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // is not determinable from CI artifacts. Not reproducible locally and not observed in the
     // production app. Previous attempts to fix it did not hold. Android is unaffected.
     itNotIos('MM-T2530H should accept manual time entry on datetime field', async () => {
-        await ChannelScreen.postSlashCommand('/dialog datetime-timezone');
+        await postSlashCommandDirect('/dialog datetime-timezone');
         await ensureDialogOpen();
 
         // # Scroll past introduction text to reveal fields
