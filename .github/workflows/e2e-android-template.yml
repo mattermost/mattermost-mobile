@@ -591,6 +591,10 @@ jobs:
       - name: Merge per-shard Jest JSON for TSIO
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false'
         id: tsio-merge
+        env:
+          # Built from repo filenames, so it must reach the shell as data, never spliced
+          # into the script text: a spec named x'$(...)'.e2e.ts would otherwise execute.
+          EXPECTED_SPECS: ${{ needs.generate-specs.outputs.specs }}
         run: |
           set +e
           # TSIO extractDetox expects testFilePath + nested testResults (not Jest CLI
@@ -598,7 +602,7 @@ jobs:
           if ! node detox/utils/merge-jest-results-for-tsio.js \
             --dir detox/artifacts \
             --repo-root "${GITHUB_WORKSPACE}" \
-            --expected-count "${{ needs.generate-specs.outputs.shard_count }}" \
+            --expected-specs "$EXPECTED_SPECS" \
             --output detox/artifacts/jest-results-merged.json; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "No jest-results.json found or merge failed — skipping TSIO upload."

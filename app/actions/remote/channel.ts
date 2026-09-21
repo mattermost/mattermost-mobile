@@ -26,7 +26,7 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
-import {getFullErrorMessage, getServerError} from '@utils/errors';
+import {getFullErrorMessage, getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
@@ -34,6 +34,7 @@ import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
+import {fetchChannelAttributeValues} from './classification';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
@@ -45,6 +46,8 @@ import {fetchProfilesInChannel, fetchProfilesInGroupChannels, fetchProfilesPerCh
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
+
+const HTTP_NOT_FOUND = 404;
 
 export type MyChannelsRequest = {
     teamId?: string;
@@ -818,18 +821,23 @@ export async function joinIfNeededAndSwitchToChannel(
             }
         }
 
-        const channel = channelId ? await getChannelById(database, channelId) : await getChannelByName(database, teamId, channelName);
+        const channelByName = channelName ? await getChannelByName(database, teamId, channelName) : undefined;
+        const channel = channelByName || (channelId ? await getChannelById(database, channelId) : undefined);
         const isChannelMember = channel ? await getMyChannel(database, channel.id) : false;
-        if (!channelId) {
-            channelId = channel?.id || '';
+        if (channel) {
+            channelId = channel.id;
         }
 
         if (!isChannelMember) {
-            const fetchRequest = channelId ? await fetchChannelById(serverUrl, channelId) : await fetchChannelByName(serverUrl, teamId, channelName, true);
+            let fetchRequest = channelId ? await fetchChannelById(serverUrl, channelId) : await fetchChannelByName(serverUrl, teamId, channelName, true);
+            if (!fetchRequest.channel && channelId && channelName && isErrorWithStatusCode(fetchRequest.error) && fetchRequest.error.status_code === HTTP_NOT_FOUND) {
+                fetchRequest = await fetchChannelByName(serverUrl, teamId, channelName, true);
+            }
             if (!fetchRequest.channel) {
                 onError(joinedTeam, teamId);
                 return {error: fetchRequest.error || 'cannot fetch channel'};
             }
+            channelId = fetchRequest.channel.id;
             if (fetchRequest.channel.type === General.PRIVATE_CHANNEL) {
                 const {join} = await privateChannelJoinPrompt(fetchRequest.channel.display_name, intl);
                 if (!join) {
@@ -844,8 +852,6 @@ export async function joinIfNeededAndSwitchToChannel(
                 onError(joinedTeam, teamId);
                 return {error: joinRequest.error || 'no channel returned from join'};
             }
-
-            channelId = fetchRequest.channel.id;
         }
 
         await switchToChannelById(serverUrl, channelId, teamId);
@@ -1192,6 +1198,7 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     fetchPostsForChannel(serverUrl, channelId, false, false, groupLabel);
     fetchChannelBookmarks(serverUrl, channelId, false, groupLabel);
+    fetchChannelAttributeValues(serverUrl, channelId);
     await switchToChannel(serverUrl, channelId, teamId, skipLastUnread);
     openChannelIfNeeded(serverUrl, channelId, groupLabel);
     markChannelAsRead(serverUrl, channelId, false, groupLabel);
