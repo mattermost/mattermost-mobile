@@ -229,6 +229,12 @@ const ToolCard = ({
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
 
+    // A pending call flagged would_auto_execute is executed server-side, so it
+    // must never offer an approval decision — only the result-stage
+    // share/keep-private controls stay available.
+    const showDecisionButtons = Boolean(onApprove && onReject) &&
+        (isResultPhase || (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute));
+
     const displayName = useMemo(() => {
         return tool.name.
             replace(/_/g, ' ').
@@ -485,7 +491,7 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isPending && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isPending && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.buttonContainer}>
                     <Pressable
                         onPress={handleApprove}
@@ -516,7 +522,7 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.resultButtonContainer}>
                     <Pressable
                         onPress={handleApprove}

@@ -15,11 +15,6 @@ export type ClassificationBannerState = {
     color: string;
 };
 
-export type ChannelClassificationBannerState = {
-    hasClassification: boolean;
-    classificationBanner: ChannelBannerInfo | undefined;
-};
-
 // Minimal structural shapes that both the WatermelonDB models and the query
 // observers satisfy. Selection (group/field/value/delete_at) is handled by the
 // scoped queries in @queries/servers/properties; these helpers only map the
@@ -28,11 +23,6 @@ type ClassificationField = Pick<PropertyFieldModel, 'id' | 'name' | 'objectType'
 type ClassificationValue = Pick<PropertyValueModel, 'fieldId' | 'value'>;
 
 const hiddenState: ClassificationBannerState = {visible: false, levelName: '', color: ''};
-
-const noClassification: ChannelClassificationBannerState = {
-    hasClassification: false,
-    classificationBanner: undefined,
-};
 
 export function deriveClassificationBannerState(
     fields: ClassificationField[],
@@ -68,32 +58,7 @@ export function deriveClassificationBannerState(
     };
 }
 
-export function deriveChannelClassificationBanner(
-    fields: ClassificationField[],
-    channelValues: ClassificationValue[],
-    nativeBannerText?: string,
-): ChannelClassificationBannerState {
-    const channelValue = channelValues.length > 0 ? channelValues[0] : undefined;
-    const classificationId = channelValue?.value;
-    if (typeof classificationId !== 'string' || !classificationId) {
-        return noClassification;
-    }
-
-    const fieldWithOptions = fields.find((f) => (f.attrs?.options as PropertyFieldOption[] | undefined)?.length);
-    const options = (fieldWithOptions?.attrs?.options as PropertyFieldOption[] | undefined) ?? [];
-    const level = options.find((o) => o.id === classificationId);
-    if (!level) {
-        return noClassification;
-    }
-
-    const bannerText = nativeBannerText ?? `**${level.name}**`;
-
-    return {
-        hasClassification: true,
-        classificationBanner: {
-            enabled: true,
-            text: bannerText,
-            background_color: level.color,
-        },
-    };
-}
+// The per-channel banner is no longer classification's: any attribute designated
+// for banner display produces one. See deriveChannelAttributeBanner in
+// @utils/channel_attributes, which selects by attrs.actions and keeps a
+// name-based fallback for classification fields that predate any configuration.

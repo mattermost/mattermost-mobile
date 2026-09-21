@@ -3,7 +3,6 @@
 
 import {Platform} from 'react-native';
 
-import {isEdgeToEdge} from '@constants/device';
 import {DEFAULT_INPUT_ACCESSORY_HEIGHT, MINIMAL_EMOJI_LIST_HEIGHT, SEARCH_BAR_HEIGHT, SEARCH_CONTAINER_PADDING, SEARCH_VISIBILITY_OFFSET} from '@keyboard/constants';
 import {InputContainerStateType, type ActionUpdates, type StateEvent, type StateSnapshot} from '@keyboard/state_machine/types';
 
@@ -105,8 +104,7 @@ export function calculateKeyboardUpdates(snapshot: StateSnapshot, adjustedHeight
 export function getEmojiSearchActiveHeight(tabBarHeight: number, safeAreaBottom: number): number {
     'worklet';
 
-    const offset = isEdgeToEdge ? SEARCH_VISIBILITY_OFFSET : SEARCH_CONTAINER_PADDING;
-    return (SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + offset + MINIMAL_EMOJI_LIST_HEIGHT + tabBarHeight) - safeAreaBottom;
+    return (SEARCH_BAR_HEIGHT + SEARCH_CONTAINER_PADDING + SEARCH_VISIBILITY_OFFSET + MINIMAL_EMOJI_LIST_HEIGHT + tabBarHeight) - safeAreaBottom;
 }
 
 /**

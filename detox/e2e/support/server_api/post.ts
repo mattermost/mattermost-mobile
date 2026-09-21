@@ -4,21 +4,10 @@
 import path from 'path';
 
 import {timeouts, wait} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
-
-// ****************************************************************
-// Posts
-// See https://api.mattermost.com/#tag/posts
-//
-// Exported API function should have the following:
-// - documented using JSDoc
-// - meaningful description
-// - match the referenced API endpoints
-// - parameter/s defined by `@param`
-// - return value defined by `@return`
-// ****************************************************************
 
 /**
  * Create a new post in a channel. To create the post as a comment on another post, provide root_id.
@@ -30,26 +19,43 @@ import {apiUploadFile, getResponseFromError} from './common';
  * @param {Object} option.props - A general object property bag to attach to the post
  * @param {string[]} option.fileIds - Array of file IDs to attach to the post (top-level API field)
  * @param {Date} option.createAt - The date the post is created at
- * @return {Object} returns {post} on success or {error, status} on error
+ * @param {boolean} option.retryOnTransportFailure - replay the POST when the connection drops
+ *   before a response arrives. Off by default: a dropped response is ambiguous, so a replay can
+ *   leave a duplicate post behind. Opt in only where a duplicate is harmless for the caller, and
+ *   say why at the call site.
+ * @return {Object} returns {post} on success. Throws on error (never returns {error}).
  */
-export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0}: any): Promise<any> => {
-    try {
-        const payload: Record<string, any> = {
-            channel_id: channelId,
-            message,
-            root_id: rootId,
-            props,
-            create_at: createAt,
-        };
-        if (fileIds?.length) {
-            payload.file_ids = fileIds;
-        }
-        const response = await client.post(`${baseUrl}/api/v4/posts`, payload);
+export const apiCreatePost = async (baseUrl: string, {channelId, message, rootId, props = {}, fileIds, createAt = 0, retryOnTransportFailure = false}: any): Promise<any> => {
+    const attempt = async (): Promise<any> => {
+        try {
+            const payload: Record<string, any> = {
+                channel_id: channelId,
+                message,
+                root_id: rootId,
+                props,
+                create_at: createAt,
+            };
+            if (fileIds?.length) {
+                payload.file_ids = fileIds;
+            }
+            const response = await client.post(`${baseUrl}/api/v4/posts`, payload);
 
-        return {post: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
+            return {post: response.data};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    };
+
+    const result = await withTransportRetry(attempt, {
+        idempotent: false,
+        allowDuplicateWrites: retryOnTransportFailure,
+        label: 'apiCreatePost',
+    });
+
+    if (result?.error || !result?.post) {
+        throw new Error(`apiCreatePost failed: ${JSON.stringify(result?.error ?? 'no post returned')}`);
     }
+    return result;
 };
 
 /**
@@ -114,7 +120,7 @@ export const apiFindPostInChannelByMessage = async (
     baseUrl: string,
     channelId: string,
     message: string,
-    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC} = {},
+    {maxAttempts = 6, intervalMs = timeouts.TWO_SEC, exact = false} = {},
 ): Promise<any> => {
     /* eslint-disable no-await-in-loop -- poll until the target post is indexed */
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -132,7 +138,9 @@ export const apiFindPostInChannelByMessage = async (
             continue;
         }
 
-        const post = response.posts?.find((candidate: any) => candidate.message.includes(message));
+        const post = response.posts?.find((candidate: any) => (
+            exact ? candidate.message === message : candidate.message.includes(message)
+        ));
         if (post) {
             return {post};
         }
@@ -266,10 +274,14 @@ export const apiUploadFileToChannel = async (
         // (required by ChannelBookmark store for type=file bookmarks).
         query.set('bookmark', 'true');
     }
-    const result = await apiUploadFile('files', absFilePath, {
+
+    // A replayed upload can leave an extra FileInfo behind, but an unreferenced file is
+    // invisible to every assertion in the suite, and losing the upload fails the test
+    // outright — so a duplicate is the cheaper outcome here.
+    const result = await withTransportRetry(() => apiUploadFile('files', absFilePath, {
         url: `${baseUrl}/api/v4/files?${query.toString()}`,
         method: 'POST',
-    });
+    }), {idempotent: false, allowDuplicateWrites: true, label: 'apiUploadFileToChannel'});
     if (result.error) {
         return result;
     }
@@ -285,27 +297,47 @@ export const apiUploadFileToChannel = async (
  * @param {string} baseUrl - the base server URL
  * @param {string} channelId - The channel ID to post in
  * @param {string} rootId - (optional) root post ID for thread replies
- * @return {Object} returns {post, fileId} on success or {error, status} on error
+ * @return {Object} returns {post, fileId} on success. Throws after transport retries if upload or create fails.
  */
 export const apiCreatePostWithImageAttachment = async (baseUrl: string, channelId: string, rootId = ''): Promise<any> => {
     const absFilePath = path.resolve(__dirname, '../../support/fixtures/image.png');
     const {fileId, error: uploadError} = await apiUploadFileToChannel(baseUrl, channelId, absFilePath);
-    if (uploadError) {
-        return {error: uploadError};
+    if (uploadError || !fileId) {
+        throw new Error(`apiCreatePostWithImageAttachment: upload failed: ${JSON.stringify(uploadError)}`);
     }
+
     const {post, error: postError} = await apiCreatePost(baseUrl, {
         channelId,
         message: '',
         rootId: rootId || undefined,
         fileIds: [fileId],
     });
-    if (postError) {
-        return {error: postError};
+    if (postError || !post?.id) {
+        throw new Error(`apiCreatePostWithImageAttachment: create post failed: ${JSON.stringify(postError)}`);
     }
     if (!post.file_ids || !post.file_ids.includes(fileId)) {
-        return {error: {message: `Server did not attach file to post. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`}};
+        throw new Error(`apiCreatePostWithImageAttachment: server did not attach file. post.file_ids=${JSON.stringify(post.file_ids)}, fileId=${fileId}`);
     }
     return {post, fileId};
+};
+
+/**
+ * Get the public (unauthenticated) link for a file. Requires the file to be attached to a
+ * post and `FileSettings.EnablePublicLink` to be true.
+ * See https://api.mattermost.com/#operation/GetFileLink
+ * @param {string} baseUrl - the base server URL
+ * @param {string} fileId - the file ID
+ * @return {Object} returns {link} on success or {error, status} on error
+ */
+export const apiGetFilePublicLink = async (baseUrl: string, fileId: string): Promise<any> => {
+    return withTransportRetry(async () => {
+        try {
+            const response = await client.get(`${baseUrl}/api/v4/files/${fileId}/link`);
+            return {link: response.data?.link};
+        } catch (err) {
+            return getResponseFromError(err);
+        }
+    }, {idempotent: true, label: 'apiGetFilePublicLink'});
 };
 
 export const apiGetFlaggedPosts = async (baseUrl: string, userId: string): Promise<{order: string[]; posts: Record<string, any>; error?: any}> => {
@@ -486,6 +518,7 @@ export const Post = {
     apiPostIncomingWebhook,
     apiSearchPosts,
     apiUploadFileToChannel,
+    apiGetFilePublicLink,
     apiGetFlaggedPosts,
     waitForPostFlagged,
     waitForPostMessage,

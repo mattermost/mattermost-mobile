@@ -422,7 +422,7 @@ const AppsFormFieldComponent = React.memo(({
                         minDate={resolvedMinDate}
                         maxDate={resolvedMaxDate}
                         minuteInterval={field.datetime_config?.time_interval || field.time_interval || DEFAULT_TIME_INTERVAL_MINUTES}
-                        allowManualTimeEntry={field.datetime_config?.allow_manual_time_entry}
+                        allowManualTimeEntry={field.datetime_config?.manual_time_entry ?? field.datetime_config?.allow_manual_time_entry}
                         testID={testID}
                     />
 

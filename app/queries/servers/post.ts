@@ -427,3 +427,25 @@ export const syncPermalinkPreviewsForEditedPost = async (
         return [];
     }
 };
+
+// Returns the create_at of the nth post in channelId that is strictly older
+// than anchor (sorted descending). Returns undefined when fewer than n such
+// posts exist
+export const createAtOfNthPostOlderThan = async (
+    database: Database,
+    channelId: string,
+    anchor: number,
+    n: number,
+): Promise<number | undefined> => {
+    const posts = await database.get<PostModel>(POST).query(
+        Q.where('channel_id', Q.eq(channelId)),
+        Q.where('create_at', Q.lt(anchor)),
+        Q.where('delete_at', Q.eq(0)),
+        Q.sortBy('create_at', Q.desc),
+        Q.take(n),
+    ).fetch();
+    if (posts.length < n) {
+        return undefined;
+    }
+    return posts[posts.length - 1].createAt;
+};

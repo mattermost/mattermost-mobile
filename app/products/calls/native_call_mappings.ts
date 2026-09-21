@@ -10,6 +10,7 @@ export type NativeCallMapping = {
     channelId: string;
     postId: string;
     threadId: string;
+    callId?: string;
 };
 
 const mappings = new Map<string, NativeCallMapping>();
@@ -26,11 +27,19 @@ export const clearNativeCallMapping = (uuid: string): boolean => {
     return mappings.delete(uuid);
 };
 
-export const getNativeCallUUIDForCall = (serverUrl: string, channelId: string): string | undefined => {
+export const getNativeCallUUIDForCall = (serverUrl: string, channelId: string, callId?: string): string | undefined => {
     for (const [uuid, mapping] of mappings) {
-        if (mapping.serverUrl === serverUrl && mapping.channelId === channelId) {
-            return uuid;
+        if (mapping.serverUrl !== serverUrl || mapping.channelId !== channelId) {
+            continue;
         }
+
+        // When a callId is provided, require it to match the mapping — an
+        // unset (empty) mapping.callId means call_started hasn't arrived yet,
+        // so any event carrying a callId is stale and should be ignored.
+        if (callId !== undefined && mapping.callId !== callId) {
+            return undefined;
+        }
+        return uuid;
     }
     return undefined;
 };

@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -50,10 +49,9 @@ describe('Messaging - Markdown List', () => {
         const item2SubPoint = 'item two sub-point';
         const markdownBulletList = `* ${item1}\n- ${item2}\n  + ${item2SubPoint}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownBulletList);
 
         // * Verify markdown bullet list is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownBulletList, testChannel.id, siteOneUrl);
         const {postListPostItemListItem, postListPostItemListItemBullet} = ChannelScreen.getPostListPostItem(post.id);
         await expect(postListPostItemListItem.atIndex(0)).toBeVisible(50);
         await expect(element(by.text(item1))).toBeVisible(50);
@@ -81,10 +79,9 @@ describe('Messaging - Markdown List', () => {
         const item3 = 'Item three';
         const markdownOrderedList = `1. ${item1}\n1. ${item2}\n1. ${item3}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(markdownOrderedList);
 
         // * Verify markdown ordered list is displayed
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(markdownOrderedList, testChannel.id, siteOneUrl);
         const {postListPostItemListItem, postListPostItemListItemBullet} = ChannelScreen.getPostListPostItem(post.id);
         await expect(postListPostItemListItem.atIndex(0)).toBeVisible(50);
         await expect(postListPostItemListItemBullet.atIndex(0)).toHaveText('1.');

@@ -121,6 +121,10 @@ export function identity<T>(arg: T): T {
     return arg;
 }
 
+export function safeArrayCast<T>(data: unknown): T[] {
+    return Array.isArray(data) ? data : [];
+}
+
 export function safeParseJSON(rawJson: string | Record<string, unknown> | unknown[]) {
     let data = rawJson;
     try {
