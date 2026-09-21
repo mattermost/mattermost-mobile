@@ -339,12 +339,14 @@ class DatabaseManagerSingleton {
         if (database) {
             const server = await this.getServer(serverUrl);
             if (server) {
-                database.write(async () => {
+                // Both awaited, as in deleteServerDatabase above: an afterEach that awaits this
+                // must not leave a write in flight for the next beforeEach's init to race.
+                await database.write(async () => {
                     await server.destroyPermanently();
                 });
 
                 delete this.serverDatabases[serverUrl];
-                this.deleteServerDatabaseFiles(serverUrl);
+                await this.deleteServerDatabaseFiles(serverUrl);
             }
         }
     };
