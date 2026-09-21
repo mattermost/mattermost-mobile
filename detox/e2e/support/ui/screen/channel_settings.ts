@@ -83,9 +83,13 @@ class ChannelSettingsScreen {
                     throw screenStillUp;
                 }
 
+                // Report the alert, not a cause. alertErrorWithFallback (app/utils/draft) shows
+                // this fallback text whenever the error carries no message of its own, so it
+                // covers more than a dropped request — asserting a cause here would repeat the
+                // mistake this PR removes from postMessageAndVerify.
                 throw new Error(
                     'archive channel failed: the app showed "Received invalid response from the ' +
-                    'server." — the request to the server did not complete',
+                    'server." and stayed on the channel settings screen',
                 );
             }
         } else {
