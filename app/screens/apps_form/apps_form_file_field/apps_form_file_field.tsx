@@ -201,9 +201,10 @@ function AppsFormFileField({
         };
     }, []);
 
-    // Pre-populate previews from an existing value (the file IDs the server/plugin
-    // sends back when re-opening the dialog). Mount-time only by design — re-opening
-    // mounts a fresh screen, and a cleared value (file-upload-clear) yields no entries.
+    // Hydrate previews from pre-existing file IDs (e.g. a plugin pre-populates the field
+    // when re-opening a dialog). This is distinct from the upload flow: here we only have
+    // bare IDs and must fetch metadata to render previews. Fresh uploads get their FileInfo
+    // directly from the upload response in onComplete and never come through here.
     useDidMount(() => {
         const ids = value.split(',').map((id) => id.trim()).filter(Boolean);
         if (!ids.length) {
@@ -397,6 +398,8 @@ function AppsFormFileField({
             cancelMapRef.current.delete(stableId);
         }
 
+        // No server-side delete: the server's orphan-file cleanup job handles
+        // files that were uploaded but never attached to a post.
         setEntries(removeEntryUpdater(stableId));
     }, []);
 

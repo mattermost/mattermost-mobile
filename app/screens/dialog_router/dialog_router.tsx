@@ -16,9 +16,6 @@ import {logDebug} from '@utils/log';
 
 export type DialogRouterProps = {
     config: InteractiveDialogConfig;
-};
-
-type Props = DialogRouterProps & {
     channelId: string;
 };
 
@@ -57,7 +54,7 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
     }, {error: error.message});
 }
 
-export const DialogRouter = React.memo<Props>(({
+export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
     channelId,
 }) => {
@@ -71,12 +68,6 @@ export const DialogRouter = React.memo<Props>(({
     // State to accumulate values across multiform steps
     const [accumulatedValues, setAccumulatedValues] = useState<AppFormValues>({});
 
-    // Element definitions from the multiform steps already completed.
-    //
-    // Needed for correctness: convertAppFormValuesToDialogSubmission looks every value
-    // up by element name and DROPS any it cannot find. Each step's server response
-    // replaces dialog.elements wholesale, so converting the accumulated values against
-    // only the final step's elements silently discarded every earlier step's answers.
     const [accumulatedElements, setAccumulatedElements] = useState<DialogElement[]>([]);
 
     // Union of element definitions, later steps winning on a name collision so the most
@@ -150,12 +141,6 @@ export const DialogRouter = React.memo<Props>(({
                     url: currentConfig.url || '',
                     callback_id: currentConfig.dialog.callback_id || '',
                     state: currentConfig.dialog.state || '',
-
-                    // Cast as in InteractiveDialogAdapter.convertValuesToSubmission: the
-                    // shared converter can emit non-string values, and this branch's
-                    // DialogSubmission still types submission as string-only. The
-                    // checkbox_group branch widens that type, at which point the cast
-                    // here becomes unnecessary.
                     submission: multiformSubmission as {[x: string]: string},
                     user_id: '', // Will be populated by mobile action
                     channel_id: '', // Will be populated by mobile action

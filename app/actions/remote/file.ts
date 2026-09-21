@@ -58,12 +58,7 @@ export const fetchFilesInfo = async (serverUrl: string, fileIds: string[]): Prom
 
         return {files};
     } catch (error) {
-        // Hard failure (e.g. client not registered) — louder than the per-file
-        // rejections above, which are expected 404s for deleted files.
-        //
-        // `error` is returned so callers can tell this apart from "every requested id
-        // was rejected", which also yields an empty files array. Treating the two the
-        // same would let a transient failure look like "all these files are gone".
+        // Return error so callers can distinguish a hard failure from "all ids were 404d".
         logError('error on fetchFilesInfo', getFullErrorMessage(error));
         return {files: [], error};
     }
