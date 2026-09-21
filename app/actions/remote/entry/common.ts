@@ -184,12 +184,15 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
 
         await handleAutotranslationChanges(serverUrl, meData, chData);
 
-        const [models] = await Promise.all([
-            prepareEntryModels({operator, teamData: initialTeamData, chData, prefData, meData, isCRTEnabled}).
-                then((proms) => Promise.all(proms)).
-                then((results) => results.flat()),
-            fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel),
-        ]);
+        const rolesRequest = fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel);
+
+        const modelPromises = await prepareEntryModels({operator, teamData: initialTeamData, chData, prefData, meData, isCRTEnabled});
+        const models = (await Promise.all(modelPromises)).flat();
+
+        const {error: rolesError} = await rolesRequest;
+        if (rolesError) {
+            logDebug('entryRest: failed to fetch roles', groupLabel, getFullErrorMessage(rolesError));
+        }
 
         logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
         return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};

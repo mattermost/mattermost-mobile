@@ -120,6 +120,7 @@ describe('actions/remote/entry/common', () => {
             (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue(mockChannels);
 
             (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+            jest.mocked(fetchRoles).mockResolvedValue({roles: []});
 
             const result = await entry(serverUrl, 'team1');
 
@@ -143,6 +144,21 @@ describe('actions/remote/entry/common', () => {
                 meData: mockUser,
                 gmConverted: false,
             }));
+        });
+
+        it('should complete the entry when fetching roles fails', async () => {
+            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: false, config: {Version: '7.8.0'}, license: {}});
+            (fetchMyPreferences as jest.Mock).mockResolvedValue({preferences: []});
+            (fetchMyTeams as jest.Mock).mockResolvedValue({teams: [], memberships: []});
+            (fetchMe as jest.Mock).mockResolvedValueOnce({user: {id: 'user1', roles: '', username: 'user1'}});
+            (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue({channels: [], memberships: [], categories: []});
+            (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+            jest.mocked(fetchRoles).mockResolvedValue({error: new Error('Roles error')});
+
+            const result = await entry(serverUrl, 'team1');
+
+            expect(result).toEqual(expect.objectContaining({models: expect.any(Array)}));
+            expect(logDebug).toHaveBeenCalledWith('entryRest: failed to fetch roles', undefined, 'Roles error');
         });
 
         it('should handle errors in data fetching', async () => {
