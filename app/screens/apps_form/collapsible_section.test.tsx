@@ -149,6 +149,37 @@ describe('CollapsibleSection prop-driven expansion', () => {
 
         expect(queryByText(CHILD)).toBeTruthy();
     });
+
+    it('re-opens again on each subsequent forceExpandVersion increment after the user re-collapses', () => {
+        const {rerender, getByLabelText, queryByText} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1})}/>,
+        );
+
+        // First increment opens it.
+        rerender(<CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 2})}/>);
+        expect(queryByText(CHILD)).toBeTruthy();
+
+        // User collapses it once more.
+        fireEvent.press(getByLabelText('Section'));
+        expect(queryByText(CHILD)).toBeNull();
+
+        // A further increment must re-open it — the effect reacts to the change, not a fixed value.
+        rerender(<CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 3})}/>);
+        expect(queryByText(CHILD)).toBeTruthy();
+    });
+
+    it('re-syncs to collapsed when initiallyExpanded flips to false (multistep refresh)', () => {
+        const {rerender, getByLabelText, queryByText} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({initiallyExpanded: true})}/>,
+        );
+
+        expect(queryByText(CHILD)).toBeTruthy();
+
+        rerender(<CollapsibleSection {...getProps({initiallyExpanded: false})}/>);
+
+        expect(queryByText(CHILD)).toBeNull();
+        expect(getByLabelText('Section').props.accessibilityState).toMatchObject({expanded: false});
+    });
 });
 
 describe('CollapsibleSection error affordance', () => {

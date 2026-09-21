@@ -1225,5 +1225,111 @@ describe('dialog_conversion', () => {
             expect(submission.email).toBeUndefined();
             expect(errors).toEqual(['Field email not found in dialog elements']);
         });
+
+        it('defaults a collapsible with no collapsible_config to an empty, expanded, bordered section', () => {
+            const field = convertDialogElementToAppField({
+                name: 'bare',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Bare',
+            } as DialogElement);
+
+            expect(field.type).toBe('collapsible');
+            expect(field.collapsible_config).toEqual({
+                fields: [],
+                expanded: true,
+                bordered: true,
+            });
+        });
+
+        it('uses the element name as the label fallback surface (label mirrors display_name, even when empty)', () => {
+            const field = convertDialogElementToAppField({
+                name: 'sec',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: '',
+                collapsible_config: {elements: [] as DialogElement[]},
+            } as DialogElement);
+
+            // The converter copies display_name verbatim; the component owns the
+            // name-fallback for the visible label.
+            expect(field.label).toBe('');
+            expect(field.name).toBe('sec');
+        });
+
+        it('preserves sibling top-level collapsibles with correct positions via convertDialogToAppForm', () => {
+            const form = convertDialogToAppForm({
+                dialog: {
+                    title: 'T',
+                    elements: [
+                        {name: 'sec_a', type: DialogElementTypes.COLLAPSIBLE, display_name: 'A', collapsible_config: {elements: [{name: 'a1', type: DialogElementTypes.TEXT, display_name: 'A1', optional: true} as DialogElement]}} as DialogElement,
+                        {name: 'sec_b', type: DialogElementTypes.COLLAPSIBLE, display_name: 'B', collapsible_config: {elements: [{name: 'b1', type: DialogElementTypes.TEXT, display_name: 'B1', optional: true} as DialogElement]}} as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig);
+
+            expect(form.fields).toHaveLength(2);
+            expect(form.fields?.[0]).toMatchObject({name: 'sec_a', type: 'collapsible', position: 0});
+            expect(form.fields?.[1]).toMatchObject({name: 'sec_b', type: 'collapsible', position: 1});
+
+            // Nested children keep their own converted shape; positions are only set at the top level.
+            expect(form.fields?.[0].collapsible_config?.fields?.[0]).toMatchObject({name: 'a1', type: 'text'});
+        });
+
+        it('converts nested select and bool leaves inside a collapsible (round-trips through submission)', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'prefs',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Preferences',
+                    collapsible_config: {
+                        elements: [
+                            {name: 'severity', type: DialogElementTypes.SELECT, display_name: 'Severity', optional: false, options: [{text: 'Low', value: 'low'}, {text: 'High', value: 'high'}]} as DialogElement,
+                            {name: 'silent', type: DialogElementTypes.BOOL, display_name: 'Silent', optional: true} as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission(
+                {severity: {label: 'High', value: 'high'}, silent: false},
+                flattenDialogElements(elements),
+            );
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({severity: 'high', silent: false});
+        });
+
+        it('carries deeply nested (depth-3) leaf values into submission once flattened', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'l1',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'L1',
+                    collapsible_config: {
+                        elements: [
+                            {
+                                name: 'l2',
+                                type: DialogElementTypes.COLLAPSIBLE,
+                                display_name: 'L2',
+                                collapsible_config: {
+                                    elements: [
+                                        {
+                                            name: 'l3',
+                                            type: DialogElementTypes.COLLAPSIBLE,
+                                            display_name: 'L3',
+                                            collapsible_config: {elements: [{name: 'deep', type: DialogElementTypes.TEXT, display_name: 'Deep', optional: true} as DialogElement]},
+                                        } as DialogElement,
+                                    ],
+                                },
+                            } as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission({deep: 'value'}, flattenDialogElements(elements));
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({deep: 'value'});
+        });
     });
 });
