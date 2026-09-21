@@ -450,7 +450,7 @@ describe('ClientChannels', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
-    test('searchAccessControlDecisionActions', async () => {
+    it('should search access-control decision actions', async () => {
         const expectedUrl = `${client.getAccessControlRoute()}/decisions/actions/search`;
         const expectedOptions = {method: 'post', body: {resource: {type: 'channel', id: 'channel1'}, actions: ['channel_write_access']}};
 

@@ -6,7 +6,7 @@ import {firstValueFrom} from 'rxjs';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {clearChannelWriteAccess, getChannelWriteAccessGeneration, observeChannelWriteDenied} from '@store/channel_write_access_store';
+import {clearChannelWriteAccess, getChannelWriteAccessGeneration, observeChannelWriteDenied, setChannelWriteDenied} from '@store/channel_write_access_store';
 
 import {fetchAllMyChannelsForAllTeams, handleKickFromChannel} from './channel';
 import {fetchChannelWriteAccess, reconcileChannelAccess} from './channel_access';
@@ -260,6 +260,15 @@ describe('fetchChannelWriteAccess', () => {
         expect(await isDenied()).toBe(false);
     });
 
+    it('drops a cached denial once the feature is disabled', async () => {
+        setChannelWriteDenied(channelId, true);
+
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(mockSearch).not.toHaveBeenCalled();
+        expect(await isDenied()).toBe(false);
+    });
+
     it('stores a denial when the policy evaluated and refused', async () => {
         await enableFeature();
         mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: true}}});
@@ -323,6 +332,31 @@ describe('fetchChannelWriteAccess', () => {
         ]);
 
         expect(mockSearch).toHaveBeenCalledTimes(1);
+        expect(await isDenied()).toBe(true);
+    });
+
+    it('starts a new request when an invalidation lands while one is in flight', async () => {
+        await enableFeature();
+        let release = () => {};
+        mockSearch.
+            mockImplementationOnce(() => new Promise((resolve) => {
+                release = () => resolve({decisions: {channel_write_access: {allowed: true, evaluated: true}}});
+            })).
+            mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: true}}});
+
+        const first = fetchChannelWriteAccess(serverUrl, channelId);
+        await waitFor(() => mockSearch.mock.calls.length >= 1);
+
+        clearChannelWriteAccess();
+        const second = fetchChannelWriteAccess(serverUrl, channelId);
+
+        // The second call must get its own request rather than wait on the first, whose answer
+        // predates the invalidation, so let it reach the network before the first one settles.
+        await waitFor(() => mockSearch.mock.calls.length >= 2);
+        release();
+        await Promise.all([first, second]);
+
+        expect(mockSearch).toHaveBeenCalledTimes(2);
         expect(await isDenied()).toBe(true);
     });
 });

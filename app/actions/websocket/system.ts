@@ -11,8 +11,10 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
+import {clearChannelWriteAccess} from '@store/channel_write_access_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
+import {isMinimumLicenseTier} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -27,6 +29,12 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
 
         if (license?.LockTeammateNameDisplay && (prevLicense?.LockTeammateNameDisplay !== license.LockTeammateNameDisplay)) {
             updateDmGmDisplayName(serverUrl);
+        }
+
+        const prevAccessPolicy = isMinimumLicenseTier(prevLicense, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+        const newAccessPolicy = isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+        if (newAccessPolicy !== prevAccessPolicy) {
+            clearChannelWriteAccess();
         }
 
         const prevSessionAttributes = prevLicense?.SkuShortName === License.SKU_SHORT_NAME.EnterpriseAdvanced;
@@ -61,6 +69,12 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             if (currentTeamId) {
                 await fetchCategories(serverUrl, currentTeamId, true);
             }
+        }
+
+        const prevAccessPolicy = prevConfig?.FeatureFlagPermissionPolicies === 'true' && prevConfig?.FeatureFlagChannelAccessABACPermission === 'true';
+        const newAccessPolicy = config?.FeatureFlagPermissionPolicies === 'true' && config?.FeatureFlagChannelAccessABACPermission === 'true';
+        if (newAccessPolicy !== prevAccessPolicy) {
+            clearChannelWriteAccess();
         }
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating

@@ -97,10 +97,14 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
     }
 }
 
-const inFlightWrite = new Map<string, Promise<void>>();
+type PendingWriteDecision = {
+    generation: number;
+    promise: Promise<void>;
+};
 
-async function fetchWriteDecision(serverUrl: string, channelId: string) {
-    const startedAt = getChannelWriteAccessGeneration();
+const inFlightWrite = new Map<string, PendingWriteDecision>();
+
+async function fetchWriteDecision(serverUrl: string, channelId: string, startedAt: number) {
     const client = NetworkManager.getClient(serverUrl);
     const response = await client.searchAccessControlDecisionActions(ACCESS_CONTROL_RESOURCE_CHANNEL, channelId, [ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS]);
     const decision = response.decisions?.[ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS];
@@ -116,15 +120,29 @@ export async function fetchChannelWriteAccess(serverUrl: string, channelId: stri
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await getChannelAccessPolicyEnabled(database))) {
+            // The gate can be turned off while a denial is cached, and only the fetch knows the
+            // gate is gone, so drop the denial instead of leaving the channel read-only forever.
+            setChannelWriteDenied(channelId, false);
             return {};
         }
 
+        const generation = getChannelWriteAccessGeneration();
         let pending = inFlightWrite.get(key);
-        if (!pending) {
-            pending = fetchWriteDecision(serverUrl, channelId).finally(() => inFlightWrite.delete(key));
+
+        // A request that started before an invalidation discards its own answer, so it cannot be
+        // shared with a caller that needs a decision for the current generation.
+        if (pending?.generation !== generation) {
+            const promise = fetchWriteDecision(serverUrl, channelId, generation).finally(() => {
+                // A newer generation may already own the key, and that entry has to outlive this one.
+                if (inFlightWrite.get(key)?.promise === promise) {
+                    inFlightWrite.delete(key);
+                }
+            });
+            pending = {generation, promise};
             inFlightWrite.set(key, pending);
         }
-        await pending;
+
+        await pending.promise;
         return {};
     } catch (error) {
         logDebug('error on fetchChannelWriteAccess', getFullErrorMessage(error));
