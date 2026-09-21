@@ -56,6 +56,11 @@ describe('Channels - Browse Channels', () => {
         // Dismiss any lingering "Removed from channel" or "Archived channel"
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
+        // The scheduled-post tutorial tooltip is shown once per user and outlives the test
+        // that triggered it, and its scrim swallows taps meant for anything underneath. Clear
+        // it here too so one test's leftover cannot fail the next one on an unrelated element.
+        await ChannelScreen.dismissScheduledPostTooltip();
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
