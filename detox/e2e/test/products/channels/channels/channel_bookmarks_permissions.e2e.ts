@@ -74,7 +74,7 @@ describe('Channels - Channel Bookmarks Permissions', () => {
         testTeam = team;
         testUser = user;
 
-        // ChannelBookmarks enabled in setup.ts. Create regular user for MM-T5615_1.
+        // Bookmarks arrive enabled from the provisioned server. Create regular user for MM-T5615_1.
         const {user: rUser} = await User.apiCreateUser(siteOneUrl);
         if (!rUser?.id) {
             throw new Error('[beforeAll] Failed to create regularUser');
