@@ -571,11 +571,14 @@ async function openChannel(channelName: string) {
         );
 
         // # Create the channel with HIGH as the initial value.
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+        const {channel, error: createError} = await Channel.apiCreateChannel(siteOneUrl, {
             teamId: testTeam.id,
             prefix: 'channel',
             propertyValues: [{field_id: channelFieldId, value: requireOption(optionIdsByName, 'HIGH')}],
         });
+        if (!channel?.id) {
+            throw new Error(`failed to create the channel for MM-T6310_1: ${JSON.stringify(createError ?? 'no channel and no error')}`);
+        }
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
         await device.reloadReactNative();
