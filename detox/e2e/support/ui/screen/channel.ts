@@ -244,10 +244,14 @@ class ChannelScreen {
         await this.introChannelInfoAction.tap();
     };
 
-    // Same intro-footer race as tapIntroChannelInfoAction (CI 33936010053 MM-T4884
-    // beforeAllFailure.png: spinner still up, set_header.action not in the tree).
-    tapIntroSetHeaderAction = async () => {
-        await waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN);
+    // Same intro-footer race as tapIntroChannelInfoAction: the post list can keep its
+    // spinner up and never render the intro options, so reopening the channel is the
+    // recovery. Callers that can afford to leave and re-enter pass reopen.
+    tapIntroSetHeaderAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introSetHeaderAction.tap();
     };
 

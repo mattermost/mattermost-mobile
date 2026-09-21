@@ -42,6 +42,23 @@ describe('Messaging - Channel-wide Mention and Keyword (Recipient)', () => {
 
     // Public channels are created under the admin session that apiInit leaves active, so
     // membership does not depend on a regular user's add-member permission.
+    // A dropped response (ECONNRESET) on one of these POSTs left the user off the team,
+    // and the channel add then failed with an unrelated-looking "No team member found".
+    // Both calls are idempotent, so the shared transient retry is the right owner.
+    const addToTeam = async (userId: string, teamId: string) => {
+        const {error} = await Setup.retryTransient(() => Team.apiAddUserToTeam(siteOneUrl, userId, teamId), 'apiAddUserToTeam');
+        if (error) {
+            throw new Error(`[beforeAll] Failed to add ${userId} to the team: ${JSON.stringify(error)}`);
+        }
+    };
+
+    const addToChannel = async (userId: string, channelId: string, label: string) => {
+        const {error} = await Setup.retryTransient(() => Channel.apiAddUserToChannel(siteOneUrl, userId, channelId), 'apiAddUserToChannel');
+        if (error) {
+            throw new Error(`[beforeAll] Failed to add ${userId} to ${label} channel: ${JSON.stringify(error)}`);
+        }
+    };
+
     const createSharedChannel = async (teamId: string, prefix: string, memberIds: string[]) => {
         const {channel, error} = await Channel.apiCreateChannel(siteOneUrl, {teamId, prefix});
         if (error || !channel?.id) {
@@ -49,10 +66,7 @@ describe('Messaging - Channel-wide Mention and Keyword (Recipient)', () => {
         }
         for (const memberId of memberIds) {
             // eslint-disable-next-line no-await-in-loop -- membership is set up in order
-            const {error: addError} = await Channel.apiAddUserToChannel(siteOneUrl, memberId, channel.id);
-            if (addError) {
-                throw new Error(`[beforeAll] Failed to add ${memberId} to ${prefix} channel: ${JSON.stringify(addError)}`);
-            }
+            await addToChannel(memberId, channel.id, prefix);
         }
         return channel;
     };
@@ -75,15 +89,15 @@ describe('Messaging - Channel-wide Mention and Keyword (Recipient)', () => {
         if (!mentioner?.id) {
             throw new Error('[beforeAll] Failed to create mentioner');
         }
-        await Team.apiAddUserToTeam(siteOneUrl, mentioner.id, team.id);
-        await Channel.apiAddUserToChannel(siteOneUrl, mentioner.id, channelMentionChannel.id);
+        await addToTeam(mentioner.id, team.id);
+        await addToChannel(mentioner.id, channelMentionChannel.id, 'channel-mention');
 
         // # A third member makes the GM a group channel rather than a second DM
         const {user: bystander} = await User.apiCreateUser(siteOneUrl, {prefix: 'bystander'});
         if (!bystander?.id) {
             throw new Error('[beforeAll] Failed to create GM bystander');
         }
-        await Team.apiAddUserToTeam(siteOneUrl, bystander.id, team.id);
+        await addToTeam(bystander.id, team.id);
 
         // # One channel per mention type, all with both users as members
         const allMentionChannel = await createSharedChannel(team.id, 'all-mention', [recipient.id, mentioner.id]);
