@@ -14,8 +14,6 @@ import {
     calculateSearchHeight,
 } from './keyboard_utils';
 
-jest.mock('@constants/device', () => ({isEdgeToEdge: false}));
-
 function makeSnapshot(overrides: Partial<StateSnapshot> = {}): StateSnapshot {
     return {
         inputAccessoryHeight: 0,
@@ -229,27 +227,27 @@ describe('calculateKeyboardUpdates', () => {
 });
 
 describe('getEmojiSearchActiveHeight', () => {
-    it('should compute height without edge-to-edge using SEARCH_CONTAINER_PADDING as offset', () => {
-        // offset=8 → (56+8+8+50+49)-34 = 171-34 = 137
-        expect(getEmojiSearchActiveHeight(49, 34)).toBe(137);
+    it('should compute height using SEARCH_VISIBILITY_OFFSET as offset', () => {
+        // offset=40 → (56+8+40+50+49)-34 = 203-34 = 169
+        expect(getEmojiSearchActiveHeight(49, 34)).toBe(169);
     });
 
     it('should handle zero tabBarHeight and safeAreaBottom', () => {
-        // offset=8 → (56+8+8+50+0)-0 = 122
-        expect(getEmojiSearchActiveHeight(0, 0)).toBe(122);
+        // offset=40 → (56+8+40+50+0)-0 = 154
+        expect(getEmojiSearchActiveHeight(0, 0)).toBe(154);
     });
 });
 
 describe('calculateSearchHeight', () => {
     it('should return keyboardHeight + getEmojiSearchActiveHeight', () => {
-        // getEmojiSearchActiveHeight(49, 34) = 137 (non-edge-to-edge)
-        // keyboardHeight=336 → 336 + 137 = 473
-        expect(calculateSearchHeight(336, 49, 34)).toBe(473);
+        // getEmojiSearchActiveHeight(49, 34) = 169
+        // keyboardHeight=336 → 336 + 169 = 505
+        expect(calculateSearchHeight(336, 49, 34)).toBe(505);
     });
 
     it('should work with zero keyboard height', () => {
-        // getEmojiSearchActiveHeight(0, 0) = 122
-        // keyboardHeight=0 → 0 + 122 = 122
-        expect(calculateSearchHeight(0, 0, 0)).toBe(122);
+        // getEmojiSearchActiveHeight(0, 0) = 154
+        // keyboardHeight=0 → 0 + 154 = 154
+        expect(calculateSearchHeight(0, 0, 0)).toBe(154);
     });
 });

@@ -27,7 +27,7 @@ jest.mock('expo-application', () => ({
 
 jest.mock('expo-device', () => ({
     isRootedExperimentalAsync: jest.fn().mockResolvedValue(false),
-    osVersion: '17.0',
+    osVersion: '18.0',
 }));
 
 jest.mock('@actions/remote/session_attributes', () => ({
@@ -57,7 +57,7 @@ const ssidManifest: SAField[] = [
 
 const iosStableValues = {
     jailbreak_detected: 'false',
-    os_version: '17.0',
+    os_version: '18.0',
     os_platform: 'ios',
     client_version: '2.20.0+456',
     client_device_id: 'ios-device-id',
@@ -98,7 +98,7 @@ describe('SessionAttributesManager', () => {
 
         expect(mockSetSessionAttributesStableValues).toHaveBeenCalledWith({
             jailbreak_detected: 'true',
-            os_version: '17.0',
+            os_version: '18.0',
             os_platform: 'android',
             client_version: '2.20.0+456',
             client_device_id: 'android-device-id',

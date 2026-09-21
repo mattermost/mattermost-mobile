@@ -7,7 +7,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission-sdk-23 android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
@@ -28,7 +27,7 @@
     <!-- Opt out of react-native-nitro-bg-timer-plus foreground service (Play Store special-use review not needed) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" tools:node="remove" />
 
-    <!-- Request legacy Bluetooth permissions on older devices. -->
+    <!-- Legacy Bluetooth permissions required on API 30. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
@@ -55,7 +54,6 @@
       android:installLocation="auto"
       android:networkSecurityConfig="@xml/network_security_config"
       android:resizeableActivity="true"
-      android:requestLegacyExternalStorage="true"
       android:usesCleartextTraffic="true"
     >
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />

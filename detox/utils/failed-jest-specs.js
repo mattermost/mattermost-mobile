@@ -112,8 +112,23 @@ function listRetrySpecs(resultsPath, shardSpecs) {
 }
 
 /**
- * Later Jest JSON wins for the same spec. Keeps CLI shape (`name` + suites)
- * so merge-jest-results-for-tsio can ingest the result.
+ * @param {object} suite
+ * @returns {object[]}
+ */
+function suiteCases(suite) {
+    const cases = suite?.assertionResults || suite?.testResults || [];
+    return Array.isArray(cases) ? cases : [];
+}
+
+/**
+ * Later Jest JSON wins for the same spec, EXCEPT when the later attempt carries
+ * no per-test results. Detox can fail a retry before Jest runs a single test
+ * (`Test Suites: 1 failed, 1 total` with `Tests: 0 total`); letting that empty
+ * suite overwrite attempt 1 erased attempt 1's real failures AND passes from the
+ * shard report — a shard with 16 failures reported 1.
+ *
+ * Keeps CLI shape (`name` + suites) so merge-jest-results-for-tsio can ingest
+ * the result.
  *
  * @param {string[]} inputPaths
  * @returns {object}
@@ -133,9 +148,14 @@ function mergeJestResultsPreferLater(inputPaths) {
         const suites = Array.isArray(report.testResults) ? report.testResults : [];
         for (const suite of suites) {
             const key = specKey(suitePath(suite));
-            if (key) {
-                byKey.set(key, suite);
+            if (!key) {
+                continue;
             }
+            const previous = byKey.get(key);
+            if (previous && suiteCases(suite).length === 0 && suiteCases(previous).length > 0) {
+                continue;
+            }
+            byKey.set(key, suite);
         }
     }
 
@@ -143,7 +163,17 @@ function mergeJestResultsPreferLater(inputPaths) {
     let numFailedTests = 0;
     let numPassedTests = 0;
     for (const suite of testResults) {
-        const cases = suite.assertionResults || suite.testResults || [];
+        const cases = suiteCases(suite);
+
+        // A suite that failed without producing a single test result is a crash,
+        // not an absence of failures. Counting it as zero is how a wedged shard
+        // reports green.
+        if (cases.length === 0) {
+            if (suiteFailed(suite)) {
+                numFailedTests += 1;
+            }
+            continue;
+        }
         for (const c of cases) {
             if (c?.status === 'failed') {
                 numFailedTests += 1;

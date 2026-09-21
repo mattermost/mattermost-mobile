@@ -27,7 +27,7 @@ import {
     ThreadScreen,
 } from '@support/ui/screen';
 import {getRandomId, timeouts, waitForElementToBeVisible} from '@support/utils';
-import {expect} from 'detox';
+import {waitFor} from 'detox';
 
 describe('Threads - Save and Unsave Thread', () => {
     const serverOneDisplayName = 'Server 1';
@@ -80,7 +80,7 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Open thread options for thread, tap on save option, and tap on thread
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
@@ -122,7 +122,7 @@ describe('Threads - Save and Unsave Thread', () => {
         await GlobalThreadsScreen.open();
 
         // * Verify thread is displayed
-        await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
+        await waitFor(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Tap on thread and tap on thread overview save button
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
