@@ -54,7 +54,6 @@ import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
 import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -800,11 +799,6 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         if (channel?.teamId && currentTeamId !== channel.teamId) {
             await setCurrentTeamId(operator, channel.teamId);
         }
-
-        // Popping back to an already-open thread screen replaces its route params, so the
-        // screen re-resolves the thread from this value. switchToThread does the same.
-        EphemeralStore.setCurrentThreadId(rootId);
-
         if (activeUrl === serverUrl) {
             await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
             return;

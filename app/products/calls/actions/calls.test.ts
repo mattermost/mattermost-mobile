@@ -10,7 +10,7 @@ import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import * as CallsActions from '@calls/actions';
-import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation, switchToCallThread} from '@calls/actions/calls';
+import {getConnectionForTesting, joinCallAndOpenCallScreen, leaveCallConfirmation} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
@@ -40,12 +40,10 @@ import {
     DefaultCallsState,
 } from '@calls/types/calls';
 import {errorAlert} from '@calls/utils';
-import {General, Screens} from '@constants';
+import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
-import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import type {CallJobState} from '@mattermost/calls/lib/types';
@@ -136,11 +134,6 @@ jest.mock('@actions/remote/session', () => ({
 
 jest.mock('@queries/servers/user', () => ({
     getCurrentUser: jest.fn(),
-}));
-
-jest.mock('@screens/navigation', () => ({
-    ...jest.requireActual('@screens/navigation'),
-    dismissAllRoutesAndPopToScreen: jest.fn(),
 }));
 
 jest.mock('@queries/servers/channel', () => ({
@@ -1583,36 +1576,5 @@ describe('Actions.Calls', () => {
             expect(router.push).not.toHaveBeenCalled();
             assert.equal(State.getGlobalCallsState().joiningChannelId, null);
         });
-    });
-});
-
-describe('switchToCallThread', () => {
-    const serverUrl = 'switch-to-call-thread.test.com';
-    const rootId = 'thread-1';
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        await DatabaseManager.init([serverUrl]);
-
-        // Exercise the same-server branch, which is the path the call screen takes.
-        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
-    });
-
-    afterEach(async () => {
-        jest.restoreAllMocks();
-        EphemeralStore.setCurrentThreadId('');
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
-    it('should record the thread id so the screen can resolve it without route params', async () => {
-        // Popping back to an open thread screen replaces its route params, so the screen
-        // falls back to this value. Without it the previously opened thread is shown - MM-70539.
-        await switchToCallThread(serverUrl, rootId, 'Call Thread');
-
-        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(
-            Screens.THREAD,
-            expect.objectContaining({rootId}),
-        );
-        expect(EphemeralStore.getCurrentThreadId()).toBe(rootId);
     });
 });
