@@ -790,7 +790,6 @@
   "mobile.calls_stop_screenshare": "Stop screen share",
   "mobile.calls_tablet": "Tablet",
   "mobile.calls_thread": "Thread",
-  "mobile.calls_thread_unavailable": "We couldn't open the call thread. Please check your connection and try again.",
   "mobile.calls_unmute": "Unmute",
   "mobile.calls_user_left_channel_error_message": "You have left the channel, and have been disconnected from the call.",
   "mobile.calls_user_left_channel_error_title": "You left the channel",

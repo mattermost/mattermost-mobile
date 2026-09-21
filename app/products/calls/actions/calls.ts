@@ -6,7 +6,6 @@
 import CallsNative from '@mattermost/calls-native';
 import {Alert} from 'react-native';
 
-import {fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
@@ -790,43 +789,12 @@ export const hostRemove = async (serverUrl: string, callId: string, sessionId: s
     }
 };
 
-const callThreadErrorAlert = (intl: IntlShape) => {
-    Alert.alert(
-        intl.formatMessage({
-            id: 'mobile.calls_error_title',
-            defaultMessage: 'Error',
-        }),
-        intl.formatMessage({
-            id: 'mobile.calls_thread_unavailable',
-            defaultMessage: 'We couldn\'t open the call thread. Please check your connection and try again.',
-        }),
-    );
-};
-
-export const switchToCallThread = async (serverUrl: string, rootId: string, title: string, intl: IntlShape) => {
+export const switchToCallThread = async (serverUrl: string, rootId: string, title: string) => {
     try {
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        let post = await getPostById(database, rootId);
-        if (!post) {
-            // A call can be joined from a channel whose thread was never loaded locally.
-            const {error} = await fetchPostThread(serverUrl, rootId);
-            if (error) {
-                logDebug('error on switchToCallThread', getFullErrorMessage(error));
-                callThreadErrorAlert(intl);
-                return;
-            }
-            post = await getPostById(database, rootId);
-        }
-
-        if (!post?.channelId) {
-            logDebug('error on switchToCallThread: root post unavailable', rootId);
-            callThreadErrorAlert(intl);
-            return;
-        }
-
-        const channel = await getChannelById(database, post.channelId);
+        const post = await getPostById(database, rootId);
+        const channel = await getChannelById(database, post?.channelId || '');
         const currentTeamId = await getCurrentTeamId(database);
 
         if (channel?.teamId && currentTeamId !== channel.teamId) {
@@ -850,6 +818,5 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
     } catch (error) {
         logDebug('error on switchToCallThread', getFullErrorMessage(error));
-        callThreadErrorAlert(intl);
     }
 };

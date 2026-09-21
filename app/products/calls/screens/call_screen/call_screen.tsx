@@ -444,11 +444,11 @@ const CallScreen = ({
         if (!currentCall) {
             return;
         }
-        switchToCallThread(currentCall.serverUrl, currentCall.threadId, callThreadOptionTitle, intl);
+        switchToCallThread(currentCall.serverUrl, currentCall.threadId, callThreadOptionTitle);
 
         // Only check if the serverUrl, threadId or the callThreadOptionTitle changed
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentCall?.serverUrl, currentCall?.threadId, callThreadOptionTitle, intl]);
+    }, [currentCall?.serverUrl, currentCall?.threadId, callThreadOptionTitle]);
 
     // The user should receive a recording alert if all of the following conditions apply:
     // - Recording has started, recording has not ended
