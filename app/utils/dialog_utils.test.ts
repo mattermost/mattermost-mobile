@@ -15,6 +15,8 @@ import {
     createAppField,
     supportsOptions,
     supportsDataSource,
+    flattenAppFields,
+    flattenDialogElements,
 } from './dialog_utils';
 
 describe('dialog_utils', () => {
@@ -284,5 +286,79 @@ describe('dialog_utils', () => {
             expect(DialogTextSubtypes.TEXTAREA).toBe('textarea');
         });
 
+    });
+
+    describe('flattenAppFields', () => {
+        it('returns flat fields unchanged', () => {
+            const fields: AppField[] = [
+                {name: 'name', type: 'text'},
+                {name: 'email', type: 'text'},
+            ] as AppField[];
+
+            expect(flattenAppFields(fields)).toEqual(fields);
+        });
+
+        it('replaces a collapsible container with its child fields', () => {
+            const email: AppField = {name: 'email', type: 'text'} as AppField;
+            const phone: AppField = {name: 'phone', type: 'text'} as AppField;
+            const fields: AppField[] = [
+                {name: 'name', type: 'text'} as AppField,
+                {
+                    name: 'contact_section',
+                    type: AppFieldTypes.COLLAPSIBLE,
+                    collapsible_config: {fields: [email, phone]},
+                } as AppField,
+            ];
+
+            const result = flattenAppFields(fields);
+            expect(result).toHaveLength(3);
+            expect(result.map((f) => f.name)).toEqual(['name', 'email', 'phone']);
+        });
+
+        it('recursively flattens nested collapsible sections', () => {
+            const inner: AppField = {name: 'notes', type: 'text'} as AppField;
+            const fields: AppField[] = [
+                {
+                    name: 'outer',
+                    type: AppFieldTypes.COLLAPSIBLE,
+                    collapsible_config: {
+                        fields: [
+                            {
+                                name: 'inner',
+                                type: AppFieldTypes.COLLAPSIBLE,
+                                collapsible_config: {fields: [inner]},
+                            } as AppField,
+                        ],
+                    },
+                } as AppField,
+            ];
+
+            const result = flattenAppFields(fields);
+            expect(result).toHaveLength(1);
+            expect(result[0].name).toBe('notes');
+        });
+
+        it('returns an empty array for an empty input', () => {
+            expect(flattenAppFields([])).toEqual([]);
+        });
+    });
+
+    describe('flattenDialogElements', () => {
+        it('replaces a collapsible element with its child elements', () => {
+            const emailEl: DialogElement = {name: 'email', type: 'text'} as DialogElement;
+            const phoneEl: DialogElement = {name: 'phone', type: 'text'} as DialogElement;
+            const elements: DialogElement[] = [
+                {name: 'name', type: 'text'} as DialogElement,
+                {
+                    name: 'contact_section',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    collapsible_config: {elements: [emailEl, phoneEl]},
+                } as DialogElement,
+            ];
+
+            const result = flattenDialogElements(elements);
+            expect(result).toHaveLength(3);
+            expect(result.map((e) => e.name)).toEqual(['name', 'email', 'phone']);
+        });
     });
 });

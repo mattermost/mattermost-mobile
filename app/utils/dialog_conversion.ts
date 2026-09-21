@@ -93,6 +93,19 @@ export function convertAppFormValuesToDialogSubmission(
  * Used when converting dialog config to AppForm
  */
 export function convertDialogElementToAppField(element: DialogElement): AppField {
+    if (element.type === DialogElementTypes.COLLAPSIBLE) {
+        return {
+            name: element.name,
+            type: 'collapsible',
+            label: element.display_name,
+            collapsible_config: {
+                fields: element.collapsible_config?.elements?.map((e) => convertDialogElementToAppField(e)) || [],
+                expanded: !element.collapsible_config?.collapsed,
+                bordered: !element.collapsible_config?.borderless,
+            },
+        };
+    }
+
     const appField: AppField = {
         name: element.name,
         type: mapDialogTypeToAppFieldType(element.type, element.data_source),

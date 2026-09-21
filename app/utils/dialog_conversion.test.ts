@@ -6,7 +6,7 @@ import {
     convertDialogElementToAppField,
     convertDialogToAppForm,
 } from './dialog_conversion';
-import {DialogElementTypes} from './dialog_utils';
+import {DialogElementTypes, flattenDialogElements} from './dialog_utils';
 
 describe('dialog_conversion', () => {
     describe('convertAppFormValuesToDialogSubmission', () => {
@@ -1087,6 +1087,143 @@ describe('dialog_conversion', () => {
                 path: 'https://example.com/custom-refresh',
                 expand: {},
             });
+        });
+    });
+
+    describe('collapsible sections (interactive dialog → AppForm → submission)', () => {
+        it('converts a collapsible element into a collapsible AppField with recursively converted children', () => {
+            const element: DialogElement = {
+                name: 'contact_section',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Contact Info',
+                collapsible_config: {
+                    elements: [
+                        {name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement,
+                        {name: 'priority', type: DialogElementTypes.SELECT, display_name: 'Priority', optional: false, options: [{text: 'High', value: 'high'}]} as DialogElement,
+                    ],
+                },
+            } as DialogElement;
+
+            const field = convertDialogElementToAppField(element);
+
+            expect(field.type).toBe('collapsible');
+            expect(field.name).toBe('contact_section');
+            expect(field.label).toBe('Contact Info');
+            expect(field.collapsible_config?.fields).toHaveLength(2);
+            expect(field.collapsible_config?.fields?.[0]).toMatchObject({name: 'email', type: 'text', is_required: false});
+            expect(field.collapsible_config?.fields?.[1]).toMatchObject({name: 'priority', type: 'static_select', is_required: true});
+            expect(field.collapsible_config?.fields?.[1].options).toEqual([{label: 'High', value: 'high'}]);
+        });
+
+        it('maps collapsed/borderless to expanded/bordered (inverted), defaulting to expanded + bordered', () => {
+            const defaults = convertDialogElementToAppField({
+                name: 's',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'S',
+                collapsible_config: {elements: [] as DialogElement[]},
+            } as DialogElement);
+            expect(defaults.collapsible_config?.expanded).toBe(true);
+            expect(defaults.collapsible_config?.bordered).toBe(true);
+
+            const explicit = convertDialogElementToAppField({
+                name: 's',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'S',
+                collapsible_config: {elements: [] as DialogElement[], collapsed: true, borderless: true},
+            } as DialogElement);
+            expect(explicit.collapsible_config?.expanded).toBe(false);
+            expect(explicit.collapsible_config?.bordered).toBe(false);
+        });
+
+        it('converts nested (depth-2) collapsible sections recursively', () => {
+            const field = convertDialogElementToAppField({
+                name: 'outer',
+                type: DialogElementTypes.COLLAPSIBLE,
+                display_name: 'Outer',
+                collapsible_config: {
+                    elements: [{
+                        name: 'inner',
+                        type: DialogElementTypes.COLLAPSIBLE,
+                        display_name: 'Inner',
+                        collapsible_config: {
+                            elements: [{name: 'deep', type: DialogElementTypes.TEXT, display_name: 'Deep', optional: true} as DialogElement],
+                        },
+                    } as DialogElement],
+                },
+            } as DialogElement);
+
+            const inner = field.collapsible_config?.fields?.[0];
+            expect(inner?.type).toBe('collapsible');
+            expect(inner?.collapsible_config?.fields?.[0]).toMatchObject({name: 'deep', type: 'text'});
+        });
+
+        it('places a top-level collapsible field at its element index via convertDialogToAppForm', () => {
+            const form = convertDialogToAppForm({
+                dialog: {
+                    title: 'T',
+                    elements: [
+                        {name: 'name', type: DialogElementTypes.TEXT, display_name: 'Full Name', optional: false} as DialogElement,
+                        {name: 'contact_section', type: DialogElementTypes.COLLAPSIBLE, display_name: 'Contact Info', collapsible_config: {elements: [{name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement]}} as DialogElement,
+                    ],
+                },
+            } as InteractiveDialogConfig);
+
+            expect(form.fields?.[0]).toMatchObject({name: 'name', position: 0});
+            expect(form.fields?.[1]).toMatchObject({name: 'contact_section', type: 'collapsible', position: 1});
+        });
+
+        it('submits values from fields nested in a collapsible once the elements are flattened', () => {
+            const elements: DialogElement[] = [
+                {name: 'name', type: DialogElementTypes.TEXT, display_name: 'Full Name', optional: false} as DialogElement,
+                {
+                    name: 'contact_section',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Contact Info',
+                    collapsible_config: {
+                        elements: [
+                            {name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement,
+                            {name: 'priority', type: DialogElementTypes.SELECT, display_name: 'Priority', optional: true, options: [{text: 'High', value: 'high'}]} as DialogElement,
+                            {name: 'notify', type: DialogElementTypes.BOOL, display_name: 'Notify', optional: true} as DialogElement,
+                        ],
+                    },
+                } as DialogElement,
+            ];
+
+            // The form holds a flat value map keyed by field name (select as an AppSelectOption).
+            const values: AppFormValues = {
+                name: 'Jane Doe',
+                email: 'jane@example.com',
+                priority: {label: 'High', value: 'high'},
+                notify: true,
+            };
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission(values, flattenDialogElements(elements));
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({
+                name: 'Jane Doe',
+                email: 'jane@example.com',
+                priority: 'high',
+                notify: true,
+            });
+        });
+
+        it('drops nested values with an error when the elements are NOT flattened (documents why the adapter flattens)', () => {
+            const elements: DialogElement[] = [
+                {
+                    name: 'contact_section',
+                    type: DialogElementTypes.COLLAPSIBLE,
+                    display_name: 'Contact Info',
+                    collapsible_config: {
+                        elements: [{name: 'email', type: DialogElementTypes.TEXT, display_name: 'Email', optional: true} as DialogElement],
+                    },
+                } as DialogElement,
+            ];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission({email: 'jane@example.com'}, elements);
+
+            expect(submission.email).toBeUndefined();
+            expect(errors).toEqual(['Field email not found in dialog elements']);
         });
     });
 });
