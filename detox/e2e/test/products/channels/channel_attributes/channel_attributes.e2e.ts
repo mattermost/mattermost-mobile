@@ -71,6 +71,37 @@ async function openChannel(channelName: string) {
     await ChannelScreen.open('channels', channelName);
 }
 
+const ATTRIBUTE_RENDER_ATTEMPTS = 3;
+
+/**
+ * Run the navigation and assertions against a freshly reloaded app, retrying the whole cycle.
+ *
+ * The app reads the client config once at start and keeps its own copy, while the server
+ * propagates a FeatureFlags change asynchronously — it has been seen still reporting the old
+ * value after a patch the config API had already acknowledged. A single reload can therefore
+ * bring the app up with ChannelAttributes still off, which renders none of the attribute UI.
+ * Only another reload clears that; a longer timeout on the first attempt cannot, because the
+ * app never re-reads the config while it is running.
+ */
+async function assertOnReloadedApp(steps: () => Promise<void>) {
+    let lastError: unknown;
+
+    /* eslint-disable no-await-in-loop -- each attempt reloads the app the previous one left behind */
+    for (let attempt = 1; attempt <= ATTRIBUTE_RENDER_ATTEMPTS; attempt++) {
+        await device.reloadReactNative();
+        await ChannelListScreen.toBeVisible();
+        try {
+            await steps();
+            return;
+        } catch (error) {
+            lastError = error;
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    throw lastError;
+}
+
 // FeatureFlagChannelAttributes exists on server master (v12.0+) only. On 11.x the key is absent,
 // so enableChannelAttributes() can never succeed and every test here fails in beforeAll.
 (hasChannelAttributes ? describe : describe.skip)('Channel Attributes - Header chips and Channel Info section', () => {
@@ -218,15 +249,15 @@ async function openChannel(channelName: string) {
         });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
 
         // # Navigate to the channel.
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        // * The HIGH chip is visible.
-        await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+            // * The HIGH chip is visible.
+            await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+        });
 
         await ChannelScreen.back();
     });
@@ -244,18 +275,36 @@ async function openChannel(channelName: string) {
             },
         );
 
-        // # Create the channel without a value — optional field so the server accepts it.
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        // # A second field, this one set, is the control. An unset field and a switched-off
+        // # feature both render nothing, so without it this test passes either way.
+        const {channelFieldId: controlFieldId, optionIdsByName: controlOptions} = await Properties.apiSetupChannelAttributeField(
+            siteOneUrl,
+            {
+                fieldName: SECOND_FIELD_NAME,
+                options: SECOND_FIELD_OPTIONS,
+                actions: ['display_label_header'],
+            },
+        );
+
+        // # Create the channel with only the control value set — TEST_FIELD_NAME stays unset.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: controlFieldId, value: requireOption(controlOptions, 'HIGH2')}],
+        });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
 
         // # Navigate to the channel.
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        // * No chip row because there is nothing to show.
-        await ChannelAttributeLabels.toNotBeVisible();
+            // * The control chip renders, so the feature is live in the app.
+            await waitFor(ChannelAttributeLabels.getChip(SECOND_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        });
+
+        // * The unset field contributes no chip of its own.
+        await expect(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).not.toBeVisible();
 
         await ChannelScreen.back();
     });
@@ -292,16 +341,16 @@ async function openChannel(channelName: string) {
         });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
 
         // # Navigate to the channel. With MAX_VISIBLE_CHIPS=2 and exactly 2 fields, both fit
         // # inline and no overflow +N button should be shown.
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        // * Both chips visible.
-        await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelAttributeLabels.getChip(SECOND_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            // * Both chips visible.
+            await waitFor(ChannelAttributeLabels.getChip(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChip(SECOND_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        });
 
         // * No overflow button — count equals MAX_VISIBLE_CHIPS exactly.
         await expect(ChannelAttributeLabels.overflow).not.toBeVisible();
@@ -368,18 +417,17 @@ async function openChannel(channelName: string) {
         });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
+            // # Open Channel Info.
+            await ChannelInfoScreen.open();
 
-        // # Open Channel Info.
-        await ChannelInfoScreen.open();
-
-        // * The attributes section and the field row with a chip are visible.
-        await waitFor(element(by.id('channel_info.attributes'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}.chip`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            // * The attributes section and the field row with a chip are visible.
+            await waitFor(element(by.id('channel_info.attributes'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}.chip`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        });
 
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -443,20 +491,39 @@ async function openChannel(channelName: string) {
             },
         );
 
-        // # Create the channel without a value — optional field so the server accepts it.
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id, prefix: 'channel'});
+        // # A second info-designated field, this one set, is the control. An unset field and a
+        // # switched-off feature both render nothing, so without it this test passes either way.
+        const {channelFieldId: controlFieldId, optionIdsByName: controlOptions} = await Properties.apiSetupChannelAttributeField(
+            siteOneUrl,
+            {
+                fieldName: SECOND_FIELD_NAME,
+                options: SECOND_FIELD_OPTIONS,
+                actions: ['display_label_info'],
+                required: false,
+            },
+        );
+
+        // # Create the channel with only the control value set — TEST_FIELD_NAME stays unset.
+        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+            teamId: testTeam.id,
+            prefix: 'channel',
+            propertyValues: [{field_id: controlFieldId, value: requireOption(controlOptions, 'HIGH2')}],
+        });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
 
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        // # Open Channel Info.
-        await ChannelInfoScreen.open();
+            // # Open Channel Info.
+            await ChannelInfoScreen.open();
 
-        // * No attributes section because there is nothing to show.
-        await expect(element(by.id('channel_info.attributes'))).not.toBeVisible();
+            // * The control row renders, so the feature is live in the app.
+            await waitFor(element(by.id(`channel_info.attributes.${SECOND_FIELD_NAME}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        });
+
+        // * The unset field contributes no row of its own.
+        await expect(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}`))).not.toBeVisible();
 
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
@@ -510,14 +577,13 @@ async function openChannel(channelName: string) {
         });
         testChannel = channel;
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        await device.reloadReactNative();
+        await assertOnReloadedApp(async () => {
+            await openChannel(channel.name);
 
-        await ChannelListScreen.toBeVisible();
-        await openChannel(channel.name);
-
-        // * Every designated attribute contributes in field order.
-        await waitFor(element(by.id('channel.banner'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(element(by.text('HIGH, MEDIUM · HIGH2 · operational note'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            // * Every designated attribute contributes in field order.
+            await waitFor(element(by.id('channel.banner'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.text('HIGH, MEDIUM · HIGH2 · operational note'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        });
 
         await ChannelScreen.back();
     });
