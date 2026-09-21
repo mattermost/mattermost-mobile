@@ -38,6 +38,7 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     RADIO: 'radio',
     DATE: 'date',
     DATETIME: 'datetime',
+    COLLAPSIBLE: 'collapsible',
 };
 
 export const SelectableAppFieldTypes = [
