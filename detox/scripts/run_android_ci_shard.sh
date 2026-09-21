@@ -22,6 +22,8 @@ ATTEMPT_TIMEOUT_MIN="${ATTEMPT_TIMEOUT_MIN:-60}"
 RESULTS="${DETOX_DIR}/artifacts/jest-results.json"
 ATTEMPT1_RESULTS="${DETOX_DIR}/artifacts/jest-results-attempt1.json"
 FAILED_SPECS_JS="${DETOX_DIR}/utils/failed-jest-specs.js"
+ATTEMPT_LOG="${DETOX_DIR}/artifacts/attempt.log"
+mkdir -p "${DETOX_DIR}/artifacts"
 
 # Jest --outputFile can miss the shutdown flush while jest-stare still wrote
 # android-data.json (CI 33915931136 machine-2) — and `timeout` killing an attempt
@@ -63,6 +65,14 @@ emulator_healthy() {
     adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
 }
 
+# emulator_healthy only proves the device booted and the package is registered, which
+# stays true when the app cannot actually start. Detox reports that case explicitly.
+app_never_launched() {
+    [[ -f "${ATTEMPT_LOG}" ]] || return 1
+    grep -q "Failed to run application on the device" "${ATTEMPT_LOG}" ||
+        grep -q "Detox can't seem to connect to the test app" "${ATTEMPT_LOG}"
+}
+
 kill_emulator() {
     adb -s emulator-5554 emu kill 2>/dev/null || true
     pkill -9 -f qemu-system 2>/dev/null || true
@@ -83,7 +93,8 @@ run_detox_attempt() {
             CI=true timeout "${ATTEMPT_TIMEOUT_MIN}m" \
                 ./create_android_emulator.sh "${SDK_VERSION}" "${AVD_NAME}" "$@"
         fi
-    )
+    ) 2>&1 | tee -a "${ATTEMPT_LOG}"
+    return "${PIPESTATUS[0]}"
 }
 
 merge_attempt_results() {
@@ -131,7 +142,18 @@ while (( attempt <= MAX_ATTEMPTS )); do
             mv "${RESULTS}" "${ATTEMPT1_RESULTS}"
         fi
 
-        if emulator_healthy; then
+        if ! emulator_healthy; then
+            echo "==> Emulator unhealthy — cold boot, then retrying failed specs only"
+            kill_emulator
+            run_detox_attempt false "${retry_specs[@]}"
+            rc=$?
+        elif app_never_launched; then
+            # Reusing this device would fail the same way and spend the whole retry budget.
+            echo "==> App never launched on this device — cold boot, then retrying failed specs only"
+            kill_emulator
+            run_detox_attempt false "${retry_specs[@]}"
+            rc=$?
+        else
             echo "==> Emulator healthy — resetting app and retrying failed specs only"
             run_detox_attempt true "${retry_specs[@]}"
             rc=$?
@@ -141,11 +163,6 @@ while (( attempt <= MAX_ATTEMPTS )); do
                 run_detox_attempt false "${retry_specs[@]}"
                 rc=$?
             fi
-        else
-            echo "==> Emulator unhealthy — cold boot, then retrying failed specs only"
-            kill_emulator
-            run_detox_attempt false "${retry_specs[@]}"
-            rc=$?
         fi
         # Same recovery for the retry: a second timeout must not throw away the
         # suites it did finish, which merge_attempt_results would otherwise drop.
