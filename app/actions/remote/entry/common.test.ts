@@ -152,12 +152,13 @@ describe('actions/remote/entry/common', () => {
             (fetchMyTeams as jest.Mock).mockResolvedValue({teams: [], memberships: []});
             (fetchMe as jest.Mock).mockResolvedValueOnce({user: {id: 'user1', roles: '', username: 'user1'}});
             (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue({channels: [], memberships: [], categories: []});
-            (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+            const preparedModel = {id: 'model1'};
+            (prepareEntryModels as jest.Mock).mockResolvedValue([Promise.resolve([preparedModel])]);
             jest.mocked(fetchRoles).mockResolvedValue({error: new Error('Roles error')});
 
             const result = await entry(serverUrl, 'team1');
 
-            expect(result).toEqual(expect.objectContaining({models: expect.any(Array)}));
+            expect(result).toEqual(expect.objectContaining({models: [preparedModel]}));
             expect(logDebug).toHaveBeenCalledWith('entryRest: failed to fetch roles', undefined, 'Roles error');
         });
 
