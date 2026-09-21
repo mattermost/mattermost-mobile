@@ -8,6 +8,7 @@ import {Text, View} from 'react-native';
 import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
+import EphemeralStore from '@store/ephemeral_store';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -39,6 +40,7 @@ describe('screens/thread/index', () => {
     });
 
     afterEach(async () => {
+        EphemeralStore.setCurrentThreadId('');
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -67,6 +69,23 @@ describe('screens/thread/index', () => {
         const Component = enhanced;
         const {findByTestId} = renderWithEverything(
             <Component rootId='thread1'/>,
+            {database, serverUrl},
+        );
+
+        expect(await findByTestId('rootId')).toHaveTextContent('thread1');
+        expect(await findByTestId('scheduledPostCount')).toHaveTextContent('2');
+    });
+
+    it('should fall back to the current thread id for every query when rootId is missing', async () => {
+        // Popping back to an open thread screen clears its route params. Passing the
+        // resulting undefined straight to a query throws inside the observable factory,
+        // which crashed the app mid-call - MM-70539.
+        await seedScheduledPosts();
+        EphemeralStore.setCurrentThreadId('thread1');
+
+        const Component = enhanced;
+        const {findByTestId} = renderWithEverything(
+            <Component rootId={undefined as unknown as string}/>,
             {database, serverUrl},
         );
 

@@ -47,6 +47,7 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {dismissAllRoutesAndPopToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 
 import type {CallJobState} from '@mattermost/calls/lib/types';
@@ -1603,11 +1604,14 @@ describe('switchToCallThread', () => {
     const rootId = 'thread-1';
     const localPost = {channelId: 'channel-1'} as unknown as PostModel;
     const intl = createIntl({locale: 'en', messages: {}});
+    const errorTitle = 'Error';
+    const errorMessage = 'We couldn\'t open the call thread. Please check your connection and try again.';
 
     beforeEach(async () => {
         jest.clearAllMocks();
         await DatabaseManager.init([serverUrl]);
         jest.mocked(getChannelById).mockResolvedValue(undefined);
+        jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 
         // Exercise the same-server branch, which is the path the call screen takes.
         jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
@@ -1615,6 +1619,7 @@ describe('switchToCallThread', () => {
 
     afterEach(async () => {
         jest.restoreAllMocks();
+        EphemeralStore.setCurrentThreadId('');
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -1628,7 +1633,7 @@ describe('switchToCallThread', () => {
             Screens.THREAD,
             expect.objectContaining({rootId}),
         );
-        expect(errorAlert).not.toHaveBeenCalled();
+        expect(Alert.alert).not.toHaveBeenCalled();
     });
 
     it('should fetch the root post when it is missing, then navigate', async () => {
@@ -1643,7 +1648,15 @@ describe('switchToCallThread', () => {
             Screens.THREAD,
             expect.objectContaining({rootId}),
         );
-        expect(errorAlert).not.toHaveBeenCalled();
+        expect(Alert.alert).not.toHaveBeenCalled();
+    });
+
+    it('should record the thread id so the screen can resolve it without route params', async () => {
+        jest.mocked(getPostById).mockResolvedValue(localPost);
+
+        await switchToCallThread(serverUrl, rootId, 'Call Thread', intl);
+
+        expect(EphemeralStore.getCurrentThreadId()).toBe(rootId);
     });
 
     it('should alert the user when the root post is still unavailable after fetching', async () => {
@@ -1654,10 +1667,10 @@ describe('switchToCallThread', () => {
         expect(fetchPostThread).toHaveBeenCalledTimes(1);
         expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
         expect(router.push).not.toHaveBeenCalled();
-        expect(errorAlert).toHaveBeenCalledWith('See server logs', intl);
+        expect(Alert.alert).toHaveBeenCalledWith(errorTitle, errorMessage);
     });
 
-    it('should alert the user when fetching the root post fails', async () => {
+    it('should keep the underlying failure out of the alert when fetching the root post fails', async () => {
         jest.mocked(getPostById).mockResolvedValue(undefined);
         jest.mocked(fetchPostThread).mockResolvedValueOnce({error: new Error('fetch failed')});
 
@@ -1666,6 +1679,6 @@ describe('switchToCallThread', () => {
         expect(getPostById).toHaveBeenCalledTimes(1);
         expect(dismissAllRoutesAndPopToScreen).not.toHaveBeenCalled();
         expect(router.push).not.toHaveBeenCalled();
-        expect(errorAlert).toHaveBeenCalledWith(expect.stringContaining('fetch failed'), intl);
+        expect(Alert.alert).toHaveBeenCalledWith(errorTitle, errorMessage);
     });
 });

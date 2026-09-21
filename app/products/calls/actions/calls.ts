@@ -43,7 +43,7 @@ import {
     startOutgoingCall,
 } from '@calls/state';
 import {type AudioDeviceType, type Call, type CallSession, type CallsConnection, EndCallReturn} from '@calls/types/calls';
-import {areGroupCallsAllowed, errorAlert} from '@calls/utils';
+import {areGroupCallsAllowed} from '@calls/utils';
 import {General, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
@@ -55,6 +55,7 @@ import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -62,7 +63,6 @@ import {isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
 
-import type {ChannelModel} from '@database/models/server';
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
@@ -790,6 +790,19 @@ export const hostRemove = async (serverUrl: string, callId: string, sessionId: s
     }
 };
 
+const callThreadErrorAlert = (intl: IntlShape) => {
+    Alert.alert(
+        intl.formatMessage({
+            id: 'mobile.calls_error_title',
+            defaultMessage: 'Error',
+        }),
+        intl.formatMessage({
+            id: 'mobile.calls_thread_unavailable',
+            defaultMessage: 'We couldn\'t open the call thread. Please check your connection and try again.',
+        }),
+    );
+};
+
 export const switchToCallThread = async (serverUrl: string, rootId: string, title: string, intl: IntlShape) => {
     try {
         const activeUrl = await DatabaseManager.getActiveServerUrl();
@@ -797,31 +810,33 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
 
         let post = await getPostById(database, rootId);
         if (!post) {
-            // If no posts are available for that thread yet
-            // Try to fetch the post from the server to ensure it's available locally.
+            // A call can be joined from a channel whose thread was never loaded locally.
             const {error} = await fetchPostThread(serverUrl, rootId);
             if (error) {
                 logDebug('error on switchToCallThread', getFullErrorMessage(error));
-                errorAlert(getFullErrorMessage(error, intl), intl);
+                callThreadErrorAlert(intl);
                 return;
             }
             post = await getPostById(database, rootId);
         }
 
-        let channel: ChannelModel | undefined;
-        if (post && post.channelId) {
-            channel = await getChannelById(database, post.channelId);
-        } else {
-            logDebug('error on switchToCallThread: post unavailable');
-            errorAlert(intl.formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'}), intl);
+        if (!post?.channelId) {
+            logDebug('error on switchToCallThread: root post unavailable', rootId);
+            callThreadErrorAlert(intl);
             return;
         }
 
+        const channel = await getChannelById(database, post.channelId);
         const currentTeamId = await getCurrentTeamId(database);
 
         if (channel?.teamId && currentTeamId !== channel.teamId) {
             await setCurrentTeamId(operator, channel.teamId);
         }
+
+        // Popping back to an already-open thread screen replaces its route params, so the
+        // screen re-resolves the thread from this value. switchToThread does the same.
+        EphemeralStore.setCurrentThreadId(rootId);
+
         if (activeUrl === serverUrl) {
             await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
             return;
@@ -835,6 +850,6 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         navigateToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
     } catch (error) {
         logDebug('error on switchToCallThread', getFullErrorMessage(error));
-        errorAlert(getFullErrorMessage(error, intl), intl);
+        callThreadErrorAlert(intl);
     }
 };
