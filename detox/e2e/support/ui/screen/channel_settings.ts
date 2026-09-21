@@ -68,7 +68,26 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+
+            try {
+                await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+            } catch (screenStillUp) {
+                // A failed archive replaces the confirmation with an error alert, which satisfies
+                // the wait above and then leaves the settings screen in place. Name that instead
+                // of reporting a screen that was never going to disappear. CMT run 35367435953
+                // (machine-4, MM-T3208): the DELETE died with NSURLError -1005 and surfaced as
+                // "channel_settings.screen still present after 10000ms".
+                try {
+                    await waitFor(Alert.invalidServerResponse).toExist().withTimeout(timeouts.TWO_SEC);
+                } catch {
+                    throw screenStillUp;
+                }
+
+                throw new Error(
+                    'archive channel failed: the app showed "Received invalid response from the ' +
+                    'server." — the request to the server did not complete',
+                );
+            }
         } else {
             await noButton.tap();
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);

@@ -484,7 +484,15 @@ class ChannelScreen {
             return result;
         }
 
-        throw new Error(`message never reached the server after two sends, likely dropped by the sim network (${JSON.stringify(result.error ?? 'no post and no error')})`);
+        // Say only what was established: the message is not in THIS channel. It may well have
+        // posted somewhere else — in CMT run 35367435953 a mistargeted sidebar tap put both
+        // sends in Off-Topic, and the old wording ("dropped by the sim network") sent the
+        // investigation after a network fault that never happened.
+        throw new Error(
+            `message "${message}" not found in channel ${channelId} after two sends — the send ` +
+            'may have failed, or the app may not have been in that channel ' +
+            `(${JSON.stringify(result.error ?? 'no post and no error')})`,
+        );
     };
 
     postSlashCommand = async (command: string) => {
