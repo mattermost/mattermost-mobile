@@ -59,9 +59,13 @@ export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = '
 
     // A create whose response is lost still leaves the channel on the server, and the caller
     // then reads `.channel` as undefined and dies on `.id` many lines later. Read the name back
-    // before reporting a failure, rather than replaying a non-idempotent write.
+    // before reporting a failure, rather than replaying a non-idempotent write. Only for
+    // failures where the write may still have landed: a 4xx is the server rejecting it, so
+    // that answer is final and is returned as-is.
     const recoverByName = async (failure: any) => {
-        if (!teamId || !channelData?.name) {
+        const status = failure?.status ?? 0;
+        const mayHaveLanded = status === 0 || status >= 500;
+        if (!mayHaveLanded || !teamId || !channelData?.name) {
             return failure;
         }
 

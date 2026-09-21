@@ -24,6 +24,8 @@ import {
 import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
+import {logDebug} from '../../../../provision/log';
+
 import InteractiveDialogScreen from './interactive_dialog';
 
 async function dismissErrorAlertIfPresent(): Promise<boolean> {
@@ -259,9 +261,8 @@ class ChannelScreen {
             } catch (notInSidebar) {
                 // The channel exists on the server but has not landed in a sidebar category.
                 // Search reaches it regardless, so specs that are not about the sidebar can
-                // carry on; the warning keeps a real sidebar regression visible.
-                // eslint-disable-next-line no-console
-                console.warn(`[ChannelScreen.open] ${name} absent from the sidebar, opening via Find Channels: ${String(notInSidebar)}`);
+                // carry on; the log keeps a real sidebar regression visible.
+                logDebug(`[ChannelScreen.open] ${name} absent from the sidebar, opening via Find Channels: ${String(notInSidebar)}`);
                 return this.openViaFindChannels(name);
             }
         } else {
