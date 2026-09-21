@@ -195,10 +195,8 @@ class ChannelListScreen {
             /* eslint-enable no-await-in-loop */
             await expect(label).toBeVisible(40);
 
-            // Tap the label, which sits in the middle of the row. The top-edge tap below is two
-            // pixels from the row above it, and in CMT run 35367435953 (machine-6, MM-T4862_2)
-            // it landed on the neighbouring channel: the app opened Off-Topic instead of the
-            // target, posted both messages there, and the spec reported the send as lost.
+            // Tap the label, mid-row: the edge tap below sits two pixels from the neighbouring
+            // row and can open the wrong channel.
             try {
                 await label.tap();
                 return;
