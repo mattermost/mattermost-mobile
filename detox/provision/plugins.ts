@@ -6,7 +6,7 @@
 import https from 'node:https';
 import path from 'node:path';
 
-import {ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
 
 import {
     AGENTS_PLUGIN_ID,
@@ -385,15 +385,27 @@ export async function installRequiredPlugin(
     }
 
     const {active = [], inactive = []} = pluginsRes.data;
-    const isActive = active.some((p: PluginListEntry) => p.id === pluginId);
+    const activeEntry = active.find((p: PluginListEntry) => p.id === pluginId);
+    const isActive = Boolean(activeEntry);
     const isInactive = inactive.some((p: PluginListEntry) => p.id === pluginId);
 
-    if (isActive) {
+    // Matterwick hands over servers with the demo plugin already running, so "active" alone
+    // would keep whatever version it installed and silently ignore the pinned fixture. Compare
+    // the version and replace when it differs; the upload below runs with force.
+    const wrongVersion = pluginId === DEMO_PLUGIN_ID &&
+        activeEntry?.version !== undefined &&
+        activeEntry.version !== DEMO_PLUGIN_VERSION;
+
+    if (isActive && !wrongVersion) {
         logInfo(`Plugin ${pluginId} is already installed and active.`);
         return;
     }
 
-    if (isInactive) {
+    if (wrongVersion) {
+        logInfo(`Plugin ${pluginId} is active at ${activeEntry?.version}, replacing with the pinned ${DEMO_PLUGIN_VERSION}.`);
+    }
+
+    if (isInactive && !wrongVersion) {
         logInfo(`Plugin ${pluginId} is installed but inactive, enabling...`);
 
         // A transient enable timeout (e.g. demo-plugin on a freshly-provisioned
