@@ -72,21 +72,16 @@ class ChannelSettingsScreen {
             try {
                 await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
             } catch (screenStillUp) {
-                // A failed archive replaces the confirmation with an error alert, which satisfies
-                // the wait above and then leaves the settings screen in place. Name that instead
-                // of reporting a screen that was never going to disappear. CMT run 35367435953
-                // (machine-4, MM-T3208): the DELETE died with NSURLError -1005 and surfaced as
-                // "channel_settings.screen still present after 10000ms".
+                // A failed archive swaps the confirmation for an error alert, which satisfies the
+                // wait above and leaves the settings screen up. Name the alert, not the screen.
                 try {
                     await waitFor(Alert.invalidServerResponse).toExist().withTimeout(timeouts.TWO_SEC);
                 } catch {
                     throw screenStillUp;
                 }
 
-                // Report the alert, not a cause. alertErrorWithFallback (app/utils/draft) shows
-                // this fallback text whenever the error carries no message of its own, so it
-                // covers more than a dropped request — asserting a cause here would repeat the
-                // mistake this PR removes from postMessageAndVerify.
+                // Report the alert, not a cause: alertErrorWithFallback shows this text whenever
+                // the error carries no message of its own.
                 throw new Error(
                     'archive channel failed: the app showed "Received invalid response from the ' +
                     'server." and stayed on the channel settings screen',
