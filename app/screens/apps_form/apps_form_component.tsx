@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
@@ -12,7 +11,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {handleGotoLocation} from '@actions/remote/command';
 import Button from '@components/button';
 import Markdown from '@components/markdown';
-import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {useServerUrl} from '@context/server';
@@ -21,13 +19,15 @@ import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
-import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
+import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType, flattenAppFields} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
+import {typography} from '@utils/typography';
 
 import AppsFormField from './apps_form_field';
+import CollapsibleSection from './collapsible_section';
 import DialogIntroductionText from './dialog_introduction_text';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -39,17 +39,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         errorContainer: {
             marginTop: 15,
             marginLeft: 15,
-            fontSize: 14,
-            fontWeight: 'bold',
         },
         scrollView: {
             paddingBottom: 20,
             marginTop: 10,
         },
         errorLabel: {
-            fontSize: 12,
             textAlign: 'left',
-            color: (theme.errorTextColor || '#DA4A4A'),
+            color: theme.errorTextColor,
+            ...typography('Body', 75, 'Regular'),
         },
         buttonContainer: {
             paddingTop: 20,
@@ -100,10 +98,42 @@ export type Props = {
 type Errors = {[name: string]: string}
 const emptyErrorsState: Errors = {};
 
+// Returns true if this field or any of its (recursively nested) children have an error.
+function sectionHasError(field: AppField, errors: Errors): boolean {
+    if (field.type !== AppFieldTypes.COLLAPSIBLE) {
+        return Boolean(field.name && errors[field.name]);
+    }
+    return (field.collapsible_config?.fields || []).some((child) => sectionHasError(child, errors));
+}
+
+// Returns a partial version map — only entries for sections that contain errors,
+// each incremented by 1 relative to `prev`. Extracted here so bumpErroredSections
+// stays within the max-nested-callbacks lint limit.
+function computeExpandBumps(
+    fields: AppField[],
+    errors: Errors,
+    prev: Record<string, number>,
+): Record<string, number> {
+    const next: Record<string, number> = {};
+    fields.forEach((f) => {
+        if (f.type !== AppFieldTypes.COLLAPSIBLE || !f.name) {
+            return;
+        }
+        if (sectionHasError(f, errors)) {
+            next[f.name] = (prev[f.name] || 0) + 1;
+        }
+        Object.assign(next, computeExpandBumps(f.collapsible_config?.fields || [], errors, prev));
+    });
+    return next;
+}
+
 type ValuesAction = {name: string; value: AppFormValue} | {elements?: AppField[]}
 function valuesReducer(state: AppFormValues, action: ValuesAction) {
     if (!('name' in action)) {
-        return initValues(action.elements);
+        // Merge server-provided values into existing user input so that a field
+        // refresh (triggered by refresh:true) doesn't discard values the user
+        // has already typed. Only fields with a new server value are overwritten.
+        return {...state, ...initValues(action.elements)};
     }
 
     if (state[action.name] === action.value) {
@@ -115,6 +145,11 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 export function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
     fields?.forEach((field) => {
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            Object.assign(values, initValues(field.collapsible_config?.fields));
+            return;
+        }
+
         if (!field.name) {
             return;
         }
@@ -131,9 +166,7 @@ export function initValues(fields?: AppField[]) {
 
             // Round up to next time interval
             const minutesMod = currentTime.minutes() % timeInterval;
-            const defaultMoment = minutesMod === 0
-                ? currentTime.clone().seconds(0).milliseconds(0)
-                : currentTime.clone().add(timeInterval - minutesMod, 'minutes').seconds(0).milliseconds(0);
+            const defaultMoment = minutesMod === 0? currentTime.clone().seconds(0).milliseconds(0): currentTime.clone().add(timeInterval - minutesMod, 'minutes').seconds(0).milliseconds(0);
 
             // Clamp to min/max bounds
             if (field.min_date) {
@@ -176,12 +209,15 @@ function AppsFormComponent({
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
     const [submitting, setSubmitting] = useState(false);
-    const navigation = useNavigation();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [error, setError] = useState('');
     const [errors, setErrors] = useState(emptyErrorsState);
     const [values, dispatchValues] = useReducer(valuesReducer, form.fields, initValues);
+
+    // Tracks per-section expand triggers. Incrementing a key forces the named
+    // CollapsibleSection to open even if the user previously collapsed it.
+    const [expandVersions, setExpandVersions] = useState<Record<string, number>>({});
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -190,7 +226,7 @@ function AppsFormComponent({
     }, [form]);
 
     const submitButtons = useMemo(() => {
-        return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
+        return flattenAppFields(form.fields || []).find((f) => f.name === form.submit_buttons);
     }, [form]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
@@ -227,8 +263,15 @@ function AppsFormComponent({
         return hasErrors;
     }, [intl]);
 
+    // Increment the expand-version for every collapsible section (at any nesting depth)
+    // that contains at least one field with a current error. Causes those sections
+    // to open so the user can see and fix the problem without searching manually.
+    const bumpErroredSections = useCallback((fieldErrors: Errors) => {
+        setExpandVersions((prev) => ({...prev, ...computeExpandBumps(form.fields || [], fieldErrors, prev)}));
+    }, [form.fields]);
+
     const onChange = useCallback((name: string, value: AppFormValue) => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
         if (!field) {
             logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
@@ -284,8 +327,8 @@ function AppsFormComponent({
         dispatchValues({name, value});
     }, [form, values, refreshOnSelect, updateErrors, intl]);
 
-    // Memoize elements conversion for performance
-    const elements = useMemo(() => fieldsAsElements(form.fields), [form.fields]);
+    // Memoize elements conversion for performance; flatten collapsible containers to leaf fields
+    const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
 
     // Memoize filtered fields to avoid recalculation on every render
     const visibleFields = useMemo(() =>
@@ -314,6 +357,7 @@ function AppsFormComponent({
 
         if (hasErrors) {
             setErrors(fieldErrors);
+            bumpErroredSections(fieldErrors);
             return;
         }
 
@@ -340,12 +384,16 @@ function AppsFormComponent({
                 close();
                 return;
             }
+            if (errorResponse.data?.errors) {
+                bumpErroredSections(errorResponse.data.errors);
+            }
             setSubmitting(false);
             return;
         }
 
         setError('');
         setErrors(emptyErrorsState);
+        setExpandVersions({});
 
         const callResponse = res.data!;
         switch (callResponse.type) {
@@ -368,10 +416,10 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, submitting, updateErrors, serverUrl, intl]);
+    }, [elements, form, values, submit, submitting, updateErrors, bumpErroredSections, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
         if (!field?.name) {
             return [];
         }
@@ -426,35 +474,52 @@ function AppsFormComponent({
         }
     }, [form, values, performLookupCall, intl]);
 
-    useEffect(() => {
-        // Header Submit is the default submission affordance. When the form
-        // declares a custom submit_buttons field with at least one option, the
-        // inline buttons rendered at the bottom of the form replace the header
-        // Submit so the user picks an explicit button value. If the field has
-        // no options (nothing renders inline), keep the header Submit so the
-        // form remains submittable.
-        if (submitButtons?.options?.length) {
-            navigation.setOptions({headerRight: undefined});
-            return;
-        }
-        navigation.setOptions({
-            headerRight: () => (
-                <NavigationButton
-                    onPress={handleSubmit}
-                    disabled={submitting}
-                    testID='interactive_dialog.submit.button'
-                    text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                />
-            ),
-        });
-    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting]);
-
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {
         return () => {
             isMountedRef.current = false;
         };
     }, []);
+
+    const renderField = useCallback((field: AppField, isFirstField: boolean, depth = 0): React.ReactNode => {
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            const childFields = (field.collapsible_config?.fields || []).filter((f) => f.name !== form.submit_buttons);
+
+            // Don't render a toggle for a section with no visible fields (matches
+            // CollapsibleBlock, which returns null when it has no content).
+            if (childFields.length === 0) {
+                return null;
+            }
+            return (
+                <CollapsibleSection
+                    key={field.name}
+                    label={field.label || field.name || ''}
+                    initiallyExpanded={field.collapsible_config?.expanded ?? true}
+                    bordered={field.collapsible_config?.bordered ?? true}
+                    depth={depth}
+                    hasError={sectionHasError(field, errors)}
+                    forceExpandVersion={expandVersions[field.name ?? '']}
+                >
+                    {childFields.map((child, i) => renderField(child, isFirstField && i === 0, depth + 1))}
+                </CollapsibleSection>
+            );
+        }
+        if (!field.name) {
+            return null;
+        }
+        const value = secureGetFromRecord(values, field.name);
+        return (
+            <AppsFormField
+                field={field}
+                key={field.name}
+                name={field.name}
+                errorText={secureGetFromRecord(errors, field.name)}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+            />
+        );
+    }, [values, errors, expandVersions, performLookup, onChange, form.submit_buttons]);
 
     return (
         <SafeAreaView
@@ -485,27 +550,11 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {visibleFields.map((field) => {
-                    if (!field.name) {
-                        return null;
-                    }
-                    const value = secureGetFromRecord(values, field.name);
-                    return (
-                        <AppsFormField
-                            field={field}
-                            key={field.name}
-                            name={field.name}
-                            errorText={secureGetFromRecord(errors, field.name)}
-                            value={value || ''}
-                            performLookup={performLookup}
-                            onChange={onChange}
-                        />
-                    );
-                })}
+                {visibleFields.map((field, index) => renderField(field, index === 0))}
                 <View
                     style={style.buttonsWrapper}
                 >
-                    {submitButtons?.options?.map((o) => (
+                    {submitButtons?.options?.length ? submitButtons.options.map((o) => (
                         <View
                             key={o.value}
                             style={style.buttonContainer}
@@ -517,7 +566,19 @@ function AppsFormComponent({
                                 text={o.label || ''}
                             />
                         </View>
-                    ))}
+                    )) : (
+                        <View style={style.buttonContainer}>
+                            <Button
+                                onPress={() => handleSubmit()}
+                                disabled={submitting}
+                                showLoader={submitting}
+                                theme={theme}
+                                size='lg'
+                                testID='interactive_dialog.submit.button'
+                                text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
+                            />
+                        </View>
+                    )}
                 </View>
             </KeyboardAwareScrollView>
         </SafeAreaView>

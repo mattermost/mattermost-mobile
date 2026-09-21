@@ -4,7 +4,7 @@
 import moment, {type Moment} from 'moment-timezone';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text} from 'react-native';
+import {Platform, Switch, View, Text} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import DateTimeSelector from '@components/date_time_selector';
@@ -12,7 +12,6 @@ import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
-import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {Screens, View as ViewConstants} from '@constants';
@@ -22,7 +21,7 @@ import {getDateValue, parseDateInTimezone, resolveRelativeDate} from '@utils/dat
 import {isAppSelectOption} from '@utils/dialog_utils';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {selectKeyboardType} from '@utils/integrations';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
@@ -263,19 +262,45 @@ const AppsFormFieldComponent = React.memo(({
             );
         }
         case AppFieldTypes.BOOL: {
+            const boolValue = value as boolean;
+
+            // Canonical toggle colors (matches OptionItem's toggle type).
+            const trackColor = Platform.select({
+                ios: {true: theme.buttonBg, false: changeOpacity(theme.centerChannelColor, 0.16)},
+                default: {true: changeOpacity(theme.buttonBg, 0.32), false: changeOpacity(theme.centerChannelColor, 0.24)},
+            });
+            const thumbColor = Platform.select({
+                android: boolValue ? theme.buttonBg : '#F3F3F3', // Hardcoded color specified in ticket MM-45143
+            });
+
             return (
-                <BoolSetting
-                    label={displayName}
-                    value={value as boolean}
-                    placeholder={placeholder}
-                    helpText={field.description}
-                    errorText={errorText}
-                    optional={!field.is_required}
-                    onChange={handleChange}
-                    disabled={field.readonly}
-                    testID={testID}
-                    location={Screens.APPS_FORM}
-                />
+                <View style={dateTimeStyles.container}>
+                    {/* Reuse the shared field-row layout: label left, control right, help/error below */}
+                    <View style={dateTimeStyles.labelContainer}>
+                        <Text style={dateTimeStyles.label}>
+                            {displayName}
+                            {field.is_required && <Text style={dateTimeStyles.asterisk}>{' *'}</Text>}
+                        </Text>
+                        <Switch
+                            onValueChange={handleChange}
+                            value={boolValue}
+                            trackColor={trackColor}
+                            thumbColor={thumbColor}
+                            disabled={field.readonly}
+                            testID={`${testID}.toggled.${boolValue}.button`}
+                        />
+                    </View>
+                    {Boolean(field.description) && (
+                        <Text style={dateTimeStyles.helpText}>
+                            {field.description}
+                        </Text>
+                    )}
+                    {Boolean(errorText) && (
+                        <Text style={dateTimeStyles.errorText}>
+                            {errorText}
+                        </Text>
+                    )}
+                </View>
             );
         }
         case AppFieldTypes.RADIO: {
