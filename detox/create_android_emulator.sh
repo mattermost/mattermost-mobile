@@ -165,6 +165,61 @@ install_app() {
     adb shell pm list packages | grep "com.mattermost.rnbeta" && echo "App is installed." || echo "App is not installed."
 }
 
+# `pm list packages` only proves the package is registered, not that its APK is readable.
+# A bad install lets the app start and then fail in ReactInstance.loadJSBundleFromAssets
+# ("Unable to load script"), so Detox never gets an RN context and every spec on the shard
+# dies in the global beforeAll. Launch once and look for that error before handing over.
+app_bundle_loads() {
+    local bundle_id="com.mattermost.rnbeta"
+    local deadline=$((SECONDS + 60))
+
+    adb logcat -c 2>/dev/null || true
+    adb shell am force-stop "$bundle_id" 2>/dev/null || true
+    adb shell monkey -p "$bundle_id" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 || true
+
+    while (( SECONDS < deadline )); do
+        if adb logcat -d 2>/dev/null | grep -q "Unable to load script"; then
+            return 1
+        fi
+        # ReactNativeJS only appears once the bundle is loaded and JS is executing. A broken
+        # install still logs ReactContext and startSurface, so neither can be the signal.
+        if adb logcat -d 2>/dev/null | grep -q "ReactNativeJS"; then
+            adb shell am force-stop "$bundle_id" 2>/dev/null || true
+            return 0
+        fi
+        sleep 2
+    done
+
+    # Neither signal inside the window: treat as healthy rather than reinstalling on a
+    # slow-but-working emulator. Detox's own launch still has to succeed after this.
+    adb shell am force-stop "$bundle_id" 2>/dev/null || true
+    return 0
+}
+
+ensure_app_bundle_loads() {
+    local attempt
+    for attempt in 1 2; do
+        if app_bundle_loads; then
+            if (( attempt > 1 )); then
+                echo "App bundle loads after reinstall."
+            fi
+            return 0
+        fi
+        echo "==> App cannot load index.android.bundle (attempt ${attempt}) — reinstalling"
+        adb uninstall com.mattermost.rnbeta.test 2>/dev/null || true
+        adb uninstall com.mattermost.rnbeta 2>/dev/null || true
+        install_app
+    done
+
+    if app_bundle_loads; then
+        echo "App bundle loads after reinstall."
+        return 0
+    fi
+
+    echo "::error::App cannot load index.android.bundle after two reinstalls on this emulator."
+    return 1
+}
+
 grant_android_runtime_permissions() {
     local bundle_id="com.mattermost.rnbeta"
     adb shell pm grant "$bundle_id" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
@@ -370,6 +425,10 @@ run_tests_only() {
         exit 2
     fi
     reset_app_for_retry
+    if ! ensure_app_bundle_loads; then
+        echo "TESTS_ONLY: app cannot load its bundle — falling back to cold boot"
+        exit 2
+    fi
     grant_android_runtime_permissions
     configure_emulator_for_tests
     setup_adb_reverse
@@ -405,6 +464,9 @@ main() {
 
     if [[ "$CI" == "true" ]]; then
         install_app
+        if [[ "${MAESTRO_ANDROID:-}" != "true" && "${BOOTSTRAP_ONLY:-}" != "true" ]]; then
+            ensure_app_bundle_loads
+        fi
         # Maestro uses a release APK with an embedded bundle (mirrors iOS simulator builds).
         if [[ "${MAESTRO_ANDROID:-}" != "true" ]]; then
             start_server
