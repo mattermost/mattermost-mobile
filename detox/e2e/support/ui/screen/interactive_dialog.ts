@@ -34,6 +34,19 @@ class InteractiveDialogScreen {
         await input.replaceText(value);
     };
 
+    // Dismiss an open keyboard by tapping the scroll view's top-left background
+    // (a label/help area, never an input). A keyboard left open by a previous
+    // field otherwise occludes lower fields and the submit button, and the
+    // keyboard-aware scroll view cannot scroll them above it.
+    dismissKeyboard = async () => {
+        try {
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // No scroll view present, or nothing to dismiss.
+        }
+    };
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
@@ -41,8 +54,9 @@ class InteractiveDialogScreen {
 
         // The apps form renders inside a modal with a sticky header and a
         // keyboard-aware scroll view. A fixed-distance scroll can push the target
-        // under the header or stop short on long forms, so scroll until the input
-        // is actually visible instead of by a hardcoded amount.
+        // under the header or stop short on long forms, so dismiss any open
+        // keyboard first, then scroll until the input is actually visible.
+        await this.dismissKeyboard();
         try {
             await waitFor(appsFormElement).
                 toBeVisible().
@@ -98,8 +112,10 @@ class InteractiveDialogScreen {
 
     submit = async () => {
         // The submit button sits at the bottom of the modal and can be hidden by
-        // the keyboard or fall below the fold on long/multistep dialogs. Scroll
-        // until it is visible rather than by a single fixed distance.
+        // the keyboard or fall below the fold on long/multistep dialogs. Dismiss
+        // the keyboard first, then scroll until it is visible rather than by a
+        // single fixed distance.
+        await this.dismissKeyboard();
         try {
             await waitFor(this.submitButton).
                 toBeVisible().
