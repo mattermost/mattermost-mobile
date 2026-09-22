@@ -121,6 +121,10 @@ const WebsocketEvents = {
     BOR_POST_BURNED: 'post_burned',
     BURN_ON_READ_ALL_REVEALED: 'burn_on_read_all_revealed',
 
+    // Access control policies
+    CHANNEL_ACCESS_CONTROL_UPDATED: 'channel_access_control_updated',
+    PERMISSION_POLICY_UPDATED: 'permission_policy_updated',
+
     // File access control
     FILE_DOWNLOAD_REJECTED: 'file_download_rejected',
     SHOW_TOAST: 'show_toast',
