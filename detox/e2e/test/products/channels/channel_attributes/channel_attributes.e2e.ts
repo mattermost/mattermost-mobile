@@ -691,7 +691,11 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         // * multi-valued field) — not folded into a joined string with the other two.
         await waitFor(ChannelAttributeLabels.overflow).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelAttributeLabels.overflow.tap();
-        await waitFor(ChannelAttributeLabels.overflowSheet).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+        // The sheet's spring-in animation (animatedConfig in screens/bottom_sheet)
+        // occasionally settles past 10s under CI load even though the content is
+        // already correct — give it more room before the visibility check.
+        await waitFor(ChannelAttributeLabels.overflowSheet).toBeVisible().withTimeout(timeouts.TWENTY_SEC);
         await waitFor(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 2)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 2)).toHaveText('LOW').withTimeout(timeouts.TEN_SEC);
 
