@@ -75,12 +75,12 @@ class CreateOrEditChannelScreen {
         return this.toBeVisible();
     };
 
-    openEditChannelHeader = async ({fromChannelInfo = false} = {}) => {
+    openEditChannelHeader = async ({fromChannelInfo = false, reopen}: {fromChannelInfo?: boolean; reopen?: {category: string; channelName: string}} = {}) => {
         // # Open edit channel header screen
         if (fromChannelInfo) {
             await ChannelInfoScreen.setHeaderAction.tap();
         } else {
-            await ChannelScreen.tapIntroSetHeaderAction();
+            await ChannelScreen.tapIntroSetHeaderAction(reopen);
         }
 
         return this.toBeVisible();

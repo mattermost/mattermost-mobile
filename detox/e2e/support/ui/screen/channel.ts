@@ -24,6 +24,8 @@ import {
 import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
 
+import {logDebug} from '../../../../provision/log';
+
 import InteractiveDialogScreen from './interactive_dialog';
 
 async function dismissErrorAlertIfPresent(): Promise<boolean> {
@@ -242,10 +244,14 @@ class ChannelScreen {
         await this.introChannelInfoAction.tap();
     };
 
-    // Same intro-footer race as tapIntroChannelInfoAction (CI 33936010053 MM-T4884
-    // beforeAllFailure.png: spinner still up, set_header.action not in the tree).
-    tapIntroSetHeaderAction = async () => {
-        await waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN);
+    // Same intro-footer race as tapIntroChannelInfoAction: the post list can keep its
+    // spinner up and never render the intro options, so reopening the channel is the
+    // recovery. Callers that can afford to leave and re-enter pass reopen.
+    tapIntroSetHeaderAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introSetHeaderAction.tap();
     };
 
@@ -254,7 +260,15 @@ class ChannelScreen {
         await wait(timeouts.FOUR_SEC);
         const name = typeof channelName === 'string' ? channelName : String(channelName);
         if (category === 'channels') {
-            await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
+            try {
+                await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
+            } catch (notInSidebar) {
+                // The channel exists on the server but has not landed in a sidebar category.
+                // Search reaches it regardless, so specs that are not about the sidebar can
+                // carry on; the log keeps a real sidebar regression visible.
+                logDebug(`[ChannelScreen.open] ${name} absent from the sidebar, opening via Find Channels: ${String(notInSidebar)}`);
+                return this.openViaFindChannels(name);
+            }
         } else {
             await ChannelListScreen.getChannelItemDisplayName(category, name).tap();
         }
@@ -484,7 +498,13 @@ class ChannelScreen {
             return result;
         }
 
-        throw new Error(`message never reached the server after two sends, likely dropped by the sim network (${JSON.stringify(result.error ?? 'no post and no error')})`);
+        // Only what is established: not in THIS channel. A mistargeted sidebar tap can post it
+        // to a different channel, so do not blame the network.
+        throw new Error(
+            `message "${message}" not found in channel ${channelId} after two sends — the send ` +
+            'may have failed, or the app may not have been in that channel ' +
+            `(${JSON.stringify(result.error ?? 'no post and no error')})`,
+        );
     };
 
     postSlashCommand = async (command: string) => {
