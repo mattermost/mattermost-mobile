@@ -9,6 +9,8 @@ import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfigBooleanValue, getLicense} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
+import * as GeneralUtils from '@utils/general';
 
 const mockSetSessionAttributesEnabled = jest.fn();
 const mockRemoveSessionAttributesServer = jest.fn();
@@ -43,9 +45,14 @@ jest.mock('@mattermost/react-native-network-client', () => ({
     setSessionAttributesStableValues: (...args: unknown[]) => mockSetSessionAttributesStableValues(...args),
 }));
 jest.mock('@queries/servers/system');
+jest.mock('@queries/servers/user', () => ({
+    getCurrentUser: jest.fn(),
+}));
 jest.mock('@utils/log');
 
 import {SessionAttributesManagerSingleton} from './index';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 const serverUrl = 'https://chat.example.com';
 const manifest: SAField[] = [
@@ -83,6 +90,7 @@ describe('SessionAttributesManager', () => {
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
         jest.mocked(check).mockResolvedValue(RESULTS.GRANTED);
         jest.mocked(request).mockResolvedValue(RESULTS.GRANTED);
+        jest.mocked(getCurrentUser).mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -224,6 +232,7 @@ describe('SessionAttributesManager', () => {
                 expect.objectContaining({cancelable: true}),
             );
             expect(request).not.toHaveBeenCalled();
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
 
             const continueButton = jest.mocked(Alert.alert).mock.calls[0][2]?.[1];
             const onContinue = continueButton?.onPress;
@@ -242,6 +251,8 @@ describe('SessionAttributesManager', () => {
             await manager.refreshManifest(serverUrl);
             await new Promise(process.nextTick);
 
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
+
             const cancelButton = jest.mocked(Alert.alert).mock.calls[0][2]?.[0];
             const onCancel = cancelButton?.onPress;
             expect(onCancel).toEqual(expect.any(Function));
@@ -258,6 +269,8 @@ describe('SessionAttributesManager', () => {
 
             await manager.refreshManifest(serverUrl);
             await new Promise(process.nextTick);
+
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
 
             const options = jest.mocked(Alert.alert).mock.calls[0][3];
             expect(options?.onDismiss).toEqual(expect.any(Function));
@@ -315,6 +328,45 @@ describe('SessionAttributesManager', () => {
             await new Promise(process.nextTick);
 
             expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should format the Android pre-prompt using the current user locale', async () => {
+            Platform.OS = 'android';
+            jest.mocked(Platform.select).mockReturnValue(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+            jest.mocked(getCurrentUser).mockResolvedValue({locale: 'es'} as UserModel);
+            const getIntlShapeSpy = jest.spyOn(GeneralUtils, 'getIntlShape').mockReturnValue({
+                formatMessage: ({defaultMessage}: {defaultMessage: string}) => defaultMessage,
+            } as ReturnType<typeof GeneralUtils.getIntlShape>);
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(getIntlShapeSpy).toHaveBeenCalledWith('es');
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
+        });
+
+        it('should not show the Android pre-prompt again when a later check reports blocked', async () => {
+            Platform.OS = 'android';
+            jest.mocked(Platform.select).mockReturnValue(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValueOnce(RESULTS.DENIED).mockResolvedValue(RESULTS.BLOCKED);
+            jest.mocked(request).mockResolvedValue(RESULTS.BLOCKED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
+            jest.mocked(Alert.alert).mock.calls[0][2]?.[1]?.onPress?.();
+            await new Promise(process.nextTick);
+            expect(request).toHaveBeenCalledTimes(1);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(jest.mocked(Alert.alert).mock.calls).toHaveLength(1);
+            expect(request).toHaveBeenCalledTimes(1);
         });
 
         it('should request location when the ssid field arrives over the websocket', async () => {
