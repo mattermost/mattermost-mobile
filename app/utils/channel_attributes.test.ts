@@ -5,8 +5,10 @@ import {
     canMoveToOption,
     compareChannelAttributeFields,
     deriveChannelAttributeBanner,
+    flattenChannelAttributesToChips,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
+    groupChannelAttributeChipsByField,
     isPropertyFieldRequired,
     isPropertyValueSet,
     renderBannerTemplate,
@@ -14,8 +16,10 @@ import {
     selectAttributesForAction,
     selectChannelInfoAttributes,
     stripUnresolvedTokens,
+    type ChannelAttributeChipItem,
     type ChannelAttributeField,
     type ChannelAttributeValue,
+    type ResolvedChannelAttribute,
 } from './channel_attributes';
 
 const CLASSIFICATION_OPTIONS = [
@@ -447,5 +451,116 @@ describe('deriveChannelAttributeBanner', () => {
         });
 
         expect(deriveChannelAttributeBanner([configured], [classificationValue]).hasBanner).toBe(true);
+    });
+});
+
+// Builds a ResolvedChannelAttribute directly, bypassing resolveChannelAttributes, since
+// flattenChannelAttributesToChips and groupChannelAttributeChipsByField only care about
+// field identity and displayValues, not how those were resolved.
+function resolvedAttribute(overrides: Partial<ResolvedChannelAttribute> & {field: ChannelAttributeField}): ResolvedChannelAttribute {
+    return {displayValue: '', displayValues: [], ...overrides};
+}
+
+describe('flattenChannelAttributesToChips', () => {
+    const PREFIX = 'test.chip';
+
+    it('should give a single-valued attribute a bare testID with no index suffix', () => {
+        const attribute = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [{value: 'HIGH', color: '#FF0000'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([attribute], PREFIX);
+
+        expect(chips).toEqual([
+            {key: 'f1-0', fieldId: 'f1', label: 'sensitivity', value: 'HIGH', color: '#FF0000', testID: 'test.chip.sensitivity'},
+        ]);
+    });
+
+    it('should give each value of a multi-valued attribute an indexed testID suffix', () => {
+        const attribute = resolvedAttribute({
+            field: field({id: 'f1', name: 'caveat'}),
+            displayValues: [{value: 'NOFORN', color: '#FF0000'}, {value: 'ORCON'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([attribute], PREFIX);
+
+        expect(chips).toEqual([
+            {key: 'f1-0', fieldId: 'f1', label: 'caveat', value: 'NOFORN', color: '#FF0000', testID: 'test.chip.caveat.0'},
+            {key: 'f1-1', fieldId: 'f1', label: 'caveat', value: 'ORCON', color: undefined, testID: 'test.chip.caveat.1'},
+        ]);
+    });
+
+    it('should produce correct keys and testIDs for a mix of single- and multi-valued attributes', () => {
+        const single = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [{value: 'HIGH'}],
+        });
+        const multi = resolvedAttribute({
+            field: field({id: 'f2', name: 'caveat'}),
+            displayValues: [{value: 'NOFORN'}, {value: 'ORCON'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([single, multi], PREFIX);
+
+        expect(chips.map((chip) => [chip.key, chip.testID])).toEqual([
+            ['f1-0', 'test.chip.sensitivity'],
+            ['f2-0', 'test.chip.caveat.0'],
+            ['f2-1', 'test.chip.caveat.1'],
+        ]);
+    });
+
+    it('should emit no chips for an attribute with no display values', () => {
+        const unset = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [],
+        });
+
+        expect(flattenChannelAttributesToChips([unset], PREFIX)).toEqual([]);
+    });
+});
+
+describe('groupChannelAttributeChipsByField', () => {
+    function chip(fieldId: string, index: number, label = fieldId): ChannelAttributeChipItem {
+        return {key: `${fieldId}-${index}`, fieldId, label, value: `${fieldId}-value-${index}`, testID: `test.chip.${fieldId}.${index}`};
+    }
+
+    it('should group every item under one entry when they all belong to the same field', () => {
+        const items = [chip('f1', 0), chip('f1', 1), chip('f1', 2)];
+
+        const groups = groupChannelAttributeChipsByField(items);
+
+        expect(groups).toEqual([
+            {fieldId: 'f1', label: 'f1', items},
+        ]);
+    });
+
+    it('should produce one group per field, in first-seen order', () => {
+        const items = [chip('f2', 0), chip('f1', 0), chip('f3', 0)];
+
+        const groups = groupChannelAttributeChipsByField(items);
+
+        expect(groups.map((group) => group.fieldId)).toEqual(['f2', 'f1', 'f3']);
+        expect(groups).toHaveLength(3);
+        groups.forEach((group) => expect(group.items).toHaveLength(1));
+    });
+
+    it('should merge non-contiguous items from the same field back into that field\'s single group, at its first-seen position', () => {
+        // Intended behavior: grouping is keyed by fieldId regardless of contiguity, so an
+        // interleaved run (f1, f2, f1) still produces one group per field, not a re-opened
+        // second group for the field's later items.
+        const first = chip('f1', 0);
+        const middle = chip('f2', 0);
+        const last = chip('f1', 1);
+
+        const groups = groupChannelAttributeChipsByField([first, middle, last]);
+
+        expect(groups.map((group) => group.fieldId)).toEqual(['f1', 'f2']);
+        expect(groups[0].items).toEqual([first, last]);
+        expect(groups[1].items).toEqual([middle]);
+    });
+
+    it('should return an empty array for empty input', () => {
+        expect(groupChannelAttributeChipsByField([])).toEqual([]);
     });
 });

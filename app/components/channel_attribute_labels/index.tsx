@@ -42,7 +42,7 @@ const messages = defineMessages({
     },
     overflowAccessibility: {
         id: 'channel_attributes.labels.overflow_aria',
-        defaultMessage: '{count, plural, one {# more attribute} other {# more attributes}}',
+        defaultMessage: '{count, plural, one {# more attribute value} other {# more attribute values}}',
     },
     sheetTitle: {
         id: 'channel_attributes.labels.sheet_title',
