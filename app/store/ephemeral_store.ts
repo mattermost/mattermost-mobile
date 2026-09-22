@@ -36,7 +36,6 @@ class EphemeralStoreSingleton {
     // and make sure we only handle one.
     private addingTeam = new Set<string>();
     private joiningChannels = new Set<string>();
-    private channelMemberSyncs = new Map<string, Promise<void>>();
     private leavingChannels = new Set<string>();
     private archivingChannels = new Set<string>();
     private convertingChannels = new Set<string>();
@@ -324,21 +323,6 @@ class EphemeralStoreSingleton {
 
     removeJoiningChannel = (channelId: string) => {
         this.joiningChannels.delete(channelId);
-    };
-
-    // In-flight handling of a user_added websocket event, keyed by channel
-    setChannelMemberSync = (channelId: string, sync: Promise<void>) => {
-        this.channelMemberSyncs.set(channelId, sync);
-    };
-
-    getChannelMemberSync = (channelId: string) => {
-        return this.channelMemberSyncs.get(channelId);
-    };
-
-    clearChannelMemberSync = (channelId: string, sync: Promise<void>) => {
-        if (this.channelMemberSyncs.get(channelId) === sync) {
-            this.channelMemberSyncs.delete(channelId);
-        }
     };
 
     // Ephemeral control when adding a team locally
