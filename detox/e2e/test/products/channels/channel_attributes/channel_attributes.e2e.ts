@@ -598,14 +598,23 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         beforeAll(async () => {
             // The only other flag write in the suite; see beforeAll above.
             canControlFlag = await disableChannelAttributes(siteOneUrl);
+
+            // Fail here rather than letting each test return early. A test that returns without
+            // asserting is recorded by Jest as passed, so an installation that owns the flag used
+            // to report three green flag-off tests that never ran — the same thing as reporting
+            // the feature works when it was never switched off. Every provisioned server in CI
+            // accepts this write, so this is a real change in the environment, not a normal skip.
+            if (!canControlFlag) {
+                throw new Error(
+                    'FeatureFlagChannelAttributes cannot be turned off on this server (the ' +
+                    'installation supplies it, so config/patch is accepted and ignored). The ' +
+                    'flag-off tests below have no pre-condition to assert against and are not ' +
+                    'being reported as passed.',
+                );
+            }
         });
 
         it('MM-T6300_1 - should not render attribute chips in the header when ChannelAttributes flag is off', async () => {
-            if (!canControlFlag) {
-                // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-                return;
-            }
-
             // # Create a header-designated attribute field.
             const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
                 siteOneUrl,
@@ -635,11 +644,6 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         });
 
         it('MM-T6309_1 - should not show channel attribute banner when the flag is off', async () => {
-            if (!canControlFlag) {
-                // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-                return;
-            }
-
             // # ChannelAttributes flag is off. Create field and channel, then PATCH the value
             // # (property_values at creation are ignored by the server when the flag is off).
             const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
@@ -671,11 +675,6 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         });
 
         it('MM-T6311_1 - should not show attribute chips when ChannelAttributes is off even if ClassificationMarkings is on', async () => {
-            if (!canControlFlag) {
-                // Server controls FeatureFlagChannelAttributes via env var; flag-off behavior cannot be tested.
-                return;
-            }
-
             // # Enable classification markings only; channel attributes flag stays off.
             await enableClassificationMarkings(siteOneUrl);
 

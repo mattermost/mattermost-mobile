@@ -41,9 +41,16 @@ patch_json="$3"
 key="$4"
 expected="$5"
 
+# Every request here is a small JSON read or patch against one server. Without a ceiling a
+# stalled connection blocks curl indefinitely: the script cannot reach its retry or exit path
+# and the caller burns its whole CI job timeout on one unanswered socket.
+CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
+MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
+
 read_key() {
     local response
     if ! response="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         "${site_url}/api/v4/config/client?format=old" 2>/dev/null)"; then
         printf '%s' "<client config could not be read>"
@@ -74,6 +81,7 @@ read_restricted() {
     # 'unknown' and then the || prints a second one, and the caller reports both.
     local body
     if ! body="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         "${site_url}/api/v4/config" 2>/dev/null)"; then
         printf 'unknown'
@@ -93,6 +101,7 @@ print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unk
 read_env_managed() {
     local body
     if ! body="$(curl -f -sS --show-error \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         "${site_url}/api/v4/config/environment" 2>/dev/null)"; then
         printf 'unknown'
@@ -131,6 +140,7 @@ fi
 actual=""
 for attempt in 1 2 3; do
     if ! curl -f -sS --show-error -X PUT \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         -H "Content-Type: application/json" \
         -d "$patch_json" \
