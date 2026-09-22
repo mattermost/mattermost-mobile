@@ -291,8 +291,21 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
 }
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
-    const userId = msg.data.user_id || msg.broadcast.userId;
     const channelId = msg.data.channel_id || msg.broadcast.channel_id;
+
+    // Registered before the first await so a channel_deleted event that follows
+    // can wait for this channel to be stored instead of missing it.
+    const sync = processUserAddedToChannel(serverUrl, msg, channelId);
+    EphemeralStore.setChannelMemberSync(channelId, sync);
+    try {
+        await sync;
+    } finally {
+        EphemeralStore.clearChannelMemberSync(channelId, sync);
+    }
+}
+
+async function processUserAddedToChannel(serverUrl: string, msg: any, channelId: string) {
+    const userId = msg.data.user_id || msg.broadcast.userId;
     const {team_id: teamId} = msg.data;
 
     try {
@@ -433,6 +446,10 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
     }
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // A channel fetched for a user_added event just before the archive is not
+        // stored yet; setting deleteAt now would miss it and the stale copy would win.
+        await EphemeralStore.getChannelMemberSync(channelId);
 
         const user = await getCurrentUser(database);
         if (!user) {

@@ -615,6 +615,42 @@ describe('WebSocket Channel Actions', () => {
             expect(removeCurrentUserFromChannel).toHaveBeenCalledWith(serverUrl, channelId);
         });
 
+        it('should apply the archive after an in-flight user_added sync stores the channel', async () => {
+            const syncs = new Map<string, Promise<void>>();
+            jest.mocked(EphemeralStore.setChannelMemberSync).mockImplementation((id, sync) => {
+                syncs.set(id, sync);
+            });
+            jest.mocked(EphemeralStore.getChannelMemberSync).mockImplementation((id) => syncs.get(id));
+            jest.mocked(EphemeralStore.clearChannelMemberSync).mockImplementation((id) => {
+                syncs.delete(id);
+            });
+
+            const order: string[] = [];
+            let resolveFetch: (value: Awaited<ReturnType<typeof fetchMyChannel>>) => void = () => undefined;
+            (getCurrentUser as jest.Mock).mockResolvedValue({id: userId, isGuest: false});
+            mockedFetchMyChannel.mockReturnValue(new Promise((resolve) => {
+                resolveFetch = resolve;
+            }));
+            mockedPrepareMyChannelsForTeam.mockResolvedValue([Promise.resolve([{} as any])]);
+            jest.spyOn(operator, 'batchRecords').mockImplementation(async () => {
+                order.push('channel stored');
+            });
+            (addChannelToDefaultCategory as jest.Mock).mockResolvedValue({models: []});
+            (fetchPostsForChannel as jest.Mock).mockResolvedValue({});
+            (setChannelDeleteAt as jest.Mock).mockImplementation(async () => {
+                order.push('deleteAt set');
+            });
+            (canViewArchivedChannels as jest.Mock).mockResolvedValue(true);
+
+            const added = handleUserAddedToChannelEvent(serverUrl, {...msg, data: {...msg.data, user_id: userId}});
+            const deleted = handleChannelDeletedEvent(serverUrl, {...msg, data: {...msg.data, delete_at: 123}});
+            resolveFetch({channels: [channel], memberships: [{} as any]});
+            await Promise.all([added, deleted]);
+
+            expect(order).toEqual(['channel stored', 'deleteAt set']);
+            expect(setChannelDeleteAt).toHaveBeenCalledWith(serverUrl, channelId, 123);
+        });
+
         it('should keep the user in the channel when archived channels are viewable', async () => {
             (EphemeralStore.isLeavingChannel as jest.Mock).mockReturnValueOnce(false);
             (EphemeralStore.isArchivingChannel as jest.Mock).mockReturnValueOnce(false);
