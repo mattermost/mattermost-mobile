@@ -54,6 +54,7 @@ import {getCurrentTeamId, setCurrentTeamId} from '@queries/servers/system';
 import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import {navigateToRoot, dismissAllRoutesAndPopToScreen, navigateToScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 import {isDMChannel} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -799,6 +800,11 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
         if (channel?.teamId && currentTeamId !== channel.teamId) {
             await setCurrentTeamId(operator, channel.teamId);
         }
+
+        // Marks which thread the user is viewing, which websocket handlers, push
+        // notifications and cache cleanup all read. switchToThread sets it too.
+        EphemeralStore.setCurrentThreadId(rootId);
+
         if (activeUrl === serverUrl) {
             await dismissAllRoutesAndPopToScreen(Screens.THREAD, {rootId, title, channelName: channel?.displayName || ''});
             return;
