@@ -54,9 +54,16 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
 
         lastObserved = await observedFlagValues(baseUrl);
 
+        // Say which of the two failed. A rejected patch and a patch that was accepted but
+        // never propagated both land here, and the observed values alone cannot tell them
+        // apart — that ambiguity is what made this helper's `false` mean two different things.
+        const cause = patchResult.error ?
+            `patch rejected: ${JSON.stringify(patchResult.error).slice(0, 200)}` :
+            'patch accepted but the client config did not report false in time';
+
         // eslint-disable-next-line no-console
         console.warn(
-            `[disableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
+            `[disableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ${cause}; ` +
             `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
     }
