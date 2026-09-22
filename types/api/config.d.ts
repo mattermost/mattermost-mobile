@@ -128,6 +128,7 @@ interface ClientConfig {
     ExperimentalViewArchivedChannels: string;
     ExtendSessionLengthWithActivity: string;
     FeatureFlagAppsEnabled?: string;
+    FeatureFlagChannelAttributes?: string;
     FeatureFlagClassificationMarkings?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagPostPriority?: string;

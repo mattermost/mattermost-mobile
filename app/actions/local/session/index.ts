@@ -156,6 +156,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     RedactionRevalidationManager.removeServer(serverUrl);
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
     EphemeralStore.clearClassificationCache(serverUrl);
+    EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
 
     // Post ids are not namespaced by server, so leaving the last viewable items behind would
     // let a stale entry read as "on screen" for whatever list mounts next.

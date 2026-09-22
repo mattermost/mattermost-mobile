@@ -60,10 +60,9 @@ describe('Messaging - Message Reply', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
@@ -93,10 +92,9 @@ describe('Messaging - Message Reply', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
@@ -110,16 +108,19 @@ describe('Messaging - Message Reply', () => {
         await ThreadScreen.back();
     });
 
-    // Skip Android: CI run 30000635898 — the thread parent post is below the visibility threshold.
-    (isAndroid() ? it.skip : it)('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
+    it('MM-T4785_3 - should not have reply option available on reply thread post options', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
 
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
-        await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        await waitFor(postListPostItem).toExist().withTimeout(timeouts.FOUR_SEC);
+        if (isAndroid()) {
+            await waitFor(postListPostItem).toBeVisible(15).withTimeout(timeouts.FOUR_SEC);
+        } else {
+            await waitFor(postListPostItem).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+        }
 
         await postListPostItem.tap();
 

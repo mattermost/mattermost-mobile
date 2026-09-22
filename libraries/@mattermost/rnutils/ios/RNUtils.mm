@@ -107,6 +107,19 @@ RCT_REMAP_METHOD(removeThreadNotifications, server:(NSString *)serverUrl
     [self removeThreadNotifications:serverUrl threadId:threadId];
 }
 
+RCT_EXPORT_METHOD(beginDatabaseActivity:(NSString *)serverUrl
+                  task:(NSString *)task
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject) {
+    [self beginDatabaseActivity:serverUrl task:task resolve:resolve reject:reject];
+}
+
+RCT_EXPORT_METHOD(endDatabaseActivity:(NSString *)token
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject) {
+    [self endDatabaseActivity:token resolve:resolve reject:reject];
+}
+
 RCT_REMAP_METHOD(removeServerNotifications, serverUrl:(NSString *)serverUrl) {
     [self removeServerNotifications:serverUrl];
 }
@@ -121,14 +134,6 @@ RCT_EXPORT_METHOD(saveFile:(NSString *)filePath
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject) {
     [self saveFile:filePath resolve:resolve reject:reject];
-}
-
-RCT_REMAP_METHOD(setSoftKeyboardToAdjustResize, setAdjustResize) {
-    [self setSoftKeyboardToAdjustResize];
-}
-
-RCT_REMAP_METHOD(setSoftKeyboardToAdjustNothing, setAdjustNothing) {
-    [self setSoftKeyboardToAdjustNothing];
 }
 
 RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
@@ -222,6 +227,20 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
     [[NotificationManager shared] removeServerNotificationsWithServerUrl:serverUrl];
 }
 
+- (void)beginDatabaseActivity:(NSString *)serverUrl task:(NSString *)task resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *token = [[DatabaseLockProtectionManager shared] begin:serverUrl task:task];
+        resolve(token);
+    });
+}
+
+- (void)endDatabaseActivity:(NSString *)token resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[DatabaseLockProtectionManager shared] end:token];
+        resolve(nil);
+    });
+}
+
 - (void)getRealFilePath:(NSString *)filePath resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     resolve(@"");
 }
@@ -238,14 +257,6 @@ RCT_EXPORT_METHOD(createZipFile:(NSArray<NSString *> *)paths
     } else {
         reject(@"create_zip_error", [result objectForKey:@"error"], nil);
     }
-}
-
--(void)setSoftKeyboardToAdjustResize {
-    // Do nothing as it does not apply to iOS
-}
-
--(void)setSoftKeyboardToAdjustNothing {
-    // Do nothing as it does not apply to iOS
 }
 
 #pragma helpers

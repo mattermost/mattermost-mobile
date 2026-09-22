@@ -15,10 +15,6 @@ jest.mock('@components/option_item', () => ({
     ITEM_HEIGHT: 48,
 }));
 
-jest.mock('@mattermost/react-native-emm', () => ({
-    useManagedConfig: () => ({}),
-}));
-
 jest.mock('@context/server', () => ({
     useServerUrl: () => 'https://example.com',
 }));

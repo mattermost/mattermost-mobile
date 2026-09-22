@@ -106,7 +106,19 @@ describe('ChecklistItemBottomSheet', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         jest.mocked(useIsTablet).mockReturnValue(false);
+        jest.mocked(dismissBottomSheet).mockResolvedValue(undefined);
     });
+
+    function mockDeferredDismiss() {
+        let resolveDismiss: () => void = () => {
+            // noop until assigned
+        };
+        const dismissPromise = new Promise<void>((resolve) => {
+            resolveDismiss = resolve;
+        });
+        jest.mocked(dismissBottomSheet).mockReturnValue(dismissPromise);
+        return {resolveDismiss};
+    }
 
     it('renders correctly with all props', () => {
         const props = getBaseProps();
@@ -397,14 +409,24 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the command modal when the command is clicked', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
         const commandItem = getByTestId('checklist_item.command');
 
+        let actionPromise!: Promise<void>;
         act(() => {
-            commandItem.props.action();
+            actionPromise = commandItem.props.action();
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToEditCommand).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveDismiss();
+            await actionPromise;
         });
 
         expect(goToEditCommand).toHaveBeenCalledWith(
@@ -430,6 +452,7 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the set date modal when the due date is clicked', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
@@ -439,9 +462,20 @@ describe('ChecklistItemBottomSheet', () => {
         });
         const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
         const dueDateItem = getByTestId('checklist_item.due_date');
+
+        let actionPromise!: Promise<void>;
         act(() => {
-            dueDateItem.props.action();
+            actionPromise = dueDateItem.props.action();
         });
+
+        expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToSelectDate).not.toHaveBeenCalled();
+
+        await act(async () => {
+            resolveDismiss();
+            await actionPromise;
+        });
+
         expect(goToSelectDate).toHaveBeenCalledWith(
             'Run 1',
             expect.any(Function),
@@ -490,6 +524,7 @@ describe('ChecklistItemBottomSheet', () => {
     });
 
     it('opens the select assigneed screen when the assignee option item is pressed', async () => {
+        const {resolveDismiss} = mockDeferredDismiss();
         const props = getBaseProps();
         props.checklistNumber = 2;
         props.itemNumber = 4;
@@ -498,8 +533,17 @@ describe('ChecklistItemBottomSheet', () => {
         const assigneeItem = getByTestId('checklist_item.assignee');
         const onPress = assigneeItem.props.action;
 
+        let actionPromise!: Promise<void>;
+        act(() => {
+            actionPromise = onPress('user-1');
+        });
+
+        expect(dismissBottomSheet).toHaveBeenCalled();
+        expect(goToSelectUser).not.toHaveBeenCalled();
+
         await act(async () => {
-            onPress('user-1');
+            resolveDismiss();
+            await actionPromise;
         });
 
         expect(goToSelectUser).toHaveBeenCalledWith(
@@ -552,7 +596,7 @@ describe('ChecklistItemBottomSheet', () => {
         const onPress = assigneeItem.props.action;
 
         await act(async () => {
-            onPress('user-1');
+            await onPress('user-1');
         });
 
         const handleSelect = jest.mocked(goToSelectUser).mock.calls[0][4];
@@ -853,7 +897,8 @@ describe('ChecklistItemBottomSheet', () => {
             expect(queryByTestId('checklist_item.edit_button')).toBeNull();
         });
 
-        it('should open edit modal when edit button is pressed', () => {
+        it('should open edit modal when edit button is pressed', async () => {
+            const {resolveDismiss} = mockDeferredDismiss();
             const props = getBaseProps();
             props.item = TestHelper.fakePlaybookChecklistItemModel({
                 id: 'item-1',
@@ -867,6 +912,13 @@ describe('ChecklistItemBottomSheet', () => {
             const editButton = getByTestId('checklist_item.edit_button');
             fireEvent.press(editButton);
 
+            expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(goToEditChecklistItem).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveDismiss();
+            });
+
             expect(goToEditChecklistItem).toHaveBeenCalledWith(
                 'Run 1',
                 'Test Checklist Item',
@@ -875,7 +927,8 @@ describe('ChecklistItemBottomSheet', () => {
             );
         });
 
-        it('should open edit modal with undefined description when item has no description', () => {
+        it('should open edit modal with undefined description when item has no description', async () => {
+            const {resolveDismiss} = mockDeferredDismiss();
             const props = getBaseProps();
             props.item = TestHelper.fakePlaybookChecklistItemModel({
                 ...mockItem,
@@ -885,6 +938,13 @@ describe('ChecklistItemBottomSheet', () => {
 
             const editButton = getByTestId('checklist_item.edit_button');
             fireEvent.press(editButton);
+
+            expect(dismissBottomSheet).toHaveBeenCalled();
+            expect(goToEditChecklistItem).not.toHaveBeenCalled();
+
+            await act(async () => {
+                resolveDismiss();
+            });
 
             expect(goToEditChecklistItem).toHaveBeenCalledWith(
                 'Run 1',
@@ -902,7 +962,9 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const editButton = getByTestId('checklist_item.edit_button');
-            fireEvent.press(editButton);
+            await act(async () => {
+                fireEvent.press(editButton);
+            });
 
             const handleEditItem = jest.mocked(goToEditChecklistItem).mock.calls[0][3];
             await act(async () => {
@@ -925,7 +987,9 @@ describe('ChecklistItemBottomSheet', () => {
             const {getByTestId} = renderWithIntl(<ChecklistItemBottomSheet {...props}/>);
 
             const editButton = getByTestId('checklist_item.edit_button');
-            fireEvent.press(editButton);
+            await act(async () => {
+                fireEvent.press(editButton);
+            });
 
             const handleEditItem = jest.mocked(goToEditChecklistItem).mock.calls[0][3];
             await act(async () => {

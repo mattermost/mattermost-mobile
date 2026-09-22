@@ -1,7 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {
+    DEMO_PLUGIN_DOWNLOAD_URL,
+    DEMO_PLUGIN_FIXTURE_FILENAME,
+    DEMO_PLUGIN_ID,
+} from '../shared/demo-plugin-fixture';
+
 import type {RequiredPlugin} from './types';
+
+export {DEMO_PLUGIN_DOWNLOAD_URL, DEMO_PLUGIN_FIXTURE_FILENAME, DEMO_PLUGIN_ID};
 
 export const LOG_PREFIX = '[provision]';
 
@@ -15,14 +23,12 @@ export const PLUGIN_STATE_FAILED = 3;
 
 export const CALLS_PLUGIN_URL = 'https://github.com/mattermost/mattermost-plugin-calls/releases/download/v1.11.5/mattermost-plugin-calls-v1.11.5-linux-amd64.tar.gz';
 
-export const DEMO_PLUGIN_ID = 'com.mattermost.demo-plugin';
-export const DEMO_PLUGIN_DOWNLOAD_URL = 'https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz';
-export const DEMO_PLUGIN_FIXTURE_FILENAME = 'mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz';
-
 export const REQUIRED_PLUGINS: RequiredPlugin[] = [
     {id: AGENTS_PLUGIN_ID, url: null, fixture: null},
     {id: 'com.mattermost.calls', url: CALLS_PLUGIN_URL, fixture: null},
-    {id: DEMO_PLUGIN_ID, url: DEMO_PLUGIN_DOWNLOAD_URL, fixture: DEMO_PLUGIN_FIXTURE_FILENAME},
+
+    // url is null on purpose: origin-side install_from_url 524s behind Cloudflare.
+    {id: DEMO_PLUGIN_ID, url: null, fixture: DEMO_PLUGIN_FIXTURE_FILENAME},
 ];
 
 export const ALLOWED_DOMAIN_PATTERNS = [

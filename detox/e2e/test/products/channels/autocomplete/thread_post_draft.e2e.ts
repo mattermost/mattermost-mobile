@@ -8,7 +8,6 @@
 // *******************************************************************
 
 import {
-    Post,
     Setup,
 } from '@support/server_api';
 import {
@@ -46,8 +45,7 @@ describe('Autocomplete - Thread Post Draft', () => {
         // # Open a channel screen, post a message, and open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.postMessage(message);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post} = await ChannelScreen.postMessageAndVerify(message, testChannel.id, siteOneUrl);
         await wait(timeouts.FOUR_SEC);
         await ChannelScreen.openReplyThreadFor(post.id, message);
     });

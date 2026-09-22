@@ -151,17 +151,24 @@ describe('Messaging - File Upload', () => {
         // Full UI multi-file selection from a picker isn't automatable in Detox — upload via API.
 
         // # Upload two images to the channel via API
-        const {fileId: fileId1} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, require('path').resolve(__dirname, '../../../../support/fixtures/image.png'));
-
-        const {fileId: fileId2} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, require('path').resolve(__dirname, '../../../../support/fixtures/image.png'));
+        const upload1 = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, require('path').resolve(__dirname, '../../../../support/fixtures/image.png'));
+        const upload2 = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, require('path').resolve(__dirname, '../../../../support/fixtures/image.png'));
+        if (upload1.error || !upload1.fileId || upload2.error || !upload2.fileId) {
+            throw new Error(`MM-T328_1: file upload failed: ${JSON.stringify({upload1: upload1.error, upload2: upload2.error})}`);
+        }
+        const {fileId: fileId1} = upload1;
+        const {fileId: fileId2} = upload2;
 
         // # Create a post with both file IDs attached
         const message = `Multi-attachment post ${getRandomId()}`;
-        const {post} = await Post.apiCreatePost(siteOneUrl, {
+        const {post, error: postError} = await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
             message,
             fileIds: [fileId1, fileId2],
         });
+        if (postError || !post?.id) {
+            throw new Error(`MM-T328_1: create post failed: ${JSON.stringify(postError)}`);
+        }
 
         // # Open channel screen
         await ChannelScreen.open(channelsCategory, testChannel.name);

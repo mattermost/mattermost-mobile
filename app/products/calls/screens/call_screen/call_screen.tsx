@@ -10,6 +10,7 @@ import {
     type LayoutRectangle,
     Platform,
     Pressable,
+    type PressableStateCallbackType,
     ScrollView,
     StatusBar,
     Text,
@@ -28,8 +29,8 @@ import {
     stopRecordingConfirmationAlert,
 } from '@calls/alerts';
 import {AudioDeviceButton} from '@calls/components/audio_device_button';
-import CallDuration from '@calls/components/call_duration';
 import CallNotification from '@calls/components/call_notification';
+import {CallStatusTimer} from '@calls/components/call_status_timer';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import Captions from '@calls/components/captions';
 import EmojiList from '@calls/components/emoji_list';
@@ -46,7 +47,7 @@ import {
     useIncomingCalls,
 } from '@calls/state';
 import {AudioDevice, type CallSession, type CallsTheme, type CurrentCall} from '@calls/types/calls';
-import {getHandsRaised, makeCallsTheme, sortSessions} from '@calls/utils';
+import {getHandsRaised, makeCallsTheme, sortDMSessions, sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -61,6 +62,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
+import type UserModel from '@typings/database/models/servers/user';
+
+const MY_CARD_KEY = 'my-session';
+const CALLEE_CARD_KEY = 'dm-callee';
+const PENDING_CALLEE_SESSION_ID = 'dm-callee-pending';
+
 export const avatarL = 96;
 export const avatarM = 72;
 export const usernameL = 110;
@@ -73,9 +80,15 @@ export type Props = {
     teammateNameDisplay: string;
     displayName?: string;
     isOwnDirectMessage: boolean;
+    isDM: boolean;
     otherParticipants: boolean;
     isAdmin: boolean;
     isHost: boolean;
+    isDMConnecting: boolean;
+    isDMCalling: boolean;
+    currentUser?: UserModel;
+    dmCallee?: UserModel;
+    dmCalleeAnsweredAt: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
@@ -112,20 +125,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         gap: 8,
         paddingHorizontal: 24,
     },
-    headerLeft: {
+    headerSide: {
+        flex: 1,
+        minWidth: 57,
         flexDirection: 'row',
-        justifyContent: 'flex-start',
         alignItems: 'center',
-        width: 93,
         gap: 8,
     },
-    headerLeftRightRecOff: {
-        width: 57,
+    headerLeft: {
+        justifyContent: 'flex-start',
     },
-    time: {
+    timerText: {
         color: theme.buttonColor,
-        ...typography('Heading', 200),
-        width: 56,
+        ...typography('Body', 100, 'SemiBold'),
     },
     headerPortraitSpacer: {
         height: 12,
@@ -141,10 +153,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         top: -1000,
     },
     headerRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'flex-end',
-        width: 93,
+    },
+    headerRightPressed: {
+        opacity: 0.72,
     },
     collapseIcon: {
         color: changeOpacity(theme.buttonColor, 0.56),
@@ -160,7 +172,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         width: '100%',
     },
     usersScrollContainerScreenOn: {
-        marginTop: -20,
+        flex: 0,
     },
     usersScrollViewCentered: {
         flex: 1,
@@ -203,6 +215,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         flexDirection: 'column',
         alignItems: 'center',
         flex: 1,
+    },
+    buttonDisabled: {
+        opacity: 0.5,
     },
     buttonLandscape: {
         flex: 0,
@@ -278,7 +293,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
-        flex: 2,
+        flex: 1,
         width: '100%',
         height: '100%',
         alignItems: 'center',
@@ -302,9 +317,15 @@ const CallScreen = ({
     teammateNameDisplay,
     displayName,
     isOwnDirectMessage,
+    isDM,
     otherParticipants,
     isAdmin,
     isHost,
+    isDMConnecting,
+    isDMCalling,
+    currentUser,
+    dmCallee,
+    dmCalleeAnsweredAt,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -325,13 +346,76 @@ const CallScreen = ({
     const [contentOverflow, setContentOverflow] = useState(false);
     const [previousNumSessions, setPreviousNumSessions] = useState(0);
 
-    const mySession = currentCall?.sessions[currentCall.mySessionId];
+    const mySession = sessionsDict[currentCall?.mySessionId ?? ''];
+    const callHasMySession = Boolean(currentCall?.sessions[currentCall.mySessionId]);
+    const pendingMySession: CallSession = useMemo(() => ({
+        sessionId: currentCall?.mySessionId ?? '',
+        userId: currentCall?.myUserId ?? '',
+        muted: !currentCall?.startUnmuted,
+        raisedHand: 0,
+        userModel: currentUser,
+    }), [currentCall?.mySessionId, currentCall?.myUserId, currentCall?.startUnmuted, currentUser]);
+    const pendingCalleeSession: CallSession = useMemo(() => ({
+        sessionId: PENDING_CALLEE_SESSION_ID,
+        userId: dmCallee?.id ?? '',
+        muted: false,
+        raisedHand: 0,
+        userModel: dmCallee,
+    }), [dmCallee]);
+
+    const cards = useMemo(() => {
+        if (!currentCall) {
+            return [];
+        }
+
+        const cardItems = [];
+
+        const sessions = isDM ?
+            sortDMSessions(intl.locale, teammateNameDisplay, currentCall.myUserId, sessionsDict, currentCall.screenOn) :
+            sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
+
+        if (!mySession) {
+            cardItems.push({key: MY_CARD_KEY, session: pendingMySession, isRinging: false});
+        }
+
+        // When we do have sessions, iterate over then so we can add same consistent Keys to avoid remounting cards.
+        let calleeKeyTaken = false;
+        for (const session of sessions) {
+            let key = session.sessionId;
+            if (session.sessionId === currentCall.mySessionId) {
+                key = MY_CARD_KEY;
+            } else if (isDM && !calleeKeyTaken && session.userId === dmCallee?.id) {
+                // One user can hold several sessions, so only the first callee session takes the shared key.
+                key = CALLEE_CARD_KEY;
+                calleeKeyTaken = true;
+            }
+
+            cardItems.push({key, session, isRinging: false});
+        }
+
+        // DM callee gets a placeholder card until their answered session appears; removed once they leave.
+        const calleeIsExpected = isDM && dmCallee?.id && (
+            isDMConnecting ||
+            isDMCalling ||
+            Object.values(currentCall.sessions).some((session) => session.userId === dmCallee.id)
+        );
+        if (calleeIsExpected && !calleeKeyTaken) {
+            cardItems.push({key: CALLEE_CARD_KEY, session: pendingCalleeSession, isRinging: true});
+        }
+
+        return cardItems;
+    }, [currentCall, isDM, intl.locale, teammateNameDisplay, sessionsDict, mySession, isDMConnecting, isDMCalling, pendingMySession, pendingCalleeSession, dmCallee?.id]);
+
+    const controlsDisabled = !currentCall?.connected;
+
+    const displayMySession = mySession ?? pendingMySession;
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const screenShareOn = Boolean(currentCall?.screenOn);
     const isLandscape = width > height;
     const smallerAvatar = isLandscape || screenShareOn || showCC || contentOverflow;
     const avatarSize = smallerAvatar ? avatarM : avatarL;
-    const numSessions = Object.keys(sessionsDict).length;
+
+    const numSessions = cards.length;
     const showIncomingCalls = incomingCalls.incomingCalls.length > 0;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
@@ -341,16 +425,16 @@ const CallScreen = ({
     const hideCCTitle = intl.formatMessage({id: 'mobile.calls_hide_cc', defaultMessage: 'Hide live captions'});
 
     const leaveCallHandler = useCallback(() => {
-        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '', navigateBack);
+        leaveCallConfirmation(intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId || '');
     }, [intl, otherParticipants, isAdmin, isHost, serverUrl, currentCall?.channelId]);
 
     const muteUnmuteHandler = useCallback(() => {
-        if (mySession?.muted) {
+        if (displayMySession.muted) {
             unmuteMyself();
         } else {
             muteMyself();
         }
-    }, [mySession?.muted]);
+    }, [displayMySession.muted]);
 
     const toggleReactions = useCallback(() => {
         setShowReactions((prev) => !prev);
@@ -359,6 +443,12 @@ const CallScreen = ({
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
+
+    const collapseButtonStyle = useCallback(({pressed}: PressableStateCallbackType) => [
+        style.headerSide,
+        style.headerRight,
+        pressed && style.headerRightPressed,
+    ], [style.headerSide, style.headerRight, style.headerRightPressed]);
 
     const startRecording = useCallback(async () => {
         Keyboard.dismiss();
@@ -496,7 +586,7 @@ const CallScreen = ({
 
         const avatarCellHeight = avatarSize + 20 + 20 + 20; // avatar + name + host pill + padding
         const usernameSize = smallerAvatar ? usernameM : usernameL;
-        const avatarCellWidth = usernameSize + 20; // name width + padding
+        const avatarCellWidth = usernameSize + 32; // name width + card padding (24) + margin (8)
 
         const perRow = Math.floor(layout.width / avatarCellWidth);
         const totalHeight = Math.ceil(numSessions / perRow) * avatarCellHeight;
@@ -522,21 +612,28 @@ const CallScreen = ({
         }
     }, [layout, numSessions, previousNumSessions]);
 
+    const isPendingCard = useCallback((session: CallSession) => !sessionsDict[session.sessionId], [sessionsDict]);
+
     const onShortPress = useCallback((session: CallSession) => () => {
-        if (hostControlsAvailable) {
+        if (hostControlsAvailable && !isPendingCard(session)) {
             onPress(session)();
         }
-    }, [hostControlsAvailable, onPress]);
+    }, [hostControlsAvailable, isPendingCard, onPress]);
 
     const onLongPress = useCallback((session: CallSession) => () => {
+        if (isPendingCard(session)) {
+            return;
+        }
+
         if (hostControlsAvailable) {
             onPress(session)();
         } else {
             openProfile(session);
         }
-    }, [hostControlsAvailable, onPress, openProfile]);
+    }, [hostControlsAvailable, isPendingCard, onPress, openProfile]);
 
-    if (!currentCall || !mySession) {
+    // A call we're placing has no session for us yet; anything else without one isn't ours to show.
+    if (!currentCall || (!callHasMySession && !isDMConnecting)) {
         return null;
     }
 
@@ -564,8 +661,6 @@ const CallScreen = ({
         );
     }
 
-    const raisedHands = getHandsRaised(sessionsDict);
-    const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict, currentCall.screenOn);
     let usersList = null;
     if (!screenShareOn || !isLandscape) {
         usersList = (
@@ -582,14 +677,16 @@ const CallScreen = ({
                         onPress={toggleControlsInLandscape}
                         style={style.users}
                     >
-                        {sessions.map((sess) => (
+                        {cards.map(({key, session, isRinging}) => (
                             <ParticipantCard
-                                key={sess.sessionId}
-                                session={sess}
+                                key={key}
+                                session={session}
+                                isRinging={isRinging}
                                 smallerAvatar={smallerAvatar}
                                 teammateNameDisplay={teammateNameDisplay}
-                                onPress={onShortPress(sess)}
-                                onLongPress={onLongPress(sess)}
+                                showHostBadge={!isDM}
+                                onPress={onShortPress(session)}
+                                onLongPress={onLongPress(session)}
                             />
                         ))}
                     </Pressable>
@@ -611,6 +708,8 @@ const CallScreen = ({
             style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
+    const raisedHands = getHandsRaised(sessionsDict);
+
     const header = (
         <View
             style={[
@@ -619,13 +718,14 @@ const CallScreen = ({
                 isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
             ]}
         >
-            <View style={[style.headerLeft, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}>
+            <View style={[style.headerSide, style.headerLeft]}>
                 {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                 {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
-                <CallDuration
-                    style={style.time}
-                    value={currentCall.startTime}
-                    updateIntervalInSeconds={1}
+                <CallStatusTimer
+                    isConnecting={isDMConnecting}
+                    isCalling={isDMCalling}
+                    style={style.timerText}
+                    value={dmCalleeAnsweredAt}
                     truncateWhenLong={true}
                 />
             </View>
@@ -639,7 +739,7 @@ const CallScreen = ({
             <Pressable
                 testID='calls.collapse.button'
                 onPress={navigateBack}
-                style={[style.headerRight, !(waitingForRecording || recording) && style.headerLeftRightRecOff]}
+                style={collapseButtonStyle}
             >
                 <CompassIcon
                     name='arrow-collapse'
@@ -702,29 +802,30 @@ const CallScreen = ({
                         ]}
                     >
                         {showReactions &&
-                            <ReactionBar raisedHand={mySession.raisedHand}/>
+                            <ReactionBar raisedHand={displayMySession.raisedHand}/>
                         }
                         {!isLandscape &&
                             <Pressable
                                 testID='mute-unmute'
-                                style={[style.mute, mySession.muted && style.muteMuted]}
+                                style={[style.mute, displayMySession.muted && style.muteMuted, controlsDisabled && style.buttonDisabled]}
                                 onPress={muteUnmuteHandler}
-                                disabled={!micPermissionsGranted}
+                                disabled={!micPermissionsGranted || controlsDisabled}
                             >
                                 <UnavailableIconWrapper
-                                    name={mySession.muted ? 'microphone-off' : 'microphone'}
+                                    name={displayMySession.muted ? 'microphone-off' : 'microphone'}
                                     size={32}
                                     unavailable={!micPermissionsGranted}
                                     style={style.muteIcon}
                                 />
-                                {mySession.muted ? UnmuteText : MuteText}
+                                {displayMySession.muted ? UnmuteText : MuteText}
                             </Pressable>
                         }
                         <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
                             <Pressable
                                 testID='leave'
-                                style={[style.button, isLandscape && style.buttonLandscape]}
+                                style={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                 onPress={leaveCallHandler}
+                                disabled={controlsDisabled}
                             >
                                 <CompassIcon
                                     name='phone-hangup'
@@ -738,7 +839,7 @@ const CallScreen = ({
                                 />
                             </Pressable>
                             <AudioDeviceButton
-                                pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
+                                pressableStyle={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                 iconStyle={[
                                     style.buttonIcon,
                                     isLandscape && style.buttonIconLandscape,
@@ -746,10 +847,12 @@ const CallScreen = ({
                                 ]}
                                 buttonTextStyle={style.buttonText}
                                 currentCall={currentCall}
+                                disabled={controlsDisabled}
                             />
                             <Pressable
-                                style={[style.button, isLandscape && style.buttonLandscape]}
+                                style={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                 onPress={toggleReactions}
+                                disabled={controlsDisabled}
                             >
                                 <CompassIcon
                                     name={'emoticon-happy-outline'}
@@ -762,25 +865,28 @@ const CallScreen = ({
                                     style={style.buttonText}
                                 />
                             </Pressable>
-                            <Pressable
-                                style={[style.button, isLandscape && style.buttonLandscape]}
-                                onPress={openParticipantsList}
-                            >
-                                <CompassIcon
-                                    name={'account-multiple-outline'}
-                                    size={32}
-                                    style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
-                                />
-                                <FormattedText
-                                    id={'mobile.calls_people'}
-                                    defaultMessage={'People'}
-                                    style={style.buttonText}
-                                />
-                            </Pressable>
-                            {!isLandscape && (isHost || ccAvailable) &&
+                            {!isDM && (
                                 <Pressable
                                     style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={openParticipantsList}
+                                >
+                                    <CompassIcon
+                                        name={'account-multiple-outline'}
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <FormattedText
+                                        id={'mobile.calls_people'}
+                                        defaultMessage={'People'}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            )}
+                            {!isLandscape && (isHost || ccAvailable) &&
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                     onPress={showOtherActions}
+                                    disabled={controlsDisabled}
                                 >
                                     <CompassIcon
                                         name='dots-horizontal'
@@ -797,28 +903,30 @@ const CallScreen = ({
                             {isLandscape &&
                                 <Pressable
                                     testID='mute-unmute'
-                                    style={[style.button, style.buttonLandscape]}
+                                    style={[style.button, style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                     onPress={muteUnmuteHandler}
+                                    disabled={controlsDisabled}
                                 >
                                     <UnavailableIconWrapper
-                                        name={mySession.muted ? 'microphone-off' : 'microphone'}
+                                        name={displayMySession.muted ? 'microphone-off' : 'microphone'}
                                         size={32}
                                         unavailable={!micPermissionsGranted}
                                         style={[
                                             style.buttonIcon,
                                             isLandscape && style.buttonIconLandscape,
                                             style.muteIconLandscape,
-                                            mySession?.muted && style.muteIconLandscapeMuted,
+                                            displayMySession.muted && style.muteIconLandscapeMuted,
                                         ]}
                                         errorContainerStyle={isLandscape && style.errorContainerLandscape}
                                     />
-                                    {mySession.muted ? UnmuteText : MuteText}
+                                    {displayMySession.muted ? UnmuteText : MuteText}
                                 </Pressable>
                             }
                             {(isLandscape || (!isHost && !ccAvailable)) &&
                                 <Pressable
-                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    style={[style.button, isLandscape && style.buttonLandscape, controlsDisabled && style.buttonDisabled]}
                                     onPress={switchToThread}
+                                    disabled={controlsDisabled}
                                 >
                                     <CompassIcon
                                         name='message-text-outline'

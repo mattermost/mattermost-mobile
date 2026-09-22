@@ -4,6 +4,7 @@
 import {getAndroidId, getIosIdForVendorAsync} from 'expo-application';
 import {isRootedExperimentalAsync} from 'expo-device';
 import {Platform} from 'react-native';
+import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -26,7 +27,7 @@ jest.mock('expo-application', () => ({
 
 jest.mock('expo-device', () => ({
     isRootedExperimentalAsync: jest.fn().mockResolvedValue(false),
-    osVersion: '17.0',
+    osVersion: '18.0',
 }));
 
 jest.mock('@actions/remote/session_attributes', () => ({
@@ -50,10 +51,13 @@ const serverUrl = 'https://chat.example.com';
 const manifest: SAField[] = [
     {name: 'os_platform', type: 'string', ttl_seconds: 0, grace_period_seconds: 0},
 ];
+const ssidManifest: SAField[] = [
+    {name: 'ssid', type: 'string', ttl_seconds: 0, grace_period_seconds: 0},
+];
 
 const iosStableValues = {
     jailbreak_detected: 'false',
-    os_version: '17.0',
+    os_version: '18.0',
     os_platform: 'ios',
     client_version: '2.20.0+456',
     client_device_id: 'ios-device-id',
@@ -75,6 +79,8 @@ describe('SessionAttributesManager', () => {
         } as ClientLicense);
         mockFetchSessionAttributesManifest.mockResolvedValue({manifest});
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
+        jest.mocked(check).mockResolvedValue(RESULTS.GRANTED);
+        jest.mocked(request).mockResolvedValue(RESULTS.GRANTED);
     });
 
     it('should collect stable values from Expo on iOS', async () => {
@@ -92,7 +98,7 @@ describe('SessionAttributesManager', () => {
 
         expect(mockSetSessionAttributesStableValues).toHaveBeenCalledWith({
             jailbreak_detected: 'true',
-            os_version: '17.0',
+            os_version: '18.0',
             os_platform: 'android',
             client_version: '2.20.0+456',
             client_device_id: 'android-device-id',
@@ -179,5 +185,64 @@ describe('SessionAttributesManager', () => {
     it('should forward removeManifestField to native', () => {
         manager.removeManifestField(serverUrl, 'os_version');
         expect(mockRemoveSessionAttributesField).toHaveBeenCalledWith(serverUrl, 'os_version');
+    });
+
+    describe('location permission for the ssid attribute', () => {
+        it('should request location when the manifest includes ssid and it has not been asked yet', async () => {
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(request).toHaveBeenCalledWith(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+        });
+
+        it('should not request location when the manifest omits ssid', async () => {
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(check).not.toHaveBeenCalled();
+            expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should not request location when it has already been granted', async () => {
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should not request location when the permission is blocked', async () => {
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.BLOCKED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should request location when the ssid field arrives over the websocket', async () => {
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            manager.upsertManifestField(serverUrl, ssidManifest[0]);
+            await new Promise(process.nextTick);
+
+            expect(request).toHaveBeenCalledWith(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+        });
+
+        it('should not request location for a field other than ssid', async () => {
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            manager.upsertManifestField(serverUrl, manifest[0]);
+            await new Promise(process.nextTick);
+
+            expect(check).not.toHaveBeenCalled();
+        });
     });
 });

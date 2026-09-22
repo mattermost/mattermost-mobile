@@ -57,8 +57,8 @@ class MMCallsNativeModule(reactContext: ReactApplicationContext) : NativeMMCalls
         implementation.getAudioRoute(promise)
     }
 
-    override fun startRingtone(name: String?, seconds: Double, promise: Promise?) {
-        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), promise)
+    override fun startRingtone(name: String?, seconds: Double, isRingback: Boolean, promise: Promise?) {
+        implementation.startRingtone(name ?: "default_ringtone", seconds.toInt(), isRingback, promise)
     }
 
     override fun stopRingtone(promise: Promise?) {

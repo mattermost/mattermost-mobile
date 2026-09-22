@@ -52,8 +52,7 @@ describe('Channels - Unarchive Channel', () => {
         const channelDisplayName = `Channel ${getRandomId()}`;
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
-        await CreateOrEditChannelScreen.createButton.tap();
-        await wait(timeouts.FOUR_SEC);
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
 
         await ChannelScreen.dismissScheduledPostTooltip();
 
@@ -95,8 +94,7 @@ describe('Channels - Unarchive Channel', () => {
         await CreateOrEditChannelScreen.openCreateChannel();
         await CreateOrEditChannelScreen.toggleMakePrivateOn();
         await CreateOrEditChannelScreen.displayNameInput.replaceText(channelDisplayName);
-        await CreateOrEditChannelScreen.createButton.tap();
-        await wait(timeouts.FOUR_SEC);
+        await CreateOrEditChannelScreen.tapCreateAndWaitForChannel();
 
         await ChannelScreen.dismissScheduledPostTooltip();
 

@@ -36,11 +36,6 @@ jest.mock('@context/edit_post', () => ({
     useEditPost: jest.fn(() => ({isEditMode: false, updateFileCallback: undefined, onFileRemove: undefined})),
 }));
 
-jest.mock('@utils/file', () => ({
-    isImage: jest.fn(),
-    getFormattedFileSize: jest.fn((size) => `${size} KB`),
-}));
-
 jest.mock('@components/files/image_file', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -52,8 +47,6 @@ jest.mock('@components/files/file_icon', () => ({
     default: jest.fn(),
 }));
 jest.mocked(FileIcon).mockImplementation((props) => React.createElement('FileIcon', {...props}));
-
-const {isImage} = require('@utils/file');
 
 describe('UploadItem', () => {
     const serverUrl = 'serverUrl';
@@ -90,10 +83,6 @@ describe('UploadItem', () => {
     };
 
     describe('Image Files', () => {
-        beforeEach(() => {
-            isImage.mockReturnValue(true);
-        });
-
         it('should display thumbnail for image files', () => {
             const imageFile = {
                 ...baseProps.file,
@@ -145,10 +134,6 @@ describe('UploadItem', () => {
     });
 
     describe('Non-Image Files', () => {
-        beforeEach(() => {
-            isImage.mockReturnValue(false);
-        });
-
         it('should display file name, extension, and size for non-image files', () => {
             const documentFile = {
                 ...baseProps.file,
@@ -170,7 +155,7 @@ describe('UploadItem', () => {
 
             expect(getByTestId('id')).toBeTruthy();
             expect(getByText('document.pdf')).toBeTruthy();
-            expect(getByText('PDF 5120 KB')).toBeTruthy();
+            expect(getByText('PDF 5 KB')).toBeTruthy();
         });
 
         it('should display file info for different file types', () => {
@@ -193,7 +178,7 @@ describe('UploadItem', () => {
             );
 
             expect(getByText('spreadsheet.xlsx')).toBeTruthy();
-            expect(getByText('XLSX 3072 KB')).toBeTruthy();
+            expect(getByText('XLSX 3 KB')).toBeTruthy();
         });
 
         it('should handle files without extension gracefully', () => {
@@ -216,7 +201,7 @@ describe('UploadItem', () => {
             );
 
             expect(getByText('document')).toBeTruthy();
-            expect(getByText('DOCUMENT 1024 KB')).toBeTruthy();
+            expect(getByText('DOCUMENT 1024 B')).toBeTruthy();
         });
 
         it('should extract extension from file name when extension field is missing', () => {
@@ -239,7 +224,7 @@ describe('UploadItem', () => {
             );
 
             expect(getByText('report.docx')).toBeTruthy();
-            expect(getByText('DOCX 2048 KB')).toBeTruthy();
+            expect(getByText('DOCX 2 KB')).toBeTruthy();
         });
     });
 

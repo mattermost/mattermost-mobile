@@ -6,8 +6,10 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
 import {useAgentsConfig} from '@agents/store/agents_config';
+import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
+import ChannelAttributeLabels from '@components/channel_attribute_labels';
 import ChannelBanner from '@components/channel_banner';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -25,7 +27,7 @@ import {fetchPlaybookRunsForChannel} from '@playbooks/actions/remote/runs';
 import {goToCreateQuickChecklist, goToPlaybookRun, goToPlaybookRuns} from '@playbooks/screens/navigation';
 import {bottomSheet, navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {isTypeDMorGM} from '@utils/channel';
+import {isDMChannel, isTypeDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -33,9 +35,11 @@ import ChannelHeaderBookmarks from './bookmarks';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {NavigationButtonProps} from '@components/navigation_button';
+import type {ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 type ChannelProps = {
     canAddBookmarks: boolean;
+    canCallDMUser: boolean;
     channelId: string;
     channelType: ChannelType;
     currentUserId: string;
@@ -58,6 +62,7 @@ type ChannelProps = {
     isPlaybooksEnabled: boolean;
     activeRunId?: string;
     isChannelAutotranslated: boolean;
+    channelAttributes: ResolvedChannelAttribute[];
 
     // searchTerm: string;
 };
@@ -89,6 +94,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelHeader = ({
     canAddBookmarks,
+    canCallDMUser,
     channelId,
     channelType,
     currentUserId,
@@ -111,6 +117,7 @@ const ChannelHeader = ({
     isPlaybooksEnabled,
     activeRunId,
     isChannelAutotranslated,
+    channelAttributes,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -130,6 +137,8 @@ const ChannelHeader = ({
     }
 
     const isDMorGM = isTypeDMorGM(channelType);
+    const isDM = isDMChannel(channelType);
+    const navigationHeaderCallButton = useNavigationHeaderCallButtonForDM(channelId, channelType);
     const contextStyle = useMemo(() => ({
         top: defaultHeight,
     }), [defaultHeight]);
@@ -216,29 +225,26 @@ const ChannelHeader = ({
         const buttons: NavigationButtonProps[] = [];
         if (isPlaybooksEnabled && !isDMorGM) {
             buttons.push({
+                id: 'playbooks',
                 iconName: 'product-playbooks',
                 onPress: openPlaybooksRuns,
                 count: playbooksActiveRuns || '+',
             });
         }
 
-        // {
-        //     iconName: 'magnify',
-        //     onPress: () => {
-        //         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {screen: 'Search', params: {searchTerm: `in: ${searchTerm}`}});
-        //         if (!isTablet) {
-        //             popTopScreen(componentId);
-        //         }
-        //     },
-        // },
+        if (isDM && callsAvailable && canCallDMUser && navigationHeaderCallButton) {
+            buttons.push(navigationHeaderCallButton);
+        }
+
         buttons.push({
+            id: 'channel-quick-actions',
             iconName: Platform.select({android: 'dots-vertical', default: 'dots-horizontal'}),
             onPress: onChannelQuickAction,
             testID: 'channel_header.channel_quick_actions.button',
         });
 
         return buttons;
-    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns]);
+    }, [isPlaybooksEnabled, playbooksActiveRuns, isDMorGM, onChannelQuickAction, openPlaybooksRuns, isDM, callsAvailable, canCallDMUser, navigationHeaderCallButton]);
 
     let title = displayName;
     if (isOwnDirectMessage) {
@@ -288,6 +294,20 @@ const ChannelHeader = ({
         return undefined;
     }, [memberCount, customStatus, isCustomStatusExpired, theme.sidebarHeaderTextColor, styles.customStatusContainer, styles.customStatusEmoji, styles.customStatusText, styles.subtitle, isCustomStatusEnabled]);
 
+    // Chips take the subtitle line, which is what the design shows and the only
+    // line available: the header is a fixed height and cannot grow a third row.
+    // So they are passed only when the channel actually has designated values —
+    // otherwise the member count would be displaced by an empty row.
+    //
+    // Suppressed on DMs and GMs, where assigning attributes is later work.
+    const subtitleComponent = useMemo(() => {
+        if (isDMorGM || channelAttributes.length === 0) {
+            return undefined;
+        }
+
+        return <ChannelAttributeLabels attributes={channelAttributes}/>;
+    }, [isDMorGM, channelAttributes]);
+
     const titleCompanion = useMemo(() => {
         if (isChannelAutotranslated) {
             return (
@@ -323,6 +343,7 @@ const ChannelHeader = ({
                 showBackButton={!isTablet || !isTabletView}
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
+                subtitleComponent={subtitleComponent}
                 title={title}
                 titleCompanion={titleCompanion}
             />

@@ -139,6 +139,55 @@ function mergeJestResultsForTsio(inputPaths, opts = {}) {
 }
 
 /**
+ * Flatten a generate-specs matrix ({"include":[{specs:"a.e2e.ts b.e2e.ts"}]}) into spec paths.
+ *
+ * @param {string} specsJson
+ * @returns {string[]}
+ */
+function parseExpectedSpecs(specsJson) {
+    if (!specsJson) {
+        return [];
+    }
+    const include = JSON.parse(specsJson)?.include;
+    if (!Array.isArray(include)) {
+        return [];
+    }
+    return [...new Set(include.flatMap((row) => String(row?.specs ?? '').split(/\s+/).filter(Boolean)))];
+}
+
+/**
+ * Every spec generate-specs handed out must come back with a result, or a shard that
+ * uploaded nothing just shrinks the suite and the gate goes green (main d943628).
+ *
+ * @param {{testResults: object[]}} merged
+ * @param {string[]} expectedSpecs  repo-relative paths
+ * @returns {string[]} the specs that never reported
+ */
+function appendUnreportedSpecs(merged, expectedSpecs) {
+    if (expectedSpecs.length === 0) {
+        return [];
+    }
+    const reported = new Set(merged.testResults.map((suite) => suite.testFilePath));
+    const missing = expectedSpecs.filter((spec) => !reported.has(spec));
+    const now = Date.now();
+    for (const spec of missing) {
+        merged.testResults.push({
+            testFilePath: spec,
+            perfStats: {start: now},
+            testResults: [{
+                ancestorTitles: ['CI shard reporting'],
+                duration: 0,
+                failureMessages: [`${spec} was assigned to a shard but produced no result. The shard uploaded nothing, or its Jest process died before reaching this spec.`],
+                fullName: `${spec} — spec did not run`,
+                status: 'failed',
+                title: 'spec did not run',
+            }],
+        });
+    }
+    return missing;
+}
+
+/**
  * Recursively collect jest-results.json under dir, skipping `excludePath`.
  *
  * @param {string} dir
@@ -201,16 +250,32 @@ function main() {
         inputPaths = findJestResultFiles(args.dir, output);
     }
 
-    if (inputPaths.length === 0) {
-        console.error('merge-jest-results-for-tsio: no jest-results.json found');
-        process.exit(1);
-    }
-
     const opts = {
         repoRoot: args['repo-root'] || process.env.GITHUB_WORKSPACE || process.cwd(),
     };
-    const {suites, tests} = writeMergedJestResultsForTsio(inputPaths, output, opts);
+    const expectedSpecs = parseExpectedSpecs(args['expected-specs']);
+
+    // Exiting here would leave TSIO with no report, so the status stays pending forever.
+    // Fall through and let appendUnreportedSpecs produce the failure rows.
+    if (inputPaths.length === 0 && expectedSpecs.length === 0) {
+        console.error('merge-jest-results-for-tsio: no jest-results.json found and no expected spec list');
+        process.exit(1);
+    }
+
+    const merged = mergeJestResultsForTsio(inputPaths, opts);
+    const missing = appendUnreportedSpecs(merged, expectedSpecs);
+
+    fs.mkdirSync(path.dirname(output), {recursive: true});
+    fs.writeFileSync(output, JSON.stringify(merged));
+    const suites = merged.testResults.length;
+    const tests = merged.testResults.reduce((n, s) => n + (s.testResults?.length || 0), 0);
     console.log(`Merged ${inputPaths.length} shard JSON(s) -> ${suites} suite(s), ${tests} test(s) -> ${output}`);
+    if (missing.length > 0) {
+        console.error(`merge-jest-results-for-tsio: ${missing.length}/${expectedSpecs.length} assigned spec(s) never reported — marked failed:`);
+        for (const spec of missing) {
+            console.error(`  - ${spec}`);
+        }
+    }
 }
 
 if (require.main === module) {
@@ -220,6 +285,8 @@ if (require.main === module) {
 module.exports = {
     mergeJestResultsForTsio,
     writeMergedJestResultsForTsio,
+    appendUnreportedSpecs,
+    parseExpectedSpecs,
     toTsioDetoxSuite,
     relativizeDetoxPath,
     resolveRepoRoots,

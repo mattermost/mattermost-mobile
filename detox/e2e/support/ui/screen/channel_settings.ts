@@ -68,7 +68,25 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+
+            try {
+                await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+            } catch (screenStillUp) {
+                // A failed archive swaps the confirmation for an error alert, which satisfies the
+                // wait above and leaves the settings screen up. Name the alert, not the screen.
+                try {
+                    await waitFor(Alert.invalidServerResponse).toExist().withTimeout(timeouts.TWO_SEC);
+                } catch {
+                    throw screenStillUp;
+                }
+
+                // Report the alert, not a cause: alertErrorWithFallback shows this text whenever
+                // the error carries no message of its own.
+                throw new Error(
+                    'archive channel failed: the app showed "Received invalid response from the ' +
+                    'server." and stayed on the channel settings screen',
+                );
+            }
         } else {
             await noButton.tap();
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
@@ -127,26 +145,56 @@ class ChannelSettingsScreen {
         }
     };
 
-    unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await waitFor(this.unarchiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
-        await wait(timeouts.TWO_SEC);
-        await this.unarchiveChannelOption.tap({x: 1, y: 1});
-        const {
-            noButton,
-            yesButton,
-        } = Alert;
+    confirmUnarchive = async (alertUnarchiveChannelTitle: Detox.NativeElement) => {
+        const {noButton, yesButton} = Alert;
         await expect(alertUnarchiveChannelTitle).toBeVisible();
         await expect(noButton).toBeVisible();
         await expect(yesButton).toBeVisible();
-        if (confirm) {
-            await yesButton.tap();
+        await yesButton.tap();
+        await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
+    };
 
-            // Wait for the alert to be fully dismissed before proceeding — a fixed sleep
-            // is insufficient on slow iOS CI runners where the dismiss animation can take
-            // longer, leaving the dimming view blocking subsequent taps.
-            await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await expect(this.channelSettingsScreen).not.toExist();
+    tapUnarchiveOption = async () => {
+        await waitFor(this.unarchiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
+        await wait(timeouts.TWO_SEC);
+        await this.unarchiveChannelOption.tap({x: 1, y: 1});
+    };
+
+    // Restore can fail with a transient offline blip (-1009). Settings stay up and
+    // alertErrorWithFallback shows "Received invalid response from the server."
+    // Retry once the way a user would; do not treat settings remaining as success.
+    retryUnarchiveOnceIfRestoreFailed = async (alertUnarchiveChannelTitle: Detox.NativeElement) => {
+        try {
+            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+            return;
+        } catch {
+            // Settings still open — look for the restore error alert.
+        }
+
+        try {
+            await waitFor(Alert.invalidServerResponse).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+            return;
+        }
+
+        await Alert.okButton.tap();
+        await waitFor(Alert.invalidServerResponse).not.toExist().withTimeout(timeouts.TEN_SEC);
+
+        await this.tapUnarchiveOption();
+        await this.confirmUnarchive(alertUnarchiveChannelTitle);
+        await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+    };
+
+    unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
+        await this.tapUnarchiveOption();
+        const {noButton} = Alert;
+        if (confirm) {
+            await this.confirmUnarchive(alertUnarchiveChannelTitle);
+            await this.retryUnarchiveOnceIfRestoreFailed(alertUnarchiveChannelTitle);
         } else {
+            await expect(alertUnarchiveChannelTitle).toBeVisible();
+            await expect(noButton).toBeVisible();
             await noButton.tap();
             await waitFor(alertUnarchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
             await expect(this.channelSettingsScreen).toExist();

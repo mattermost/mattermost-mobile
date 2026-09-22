@@ -27,6 +27,9 @@ declare class MyChannelModel extends Model {
     /** mentions_count : The number of mentions on this channel */
     mentionsCount: number;
 
+    /** urgent_mention_count : The number of unread urgent mentions on this channel */
+    urgentMentionCount: number;
+
     /** message_count : The derived number of unread messages on this channel */
     messageCount: number;
 

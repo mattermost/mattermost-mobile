@@ -32,7 +32,7 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 21,
+        toVersion: 22,
         steps: [
 
             // Existing rows default to 0, below the epoch the redaction service reports when no
@@ -47,6 +47,17 @@ export default schemaMigrations({migrations: [
                 table: MY_CHANNEL,
                 columns: [
                     {name: 'redaction_required_epoch', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'urgent_mention_count', type: 'number'},
                 ],
             }),
         ],
