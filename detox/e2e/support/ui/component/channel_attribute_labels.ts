@@ -11,7 +11,10 @@ class ChannelAttributeLabels {
     testID = {
         container: 'channel_attribute_labels',
         overflow: 'channel_attribute_labels.overflow',
-        overflowSheet: 'channel_attribute_labels.overflow_sheet',
+
+        // BottomSheetContent (screens/bottom_sheet/content.tsx) renders its outer
+        // container with `${testID}.screen`, not the bare testID passed to it.
+        overflowSheet: 'channel_attribute_labels.overflow_sheet.screen',
     };
 
     container = element(by.id(this.testID.container));
