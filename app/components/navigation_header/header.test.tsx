@@ -3,6 +3,7 @@
 
 import {fireEvent, render, within} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
+import {Text} from 'react-native';
 
 import {Preferences} from '@constants';
 
@@ -17,6 +18,28 @@ describe('Header', () => {
         isLargeTitle: false,
         heightOffset: 0,
         theme: Preferences.THEMES.denim,
+    });
+
+    it('renders subtitleComponent when provided', () => {
+        const props = getBaseProps();
+        const subtitleText = 'Custom Subtitle';
+        props.subtitleComponent = <Text testID='custom-subtitle'>{subtitleText}</Text>;
+        const {getByTestId} = render(<Header {...props}/>);
+        expect(getByTestId('custom-subtitle')).toBeOnTheScreen();
+    });
+
+    it('falls back to subtitle text when subtitleComponent is absent', () => {
+        const props = getBaseProps();
+        props.subtitle = 'Legacy subtitle';
+        const {getByTestId, queryByTestId} = render(<Header {...props}/>);
+        expect(getByTestId('navigation.header.subtitle')).toBeOnTheScreen();
+        expect(queryByTestId('custom-subtitle')).toBeNull();
+    });
+
+    it('does not render the subtitle area when neither subtitleComponent nor subtitle is provided', () => {
+        const props = getBaseProps();
+        const {queryByTestId} = render(<Header {...props}/>);
+        expect(queryByTestId('navigation.header.subtitle')).toBeNull();
     });
 
     it('should render right buttons with count', () => {

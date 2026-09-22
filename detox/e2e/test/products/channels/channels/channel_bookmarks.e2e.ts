@@ -27,6 +27,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -66,45 +67,73 @@ describe('Channels - Channel Bookmarks', () => {
 
     const waitForBookmarkInChannelInfo = async (
         bookmarkMatcher: Detox.NativeMatcher,
-        options?: {textFallback?: string; bookmarkId?: string},
+        options?: {textFallback?: string; bookmarkId?: string; onResync?: () => Promise<unknown>},
     ) => {
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
 
+    // apiCreateChannel owns no retry by design (apiInit's retryTransient is the single owner),
+    // but these 11 bare calls have nothing above them, so one dropped request failed all 11 tests.
+    // Generating the payload once makes the replay idempotent rather than duplicate-tolerant: the
+    // server rejects a second channel with the same name, so a lost response is recovered by
+    // fetching that name instead of leaving an untracked channel behind.
     const createChannel = async () => {
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            type: 'O',
-            teamId: testTeam.id,
-        });
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        return channel;
-    };
+        const payload = Channel.generateRandomChannel(testTeam.id, 'O', 'channel');
+        const {channel, error} = await withTransportRetry(
+            () => Channel.apiCreateChannel(siteOneUrl, {channel: payload}),
+            {
+                idempotent: false,
+                allowDuplicateWrites: true,
+                label: 'channel_bookmarks createChannel',
+                budgetMs: timeouts.HALF_MIN,
+            },
+        );
 
-    const channelsCategory = 'channels';
-
-    // Last sidebar rows sit under the tab bar with no extra scroll unless the list
-    // has bottom padding. Scroll the target into view and fail if it never is.
-    const openChannel = async (channel: any) => {
-        await ChannelListScreen.toBeVisible();
-        const displayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, channel.name);
-        await waitFor(element(by.id('channel_list.flat_list'))).
-            toExist().
-            withTimeout(timeouts.TWENTY_SEC);
-
-        try {
-            await element(by.id('channel_list.flat_list')).scrollTo('top');
-        } catch {
-            // List too short to scroll
+        let created = channel;
+        if (!created?.id) {
+            // This read only runs because the network just failed, so it is the likeliest call to
+            // hit the same blip. It is a GET, so replaying it is free.
+            const {channel: existing} = await withTransportRetry(
+                () => Channel.apiGetChannelByName(siteOneUrl, testTeam.id, payload.name),
+                {idempotent: true, label: 'channel_bookmarks recover created channel', budgetMs: timeouts.HALF_MIN},
+            );
+            created = existing;
+        }
+        if (!created?.id) {
+            throw new Error(`channel_bookmarks: failed to create channel: ${JSON.stringify(error ?? 'no channel in response')}`);
         }
 
-        // Default scroll start is the bottom of the list, which sits under the
-        // tab bar (T5612: "View is not scrollable at the given start
-        // point" {201, 701}; screenshot shows Channel fb6c26 clipped by tabs).
-        await waitFor(displayNameEl).
-            toBeVisible().
-            whileElement(by.id('channel_list.flat_list')).
-            scroll(100, 'down', 0.5, 0.5);
+        // openChannel taps the sidebar row, which only exists for a member, so an ignored
+        // failure here resurfaces as a missing row several steps later. A lost response can
+        // still hide a committed write, so read the membership back rather than replaying the
+        // POST, which would report success without knowing the user was added.
+        const membership = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
+        if (membership.error || !membership.member) {
+            const {channels} = await withTransportRetry(
+                () => Channel.apiGetChannelsForUser(siteOneUrl, testUser.id, testTeam.id),
+                {idempotent: true, label: 'channel_bookmarks recover membership', budgetMs: timeouts.HALF_MIN},
+            );
+            const joined = Array.isArray(channels) && channels.some((c: {id: string}) => c.id === created.id);
+            if (!joined) {
+                throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
+            }
+        }
 
+        return created;
+    };
+
+    // The last sidebar row sits under the tab bar, so it can never satisfy Detox's default 75%
+    // visibility threshold no matter how far the list scrolls. This suite used to pre-gate on
+    // exactly that (waitFor(...).toBeVisible().whileElement(...).scroll(...)) and threw
+    // "Unable to scroll down ... View is clipped by one or more of its superviews' bounds"
+    // before ever reaching the call below -- one Channel Bookmarks test failed that way in every
+    // sampled main run, rotating between sub-tests because the sidebar is name-sorted and
+    // whichever channel sorts last is the one that gets clipped.
+    //
+    // tapSidebarPublicChannelDisplayName already handles this: it scrolls the row into view,
+    // asserts at a 40% threshold, and taps the row's exposed top edge. Let it do its job.
+    const openChannel = async (channel: any) => {
+        await ChannelListScreen.toBeVisible();
         await ChannelListScreen.tapSidebarPublicChannelDisplayName(channel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         const channelScreen = await ChannelScreen.toBeVisible();
@@ -238,8 +267,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.open();
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
-        // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (bare expect raced Config changed).
+        // waitFor — the server's bookmark gate and canAddBookmarks may still be settling
+        // after the beforeAll reload (a bare expect raced "Config changed").
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);
@@ -774,7 +803,11 @@ describe('Channels - Channel Bookmarks', () => {
     });
 
     it('MM-T69455_1 - should open file preview on tap and options on long press', async () => {
-        const channelT69455 = await createChannel();
+        // # Create the channel and BOTH bookmarks before the test user joins it.
+        const {channel: channelT69455} = await Channel.apiCreateChannel(siteOneUrl, {
+            type: 'O',
+            teamId: testTeam.id,
+        });
 
         const {bookmark: linkT69455, error: linkError} = await ChannelBookmark.apiCreateChannelBookmarkLink(
             siteOneUrl, channelT69455.id, 'Tap Link Bookmark', 'https://mattermost.com',
@@ -798,6 +831,8 @@ describe('Channels - Channel Bookmarks', () => {
         if (fileBookmarkError || !bookmarkFileT69455?.id) {
             throw new Error(`[MM-T69455_1] Failed to create bookmarkFileT69455: ${JSON.stringify(fileBookmarkError)}`);
         }
+
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channelT69455.id);
 
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
@@ -827,15 +862,20 @@ describe('Channels - Channel Bookmarks', () => {
         // Authoritative sync: both bookmarks must exist in channel info before
         // trusting the virtualized header FlatList (file chip can appear first).
         await ChannelInfoScreen.open();
+
+        // onResync re-enters the channel between attempts. Bookmarks arrive via
+        // fetchChannelBookmarks, which only runs on channel switch, so a bookmark that never
+        // synced cannot be recovered by reopening this sheet alone.
+        const resyncChannel = () => openChannel(channelT69455);
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${bookmarkFileT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark'},
+            {bookmarkId: bookmarkFileT69455.id, textFallback: 'Tap File Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(
             by.id(`channel_bookmark.${linkT69455.id}`).
                 withAncestor(by.id('channel_info.bookmarks.list')),
-            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark'},
+            {bookmarkId: linkT69455.id, textFallback: 'Tap Link Bookmark', onResync: resyncChannel},
         );
         await ChannelInfoScreen.close();
 

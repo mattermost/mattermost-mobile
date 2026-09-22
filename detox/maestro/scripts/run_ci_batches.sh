@@ -17,6 +17,8 @@
 #   MAESTRO_APP_ID       — default com.mattermost.rnbeta
 #   FLOW_PATH            — optional; space-separated flow dirs (default: detox/maestro/flows/* categories)
 #   SITE_1_URL, TEST_*   — passed through to maestro --env
+#   ADMIN_TOKEN           — re-applies the server config baseline at startup and enables
+#                           Calls in the test channel; passed through to maestro --env
 #   MAESTRO_DRIVER_STARTUP_TIMEOUT — default 180000 (Maestro CI recommendation)
 
 set -euo pipefail
@@ -29,7 +31,15 @@ PLATFORM=""
 DEVICE_ARGS=()
 OUTPUT_DIR="build"
 ARTIFACTS_DIR="build/maestro-artifacts"
-MERGED_XML="$OUTPUT_DIR/maestro-report.xml"
+# NOT maestro-report.xml. The workflow's parse step builds that file itself with
+# mergeMaestroBatchReportsFromDir, which globs maestro-batch-*.xml AND
+# maestro-report-*.xml so the config-gated flows run from dedicated steps
+# (MM-T67856_4, MM-T3261_1, MM-T3261_2) are counted in the gate and in TSIO.
+# That helper returns early if its output already exists, so writing
+# maestro-report.xml here silently excluded those flows from the pass/fail
+# decision. This name is outside the helper's glob, so the batches are merged
+# exactly once.
+MERGED_XML="$OUTPUT_DIR/maestro-batches-merged.xml"
 MAESTRO_BIN="${MAESTRO_BIN:-$HOME/.maestro/bin/maestro}"
 MAESTRO_APP_ID="${MAESTRO_APP_ID:-com.mattermost.rnbeta}"
 export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-180000}"
@@ -226,6 +236,27 @@ grant_android_calls_permissions() {
   adb shell pm grant "$MAESTRO_APP_ID" android.permission.CAMERA 2>/dev/null || true
 }
 
+# Idempotent and non-destructive: re-asserts only the state a run requires, so a shared
+# server or a crashed earlier job cannot leak config into this one. Called once before any
+# batch runs. AllowDownloadLogs is intentionally NOT included here: MM-T67856_4 flips it in
+# its own onFlowStart/onFlowComplete hooks (fixtures/set_allow_download_logs.js) so that flow
+# is self-contained whether it runs in CI or locally.
+apply_config_baseline() {
+  [[ -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
+    echo "Warning: missing ADMIN_TOKEN/SITE_1_URL; skipping config baseline" >&2
+    return 0
+  }
+
+  echo "==> Re-applying config baseline on ${SITE_1_URL}"
+  if ! curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"SupportSettings":{"AllowDownloadLogs":true},"ServiceSettings":{"EnableSignInWithEmail":true,"EnableSignInWithUsername":true}}' \
+    "${SITE_1_URL}/api/v4/config/patch" >/dev/null; then
+    echo "Warning: could not PUT config baseline on ${SITE_1_URL}" >&2
+  fi
+}
+
 ensure_calls_channel_enabled() {
   [[ -n "${TEST_CHANNEL_ID:-}" && -n "${ADMIN_TOKEN:-}" && -n "${SITE_1_URL:-}" ]] || {
     echo "Warning: missing TEST_CHANNEL_ID/ADMIN_TOKEN/SITE_1_URL; skipping calls channel enable" >&2
@@ -269,10 +300,23 @@ run_maestro_batch() {
     cmd+=("${platform_args[@]}")
   fi
 
+  # Keep Maestro's debug output (maestro.log, per-command timings, the failure screenshot
+  # and hierarchy dump, and the XCUITest runner's console via `simctl launch --console`)
+  # inside the uploaded build/ tree. With --flatten-debug-output and no --debug-output,
+  # Maestro 2.6.1 writes all of it to $HOME (TestDebugReporter.getDebugOutputPath), which
+  # CI never collects. That is why run 34185558418 reported attach_logs_toggle_visible as
+  # "Unknown error": the runner process (the app's XPC peer) exited mid-flow and the only
+  # record of why was in /Users/runner. One directory per batch, so the flattened files of
+  # one batch never overwrite another's.
+  local debug_dir
+  debug_dir="$ARTIFACTS_DIR/debug/$(basename "${batch_xml%.xml}")"
+  mkdir -p "$debug_dir"
+
   cmd+=(
     --format junit
     --output "$batch_xml"
     --test-output-dir "$ARTIFACTS_DIR"
+    --debug-output "$debug_dir"
     --flatten-debug-output
   )
   local exclude_tags
@@ -283,7 +327,60 @@ run_maestro_batch() {
   cmd+=("${maestro_env_args[@]}")
   cmd+=("${flows[@]}")
 
-  "${cmd[@]}"
+  # Tee so the batch output is still in the CI log verbatim while also being greppable for
+  # driver-startup failures (see the retry in the batch loop). PIPESTATUS keeps maestro's
+  # exit code rather than tee's.
+  local batch_log="${batch_xml%.xml}.log"
+  "${cmd[@]}" 2>&1 | tee "$batch_log"
+  return "${PIPESTATUS[0]}"
+}
+
+# True when the driver died before driving the app: Android then writes JUnit with every
+# time="0.0". Any digit 1-9 means non-zero, so "0.0" is zero and "0.5" is not.
+driver_startup_failed() {
+  local batch_log=$1 batch_xml=${2:-}
+  { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
+  [[ -s "$batch_xml" ]] || return 0
+  ! grep -qE '<testcase\b[^>]*\btime="[0-9.]*[1-9]' "$batch_xml"
+}
+
+ensure_android_driver_healthy() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Reconnecting adb after Maestro driver loss"
+  adb start-server >/dev/null 2>&1 || true
+  # Never returns when no device comes back, and `|| true` cannot help, so bound it.
+  timeout 60 adb wait-for-device || echo "==> adb wait-for-device timed out — continuing"
+  reset_android_app_state
+  ensure_android_app_launchable
+}
+
+# Flow paths come from the filesystem, so `&`, `<` or `"` in a name would otherwise
+# emit XML the report parser cannot read.
+xml_escape() {
+  printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
+}
+
+# Failures, not skips: a flow that never ran must not shrink the suite and still pass. One
+# <testcase> per flow, not per batch, so the report names which flows died and why.
+write_driver_failure_junit() {
+  local batch_xml=$1
+  shift
+  local msg
+  msg="$(xml_escape 'Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) and did not recover after one retry')"
+  {
+    printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
+    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="%d" errors="0" skipped="0" time="0">\n' "$#" "$#"
+    local flow base id flow_xml id_xml
+    for flow in "$@"; do
+      base="${flow##*/}"; id="${base%.yml}"
+      flow_xml="$(xml_escape "$flow")"; id_xml="$(xml_escape "$id")"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="ERROR">\n' "$id_xml" "$id_xml" "$flow_xml" "$flow_xml"
+      printf '      <failure>%s</failure>\n    </testcase>\n' "$msg"
+    done
+    printf '  </testsuite>\n</testsuites>\n'
+  } > "$batch_xml"
 }
 
 BATCH_XMLS=()
@@ -351,6 +448,8 @@ log_resource_snapshot() {
   fi
 }
 
+apply_config_baseline
+
 for batch_paths in "${BATCHES[@]}"; do
   batch_idx=$((batch_idx + 1))
   read -r -a path_arr <<< "$batch_paths"
@@ -378,6 +477,31 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
 
+  # Retry once when the driver never drove the app. A flow that ran and failed writes
+  # real elapsed times and is reported as-is.
+  if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+    echo "==> Batch ${batch_idx}: Maestro driver never drove the app. Recovering and retrying this batch once."
+    if [[ "$PLATFORM" == "ios" ]]; then
+      ensure_ios_simulator_healthy
+    else
+      ensure_android_driver_healthy
+    fi
+    rm -f "$batch_xml"
+    batch_start_epoch=$(date +%s)
+    run_maestro_batch "$batch_xml" "${path_arr[@]}"
+    rc=$?
+    batch_end_epoch=$(date +%s)
+    echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+
+    if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as failed"
+      write_driver_failure_junit "$batch_xml" "${path_arr[@]}"
+      # Recover the device for the next batch, but leave rc non-zero so the batch stays red.
+      [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
+      [[ "$PLATFORM" == "android" ]] && ensure_android_driver_healthy
+    fi
+  fi
+
   if [[ $rc -ne 0 ]]; then
     echo "==> Batch $batch_idx failed (exit $rc) — continuing with remaining batches"
     BATCH_FAILED=1
@@ -386,9 +510,6 @@ for batch_paths in "${BATCHES[@]}"; do
       flow_label="${path_arr[0]:-unknown_flow}"
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
-      xml_escape() {
-        printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
-      }
       flow_label_xml="$(xml_escape "$flow_label")"
       flow_id_xml="$(xml_escape "$flow_id")"
       cat > "$batch_xml" <<EOF

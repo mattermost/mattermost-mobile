@@ -26,8 +26,10 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {by, expect, waitFor} from 'detox';
+
+const itNotIos = isIos() ? it.skip : it;
 
 describe('Search - Search Message Post Actions', () => {
     const serverOneDisplayName = 'Server 1';
@@ -62,8 +64,7 @@ describe('Search - Search Message Post Actions', () => {
         await HomeScreen.logout();
     });
 
-    // Skip: BACK_INDEX / edit-reply-delete from search
-    it.skip('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
+    it('MM-T5294_10 - should be able to edit, reply to, and delete a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
@@ -184,10 +185,7 @@ describe('Search - Search Message Post Actions', () => {
         await ChannelListScreen.toBeVisible();
     });
 
-    // iOS still exceeds 600s Jest timeout after waitForPostPinned
-    // harden (empty pinned list / hung navigation). Sibling edit/reply path already skipped.
-    jest.setTimeout(600000);
-    it.skip('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
+    itNotIos('MM-T5294_12 - should be able to pin/unpin a searched message from search results screen', async () => {
         // # Open a channel screen, post a message, go back to channel list screen, and open search messages screen
         const searchTerm = getRandomId();
         const message = `Message ${searchTerm}`;
@@ -238,14 +236,10 @@ describe('Search - Search Message Post Actions', () => {
         // * Verify searched message is not displayed anymore on pinned messages screen
         await waitFor(postListPostItem).not.toExist().withTimeout(timeouts.TEN_SEC);
 
-        // # Go back to searched messages screen, clear search input, remove recent search item, and go back to channel list screen
+        // # Go back to channel list screen
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
-        await SearchMessagesScreen.open();
-        await SearchMessagesScreen.searchClearButton.tap();
-        await SearchMessagesScreen.removeRecentSearchItem(searchTerm);
-        await SearchMessagesScreen.close();
         await ChannelListScreen.toBeVisible();
-    });
+    }, 360000);
 });

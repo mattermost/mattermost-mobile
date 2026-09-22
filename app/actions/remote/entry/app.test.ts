@@ -10,6 +10,16 @@ import {appEntry} from './app';
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/user');
 jest.mock('@agents/actions/remote/agents');
+
+// The shared mock in test/setup.ts is a singleton, so reassigning its methods in
+// beforeEach is order-sensitive; keep this file-local factory.
+jest.mock('@database/manager', () => ({
+    __esModule: true,
+    default: {
+        getServerDatabaseAndOperator: jest.fn(),
+        serverDatabases: {},
+    },
+}));
 jest.mock('@managers/websocket_manager');
 jest.mock('@queries/servers/system');
 jest.mock('./common');
@@ -25,10 +35,10 @@ describe('actions/remote/entry/app', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({
             database: mockDatabase,
             operator: mockOperator,
-        }) as typeof DatabaseManager.getServerDatabaseAndOperator;
+        } as unknown as ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>);
 
         jest.mocked(prepareCommonSystemValues).mockResolvedValue([]);
         jest.mocked(getCurrentUserId).mockResolvedValue('user1');

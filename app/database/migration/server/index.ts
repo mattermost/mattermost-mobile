@@ -32,6 +32,17 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'urgent_mention_count', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 20,
         steps: [
             createTable({

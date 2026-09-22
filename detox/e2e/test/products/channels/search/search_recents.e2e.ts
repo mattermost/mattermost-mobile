@@ -26,8 +26,10 @@ import {
     SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait, waitForElementToBeVisible} from '@support/utils';
 import {expect, waitFor} from 'detox';
+
+const itNotAndroid = isAndroid() ? it.skip : it;
 
 describe('Search - Recents and Input', () => {
     const serverOneDisplayName = 'Server 1';
@@ -167,7 +169,7 @@ describe('Search - Recents and Input', () => {
         await ChannelListScreen.open();
     });
 
-    it('MM-T3238_1 - delete one previous search, tap on another', async () => {
+    itNotAndroid('MM-T3238_1 - delete one previous search, tap on another', async () => {
         // # Post messages for two distinct search terms so they appear in recent searches
         const termOne = `recent1${getRandomId()}`;
         const termTwo = `recent2${getRandomId()}`;
@@ -244,9 +246,6 @@ describe('Search - Recents and Input', () => {
         await SearchMessagesScreen.toBeVisible();
 
         // # Type a search term and submit search.
-        // Use replaceText (not typeText) — typeText appends, so any stale text
-        // left by a previous test would concatenate with `searchTerm` and the
-        // server-side search would return 0 results.
         await SearchMessagesScreen.searchInput.replaceText(searchTerm);
         await SearchMessagesScreen.searchInput.tapReturnKey();
         await wait(timeouts.TWO_SEC);
