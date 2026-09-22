@@ -6,6 +6,7 @@ import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchMyPreferences} from '@actions/remote/preference';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
@@ -25,6 +26,7 @@ import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, han
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
+jest.mock('@actions/remote/role');
 jest.mock('@actions/remote/systems');
 jest.mock('@actions/remote/team');
 jest.mock('@actions/remote/user');
@@ -118,6 +120,7 @@ describe('actions/remote/entry/common', () => {
             (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue(mockChannels);
 
             (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+            jest.mocked(fetchRoles).mockResolvedValue({roles: []});
 
             const result = await entry(serverUrl, 'team1');
 
@@ -129,6 +132,7 @@ describe('actions/remote/entry/common', () => {
                 meData: mockUser,
                 isCRTEnabled: false,
             });
+            expect(fetchRoles).toHaveBeenCalled();
 
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
@@ -140,6 +144,22 @@ describe('actions/remote/entry/common', () => {
                 meData: mockUser,
                 gmConverted: false,
             }));
+        });
+
+        it('should complete the entry when fetching roles fails', async () => {
+            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: false, config: {Version: '7.8.0'}, license: {}});
+            (fetchMyPreferences as jest.Mock).mockResolvedValue({preferences: []});
+            (fetchMyTeams as jest.Mock).mockResolvedValue({teams: [], memberships: []});
+            (fetchMe as jest.Mock).mockResolvedValueOnce({user: {id: 'user1', roles: '', username: 'user1'}});
+            (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue({channels: [], memberships: [], categories: []});
+            const preparedModel = {id: 'model1'};
+            (prepareEntryModels as jest.Mock).mockResolvedValue([Promise.resolve([preparedModel])]);
+            jest.mocked(fetchRoles).mockResolvedValue({error: new Error('Roles error')});
+
+            const result = await entry(serverUrl, 'team1');
+
+            expect(result).toEqual(expect.objectContaining({models: [preparedModel]}));
+            expect(logDebug).toHaveBeenCalledWith('entryRest: failed to fetch roles', undefined, 'Roles error');
         });
 
         it('should handle errors in data fetching', async () => {
