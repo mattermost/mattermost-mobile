@@ -96,6 +96,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
@@ -127,6 +128,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);
@@ -162,6 +164,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         await Post.apiCreatePost(siteOneUrl, {
             channelId: archivedChannel.id,
             message: uniqueMessage,
@@ -229,6 +232,7 @@ describe('Channels - Archived Channel Interactions', () => {
             testUser.id,
             archivedChannel.id,
         );
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         const {sentinel, postId} = await postArchivedChannelSentinel(archivedChannel.id);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.FOUR_SEC);

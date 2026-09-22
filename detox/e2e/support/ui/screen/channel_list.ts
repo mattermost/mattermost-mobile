@@ -92,6 +92,13 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    // The sidebar row is written after the channel itself, so once it exists the app has
+    // stored a channel the user was just added to. Archiving before that point races the
+    // app's own fetch of the channel, and the pre-archive copy can land last.
+    waitForChannelItem = async (categoryKey: string, channelName: string) => {
+        await waitFor(this.getChannelItemDisplayName(categoryKey, channelName)).toExist().withTimeout(timeouts.HALF_MIN);
+    };
+
     // Mention-count badge on a sidebar row. Badge returns null while its count is 0, so
     // `not.toExist()` is the "unread but not mentioned" assertion, not a visibility check.
     getChannelItemBadge = (categoryKey: string, channelName: string) => {
