@@ -3,7 +3,7 @@
 
 import {getAndroidId, getIosIdForVendorAsync} from 'expo-application';
 import {isRootedExperimentalAsync} from 'expo-device';
-import {Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import {PERMISSIONS, RESULTS, check, request} from 'react-native-permissions';
 
 import {License} from '@constants';
@@ -68,8 +68,10 @@ describe('SessionAttributesManager', () => {
     const mockDatabase = {};
 
     beforeEach(() => {
+        jest.restoreAllMocks();
         jest.clearAllMocks();
         Platform.OS = 'ios';
+        jest.spyOn(Platform, 'select').mockReturnValue(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
         manager = new SessionAttributesManagerSingleton();
         (DatabaseManager.serverDatabases as Record<string, unknown>)[serverUrl] = {database: mockDatabase};
         jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
@@ -81,6 +83,10 @@ describe('SessionAttributesManager', () => {
         jest.mocked(isRootedExperimentalAsync).mockResolvedValue(false);
         jest.mocked(check).mockResolvedValue(RESULTS.GRANTED);
         jest.mocked(request).mockResolvedValue(RESULTS.GRANTED);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     it('should collect stable values from Expo on iOS', async () => {
@@ -188,7 +194,7 @@ describe('SessionAttributesManager', () => {
     });
 
     describe('location permission for the ssid attribute', () => {
-        it('should request location when the manifest includes ssid and it has not been asked yet', async () => {
+        it('should request iOS location directly when the manifest includes ssid', async () => {
             mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
             jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
 
@@ -196,6 +202,90 @@ describe('SessionAttributesManager', () => {
             await new Promise(process.nextTick);
 
             expect(request).toHaveBeenCalledWith(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+            expect(Alert.alert).not.toHaveBeenCalled();
+        });
+
+        it('should explain the Android location request before opening the native permission prompt', async () => {
+            Platform.OS = 'android';
+            jest.mocked(Platform.select).mockReturnValue(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Allow location access?',
+                "Your location can be used to report the Wi-Fi network name to your administrator when required by your organization's security policy.",
+                [
+                    expect.objectContaining({text: 'Not now', style: 'cancel'}),
+                    expect.objectContaining({text: 'Continue'}),
+                ],
+                expect.objectContaining({cancelable: true}),
+            );
+            expect(request).not.toHaveBeenCalled();
+
+            const continueButton = jest.mocked(Alert.alert).mock.calls[0][2]?.[1];
+            const onContinue = continueButton?.onPress;
+            expect(onContinue).toEqual(expect.any(Function));
+            onContinue?.();
+            await new Promise(process.nextTick);
+
+            expect(request).toHaveBeenCalledWith(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+        });
+
+        it('should not request native Android permission when the pre-prompt is declined', async () => {
+            Platform.OS = 'android';
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            const cancelButton = jest.mocked(Alert.alert).mock.calls[0][2]?.[0];
+            const onCancel = cancelButton?.onPress;
+            expect(onCancel).toEqual(expect.any(Function));
+            onCancel?.();
+            await new Promise(process.nextTick);
+
+            expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should not request native Android permission when the pre-prompt is dismissed', async () => {
+            Platform.OS = 'android';
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            await new Promise(process.nextTick);
+
+            const options = jest.mocked(Alert.alert).mock.calls[0][3];
+            expect(options?.onDismiss).toEqual(expect.any(Function));
+            options?.onDismiss?.();
+            await new Promise(process.nextTick);
+
+            expect(request).not.toHaveBeenCalled();
+        });
+
+        it('should show only one Android pre-prompt for concurrent requests and allow a later retry', async () => {
+            Platform.OS = 'android';
+            mockFetchSessionAttributesManifest.mockResolvedValue({manifest: ssidManifest});
+            jest.mocked(check).mockResolvedValue(RESULTS.DENIED);
+
+            await manager.refreshManifest(serverUrl);
+            manager.upsertManifestField(serverUrl, ssidManifest[0]);
+            await new Promise(process.nextTick);
+
+            expect(Alert.alert).toHaveBeenCalledTimes(1);
+
+            const cancelButton = jest.mocked(Alert.alert).mock.calls[0][2]?.[0];
+            cancelButton?.onPress?.();
+            await new Promise(process.nextTick);
+
+            manager.upsertManifestField(serverUrl, ssidManifest[0]);
+            await new Promise(process.nextTick);
+
+            expect(Alert.alert).toHaveBeenCalledTimes(2);
         });
 
         it('should not request location when the manifest omits ssid', async () => {
