@@ -66,8 +66,10 @@ onFlowComplete:
 # "and app logs" only in the false branch, so it is the app telling us the value landed.
 # Without it the assertions below pass whenever the config is simply late, which is the
 # same thing as passing with the feature switched on.
+# Full-string regex, as in login.yml: Maestro matches the whole text, so the bare
+# phrase never matches the sentence it sits in.
 - extendedWaitUntil:
-    visible: "share the metadata given below"
+    visible: ".*share the metadata given below.*"
     timeout: 30000
 - takeScreenshot: report-problem-without-logs
 
