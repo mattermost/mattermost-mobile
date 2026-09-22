@@ -26,8 +26,17 @@ export type ResolvedChannelAttribute = {
     // a stored option id that no longer exists on the field.
     option?: PropertyFieldOption;
 
-    // Display string, empty when the attribute is unset.
+    // Display string, empty when the attribute is unset. For a multi-valued
+    // attribute this is every value joined, kept for surfaces that render plain
+    // text (the banner).
     displayValue: string;
+
+    // One entry per underlying value, in order, each with its own resolved
+    // colour when the field is options-bearing. A single-valued attribute has
+    // one entry; an unset attribute has none. Chip-rendering surfaces should
+    // render one chip per entry instead of collapsing to displayValue, so a
+    // multiselect or graph attribute shows each value as its own chip.
+    displayValues: Array<{value: string; color?: string}>;
 
     // Option ids that no longer resolve on an options-bearing field.
     unresolvedOptionIds?: string[];
@@ -169,9 +178,9 @@ export function compareChannelAttributeFields(a: ChannelAttributeField, b: Chann
     return a.name.localeCompare(b.name, 'en');
 }
 
-function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<ResolvedChannelAttribute, 'option' | 'displayValue' | 'unresolvedOptionIds'> {
+function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<ResolvedChannelAttribute, 'option' | 'displayValue' | 'displayValues' | 'unresolvedOptionIds'> {
     if (!isPropertyValueSet(raw)) {
-        return {displayValue: ''};
+        return {displayValue: '', displayValues: []};
     }
 
     const options = getFieldOptions(field);
@@ -179,26 +188,28 @@ function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<R
 
     if (Array.isArray(raw)) {
         const unresolvedOptionIds: string[] = [];
-        const names = raw.map((id) => {
-            const name = options.find((option) => option.id === id)?.name;
-            if (name === undefined && optionsBearing) {
+        const displayValues = raw.map((id) => {
+            const option = options.find((candidate) => candidate.id === id);
+            if (option === undefined && optionsBearing) {
                 unresolvedOptionIds.push(String(id));
             }
-            return name ?? String(id);
+            return {value: option?.name ?? String(id), color: option?.color};
         });
         return {
-            displayValue: names.join(', '),
+            displayValue: displayValues.map((entry) => entry.value).join(', '),
+            displayValues,
             unresolvedOptionIds: unresolvedOptionIds.length > 0 ? unresolvedOptionIds : undefined,
         };
     }
 
     if (typeof raw !== 'string') {
-        return {displayValue: String(raw)};
+        const value = String(raw);
+        return {displayValue: value, displayValues: [{value}]};
     }
 
     const option = options.find((candidate) => candidate.id === raw);
     if (option) {
-        return {option, displayValue: option.name};
+        return {option, displayValue: option.name, displayValues: [{value: option.name, color: option.color}]};
     }
 
     // Text fields store the display string directly. A select field whose option
@@ -206,6 +217,7 @@ function resolveDisplayValue(field: ChannelAttributeField, raw: unknown): Pick<R
     // visible — better than silently dropping a marking.
     return {
         displayValue: raw,
+        displayValues: [{value: raw}],
         unresolvedOptionIds: optionsBearing ? [raw] : undefined,
     };
 }
@@ -275,6 +287,59 @@ export function selectChannelInfoAttributes(
         return Boolean(attribute.displayValue) || isPropertyFieldRequired(attribute.field);
     });
     return listed.length === 0 ? EMPTY_RESOLVED : listed;
+}
+
+export type ChannelAttributeChipItem = {
+    key: string;
+    fieldId: string;
+    label: string;
+    value: string;
+    color?: string;
+    testID: string;
+};
+
+/**
+ * Flattens every attribute's values into individual chip items, one per value,
+ * so a caller can cap overflow by chip count rather than attribute count. A
+ * single multi-valued attribute keeps the bare `{testIDPrefix}.{field.name}`
+ * testID when it is the only value on its field, matching what a
+ * single-valued attribute has always used; a multi-valued field gets an index
+ * suffix per chip so each one stays addressable.
+ */
+export function flattenChannelAttributesToChips(attributes: ResolvedChannelAttribute[], testIDPrefix: string): ChannelAttributeChipItem[] {
+    return attributes.flatMap((attribute) => {
+        const label = getPropertyFieldLabel(attribute.field);
+        const multiValue = attribute.displayValues.length > 1;
+        return attribute.displayValues.map((entry, index) => ({
+            key: `${attribute.field.id}-${index}`,
+            fieldId: attribute.field.id,
+            label,
+            value: entry.value,
+            color: entry.color,
+            testID: multiValue ? `${testIDPrefix}.${attribute.field.name}.${index}` : `${testIDPrefix}.${attribute.field.name}`,
+        }));
+    });
+}
+
+/**
+ * Groups chip items back by field, in order, so a caller can render one row
+ * per field with only the values it was given — e.g. a partially visible
+ * multi-valued attribute lists just its remaining values, rather than
+ * repeating the ones already shown elsewhere.
+ */
+export function groupChannelAttributeChipsByField(items: ChannelAttributeChipItem[]): Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> {
+    const groups: Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> = [];
+    const byFieldId = new Map<string, {fieldId: string; label: string; items: ChannelAttributeChipItem[]}>();
+    for (const item of items) {
+        let group = byFieldId.get(item.fieldId);
+        if (!group) {
+            group = {fieldId: item.fieldId, label: item.label, items: []};
+            byFieldId.set(item.fieldId, group);
+            groups.push(group);
+        }
+        group.items.push(item);
+    }
+    return groups;
 }
 
 function hasAction(field: ChannelAttributeField, action: PropertyFieldAction): boolean {

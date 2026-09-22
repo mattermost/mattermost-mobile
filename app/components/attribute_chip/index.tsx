@@ -14,6 +14,20 @@ import {typography} from '@utils/typography';
 // ellipsis so one long label cannot consume the whole header row.
 const MAX_CHARS = 15;
 
+// Wraps several AttributeChips for one multi-valued attribute so they wrap
+// onto additional lines instead of running off-screen, right-aligned to match
+// a single chip's position. Shared by every surface that renders more than
+// one chip per attribute (header overflow sheet, Channel Info), so the
+// wrapping behaviour can't drift between them.
+export const attributeChipGroupStyle = {
+    flex: 1,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    flexWrap: 'wrap' as const,
+    justifyContent: 'flex-end' as const,
+    gap: 4,
+};
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingHorizontal: 6,

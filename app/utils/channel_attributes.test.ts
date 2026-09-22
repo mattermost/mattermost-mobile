@@ -131,12 +131,14 @@ describe('resolveChannelAttributes', () => {
         expect(resolved.displayValue).toBe('Secret');
         expect(resolved.option?.color).toBe('#FF0000');
         expect(resolved.rawValue).toBe('level-secret');
+        expect(resolved.displayValues).toEqual([{value: 'Secret', color: '#FF0000'}]);
     });
 
     it('should include an unset field with an empty display value', () => {
         const [resolved] = resolveChannelAttributes([classificationField], []);
         expect(resolved.displayValue).toBe('');
         expect(resolved.option).toBeUndefined();
+        expect(resolved.displayValues).toEqual([]);
     });
 
     it('should match values by field id rather than position', () => {
@@ -154,10 +156,14 @@ describe('resolveChannelAttributes', () => {
     });
 
     it('should join a multi-value selection with resolved option names', () => {
-        const caveat = field({id: 'cf-3', name: 'caveat', attrs: {options: [{id: 'a', name: 'NOFORN'}, {id: 'b', name: 'ORCON'}]}});
+        const caveat = field({id: 'cf-3', name: 'caveat', attrs: {options: [{id: 'a', name: 'NOFORN', color: '#FF0000'}, {id: 'b', name: 'ORCON'}]}});
         const value = {fieldId: 'cf-3', value: ['a', 'b']} as unknown as ChannelAttributeValue;
         const [resolved] = resolveChannelAttributes([caveat], [value]);
         expect(resolved.displayValue).toBe('NOFORN, ORCON');
+        expect(resolved.displayValues).toEqual([
+            {value: 'NOFORN', color: '#FF0000'},
+            {value: 'ORCON', color: undefined},
+        ]);
     });
 
     it('should render the raw value when its option no longer exists, rather than dropping the marking', () => {
@@ -165,6 +171,16 @@ describe('resolveChannelAttributes', () => {
         const [resolved] = resolveChannelAttributes([classificationField], [value]);
         expect(resolved.displayValue).toBe('level-gone');
         expect(resolved.option).toBeUndefined();
+        expect(resolved.displayValues).toEqual([{value: 'level-gone'}]);
+        expect(resolved.unresolvedOptionIds).toEqual(['level-gone']);
+    });
+
+    it('should render a non-string raw value as text, with no option resolution attempted', () => {
+        const numeric = field({id: 'cf-4', name: 'count', attrs: {}});
+        const value = {fieldId: 'cf-4', value: 5} as unknown as ChannelAttributeValue;
+        const [resolved] = resolveChannelAttributes([numeric], [value]);
+        expect(resolved.displayValue).toBe('5');
+        expect(resolved.displayValues).toEqual([{value: '5'}]);
     });
 });
 

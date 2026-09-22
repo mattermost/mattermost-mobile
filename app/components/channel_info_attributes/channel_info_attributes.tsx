@@ -5,7 +5,7 @@ import React from 'react';
 import {defineMessages} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import AttributeChip from '@components/attribute_chip';
+import AttributeChip, {attributeChipGroupStyle} from '@components/attribute_chip';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {getPropertyFieldLabel, type ResolvedChannelAttribute} from '@utils/channel_attributes';
@@ -41,7 +41,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
         gap: 12,
         minHeight: 28,
+        paddingVertical: 6,
     },
+    valueGroup: attributeChipGroupStyle,
     label: {
         color: theme.centerChannelColor,
         ...typography('Body', 200),
@@ -107,13 +109,20 @@ const ChannelInfoAttributes = ({attributes}: Props) => {
                         </Text>
 
                         {attribute.displayValue ? (
-                            <AttributeChip
-                                label={label}
-                                value={attribute.displayValue}
-                                color={attribute.option?.color}
-                                announceLabel={false}
-                                testID={`channel_info.attributes.${attribute.field.name}.chip`}
-                            />
+                            <View style={styles.valueGroup}>
+                                {attribute.displayValues.map((entry, index) => (
+                                    <AttributeChip
+                                        key={`${attribute.field.id}-${index}`}
+                                        label={label}
+                                        value={entry.value}
+                                        color={entry.color}
+                                        announceLabel={false}
+                                        testID={attribute.displayValues.length > 1 ?
+                                            `channel_info.attributes.${attribute.field.name}.chip.${index}` :
+                                            `channel_info.attributes.${attribute.field.name}.chip`}
+                                    />
+                                ))}
+                            </View>
                         ) : (
                             <FormattedText
                                 {...messages.notSet}

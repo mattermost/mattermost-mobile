@@ -18,11 +18,17 @@ class ChannelAttributeLabels {
     overflow = element(by.id(this.testID.overflow));
     overflowSheet = element(by.id(this.testID.overflowSheet));
 
-    // chip.{field.name} — the chip container for a given field
-    getChip = (fieldName: string) => element(by.id(`channel_attribute_labels.chip.${fieldName}`));
+    // chip.{field.name} — the chip container for a single-valued field.
+    // chip.{field.name}.{index} — one chip among several values on a multi-valued field
+    // (multiselect, graph). Pass index only when the field has more than one value.
+    getChip = (fieldName: string, index?: number) => element(by.id(
+        index === undefined ? `channel_attribute_labels.chip.${fieldName}` : `channel_attribute_labels.chip.${fieldName}.${index}`,
+    ));
 
-    // chip.{field.name}.value — the value text inside the chip
-    getChipValue = (fieldName: string) => element(by.id(`channel_attribute_labels.chip.${fieldName}.value`));
+    // .value — the value text inside the chip identified by getChip's testID.
+    getChipValue = (fieldName: string, index?: number) => element(by.id(
+        `${index === undefined ? `channel_attribute_labels.chip.${fieldName}` : `channel_attribute_labels.chip.${fieldName}.${index}`}.value`,
+    ));
 
     toNotBeVisible = async () => {
         // Use waitFor rather than an immediate expect — the chip row may take a moment
