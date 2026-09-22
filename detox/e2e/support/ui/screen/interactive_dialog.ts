@@ -37,25 +37,21 @@ class InteractiveDialogScreen {
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
+        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
+
+        // The apps form renders inside a modal with a sticky header and a
+        // keyboard-aware scroll view. A fixed-distance scroll can push the target
+        // under the header or stop short on long forms, so scroll until the input
+        // is actually visible instead of by a hardcoded amount.
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
-            if (isPasswordOrTextarea) {
-                try {
-                    await dialogScrollView.tap({x: 20, y: 20});
-                    await wait(500);
-                } catch {
-                    // No keyboard up, or the tap landed on a field — scrolling still helps.
-                }
-                await dialogScrollView.scrollTo('bottom');
-                await wait(500);
-            } else {
-                await dialogScrollView.scroll(100, 'down');
-            }
+            await waitFor(appsFormElement).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(120, 'down');
         } catch (scrollError) {
-            // Could not scroll dialog, continuing without scroll
+            // Short dialog that doesn't scroll, or the field is already visible.
         }
 
-        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
         await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await expect(appsFormElement).toExist();
@@ -101,9 +97,15 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
+        // The submit button sits at the bottom of the modal and can be hidden by
+        // the keyboard or fall below the fold on long/multistep dialogs. Scroll
+        // until it is visible rather than by a single fixed distance.
         try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
-        } catch { /* short dialogs may not scroll */ }
+            await waitFor(this.submitButton).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(200, 'down');
+        } catch { /* short dialogs may not scroll, or button already visible */ }
         await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
