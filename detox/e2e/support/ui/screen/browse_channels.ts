@@ -20,9 +20,11 @@ class BrowseChannelsScreen {
         channelDropdownTextShared: 'browse_channels.channel_dropdown.text.shared',
         flatChannelList: 'browse_channels.channel_list.flat_list',
         scheduledPostTooltipCloseButton: 'scheduled_post.tooltip.close.button',
+        scheduledPostTooltipCloseButtonAdminAccount: 'scheduled_post_tutorial_tooltip.close',
     };
 
     scheduledPostTooltipCloseButton = element(by.id(this.testID.scheduledPostTooltipCloseButton));
+    scheduledPostTooltipCloseButtonAdminAccount = element(by.id(this.testID.scheduledPostTooltipCloseButtonAdminAccount));
     browseChannelsScreen = element(by.id(this.testID.browseChannelsScreen));
     closeButton = element(by.id(this.testID.closeButton));
     createButton = element(by.id(this.testID.createButton));
@@ -97,12 +99,26 @@ class BrowseChannelsScreen {
         await expect(this.browseChannelsScreen).not.toBeVisible();
     };
 
+    // Wait for the tooltip before tapping it, the way ChannelScreen does. Tapping straight
+    // away raced the tooltip's own entry animation: the tap threw because nothing was there
+    // yet, the throw was swallowed, and the tooltip then rendered over the channel with its
+    // scrim swallowing every later tap. It outlives the test that opened it, so the next two
+    // tests in the file failed on elements the scrim was covering rather than on anything of
+    // their own. The second testID is the icon inside the close button, which is what the
+    // admin account's tree exposes.
     dismissScheduledPostTooltip = async () => {
         try {
+            await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
             await this.scheduledPostTooltipCloseButton.tap();
-        } catch (error) {
-            // eslint-disable-next-line no-console
-            console.log('Element not visible, skipping click');
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            try {
+                await waitFor(this.scheduledPostTooltipCloseButtonAdminAccount).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                await this.scheduledPostTooltipCloseButtonAdminAccount.tap();
+                await wait(timeouts.HALF_SEC);
+            } catch {
+                // Tooltip not visible.
+            }
         }
     };
 }

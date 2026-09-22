@@ -33,34 +33,15 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
         return false;
     }
 
-    let disabled = await System.waitForClientConfigFlag(
+    // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
+    // another shard changed since the GET, on a server ~10 shards share. When the patch does
+    // not move the flag the server owns it, which is what `false` here already means.
+    return System.waitForClientConfigFlag(
         baseUrl,
         'FeatureFlagChannelAttributes',
         'false',
         {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
     );
-    if (!disabled) {
-        const {config, error} = await System.apiGetConfig(baseUrl);
-        if (error || !config) {
-            return false;
-        }
-
-        config.FeatureFlags = config.FeatureFlags ?? {};
-        config.FeatureFlags.ChannelAttributes = false;
-        const replaceResult = await System.apiReplaceConfig(baseUrl, config);
-        if (replaceResult.error) {
-            return false;
-        }
-
-        disabled = await System.waitForClientConfigFlag(
-            baseUrl,
-            'FeatureFlagChannelAttributes',
-            'false',
-            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
-        );
-    }
-
-    return disabled;
 };
 
 /**
