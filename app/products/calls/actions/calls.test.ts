@@ -86,8 +86,8 @@ const mockClient = {
     dismissCall: jest.fn(),
 };
 
-jest.mock('@calls/connection/connection', () => ({
-    newConnection: jest.fn((serverURL, channelId, onClose) => Promise.resolve({
+jest.mock('@calls/connection', () => ({
+    newCallConnection: jest.fn((serverURL, channelId, onClose) => Promise.resolve({
         disconnect: jest.fn((err?: Error) => onClose(err)),
         mute: jest.fn(),
         unmute: jest.fn(() => true),
@@ -196,7 +196,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
 };
 
 describe('Actions.Calls', () => {
-    const {newConnection} = require('@calls/connection/connection');
+    const {newCallConnection} = require('@calls/connection');
     const {updateThreadFollowing} = require('@actions/remote/thread');
 
     // @ts-ignore
@@ -218,7 +218,7 @@ describe('Actions.Calls', () => {
     });
 
     beforeEach(() => {
-        newConnection.mockClear();
+        newCallConnection.mockClear();
         updateThreadFollowing.mockClear();
         mockClient.getCalls.mockClear();
         mockClient.getPluginsManifests.mockClear();
@@ -263,14 +263,14 @@ describe('Actions.Calls', () => {
 
             expect(setCurrentCallConnectedMock).toHaveBeenCalledWith('channel-id', 'session-id');
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
-        expect(newConnection).toHaveBeenCalled();
-        expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection).toHaveBeenCalled();
+        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -280,7 +280,7 @@ describe('Actions.Calls', () => {
         // Test error case
         const {endNativeCall} = require('@calls/native_call');
         endNativeCall.mockClear();
-        newConnection.mockRejectedValueOnce(forceLogoutError);
+        newCallConnection.mockRejectedValueOnce(forceLogoutError);
         await act(async () => {
             await expect(CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
                 locale: 'en',
@@ -295,7 +295,7 @@ describe('Actions.Calls', () => {
             disconnect: jest.fn(),
             waitForPeerConnection: jest.fn().mockRejectedValueOnce(new Error('failed to connect')),
         };
-        newConnection.mockResolvedValueOnce(connection);
+        newCallConnection.mockResolvedValueOnce(connection);
 
         await act(async () => {
             const res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({
@@ -322,7 +322,7 @@ describe('Actions.Calls', () => {
                 messages: {},
             }));
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
@@ -471,7 +471,7 @@ describe('Actions.Calls', () => {
                 messages: {},
             }));
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
@@ -504,7 +504,7 @@ describe('Actions.Calls', () => {
                 messages: {},
             }));
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId', 'mySessionId');
         });
@@ -1422,14 +1422,14 @@ describe('Actions.Calls', () => {
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
-        expect(newConnection).toHaveBeenCalled();
-        expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection).toHaveBeenCalled();
+        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -1465,14 +1465,14 @@ describe('Actions.Calls', () => {
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
-        expect(newConnection).toHaveBeenCalled();
-        expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection).toHaveBeenCalled();
+        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {
@@ -1508,14 +1508,14 @@ describe('Actions.Calls', () => {
         await act(async () => {
             response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, intl);
 
-            // manually call newCurrentConnection because newConnection is mocked
+            // manually call newCurrentConnection because newCallConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
-        expect(newConnection).toHaveBeenCalled();
-        expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(newCallConnection).toHaveBeenCalled();
+        expect(newCallConnection.mock.calls[0][1]).toBe('channel-id');
         expect(updateThreadFollowing).toHaveBeenCalled();
 
         await act(async () => {

@@ -59,7 +59,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
-import {newConnection} from '../connection/connection';
+import {newCallConnection} from '../connection';
 
 import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
@@ -261,7 +261,7 @@ export const joinCall = async (
     // the catch below must act on *this* connection, never on whatever is current by then.
     let conn: CallsConnection;
     try {
-        conn = await newConnection(serverUrl, channelId, (err?: Error) => {
+        conn = await newCallConnection(serverUrl, channelId, (err?: Error) => {
             // Tearing down the call state is only ours to do while we're still the current
             // connection: an abandoned join closing late would otherwise drop the user out of
             // the call they moved on to.

@@ -4,14 +4,14 @@
 import {mediaDevices, MediaStream, MediaStreamTrack, registerGlobals, RTCSessionDescription} from '@livekit/react-native-webrtc';
 import {RTCMonitor, RTCPeer, parseRTCStats} from '@mattermost/calls/lib';
 import {hasDCSignalingLockSupport} from '@mattermost/calls/lib/utils';
-import CallsNative from '@mattermost/calls-native';
 import {zlibSync, strToU8} from 'fflate';
 import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
 
-import {setPreferredAudioRoute} from '@calls/actions/calls';
-import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/foreground_service';
-import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
-import {AudioDevice, type AudioDeviceType, type CallsConnection} from '@calls/types/calls';
+import {peerConnectTimeout} from '@calls/connection/constants';
+import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
+import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/session/foreground_service';
+import {processMeanOpinionScore} from '@calls/state';
+import {type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -19,15 +19,14 @@ import NetworkManager from '@managers/network_manager';
 import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
-import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
+import {WebSocketClient, wsReconnectionTimeoutErr} from '../websocket_client';
 
 import type {EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
-const peerConnectTimeout = 5000;
 const rtcMonitorInterval = 10000;
 
-export async function newConnection(
+export async function newRtcdConnection(
     serverUrl: string,
     channelID: string,
     closeCb: (err?: Error) => void,
@@ -43,7 +42,6 @@ export async function newConnection(
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
-    let audioRouteEvent: EmitterSubscription | null = null;
 
     // Resolver for waitForPeerConnection. Set before peer exists;
     // called from inside ws.on('join') once peer emits 'connect'.
@@ -100,35 +98,16 @@ export async function newConnection(
         }
     }
 
-    let previousAvailableDevices: AudioDeviceType[] = [];
-    let userSelectedRoute: AudioDeviceType | null = null;
-
-    const getAutoRoute = (available: AudioDeviceType[]): AudioDeviceType => {
-        if (available.includes(AudioDevice.Bluetooth)) {
-            return AudioDevice.Bluetooth;
-        }
-        if (available.includes(AudioDevice.WiredHeadset)) {
-            return AudioDevice.WiredHeadset;
-        }
-        return AudioDevice.Earpiece;
-    };
-
-    const setUserSelectedAudioRoute = (route: AudioDeviceType) => {
-        userSelectedRoute = route;
-    };
+    const audioRoute = createAudioRouteManager();
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
-    try {
-        await CallsNative.startAudioSession();
-    } catch (err) {
-        throw new Error(`calls: failed to start audio session: ${getErrorMessage(err)}`);
-    }
+    await startAudioSession();
 
     try {
         await ws.initialize();
     } catch (err) {
-        await CallsNative.stopAudioSession();
+        await stopAudioSession();
 
         // Rethrows the error, to be caught by the caller.
         throw err;
@@ -162,8 +141,8 @@ export async function newConnection(
 
         peer?.destroy();
         peer = null;
-        CallsNative.stopAudioSession();
-        audioRouteEvent?.remove();
+        stopAudioSession();
+        audioRoute.stop();
 
         if (Platform.OS === 'android') {
             foregroundServiceStop();
@@ -361,38 +340,7 @@ export async function newConnection(
             foregroundServiceStart(intl);
         }
 
-        // Listen for audio route changes on both platforms via calls-native.
-        audioRouteEvent?.remove();
-        audioRouteEvent = CallsNative.onAudioRouteChanged((route) => {
-            setAudioDeviceInfo(route);
-            logDebug('calls: AudioRouteChanged, info:', route);
-
-            const available = route.availableAudioDeviceList;
-
-            // If the user's pinned device disappeared (e.g. BT headset ran out
-            // of battery), clear their intent so auto-routing resumes.
-            const selectedRouteDisconnected = Boolean(userSelectedRoute && !available.includes(userSelectedRoute));
-            if (selectedRouteDisconnected) {
-                userSelectedRoute = null;
-            }
-
-            // Re-route when a new device appears OR when the pinned device just
-            // disconnected — in both cases the current route may no longer follow
-            // the intended priority policy.
-            const isNewDevice = (d: AudioDeviceType) => !previousAvailableDevices.includes(d);
-            const newDeviceAppeared = available.some(isNewDevice);
-            previousAvailableDevices = available;
-
-            if (!userSelectedRoute && (selectedRouteDisconnected || newDeviceAppeared)) {
-                setPreferredAudioRoute(getAutoRoute(available));
-            }
-        });
-
-        // Set initial audio route based on current hardware state.
-        const initialRoute = await CallsNative.getAudioRoute();
-        setAudioDeviceInfo(initialRoute);
-        previousAvailableDevices = initialRoute.availableAudioDeviceList;
-        setPreferredAudioRoute(getAutoRoute(initialRoute.availableAudioDeviceList));
+        await audioRoute.start();
 
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
@@ -496,7 +444,7 @@ export async function newConnection(
         unraiseHand,
         sendReaction,
         initializeVoiceTrack,
-        setUserSelectedAudioRoute,
+        setUserSelectedAudioRoute: audioRoute.setUserSelectedAudioRoute,
     };
 
     return connection;
