@@ -553,19 +553,7 @@ class ChannelScreen {
     };
 
     tapSendButton = async () => {
-        try {
-            await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
-        } catch (error) {
-            // Composing the draft raises the keyboard, and the draft does not always finish
-            // moving above it before the button is asked for: the send button is mounted and
-            // enabled, it just sits behind the keyboard and cannot pass Detox's visibility
-            // check. The failure screenshot for MM-T4809_2 is the keyboard covering the whole
-            // draft. Dismissing it is what the reply-count row a few hundred lines up already
-            // does for the same reason. Only on the failing path — the keyboard is where the
-            // text came from, so the common case must not pay for this.
-            await this.dismissKeyboard();
-            await waitForElementToBeVisible(this.sendButton, timeouts.TEN_SEC);
-        }
+        await waitForElementToBeVisible(this.sendButton, timeouts.FOUR_SEC);
         await this.sendButton.tap();
         await waitFor(this.sendButton).not.toExist().withTimeout(timeouts.FIVE_SEC);
     };

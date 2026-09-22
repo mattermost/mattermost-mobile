@@ -116,9 +116,6 @@ const PREPACKAGED_PLUGINS = new Set([
 const WARMUP_RETRIES = 8;
 const WARMUP_DELAY_MS = 15000;
 
-// Feature probe only, and its failure is already handled — do not let it hold the run open.
-const ENV_CONFIG_TIMEOUT_MS = 10000;
-
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {
     let lastErr;
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -233,32 +230,6 @@ async function serverSetup() {
     }
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
-
-    // Flag-off cases need the flag turned OFF, which an installation that supplies
-    // FeatureFlags.ChannelAttributes itself will not allow: config/patch is accepted and
-    // ignored. Detect that here, with the admin token, so the block can skip at describe()
-    // time. Skipping reports those cases as not executed; returning early from each test
-    // would have Jest record them as passed, and failing the hook would turn a server we do
-    // not control into a red suite.
-    process.env.MM_SERVER_CHANNEL_ATTRIBUTES_WRITABLE = 'true';
-    if (process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true') {
-        try {
-            // Bounded: axios has no default timeout, so a server that accepts the connection
-            // and never answers would hold globalSetup open until the job's own timeout, for a
-            // probe whose failure is already non-fatal.
-            const envConfig = await axios.get(`${SITE_URL}/api/v4/config/environment`, {
-                headers,
-                timeout: ENV_CONFIG_TIMEOUT_MS,
-            });
-            if (envConfig.data?.FeatureFlags?.ChannelAttributes) {
-                process.env.MM_SERVER_CHANNEL_ATTRIBUTES_WRITABLE = 'false';
-                process.stdout.write('[globalSetup] FeatureFlags.ChannelAttributes is set by environment here — the flag-off cases will be skipped\n');
-            }
-        } catch (error) {
-            // Not fatal: assume writable and let the suite's own disable report the truth.
-            process.stdout.write(`[globalSetup] could not read config/environment (${error.message}) — assuming ChannelAttributes is writable\n`);
-        }
-    }
 
     // Pre-warm the server so the first app request isn't also the server's cold start. This
     // does not warm the simulator's TLS session, so -1005 drops are still possible.

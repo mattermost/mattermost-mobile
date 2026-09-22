@@ -71,8 +71,3 @@ export const hasCustomProfileAttributes =
  * global_setup.js. Presence is the signal; the suite still toggles the flag's value itself.
  */
 export const hasChannelAttributes = process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true';
-
-// False when the installation supplies FeatureFlags.ChannelAttributes itself, so the flag
-// cannot be turned off and the flag-off cases have no pre-condition to create. Set by
-// global_setup from GET /api/v4/config/environment.
-export const canDisableChannelAttributes = process.env.MM_SERVER_CHANNEL_ATTRIBUTES_WRITABLE !== 'false';

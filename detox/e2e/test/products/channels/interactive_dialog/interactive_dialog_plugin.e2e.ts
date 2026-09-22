@@ -724,10 +724,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await IntegrationSelectorScreen.toBeVisible();
         await expect(element(by.text('Mobile Application'))).toExist();
         await element(by.text('Mobile Application')).tap();
-
-        // Tapping the option refreshes the form through the plugin, so this waits on a server
-        // round trip, not a local re-render. Two seconds was never a budget for that.
-        await waitFor(element(by.id('AppFormElement.mobile_platform.select.button'))).toExist().withTimeout(timeouts.TEN_SEC);
+        await waitFor(element(by.id('AppFormElement.mobile_platform.select.button'))).toExist().withTimeout(2000);
         await expect(element(by.id('AppFormElement.min_os_version.input'))).toExist();
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();

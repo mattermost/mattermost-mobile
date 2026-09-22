@@ -45,22 +45,12 @@ expected="$5"
 # stalled connection blocks curl indefinitely: the script cannot reach its retry or exit path
 # and the caller burns its whole CI job timeout on one unanswered socket.
 CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
-# Reads are small GETs of one JSON document.
 MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
-# The write is not: config/patch makes the server persist and reload its configuration and
-# re-push it to every connected client, so it is legitimately slow on a loaded installation.
-# detox's own apiPatchConfig allows 45s for the same call. A 30s ceiling here aborted three
-# consecutive patches at exactly 30.0s against a server that was going to answer.
-PATCH_MAX_TIME_SECS="${CONFIG_PATCH_MAX_TIME_SECS:-90}"
-POLL_WINDOW_SECS="${CONFIG_POLL_WINDOW_SECS:-10}"
 
-# $1: seconds this read may take. The poll deadline below is shorter than MAX_TIME_SECS, so a
-# read given the full budget could outlive the loop it belongs to and overshoot the deadline.
 read_key() {
-    local budget="${1:-$MAX_TIME_SECS}"
     local response
     if ! response="$(curl -f -sS --show-error \
-        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${budget}" \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         "${site_url}/api/v4/config/client?format=old" 2>/dev/null)"; then
         printf '%s' "<client config could not be read>"
@@ -150,7 +140,7 @@ fi
 actual=""
 for attempt in 1 2 3; do
     if ! curl -f -sS --show-error -X PUT \
-        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${PATCH_MAX_TIME_SECS}" \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
         -H "Content-Type: application/json" \
         -d "$patch_json" \
@@ -161,17 +151,15 @@ for attempt in 1 2 3; do
     fi
 
     # Poll rather than read once: a clustered installation propagates a patch asynchronously.
-    deadline=$(( SECONDS + POLL_WINDOW_SECS ))
+    deadline=$(( SECONDS + 10 ))
     while :; do
-        # Check the clock first, and give the read only what is left of the window.
-        remaining=$(( deadline - SECONDS ))
-        if (( remaining <= 0 )); then
-            break
-        fi
-        actual="$(read_key "$remaining")"
+        actual="$(read_key)"
         if [[ "$actual" == "$expected" ]]; then
             echo "==> Verified ${key}=${actual} in the client config (attempt ${attempt})"
             exit 0
+        fi
+        if (( SECONDS >= deadline )); then
+            break
         fi
         sleep 2
     done

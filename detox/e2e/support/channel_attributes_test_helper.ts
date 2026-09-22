@@ -20,10 +20,9 @@ const observedFlagValues = async (baseUrl: string) => {
 /**
  * Attempt to disable the ChannelAttributes feature flag on the server.
  *
- * Returns true if the flag was successfully set to false, false if the server
- * controls the flag via an environment variable and it cannot be overridden.
- * Never throws — callers that require the flag to be off should check the return
- * value and skip or fail with a clear message.
+ * Returns true once client config reports the flag as false. Returns false if every
+ * attempt's patch was rejected or never propagated; the logged warnings say which.
+ * Never throws — callers that require the flag to be off should fail on false.
  */
 export const disableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
     let lastObserved: {server?: unknown; client?: unknown} = {};
