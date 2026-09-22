@@ -24,24 +24,45 @@ const observedFlagValues = async (baseUrl: string) => {
  * value and skip or fail with a clear message.
  */
 export const disableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
-    const patchResult = await System.apiPatchConfig(baseUrl, {
-        FeatureFlags: {
-            ChannelAttributes: false,
-        },
-    });
-    if (patchResult.error) {
-        return false;
-    }
+    let lastObserved: {server?: unknown; client?: unknown} = {};
 
-    // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
-    // another shard changed since the GET, on a server ~10 shards share. When the patch does
-    // not move the flag the server owns it, which is what `false` here already means.
-    return System.waitForClientConfigFlag(
-        baseUrl,
-        'FeatureFlagChannelAttributes',
-        'false',
-        {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
-    );
+    // Re-patch between polls, the way enableChannelAttributes does. Disabling used to patch
+    // once and then wait, so a server that dropped or was slow to propagate that single write
+    // made this return false — the same answer it gives when the installation owns the flag,
+    // even though a second patch would have taken. Both directions now get the same budget.
+    /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
+    for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
+        const patchResult = await System.apiPatchConfig(baseUrl, {
+            FeatureFlags: {
+                ChannelAttributes: false,
+            },
+        });
+
+        // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
+        // another shard changed since the GET, on a server ~10 shards share.
+        if (!patchResult.error) {
+            const disabled = await System.waitForClientConfigFlag(
+                baseUrl,
+                'FeatureFlagChannelAttributes',
+                'false',
+                {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
+            );
+            if (disabled) {
+                return true;
+            }
+        }
+
+        lastObserved = await observedFlagValues(baseUrl);
+
+        // eslint-disable-next-line no-console
+        console.warn(
+            `[disableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
+            `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
+        );
+    }
+    /* eslint-enable no-await-in-loop */
+
+    return false;
 };
 
 /**
