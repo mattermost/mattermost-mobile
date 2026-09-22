@@ -184,7 +184,15 @@ describe('Channels - Find Channels', () => {
         // opened — and both are present in that state.
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(archivedChannel.display_name);
-        await waitFor(ChannelScreen.postDraftArchived).toBeVisible().withTimeout(timeouts.HALF_MIN);
+
+        // The close-channel button, not the post_draft.archived container: the container can
+        // sit below Detox's visibility threshold while the control inside it is plainly on
+        // screen, and the button is what archive_channel_from_settings already polls for the
+        // same state. The archive has to propagate through the DB observable before it mounts,
+        // so this is a wait rather than a one-shot expect.
+        await waitFor(
+            ChannelScreen.postDraftArchivedCloseChannelButton,
+        ).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
