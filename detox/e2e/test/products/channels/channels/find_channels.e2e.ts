@@ -26,7 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait, waitForElementToHaveText} from '@support/utils';
+import {timeouts, wait, waitForElementToExist, waitForElementToHaveText} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -234,5 +234,12 @@ async function verifyDetailsOnChannelScreen(display_name: string) {
 
     await ChannelScreen.toBeVisible();
     await expect(ChannelScreen.headerTitle).toHaveText(display_name);
+
+    // The channel intro and the post list's loading spinner are mutually exclusive: while the
+    // list is still fetching, intro.display_name is not merely late, it is absent from the
+    // tree, and waiting on it waits for something that is not coming. Wait for the post list
+    // to settle first, then read the intro — by which point it is there or the channel
+    // genuinely has none.
+    await waitForElementToExist(ChannelScreen.postList.getFlatList(), timeouts.HALF_MIN);
     await waitForElementToHaveText(ChannelScreen.introDisplayName, display_name, timeouts.HALF_MIN);
 }
