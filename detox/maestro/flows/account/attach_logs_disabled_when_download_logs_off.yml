@@ -58,6 +58,19 @@ onFlowComplete:
     visible:
       id: "report_problem.screen"
     timeout: 30000
+
+# * Wait for the app to actually hold AllowDownloadLogs=false before asserting anything is
+# absent. The app reads the flag from its own database and defaults it to true until the
+# server config arrives, so the toggle is on screen for a moment even when the server has
+# already been patched — asserting straight away races that sync. This description drops
+# "and app logs" only in the false branch, so it is the app telling us the value landed.
+# Without it the assertions below pass whenever the config is simply late, which is the
+# same thing as passing with the feature switched on.
+# Full-string regex, as in login.yml: Maestro matches the whole text, so the bare
+# phrase never matches the sentence it sits in.
+- extendedWaitUntil:
+    visible: ".*share the metadata given below.*"
+    timeout: 30000
 - takeScreenshot: report-problem-without-logs
 
 # # Scroll to the end of the details first. assertNotVisible also passes for a
