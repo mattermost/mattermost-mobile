@@ -11,7 +11,7 @@ import {disableChannelAttributes, enableChannelAttributes} from '@support/channe
 import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Channel, Post, Properties, Team, User} from '@support/server_api';
-import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
+import {canDisableChannelAttributes, hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';
@@ -594,22 +594,24 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         });
     });
 
-    describe('with the flag off', () => {
+    // Skipped as a block when the installation supplies FeatureFlags.ChannelAttributes itself:
+    // the flag cannot be turned off, so these cases have no pre-condition to assert against.
+    // Skipping reports them as not executed. They used to return early from each test, which
+    // Jest records as passed — three green tests that never ran, indistinguishable from three
+    // that verified the flag-off behaviour.
+    (canDisableChannelAttributes ? describe : describe.skip)('with the flag off', () => {
         beforeAll(async () => {
-            // The only other flag write in the suite; see beforeAll above.
+            // The only other flag write in the suite; see beforeAll above. global_setup has
+            // already established the server allows it, so a failure here is a real one.
             canControlFlag = await disableChannelAttributes(siteOneUrl);
-
-            // Fail here rather than letting each test return early. A test that returns without
-            // asserting is recorded by Jest as passed, so an installation that owns the flag used
-            // to report three green flag-off tests that never ran — the same thing as reporting
-            // the feature works when it was never switched off. Every provisioned server in CI
-            // accepts this write, so this is a real change in the environment, not a normal skip.
             if (!canControlFlag) {
+                // Only what the helper actually established: it returns false both when the
+                // patch call fails and when the client config never reports false before its
+                // poll ends, so neither cause can be claimed here.
                 throw new Error(
-                    'FeatureFlagChannelAttributes cannot be turned off on this server (the ' +
-                    'installation supplies it, so config/patch is accepted and ignored). The ' +
-                    'flag-off tests below have no pre-condition to assert against and are not ' +
-                    'being reported as passed.',
+                    'disableChannelAttributes could not confirm FeatureFlagChannelAttributes ' +
+                    'is off (the patch failed, or the client config did not report false ' +
+                    'before polling ended), so the flag-off cases have no pre-condition.',
                 );
             }
         });

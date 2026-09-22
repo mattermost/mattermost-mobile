@@ -46,11 +46,15 @@ expected="$5"
 # and the caller burns its whole CI job timeout on one unanswered socket.
 CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
 MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
+POLL_WINDOW_SECS="${CONFIG_POLL_WINDOW_SECS:-10}"
 
+# $1: seconds this read may take. The poll deadline below is shorter than MAX_TIME_SECS, so a
+# read given the full budget could outlive the loop it belongs to and overshoot the deadline.
 read_key() {
+    local budget="${1:-$MAX_TIME_SECS}"
     local response
     if ! response="$(curl -f -sS --show-error \
-        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
+        --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${budget}" \
         -H "Authorization: Bearer ${admin_token}" \
         "${site_url}/api/v4/config/client?format=old" 2>/dev/null)"; then
         printf '%s' "<client config could not be read>"
@@ -151,15 +155,17 @@ for attempt in 1 2 3; do
     fi
 
     # Poll rather than read once: a clustered installation propagates a patch asynchronously.
-    deadline=$(( SECONDS + 10 ))
+    deadline=$(( SECONDS + POLL_WINDOW_SECS ))
     while :; do
-        actual="$(read_key)"
+        # Check the clock first, and give the read only what is left of the window.
+        remaining=$(( deadline - SECONDS ))
+        if (( remaining <= 0 )); then
+            break
+        fi
+        actual="$(read_key "$remaining")"
         if [[ "$actual" == "$expected" ]]; then
             echo "==> Verified ${key}=${actual} in the client config (attempt ${attempt})"
             exit 0
-        fi
-        if (( SECONDS >= deadline )); then
-            break
         fi
         sleep 2
     done

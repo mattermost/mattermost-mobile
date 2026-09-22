@@ -231,6 +231,26 @@ async function serverSetup() {
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
 
+    // Flag-off cases need the flag turned OFF, which an installation that supplies
+    // FeatureFlags.ChannelAttributes itself will not allow: config/patch is accepted and
+    // ignored. Detect that here, with the admin token, so the block can skip at describe()
+    // time. Skipping reports those cases as not executed; returning early from each test
+    // would have Jest record them as passed, and failing the hook would turn a server we do
+    // not control into a red suite.
+    process.env.MM_SERVER_CHANNEL_ATTRIBUTES_WRITABLE = 'true';
+    if (process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true') {
+        try {
+            const envConfig = await axios.get(`${SITE_URL}/api/v4/config/environment`, {headers});
+            if (envConfig.data?.FeatureFlags?.ChannelAttributes) {
+                process.env.MM_SERVER_CHANNEL_ATTRIBUTES_WRITABLE = 'false';
+                process.stdout.write('[globalSetup] FeatureFlags.ChannelAttributes is set by environment here — the flag-off cases will be skipped\n');
+            }
+        } catch (error) {
+            // Not fatal: assume writable and let the suite's own disable report the truth.
+            process.stdout.write(`[globalSetup] could not read config/environment (${error.message}) — assuming ChannelAttributes is writable\n`);
+        }
+    }
+
     // Pre-warm the server so the first app request isn't also the server's cold start. This
     // does not warm the simulator's TLS session, so -1005 drops are still possible.
     try {
