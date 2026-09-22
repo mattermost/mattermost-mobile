@@ -801,8 +801,7 @@ export const switchToCallThread = async (serverUrl: string, rootId: string, titl
             await setCurrentTeamId(operator, channel.teamId);
         }
 
-        // Marks which thread the user is viewing, which websocket handlers, push
-        // notifications and cache cleanup all read. switchToThread sets it too.
+        // Set the currently viewed thread id to the call's thread root id.
         EphemeralStore.setCurrentThreadId(rootId);
 
         if (activeUrl === serverUrl) {
