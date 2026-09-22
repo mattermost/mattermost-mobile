@@ -4,6 +4,8 @@
 import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 
+import {logWarn} from '../../provision/log';
+
 const FLAG_PATCH_ATTEMPTS = 3;
 
 const observedFlagValues = async (baseUrl: string) => {
@@ -61,8 +63,7 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
             `patch rejected: ${JSON.stringify(patchResult.error).slice(0, 200)}` :
             'patch accepted but the client config did not report false in time';
 
-        // eslint-disable-next-line no-console
-        console.warn(
+        logWarn(
             `[disableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ${cause}; ` +
             `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
@@ -104,8 +105,7 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
 
         lastObserved = await observedFlagValues(baseUrl);
 
-        // eslint-disable-next-line no-console
-        console.warn(
+        logWarn(
             `[enableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
             `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
