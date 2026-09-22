@@ -68,7 +68,25 @@ class ChannelSettingsScreen {
             // is insufficient on slow iOS CI runners where the dismiss animation can take
             // longer, leaving the dimming view blocking subsequent taps.
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);
-            await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+
+            try {
+                await waitForElementToNotExist(this.channelSettingsScreen, timeouts.TEN_SEC);
+            } catch (screenStillUp) {
+                // A failed archive swaps the confirmation for an error alert, which satisfies the
+                // wait above and leaves the settings screen up. Name the alert, not the screen.
+                try {
+                    await waitFor(Alert.invalidServerResponse).toExist().withTimeout(timeouts.TWO_SEC);
+                } catch {
+                    throw screenStillUp;
+                }
+
+                // Report the alert, not a cause: alertErrorWithFallback shows this text whenever
+                // the error carries no message of its own.
+                throw new Error(
+                    'archive channel failed: the app showed "Received invalid response from the ' +
+                    'server." and stayed on the channel settings screen',
+                );
+            }
         } else {
             await noButton.tap();
             await waitFor(alertArchiveChannelTitle).not.toExist().withTimeout(timeouts.TEN_SEC);

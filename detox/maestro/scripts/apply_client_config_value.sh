@@ -15,7 +15,13 @@
 #
 # Usage: apply_client_config_value.sh <site-url> <admin-token> <patch-json> <key> <expected-value>
 # Exit 0: the client config serves <expected-value>.
-# Exit 3: this installation forbids the write. Two causes are checked and both are printed:
+#         A read that matches is only meaningful because exit 3 below has already ruled out
+#         an installation that would answer 200 and keep its own value. Callers that need the
+#         value to still be in force later must check it where it matters -- this script does
+#         not hold it, and no wait here could prove that it will.
+# Exit 3: this installation forbids the write. Checked FIRST, before any patch attempt, since
+#         both signals are deterministic and retrying cannot change them. Two causes are
+#         checked and both are printed:
 #         the key being supplied by an environment variable (Mattermost keeps the env value
 #         and silently ignores config/patch while answering 200 -- this is what the PR
 #         Spinwicks do, proven in run 34452126763: "RestrictSystemAdmin=false,
@@ -55,6 +61,73 @@ print(config.get(key, '<key absent from client config>'))
 " "$key"
 }
 
+# Whether this installation will accept the write at all. Both answers are deterministic --
+# neither depends on how quickly a value propagates, so they are asked before any patching
+# rather than only after attempts have been spent:
+#   1. ExperimentalSettings.RestrictSystemAdmin drops every write_restrictable /
+#      cloud_restrictable field (server/channels/api4/config.go, makeFilterConfigByPermission).
+#   2. The field is supplied by an environment variable. Mattermost keeps the env value and
+#      silently ignores config/patch while answering 200; GET /api/v4/config/environment
+#      reports which fields those are. Cloud provisioners configure installations this way.
+read_restricted() {
+    # Guard the read like read_key does. Piping a failed curl into python prints its own
+    # 'unknown' and then the || prints a second one, and the caller reports both.
+    local body
+    if ! body="$(curl -f -sS --show-error \
+        -H "Authorization: Bearer ${admin_token}" \
+        "${site_url}/api/v4/config" 2>/dev/null)"; then
+        printf 'unknown'
+        return
+    fi
+    printf '%s' "$body" | python3 -c "
+import json, sys
+try:
+    config = json.load(sys.stdin)
+except ValueError:
+    print('unknown')
+    sys.exit(0)
+print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unknown')).lower())
+"
+}
+
+read_env_managed() {
+    local body
+    if ! body="$(curl -f -sS --show-error \
+        -H "Authorization: Bearer ${admin_token}" \
+        "${site_url}/api/v4/config/environment" 2>/dev/null)"; then
+        printf 'unknown'
+        return
+    fi
+    printf '%s' "$body" | python3 -c "
+import json, sys
+patch = sys.argv[1]
+try:
+    env = json.load(sys.stdin)
+    fields = json.loads(patch)
+except ValueError:
+    print('unknown')
+    sys.exit(0)
+for section, values in fields.items():
+    if not isinstance(values, dict):
+        continue
+    section_env = env.get(section, {})
+    for field in values:
+        if section_env.get(field):
+            print('true')
+            sys.exit(0)
+print('false')
+" "$patch_json"
+}
+
+# Ask first. An installation that owns the field will answer 200 to every patch and keep its
+# own value, so retrying cannot help and a read that briefly matches is not evidence.
+restricted="$(read_restricted)"
+env_managed="$(read_env_managed)"
+if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
+    echo "==> ${key} is owned by this installation (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed}), so the flow's pre-condition cannot be created here." >&2
+    exit 3
+fi
+
 actual=""
 for attempt in 1 2 3; do
     if ! curl -f -sS --show-error -X PUT \
@@ -84,49 +157,10 @@ for attempt in 1 2 3; do
     echo "==> ${key} is '${actual}' after attempt ${attempt}, re-applying the patch" >&2
 done
 
-# Work out WHY before deciding failure vs skip, and say so either way. The first version
-# of this script only reported that the value "never took", which left the next run just as
-# undiagnosable as the one before it -- so both signals are printed unconditionally.
-#
-# Two ways an installation can refuse a write while still answering 200:
-#   1. ExperimentalSettings.RestrictSystemAdmin -- drops every write_restrictable /
-#      cloud_restrictable field (server/channels/api4/config.go, makeFilterConfigByPermission).
-#   2. The setting is supplied by an environment variable. Mattermost keeps the env value and
-#      silently ignores the patch; GET /api/v4/config/environment reports which fields those
-#      are. Cloud provisioners configure installations this way.
-restricted="$(curl -f -sS --show-error \
-    -H "Authorization: Bearer ${admin_token}" \
-    "${site_url}/api/v4/config" 2>/dev/null | python3 -c "
-import json, sys
-try:
-    config = json.load(sys.stdin)
-except ValueError:
-    print('unknown')
-    sys.exit(0)
-print(str(config.get('ExperimentalSettings', {}).get('RestrictSystemAdmin', 'unknown')).lower())
-" || printf 'unknown')"
-
-env_managed="$(curl -f -sS --show-error \
-    -H "Authorization: Bearer ${admin_token}" \
-    "${site_url}/api/v4/config/environment" 2>/dev/null | python3 -c "
-import json, sys
-patch = sys.argv[1]
-try:
-    env = json.load(sys.stdin)
-    fields = json.loads(patch)
-except ValueError:
-    print('unknown')
-    sys.exit(0)
-for section, values in fields.items():
-    if not isinstance(values, dict):
-        continue
-    section_env = env.get(section, {})
-    for field in values:
-        if section_env.get(field):
-            print('true')
-            sys.exit(0)
-print('false')
-" "$patch_json" || printf 'unknown')"
+# The installation said it would accept the write, so re-ask rather than assume: the answer
+# can change mid-run, and printing both signals keeps the next run diagnosable.
+restricted="$(read_restricted)"
+env_managed="$(read_env_managed)"
 
 echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})" >&2
 

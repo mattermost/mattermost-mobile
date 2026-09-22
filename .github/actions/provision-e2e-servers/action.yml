@@ -67,16 +67,16 @@ runs:
       id: demo-plugin-cache
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
-        path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
-        key: mattermost-plugin-demo-linux-amd64-v0.11.1
+        path: detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz
+        key: mattermost-plugin-demo-linux-amd64-v0.12.1
 
     - name: Download demo plugin fixture
       if: steps.demo-plugin-cache.outputs.cache-hit != 'true'
       run: |
         mkdir -p detox/e2e/support/fixtures
-        curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz \
-          "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.11.1/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz"
-        ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.11.1-linux-amd64.tar.gz
+        curl -fsSL -o detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz \
+          "https://github.com/mattermost/mattermost-plugin-demo/releases/download/v0.12.1/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz"
+        ls -lh detox/e2e/support/fixtures/mattermost-plugin-demo-v0.12.1-linux-amd64.tar.gz
       shell: bash
 
     - name: Provision servers (license + plugins)
