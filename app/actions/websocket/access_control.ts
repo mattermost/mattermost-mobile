@@ -232,19 +232,20 @@ export const invalidateRedactionForChannelMembership = (serverUrl: string, chann
 };
 
 /**
- * Websocket events are not replayed on a cold start but post rows outlive the process, so a first
- * connection must assume every cached decision is stale. Awaited and uncoalesced unlike every other
- * trigger: the fetch that follows has to capture the raised epoch, not the old one.
+ * A resync runs whenever websocket events may have been lost: a cold start, or a reconnect the server
+ * could not resume (long timeout, restart, sequence gap). Post rows outlive both, so every cached
+ * decision must be assumed stale. Awaited and uncoalesced unlike every other trigger: the fetch that
+ * follows has to capture the raised epoch, not the old one.
  */
-export const invalidateRedactionOnFirstConnect = async (serverUrl: string) => {
+export const invalidateRedactionOnResync = async (serverUrl: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {
             return;
         }
-        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.FirstConnect);
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
     } catch (error) {
-        logError('invalidateRedactionOnFirstConnect', getFullErrorMessage(error));
+        logError('invalidateRedactionOnResync', getFullErrorMessage(error));
     }
 };
 

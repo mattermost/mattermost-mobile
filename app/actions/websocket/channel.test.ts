@@ -8,14 +8,16 @@ import {fetchMyChannel, fetchChannelById, fetchMissingDirectChannelsInfo} from '
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import {invalidateRedactionForChannelMembership} from '@actions/websocket/access_control';
 import {leaveCall} from '@calls/actions/calls';
 import {getCurrentCall} from '@calls/state';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {deleteChannelMembership, getChannelById, getCurrentChannel, prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, canViewArchivedChannels} from '@queries/servers/system';
+import {deleteChannelMembership, getChannelById, getCurrentChannel, getMyChannel, prepareMyChannelsForTeam} from '@queries/servers/channel';
+import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, canViewArchivedChannels} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import TestHelper from '@test/test_helper';
 
 import {handleChannelCreatedEvent, handleChannelUnarchiveEvent, handleChannelConvertedEvent, handleChannelUpdatedEvent, handleChannelViewedEvent, handleMultipleChannelsViewedEvent, handleChannelMemberUpdatedEvent, handleChannelDeletedEvent, handleDirectAddedEvent, handleUserAddedToChannelEvent, handleUserRemovedFromChannelEvent} from './channel';
 
@@ -30,6 +32,7 @@ jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/role');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/user');
+jest.mock('@actions/websocket/access_control');
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/post');
 jest.mock('@queries/servers/channel');
@@ -361,6 +364,31 @@ describe('WebSocket Channel Actions', () => {
 
             expect(fetchRolesIfNeeded).toHaveBeenCalled();
             expect(operator.batchRecords).toHaveBeenCalled();
+        });
+
+        describe('redaction invalidation', () => {
+            const receive = async (previousRoles: string, roles: string) => {
+                msg.data = {channelMember: JSON.stringify({channel_id: channelId, user_id: userId, roles})};
+                jest.mocked(getMyChannel).mockResolvedValue(TestHelper.fakeMyChannelModel({id: channelId, roles: previousRoles}));
+                jest.mocked(getCurrentUserId).mockResolvedValue(userId);
+                (updateMyChannelFromWebsocket as jest.Mock).mockResolvedValue({model: {}});
+                (fetchRolesIfNeeded as jest.Mock).mockResolvedValue({roles: []});
+                jest.spyOn(operator, 'batchRecords').mockResolvedValueOnce();
+
+                await handleChannelMemberUpdatedEvent(serverUrl, msg);
+            };
+
+            it('should not invalidate when the roles are unchanged, as for a mute or notify props change', async () => {
+                await receive('channel_user channel_admin', 'channel_admin channel_user');
+
+                expect(invalidateRedactionForChannelMembership).not.toHaveBeenCalled();
+            });
+
+            it('should invalidate the channel when the current user roles change', async () => {
+                await receive('channel_user', 'channel_user channel_admin');
+
+                expect(invalidateRedactionForChannelMembership).toHaveBeenCalledWith(serverUrl, channelId);
+            });
         });
     });
 

@@ -17,7 +17,7 @@ import {
     handleRedactionForPropertyValuesUpdated,
     invalidateRedactionForChannelMembership,
     invalidateRedactionForCurrentUser,
-    invalidateRedactionOnFirstConnect,
+    invalidateRedactionOnResync,
 } from './access_control';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -213,10 +213,10 @@ describe('redaction invalidation triggers', () => {
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
     });
 
-    it('should advance immediately and without coalescing on first connect', async () => {
+    it('should advance immediately and without coalescing on resync', async () => {
         // The reconnect path fetches the visible channel right after, and that fetch must capture the
         // raised epoch rather than the one it is replacing.
-        await invalidateRedactionOnFirstConnect(serverUrl);
+        await invalidateRedactionOnResync(serverUrl);
 
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
     });

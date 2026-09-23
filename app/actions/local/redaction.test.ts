@@ -166,37 +166,39 @@ describe('captureRedactionEpoch / isRedactionEpochCurrent', () => {
     it('should capture nothing while the server is not enforcing policies', async () => {
         // A server without ABAC must behave exactly as it did before this feature existed: no epoch
         // is stamped, so no post is ever gated.
-        expect(await captureRedactionEpoch(serverUrl, channelId)).toBeUndefined();
-        expect(await isRedactionEpochCurrent(serverUrl, undefined, channelId)).toBe(true);
+        expect(await captureRedactionEpoch(serverUrl)).toBeUndefined();
+        expect(await isRedactionEpochCurrent(serverUrl, undefined)).toBe(true);
     });
 
     it('should treat a captured epoch as stale once an invalidation lands', async () => {
         await enable();
         await seedMyChannel(channelId);
 
-        const captured = await captureRedactionEpoch(serverUrl, channelId);
+        const captured = await captureRedactionEpoch(serverUrl);
         expect(captured).toBe(1);
-        expect(await isRedactionEpochCurrent(serverUrl, captured, channelId)).toBe(true);
+        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(true);
 
         await invalidateChannelRedaction(serverUrl, channelId, RedactionInvalidationReason.ChannelPolicy);
 
-        expect(await isRedactionEpochCurrent(serverUrl, captured, channelId)).toBe(false);
+        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(false);
     });
 
-    it('should not treat a channel invalidation as superseding another channel', async () => {
+    it('should verify posts of a channel whose own epoch is ahead of the global one', async () => {
+        // Thread and single-post fetches capture before they know the channel. Capturing the global
+        // epoch left every response for a channel-invalidated channel permanently below its gate.
         await enable();
         await seedMyChannel(channelId);
-        await seedMyChannel(otherChannelId);
+        await invalidateChannelRedaction(serverUrl, channelId, RedactionInvalidationReason.ChannelRoles);
 
-        const captured = await captureRedactionEpoch(serverUrl, otherChannelId);
-        await invalidateChannelRedaction(serverUrl, channelId, RedactionInvalidationReason.ChannelPolicy);
+        const captured = await captureRedactionEpoch(serverUrl);
 
-        expect(await isRedactionEpochCurrent(serverUrl, captured, otherChannelId)).toBe(true);
+        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(true);
+        expect(isPostRedactionVerified(captured, await getRequiredRedactionEpoch(operator.database, channelId))).toBe(true);
     });
 
     it('should fail closed when the database cannot be read', async () => {
         await enable();
-        expect(await isRedactionEpochCurrent('no.such.server', 5, channelId)).toBe(false);
+        expect(await isRedactionEpochCurrent('no.such.server', 5)).toBe(false);
     });
 });
 

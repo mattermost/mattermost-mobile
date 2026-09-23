@@ -1374,6 +1374,50 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             expect(rows[0].metadata?.redacted_file_count).toBe(3);
             expect(rows[0].redactionVerifiedEpoch).toBe(2);
         });
+
+        it('should store a newer epoch for a post whose access did not change', async () => {
+            // Nothing but the epoch differs, so without an explicit clause the write is skipped and
+            // the post stays unverified after every invalidation.
+            const post = basePost({redacted_file_count: 0});
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...post}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...post}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(2);
+        });
+
+        it('should not let a newer epoch roll back a newer edit', async () => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), message: 'original'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited');
+            expect(rows[0].redactionVerifiedEpoch).toBe(1);
+        });
     });
 });
 

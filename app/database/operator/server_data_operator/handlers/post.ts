@@ -113,6 +113,7 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 
 export const exportedForTest = {
     mergePostInChannelChunks,
+    isNewerRedactionGeneration,
     isStaleRedactionGeneration,
     shouldUpdateForBoRPost,
     shouldUpdateForRedaction,
@@ -129,6 +130,19 @@ function isStaleRedactionGeneration(e: PostModel, n: Post): boolean {
         return false;
     }
     return incoming < (e.redactionVerifiedEpoch ?? 0);
+}
+
+/**
+ * Re-verifying a post whose access did not change returns it with the same update_at and redaction
+ * metadata, so without this the newer epoch is never stored and the post stays unverified for good.
+ * An older update_at is still refused: a newer epoch must not roll back an edit.
+ */
+function isNewerRedactionGeneration(e: PostModel, n: Post): boolean {
+    const incoming = (n as PostWithRedactionEpoch).redaction_verified_epoch;
+    if (incoming === undefined) {
+        return false;
+    }
+    return incoming > (e.redactionVerifiedEpoch ?? 0) && n.update_at >= e.updateAt;
 }
 
 function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
@@ -453,6 +467,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             shouldUpdate: (e: PostModel, n: Post) => {
                 if (isStaleRedactionGeneration(e, n)) {
                     return false;
+                }
+
+                if (isNewerRedactionGeneration(e, n)) {
+                    return true;
                 }
 
                 if (shouldUpdateForBoRPost(e, n)) {

@@ -45,7 +45,7 @@ export const RedactionInvalidationReason = {
     UserFields: 'user_fields',
     ConfigChanged: 'config_changed',
     LicenseChanged: 'license_changed',
-    FirstConnect: 'first_connect',
+    Resync: 'resync',
     AttributeViewRetry: 'attribute_view_retry',
 } as const;
 export type RedactionReason = typeof RedactionInvalidationReason[keyof typeof RedactionInvalidationReason];
@@ -181,34 +181,39 @@ export const getRequiredRedactionEpoch = async (database: Database, channelId?: 
 /**
  * Epoch a request returning ABAC-sanitized metadata is dispatched under. Undefined when policies are
  * not enforced, so nothing is stamped and the gate never applies.
+ *
+ * The counter, not a scoped required epoch: it is at least every channel's requirement, so a response
+ * stamped with it is verified wherever its posts live, including requests whose channel is unknown
+ * until the response arrives (a thread, a single post).
  */
-export const captureRedactionEpoch = async (serverUrl: string, channelId?: string): Promise<number | undefined> => {
+export const captureRedactionEpoch = async (serverUrl: string): Promise<number | undefined> => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {
             return undefined;
         }
-        return await getRequiredRedactionEpoch(database, channelId);
+        return (await getRedactionEpochState(database)).counter;
     } catch (error) {
-        logDebug('captureRedactionEpoch: could not read the required epoch', getFullErrorMessage(error));
+        logDebug('captureRedactionEpoch: could not read the redaction epoch', getFullErrorMessage(error));
         return undefined;
     }
 };
 
 /**
- * An invalidation can still commit between this check and the Watermelon batch, so the persisted
- * per-post epoch and the render gate — not this — are the security boundary. This only avoids
- * storing work already known to be superseded.
+ * False once any invalidation has committed since capture, even for an unrelated channel: over-dropping
+ * costs a refetch, under-dropping would stamp a stale decision as current. An invalidation can still
+ * commit between this check and the Watermelon batch, so the persisted per-post epoch and the render
+ * gate, not this, are the security boundary.
  */
-export const isRedactionEpochCurrent = async (serverUrl: string, epoch: number | undefined, channelId?: string): Promise<boolean> => {
+export const isRedactionEpochCurrent = async (serverUrl: string, epoch: number | undefined): Promise<boolean> => {
     if (epoch === undefined) {
         return true;
     }
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        return (await getRequiredRedactionEpoch(database, channelId)) <= epoch;
+        return (await getRedactionEpochState(database)).counter <= epoch;
     } catch (error) {
-        logDebug('isRedactionEpochCurrent: could not read the required epoch', getFullErrorMessage(error));
+        logDebug('isRedactionEpochCurrent: could not read the redaction epoch', getFullErrorMessage(error));
         return false;
     }
 };

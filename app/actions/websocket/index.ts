@@ -18,7 +18,7 @@ import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
-import {invalidateRedactionOnFirstConnect} from '@actions/websocket/access_control';
+import {invalidateRedactionOnResync} from '@actions/websocket/access_control';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -49,14 +49,14 @@ import {logDebug, logInfo} from '@utils/log';
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
-    return doReconnect(serverUrl, groupLabel, true);
+    return doReconnect(serverUrl, groupLabel);
 }
 
 export async function handleReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') {
     return doReconnect(serverUrl, groupLabel);
 }
 
-async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel, isFirstConnect = false) {
+async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return new Error('cannot find server database');
@@ -98,11 +98,10 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
+        // Every path here may have lost websocket events, so any ABAC change they carried is gone.
         // Awaited so the epoch is raised before the fetch below captures it, and placed after
         // entry() commits its config models so the predicate reads the server's current state.
-        if (isFirstConnect) {
-            await invalidateRedactionOnFirstConnect(serverUrl);
-        }
+        await invalidateRedactionOnResync(serverUrl);
 
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 

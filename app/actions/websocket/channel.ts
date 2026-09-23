@@ -18,7 +18,7 @@ import {userLeftChannelErr, userRemovedFromChannelErr} from '@calls/errors';
 import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
-import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
+import {deleteChannelMembership, getChannelById, getMyChannel, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {canViewArchivedChannels, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, setCurrentTeamId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -193,6 +193,16 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
     }
 }
 
+const haveSameRoles = (previous: string | undefined, next: string) => {
+    if (previous === undefined) {
+        return false;
+    }
+    const toSet = (roles: string) => new Set(roles.split(' ').filter(Boolean));
+    const a = toSet(previous);
+    const b = toSet(next);
+    return a.size === b.size && [...a].every((role) => b.has(role));
+};
+
 // This event is triggered by changes in the notify props or in the roles.
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
     try {
@@ -202,6 +212,9 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
 
         const updatedChannelMember: ChannelMembership = JSON.parse(msg.data.channelMember);
         updatedChannelMember.id = updatedChannelMember.channel_id;
+
+        // Read before updateMyChannelFromWebsocket, whose prepareUpdate rewrites the model in place.
+        const previousRoles = (await getMyChannel(operator.database, updatedChannelMember.channel_id))?.roles;
 
         const myMemberModel = await updateMyChannelFromWebsocket(serverUrl, updatedChannelMember, true);
         if (myMemberModel.model) {
@@ -222,10 +235,10 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         }
         await operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
 
-        // The ABAC subject resolves a channel-scoped role from these scheme flags, so a membership
-        // change can flip file access in this channel alone.
+        // The ABAC subject resolves a channel-scoped role, so a role change can flip file access in this
+        // channel alone. The same event fires for mute, notify props and autotranslation, which cannot.
         const currentUserId = await getCurrentUserId(operator.database);
-        if (currentUserId === updatedChannelMember.user_id) {
+        if (currentUserId === updatedChannelMember.user_id && !haveSameRoles(previousRoles, updatedChannelMember.roles)) {
             invalidateRedactionForChannelMembership(serverUrl, updatedChannelMember.channel_id);
         }
     } catch {

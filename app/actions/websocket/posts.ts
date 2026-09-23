@@ -46,7 +46,7 @@ const captureEpochForBroadcastPost = async (serverUrl: string, post: Post) => {
     if (post.type === PostTypes.BURN_ON_READ || post.type === PostTypes.EPHEMERAL || post.type === PostTypes.EPHEMERAL_ADD_TO_CHANNEL) {
         return undefined;
     }
-    return captureRedactionEpoch(serverUrl, post.channel_id);
+    return captureRedactionEpoch(serverUrl);
 };
 
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
