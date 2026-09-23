@@ -85,16 +85,13 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
             return entryData.error;
         }
 
-        const {prepareModels, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
+        const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
 
         await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
 
         const dt = Date.now();
-        try {
-            await operator.prepareAndBatchRecords(prepareModels, 'doReconnect', true);
-        } catch (error) {
-            // Nothing was stored, so the last full sync must not move forward.
-            return error;
+        if (models?.length) {
+            await operator.batchRecords(models, 'doReconnect');
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);

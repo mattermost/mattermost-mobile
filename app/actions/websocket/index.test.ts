@@ -52,7 +52,6 @@ jest.mock('@store/ephemeral_store');
 jest.mock('@store/navigation_store');
 jest.mock('@store/team_load_store');
 jest.mock('@utils/helpers', () => ({
-    ...jest.requireActual('@utils/helpers'),
     isTablet: jest.fn().mockReturnValue(false),
 }));
 
@@ -80,7 +79,7 @@ describe('WebSocket Index Actions', () => {
         DatabaseManager.serverDatabases[serverUrl] = {
             operator: {
                 database: {},
-                prepareAndBatchRecords: jest.fn(),
+                batchRecords: jest.fn(),
             },
         } as any;
         DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
@@ -94,7 +93,7 @@ describe('WebSocket Index Actions', () => {
     describe('handleFirstConnect', () => {
         it('should handle first connection successfully', async () => {
             const mockEntryData = {
-                prepareModels: async () => [],
+                models: [],
                 initialTeamId: currentTeamId,
                 initialChannelId: currentChannelId,
                 prefData: {preferences: []},
@@ -123,59 +122,6 @@ describe('WebSocket Index Actions', () => {
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
         });
 
-        it('should store the synced channels when a websocket event stores one of them during the sync', async () => {
-            const syncServerUrl = 'concurrent-sync.test.com';
-            await DatabaseManager.init([syncServerUrl]);
-            const {operator} = DatabaseManager.serverDatabases[syncServerUrl]!;
-            const channel = TestHelper.fakeChannel({id: 'channel-id', team_id: currentTeamId});
-            const otherChannel = TestHelper.fakeChannel({id: 'other-channel-id', team_id: currentTeamId});
-
-            jest.mocked(entry).mockResolvedValueOnce({
-                prepareModels: () => operator.handleChannel({channels: [channel, otherChannel], prepareRecordsOnly: true}),
-                initialTeamId: currentTeamId,
-                initialChannelId: '',
-                prefData: {preferences: []},
-                teamData: {memberships: [], teams: []},
-                chData: {memberships: [], channels: [channel, otherChannel]},
-                gmConverted: false,
-            });
-
-            // A channel_updated event for the channel is stored after the sync fetched its data.
-            jest.mocked(handleEntryAfterLoadNavigation).mockImplementationOnce(async () => {
-                await operator.handleChannel({channels: [{...channel, update_at: channel.update_at + 1}], prepareRecordsOnly: false});
-            });
-            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId, locale: 'en'}));
-
-            const error = await handleFirstConnect(syncServerUrl);
-
-            const stored = await operator.database.get('Channel').query().fetchIds();
-            expect(stored.sort()).toEqual(['channel-id', 'other-channel-id']);
-            expect(error).toBeUndefined();
-            expect(setLastFullSync).toHaveBeenCalled();
-
-            await DatabaseManager.destroyServerDatabase(syncServerUrl);
-        });
-
-        it('should not move the last full sync forward when storing the synced data fails', async () => {
-            const storeError = new Error('store failed');
-            jest.mocked(entry).mockResolvedValueOnce({
-                prepareModels: async () => [],
-                initialTeamId: currentTeamId,
-                initialChannelId: currentChannelId,
-                prefData: {preferences: []},
-                teamData: {memberships: [], teams: []},
-                chData: {memberships: [], channels: []},
-                gmConverted: false,
-            });
-            jest.mocked(DatabaseManager.serverDatabases[serverUrl]!.operator.prepareAndBatchRecords).mockRejectedValueOnce(storeError);
-
-            const error = await handleFirstConnect(serverUrl);
-
-            expect(error).toBe(storeError);
-            expect(setLastFullSync).not.toHaveBeenCalled();
-            expect(deferredAppEntryActions).not.toHaveBeenCalled();
-        });
-
         it('should handle error when server database not found', async () => {
             DatabaseManager.serverDatabases = {};
 
@@ -199,7 +145,7 @@ describe('WebSocket Index Actions', () => {
 
         it('should handle reconnection successfully', async () => {
             const mockEntryData = {
-                prepareModels: async () => [],
+                models: [],
                 initialTeamId: currentTeamId,
                 initialChannelId: currentChannelId,
                 prefData: {preferences: []},
@@ -311,7 +257,7 @@ describe('WebSocket Index Actions', () => {
         describe('cleanup', () => {
             beforeEach(() => {
                 jest.mocked(entry).mockResolvedValue({
-                    prepareModels: async () => [],
+                    models: [],
                     initialTeamId: currentTeamId,
                     initialChannelId: currentChannelId,
                     prefData: {preferences: []},

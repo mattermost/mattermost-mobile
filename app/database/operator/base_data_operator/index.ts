@@ -27,7 +27,6 @@ export interface BaseDataOperatorType {
     handleRecords: <T extends Model, R extends RawValue>({buildKeyRecordBy, fieldName, transformer, createOrUpdateRawValues, deleteRawValues, tableName, prepareRecordsOnly}: HandleRecordsArgs<T, R>, description: string) => Promise<Model[]>;
     processRecords: <T extends Model, R extends RawValue>({createOrUpdateRawValues, deleteRawValues, tableName, buildKeyRecordBy, fieldName}: ProcessRecordsArgs<R>) => Promise<ProcessRecordResults<T, R>>;
     batchRecords: (models: Model[], description: string, propagateError?: boolean) => Promise<void>;
-    prepareAndBatchRecords: (prepare: () => Promise<Model[]>, description: string, propagateError?: boolean) => Promise<void>;
     prepareRecords: <T extends Model, R extends RawValue>({tableName, createRaws, deleteRaws, updateRaws, transformer}: OperationArgs<T, R>) => Promise<Model[]>;
 }
 
@@ -190,27 +189,12 @@ export default class BaseDataOperator {
      * @returns {Promise<void>}
      */
     async batchRecords(models: Model[], description: string, propagateError = false): Promise<void> {
-        if (!models.length) {
-            return;
-        }
-
-        await this.prepareAndBatchRecords(async () => models, description, propagateError);
-    }
-
-    /**
-     * prepareAndBatchRecords: Prepares the models inside the writer that stores them, so no other
-     * writer can store a record between the prepare's existence checks and the batch.
-     * @param {() => Promise<Model[]>} prepare - must only prepare records, never write
-     * @returns {Promise<void>}
-     */
-    async prepareAndBatchRecords(prepare: () => Promise<Model[]>, description: string, propagateError = false): Promise<void> {
         try {
-            await this.database.write(async (writer) => {
-                const models = await prepare();
-                if (models.length) {
+            if (models.length > 0) {
+                await this.database.write(async (writer) => {
                     await writer.batch(...models);
-                }
-            }, description);
+                }, description);
+            }
         } catch (e) {
             logWarning('batchRecords error ', description, e as Error);
             if (isDatabaseCorruptionError(e)) {

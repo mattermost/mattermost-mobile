@@ -53,7 +53,7 @@ export type AppEntryError = {
 }
 
 export type EntryResponse = {
-    prepareModels: () => Promise<Model[]>;
+    models: Model[];
     initialTeamId: string;
     initialChannelId: string;
     prefData: MyPreferencesRequest;
@@ -180,24 +180,22 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             memberships: teamData.memberships?.filter((m) => m.team_id === initialTeamId),
         } : teamData;
 
+        const dt = Date.now();
+
         await handleAutotranslationChanges(serverUrl, meData, chData);
 
-        const {error: rolesError} = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel);
+        const rolesRequest = fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel);
+
+        const modelPromises = await prepareEntryModels({operator, teamData: initialTeamData, chData, prefData, meData, isCRTEnabled});
+        const models = (await Promise.all(modelPromises)).flat();
+
+        const {error: rolesError} = await rolesRequest;
         if (rolesError) {
             logDebug('entryRest: failed to fetch roles', groupLabel, getFullErrorMessage(rolesError));
         }
 
-        // Called inside the writer that stores the models: websocket events are handled
-        // during the sync and may store the same records after an earlier prepare.
-        const prepareModels = async () => {
-            const dt = Date.now();
-            const modelPromises = await prepareEntryModels({operator, teamData: initialTeamData, chData, prefData, meData, isCRTEnabled});
-            const models = (await Promise.all(modelPromises)).flat();
-            logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
-            return models;
-        };
-
-        return {prepareModels, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
+        logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
+        return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
     } catch (error) {
         logError('entryRest', groupLabel, error);
         return {error};
