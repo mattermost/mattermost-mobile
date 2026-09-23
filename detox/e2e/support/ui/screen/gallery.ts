@@ -151,7 +151,7 @@ class GalleryScreen {
             }
 
             // eslint-disable-next-line no-await-in-loop
-            await wait(timeouts.HALF_SEC);
+            await wait(timeouts.ONE_SEC);
         } while (Date.now() < deadline);
 
         return false;

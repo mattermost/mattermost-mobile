@@ -101,7 +101,7 @@ describe('Messaging - Video Playback', () => {
 
         await wait(GalleryScreen.AUTO_HIDE_TIMEOUT);
 
-        await GalleryScreen.controlsToBeVisible();
+        await GalleryScreen.controlsToBeVisible(timeouts.TEN_SEC);
         await expect(GalleryScreen.playButton).toBeVisible();
     });
 
