@@ -4,7 +4,9 @@
 import CookieManager from '@preeternal/react-native-cookie-manager';
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
 
+import {attachAuditEventErrorReason} from '@actions/local/ephemeral_mode/audit_queue';
 import {cancelAllSessionNotifications} from '@actions/local/session';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -51,6 +53,12 @@ jest.mock('@actions/local/session', () => {
         cancelAllSessionNotifications: jest.fn(),
     };
 });
+jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
+    attachAuditEventErrorReason: jest.fn(),
+}));
+jest.mock('@actions/remote/ephemeral_mode', () => ({
+    flushAuditQueue: jest.fn(),
+}));
 jest.mock('@init/credentials');
 jest.mock('@init/launch');
 jest.mock('@init/push_notifications');
@@ -201,6 +209,11 @@ describe('SessionManager', () => {
             expect(EphemeralModeManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, false);
+
+            // No auditEventId on this event (a non-push-triggered logout) — still
+            // flushes opportunistically, but has nothing to attach a reason to.
+            expect(flushAuditQueue).toHaveBeenCalledWith(mockServerUrl);
+            expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
         });
 
         it('should handle session expiration', async () => {
@@ -214,6 +227,28 @@ describe('SessionManager', () => {
             expect(SessionAttributesManager.removeServer).toHaveBeenCalledWith(mockServerUrl);
             expect(IntuneManager.unenrollServer).toHaveBeenCalledWith(mockServerUrl, true);
             expect(determineRouteFromLaunchProps).toHaveBeenCalled();
+        });
+
+        it('should flush the audit queue without attaching a reason when a push-triggered logout succeeds', async () => {
+            const event = {serverUrl: mockServerUrl, auditEventId: 'audit-evt-1'};
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, event);
+
+            await TestHelper.wait(50);
+
+            expect(flushAuditQueue).toHaveBeenCalledWith(mockServerUrl);
+            expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+        });
+
+        it('should attach a reason naming the failed operation before flushing when a push-triggered logout fails', async () => {
+            jest.mocked(DatabaseManager.deleteServerDatabase).mockRejectedValueOnce(new Error('database is locked'));
+
+            const event = {serverUrl: mockServerUrl, auditEventId: 'audit-evt-1'};
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, event);
+
+            await TestHelper.wait(50);
+
+            expect(attachAuditEventErrorReason).toHaveBeenCalledWith(mockServerUrl, 'audit-evt-1', 'terminateSession failed: databaseOperation');
+            expect(flushAuditQueue).toHaveBeenCalledWith(mockServerUrl);
         });
     });
 

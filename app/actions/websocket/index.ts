@@ -14,6 +14,7 @@ import {
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -128,6 +129,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         openAllUnreadChannels(serverUrl, groupLabel);
 
         doCleanup(serverUrl);
+
+        flushAuditQueue(serverUrl);
 
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
