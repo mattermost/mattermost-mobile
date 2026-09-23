@@ -193,7 +193,8 @@ class EphemeralModeManagerSingleton {
                     prevPurgeHours === nextPurgeHours && prevCleanupDays === nextCleanupDays,
             ),
         ).subscribe(([enabledStr, timeoutStr, purgeHoursStr, cleanupDaysStr]) => {
-            this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr, purgeHoursStr, cleanupDaysStr);
+            // Serialise with runWipe so a config change can't interleave with an in-flight wipe.
+            this.enqueueEval(serverUrl, () => this.onEphemeralModeConfigChange(serverUrl, enabledStr, timeoutStr, purgeHoursStr, cleanupDaysStr));
         });
     };
 

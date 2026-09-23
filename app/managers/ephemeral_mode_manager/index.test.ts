@@ -844,14 +844,16 @@ describe('EphemeralModeManager', () => {
             await advanceTimers(0);
             await advanceTimers(0);
 
-            // untrack runs synchronously outside the eval queue while the above is suspended.
+            // The disable is queued behind the mid-flight evaluation, not applied until it resolves.
             await updateConfig(serverA, {enabled: false});
             await advanceTimers(0);
-            expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
 
             resolveOfflineSince(Date.now() - 1000);
             await advanceTimers(0);
             await advanceTimers(0);
+
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
 
             await advanceTimers(2 * ONE_HOUR_MS);
 
@@ -1030,6 +1032,43 @@ describe('EphemeralModeManager', () => {
             await advanceTimers(0);
 
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
+        });
+
+        it('defers a config change disabling ephemeral mode until the in-flight wipe finishes', async () => {
+            let resolveDisplayName!: (value: string) => void;
+            jest.mocked(getServerDisplayName).mockReturnValueOnce(new Promise<string>((res) => {
+                resolveDisplayName = res;
+            }));
+
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(ONE_HOUR_MS);
+
+            // runWipe is stuck awaiting getServerDisplayName, before pauseSubscriptions runs.
+            expect(updatePersistenceFlagSpy).not.toHaveBeenCalledWith(serverA, 'wiped');
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {enabled: false});
+            await advanceTimers(0);
+
+            // The queued disable must not interleave with the in-flight wipe.
+            expect(showSnackBar).not.toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED}));
+            expect(updatePersistenceFlagSpy).not.toHaveBeenCalledWith(serverA, 'wiped');
+
+            resolveDisplayName(displayName);
+            await advanceTimers(0);
+
+            // The wipe still completes once committed to, and the server ends up untracked.
+            expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverA, 'wiped');
+            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(false);
         });
 
         describe('offline-purge audit event', () => {
