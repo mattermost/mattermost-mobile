@@ -224,7 +224,23 @@ function shouldUpdateForRedaction(e: PostModel, n: Post): boolean {
  * stay hidden until a sanitized response re-checks them.
  */
 async function resetEpochForUnstampedRedactionChanges(database: Database, posts: Post[]) {
-    const stored = await database.get<PostModel>(POST).query(Q.where('id', Q.oneOf(posts.map((p) => p.id)))).fetch();
+    const candidates = posts.filter((p) => p.metadata && (
+        Boolean(p.file_ids?.length) ||
+        (p.metadata.redacted_file_count ?? 0) > 0 ||
+        Boolean(p.metadata.embeds?.some((embed) => embed.type === 'permalink'))
+    ));
+    if (!candidates.length) {
+        return;
+    }
+
+    // A stored stamp of 0 has nothing to reset.
+    const stored = await database.get<PostModel>(POST).query(
+        Q.where('id', Q.oneOf(candidates.map((p) => p.id))),
+        Q.where('redaction_verified_epoch', Q.gt(0)),
+    ).fetch();
+    if (!stored.length) {
+        return;
+    }
     const storedById = new Map(stored.map((p) => [p.id, p]));
     for (const post of posts) {
         const existing = storedById.get(post.id);
@@ -234,7 +250,7 @@ async function resetEpochForUnstampedRedactionChanges(database: Database, posts:
     }
 }
 
-const PostHandler =<TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
+const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleScheduledPosts: Handler responsible for the Create/Update operations occurring the SchedulePost table from the 'Server' schema
      * @param {HandleScheduledPostsArgs} ScheduledPostsArgs

@@ -1496,6 +1496,19 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             }).toEqual(expect.objectContaining({rendersFilesAsVerified: false}));
         });
 
+        it('should not look up stored epochs for an unstamped write with nothing redaction-related in it', async () => {
+            // Every write while ABAC is off is unstamped; a plain text post must not cost an extra query.
+            await write({...basePost({}), message: 'first'});
+            const posts = database.get<PostModel>(MM_TABLES.SERVER.POST);
+            const query = jest.spyOn(posts, 'query');
+
+            await write({...basePost({}), update_at: 2000, message: 'edited'});
+
+            const epochLookups = query.mock.calls.filter((args) => JSON.stringify(args).includes('redaction_verified_epoch'));
+            expect(epochLookups).toHaveLength(0);
+            query.mockRestore();
+        });
+
         it('should keep a denied root verified when a thread payload carries it without metadata', async () => {
             // Thread payloads are unstamped and omit the root's metadata; that says nothing about its
             // attachments, so it must neither rewrite the denial nor send the root back to unverified.
