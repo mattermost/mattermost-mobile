@@ -97,7 +97,6 @@ describe('Messaging - Video Playback', () => {
 
         await GalleryScreen.waitForPlaybackToAdvance(3);
         await GalleryScreen.pause();
-        await GalleryScreen.showControls();
         await GalleryScreen.controlsToBeVisible();
 
         await wait(GalleryScreen.AUTO_HIDE_TIMEOUT);

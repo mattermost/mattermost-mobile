@@ -305,7 +305,6 @@ class GalleryScreen {
         return advanced / ((Date.now() - startedAt) / 1000);
     };
 
-    // The play/pause testID swaps, so one button's presence proves the other's tap landed.
     play = async () => this.tapControl(
         this.playButton,
         () => this.elementExists(this.pauseButton),
@@ -314,7 +313,7 @@ class GalleryScreen {
 
     pause = async () => this.tapControl(
         this.pauseButton,
-        () => this.elementExists(this.playButton),
+        () => this.elementExists(this.playButton).then((exists) => exists && this.overlayIsShown()),
         'pause: the video did not reach a paused state',
     );
 
