@@ -21,7 +21,9 @@ import {getCurrentChannelId, getCurrentTeamId, setCurrentTeamAndChannelId} from 
 import {NavigationStore} from '@store/navigation_store';
 import {logDebug} from '@utils/log';
 
-import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, handleEntryAfterLoadNavigation} from './common';
+import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, handleEntryAfterLoadNavigation, type EntryResponse} from './common';
+
+type EntryData = Extract<EntryResponse, {prepareModels: unknown}>;
 
 jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/scheduled_post');
@@ -122,7 +124,8 @@ describe('actions/remote/entry/common', () => {
             (prepareEntryModels as jest.Mock).mockResolvedValue([]);
             jest.mocked(fetchRoles).mockResolvedValue({roles: []});
 
-            const result = await entry(serverUrl, 'team1');
+            const result = await entry(serverUrl, 'team1') as EntryData;
+            await result.prepareModels();
 
             expect(prepareEntryModels).toHaveBeenCalledWith({
                 operator: mockOperator,
@@ -137,7 +140,7 @@ describe('actions/remote/entry/common', () => {
             expect(result).toEqual(expect.objectContaining({
                 initialChannelId: '',
                 initialTeamId: '',
-                models: expect.any(Array),
+                prepareModels: expect.any(Function),
                 prefData: mockPreferences,
                 teamData: mockTeams,
                 chData: mockChannels,
@@ -156,9 +159,9 @@ describe('actions/remote/entry/common', () => {
             (prepareEntryModels as jest.Mock).mockResolvedValue([Promise.resolve([preparedModel])]);
             jest.mocked(fetchRoles).mockResolvedValue({error: new Error('Roles error')});
 
-            const result = await entry(serverUrl, 'team1');
+            const result = await entry(serverUrl, 'team1') as EntryData;
 
-            expect(result).toEqual(expect.objectContaining({models: [preparedModel]}));
+            expect(await result.prepareModels()).toEqual([preparedModel]);
             expect(logDebug).toHaveBeenCalledWith('entryRest: failed to fetch roles', undefined, 'Roles error');
         });
 
