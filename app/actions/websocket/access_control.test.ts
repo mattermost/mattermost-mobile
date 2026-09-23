@@ -85,6 +85,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+    jest.restoreAllMocks();
     clearRedactionInvalidations(serverUrl);
     clearRedactionInvalidations(otherServerUrl);
     await DatabaseManager.destroyServerDatabase(serverUrl);
@@ -197,6 +198,18 @@ describe('redaction invalidation triggers', () => {
         expect((await getRedactionEpochState(operator.database)).global).toBe(2);
     });
 
+    it('should raise the global epoch when the session attribute manifest changes, including a new field', async () => {
+        // The manifest decides which attributes every request carries, so even a new field changes
+        // the session subject from the next request on.
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_CREATED,
+            data: {object_type: 'session', property_field: JSON.stringify({id: 'fieldid3', object_type: 'session'})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
     it('should ignore field changes that cannot alter a subject', async () => {
         handleRedactionForPropertyFieldChanged(serverUrl, {
             event: WebsocketEvents.PROPERTY_FIELD_CREATED,
@@ -212,6 +225,7 @@ describe('redaction invalidation triggers', () => {
     });
 
     it('should close any open viewer, which cannot observe the database', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
         const listener = jest.fn();
         const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
 
@@ -220,6 +234,46 @@ describe('redaction invalidation triggers', () => {
         subscription.remove();
 
         expect(listener).toHaveBeenCalled();
+    });
+
+    it('should leave a viewer open when the change cannot affect what it shows', async () => {
+        // A background server, or a channel-scoped change for a channel other than the viewed post's.
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
+        await seedMyChannel(operator, channelId);
+        await operator.handlePosts({
+            actionType: 'POSTS.RECEIVED_NEW',
+            order: ['viewed-post'],
+            posts: [{id: 'viewed-post', channel_id: otherChannelId, create_at: 1, update_at: 1, delete_at: 0, message: '', user_id: currentUserId, metadata: {}} as unknown as Post],
+            prepareRecordsOnly: false,
+        });
+        jest.spyOn(EphemeralStore, 'getCurrentFileViewerPostId').mockReturnValue('viewed-post');
+        const activeServer = jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue('some.other.server');
+
+        handlePermissionPolicyUpdatedEvent(serverUrl);
+        await flushCoalescer();
+        activeServer.mockResolvedValue(serverUrl);
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+        subscription.remove();
+
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('should raise a burst of channel policy changes in one write', async () => {
+        // A parent policy save sends one event per child channel.
+        await seedMyChannel(operator, channelId);
+        await seedMyChannel(operator, otherChannelId);
+
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: otherChannelId}} as WebSocketMessage);
+        await flushCoalescer();
+
+        const state = await getRedactionEpochState(operator.database);
+        expect(state.counter).toBe(2);
+        expect(state.global).toBe(1);
+        expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        expect(await getRequiredRedactionEpoch(operator.database, otherChannelId)).toBe(2);
     });
 
     it('should refresh the visible channel without waiting to be rendered', async () => {
@@ -257,6 +311,19 @@ describe('redaction invalidation triggers', () => {
         expect(await getRequiredRedactionEpoch(operator.database)).toBeGreaterThan(1);
     });
 
+    it('should raise the epoch on resync even while policies are not enforced', async () => {
+        // ABAC may have been turned off while events were lost; cached denials must still be re-checked.
+        await operator.handleConfigs({
+            configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        await invalidateRedactionOnResync(serverUrl);
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
     it('should keep pending work isolated between servers', async () => {
         await DatabaseManager.init([otherServerUrl]);
         const otherOperator = DatabaseManager.serverDatabases[otherServerUrl]!.operator;
@@ -273,6 +340,24 @@ describe('redaction invalidation triggers', () => {
         expect((await getRedactionEpochState(otherOperator.database)).counter).toBe(2);
 
         await DatabaseManager.destroyServerDatabase(otherServerUrl);
+    });
+});
+
+describe('epoch write failure', () => {
+    it('should retry an invalidation whose epoch write failed instead of dropping it', async () => {
+        // A dropped write would leave every cached decision trusted.
+        const redaction = jest.requireActual<typeof import('@actions/local/redaction')>('@actions/local/redaction');
+        const spy = jest.spyOn(redaction, 'invalidateRedactionGlobally').mockResolvedValueOnce(undefined);
+
+        handlePermissionPolicyUpdatedEvent(serverUrl);
+        await flushCoalescer();
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+
+        await advanceTimers(2000);
+        await advanceTimers(0);
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(2);
+        spy.mockRestore();
     });
 });
 

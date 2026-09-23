@@ -42,8 +42,7 @@
         "type": "iPad Pro 13-inch (M5)"
       },
       "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true",
-        "MM_FEATUREFLAGS_PermissionPolicies": "true"
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     },
     "android.emulator": {
@@ -52,8 +51,7 @@
         "avdName": "detox_pixel_8_api_35"
       },
       "environment": {
-        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true",
-        "MM_FEATUREFLAGS_PermissionPolicies": "true"
+        "MM_FEATUREFLAGS_InteractiveDialogAppsForm": "true"
       }
     }
   },

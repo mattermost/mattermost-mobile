@@ -577,10 +577,6 @@ class EphemeralStoreSingleton {
         return Object.values(this.viewableItems).some((items) => Boolean(items[key]));
     };
 
-    clearViewableItemsForLocation = (location: string) => {
-        delete this.viewableItems[location];
-    };
-
     clearViewableItems = () => {
         this.viewableItems = {};
     };

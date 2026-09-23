@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import DatabaseManager from '@database/manager';
 import {getRoleById} from '@queries/servers/role';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -13,6 +15,7 @@ import {handleRoleUpdatedEvent, handleUserRoleUpdatedEvent, handleTeamMemberRole
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@actions/remote/role');
+jest.mock('@actions/websocket/access_control');
 jest.mock('@database/manager');
 jest.mock('@queries/servers/role');
 jest.mock('@queries/servers/system');
@@ -149,6 +152,19 @@ describe('WebSocket Roles Actions', () => {
 
             expect(handleRole).toHaveBeenCalled();
             expect(batchRecords).toHaveBeenCalled();
+        });
+
+        it('should invalidate file decisions only when the role set actually changes', async () => {
+            // The ABAC subject carries the resolved system role; the same roles in another order are not a change.
+            jest.mocked(getCurrentUserId).mockResolvedValue(currentUserId);
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({roles: 'role1 role2', prepareUpdate: jest.fn()}));
+            jest.mocked(fetchRolesIfNeeded).mockResolvedValue({roles: []});
+
+            await handleUserRoleUpdatedEvent(serverUrl, {data: {user_id: currentUserId, roles: 'role2 role1'}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            await handleUserRoleUpdatedEvent(serverUrl, {data: {user_id: currentUserId, roles: 'role1'}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserRoles);
         });
 
         it('should handle missing current user', async () => {

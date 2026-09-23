@@ -166,22 +166,34 @@ export function deleteFileCacheByDir(dir: string) {
 }
 
 /**
- * Per-file eviction, for when an ABAC change confirms a denial: the FileModel rows are destroyed but
- * the downloaded blobs and thumbnails would stay readable on disk. Failures are swallowed — a file
- * that cannot be removed must not stop the denial being recorded, and the next refetch retries.
+ * Per-file eviction, for when the server confirms a denial: the FileModel rows are destroyed, but the
+ * downloaded bytes would stay readable on disk. Each file is looked for both where its row says it
+ * was saved and where downloads land by default, because opening a document never records its path.
+ * Failures are swallowed: a file that cannot be removed must not stop the denial being recorded.
  */
-export function deleteFilesByPath(paths: Array<string | null | undefined>) {
-    for (const path of paths) {
-        if (!path) {
-            continue;
-        }
-        try {
-            const file = new File(path);
-            if (file.exists) {
-                file.delete();
+export function deleteDownloadedFiles(serverUrl: string | undefined, files: FileModel[]) {
+    for (const f of files) {
+        const paths = new Set<string>();
+        if (f.localPath) {
+            try {
+                paths.add(decodeURIComponent(f.localPath));
+            } catch {
+                paths.add(f.localPath);
             }
-        } catch (error) {
-            logDebug('deleteFilesByPath: could not remove a cached file', getFullErrorMessage(error));
+        }
+        if (serverUrl) {
+            paths.add(getLocalFilePathFromFile(serverUrl, f));
+        }
+
+        for (const path of paths) {
+            try {
+                const file = new File(pathWithPrefix('file://', path));
+                if (file.exists) {
+                    file.delete();
+                }
+            } catch (error) {
+                logDebug('deleteDownloadedFiles: could not remove a cached file', getFullErrorMessage(error));
+            }
         }
     }
 }

@@ -67,13 +67,20 @@ const UnverifiedFilesPlaceholder = ({postId, location, requiredEpoch}: Props) =>
     const styles = getStyleSheet(theme);
 
     // Per-server reachability, not device connectivity: only this server can supply the decision.
-    const [isConnected, setIsConnected] = useState(true);
+    // Seeded synchronously so a placeholder mounted offline does not enqueue a request first.
+    const [isConnected, setIsConnected] = useState(() => WebsocketManager.isConnected(serverUrl));
     useEffect(() => {
         const subscription = WebsocketManager.observeWebsocketState(serverUrl).subscribe((state) => {
             setIsConnected(state === 'connected');
         });
         return () => subscription.unsubscribe();
     }, [serverUrl]);
+
+    const [hasFailed, setHasFailed] = useState(false);
+    useEffect(() => {
+        const subscription = RedactionRevalidationManager.observeRevalidationFailed(serverUrl, postId).subscribe(setHasFailed);
+        return () => subscription.unsubscribe();
+    }, [serverUrl, postId]);
 
     // Revalidating every unverified post would cost a request per cached post.
     const inViewPort = useIsInViewPort(location, postId);
@@ -108,25 +115,26 @@ const UnverifiedFilesPlaceholder = ({postId, location, requiredEpoch}: Props) =>
                         testID='unverified-files-placeholder.title'
                     />
                 ) : (
-                    <>
+                    <FormattedText
+                        id='post.unverified_files.offline'
+                        defaultMessage='Connect to verify file access'
+                        style={styles.title}
+                        testID='unverified-files-placeholder.title'
+                    />
+                )}
+                {(!isConnected || hasFailed) && (
+                    <Pressable
+                        accessibilityRole='button'
+                        onPress={onRetry}
+                        style={({pressed}) => [pressed && PRESSED_STYLE]}
+                        testID='unverified-files-placeholder.retry'
+                    >
                         <FormattedText
-                            id='post.unverified_files.offline'
-                            defaultMessage='Connect to verify file access'
-                            style={styles.title}
-                            testID='unverified-files-placeholder.title'
+                            id='post.unverified_files.retry'
+                            defaultMessage='Try again'
+                            style={styles.retry}
                         />
-                        <Pressable
-                            onPress={onRetry}
-                            style={({pressed}) => [pressed && PRESSED_STYLE]}
-                            testID='unverified-files-placeholder.retry'
-                        >
-                            <FormattedText
-                                id='post.unverified_files.retry'
-                                defaultMessage='Try again'
-                                style={styles.retry}
-                            />
-                        </Pressable>
-                    </>
+                    </Pressable>
                 )}
             </View>
         </View>

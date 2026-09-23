@@ -7,10 +7,11 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import path from 'path';
+
 import {
     AccessControl,
     Channel,
-    File,
     Post,
     Setup,
     System,
@@ -22,7 +23,6 @@ import {
     siteOneUrl,
 } from '@support/test_config';
 import {
-    AccountScreen,
     ChannelListScreen,
     ChannelScreen,
     HomeScreen,
@@ -31,6 +31,8 @@ import {
 } from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
+
+const FIXTURES_DIR = path.resolve(__dirname, '../../../../support/fixtures');
 
 describe('Messaging - Redacted Files (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
@@ -44,12 +46,30 @@ describe('Messaging - Redacted Files (ABAC)', () => {
     let attributeFieldId: string | null = null; // field UUID — used as the property values key
     let attributeFieldName: string | null = null; // field name  — used in CEL expressions
     let attributeFieldCreated = false; // true if this run created the field (must clean up)
+    let fileId: string;
+
+    // Server settings this suite changes, restored as they were rather than to assumed defaults.
+    let originalSettings: Record<string, any> = {};
 
     beforeAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
 
         // # Require Enterprise license
         await System.apiRequireLicense(siteOneUrl);
+
+        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
+        originalSettings = {
+            FeatureFlags: {
+                AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
+                PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
+            },
+            AccessControlSettings: {
+                EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
+                EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
+            },
+            PasswordSettings: {MinimumLength: originalConfig?.PasswordSettings?.MinimumLength},
+            ServiceSettings: {AllowCorsFrom: originalConfig?.ServiceSettings?.AllowCorsFrom},
+        };
 
         // # Relax password policy for test users
         await System.apiPatchConfig(siteOneUrl, {
@@ -111,15 +131,11 @@ describe('Messaging - Redacted Files (ABAC)', () => {
             [attributeFieldId as string]: 'Engineering',
         });
 
-        const {fileId, error: uploadError} = await File.apiUploadFileToChannel(
-            siteOneUrl,
-            testChannel.id,
-            'test_attachment.txt',
-            `ABAC redacted files test - ${getRandomId()}`,
-        );
-        if (uploadError) {
-            throw new Error(`File upload failed: ${JSON.stringify(uploadError)}`);
+        const upload = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, path.join(FIXTURES_DIR, 'sample.txt'));
+        if (upload.error) {
+            throw new Error(`File upload failed: ${JSON.stringify(upload.error)}`);
         }
+        fileId = upload.fileId;
 
         await Post.apiCreatePost(siteOneUrl, {
             channelId: testChannel.id,
@@ -153,17 +169,11 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         });
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
-        await LoginScreen.login(deniedUser);
-    });
-
-    beforeEach(async () => {
-        await ChannelListScreen.toBeVisible();
     });
 
     afterAll(async () => {
-        await HomeScreen.logout();
-
-        // # Clean up: policy, attribute field (if created), team, users, restore config
+        // # Clean up the server first: a failing UI step must not leave the deny policy active on a
+        // shared server. Then policy, attribute field (if created), team, users, and config.
         if (permissionPolicyId) {
             await AccessControl.apiDeletePermissionPolicy(siteOneUrl, permissionPolicyId);
         }
@@ -179,52 +189,43 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         if (allowedUser?.id) {
             await User.apiDeactivateUser(siteOneUrl, allowedUser.id);
         }
-        await AccessControl.apiDisableABAC(siteOneUrl);
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {AttributeBasedAccessControl: false, PermissionPolicies: false},
-        });
-        await System.apiPatchConfig(siteOneUrl, {
-            AccessControlSettings: {EnableUserManagedAttributes: false},
-            PasswordSettings: {MinimumLength: 14},
-            ServiceSettings: {AllowCorsFrom: ''},
-        });
+        await System.apiPatchConfig(siteOneUrl, originalSettings);
+
+        // # Only after the server is clean: leave the app logged out if a test did not.
+        await HomeScreen.logout();
     });
 
     it('MM-68219_1 - should show redacted files placeholder when user attribute does not satisfy the policy', async () => {
-        // # Open channel as denied user (Department: Sales)
+        // # Log in as the denied user (Department: Sales) and open the channel
+        await LoginScreen.login(deniedUser);
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Sales user does not satisfy the policy — placeholder is shown
+        // * Sales user does not satisfy the policy — placeholder is shown, the file is not
         await waitFor(element(by.id('redacted-files-placeholder'))).
             toBeVisible().
             withTimeout(timeouts.TEN_SEC);
+        await expect(element(by.id(`${fileId}-file`))).not.toExist();
 
         await ChannelScreen.back();
+        await HomeScreen.logout();
     });
 
     it('MM-68219_2 - should not show redacted placeholder when user attribute satisfies the policy', async () => {
-        // # Dismiss LogBox if present — covers the tab bar in debug builds with stale Metro cache.
-        // No-op in CI where RUNNING_E2E=true is compiled in and LogBox is suppressed.
-        try {
-            await waitFor(element(by.text('Open debugger to view warnings.'))).toBeVisible().withTimeout(timeouts.ONE_SEC);
-            await element(by.text('Open debugger to view warnings.')).tap();
-            await waitFor(element(by.text('Dismiss'))).toBeVisible().withTimeout(timeouts.TWO_SEC);
-            await element(by.text('Dismiss')).tap();
-        } catch {
-            // No LogBox present, continue
-        }
-
-        // # Switch to allowed user (Department: Engineering)
-        await AccountScreen.open();
-        await AccountScreen.logout();
+        // # Log in as the allowed user (Department: Engineering) and open the channel
         await LoginScreen.login(allowedUser);
-
-        // # Open the same channel
+        await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * Engineering user satisfies the policy — no placeholder
+        // * Wait for the attachment itself: absence of the placeholder alone would also hold before
+        // the list loads, or while the post is still unverified
+        await waitFor(element(by.id(`${fileId}-file`))).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
         await expect(element(by.id('redacted-files-placeholder'))).not.toExist();
+        await expect(element(by.id('unverified-files-placeholder'))).not.toExist();
 
         await ChannelScreen.back();
+        await HomeScreen.logout();
     });
 });

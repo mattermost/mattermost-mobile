@@ -9,6 +9,7 @@ import {logError} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
 
 import {
+    deleteDownloadedFiles,
     deleteFileCache,
     deleteFileCacheByDir,
     extractFileInfo,
@@ -34,6 +35,7 @@ import {
     uploadDisabledWarning,
 } from './index';
 
+import type FileModel from '@typings/database/models/servers/file';
 import type {Asset} from 'react-native-image-picker';
 
 jest.mock('react-native', () => {
@@ -124,6 +126,22 @@ describe('Image utils', () => {
         it('should delete file cache by dir', () => {
             deleteFileCacheByDir('someDir');
             expect(jest.mocked(Directory).mock.instances.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('deleteDownloadedFiles', () => {
+        it('should remove both the recorded path and the default download path', () => {
+            // Opening a document downloads it to the default path without recording it on the row.
+            jest.mocked(File).mockClear();
+            const file = {id: 'fileid', name: 'doc.pdf', extension: 'pdf', mimeType: 'application/pdf', localPath: '/data/my%20doc.pdf'} as unknown as FileModel;
+
+            deleteDownloadedFiles('http://server.com', [file]);
+
+            const uris = jest.mocked(File).mock.calls.map(([uri]) => uri);
+            expect(uris).toEqual(['file:///data/my doc.pdf', pathWithPrefix('file://', getLocalFilePathFromFile('http://server.com', file))]);
+            for (const result of jest.mocked(File).mock.results) {
+                expect(result.value.delete).toHaveBeenCalled();
+            }
         });
     });
 

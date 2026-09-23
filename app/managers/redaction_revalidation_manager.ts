@@ -1,11 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BehaviorSubject, type Observable} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
+
 import {getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {fetchPostById} from '@actions/remote/post';
 import DatabaseManager from '@database/manager';
+import {getPostById} from '@queries/servers/post';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
+import {isPostRedactionVerified} from '@utils/post';
 
 /**
  * A page fetch re-evaluates only the newest chunk of a channel, so older posts keep the decision
@@ -43,6 +48,38 @@ class RedactionRevalidationManager {
     private queues: {[serverUrl: string]: ServerQueue} = {};
     private metrics: {[serverUrl: string]: Metrics} = {};
 
+    // Posts whose last attempt failed while the server was reachable. Nothing else would ask again,
+    // so the placeholder offers a retry for them instead of reading "checking" indefinitely.
+    private failures: {[serverUrl: string]: BehaviorSubject<Set<string>>} = {};
+
+    private getFailures = (serverUrl: string) => {
+        if (!this.failures[serverUrl]) {
+            this.failures[serverUrl] = new BehaviorSubject(new Set<string>());
+        }
+        return this.failures[serverUrl];
+    };
+
+    private setFailed = (serverUrl: string, postId: string, failed: boolean) => {
+        const subject = this.getFailures(serverUrl);
+        if (subject.value.has(postId) === failed) {
+            return;
+        }
+        const next = new Set(subject.value);
+        if (failed) {
+            next.add(postId);
+        } else {
+            next.delete(postId);
+        }
+        subject.next(next);
+    };
+
+    public observeRevalidationFailed = (serverUrl: string, postId: string): Observable<boolean> => {
+        return this.getFailures(serverUrl).pipe(
+            map((failed) => failed.has(postId)),
+            distinctUntilChanged(),
+        );
+    };
+
     private getQueue = (serverUrl: string): ServerQueue => {
         if (!this.queues[serverUrl]) {
             this.queues[serverUrl] = {pending: new Map(), inFlight: new Set()};
@@ -71,6 +108,7 @@ class RedactionRevalidationManager {
 
         queue.pending.set(postId, {postId, requiredEpoch});
         this.metrics[serverUrl].queued += 1;
+        this.setFailed(serverUrl, postId, false);
 
         if (queue.debounce) {
             clearTimeout(queue.debounce);
@@ -98,40 +136,55 @@ class RedactionRevalidationManager {
     };
 
     private run = async (serverUrl: string, item: QueuedPost) => {
+        // Captured so a logout while the request is in flight cannot touch the next session's queue.
         const queue = this.queues[serverUrl];
+        const metrics = this.metrics[serverUrl];
+        const isTornDown = () => this.queues[serverUrl] !== queue;
         const key = `${item.postId}|${item.requiredEpoch}`;
         queue.inFlight.add(key);
 
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-            // If the requirement moved on while this queued, the response would land below the gate
-            // anyway. The viewport re-enqueues it.
+            // If the global requirement moved on while this queued, the response would land below
+            // the gate anyway; the placeholder re-enqueues when its required epoch changes.
             if ((await getRequiredRedactionEpoch(database)) > item.requiredEpoch) {
-                this.metrics[serverUrl].discardedStale += 1;
+                metrics.discardedStale += 1;
+                return;
+            }
+
+            // A channel page fetch usually re-verifies the same posts while this was queued.
+            const stored = await getPostById(database, item.postId);
+            if (stored && isPostRedactionVerified(stored.redactionVerifiedEpoch, item.requiredEpoch)) {
+                metrics.succeeded += 1;
                 return;
             }
 
             // skipPostsInChannel: recording a standalone post as its channel's newest would create
             // or widen a PostsInChannel interval over posts we do not hold.
             const {error} = await fetchPostById(serverUrl, item.postId, false, undefined, true);
+            if (isTornDown()) {
+                return;
+            }
             if (error) {
-                this.metrics[serverUrl].failed += 1;
+                metrics.failed += 1;
+                this.setFailed(serverUrl, item.postId, true);
                 logDebug('RedactionRevalidationManager.run: could not revalidate', item.postId);
                 return;
             }
 
-            this.metrics[serverUrl].succeeded += 1;
+            metrics.succeeded += 1;
         } catch (error) {
-            this.metrics[serverUrl].failed += 1;
+            metrics.failed += 1;
+            if (!isTornDown()) {
+                this.setFailed(serverUrl, item.postId, true);
+            }
             logError('RedactionRevalidationManager.run', item.postId, getFullErrorMessage(error));
         } finally {
-            const current = this.queues[serverUrl];
-            if (current) {
-                current.inFlight.delete(key);
+            queue.inFlight.delete(key);
 
-                // No retry loop: it would spin while offline. The post stays hidden until a viewport
-                // event, a reconnect, or the user re-enqueues it.
+            // No retry loop: it would spin while offline. A failed post offers the user a retry.
+            if (!isTornDown()) {
                 this.drain(serverUrl);
             }
         }
@@ -148,6 +201,7 @@ class RedactionRevalidationManager {
         }
         delete this.queues[serverUrl];
         delete this.metrics[serverUrl];
+        delete this.failures[serverUrl];
     };
 }
 

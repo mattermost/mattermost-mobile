@@ -22,7 +22,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 
 jest.mock('@actions/remote/post', () => ({
-    fetchLinkedPost: jest.fn(),
+    fetchLinkedPost: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('@actions/remote/permalink', () => ({
@@ -556,6 +556,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             post: TestHelper.fakePost({id: 'post-123', user_id: 'user-123', message: 'msg', metadata}),
         });
 
+        // Which source wins (embed, embed files, stored linked post) is covered in utils/post.
         it('should render the placeholder when the embed reports redacted files', () => {
             const {getByTestId} = renderPermalinkPreview({
                 ...baseProps,
@@ -565,37 +566,15 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
         });
 
-        it('should not render the placeholder when the embed lists accessible files, even if the linked post record still reports a redacted count', () => {
-            const {queryByTestId} = renderPermalinkPreview({
-                ...baseProps,
-                hasLinkedPostFiles: true,
-                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
-                post: TestHelper.fakePostModel({
-                    id: 'post-123',
-                    metadata: {redacted_file_count: 2} as PostMetadata,
-                }),
-            });
+        it('should fetch a linked post that is not in the database yet once, not on every remount', async () => {
+            // The embed can point at a post the fetch never populates; list windowing remounts constantly.
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'missing-post'}};
+            renderPermalinkPreview(props).unmount();
+            await waitFor(() => expect(fetchLinkedPost).toHaveBeenCalledTimes(1));
+            renderPermalinkPreview(props);
 
-            expect(queryByTestId('redacted-files-placeholder')).toBeNull();
-        });
-
-        it('should fall back to the linked post record when the embed is inconclusive', () => {
-            const {getByTestId} = renderPermalinkPreview({
-                ...baseProps,
-                embedData: embedWith({} as PostMetadata),
-                post: TestHelper.fakePostModel({
-                    id: 'post-123',
-                    metadata: {redacted_file_count: 1} as PostMetadata,
-                }),
-            });
-
-            expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
-        });
-
-        it('should re-fetch the linked post when it is not in the database yet', () => {
-            renderPermalinkPreview({...baseProps, post: undefined});
-
-            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'post-123');
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(1);
+            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'missing-post');
         });
 
         it('should re-fetch the linked post when the embed lists files the database is missing', () => {

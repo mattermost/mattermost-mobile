@@ -15,7 +15,6 @@ import {
     getRequiredRedactionEpoch,
     invalidateChannelRedaction,
     invalidateRedactionGlobally,
-    isPostRedactionVerified,
     isRedactionEnforced,
     observeRequiredRedactionEpoch,
 } from './redaction';
@@ -57,7 +56,6 @@ describe('redaction epoch state', () => {
         const state = await getRedactionEpochState(operator.database);
         expect(state).toEqual(DEFAULT_REDACTION_EPOCH_STATE);
         expect(await getRequiredRedactionEpoch(operator.database)).toBe(1);
-        expect(isPostRedactionVerified(0, 1)).toBe(false);
     });
 
     it('should fall back to the default when the stored value is malformed', async () => {
@@ -177,7 +175,7 @@ describe('captureRedactionEpoch', () => {
 
         const captured = await captureRedactionEpoch(serverUrl);
 
-        expect(isPostRedactionVerified(captured, await getRequiredRedactionEpoch(operator.database, channelId))).toBe(true);
+        expect(captured).toBeGreaterThanOrEqual(await getRequiredRedactionEpoch(operator.database, channelId));
     });
 });
 

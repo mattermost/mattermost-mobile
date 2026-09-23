@@ -7,7 +7,7 @@
 import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {captureRedactionEpoch, getRequiredRedactionEpoch, isRedactionEnforced, isPostRedactionVerified} from '@actions/local/redaction';
+import {captureRedactionEpoch, getRequiredRedactionEpoch, isRedactionEnforced} from '@actions/local/redaction';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
@@ -17,7 +17,7 @@ import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
+import {getFilesByIds, queryFilesForPost, queryFilesForPosts} from '@queries/servers/file';
 import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
@@ -29,7 +29,7 @@ import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
-import {processPostsFetched} from '@utils/post';
+import {isPostPendingOrFailed, isPostRedactionVerified, processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {processChannelPostsByTeam} from './post.auxiliary';
@@ -146,6 +146,9 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
+    // The server returns the created post sanitized for its author, so it can be stamped; left
+    // unstamped, the author's own attachments would sit behind the unverified placeholder.
+    const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
     let created;
     try {
         created = await client.createPost({...newPost, create_at: 0});
@@ -193,6 +196,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         order: [created.id],
         posts: [created],
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch,
     });
     const isCrtReply = isCRTEnabled && created.root_id !== '';
     if (!isCrtReply) {
@@ -254,12 +258,14 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         });
         await operator.batchRecords([post], 'retryFailedPost - first update');
 
+        const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const created = await client.createPost(newPost);
         const models = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [created.id],
             posts: [created],
             prepareRecordsOnly: true,
+            redactionVerifiedEpoch,
         });
         const isCrtReply = isCRTEnabled && created.root_id !== '';
         if (!isCrtReply) {
@@ -293,16 +299,31 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     return {};
 };
 
+const hasPermalinkEmbed = (post: PostModel) => Boolean(post.metadata?.embeds?.some((embed) => embed.type === 'permalink'));
+
 /**
  * A policy or attribute change while the user was elsewhere leaves cached posts behind the epoch
  * they now must satisfy. Read from the stored posts rather than remembered, so it survives a restart.
+ *
+ * Only the newest page counts, because that is all the re-verification page can re-stamp; older
+ * posts are revalidated one by one when they come on screen. Within it, only posts whose rendering
+ * depends on the decision count: a text-only or pending post is never re-stamped by anything, so
+ * counting it would page the channel again on every visit.
  */
 const hasUnverifiedPosts = async (database: Database, channelId: string, posts: PostModel[]) => {
     if (!posts.length || !(await isRedactionEnforced(database))) {
         return false;
     }
     const requiredEpoch = await getRequiredRedactionEpoch(database, channelId);
-    return posts.some((p) => !isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch));
+    const unverified = posts.slice(0, General.POST_CHUNK_SIZE).filter((p) => !isPostPendingOrFailed(p) && !isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch));
+    if (!unverified.length) {
+        return false;
+    }
+    if (unverified.some((p) => (p.metadata?.redacted_file_count ?? 0) > 0 || hasPermalinkEmbed(p))) {
+        return true;
+    }
+    const files = await queryFilesForPosts(database, unverified.map((p) => p.id)).fetch();
+    return files.length > 0;
 };
 
 /**
@@ -911,6 +932,11 @@ export async function fetchPostInfo(serverUrl: string, postId: string): Promise<
     }
 }
 
+/**
+ * Fetches a single post, sanitized for the current user, and stores it unless fetchOnly.
+ * @param skipPostsInChannel store the post without recording it as its channel's newest; for posts
+ * pulled on their own (a permalink's linked post, a revalidation) whose neighbours we do not hold
+ */
 export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false, groupLabel?: RequestGroupLabel, skipPostsInChannel = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);

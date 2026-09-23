@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {
     RedactionInvalidationReason,
     getRedactionEpochState,
-    invalidateChannelRedaction,
+    invalidateChannelsRedaction,
     invalidateRedactionGlobally,
     isRedactionEnforced,
     type RedactionReason,
@@ -14,12 +14,14 @@ import {
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
+import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
-import {logDebug, logError} from '@utils/log';
+import {logDebug, logError, logWarning} from '@utils/log';
 
 // One CPA write emits both custom_profile_attributes_values_updated and property_values_updated;
 // batching by scope collapses them into a single epoch advance and refresh.
@@ -31,15 +33,22 @@ const COALESCE_WINDOW_MS = 250;
 const ATTRIBUTE_VIEW_RETRY_MS = 32000;
 const ATTRIBUTE_VIEW_RETRY_JITTER_MS = 3000;
 
+// A lost epoch write leaves every cached decision trusted, so it is retried rather than dropped.
+const MAX_INVALIDATION_ATTEMPTS = 3;
+const INVALIDATION_RETRY_MS = 2000;
+
 type PendingInvalidation = {
     timeout: ReturnType<typeof setTimeout>;
     reason: RedactionReason;
-    channelId?: string;
+
+    // Undefined for a global invalidation.
+    channelIds?: Set<string>;
     needsAttributeViewRetry: boolean;
 };
 
-// Keyed by scope so two servers never coalesce into each other, and a channel policy edit never
-// absorbs a global one.
+// Keyed by server and scope, so two servers never coalesce into each other and a channel policy edit
+// never absorbs a global one. All channel-scoped events of a server share one batch: a parent policy
+// save sends one event per child channel, and each would otherwise be its own write and refetch.
 const pendingInvalidations = new Map<string, PendingInvalidation>();
 const attributeViewRetries = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -49,9 +58,37 @@ const attributeViewRetries = new Map<string, ReturnType<typeof setTimeout>>();
 const cleanupTokens = new Map<string, number>();
 const cleanupToken = (serverUrl: string) => cleanupTokens.get(serverUrl) ?? 0;
 
-const scopeKey = (serverUrl: string, channelId?: string) => `${serverUrl}|${channelId ?? 'global'}`;
+const scopeKey = (serverUrl: string, channelId?: string) => `${serverUrl}|${channelId ? 'channels' : 'global'}`;
 
-const refreshVisibleSurfaces = async (serverUrl: string, channelId?: string) => {
+/**
+ * The gallery and PDF viewer hold their items by value, so no database change can reach them; they
+ * are closed instead. Only when the change can affect what they show: the active server, and for a
+ * channel-scoped change, the channel of the post being viewed. An unknown post is closed.
+ */
+const closeFileViewersIfAffected = async (serverUrl: string, channelIds?: Set<string>) => {
+    try {
+        if ((await DatabaseManager.getActiveServerUrl()) !== serverUrl) {
+            return;
+        }
+
+        if (channelIds) {
+            const viewedPostId = EphemeralStore.getCurrentFileViewerPostId();
+            if (viewedPostId) {
+                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const viewedPost = await getPostById(database, viewedPostId);
+                if (viewedPost && !channelIds.has(viewedPost.channelId)) {
+                    return;
+                }
+            }
+        }
+
+        DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
+    } catch (error) {
+        logError('closeFileViewersIfAffected', getFullErrorMessage(error));
+    }
+};
+
+const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -62,7 +99,7 @@ const refreshVisibleSurfaces = async (serverUrl: string, channelId?: string) => 
         }
 
         const currentChannelId = await getCurrentChannelId(database);
-        if (currentChannelId && (!channelId || channelId === currentChannelId)) {
+        if (currentChannelId && (!channelIds || channelIds.has(currentChannelId))) {
             const {error} = await refetchPostsForRedaction(serverUrl, currentChannelId);
             if (error) {
                 logError('refreshVisibleSurfaces: failed to re-fetch channel posts', currentChannelId, getFullErrorMessage(error));
@@ -70,9 +107,11 @@ const refreshVisibleSurfaces = async (serverUrl: string, channelId?: string) => 
         }
 
         // No fromCreateAt: an incremental thread fetch cannot re-deliver replies whose only change
-        // was their redaction state.
+        // was their redaction state. A thread lives in one channel, so a scoped change elsewhere
+        // leaves it alone.
         const threadId = EphemeralStore.getCurrentThreadId();
-        if (threadId) {
+        const threadRoot = threadId && channelIds ? await getPostById(database, threadId) : undefined;
+        if (threadId && (!channelIds || !threadRoot || channelIds.has(threadRoot.channelId))) {
             const {error} = await fetchPostThread(serverUrl, threadId);
             if (error) {
                 logError('refreshVisibleSurfaces: failed to re-fetch thread posts', getFullErrorMessage(error));
@@ -106,6 +145,7 @@ const scheduleAttributeViewRetry = (serverUrl: string, epoch: number) => {
 
             const next = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.AttributeViewRetry);
             logDebug('scheduleAttributeViewRetry: re-evaluated after the server attribute view refresh window', String(next));
+            await closeFileViewersIfAffected(serverUrl);
             await refreshVisibleSurfaces(serverUrl);
         } catch (error) {
             logError('scheduleAttributeViewRetry', getFullErrorMessage(error));
@@ -115,21 +155,35 @@ const scheduleAttributeViewRetry = (serverUrl: string, epoch: number) => {
     attributeViewRetries.set(serverUrl, timeout);
 };
 
-const flushInvalidation = async (serverUrl: string, pending: PendingInvalidation) => {
-    const epoch = pending.channelId ? await invalidateChannelRedaction(serverUrl, pending.channelId, pending.reason) : await invalidateRedactionGlobally(serverUrl, pending.reason);
+const flushInvalidation = async (serverUrl: string, pending: PendingInvalidation, token = cleanupToken(serverUrl), attempt = 1) => {
+    const {channelIds} = pending;
+    const epoch = channelIds ? await invalidateChannelsRedaction(serverUrl, Array.from(channelIds), pending.reason) : await invalidateRedactionGlobally(serverUrl, pending.reason);
 
-    if (epoch === undefined) {
+    // Torn down while writing: nothing below may run against a new session.
+    if (cleanupToken(serverUrl) !== token) {
         return;
     }
 
-    logDebug('redaction invalidated', pending.reason, pending.channelId ?? 'global', String(epoch));
+    if (epoch === undefined) {
+        if (attempt < MAX_INVALIDATION_ATTEMPTS) {
+            logWarning('flushInvalidation: could not raise the epoch, retrying', pending.reason, String(attempt));
+            setTimeout(() => {
+                if (cleanupToken(serverUrl) === token) {
+                    flushInvalidation(serverUrl, pending, token, attempt + 1);
+                }
+            }, INVALIDATION_RETRY_MS * attempt);
+        } else {
+            logError('flushInvalidation: gave up raising the epoch', pending.reason, channelIds ? `${channelIds.size} channels` : 'global');
+        }
+        return;
+    }
 
-    // The gallery holds its items by value, so no database change can reach an open viewer.
-    DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
+    logDebug('flushInvalidation: redaction invalidated', pending.reason, channelIds ? `${channelIds.size} channels` : 'global', String(epoch));
 
-    await refreshVisibleSurfaces(serverUrl, pending.channelId);
+    await closeFileViewersIfAffected(serverUrl, channelIds);
+    await refreshVisibleSurfaces(serverUrl, channelIds);
 
-    if (pending.needsAttributeViewRetry) {
+    if (pending.needsAttributeViewRetry && cleanupToken(serverUrl) === token) {
         scheduleAttributeViewRetry(serverUrl, epoch);
     }
 };
@@ -161,12 +215,15 @@ export const scheduleRedactionInvalidation = async (
         const existing = pendingInvalidations.get(key);
         if (existing) {
             existing.needsAttributeViewRetry = existing.needsAttributeViewRetry || needsAttributeViewRetry;
+            if (channelId) {
+                existing.channelIds?.add(channelId);
+            }
             return;
         }
 
         const pending: PendingInvalidation = {
             reason,
-            channelId,
+            channelIds: channelId ? new Set([channelId]) : undefined,
             needsAttributeViewRetry,
             timeout: setTimeout(() => {
                 const batch = pendingInvalidations.get(key);
@@ -231,18 +288,24 @@ export const handleRedactionForPropertyValuesUpdated = async (serverUrl: string,
 };
 
 /**
- * Renaming or re-ranking an option, or changing a field's type, rewrites the attribute values every
- * policy is evaluated against without touching a single value row, so no values event follows.
- * Creating a field is skipped: no subject has a value for it yet.
+ * User attribute fields: renaming or re-ranking an option, or changing a field's type, rewrites the
+ * values every policy is evaluated against without touching a single value row, so no values event
+ * follows. Creating one is skipped: no subject has a value for it yet.
+ *
+ * Session attribute fields: the manifest decides which attributes this client sends on every request,
+ * so adding, changing or removing a field changes the session subject from the next request on.
+ * The coalescing window lets the manifest update reach the native client before the refetch.
  */
 export const handleRedactionForPropertyFieldChanged = (serverUrl: string, msg: WebSocketMessage) => {
-    if (msg.event === WebsocketEvents.PROPERTY_FIELD_CREATED) {
+    const field = safeParseJSON(msg.data?.property_field) as PropertyField | undefined;
+    const objectType = msg.data?.object_type ?? field?.object_type;
+
+    if (objectType === SESSION_ATTRIBUTES_OBJECT_TYPE) {
+        scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.SessionAttributes);
         return;
     }
 
-    const field = safeParseJSON(msg.data?.property_field) as PropertyField | undefined;
-    const objectType = msg.data?.object_type ?? field?.object_type;
-    if (objectType !== USER_ATTRIBUTE_OBJECT_TYPE) {
+    if (objectType !== USER_ATTRIBUTE_OBJECT_TYPE || msg.event === WebsocketEvents.PROPERTY_FIELD_CREATED) {
         return;
     }
 
@@ -264,14 +327,20 @@ export const invalidateRedactionForChannelMembership = (serverUrl: string, chann
  * could not resume (long timeout, restart, sequence gap). Post rows outlive both, so every cached
  * decision must be assumed stale. Awaited and uncoalesced unlike every other trigger: the fetch that
  * follows has to capture the raised epoch, not the old one.
+ *
+ * Raised even while ABAC is not enforced: it may have been turned off while events were lost, and a
+ * denial cached before that is only re-checked once it is behind the epoch. It costs one write; with
+ * enforcement off nothing without a cached denial is gated.
  */
 export const invalidateRedactionOnResync = async (serverUrl: string) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!(await isRedactionEnforced(database))) {
-            return;
-        }
         await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.Resync);
+
+        // A viewer left open across a long background can hold attachments the missed events revoked.
+        if (await isRedactionEnforced(database)) {
+            await closeFileViewersIfAffected(serverUrl);
+        }
     } catch (error) {
         logError('invalidateRedactionOnResync', getFullErrorMessage(error));
     }

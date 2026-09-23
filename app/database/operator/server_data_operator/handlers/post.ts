@@ -21,7 +21,7 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import FileModel from '@typings/database/models/servers/file';
 import ScheduledPostModel from '@typings/database/models/servers/scheduled_post';
 import {isUnrevealedBoRPost} from '@utils/bor';
-import {deleteFilesByPath} from '@utils/file';
+import {deleteDownloadedFiles} from '@utils/file';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 
@@ -169,7 +169,12 @@ function shouldUpdateForBoRPost(e: PostModel, n: Post): boolean {
  * recalculates embedded post metadata per user on every channel fetch.
  */
 function shouldUpdateForRedaction(e: PostModel, n: Post): boolean {
-    if ((n.metadata?.redacted_file_count ?? 0) !== (e.metadata?.redacted_file_count ?? 0)) {
+    // No metadata says nothing about attachments: thread payloads carry their root post without it.
+    if (!n.metadata) {
+        return false;
+    }
+
+    if ((n.metadata.redacted_file_count ?? 0) !== (e.metadata?.redacted_file_count ?? 0)) {
         return true;
     }
 
@@ -211,7 +216,25 @@ function shouldUpdateForRedaction(e: PostModel, n: Post): boolean {
     return false;
 }
 
-const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
+/**
+ * A write without an epoch (a natively fetched notification payload, a local mutation) keeps the
+ * stored stamp, which is only safe while it leaves the redaction state alone. When it changes that
+ * state the stamp would vouch for a decision it never saw: an allowed payload fetched before a denial
+ * and stored after it would render its files as verified. Such posts drop to epoch 0 instead, so they
+ * stay hidden until a sanitized response re-checks them.
+ */
+async function resetEpochForUnstampedRedactionChanges(database: Database, posts: Post[]) {
+    const stored = await database.get<PostModel>(POST).query(Q.where('id', Q.oneOf(posts.map((p) => p.id)))).fetch();
+    const storedById = new Map(stored.map((p) => [p.id, p]));
+    for (const post of posts) {
+        const existing = storedById.get(post.id);
+        if (existing && shouldUpdateForRedaction(existing, post)) {
+            (post as PostWithRedactionEpoch).redaction_verified_epoch = 0;
+        }
+    }
+}
+
+const PostHandler =<TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleScheduledPosts: Handler responsible for the Create/Update operations occurring the SchedulePost table from the 'Server' schema
      * @param {HandleScheduledPostsArgs} ScheduledPostsArgs
@@ -365,6 +388,8 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
      * @param {RawPost[]} handlePosts.posts
      * @param {string | undefined} handlePosts.previousPostId
      * @param {boolean | undefined} handlePosts.prepareRecordsOnly
+     * @param {boolean | undefined} handlePosts.skipPostsInChannel - store the posts without recording them in PostsInChannel
+     * @param {number | undefined} handlePosts.redactionVerifiedEpoch - epoch the (ABAC-sanitized) response was requested under; omit for local or unsanitized posts
      * @returns {Promise<Model[]>}
      */
     handlePosts = async ({actionType, order, posts, previousPostId = '', prepareRecordsOnly = false, skipPostsInChannel = false, redactionVerifiedEpoch}: HandlePostsArgs): Promise<Model[]> => {
@@ -449,6 +474,11 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             }
         }
 
+        // After the loop: notification metadata only becomes an object once parsed above.
+        if (redactionVerifiedEpoch === undefined) {
+            await resetEpochForUnstampedRedactionChanges(this.database, posts);
+        }
+
         // Get unique posts in case they are duplicated
         const uniquePosts = getUniqueRawsBy({
             raws: posts,
@@ -526,18 +556,23 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         // Reported as redacted, not merely absent from this payload, so the downloaded bytes go too.
         const redactedPostIds = new Set(uniquePosts.filter((p) => (p.metadata?.redacted_file_count ?? 0) > 0).map((p) => p.id));
-        const revokedFilePaths: Array<string | null | undefined> = [];
+        const revokedFiles: FileModel[] = [];
 
         const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
         allFiles.forEach((f) => {
             if (!receivedFilesSet.has(f.id) && !supersededPostIds.has(f.postId)) {
                 if (redactedPostIds.has(f.postId)) {
-                    // The row is the only record of where the bytes live.
-                    revokedFilePaths.push(f.localPath, f.imageThumbnail);
+                    revokedFiles.push(f);
                 }
                 batch.push(f.prepareDestroyPermanently());
             }
         });
+
+        // Whether or not the caller commits these records, the server has confirmed the denial, so
+        // the bytes go now; a batch that later fails leaves rows whose files are simply re-downloaded.
+        if (revokedFiles.length) {
+            deleteDownloadedFiles(this.serverUrl, revokedFiles);
+        }
 
         if (emojis.length) {
             const postEmojis = await this.handleCustomEmojis({emojis, prepareRecordsOnly: true});
@@ -564,12 +599,6 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         if (batch.length && !prepareRecordsOnly) {
             await this.batchRecords(batch, 'handlePosts');
-
-            // Only once the denial is stored, and not awaited: losing a blob is recoverable, holding
-            // up post persistence is not.
-            if (revokedFilePaths.length) {
-                deleteFilesByPath(revokedFilePaths);
-            }
         }
 
         return batch;

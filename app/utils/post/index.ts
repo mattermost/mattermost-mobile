@@ -378,3 +378,20 @@ export function getPermalinkRedactedFileCount(embedData?: PermalinkEmbedData, li
 
     return linkedPostRedactedCount;
 }
+
+export function isPostRedactionVerified(verifiedEpoch: number | undefined, requiredEpoch: number): boolean {
+    return (verifiedEpoch ?? 0) >= requiredEpoch;
+}
+
+/**
+ * Whether a stored attachment decision may be rendered. While ABAC is enforced it must have been
+ * confirmed under the current required epoch. While it is not, the server redacts nothing new, but a
+ * denial cached while it was enforced is stale until the post is fetched again: its file rows were
+ * destroyed, and no since-fetch re-delivers a post whose only change is its redaction.
+ */
+export function isAttachmentDecisionCurrent(enforced: boolean, verifiedEpoch: number | undefined, requiredEpoch: number, redactedFileCount: number): boolean {
+    if (isPostRedactionVerified(verifiedEpoch, requiredEpoch)) {
+        return true;
+    }
+    return !enforced && redactedFileCount === 0;
+}

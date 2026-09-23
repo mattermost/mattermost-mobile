@@ -90,12 +90,6 @@ describe('Body attachment render state', () => {
         expect(queryByTestId('redacted-files-placeholder')).toBeNull();
     });
 
-    it('should not render the placeholder when the server sent no redacted count', () => {
-        const {queryByTestId} = renderBody({} as PostMetadata);
-
-        expect(queryByTestId('redacted-files-placeholder')).toBeNull();
-    });
-
     it('should render neither the files nor the restricted placeholder while the decision is stale', () => {
         // The central safety property. Cached file records are not evidence the user may still see
         // them, and a stale redacted count is not evidence they may not.

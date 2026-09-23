@@ -39,25 +39,6 @@ export const apiEnableABAC = async (baseUrl: string): Promise<any> => {
     }
 };
 
-/**
- * Disable Attribute-Based Access Control (ABAC) via server config.
- * Requires admin session.
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns {config} on success or {error, status} on error
- */
-export const apiDisableABAC = async (baseUrl: string): Promise<any> => {
-    try {
-        const response = await client.put(`${baseUrl}/api/v4/config/patch`, {
-            AccessControlSettings: {
-                EnableAttributeBasedAccessControl: false,
-            },
-        });
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
 // ------------------------------------------------------------
 // Custom Profile Attribute Fields
 // Used to define user attributes that ABAC policies can reference.
@@ -240,64 +221,6 @@ export const apiDeletePermissionPolicy = async (baseUrl: string, policyId: strin
 // ------------------------------------------------------------
 
 /**
- * Create a channel membership policy.
- * When assigned to a channel and activated, only users whose attributes
- * satisfy the CEL expression will retain membership.
- * @param {string} baseUrl - the base server URL
- * @param {string} name - unique policy name
- * @param {string} expression - CEL expression, e.g. "user.attributes.Department == \"Engineering\""
- * @return {Object} returns {policy} on success or {error, status} on error
- */
-export const apiCreateChannelPolicy = async (
-    baseUrl: string,
-    name: string,
-    expression: string,
-): Promise<any> => {
-    try {
-        const response = await client.put(
-            `${baseUrl}/api/v4/access_control_policies`,
-            {
-                name,
-                type: 'channel',
-                rules: [
-                    {
-                        actions: ['membership'],
-                        expression,
-                    },
-                ],
-            },
-        );
-        return {policy: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Assign a policy to one or more channels.
- * The policy must already exist. Activation is a separate step.
- * @param {string} baseUrl - the base server URL
- * @param {string} policyId - the policy ID to assign
- * @param {string[]} channelIds - channel IDs to assign the policy to
- * @return {Object} returns {} on success or {error, status} on error
- */
-export const apiAssignPolicyToChannels = async (
-    baseUrl: string,
-    policyId: string,
-    channelIds: string[],
-): Promise<any> => {
-    try {
-        await client.post(
-            `${baseUrl}/api/v4/access_control_policies/${policyId}/resources/channels`,
-            {channel_ids: channelIds},
-        );
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Activate or deactivate an access control policy.
  * A policy must be active to be enforced by the server.
  * Uses PUT /api/v4/access_control_policies/activate with entries array.
@@ -322,72 +245,8 @@ export const apiSetPolicyActive = async (
     }
 };
 
-// ------------------------------------------------------------
-// Jobs
-// Certain ABAC operations (e.g. channel membership sync after
-// policy activation) require a background job to complete.
-// ------------------------------------------------------------
-
-/**
- * Trigger the access_control_sync background job.
- * This syncs channel memberships to match the active membership policies.
- * Required after activating a channel policy.
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns {job} on success or {error, status} on error
- */
-export const apiTriggerAccessControlSync = async (baseUrl: string): Promise<any> => {
-    try {
-        const response = await client.post(`${baseUrl}/api/v4/jobs`, {
-            type: 'access_control_sync',
-        });
-        return {job: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
- * Poll a job until it reaches status 'success' or the timeout expires.
- * @param {string} baseUrl - the base server URL
- * @param {string} jobId - the job ID to poll
- * @param {number} [timeoutMs] - maximum wait time in milliseconds (default 30 000)
- * @param {number} [intervalMs] - polling interval in milliseconds (default 1 000)
- * @return {Object} returns {job} on success or {error} on timeout / failure
- */
-export const apiWaitForJob = async (
-    baseUrl: string,
-    jobId: string,
-    timeoutMs = 30000,
-    intervalMs = 1000,
-): Promise<any> => {
-    const deadline = Date.now() + timeoutMs;
-
-    while (Date.now() < deadline) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            const response = await client.get(`${baseUrl}/api/v4/jobs/${jobId}`);
-            const job = response.data;
-
-            if (job.status === 'success') {
-                return {job};
-            }
-            if (job.status === 'error' || job.status === 'cancel_requested' || job.status === 'canceled') {
-                return {error: {message: `Job ${jobId} ended with status: ${job.status}`}};
-            }
-        } catch (err) {
-            return getResponseFromError(err);
-        }
-
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise((resolve) => setTimeout(resolve, intervalMs));
-    }
-
-    return {error: {message: `Job ${jobId} did not complete within ${timeoutMs}ms`}};
-};
-
 export const AccessControl = {
     apiEnableABAC,
-    apiDisableABAC,
     apiGetCustomProfileAttributeFields,
     apiGetOrCreateCustomProfileAttributeField,
     apiCreateCustomProfileAttributeField,
@@ -395,11 +254,7 @@ export const AccessControl = {
     apiSetUserPropertyValues,
     apiCreatePermissionPolicy,
     apiDeletePermissionPolicy,
-    apiCreateChannelPolicy,
-    apiAssignPolicyToChannels,
     apiSetPolicyActive,
-    apiTriggerAccessControlSync,
-    apiWaitForJob,
 };
 
 export default AccessControl;

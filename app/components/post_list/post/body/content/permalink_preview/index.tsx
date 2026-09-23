@@ -5,14 +5,14 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {isPostRedactionVerified, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeIsChannelAutotranslated} from '@queries/servers/channel';
 import {queryFilesForPost} from '@queries/servers/file';
 import {observePost} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeUser, observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
-import {isPermalinkEmbedRedacted} from '@utils/post';
+import {isAttachmentDecisionCurrent, isPermalinkEmbedRedacted} from '@utils/post';
 
 import PermalinkPreview from './permalink_preview';
 
@@ -86,7 +86,7 @@ const enhance = withObservables(['embedData', 'parentPostId'], ({database, embed
 
     // No host means nothing vouches for the embed, so it fails closed while enforced.
     const isEmbedRedactionVerified = combineLatest([observeRedactionEnforced(database), embedRequiredEpoch, hostPost]).pipe(
-        map(([enforced, requiredEpoch, host]) => !enforced || Boolean(host && isPostRedactionVerified(host.redactionVerifiedEpoch, requiredEpoch))),
+        map(([enforced, requiredEpoch, host]) => (host ? isAttachmentDecisionCurrent(enforced, host.redactionVerifiedEpoch, requiredEpoch, embedData?.post?.metadata?.redacted_file_count ?? 0) : !enforced)),
         distinctUntilChanged(),
     );
 

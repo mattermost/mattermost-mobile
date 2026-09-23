@@ -22,7 +22,7 @@ import {customProfileAttributeId} from '@utils/custom_profile_attribute';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logError} from '@utils/log';
-import {displayUsername} from '@utils/user';
+import {displayUsername, haveSameRoles} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
 import type {CustomProfileField} from '@typings/api/custom_profile_attributes';
@@ -87,7 +87,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
         const abacFieldChanged =
             userToSave.email !== currentUser.email ||
             Boolean(userToSave.is_bot) !== Boolean(currentUser.isBot) ||
-            userToSave.roles !== currentUser.roles;
+            !haveSameRoles(currentUser.roles, userToSave.roles);
 
         if (abacFieldChanged) {
             invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserFields);

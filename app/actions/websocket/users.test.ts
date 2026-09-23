@@ -133,6 +133,22 @@ describe('WebSocket Users Actions', () => {
             expect(batchRecords).toHaveBeenCalled();
         });
 
+        it('should invalidate file decisions only when an ABAC subject field of the current user changes', async () => {
+            // A nickname edit or a reordered role list must not invalidate every cached decision.
+            const mockCurrentUser = TestHelper.fakeUserModel({id: currentUserId, updateAt: 1000, locale: 'en', email: 'me@example.com', roles: 'system_user system_admin'});
+            jest.mocked(getCurrentUser).mockResolvedValue(mockCurrentUser);
+            const cosmetic = TestHelper.fakeUser({id: currentUserId, update_at: 1234, locale: 'en', email: 'me@example.com', roles: 'system_admin system_user', nickname: 'new'});
+            jest.mocked(fetchMe).mockResolvedValue({user: cosmetic});
+
+            await handleUserUpdatedEvent(serverUrl, {data: {user: cosmetic}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            const demoted = {...cosmetic, roles: 'system_user'};
+            jest.mocked(fetchMe).mockResolvedValue({user: demoted});
+            await handleUserUpdatedEvent(serverUrl, {data: {user: demoted}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserFields);
+        });
+
         it('should handle other user update', async () => {
             const mockUser = TestHelper.fakeUser({
                 id: otherUserId,

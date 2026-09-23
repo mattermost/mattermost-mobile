@@ -43,8 +43,8 @@ export const RedactionInvalidationReason = {
     UserRoles: 'user_roles',
     ChannelRoles: 'channel_roles',
     UserFields: 'user_fields',
+    SessionAttributes: 'session_attributes',
     ConfigChanged: 'config_changed',
-    LicenseChanged: 'license_changed',
     Resync: 'resync',
     AttributeViewRetry: 'attribute_view_retry',
 } as const;
@@ -94,14 +94,26 @@ export const isRedactionEnforced = async (database: Database): Promise<boolean> 
     return flag === 'true' && setting === 'true';
 };
 
+// Shared per database for the same reason as the required-epoch stream below: every
+// attachment-bearing row reads it.
+const enforcedStreams = new WeakMap<Database, Observable<boolean>>();
+
 export const observeRedactionEnforced = (database: Database): Observable<boolean> => {
-    return combineLatest([
+    const existing = enforcedStreams.get(database);
+    if (existing) {
+        return existing;
+    }
+
+    const stream = combineLatest([
         observeConfigBooleanValue(database, 'FeatureFlagPermissionPolicies'),
         observeConfigBooleanValue(database, 'EnableAttributeBasedAccessControl'),
     ]).pipe(
         map(([flag, setting]) => flag && setting),
         distinctUntilChanged(),
+        shareReplay({bufferSize: 1, refCount: true}),
     );
+    enforcedStreams.set(database, stream);
+    return stream;
 };
 
 /**
@@ -111,8 +123,9 @@ export const observeRedactionEnforced = (database: Database): Observable<boolean
 const advanceEpoch = async (
     serverUrl: string,
     reason: RedactionReason,
-    channelId?: string,
+    channelIds?: string[],
 ): Promise<number | undefined> => {
+    const isChannelScoped = Boolean(channelIds?.length);
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let next = 0;
@@ -123,7 +136,7 @@ const advanceEpoch = async (
             next = state.counter + 1;
             const value: RedactionEpochState = {
                 counter: next,
-                global: channelId ? state.global : next,
+                global: isChannelScoped ? state.global : next,
             };
 
             const batch = [];
@@ -138,16 +151,19 @@ const advanceEpoch = async (
                 }));
             }
 
-            if (channelId) {
-                const myChannel = await getMyChannelRecord(database, channelId);
-                if (myChannel) {
+            if (channelIds?.length) {
+                const required = next;
+                const myChannels = await database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', Q.oneOf(channelIds))).fetch();
+                for (const myChannel of myChannels) {
                     batch.push(myChannel.prepareUpdate((c) => {
-                        c.redactionRequiredEpoch = next;
+                        c.redactionRequiredEpoch = required;
                     }));
-                } else {
-                    // Not a member, or removed mid-flight. The counter still moved, so nothing is
-                    // silently trusted.
-                    logDebug('advanceEpoch: no my_channel row to raise', channelId);
+                }
+
+                // Not a member, or removed mid-flight: there is no row to raise. The server only sends
+                // channel-scoped changes to members, so this is the removal race.
+                if (myChannels.length < channelIds.length) {
+                    logDebug('advanceEpoch: channels without a my_channel row to raise', String(channelIds.length - myChannels.length));
                 }
             }
 
@@ -156,7 +172,7 @@ const advanceEpoch = async (
 
         return next;
     } catch (error) {
-        logError('error on advanceEpoch', reason, channelId ?? 'global', getFullErrorMessage(error));
+        logError('error on advanceEpoch', reason, isChannelScoped ? `${channelIds?.length} channels` : 'global', getFullErrorMessage(error));
         return undefined;
     }
 };
@@ -166,7 +182,12 @@ export const invalidateRedactionGlobally = (serverUrl: string, reason: Redaction
 };
 
 export const invalidateChannelRedaction = (serverUrl: string, channelId: string, reason: RedactionReason) => {
-    return advanceEpoch(serverUrl, reason, channelId);
+    return advanceEpoch(serverUrl, reason, [channelId]);
+};
+
+// One write and one counter step for a burst: a parent policy save sends an event per child channel.
+export const invalidateChannelsRedaction = (serverUrl: string, channelIds: string[], reason: RedactionReason) => {
+    return advanceEpoch(serverUrl, reason, channelIds);
 };
 
 export const getRequiredRedactionEpoch = async (database: Database, channelId?: string): Promise<number> => {
@@ -202,10 +223,6 @@ export const captureRedactionEpoch = async (serverUrl: string): Promise<number |
         logDebug('captureRedactionEpoch: could not read the redaction epoch', getFullErrorMessage(error));
         return undefined;
     }
-};
-
-export const isPostRedactionVerified = (verifiedEpoch: number | undefined, requiredEpoch: number): boolean => {
-    return (verifiedEpoch ?? 0) >= requiredEpoch;
 };
 
 const observeGlobalRedactionEpoch = (database: Database): Observable<number> => {

@@ -35,8 +35,8 @@ export default schemaMigrations({migrations: [
         toVersion: 22,
         steps: [
 
-            // Existing rows default to 0, below the epoch the redaction service reports when no
-            // System row exists, so posts cached before this migration start unverified.
+            // Existing rows default to 0, below DEFAULT_REDACTION_EPOCH_STATE (used while no epoch
+            // System row exists), so posts cached before this migration start unverified.
             addColumns({
                 table: POST,
                 columns: [

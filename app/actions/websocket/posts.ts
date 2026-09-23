@@ -38,6 +38,8 @@ function preparedMyChannelHack(myChannel: MyChannelModel) {
     }
 }
 
+const UNSANITIZED_BROADCAST_POST_TYPES = new Set<string>([PostTypes.BURN_ON_READ, PostTypes.EPHEMERAL, PostTypes.EPHEMERAL_ADD_TO_CHANNEL]);
+
 /**
  * `posted` and `post_edited` payloads are redacted per recipient by the server's `abac_files`
  * broadcast hook, so they can be stamped as verified. Burn-on-read is outside that hook and at least
@@ -48,7 +50,7 @@ function preparedMyChannelHack(myChannel: MyChannelModel) {
  * stamped onto that older decision.
  */
 const captureEpochForBroadcastPost = async (serverUrl: string, post: Post) => {
-    if (post.type === PostTypes.BURN_ON_READ || post.type === PostTypes.EPHEMERAL || post.type === PostTypes.EPHEMERAL_ADD_TO_CHANNEL) {
+    if (UNSANITIZED_BROADCAST_POST_TYPES.has(post.type)) {
         return undefined;
     }
     return captureRedactionEpoch(serverUrl);

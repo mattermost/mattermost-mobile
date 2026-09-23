@@ -120,10 +120,6 @@ export const queryPostsInChannel = (database: Database, channelId: string) => {
     );
 };
 
-export const queryAllPostsInChannel = (database: Database) => {
-    return database.get<PostInChannelModel>(POSTS_IN_CHANNEL).query();
-};
-
 export const queryPostsInThread = (database: Database, rootId: string, sorted = false, includeDeleted = false) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (!includeDeleted) {

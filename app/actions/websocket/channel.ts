@@ -24,6 +24,7 @@ import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/serv
 import EphemeralStore from '@store/ephemeral_store';
 import MyChannelModel from '@typings/database/models/servers/my_channel';
 import {logDebug} from '@utils/log';
+import {haveSameRoles} from '@utils/user';
 
 import type {Model} from '@nozbe/watermelondb';
 
@@ -192,16 +193,6 @@ export async function handleMultipleChannelsViewedEvent(serverUrl: string, msg: 
         // do nothing
     }
 }
-
-const haveSameRoles = (previous: string | undefined, next: string) => {
-    if (previous === undefined) {
-        return false;
-    }
-    const toSet = (roles: string) => new Set(roles.split(' ').filter(Boolean));
-    const a = toSet(previous);
-    const b = toSet(next);
-    return a.size === b.size && [...a].every((role) => b.has(role));
-};
 
 // This event is triggered by changes in the notify props or in the roles.
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {

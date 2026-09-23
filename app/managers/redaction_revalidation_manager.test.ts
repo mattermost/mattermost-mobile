@@ -4,6 +4,7 @@
 import {getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {fetchPostById} from '@actions/remote/post';
 import DatabaseManager from '@database/manager';
+import {getPostById} from '@queries/servers/post';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import RedactionRevalidationManager from './redaction_revalidation_manager';
@@ -13,6 +14,9 @@ jest.mock('@actions/remote/post', () => ({
 }));
 jest.mock('@actions/local/redaction', () => ({
     getRequiredRedactionEpoch: jest.fn(() => Promise.resolve(1)),
+}));
+jest.mock('@queries/servers/post', () => ({
+    getPostById: jest.fn(() => Promise.resolve(undefined)),
 }));
 jest.mock('@database/manager', () => ({
     __esModule: true,
@@ -36,7 +40,10 @@ const flushQueue = async () => {
 
 beforeEach(() => {
     enableFakeTimers();
-    jest.mocked(fetchPostById).mockClear();
+
+    // Reset, not clear: a failure implementation left by one test must not leak into the next.
+    jest.mocked(fetchPostById).mockReset().mockResolvedValue({post: {} as Post, redactionVerifiedEpoch: 1});
+    jest.mocked(getPostById).mockReset().mockResolvedValue(undefined);
     jest.mocked(getRequiredRedactionEpoch).mockResolvedValue(1);
     jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as never);
 });
@@ -118,6 +125,46 @@ describe('RedactionRevalidationManager', () => {
 
         expect(fetchPostById).toHaveBeenCalledTimes(1);
         expect(RedactionRevalidationManager.getMetrics(serverUrl)?.failed).toBe(1);
+    });
+
+    it('should not request a post that a page fetch already re-verified', async () => {
+        jest.mocked(getPostById).mockResolvedValue({redactionVerifiedEpoch: 1} as never);
+
+        RedactionRevalidationManager.enqueue(serverUrl, 'post1', 1);
+        await flushQueue();
+
+        expect(fetchPostById).not.toHaveBeenCalled();
+    });
+
+    it('should offer a retry for a failed post until it is queued again', async () => {
+        // Nothing else asks again while connected, so without this the post would read "checking" forever.
+        const failed: boolean[] = [];
+        const subscription = RedactionRevalidationManager.observeRevalidationFailed(serverUrl, 'post1').subscribe((f) => failed.push(f));
+        jest.mocked(fetchPostById).mockResolvedValueOnce({error: new Error('server error')});
+
+        RedactionRevalidationManager.enqueue(serverUrl, 'post1', 1);
+        await flushQueue();
+        RedactionRevalidationManager.enqueue(serverUrl, 'post1', 1);
+
+        expect(failed).toEqual([false, true, false]);
+        subscription.unsubscribe();
+    });
+
+    it('should not touch a new session when logout lands mid-request', async () => {
+        let resolve: (value: {error: unknown}) => void = () => undefined;
+        jest.mocked(fetchPostById).mockImplementationOnce(() => new Promise((r) => {
+            resolve = r;
+        }));
+
+        RedactionRevalidationManager.enqueue(serverUrl, 'post1', 1);
+        await flushQueue();
+        RedactionRevalidationManager.removeServer(serverUrl);
+        RedactionRevalidationManager.enqueue(serverUrl, 'post2', 1);
+        resolve({error: new Error('late')});
+        await flushQueue();
+
+        expect(RedactionRevalidationManager.getMetrics(serverUrl)?.failed).toBe(0);
+        expect(fetchPostById).toHaveBeenCalledWith(serverUrl, 'post2', false, undefined, true);
     });
 
     it('should keep queues isolated between servers', async () => {

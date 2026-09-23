@@ -40,6 +40,21 @@ const EDITED_INDICATOR_CONTEXT = ['paragraph'];
 const MIN_PERMALINK_WIDTH = 340;
 const TABLET_PADDING_OFFSET = 40;
 
+// FlatList windowing remounts previews constantly. Without this, a linked post the fetch cannot
+// populate (deleted, or one the user may not read) would be requested again on every remount.
+const linkedPostFetchAttempts = new Set<string>();
+const fetchLinkedPostOnce = async (serverUrl: string, postId: string, attemptKey: string) => {
+    if (linkedPostFetchAttempts.has(attemptKey)) {
+        return;
+    }
+    linkedPostFetchAttempts.add(attemptKey);
+    const {error} = await fetchLinkedPost(serverUrl, postId);
+    if (error) {
+        // A failed request says nothing about the post, so a later mount may try again.
+        linkedPostFetchAttempts.delete(attemptKey);
+    }
+};
+
 export type PermalinkPreviewProps = {
     embedData: PermalinkEmbedData;
     author?: UserModel;
@@ -181,17 +196,18 @@ const PermalinkPreview = ({
             return;
         }
         if (!post) {
-            fetchLinkedPost(serverUrl, linkedPostId);
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|missing`);
             return;
         }
 
         // When the embed shows accessible files but DB records are missing (e.g. after ABAC
         // access is granted and file records were deleted during the denial period), re-fetch
-        // the linked post so handlePosts repopulates the file records.
+        // the linked post so handlePosts repopulates the file records. Once per epoch: a newer
+        // decision is worth another attempt.
         if (isEmbedRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
-            fetchLinkedPost(serverUrl, linkedPostId);
+            fetchLinkedPostOnce(serverUrl, linkedPostId, `${serverUrl}|${linkedPostId}|files|${embedRequiredEpoch}`);
         }
-    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified]);
+    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified, embedRequiredEpoch]);
 
     if (isOriginPostDeleted) {
         return null;
@@ -236,8 +252,9 @@ const PermalinkPreview = ({
         return `~${displayName}`;
     }, [channel_display_name, channel_type, authorDisplayName]);
 
-    // The server only populates redacted_file_count when PermissionPolicies is enabled,
-    // so no explicit client-side feature-flag gate is needed here.
+    // The server only populates redacted_file_count while ABAC is enforced
+    // (FeatureFlagPermissionPolicies and EnableAttributeBasedAccessControl), so no client-side
+    // flag gate is needed here.
     const redactedFileCount = getPermalinkRedactedFileCount(embedData, post?.metadata?.redacted_file_count ?? 0);
 
     // While the host is behind either channel's epoch, neither the attachments nor a denial claim

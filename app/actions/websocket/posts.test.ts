@@ -361,6 +361,19 @@ describe('WebSocket Post Actions', () => {
             handlePostsSpy.mockRestore();
         });
 
+        it('should not vouch for a burn-on-read edit, which the broadcast redaction does not cover', async () => {
+            const captureSpy = jest.spyOn(Redaction, 'captureRedactionEpoch').mockResolvedValue(5);
+            const handlePostsSpy = jest.spyOn(operator, 'handlePosts');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify({...editedPost, type: PostTypes.BURN_ON_READ})}} as WebSocketMessage);
+
+            expect(captureSpy).not.toHaveBeenCalled();
+            expect(handlePostsSpy).toHaveBeenCalledWith(expect.objectContaining({redactionVerifiedEpoch: undefined}));
+            captureSpy.mockRestore();
+            handlePostsSpy.mockRestore();
+        });
+
         it('should handle post edited event - post exists with permalink updates', async () => {
             const batchRecordsSpy = jest.spyOn(operator, 'batchRecords');
 

@@ -34,6 +34,7 @@ import {
     hasInteractivePostContent,
     isPermalinkEmbedRedacted,
     getPermalinkRedactedFileCount,
+    isAttachmentDecisionCurrent,
 } from './index';
 
 jest.mock('@actions/local/post', () => ({
@@ -813,6 +814,26 @@ describe('post utils', () => {
         it('should fall back to the linked post when the embed says neither', () => {
             expect(getPermalinkRedactedFileCount(embed({}), 3)).toBe(3);
             expect(getPermalinkRedactedFileCount(undefined, 3)).toBe(3);
+        });
+    });
+
+    describe('isAttachmentDecisionCurrent', () => {
+        it('should render a decision confirmed under the required epoch', () => {
+            expect(isAttachmentDecisionCurrent(true, 3, 3, 2)).toBe(true);
+        });
+
+        it('should gate a decision behind the required epoch while enforced', () => {
+            expect(isAttachmentDecisionCurrent(true, 2, 3, 0)).toBe(false);
+        });
+
+        it('should render allowed attachments behind the epoch once enforcement is off', () => {
+            // Nothing new is redacted, so without a cached denial there is nothing to re-check.
+            expect(isAttachmentDecisionCurrent(false, 0, 3, 0)).toBe(true);
+        });
+
+        it('should re-check a denial cached while enforced once enforcement is off', () => {
+            // Its file rows are gone and no since-fetch re-delivers it.
+            expect(isAttachmentDecisionCurrent(false, 2, 3, 1)).toBe(false);
         });
     });
 });
