@@ -71,7 +71,6 @@ describe('components/post_list/post/body/content/Content - hasInteractivePostCon
         mmBlocksEnabled: true,
         theme: Preferences.THEMES.denim,
         showPermalinkPreviews: true,
-        isRedactionVerified: true,
     };
 
     const channelId = 'channel-interactive';
@@ -291,7 +290,6 @@ describe('components/post_list/post/body/content/Content - PermalinkPreview', ()
         mmBlocksEnabled: false,
         theme: Preferences.THEMES.denim,
         showPermalinkPreviews: true,
-        isRedactionVerified: true,
     };
 
     const permalinkEmbedData: PermalinkEmbedData = {

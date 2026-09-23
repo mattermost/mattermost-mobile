@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed, markChannelAsUnread, storeMyChannelsForTeam, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement} from '@actions/local/post';
+import * as Redaction from '@actions/local/redaction';
 import {updateThread} from '@actions/local/thread';
 import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors} from '@actions/remote/post';
@@ -339,6 +340,25 @@ describe('WebSocket Post Actions', () => {
             expect(mockedGetPostById).toHaveBeenCalledWith(expect.any(Object), 'post1');
             expect(mockedFetchChannelStats).toHaveBeenCalledWith(serverUrl, 'channel1');
             expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
+        });
+
+        it('should stamp the epoch current when the edit arrived, not one raised while it was handled', async () => {
+            // The payload carries the decision the server made at broadcast; an invalidation flushed
+            // during the author fetch must not be stamped onto it.
+            let counter = 1;
+            const captureSpy = jest.spyOn(Redaction, 'captureRedactionEpoch').mockImplementation(async () => counter);
+            mockedFetchPostAuthors.mockImplementation(async () => {
+                counter = 2;
+                return {authors: []};
+            });
+            const handlePostsSpy = jest.spyOn(operator, 'handlePosts');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, msg);
+
+            expect(handlePostsSpy).toHaveBeenCalledWith(expect.objectContaining({redactionVerifiedEpoch: 1}));
+            captureSpy.mockRestore();
+            handlePostsSpy.mockRestore();
         });
 
         it('should handle post edited event - post exists with permalink updates', async () => {

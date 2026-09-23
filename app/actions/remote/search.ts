@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {getPosts} from '@actions/local/post';
-import {captureRedactionEpoch, isRedactionEpochCurrent} from '@actions/local/redaction';
+import {captureRedactionEpoch} from '@actions/local/redaction';
 import {General} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -63,8 +63,8 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
         const user = await getCurrentUser(database);
         const timezoneOffset = getUtcOffsetForTimeZone(getUserTimezone(user)) * 60;
 
-        // Search spans channels, so only the global epoch can be asserted. A post whose channel has a
-        // higher epoch lands below its requirement and stays hidden.
+        // The epoch counter is at least every channel's requirement, so one capture covers results
+        // spanning channels.
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
 
         let postsArray: Post[] = [];
@@ -76,11 +76,6 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
 
         const posts = data.posts || {};
         const order = data.order || [];
-
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('searchPosts: dropping a response superseded by a newer redaction generation');
-            return {order: [], posts: [], matches: data.matches};
-        }
 
         const promises: Array<Promise<Model[]>> = [];
         postsArray = order.map((id) => posts[id]);

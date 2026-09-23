@@ -185,6 +185,11 @@ export const getRequiredRedactionEpoch = async (database: Database, channelId?: 
  * The counter, not a scoped required epoch: it is at least every channel's requirement, so a response
  * stamped with it is verified wherever its posts live, including requests whose channel is unknown
  * until the response arrives (a thread, a single post).
+ *
+ * A response is stored even when an invalidation commits while it is in flight: its posts are stamped
+ * with this pre-invalidation value, so the ones that invalidation affects land behind their required
+ * epoch and stay gated, and the rest were never affected by it. Dropping the response instead would
+ * lose the new posts, edits and deletions it carries.
  */
 export const captureRedactionEpoch = async (serverUrl: string): Promise<number | undefined> => {
     try {
@@ -196,25 +201,6 @@ export const captureRedactionEpoch = async (serverUrl: string): Promise<number |
     } catch (error) {
         logDebug('captureRedactionEpoch: could not read the redaction epoch', getFullErrorMessage(error));
         return undefined;
-    }
-};
-
-/**
- * False once any invalidation has committed since capture, even for an unrelated channel: over-dropping
- * costs a refetch, under-dropping would stamp a stale decision as current. An invalidation can still
- * commit between this check and the Watermelon batch, so the persisted per-post epoch and the render
- * gate, not this, are the security boundary.
- */
-export const isRedactionEpochCurrent = async (serverUrl: string, epoch: number | undefined): Promise<boolean> => {
-    if (epoch === undefined) {
-        return true;
-    }
-    try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        return (await getRedactionEpochState(database)).counter <= epoch;
-    } catch (error) {
-        logDebug('isRedactionEpochCurrent: could not read the redaction epoch', getFullErrorMessage(error));
-        return false;
     }
 };
 

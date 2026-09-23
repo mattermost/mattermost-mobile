@@ -7,7 +7,7 @@
 import {deletePostsForChannel, markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
-import {captureRedactionEpoch, getRequiredRedactionEpoch, isRedactionEnforced, isRedactionEpochCurrent, isPostRedactionVerified} from '@actions/local/redaction';
+import {captureRedactionEpoch, getRequiredRedactionEpoch, isRedactionEnforced, isPostRedactionVerified} from '@actions/local/redaction';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {fetchChannelStats} from '@actions/remote/channel';
 import {ActionType, General, Post, ServerErrors} from '@constants';
@@ -36,6 +36,7 @@ import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type {Database} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -48,9 +49,6 @@ type PostsRequest = {
     // Dispatch-time epoch, so a fetchOnly caller committing the models itself stamps the same value.
     // Undefined when ABAC is not enforced.
     redactionVerifiedEpoch?: number;
-
-    // The response was dropped because a newer ABAC invalidation superseded it.
-    staleRedaction?: boolean;
 }
 
 export type PostsForChannel = PostsRequest & {
@@ -296,10 +294,25 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
 };
 
 /**
+ * A policy or attribute change while the user was elsewhere leaves cached posts behind the epoch
+ * they now must satisfy. Read from the stored posts rather than remembered, so it survives a restart.
+ */
+const hasUnverifiedPosts = async (database: Database, channelId: string, posts: PostModel[]) => {
+    if (!posts.length || !(await isRedactionEnforced(database))) {
+        return false;
+    }
+    const requiredEpoch = await getRequiredRedactionEpoch(database, channelId);
+    return posts.some((p) => !isPostRedactionVerified(p.redactionVerifiedEpoch, requiredEpoch));
+};
+
+/**
  * Fetches posts for a channel, incrementally when the channel already has posts.
- * @param ignoreSince forces a page fetch even when the channel has a since cursor. Needed
- * when the reason for fetching is not new content but changed visibility of existing posts,
- * which a since-fetch cannot deliver (see refetchPostsForRedaction).
+ *
+ * GetPostsSince filters on UpdateAt, which an ABAC change never moves, so only a page fetch can
+ * re-verify posts we already hold. But only a since-fetch carries deletions and edits, so when both
+ * are needed the since-fetch still runs and a page follows it, rather than replacing it.
+ * @param ignoreSince re-verifies the newest page even when no stored post is behind its epoch, for
+ * callers that know a decision just changed (see refetchPostsForRedaction).
  */
 export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false, skipAuthors = false, groupLabel?: RequestGroupLabel, ignoreSince = false): Promise<PostsForChannel> {
     try {
@@ -312,12 +325,8 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         const myChannel = await getMyChannel(database, channelId);
         const postsInChannel = await getRecentPostsInChannel(database, channelId);
 
-        // A policy or attribute change while the user was elsewhere leaves this channel's cached
-        // posts behind the epoch they now must satisfy, and GetPostsSince filters on UpdateAt, which
-        // an ABAC change never moves. Read from the newest cached post so this survives a restart.
-        const requiredEpoch = await getRequiredRedactionEpoch(database, channelId);
-        const isRedactionStale = Boolean(postsInChannel?.length) && !isPostRedactionVerified(postsInChannel[0].redactionVerifiedEpoch, requiredEpoch) && await isRedactionEnforced(database);
-        const since = (ignoreSince || isRedactionStale) ? 0 : (myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0);
+        const since = myChannel?.lastFetchedAt || postsInChannel?.[0]?.createAt || 0;
+        const needsReverification = Boolean(since) && (ignoreSince || await hasUnverifiedPosts(database, channelId, postsInChannel));
         if (since) {
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
@@ -329,11 +338,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         const data = await postAction;
         if (data.error) {
             throw data.error;
-        }
-        if (data.staleRedaction) {
-            // The inner fetch dropped its payload; storing nothing leaves the posts at their old
-            // epoch, hidden until a current page arrives.
-            return {posts: [], order: [], staleRedaction: true, actionType, channelId};
         }
         let authors: UserProfile[] = [];
         if (data.posts?.length && data.order?.length) {
@@ -370,6 +374,16 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             }
         }
 
+        // Stored by fetchPosts itself, which leaves lastFetchedAt alone: advancing it from a page
+        // would skip past deletions the since-fetch above has not seen. fetchOnly callers are
+        // prefetches; their posts land unverified and are re-verified when the channel is opened.
+        if (!fetchOnly && needsReverification) {
+            const {error: reverifyError} = await fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, false, groupLabel);
+            if (reverifyError) {
+                logDebug('fetchPostsForChannel: could not re-verify the newest page', channelId, getFullErrorMessage(reverifyError));
+            }
+        }
+
         return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId, channelId, redactionVerifiedEpoch: data.redactionVerifiedEpoch};
     } catch (error) {
         logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
@@ -384,10 +398,11 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 /**
  * Re-fetches a channel's posts after an ABAC file-access decision may have changed.
  *
- * A since-fetch cannot be used here: GetPostsSince filters on `UpdateAt > since`, and a
+ * A since-fetch alone cannot do it: GetPostsSince filters on `UpdateAt > since`, and a
  * policy or user-attribute change modifies no post row, so the affected posts are never
  * returned. Only a page fetch re-runs SanitizePostListMetadataForUser over posts we already
- * hold, which is what refreshes `redacted_file_count`.
+ * hold, which is what refreshes `redacted_file_count`; the since-fetch still runs first so
+ * deletions and edits are not skipped.
  *
  * Note this re-verifies the newest POST_CHUNK_SIZE posts only: older cached posts stay behind
  * the required epoch, so they render neither files nor the redacted placeholder until they
@@ -506,10 +521,6 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPosts: dropping a response superseded by a newer redaction generation', channelId);
-            return {posts: [], order: [], staleRedaction: true};
-        }
         if (!fetchOnly && result.posts.length) {
             const models = await operator.handlePosts({
                 ...result,
@@ -561,11 +572,6 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPostsBefore: dropping a response superseded by a newer redaction generation', channelId);
-            return {posts: [], order: [], staleRedaction: true};
-        }
-
         if (result.posts.length && !fetchOnly) {
             try {
                 const models = await operator.handlePosts({
@@ -619,10 +625,6 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled, groupLabel);
         const result = processPostsFetched(data);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPostsSince: dropping a response superseded by a newer redaction generation', channelId);
-            return {posts: [], order: [], staleRedaction: true};
-        }
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
@@ -740,11 +742,6 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             ...options,
         }, groupLabel);
         const result = processPostsFetched(data);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPostThread: dropping a response superseded by a newer redaction generation', postId);
-            setFetchingThreadState(postId, false);
-            return {posts: [], staleRedaction: true};
-        }
         let posts: Model[] = [];
         if (result.posts.length && !fetchOnly) {
             const models: Model[] = [];
@@ -809,11 +806,6 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
         };
 
         const data = processPostsFetched(preData);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPostsAround: dropping a response superseded by a newer redaction generation', channelId);
-            return {posts: [], staleRedaction: true};
-        }
-
         let posts: Model[] = [];
         const models: Model[] = [];
         if (data.posts?.length) {
@@ -926,10 +918,6 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
 
         const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
         const post = await client.getPost(postId, groupLabel);
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPostById: dropping a response superseded by a newer redaction generation', postId);
-            return {staleRedaction: true};
-        }
         if (!fetchOnly) {
             const models: Model[] = [];
             const {authors} = await fetchPostAuthors(serverUrl, [post], true, groupLabel);
@@ -1181,11 +1169,6 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             };
         }
 
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchSavedPosts: dropping a response superseded by a newer redaction generation');
-            return {order: [], posts: [], staleRedaction: true};
-        }
-
         const promises: Array<Promise<Model[]>> = [];
 
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
@@ -1261,11 +1244,6 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
                 order,
                 posts: postsArray,
             };
-        }
-
-        if (!await isRedactionEpochCurrent(serverUrl, redactionVerifiedEpoch)) {
-            logDebug('fetchPinnedPosts: dropping a response superseded by a newer redaction generation', channelId);
-            return {order: [], posts: [], staleRedaction: true};
         }
 
         const promises: Array<Promise<Model[]>> = [];

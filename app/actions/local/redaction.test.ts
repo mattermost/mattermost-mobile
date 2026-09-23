@@ -11,7 +11,6 @@ import {
     DEFAULT_REDACTION_EPOCH_STATE,
     RedactionInvalidationReason,
     captureRedactionEpoch,
-    isRedactionEpochCurrent,
     getRedactionEpochState,
     getRequiredRedactionEpoch,
     invalidateChannelRedaction,
@@ -151,7 +150,7 @@ describe('isRedactionEnforced', () => {
     });
 });
 
-describe('captureRedactionEpoch / isRedactionEpochCurrent', () => {
+describe('captureRedactionEpoch', () => {
     const enable = async () => {
         await operator.handleConfigs({
             configs: [
@@ -167,20 +166,6 @@ describe('captureRedactionEpoch / isRedactionEpochCurrent', () => {
         // A server without ABAC must behave exactly as it did before this feature existed: no epoch
         // is stamped, so no post is ever gated.
         expect(await captureRedactionEpoch(serverUrl)).toBeUndefined();
-        expect(await isRedactionEpochCurrent(serverUrl, undefined)).toBe(true);
-    });
-
-    it('should treat a captured epoch as stale once an invalidation lands', async () => {
-        await enable();
-        await seedMyChannel(channelId);
-
-        const captured = await captureRedactionEpoch(serverUrl);
-        expect(captured).toBe(1);
-        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(true);
-
-        await invalidateChannelRedaction(serverUrl, channelId, RedactionInvalidationReason.ChannelPolicy);
-
-        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(false);
     });
 
     it('should verify posts of a channel whose own epoch is ahead of the global one', async () => {
@@ -192,13 +177,7 @@ describe('captureRedactionEpoch / isRedactionEpochCurrent', () => {
 
         const captured = await captureRedactionEpoch(serverUrl);
 
-        expect(await isRedactionEpochCurrent(serverUrl, captured)).toBe(true);
         expect(isPostRedactionVerified(captured, await getRequiredRedactionEpoch(operator.database, channelId))).toBe(true);
-    });
-
-    it('should fail closed when the database cannot be read', async () => {
-        await enable();
-        expect(await isRedactionEpochCurrent('no.such.server', 5)).toBe(false);
     });
 });
 

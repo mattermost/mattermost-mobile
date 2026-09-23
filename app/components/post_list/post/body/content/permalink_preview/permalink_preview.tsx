@@ -13,6 +13,7 @@ import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import Markdown from '@components/markdown';
 import RedactedFilesPlaceholder from '@components/post_list/post/body/redacted_files_placeholder';
+import UnverifiedFilesPlaceholder from '@components/post_list/post/body/unverified_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import ProfilePicture from '@components/profile_picture';
 import {View as ViewConstants} from '@constants';
@@ -52,7 +53,8 @@ export type PermalinkPreviewProps = {
     parentLocation?: string;
     parentPostId?: string;
     autotranslationsEnabled: boolean;
-    isHostRedactionVerified: boolean;
+    embedRequiredEpoch: number;
+    isEmbedRedactionVerified: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -137,7 +139,8 @@ const PermalinkPreview = ({
     parentLocation,
     parentPostId,
     autotranslationsEnabled,
-    isHostRedactionVerified,
+    embedRequiredEpoch,
+    isEmbedRedactionVerified,
 }: PermalinkPreviewProps) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -185,10 +188,10 @@ const PermalinkPreview = ({
         // When the embed shows accessible files but DB records are missing (e.g. after ABAC
         // access is granted and file records were deleted during the denial period), re-fetch
         // the linked post so handlePosts repopulates the file records.
-        if (isHostRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
+        if (isEmbedRedactionVerified && embedFilesCount > 0 && !hasLinkedPostFiles) {
             fetchLinkedPost(serverUrl, linkedPostId);
         }
-    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isHostRedactionVerified]);
+    }, [linkedPostId, post, serverUrl, embedFilesCount, hasLinkedPostFiles, isEmbedRedactionVerified]);
 
     if (isOriginPostDeleted) {
         return null;
@@ -237,10 +240,12 @@ const PermalinkPreview = ({
     // so no explicit client-side feature-flag gate is needed here.
     const redactedFileCount = getPermalinkRedactedFileCount(embedData, post?.metadata?.redacted_file_count ?? 0);
 
-    // The server sanitizes the embed as part of the host response, so the host's epoch covers it.
-    // While the host is behind, neither the attachments nor a denial claim about them is trustworthy.
-    const showEmbeddedFiles = isHostRedactionVerified && hasLinkedPostFiles && embedFilesCount > 0;
-    const showRedactedPlaceholder = isHostRedactionVerified && redactedFileCount > 0;
+    // While the host is behind either channel's epoch, neither the attachments nor a denial claim
+    // about them is trustworthy. The placeholder re-verifies the host, which re-sanitizes the embed.
+    const showEmbeddedFiles = isEmbedRedactionVerified && hasLinkedPostFiles && embedFilesCount > 0;
+    const showRedactedPlaceholder = isEmbedRedactionVerified && redactedFileCount > 0;
+    const hostPostId = parentPostId ?? '';
+    const showUnverifiedPlaceholder = !isEmbedRedactionVerified && Boolean(hostPostId) && (embedFilesCount > 0 || redactedFileCount > 0);
 
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const teamName = embedData.team_name;
@@ -350,6 +355,13 @@ const PermalinkPreview = ({
                     )}
                     {showRedactedPlaceholder && (
                         <RedactedFilesPlaceholder/>
+                    )}
+                    {showUnverifiedPlaceholder && (
+                        <UnverifiedFilesPlaceholder
+                            postId={hostPostId}
+                            location={location}
+                            requiredEpoch={embedRequiredEpoch}
+                        />
                     )}
                 </View>
 

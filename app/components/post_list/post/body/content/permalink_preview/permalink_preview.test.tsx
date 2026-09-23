@@ -8,6 +8,7 @@ import {View} from 'react-native';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchLinkedPost} from '@actions/remote/post';
 import Markdown from '@components/markdown';
+import UnverifiedFilesPlaceholder from '@components/post_list/post/body/unverified_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -42,6 +43,14 @@ jest.mock('@components/post_list/post/header/translate_icon', () => ({
 }));
 jest.mocked(TranslateIcon).mockImplementation(() =>
     React.createElement(View, {testID: 'translate-icon'}, null),
+);
+
+jest.mock('@components/post_list/post/body/unverified_files_placeholder', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(UnverifiedFilesPlaceholder).mockImplementation(() =>
+    React.createElement(View, {testID: 'unverified-files-placeholder'}, null),
 );
 
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
@@ -136,7 +145,8 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         parentLocation: Screens.CHANNEL,
         parentPostId: 'parent-post-123',
         autotranslationsEnabled: false,
-        isHostRedactionVerified: true,
+        embedRequiredEpoch: 1,
+        isEmbedRedactionVerified: true,
     };
 
     it('should render permalink preview correctly', () => {
@@ -609,18 +619,23 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         });
     });
 
-    describe('host redaction verification', () => {
-        it('should render neither the embedded files nor the restricted placeholder while the host is behind', async () => {
-            // The server sanitizes an embedded post as part of the host response, so a host whose own
-            // decision is stale carries an embed that is stale too.
-            const {queryByTestId} = renderPermalinkPreview({
+    describe('embed redaction verification', () => {
+        it('should show only the unverified placeholder while the embed decision is behind', async () => {
+            // A host post whose only attachments come through the embed has nothing else to queue a
+            // re-check, so the preview itself has to show the pending state.
+            const {queryByTestId, getByTestId} = renderPermalinkPreview({
                 ...baseProps,
-                isHostRedactionVerified: false,
+                isEmbedRedactionVerified: false,
                 hasLinkedPostFiles: true,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({id: 'post-123', user_id: 'user-123', metadata: {files: [TestHelper.fakeFileInfo({id: 'file-123'})]}}),
+                },
             });
 
             expect(queryByTestId('permalink-files-container')).toBeNull();
             expect(queryByTestId('redacted-files-placeholder')).toBeNull();
+            expect(getByTestId('unverified-files-placeholder')).toBeTruthy();
         });
     });
 
@@ -629,7 +644,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             const {queryByTestId} = renderPermalinkPreview({
                 ...baseProps,
                 autotranslationsEnabled: false,
-                isHostRedactionVerified: true,
+                isEmbedRedactionVerified: true,
             });
 
             expect(queryByTestId('translate-icon')).toBeNull();
@@ -724,7 +739,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: false,
-                isHostRedactionVerified: true,
+                isEmbedRedactionVerified: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({

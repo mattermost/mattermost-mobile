@@ -126,8 +126,9 @@ describe('Body attachment render state', () => {
         expect(allowed.queryByTestId('unverified-files-placeholder')).toBeNull();
 
         // The server clears metadata.files whenever it sets a redacted count, so these two are
-        // mutually exclusive in practice; this asserts the client enforces it rather than assuming it.
-        const denied = renderBody({redacted_file_count: 2} as PostMetadata, {filesInfo: []});
+        // mutually exclusive in practice; stored files are passed anyway so this asserts the client
+        // enforces it rather than assuming it.
+        const denied = renderBody({redacted_file_count: 2} as PostMetadata, {filesInfo: aFile});
         expect(denied.queryByTestId('files')).toBeNull();
         expect(denied.getByTestId('redacted-files-placeholder')).toBeTruthy();
         expect(denied.queryByTestId('unverified-files-placeholder')).toBeNull();

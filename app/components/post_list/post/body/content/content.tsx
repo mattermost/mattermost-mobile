@@ -26,7 +26,6 @@ type ContentProps = {
     post: PostModel;
     theme: Theme;
     showPermalinkPreviews: boolean;
-    isRedactionVerified: boolean;
 }
 
 const contentType: Record<string, string> = {
@@ -38,7 +37,7 @@ const contentType: Record<string, string> = {
     youtube: 'youtube',
 };
 
-const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, theme, showPermalinkPreviews, isRedactionVerified}: ContentProps) => {
+const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, theme, showPermalinkPreviews}: ContentProps) => {
     if (hasInteractivePostContent(post, mmBlocksEnabled)) {
         return (
             <InteractiveMessages
@@ -132,7 +131,6 @@ const Content = ({isReplyPost, layoutWidth, location, mmBlocksEnabled, post, the
                     location={location}
                     parentLocation={location}
                     parentPostId={post.id}
-                    isHostRedactionVerified={isRedactionVerified}
                 />
             );
     }

@@ -830,7 +830,7 @@ describe('get posts', () => {
         expect(result.posts?.length).toBe(2);
     });
 
-    it('refetchPostsForRedaction - should fetch a page instead of a since-fetch when the channel already has posts', async () => {
+    it('refetchPostsForRedaction - should re-verify with a page after the since-fetch when the channel already has posts', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [{
             id: channelId,
@@ -857,12 +857,13 @@ describe('get posts', () => {
 
         const result = await refetchPostsForRedaction(serverUrl, channelId);
 
+        // The page re-verifies what we hold; only the since-fetch carries deletions and edits.
         expect(result.error).toBeUndefined();
-        expect(mockClient.getPosts).toHaveBeenCalled();
-        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
     });
 
-    it('fetchPosts - should stamp the epoch it was dispatched under and drop a response a later invalidation superseded', async () => {
+    it('fetchPosts - should stamp the epoch it was dispatched under, even when a later invalidation lands in flight', async () => {
         await operator.handleConfigs({
             configs: [
                 {id: 'FeatureFlagPermissionPolicies', value: 'true'},
@@ -878,21 +879,23 @@ describe('get posts', () => {
         const rows = await queryPostsById(operator.database, [post1.id]).fetch();
         expect(rows[0].redactionVerifiedEpoch).toBe(1);
 
-        // An invalidation that lands while the request is in flight must make the response
-        // unusable, so the channel's posts keep the epoch they were last verified at.
+        // The response is still stored, so its new posts and edits are not lost, but under the epoch
+        // it was dispatched at: the invalidation that landed in flight leaves it behind the gate.
+        let requiredEpoch: number | undefined;
         (mockClient.getPosts as jest.Mock).mockImplementationOnce(async () => {
-            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
-            return {order: [post1.id], posts: {[post1.id]: post1}};
+            requiredEpoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+            return {order: [post1.id], posts: {[post1.id]: {...post1, message: 'edited in flight', update_at: post1.update_at + 1}}};
         });
 
         const superseded = await fetchPosts(serverUrl, channelId);
-        expect(superseded.staleRedaction).toBe(true);
-        expect(superseded.posts).toEqual([]);
+        expect(superseded.posts).toHaveLength(1);
         const after = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(after[0].message).toBe('edited in flight');
         expect(after[0].redactionVerifiedEpoch).toBe(1);
+        expect(requiredEpoch).toBe(2);
     });
 
-    it('fetchPostsForChannel - should force a page when the cached posts are behind the required epoch', async () => {
+    it('fetchPostsForChannel - should re-verify with a page after the since-fetch when cached posts are behind the required epoch', async () => {
         // The persisted epoch replaces the in-memory stale flag precisely so this survives a restart:
         // a since-fetch filters on UpdateAt, which an ABAC change never moves.
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
@@ -933,13 +936,12 @@ describe('get posts', () => {
         const result = await fetchPostsForChannel(serverUrl, channelId);
 
         expect(result.error).toBeUndefined();
-        expect(mockClient.getPosts).toHaveBeenCalled();
-        expect(mockClient.getPostsSince).not.toHaveBeenCalled();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
     });
 
-    it('fetchPostsForChannel - should leave the posts unverified when the re-fetch fails', async () => {
-        // A failed fetch must not look like a successful verification, or the attachments would be
-        // rendered from the decision the fetch was trying to replace.
+    it('fetchPostsForChannel - should keep the since-fetch result when the re-verification page fails', async () => {
+        // The since-fetch already stored new content; a failed page only leaves older posts unverified.
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleConfigs({
             configs: [
@@ -970,14 +972,15 @@ describe('get posts', () => {
             redactionVerifiedEpoch: 1,
         });
 
-        const requiredEpoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        mockClient.getPostsSince.mockClear();
         (mockClient.getPosts as jest.Mock).mockRejectedValueOnce(new Error('network down'));
 
         const result = await fetchPostsForChannel(serverUrl, channelId);
 
-        expect(result.error).toBeDefined();
-        const rows = await queryPostsById(operator.database, [post1.id]).fetch();
-        expect(rows[0].redactionVerifiedEpoch).toBeLessThan(requiredEpoch!);
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(result.posts).toHaveLength(2);
     });
 
     it('fetchPostsForChannel - no posts with since', async () => {

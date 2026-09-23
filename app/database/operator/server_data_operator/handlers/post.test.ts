@@ -1375,6 +1375,49 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             expect(rows[0].redactionVerifiedEpoch).toBe(2);
         });
 
+        it('should not restore files from a superseded allow over a newer denial', async () => {
+            const file = {id: 'stale-file', post_id: postId, name: 'secret.png', extension: 'png', mime_type: 'image/png', size: 1, width: 1, height: 1} as FileInfo;
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({files: [file]}), file_ids: [file.id]}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(0);
+        });
+
+        it('should not destroy files a newer allow stored when a superseded denial arrives', async () => {
+            const file = {id: 'kept-file', post_id: postId, name: 'ok.png', extension: 'png', mime_type: 'image/png', size: 1, width: 1, height: 1} as FileInfo;
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({files: [file]}), file_ids: [file.id]}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(1);
+            expect(deleteFilesByPath).not.toHaveBeenCalled();
+        });
+
         it('should store a newer epoch for a post whose access did not change', async () => {
             // Nothing but the epoch differs, so without an explicit clause the write is skipped and
             // the post stays unverified after every invalidation.

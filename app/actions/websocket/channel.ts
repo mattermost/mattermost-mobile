@@ -345,8 +345,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                 }
             }
 
-            const {posts, order, authors, actionType, previousPostId, redactionVerifiedEpoch, staleRedaction} = await fetchPostsForChannel(serverUrl, channelId, true);
-            if (posts?.length && order?.length && actionType && !staleRedaction) {
+            const {posts, order, authors, actionType, previousPostId, redactionVerifiedEpoch} = await fetchPostsForChannel(serverUrl, channelId, true);
+            if (posts?.length && order?.length && actionType) {
                 const {models: prepared} = await storePostsForChannel(
                     serverUrl, channelId,
                     posts, order, previousPostId ?? '',

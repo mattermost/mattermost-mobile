@@ -114,22 +114,25 @@ const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingC
 export const exportedForTest = {
     mergePostInChannelChunks,
     isNewerRedactionGeneration,
-    isStaleRedactionGeneration,
     shouldUpdateForBoRPost,
     shouldUpdateForRedaction,
 };
 
 /**
- * A response dispatched under epoch G1 can arrive after one dispatched under G2 was stored. The whole
- * payload is dropped rather than merged: clamping only the epoch would label a record verified at G2
- * while it carries G1's metadata. The current state is re-delivered by the next fetch or POST_EDITED.
+ * A response dispatched under epoch G1 can arrive after one dispatched under G2 was stored. Such posts
+ * are left exactly as G2 stored them, row and records alike: clamping only the epoch would label a
+ * record verified at G2 while it carries G1's metadata. The next fetch re-delivers the current state.
  */
-function isStaleRedactionGeneration(e: PostModel, n: Post): boolean {
-    const incoming = (n as PostWithRedactionEpoch).redaction_verified_epoch;
-    if (incoming === undefined) {
-        return false;
+async function getSupersededPostIds(database: Database, posts: Post[], epoch?: number): Promise<Set<string>> {
+    if (epoch === undefined) {
+        return new Set();
     }
-    return incoming < (e.redactionVerifiedEpoch ?? 0);
+
+    const stored = await database.get<PostModel>(POST).query(
+        Q.where('id', Q.oneOf(posts.map((p) => p.id))),
+        Q.where('redaction_verified_epoch', Q.gt(epoch)),
+    ).fetch();
+    return new Set(stored.map((p) => p.id));
 }
 
 /**
@@ -381,6 +384,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
         const pendingPostsToDelete: Post[] = [];
         const postsInThread: Record<string, Post[]> = {};
         const receivedFilesSet = new Set<string>();
+        const supersededPostIds = await getSupersededPostIds(this.database, posts, redactionVerifiedEpoch);
 
         // Let's process the post data
         for (const post of posts) {
@@ -400,6 +404,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                 }
             }
 
+            // The comparator already refuses the row; its records must not be applied either, or a
+            // stale allowed payload would restore the files a newer denial removed.
+            const isSuperseded = supersededPostIds.has(post.id);
+
             // Process the metadata of each post
             if (post?.metadata && Object.keys(post?.metadata).length > 0) {
                 // parsing into json since notifications are sending metadata as a string
@@ -407,19 +415,25 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
                 // Extracts reaction from post's metadata
                 if (data.reactions) {
-                    postsReactions.push({post_id: post.id, reactions: data.reactions});
+                    if (!isSuperseded) {
+                        postsReactions.push({post_id: post.id, reactions: data.reactions});
+                    }
                     delete data.reactions;
                 }
 
                 // Extracts emojis from post's metadata
                 if (data.emojis) {
-                    emojis.push(...data.emojis);
+                    if (!isSuperseded) {
+                        emojis.push(...data.emojis);
+                    }
                     delete data.emojis;
                 }
 
                 // Extracts files from post's metadata
                 if (data.files) {
-                    files.push(...data.files);
+                    if (!isSuperseded) {
+                        files.push(...data.files);
+                    }
                     delete data.files;
                 }
 
@@ -430,7 +444,9 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                 (post as PostWithRedactionEpoch).redaction_verified_epoch = redactionVerifiedEpoch;
             }
 
-            post.file_ids?.forEach((fileId) => receivedFilesSet.add(fileId));
+            if (!isSuperseded) {
+                post.file_ids?.forEach((fileId) => receivedFilesSet.add(fileId));
+            }
         }
 
         // Get unique posts in case they are duplicated
@@ -465,7 +481,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             tableName,
             fieldName: 'id',
             shouldUpdate: (e: PostModel, n: Post) => {
-                if (isStaleRedactionGeneration(e, n)) {
+                if (supersededPostIds.has(e.id)) {
                     return false;
                 }
 
@@ -514,7 +530,7 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
 
         const allFiles = await database.get<FileModel>(MM_TABLES.SERVER.FILE).query(Q.where('post_id', Q.oneOf(uniquePosts.map((p) => p.id)))).fetch();
         allFiles.forEach((f) => {
-            if (!receivedFilesSet.has(f.id)) {
+            if (!receivedFilesSet.has(f.id) && !supersededPostIds.has(f.postId)) {
                 if (redactedPostIds.has(f.postId)) {
                     // The row is the only record of where the bytes live.
                     revokedFilePaths.push(f.localPath, f.imageThumbnail);

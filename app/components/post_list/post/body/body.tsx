@@ -221,7 +221,10 @@ const Body = ({
     // have never been through the server, so there is no decision to be behind.
     const hasAttachmentEvidence = Boolean(filesInfo.length) || redactedFileCount > 0;
     const isUnverified = hasAttachmentEvidence && !isRedactionVerified && !isPendingOrFailed;
-    const showFiles = Boolean(filesInfo.length) && !isUnverified;
+
+    // The server redacts all of a post's files or none, so a count alongside stored files means the
+    // store is inconsistent; the count wins.
+    const showFiles = Boolean(filesInfo.length) && redactedFileCount === 0 && !isUnverified;
     const showRedactedPlaceholder = redactedFileCount > 0 && !isUnverified;
 
     if (!hasBeenDeleted) {
@@ -236,7 +239,6 @@ const Body = ({
                     mmBlocksEnabled={mmBlocksEnabled}
                     post={post}
                     theme={theme}
-                    isRedactionVerified={isRedactionVerified}
                 />
                 }
                 {showFiles &&
