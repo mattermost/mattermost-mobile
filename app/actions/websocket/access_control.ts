@@ -12,7 +12,8 @@ import {
     type RedactionReason,
 } from '@actions/local/redaction';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
-import {Events} from '@constants';
+import {Events, WebsocketEvents} from '@constants';
+import {USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import DatabaseManager from '@database/manager';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
@@ -205,7 +206,15 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
  */
 export const handleRedactionForPropertyValuesUpdated = async (serverUrl: string, msg: WebSocketMessage) => {
     try {
-        if (msg.data?.object_type !== 'user') {
+        // Clearing every value of a field (a field delete, or a type change dropping values) names
+        // only the field, so the object type is unknown. It is a rare admin action; treat it as
+        // touching every subject rather than miss one that it did.
+        if (!msg.data?.object_type && msg.data?.field_id) {
+            scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.UserAttributes, undefined, true);
+            return;
+        }
+
+        if (msg.data?.object_type !== USER_ATTRIBUTE_OBJECT_TYPE) {
             return;
         }
 
@@ -219,6 +228,25 @@ export const handleRedactionForPropertyValuesUpdated = async (serverUrl: string,
     } catch (error) {
         logError('handleRedactionForPropertyValuesUpdated', getFullErrorMessage(error));
     }
+};
+
+/**
+ * Renaming or re-ranking an option, or changing a field's type, rewrites the attribute values every
+ * policy is evaluated against without touching a single value row, so no values event follows.
+ * Creating a field is skipped: no subject has a value for it yet.
+ */
+export const handleRedactionForPropertyFieldChanged = (serverUrl: string, msg: WebSocketMessage) => {
+    if (msg.event === WebsocketEvents.PROPERTY_FIELD_CREATED) {
+        return;
+    }
+
+    const field = safeParseJSON(msg.data?.property_field) as PropertyField | undefined;
+    const objectType = msg.data?.object_type ?? field?.object_type;
+    if (objectType !== USER_ATTRIBUTE_OBJECT_TYPE) {
+        return;
+    }
+
+    scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.UserAttributes, undefined, true);
 };
 
 // The ABAC subject is global to the user, so every channel is affected.

@@ -8,7 +8,7 @@ import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
-import {General, Events, Preferences} from '@constants';
+import {General, Events, Preferences, WebsocketEvents} from '@constants';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -192,6 +192,12 @@ export async function handleCustomProfileAttributesFieldUpdatedEvent(serverUrl: 
             });
         } catch (error) {
             logError('Error handling custom profile attributes field updated event', error);
+        }
+
+        // Renaming an option or changing a field's type rewrites what every policy is evaluated
+        // against without a values event. A new field has no values yet, so it cannot.
+        if (msg.event === WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED) {
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.UserAttributes, true);
         }
     } catch (error) {
         logError('Error getting the operator for the custom profile field updated event', error);

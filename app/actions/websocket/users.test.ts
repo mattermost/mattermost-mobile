@@ -8,7 +8,7 @@ import {RedactionInvalidationReason} from '@actions/local/redaction';
 import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
-import {Events} from '@constants';
+import {Events, WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -475,6 +475,19 @@ describe('WebSocket Users Actions', () => {
                 fields: [mockField],
                 prepareRecordsOnly: false,
             });
+        });
+
+        it('should invalidate redaction when a field is updated but not when one is created', async () => {
+            // Renaming an option changes what policies evaluate with no values event; a new field
+            // has no values yet.
+            operator.handleCustomProfileFields = jest.fn().mockResolvedValue([]);
+            const data = {field: {id: 'field1'}};
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(serverUrl, {event: WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_CREATED, data} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            await handleCustomProfileAttributesFieldUpdatedEvent(serverUrl, {event: WebsocketEvents.CUSTOM_PROFILE_ATTRIBUTES_FIELD_UPDATED, data} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.UserAttributes, true);
         });
 
         it('should handle errors during field update', async () => {

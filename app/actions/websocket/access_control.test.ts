@@ -5,7 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {refetchPostsForRedaction} from '@actions/remote/post';
-import {Events} from '@constants';
+import {Events, WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
@@ -14,6 +14,7 @@ import {
     clearRedactionInvalidations,
     handleChannelAccessControlUpdatedEvent,
     handlePermissionPolicyUpdatedEvent,
+    handleRedactionForPropertyFieldChanged,
     handleRedactionForPropertyValuesUpdated,
     invalidateRedactionForChannelMembership,
     invalidateRedactionForCurrentUser,
@@ -169,6 +170,41 @@ describe('redaction invalidation triggers', () => {
     it('should ignore a property change that belongs to another user', async () => {
         await handleRedactionForPropertyValuesUpdated(serverUrl, {
             data: {object_type: 'user', target_id: 'someone-else'},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+    });
+
+    it('should raise the global epoch when every value of a field is cleared', async () => {
+        // The payload names only the field, so it cannot be told apart from a user attribute.
+        await handleRedactionForPropertyValuesUpdated(serverUrl, {
+            data: {field_id: 'fieldid1', values: '[]'},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should raise the global epoch when a user attribute field changes', async () => {
+        // An option rename rewrites every subject's value with no values event to follow.
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+            data: {object_type: 'user', property_field: JSON.stringify({id: 'fieldid1', object_type: 'user'})},
+        } as unknown as WebSocketMessage);
+        await flushCoalescer();
+
+        expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+    });
+
+    it('should ignore field changes that cannot alter a subject', async () => {
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_CREATED,
+            data: {object_type: 'user', property_field: JSON.stringify({id: 'fieldid1', object_type: 'user'})},
+        } as unknown as WebSocketMessage);
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+            data: {object_type: 'channel', property_field: JSON.stringify({id: 'fieldid2', object_type: 'channel'})},
         } as unknown as WebSocketMessage);
         await flushCoalescer();
 

@@ -15,7 +15,7 @@ import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
 
-import {handleChannelAccessControlUpdatedEvent, handlePermissionPolicyUpdatedEvent, handleRedactionForPropertyValuesUpdated} from './access_control';
+import {handleChannelAccessControlUpdatedEvent, handlePermissionPolicyUpdatedEvent, handleRedactionForPropertyFieldChanged, handleRedactionForPropertyValuesUpdated} from './access_control';
 import * as category from './category';
 import * as channel from './channel';
 import * as files from './files';
@@ -327,10 +327,12 @@ export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMess
         case WebsocketEvents.PROPERTY_FIELD_UPDATED:
             handlePropertyFieldCreatedOrUpdated(serverUrl, msg);
             handleSessionAttributesPropertyFieldEvent(serverUrl, msg);
+            handleRedactionForPropertyFieldChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.PROPERTY_FIELD_DELETED:
             handlePropertyFieldDeleted(serverUrl, msg);
+            handleRedactionForPropertyFieldChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.PROPERTY_VALUES_UPDATED:
