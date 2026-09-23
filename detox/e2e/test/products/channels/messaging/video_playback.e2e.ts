@@ -170,12 +170,15 @@ describe('Messaging - Video Playback', () => {
     it('MM-TXXXX_8 - should change the playback speed', async () => {
         await openVideo();
 
-        const atNormalSpeed = await GalleryScreen.playbackRate();
+        const atNormalSpeed = await GalleryScreen.playbackRate(timeouts.FIVE_SEC);
 
         await GalleryScreen.openSpeedMenu();
         await GalleryScreen.selectSpeed(2);
 
-        const atDoubleSpeed = await GalleryScreen.playbackRate();
+        // Wait for the native player to apply the new rate before sampling.
+        await wait(timeouts.ONE_SEC);
+
+        const atDoubleSpeed = await GalleryScreen.playbackRate(timeouts.FIVE_SEC);
         if (atDoubleSpeed <= atNormalSpeed * 1.5) {
             throw new Error(`expected 2x to outpace normal speed, got ${atNormalSpeed}s/s then ${atDoubleSpeed}s/s`);
         }
