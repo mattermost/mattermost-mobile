@@ -323,7 +323,7 @@ export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unkn
 
             await setLastAutoCacheCleanupRun(serverUrl);
 
-            if (postsDeleted > 0) {
+            if (postsDeleted > 0 && isActive) {
                 showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_CACHE_CLEANUP, messageValues: {count: postsDeleted, days: cleanupDays}});
             }
 

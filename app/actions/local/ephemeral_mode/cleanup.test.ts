@@ -678,7 +678,8 @@ describe('autoCacheCleanup', () => {
         });
     });
 
-    it('should show the cache-cleanup snackbar with the total deleted post count and cleanup days after a successful run', async () => {
+    it('should show the cache-cleanup snackbar with the total deleted post count and cleanup days after a successful run on the active server', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
         await writePiC('ch-notify');
         jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 5});
 
@@ -691,6 +692,15 @@ describe('autoCacheCleanup', () => {
     });
 
     it('should not show the cache-cleanup snackbar when no posts were deleted', async () => {
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
+    });
+
+    it('should not show the cache-cleanup snackbar when the server is not active', async () => {
+        await writePiC('ch-notify-inactive');
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 5});
+
         await autoCacheCleanup(SERVER_URL);
 
         expect(showSnackBar).not.toHaveBeenCalled();
