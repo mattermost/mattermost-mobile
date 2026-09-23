@@ -7,7 +7,7 @@ import {Events} from '@constants';
 import {ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS, ACCESS_CONTROL_RESOURCE_CHANNEL} from '@constants/permissions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
+import {getChannelById, queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
 import {getChannelAccessPolicyEnabled} from '@queries/servers/features';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
@@ -29,13 +29,17 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 
     const {channels, memberships, categories, error} = await fetchAllMyChannelsForAllTeams(serverUrl, 0, isCRTEnabled, true);
 
-    if (error || !channels?.length || !memberships?.length) {
+    if (error || !channels) {
         return {error};
     }
 
-    await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled);
-    if (categories?.length) {
-        await storeCategories(serverUrl, categories, true);
+    // An empty channel list is not a failure: it is what a session denied read access to
+    // every channel gets back, and those are exactly the channels that must be purged.
+    if (channels.length && memberships?.length) {
+        await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled);
+        if (categories?.length) {
+            await storeCategories(serverUrl, categories, true);
+        }
     }
 
     const accessible = new Set(channels.map((c) => c.id));
@@ -122,6 +126,12 @@ export async function fetchChannelWriteAccess(serverUrl: string, channelId: stri
         if (!(await getChannelAccessPolicyEnabled(database))) {
             // The gate can be turned off while a denial is cached, and only the fetch knows the
             // gate is gone, so drop the denial instead of leaving the channel read-only forever.
+            setChannelWriteDenied(channelId, false);
+            return {};
+        }
+
+        const channel = await getChannelById(database, channelId);
+        if (channel && isDMorGM(channel)) {
             setChannelWriteDenied(channelId, false);
             return {};
         }

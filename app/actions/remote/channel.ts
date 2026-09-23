@@ -1520,6 +1520,12 @@ export const handleChannelAccessDenied = async (serverUrl: string, channelId: st
             return {};
         }
 
+        const channel = await myChannel.channel.fetch();
+        if (channel && isDMorGM(channel)) {
+            logDebug('handleChannelAccessDenied: ignoring denial for a direct or group channel', channelId);
+            return {};
+        }
+
         if (channelId === await getCurrentChannelId(database)) {
             await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ACCESS_REVOKED);
         }

@@ -72,15 +72,10 @@ export const observeCustomProfileAttributesEnabled = (database: Database) => {
     return observeFeatureFlagWithVersion(database, 'FeatureFlagCustomProfileAttributes', CUSTOM_PROFILE_ATTRIBUTES_FLAG_REMOVED_VERSION, true);
 };
 
-// The channel-access policies (read and write) need both the umbrella flag and their shared
-// sub-flag, plus an Enterprise Advanced license, mirroring the server's enforcement gate.
-// Kept separate from ChannelPermissionPolicies because denying channel access governs a whole
-// channel, not just an attachment.
 export const getChannelAccessPolicyEnabled = async (database: Database) => {
-    const [umbrella, flag, license] = await Promise.all([
+    const [umbrella, license] = await Promise.all([
         getConfigValue(database, 'FeatureFlagPermissionPolicies'),
-        getConfigValue(database, 'FeatureFlagChannelAccessABACPermission'),
         getLicense(database),
     ]);
-    return umbrella === 'true' && flag === 'true' && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+    return umbrella === 'true' && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
 };

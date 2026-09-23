@@ -61,7 +61,8 @@ export function observePermissionForChannel(database: Database, channel: Channel
     }));
 
     // Only write permissions consult the ABAC decision, so the hot path adds no subscription.
-    if (!CHANNEL_WRITE_PERMISSIONS.has(permission)) {
+    // DMs and GMs are outside the channel-access policies, so a write denial never reaches them.
+    if (!CHANNEL_WRITE_PERMISSIONS.has(permission) || isDMorGM(channel)) {
         return granted.pipe(distinctUntilChanged());
     }
 

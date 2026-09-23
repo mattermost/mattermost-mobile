@@ -77,7 +77,6 @@ const enableFeature = async () => {
     await operator.handleConfigs({
         configs: [
             {id: 'FeatureFlagPermissionPolicies', value: 'true'},
-            {id: 'FeatureFlagChannelAccessABACPermission', value: 'true'},
         ],
         configsToDelete: [],
         prepareRecordsOnly: false,
@@ -136,14 +135,34 @@ describe('reconcileChannelAccess', () => {
         expect(await storedChannelIds()).toEqual(['channel1']);
     });
 
-    it('deletes nothing when the response is empty', async () => {
+    it('purges every governed channel when the server returns none', async () => {
         await enableFeature();
-        await seed([channel('channel1')]);
+        await seed([
+            channel('channel1'),
+            channel('channel2'),
+            channel('dmchannel', {type: 'D', team_id: ''}),
+            channel('archived', {delete_at: 123}),
+        ]);
         mockFetch.mockResolvedValueOnce({channels: [], memberships: []});
 
         await reconcileChannelAccess(serverUrl);
 
-        expect(await storedChannelIds()).toEqual(['channel1']);
+        expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
+    });
+
+    it('kicks the user out when every channel, including the current one, is denied', async () => {
+        await enableFeature();
+        await seed([channel('channel1')]);
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'channel1'}],
+            prepareRecordsOnly: false,
+        });
+        mockFetch.mockResolvedValueOnce({channels: [], memberships: []});
+
+        await reconcileChannelAccess(serverUrl);
+
+        expect(mockKick).toHaveBeenCalledWith(serverUrl, 'channel1', 'CHANNEL_ACCESS_REVOKED');
+        expect(await storedChannelIds()).toEqual([]);
     });
 
     it('purges a channel the server no longer returns', async () => {
@@ -262,6 +281,20 @@ describe('fetchChannelWriteAccess', () => {
 
     it('drops a cached denial once the feature is disabled', async () => {
         setChannelWriteDenied(channelId, true);
+
+        await fetchChannelWriteAccess(serverUrl, channelId);
+
+        expect(mockSearch).not.toHaveBeenCalled();
+        expect(await isDenied()).toBe(false);
+    });
+
+    it.each(['D', 'G'])('makes no request for a %s channel and drops any cached denial', async (type) => {
+        // A system rule that denies this session everywhere still must not reach a DM or
+        // GM, so the app must not even ask -- and must clear whatever it cached.
+        await enableFeature();
+        await operator.handleChannel({channels: [channel(channelId, {type: type as ChannelType, team_id: ''})], prepareRecordsOnly: false});
+        setChannelWriteDenied(channelId, true);
+        mockSearch.mockResolvedValue({decisions: {channel_write_access: {allowed: false, evaluated: true}}});
 
         await fetchChannelWriteAccess(serverUrl, channelId);
 

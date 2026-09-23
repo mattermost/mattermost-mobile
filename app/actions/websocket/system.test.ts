@@ -261,17 +261,15 @@ describe('WebSocket System Actions', () => {
             expect(reconcilePersistenceFlag).toHaveBeenCalledWith(serverUrl, mockConfig);
         });
 
-        it('should invalidate channel write access when an access policy flag is turned off', async () => {
+        it('should invalidate channel write access when the access policy flag is turned off', async () => {
             jest.mocked(getConfig).mockResolvedValue({
                 FeatureFlagPermissionPolicies: 'true',
-                FeatureFlagChannelAccessABACPermission: 'true',
             } as ClientConfig);
 
             const msg = {
                 data: {
                     config: {
-                        FeatureFlagPermissionPolicies: 'true',
-                        FeatureFlagChannelAccessABACPermission: 'false',
+                        FeatureFlagPermissionPolicies: 'false',
                     },
                 },
             } as WebSocketMessage;
@@ -282,17 +280,15 @@ describe('WebSocket System Actions', () => {
             expect(getChannelWriteAccessGeneration()).toBe(before + 1);
         });
 
-        it('should keep channel write access when the access policy flags are unchanged', async () => {
+        it('should keep channel write access when the access policy flag is unchanged', async () => {
             jest.mocked(getConfig).mockResolvedValue({
                 FeatureFlagPermissionPolicies: 'true',
-                FeatureFlagChannelAccessABACPermission: 'true',
             } as ClientConfig);
 
             const msg = {
                 data: {
                     config: {
                         FeatureFlagPermissionPolicies: 'true',
-                        FeatureFlagChannelAccessABACPermission: 'true',
                     },
                 },
             } as WebSocketMessage;

@@ -104,44 +104,31 @@ describe('getChannelBookmarksEnabled (async variant)', () => {
 });
 
 describe('getChannelAccessPolicyEnabled', () => {
-    const setFlags = (umbrella?: string, sub?: string) => setConfigs([
+    const setFlag = (umbrella?: string) => setConfigs([
         {id: 'FeatureFlagPermissionPolicies', value: umbrella ?? 'false'},
-        {id: 'FeatureFlagChannelAccessABACPermission', value: sub ?? 'false'},
     ]);
 
-    it('is disabled when neither flag is set', async () => {
+    it('is disabled when the umbrella flag is off', async () => {
         await setLicenseSku('advanced');
-        await setFlags();
+        await setFlag();
         expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is disabled with only the umbrella flag', async () => {
-        await setLicenseSku('advanced');
-        await setFlags('true');
-        expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
-    });
-
-    it('is disabled with only the sub-flag', async () => {
-        await setLicenseSku('advanced');
-        await setFlags(undefined, 'true');
-        expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
-    });
-
-    it('is disabled with both flags but no license', async () => {
+    it('is disabled with the umbrella flag but no license', async () => {
         await setLicensed(false);
-        await setFlags('true', 'true');
+        await setFlag('true');
         expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is disabled with both flags on a professional license', async () => {
+    it('is disabled with the umbrella flag on a professional license', async () => {
         await setLicenseSku('professional');
-        await setFlags('true', 'true');
+        await setFlag('true');
         expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is enabled with both flags on an enterprise advanced license', async () => {
+    it('is enabled with the umbrella flag on an enterprise advanced license', async () => {
         await setLicenseSku('advanced');
-        await setFlags('true', 'true');
+        await setFlag('true');
         expect(await getChannelAccessPolicyEnabled(database)).toBe(true);
     });
 });

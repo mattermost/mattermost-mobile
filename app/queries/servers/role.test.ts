@@ -198,6 +198,22 @@ describe('Role Queries', () => {
             it('should not grant a write permission the roles never granted', async () => {
                 expect(await observe(Permissions.ADD_REACTION)).toBe(false);
             });
+
+            it.each([General.DM_CHANNEL, General.GM_CHANNEL])('should ignore a write denial in a %s channel', async (type) => {
+                // DMs and GMs are outside the channel-access policies, so even a stale
+                // denial in the store must not disable their composer.
+                const directChannel = TestHelper.fakeChannelModel({id: 'direct1', type, teamId: ''});
+                setChannelWriteDenied(directChannel.id, true);
+
+                const hasPermission = await firstValueFrom(observePermissionForChannel(
+                    database,
+                    directChannel,
+                    mockUser,
+                    Permissions.CREATE_POST,
+                    false,
+                ));
+                expect(hasPermission).toBe(true);
+            });
         });
     });
 

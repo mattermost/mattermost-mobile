@@ -71,8 +71,8 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             }
         }
 
-        const prevAccessPolicy = prevConfig?.FeatureFlagPermissionPolicies === 'true' && prevConfig?.FeatureFlagChannelAccessABACPermission === 'true';
-        const newAccessPolicy = config?.FeatureFlagPermissionPolicies === 'true' && config?.FeatureFlagChannelAccessABACPermission === 'true';
+        const prevAccessPolicy = prevConfig?.FeatureFlagPermissionPolicies === 'true';
+        const newAccessPolicy = config?.FeatureFlagPermissionPolicies === 'true';
         if (newAccessPolicy !== prevAccessPolicy) {
             clearChannelWriteAccess();
         }

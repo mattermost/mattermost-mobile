@@ -718,6 +718,19 @@ describe('app/actions/remote/channel', () => {
             expect(channels).toHaveLength(1);
         });
 
+        it.each(['D', 'G'])('leaves a %s channel alone', async (type) => {
+            // DMs and GMs are outside the channel-access policies, so a read denial naming
+            // one is not believed: purging it would lose a conversation the server still serves.
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Direct', team_id: '', type} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: '', type} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+
+            const result = await handleChannelAccessDenied(serverUrl, channelId);
+
+            expect(result).toEqual({});
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(1);
+        });
+
         it('purges the channel when it is not the current one', async () => {
             await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [{id: channelId, team_id: teamId} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
