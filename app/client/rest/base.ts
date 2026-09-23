@@ -107,6 +107,10 @@ export default class ClientBase extends ClientTracking {
         return `${this.getChannelBookmarksRoute(channelId)}/${bookmarkId}`;
     }
 
+    getAccessControlRoute() {
+        return `${this.urlVersion}/access_control`;
+    }
+
     getSharedChannelsRoute() {
         return `${this.urlVersion}/sharedchannels`;
     }

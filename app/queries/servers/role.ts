@@ -3,9 +3,11 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
+import {CHANNEL_WRITE_PERMISSIONS} from '@constants/permissions';
+import {observeChannelWriteDenied} from '@store/channel_write_access_store';
 import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
@@ -45,7 +47,7 @@ export function observePermissionForChannel(database: Database, channel: Channel
     const myChannelRoles = observeMyChannelRoles(database, channel.id);
     const myTeamRoles = channel.teamId ? observeMyTeamRoles(database, channel.teamId) : of$(undefined);
 
-    return combineLatest([myChannelRoles, myTeamRoles]).pipe(switchMap(([mc, mt]) => {
+    const granted = combineLatest([myChannelRoles, myTeamRoles]).pipe(switchMap(([mc, mt]) => {
         const rolesArray = [...user.roles.split(' ')];
         if (mc) {
             rolesArray.push(...mc.split(' '));
@@ -56,8 +58,17 @@ export function observePermissionForChannel(database: Database, channel: Channel
         return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
             switchMap((r) => of$(hasPermission(r, permission))),
         );
-    }),
-    distinctUntilChanged(),
+    }));
+
+    // Only write permissions consult the ABAC decision, so the hot path adds no subscription.
+    // DMs and GMs are outside the channel-access policies, so a write denial never reaches them.
+    if (!CHANNEL_WRITE_PERMISSIONS.has(permission) || isDMorGM(channel)) {
+        return granted.pipe(distinctUntilChanged());
+    }
+
+    return combineLatest([granted, observeChannelWriteDenied(channel.id)]).pipe(
+        map(([allowed, denied]) => allowed && !denied),
+        distinctUntilChanged(),
     );
 }
 

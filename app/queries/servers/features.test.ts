@@ -9,7 +9,7 @@ import {CHANNEL_BOOKMARKS_FLAG_REMOVED_VERSION, CUSTOM_PROFILE_ATTRIBUTES_FLAG_R
 import DatabaseManager from '@database/manager';
 import {isMinimumServerVersion} from '@utils/helpers';
 
-import {getChannelReadAccessPolicyEnabled, getChannelBookmarksEnabled, observeChannelBookmarksEnabled, observeCustomProfileAttributesEnabled} from './features';
+import {getChannelAccessPolicyEnabled, getChannelBookmarksEnabled, observeChannelBookmarksEnabled, observeCustomProfileAttributesEnabled} from './features';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
@@ -103,45 +103,32 @@ describe('getChannelBookmarksEnabled (async variant)', () => {
     });
 });
 
-describe('getChannelReadAccessPolicyEnabled', () => {
-    const setFlags = (umbrella?: string, sub?: string) => setConfigs([
+describe('getChannelAccessPolicyEnabled', () => {
+    const setFlag = (umbrella?: string) => setConfigs([
         {id: 'FeatureFlagPermissionPolicies', value: umbrella ?? 'false'},
-        {id: 'FeatureFlagChannelAccessABACPermission', value: sub ?? 'false'},
     ]);
 
-    it('is disabled when neither flag is set', async () => {
+    it('is disabled when the umbrella flag is off', async () => {
         await setLicenseSku('advanced');
-        await setFlags();
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(false);
+        await setFlag();
+        expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is disabled with only the umbrella flag', async () => {
-        await setLicenseSku('advanced');
-        await setFlags('true');
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(false);
-    });
-
-    it('is disabled with only the sub-flag', async () => {
-        await setLicenseSku('advanced');
-        await setFlags(undefined, 'true');
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(false);
-    });
-
-    it('is disabled with both flags but no license', async () => {
+    it('is disabled with the umbrella flag but no license', async () => {
         await setLicensed(false);
-        await setFlags('true', 'true');
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(false);
+        await setFlag('true');
+        expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is disabled with both flags on a professional license', async () => {
+    it('is disabled with the umbrella flag on a professional license', async () => {
         await setLicenseSku('professional');
-        await setFlags('true', 'true');
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(false);
+        await setFlag('true');
+        expect(await getChannelAccessPolicyEnabled(database)).toBe(false);
     });
 
-    it('is enabled with both flags on an enterprise advanced license', async () => {
+    it('is enabled with the umbrella flag on an enterprise advanced license', async () => {
         await setLicenseSku('advanced');
-        await setFlags('true', 'true');
-        expect(await getChannelReadAccessPolicyEnabled(database)).toBe(true);
+        await setFlag('true');
+        expect(await getChannelAccessPolicyEnabled(database)).toBe(true);
     });
 });

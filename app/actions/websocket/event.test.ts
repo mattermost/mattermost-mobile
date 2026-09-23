@@ -8,6 +8,7 @@ import * as scheduledPost from '@actions/websocket/scheduled_post';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
+import {clearChannelWriteAccess} from '@store/channel_write_access_store';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -41,10 +42,11 @@ jest.mock('@actions/websocket/scheduled_post');
 jest.mock('@actions/websocket/burn_on_read');
 jest.mock('@actions/remote/channel_access');
 jest.mock('@playbooks/actions/websocket/events');
+jest.mock('@store/channel_write_access_store');
 
 describe('handleWebSocketEvent', () => {
     const serverUrl = 'https://example.com';
-    const msg = {event: '', data: {}} as WebSocketMessage;
+    const msg = {event: '', data: {}, broadcast: {channel_id: 'channel-id'}} as WebSocketMessage;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -552,12 +554,14 @@ describe('handleWebSocketEvent', () => {
         msg.event = WebsocketEvents.CHANNEL_ACCESS_CONTROL_UPDATED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(clearChannelWriteAccess).toHaveBeenCalledWith('channel-id');
     });
 
     it('should handle PERMISSION_POLICY_UPDATED event', async () => {
         msg.event = WebsocketEvents.PERMISSION_POLICY_UPDATED;
         await handleWebSocketEvent(serverUrl, msg);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(clearChannelWriteAccess).toHaveBeenCalledWith();
     });
 
     it('all messages should go through the playbooks handler', async () => {

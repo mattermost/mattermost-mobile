@@ -7,6 +7,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Autocomplete from '@components/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
+import {useChannelWriteAccess} from '@hooks/channel_write_access';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
@@ -60,6 +61,7 @@ function PostDraft({
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
+    const writeDenied = useChannelWriteAccess(channelId);
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -93,6 +95,7 @@ function PostDraft({
         return (
             <ReadOnly
                 testID={readOnlyTestID}
+                writeDenied={writeDenied}
             />
         );
     }

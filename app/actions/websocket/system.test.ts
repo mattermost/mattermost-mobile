@@ -8,6 +8,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getLicense} from '@queries/servers/system';
+import {getChannelWriteAccessGeneration} from '@store/channel_write_access_store';
 
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
 
@@ -105,6 +106,48 @@ describe('WebSocket System Actions', () => {
 
             expect(handleSystem).toHaveBeenCalled();
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
+        });
+
+        it('should invalidate channel write access when the licence stops meeting the policy tier', async () => {
+            jest.mocked(getLicense).mockResolvedValue({
+                IsLicensed: 'true',
+                SkuShortName: 'advanced',
+            } as ClientLicense);
+
+            const msg = {
+                data: {
+                    license: {
+                        IsLicensed: 'true',
+                        SkuShortName: 'professional',
+                    },
+                },
+            } as WebSocketMessage;
+
+            const before = getChannelWriteAccessGeneration();
+            await handleLicenseChangedEvent(serverUrl, msg);
+
+            expect(getChannelWriteAccessGeneration()).toBe(before + 1);
+        });
+
+        it('should keep channel write access when the licence tier is unchanged', async () => {
+            jest.mocked(getLicense).mockResolvedValue({
+                IsLicensed: 'true',
+                SkuShortName: 'advanced',
+            } as ClientLicense);
+
+            const msg = {
+                data: {
+                    license: {
+                        IsLicensed: 'true',
+                        SkuShortName: 'advanced',
+                    },
+                },
+            } as WebSocketMessage;
+
+            const before = getChannelWriteAccessGeneration();
+            await handleLicenseChangedEvent(serverUrl, msg);
+
+            expect(getChannelWriteAccessGeneration()).toBe(before);
         });
     });
 
@@ -216,6 +259,44 @@ describe('WebSocket System Actions', () => {
             await handleConfigChangedEvent(serverUrl, msg);
 
             expect(reconcilePersistenceFlag).toHaveBeenCalledWith(serverUrl, mockConfig);
+        });
+
+        it('should invalidate channel write access when the access policy flag is turned off', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagPermissionPolicies: 'true',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagPermissionPolicies: 'false',
+                    },
+                },
+            } as WebSocketMessage;
+
+            const before = getChannelWriteAccessGeneration();
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(getChannelWriteAccessGeneration()).toBe(before + 1);
+        });
+
+        it('should keep channel write access when the access policy flag is unchanged', async () => {
+            jest.mocked(getConfig).mockResolvedValue({
+                FeatureFlagPermissionPolicies: 'true',
+            } as ClientConfig);
+
+            const msg = {
+                data: {
+                    config: {
+                        FeatureFlagPermissionPolicies: 'true',
+                    },
+                },
+            } as WebSocketMessage;
+
+            const before = getChannelWriteAccessGeneration();
+            await handleConfigChangedEvent(serverUrl, msg);
+
+            expect(getChannelWriteAccessGeneration()).toBe(before);
         });
     });
 });

@@ -39,6 +39,7 @@ import {
 } from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import {clearChannelWriteAccess} from '@store/channel_write_access_store';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {setTeamLoading} from '@store/team_load_store';
@@ -129,6 +130,7 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         // Access can change while disconnected, and the entry sync only adds what is
         // visible; nothing in it drops a channel the policy stopped allowing.
         reconcileChannelAccess(serverUrl);
+        clearChannelWriteAccess();
 
         openAllUnreadChannels(serverUrl, groupLabel);
 

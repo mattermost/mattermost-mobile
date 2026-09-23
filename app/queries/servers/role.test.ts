@@ -5,6 +5,7 @@ import {firstValueFrom} from 'rxjs';
 
 import {General, Permissions} from '@constants';
 import DatabaseManager from '@database/manager';
+import {clearChannelWriteAccess, setChannelWriteDenied} from '@store/channel_write_access_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -148,6 +149,71 @@ describe('Role Queries', () => {
                 true,
             ));
             expect(hasPermission).toBe(true);
+        });
+
+        describe('channel write access policy', () => {
+            const mockUser = TestHelper.fakeUserModel({id: 'user1', roles: 'system_user'});
+            const mockChannel = TestHelper.fakeChannelModel({id: 'channel1', type: General.OPEN_CHANNEL, teamId: 'team1'});
+
+            const observe = (permission: string) => firstValueFrom(observePermissionForChannel(
+                database,
+                mockChannel,
+                mockUser,
+                permission,
+                false,
+            ));
+
+            beforeEach(async () => {
+                await operator.handleRole({
+                    roles: [{
+                        id: 'system_user',
+                        name: 'system_user',
+                        permissions: [Permissions.CREATE_POST, Permissions.READ_CHANNEL],
+                    }],
+                    prepareRecordsOnly: false,
+                });
+            });
+
+            afterEach(() => {
+                clearChannelWriteAccess();
+            });
+
+            it('should allow a write permission while no decision has been fetched', async () => {
+                expect(await observe(Permissions.CREATE_POST)).toBe(true);
+            });
+
+            it('should deny a write permission the policy refused', async () => {
+                setChannelWriteDenied(mockChannel.id, true);
+                // eslint-disable-next-line no-console
+
+                expect(await observe(Permissions.CREATE_POST)).toBe(false);
+            });
+
+            it('should leave a non-write permission alone when the policy refuses', async () => {
+                setChannelWriteDenied(mockChannel.id, true);
+
+                expect(await observe(Permissions.READ_CHANNEL)).toBe(true);
+            });
+
+            it('should not grant a write permission the roles never granted', async () => {
+                expect(await observe(Permissions.ADD_REACTION)).toBe(false);
+            });
+
+            it.each([General.DM_CHANNEL, General.GM_CHANNEL])('should ignore a write denial in a %s channel', async (type) => {
+                // DMs and GMs are outside the channel-access policies, so even a stale
+                // denial in the store must not disable their composer.
+                const directChannel = TestHelper.fakeChannelModel({id: 'direct1', type, teamId: ''});
+                setChannelWriteDenied(directChannel.id, true);
+
+                const hasPermission = await firstValueFrom(observePermissionForChannel(
+                    database,
+                    directChannel,
+                    mockUser,
+                    Permissions.CREATE_POST,
+                    false,
+                ));
+                expect(hasPermission).toBe(true);
+            });
         });
     });
 

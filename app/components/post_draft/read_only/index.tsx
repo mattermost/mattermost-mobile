@@ -12,6 +12,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 interface ReadOnlyProps {
     testID?: string;
+    writeDenied?: boolean;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -45,7 +46,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const edges: Edge[] = ['bottom'];
 
-const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
+const ReadOnlyChannnel = ({testID, writeDenied}: ReadOnlyProps) => {
     const theme = useTheme();
     const style = getStyle(theme);
     return (
@@ -63,11 +64,19 @@ const ReadOnlyChannnel = ({testID}: ReadOnlyProps) => {
                         style={style.icon}
                         color={theme.centerChannelColor}
                     />
-                    <FormattedText
-                        id='mobile.create_post.read_only'
-                        defaultMessage='This channel is read-only.'
-                        style={style.text}
-                    />
+                    {writeDenied ? (
+                        <FormattedText
+                            id='mobile.create_post.write_access_denied'
+                            defaultMessage='You do not have permission to post in this channel.'
+                            style={style.text}
+                        />
+                    ) : (
+                        <FormattedText
+                            id='mobile.create_post.read_only'
+                            defaultMessage='This channel is read-only.'
+                            style={style.text}
+                        />
+                    )}
                 </View>
             </SafeAreaView>
         </View>

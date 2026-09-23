@@ -4,11 +4,14 @@
 import {storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/channel';
 import {Events} from '@constants';
+import {ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS, ACCESS_CONTROL_RESOURCE_CHANNEL} from '@constants/permissions';
 import DatabaseManager from '@database/manager';
-import {queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
-import {getChannelReadAccessPolicyEnabled} from '@queries/servers/features';
+import NetworkManager from '@managers/network_manager';
+import {getChannelById, queryAllMyChannel, queryChannelsById} from '@queries/servers/channel';
+import {getChannelAccessPolicyEnabled} from '@queries/servers/features';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getChannelWriteAccessGeneration, setChannelWriteDenied} from '@store/channel_write_access_store';
 import {isDMorGM} from '@utils/channel';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -26,13 +29,17 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 
     const {channels, memberships, categories, error} = await fetchAllMyChannelsForAllTeams(serverUrl, 0, isCRTEnabled, true);
 
-    if (error || !channels?.length || !memberships?.length) {
+    if (error || !channels) {
         return {error};
     }
 
-    await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled);
-    if (categories?.length) {
-        await storeCategories(serverUrl, categories, true);
+    // An empty channel list is not a failure: it is what a session denied read access to
+    // every channel gets back, and those are exactly the channels that must be purged.
+    if (channels.length && memberships?.length) {
+        await storeAllMyChannels(serverUrl, channels, memberships, isCRTEnabled);
+        if (categories?.length) {
+            await storeCategories(serverUrl, categories, true);
+        }
     }
 
     const accessible = new Set(channels.map((c) => c.id));
@@ -70,7 +77,7 @@ async function reconcile(serverUrl: string): Promise<{error?: unknown}> {
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        if (!(await getChannelReadAccessPolicyEnabled(database))) {
+        if (!(await getChannelAccessPolicyEnabled(database))) {
             return {};
         }
 
@@ -90,6 +97,65 @@ export async function reconcileChannelAccess(serverUrl: string): Promise<{error?
         }
     } catch (error) {
         logDebug('error on reconcileChannelAccess', getFullErrorMessage(error));
+        return {error};
+    }
+}
+
+type PendingWriteDecision = {
+    generation: number;
+    promise: Promise<void>;
+};
+
+const inFlightWrite = new Map<string, PendingWriteDecision>();
+
+async function fetchWriteDecision(serverUrl: string, channelId: string, startedAt: number) {
+    const client = NetworkManager.getClient(serverUrl);
+    const response = await client.searchAccessControlDecisionActions(ACCESS_CONTROL_RESOURCE_CHANNEL, channelId, [ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS]);
+    const decision = response.decisions?.[ACCESS_CONTROL_ACTION_CHANNEL_WRITE_ACCESS];
+
+    // An invalidation landed while this was in flight, so the answer is already stale.
+    if (getChannelWriteAccessGeneration() === startedAt) {
+        setChannelWriteDenied(channelId, Boolean(decision?.evaluated && !decision.allowed));
+    }
+}
+
+export async function fetchChannelWriteAccess(serverUrl: string, channelId: string): Promise<{error?: unknown}> {
+    const key = `${serverUrl}-${channelId}`;
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        if (!(await getChannelAccessPolicyEnabled(database))) {
+            // The gate can be turned off while a denial is cached, and only the fetch knows the
+            // gate is gone, so drop the denial instead of leaving the channel read-only forever.
+            setChannelWriteDenied(channelId, false);
+            return {};
+        }
+
+        const channel = await getChannelById(database, channelId);
+        if (channel && isDMorGM(channel)) {
+            setChannelWriteDenied(channelId, false);
+            return {};
+        }
+
+        const generation = getChannelWriteAccessGeneration();
+        let pending = inFlightWrite.get(key);
+
+        // A request that started before an invalidation discards its own answer, so it cannot be
+        // shared with a caller that needs a decision for the current generation.
+        if (pending?.generation !== generation) {
+            const promise = fetchWriteDecision(serverUrl, channelId, generation).finally(() => {
+                // A newer generation may already own the key, and that entry has to outlive this one.
+                if (inFlightWrite.get(key)?.promise === promise) {
+                    inFlightWrite.delete(key);
+                }
+            });
+            pending = {generation, promise};
+            inFlightWrite.set(key, pending);
+        }
+
+        await pending.promise;
+        return {};
+    } catch (error) {
+        logDebug('error on fetchChannelWriteAccess', getFullErrorMessage(error));
         return {error};
     }
 }
