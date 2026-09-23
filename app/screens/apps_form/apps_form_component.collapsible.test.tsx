@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {act, fireEvent} from '@testing-library/react-native';
-import React from 'react';
+import React, {useEffect, useReducer} from 'react';
 
 import {AppFieldTypes} from '@constants/apps';
 import DatabaseManager from '@database/manager';
@@ -11,6 +11,56 @@ import {renderWithEverything} from '@test/intl-test-helper';
 import AppsFormComponent from './apps_form_component';
 
 import type {Database} from '@nozbe/watermelondb';
+
+// The default submit action is registered in the modal header via
+// navigation.setOptions({headerRight: ...}) rather than rendered inline. Override
+// the global expo-router mock (test/setup.ts) so setOptions calls are captured.
+// Subscribers are notified on every setOptions call so a test harness can render
+// the latest headerRight in the SAME render tree as the component (fireEvent gets
+// confused across multiple concurrent RTL render roots).
+type HeaderOptions = {headerRight?: () => React.ReactNode};
+const headerListeners = new Set<() => void>();
+const mockSetOptions = jest.fn<void, [HeaderOptions?]>(() => {
+    headerListeners.forEach((l) => l());
+});
+jest.mock('expo-router', () => ({
+    router: {
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        canDismiss: jest.fn(() => true),
+        dismiss: jest.fn(),
+        dismissAll: jest.fn(),
+        dismissTo: jest.fn(),
+        setParams: jest.fn(),
+        navigate: jest.fn(),
+    },
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        navigate: jest.fn(),
+    }),
+    useNavigation: () => ({
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        setOptions: mockSetOptions,
+        setParams: jest.fn(),
+        getState: jest.fn(() => ({})),
+        addListener: jest.fn(() => jest.fn()),
+    }),
+    useSegments: () => [],
+    usePathname: () => '/',
+    useLocalSearchParams: () => ({}),
+    useGlobalSearchParams: () => ({}),
+    Link: 'Link',
+    Redirect: 'Redirect',
+    Stack: {Screen: 'Screen'},
+    Tabs: {Screen: 'Screen'},
+}));
 
 jest.mock('@screens/navigation', () => ({
     navigateBack: jest.fn(),
@@ -94,11 +144,69 @@ const section = (name: string, fields: AppField[], config: Partial<NonNullable<A
 const expandedState = (node: any) => node.props.accessibilityState?.expanded;
 const fieldNames = (nodes: any[]) => nodes.map((n) => String(n.props.children).split(':')[1]);
 
+// Returns the most recently registered headerRight render function (or undefined
+// if the component cleared it, which it does for forms with submit_buttons).
+const getHeaderSubmit = () => {
+    for (let i = mockSetOptions.mock.calls.length - 1; i >= 0; i--) {
+        const o = mockSetOptions.mock.calls[i][0];
+        if (o && 'headerRight' in o) {
+            return o.headerRight;
+        }
+    }
+    return undefined;
+};
+
+// The submit testID sits on a wrapper View (to constrain the Detox hit area), so
+// the actual onPress lives on its Pressable child. fireEvent.press does not
+// descend into children, so press the Pressable directly.
+const pressSubmit = (wrapper: any) => {
+    fireEvent.press(wrapper.children[0]);
+};
+
+// Renders the AppsFormComponent together with a live slot that mirrors whatever
+// the component registers as the modal header's `headerRight`. The slot re-renders
+// on every setOptions call, so it always reflects the latest handleSubmit closure
+// (and thus the current form values). Rendering the header in the SAME tree as the
+// component is essential: fireEvent cannot reliably dispatch across separate RTL
+// render roots.
+const HeaderSlot = () => {
+    const [, forceUpdate] = useReducer((n) => n + 1, 0);
+    useEffect(() => {
+        headerListeners.add(forceUpdate);
+
+        // The component's setOptions effect runs before this slot's effect on the
+        // initial mount, so pull the freshly-registered headerRight once here.
+        forceUpdate();
+        return () => {
+            headerListeners.delete(forceUpdate);
+        };
+    }, []);
+    const headerRight = getHeaderSubmit();
+    return <>{headerRight ? headerRight() : null}</>;
+};
+
+const FormWithHeader = (props: React.ComponentProps<typeof AppsFormComponent>) => (
+    <>
+        <AppsFormComponent {...props}/>
+        <HeaderSlot/>
+    </>
+);
+
+// Presses the header submit button rendered by the harness above. Call AFTER any
+// body interactions so the latest closure (and values) are used.
+const submitViaHeader = async (getByTestId: (id: string) => any) => {
+    await act(async () => {
+        pressSubmit(getByTestId('interactive_dialog.submit.button'));
+        await new Promise((r) => setImmediate(r));
+    });
+};
+
 describe('AppsFormComponent — recursive collapsible rendering', () => {
     let database: Database;
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -107,7 +215,7 @@ describe('AppsFormComponent — recursive collapsible rendering', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    const render = (form: Partial<AppForm>) => renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+    const render = (form: Partial<AppForm>) => renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
     it('mounts every leaf across three expanded nesting levels', () => {
         const form = {
@@ -270,6 +378,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -278,10 +387,10 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    const submitForm = async (getByTestId: any) => {
-        await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        });
+    // The submit button now lives in the modal header, rendered by FormWithHeader's
+    // HeaderSlot in the same tree. Press it via the render's getByTestId.
+    const submitForm = async (getByTestId: (id: string) => any) => {
+        await submitViaHeader(getByTestId);
     };
 
     it('blocks submit and does not call submit when a required field inside a collapsed section is empty', async () => {
@@ -293,7 +402,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         await submitForm(getByTestId);
@@ -313,7 +422,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         expect(expandedState(getByLabelText('inner'))).toBe(false);
@@ -338,7 +447,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         await submitForm(getByTestId);
@@ -361,7 +470,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         await submitForm(getByTestId);
@@ -379,7 +488,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         await submitForm(getByTestId);
@@ -397,7 +506,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         // First invalid submit opens the section (expanded -> plain label).
@@ -424,7 +533,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         // Fill the required field via the field's edit affordance.
@@ -448,7 +557,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         };
 
         const {getByTestId, getByLabelText} = renderWithEverything(
-            <AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl},
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
         );
 
         await submitForm(getByTestId);
@@ -463,6 +572,7 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -474,7 +584,7 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
     it('routes onChange to a text field nested inside a collapsible', () => {
         const form = {fields: [section('sec', [text('nested_text')])]};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         fireEvent.press(getByTestId('edit.nested_text'));
 
@@ -484,7 +594,7 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
     it('routes onChange to a bool field nested inside a collapsible', () => {
         const form = {fields: [section('sec', [{name: 'nested_bool', type: AppFieldTypes.BOOL, label: 'b'} as AppField])]};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         fireEvent.press(getByTestId('edit.nested_bool'));
 
@@ -494,7 +604,7 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
     it('routes onChange to a select field nested inside a collapsible', () => {
         const form = {fields: [section('sec', [{name: 'nested_sel', type: AppFieldTypes.STATIC_SELECT, label: 's', options: [{label: 'Chosen', value: 'chosen'}]} as AppField])]};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         fireEvent.press(getByTestId('edit.nested_sel'));
 
@@ -504,7 +614,7 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
     it('routes onChange to a deeply nested field and updates the correct value', () => {
         const form = {fields: [section('outer', [section('inner', [text('deep')])])]};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         fireEvent.press(getByTestId('edit.deep'));
 
@@ -560,6 +670,7 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -583,13 +694,13 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('actions', [buttonsField('action')])],
         };
 
-        const {getByText, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByText} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         expect(getByText('Approve')).toBeTruthy();
         expect(getByText('Reject')).toBeTruthy();
 
-        // Custom buttons replace the fallback Submit.
-        expect(queryByTestId('interactive_dialog.submit.button')).toBeNull();
+        // Custom buttons replace the fallback Submit, so no header button is registered.
+        expect(getHeaderSubmit()).toBeUndefined();
     });
 
     it('discovers a submit_buttons field nested inside a deeper collapsible', () => {
@@ -598,10 +709,10 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('outer', [section('inner', [buttonsField('action')])])],
         };
 
-        const {getByText, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByText} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         expect(getByText('Approve')).toBeTruthy();
-        expect(queryByTestId('interactive_dialog.submit.button')).toBeNull();
+        expect(getHeaderSubmit()).toBeUndefined();
     });
 
     it('falls back to the Submit button when the nested submit_buttons field has no options', () => {
@@ -610,8 +721,12 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('actions', [{name: 'action', type: AppFieldTypes.STATIC_SELECT, options: []} as AppField, text('other')])],
         };
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
+        const headerRight = getHeaderSubmit();
+        expect(headerRight).toBeTruthy();
+
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -621,7 +736,7 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('actions', [buttonsField('action')])],
         };
 
-        const {queryByTestId, queryByLabelText} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {queryByTestId, queryByLabelText} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         // The button field is not rendered as a normal AppsFormField...
         expect(queryByTestId('mockfield.action')).toBeNull();
@@ -636,7 +751,7 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('mixed', [text('note'), buttonsField('action')])],
         };
 
-        const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
         expect(getByLabelText('mixed')).toBeTruthy();
         expect(getByTestId('mockfield.note')).toBeTruthy();
@@ -650,7 +765,7 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
             fields: [section('actions', [buttonsField('action')]), text('title')],
         };
 
-        const {getByText} = renderWithEverything(<AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl});
+        const {getByText} = renderWithEverything(<FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl});
 
         await act(async () => {
             fireEvent.press(getByText('Reject'));
@@ -666,6 +781,7 @@ describe('AppsFormComponent — submission payload integrity', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -690,11 +806,9 @@ describe('AppsFormComponent — submission payload integrity', () => {
             ],
         };
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form, {submit})}/>, {database, serverUrl});
+        const {getByTestId} = renderWithEverything(<FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl});
 
-        await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        });
+        await submitViaHeader(getByTestId);
 
         expect(submit).toHaveBeenCalledTimes(1);
 
@@ -714,6 +828,7 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -726,7 +841,7 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
         const submit = okSubmit();
         const props = getProps({fields: [text('a'), text('b'), text('r', {refresh: true})]}, {submit});
 
-        const {getByTestId, rerender} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        const {getByTestId, rerender} = renderWithEverything(<FormWithHeader {...props}/>, {database, serverUrl});
 
         // 1. User edits field A.
         fireEvent.press(getByTestId('edit.a'));
@@ -737,11 +852,9 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
         const refreshed = getProps({
             fields: [text('b', {value: 'server_b'}), text('c'), text('r', {refresh: true})],
         }, {submit});
-        rerender(<AppsFormComponent {...refreshed}/>);
+        rerender(<FormWithHeader {...refreshed}/>);
 
-        await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        });
+        await submitViaHeader(getByTestId);
 
         const payload = submit.mock.calls[0][0];
 
@@ -759,18 +872,16 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
         const submit = okSubmit();
         const props = getProps({fields: [text('keep'), section('sec', [text('nested')], {expanded: true})]}, {submit});
 
-        const {getByTestId, rerender} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        const {getByTestId, rerender} = renderWithEverything(<FormWithHeader {...props}/>, {database, serverUrl});
 
         fireEvent.press(getByTestId('edit.nested'));
         expect(getByTestId('mockfield.nested').props.children).toBe('FIELD:nested:EDITED_nested');
 
         // Refreshed form drops the whole section.
         const refreshed = getProps({fields: [text('keep')]}, {submit});
-        rerender(<AppsFormComponent {...refreshed}/>);
+        rerender(<FormWithHeader {...refreshed}/>);
 
-        await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        });
+        await submitViaHeader(getByTestId);
 
         expect(submit.mock.calls[0][0].nested).toBe('EDITED_nested');
     });
@@ -779,7 +890,7 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
         const submit = okSubmit();
         const props = getProps({fields: [text('a')]}, {submit});
 
-        const {getByTestId, rerender} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        const {getByTestId, rerender} = renderWithEverything(<FormWithHeader {...props}/>, {database, serverUrl});
 
         const refreshed = getProps({
             fields: [
@@ -787,11 +898,9 @@ describe('AppsFormComponent — refresh value preservation (valuesReducer merge)
                 section('new_sec', [text('new_nested', {value: 'seeded'})], {expanded: true}),
             ],
         }, {submit});
-        rerender(<AppsFormComponent {...refreshed}/>);
+        rerender(<FormWithHeader {...refreshed}/>);
 
-        await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        });
+        await submitViaHeader(getByTestId);
 
         expect(submit.mock.calls[0][0].new_nested).toBe('seeded');
     });

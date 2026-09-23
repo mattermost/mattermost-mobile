@@ -111,18 +111,9 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        // The submit button sits at the bottom of the modal and can be hidden by
-        // the keyboard or fall below the fold on long/multistep dialogs. Dismiss
-        // the keyboard first, then scroll until it is visible rather than by a
-        // single fixed distance.
-        await this.dismissKeyboard();
-        try {
-            await waitFor(this.submitButton).
-                toBeVisible().
-                whileElement(by.id(this.testID.interactiveDialogScrollView)).
-                scroll(200, 'down');
-        } catch { /* short dialogs may not scroll, or button already visible */ }
-        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        // The submit button lives in the modal header (always visible above the
+        // keyboard), so no scrolling or keyboard dismissal is needed to reach it.
+        await waitFor(this.submitButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };

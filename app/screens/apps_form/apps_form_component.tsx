@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard, Pressable, Text, View} from 'react-native';
 import {KeyboardAwareScrollView, type KeyboardAwareScrollViewRef} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -56,6 +57,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         buttonsWrapper: {
             marginHorizontal: 5,
+        },
+        headerSubmitText: {
+            color: theme.sidebarHeaderTextColor,
+            ...typography('Body', 200, 'SemiBold'),
+        },
+        headerSubmitTextDisabled: {
+            color: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
+        },
+        headerSubmitPressed: {
+            opacity: 0.72,
         },
     };
 });
@@ -220,6 +231,7 @@ function AppsFormComponent({
     const [expandVersions, setExpandVersions] = useState<Record<string, number>>({});
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const navigation = useNavigation();
 
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});
@@ -418,6 +430,36 @@ function AppsFormComponent({
         }
     }, [elements, form, values, submit, submitting, updateErrors, bumpErroredSections, serverUrl, intl]);
 
+    // Present the default submit action in the modal header (matching edit_profile /
+    // custom_status) so it stays above the keyboard and is always reachable. Forms
+    // that define their own submit_buttons keep those inline in the body instead.
+    const hasSubmitButtonsField = Boolean(submitButtons?.options?.length);
+    const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
+    useEffect(() => {
+        if (hasSubmitButtonsField) {
+            navigation.setOptions({headerRight: undefined});
+            return;
+        }
+        navigation.setOptions({
+            headerRight: () => (
+
+                // The View testID constrains the Detox hit area so a header tap lands
+                // on the button rather than the title (see edit_profile.save.button).
+                <View testID='interactive_dialog.submit.button'>
+                    <Pressable
+                        onPress={() => handleSubmit()}
+                        disabled={submitting}
+                        style={({pressed}) => pressed && style.headerSubmitPressed}
+                    >
+                        <Text style={[style.headerSubmitText, submitting && style.headerSubmitTextDisabled]}>
+                            {submitLabel}
+                        </Text>
+                    </Pressable>
+                </View>
+            ),
+        });
+    }, [navigation, hasSubmitButtonsField, submitting, submitLabel, handleSubmit, style]);
+
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
         if (!field?.name) {
@@ -551,35 +593,25 @@ function AppsFormComponent({
                     />
                 }
                 {visibleFields.map((field, index) => renderField(field, index === 0))}
-                <View
-                    style={style.buttonsWrapper}
-                >
-                    {submitButtons?.options?.length ? submitButtons.options.map((o) => (
-                        <View
-                            key={o.value}
-                            style={style.buttonContainer}
-                        >
-                            <Button
-                                onPress={() => handleSubmit(o.value)}
-                                theme={theme}
-                                size='lg'
-                                text={o.label || ''}
-                            />
-                        </View>
-                    )) : (
-                        <View style={style.buttonContainer}>
-                            <Button
-                                onPress={() => handleSubmit()}
-                                disabled={submitting}
-                                showLoader={submitting}
-                                theme={theme}
-                                size='lg'
-                                testID='interactive_dialog.submit.button'
-                                text={form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'})}
-                            />
-                        </View>
-                    )}
-                </View>
+                {hasSubmitButtonsField && (
+                    <View
+                        style={style.buttonsWrapper}
+                    >
+                        {submitButtons?.options?.map((o) => (
+                            <View
+                                key={o.value}
+                                style={style.buttonContainer}
+                            >
+                                <Button
+                                    onPress={() => handleSubmit(o.value)}
+                                    theme={theme}
+                                    size='lg'
+                                    text={o.label || ''}
+                                />
+                            </View>
+                        ))}
+                    </View>
+                )}
             </KeyboardAwareScrollView>
         </SafeAreaView>
     );

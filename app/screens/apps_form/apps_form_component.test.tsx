@@ -12,6 +12,69 @@ import AppsFormComponent, {initValues} from './apps_form_component';
 
 import type {Database} from '@nozbe/watermelondb';
 
+// The default submit action is registered in the modal header via
+// navigation.setOptions({headerRight: ...}) rather than rendered inline. The
+// global expo-router mock in test/setup.ts returns a no-op setOptions, so we
+// override it here to capture the registered headerRight for assertions.
+const mockSetOptions = jest.fn();
+jest.mock('expo-router', () => ({
+    router: {
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        canDismiss: jest.fn(() => true),
+        dismiss: jest.fn(),
+        dismissAll: jest.fn(),
+        dismissTo: jest.fn(),
+        setParams: jest.fn(),
+        navigate: jest.fn(),
+    },
+    useRouter: () => ({
+        push: jest.fn(),
+        replace: jest.fn(),
+        back: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        navigate: jest.fn(),
+    }),
+    useNavigation: () => ({
+        navigate: jest.fn(),
+        goBack: jest.fn(),
+        canGoBack: jest.fn(() => true),
+        setOptions: mockSetOptions,
+        setParams: jest.fn(),
+        getState: jest.fn(() => ({})),
+        addListener: jest.fn(() => jest.fn()),
+    }),
+    useSegments: () => [],
+    usePathname: () => '/',
+    useLocalSearchParams: () => ({}),
+    useGlobalSearchParams: () => ({}),
+    Link: 'Link',
+    Redirect: 'Redirect',
+    Stack: {Screen: 'Screen'},
+    Tabs: {Screen: 'Screen'},
+}));
+
+// Returns the most recently registered headerRight render function (or undefined
+// if the component cleared it, which it does for forms with submit_buttons).
+const getHeaderSubmit = () => {
+    for (let i = mockSetOptions.mock.calls.length - 1; i >= 0; i--) {
+        const o = mockSetOptions.mock.calls[i][0];
+        if (o && 'headerRight' in o) {
+            return o.headerRight;
+        }
+    }
+    return undefined;
+};
+
+// The submit testID sits on a wrapper View (to constrain the Detox hit area), so
+// the actual onPress lives on its Pressable child. fireEvent.press does not
+// descend into children, so press the Pressable directly.
+const pressSubmit = (wrapper: any) => {
+    fireEvent.press(wrapper.children[0]);
+};
+
 jest.mock('@screens/navigation', () => ({
     navigateBack: jest.fn(),
 }));
@@ -48,6 +111,7 @@ describe('AppsFormComponent submit button', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -56,9 +120,13 @@ describe('AppsFormComponent submit button', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    it('renders inline Submit button when the form has no submit_buttons field', () => {
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps()}/>, {database, serverUrl});
+    it('registers a header Submit button when the form has no submit_buttons field', () => {
+        renderWithEverything(<AppsFormComponent {...getProps()}/>, {database, serverUrl});
 
+        const headerRight = getHeaderSubmit();
+        expect(headerRight).toBeTruthy();
+
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
@@ -75,13 +143,13 @@ describe('AppsFormComponent submit button', () => {
             }] as AppField[],
         };
 
-        const {queryByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
 
-        // Default Submit button should not appear — inline option buttons replace it.
-        expect(queryByTestId('interactive_dialog.submit.button')).toBeNull();
+        // Default header Submit button should not appear — inline option buttons replace it.
+        expect(getHeaderSubmit()).toBeUndefined();
     });
 
-    it('renders inline Submit when submit_buttons field has no options', () => {
+    it('registers a header Submit when submit_buttons field has no options', () => {
         const form: Partial<AppForm> = {
             submit_buttons: 'action',
             fields: [{
@@ -91,17 +159,25 @@ describe('AppsFormComponent submit button', () => {
             }] as AppField[],
         };
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
+        renderWithEverything(<AppsFormComponent {...getProps(form)}/>, {database, serverUrl});
 
+        const headerRight = getHeaderSubmit();
+        expect(headerRight).toBeTruthy();
+
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
     it('honors form.submit_label as the button text', () => {
-        const {getByText} = renderWithEverything(
+        renderWithEverything(
             <AppsFormComponent {...getProps({submit_label: 'Triage'})}/>,
             {database, serverUrl},
         );
 
+        const headerRight = getHeaderSubmit();
+        expect(headerRight).toBeTruthy();
+
+        const {getByText} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
         expect(getByText('Triage')).toBeTruthy();
     });
 });
@@ -173,6 +249,7 @@ describe('AppsFormComponent collapsible field data flow', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -201,12 +278,15 @@ describe('AppsFormComponent collapsible field data flow', () => {
         };
         const props = {...getProps(form), submit: submitMock};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
-        fireEvent.press(getByTestId('interactive_dialog.submit.button'));
+        const headerRight = getHeaderSubmit();
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
 
-        // Wait for async submit to resolve
-        await new Promise((r) => setImmediate(r));
+        await act(async () => {
+            pressSubmit(getByTestId('interactive_dialog.submit.button'));
+            await new Promise((r) => setImmediate(r));
+        });
 
         expect(submitMock).toHaveBeenCalledTimes(1);
         const payload = submitMock.mock.calls[0][0];
@@ -236,10 +316,15 @@ describe('AppsFormComponent collapsible field data flow', () => {
         };
         const props = {...getProps(form), submit: submitMock};
 
-        const {getByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
-        fireEvent.press(getByTestId('interactive_dialog.submit.button'));
-        await new Promise((r) => setImmediate(r));
+        const headerRight = getHeaderSubmit();
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+
+        await act(async () => {
+            pressSubmit(getByTestId('interactive_dialog.submit.button'));
+            await new Promise((r) => setImmediate(r));
+        });
 
         expect(submitMock).toHaveBeenCalledTimes(1);
         expect(submitMock.mock.calls[0][0]).toMatchObject({priority: 'high'});
@@ -251,6 +336,7 @@ describe('AppsFormComponent collapsible section rendering', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockSetOptions.mockClear();
         await DatabaseManager.init([serverUrl]);
         database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
     });
@@ -321,15 +407,18 @@ describe('AppsFormComponent collapsible section rendering', () => {
         };
         const props = {...getProps(form), submit: submitMock};
 
-        const {getByLabelText, getByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+        const {getByLabelText} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
 
         // Collapsed to begin with.
         expect(getByLabelText('Advanced').props.accessibilityState).toMatchObject({expanded: false});
 
-        // The forced-expand runs in a follow-up effect inside the section, so let
-        // that state update settle before asserting.
+        // The submit action lives in the modal header; press it to trigger the
+        // validation path on the component instance above. The forced-expand runs in
+        // a follow-up effect inside the section, so let that state update settle.
+        const headerRight = getHeaderSubmit();
+        const submitRender = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
         await act(async () => {
-            fireEvent.press(getByTestId('interactive_dialog.submit.button'));
+            pressSubmit(submitRender.getByTestId('interactive_dialog.submit.button'));
         });
 
         // Validation blocks the submit and opens the offending section so the user
