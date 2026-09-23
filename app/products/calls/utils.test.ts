@@ -6,7 +6,7 @@ import assert from 'assert';
 import {Alert} from 'react-native';
 import {SelectedTrackType} from 'react-native-video';
 
-import {CallCardState, CallPostStatus, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
+import {CallCardState, CallPostStatus, CallsTransport, type CallsConfigState, type CallSession, type CallsPostProps, DefaultCall, DefaultCallsConfig} from '@calls/types/calls';
 import {License, Post, Preferences} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import TestHelper from '@test/test_helper';
@@ -24,6 +24,7 @@ import {
     isSupportedServerCalls,
     isHostControlsAllowed,
     areGroupCallsAllowed,
+    getCallsTransport,
     isCallsCustomMessage,
     idsAreEqual,
     errorAlert,
@@ -363,6 +364,29 @@ describe('isHostControlsAllowed and areGroupCallsAllowed', () => {
     it('returns false for undefined values', () => {
         expect(isHostControlsAllowed({} as CallsConfigState)).toBe(false);
         expect(areGroupCallsAllowed({} as CallsConfigState)).toBe(false);
+    });
+});
+
+describe('getCallsTransport', () => {
+    const configWithVersion = (version?: string): CallsConfigState => ({
+        ...DefaultCallsConfig,
+        version: {version},
+    });
+
+    it('selects LiveKit at the 2.0.0 floor', () => {
+        expect(getCallsTransport(configWithVersion('2.0.0'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects LiveKit for a pre-release 2.x plugin build', () => {
+        expect(getCallsTransport(configWithVersion('2.0.1-dev'))).toBe(CallsTransport.LiveKit);
+    });
+
+    it('selects rtcd for a 1.x plugin', () => {
+        expect(getCallsTransport(configWithVersion('1.12.5'))).toBe(CallsTransport.Rtcd);
+    });
+
+    it('selects rtcd when the version has not been fetched', () => {
+        expect(getCallsTransport(DefaultCallsConfig)).toBe(CallsTransport.Rtcd);
     });
 });
 

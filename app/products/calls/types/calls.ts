@@ -28,6 +28,16 @@ export const CallPostStatus = {
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
 export type CallPostStatus = typeof CallPostStatus[keyof typeof CallPostStatus];
 
+// The media transport a server's calls plugin uses. Selected at runtime per server,
+// since mobile ships independently of the server.
+export const CallsTransport = {
+    Rtcd: 'rtcd',
+    LiveKit: 'livekit',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- TypeScript supports same-name type/value pairs as enum alternative
+export type CallsTransport = typeof CallsTransport[keyof typeof CallsTransport];
+
 // CallPostProps comes from calls-common, which has no knowledge of call_status yet.
 export type CallsPostProps = CallPostProps & {
     call_status: CallPostStatus | '';

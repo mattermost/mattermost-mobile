@@ -15,6 +15,7 @@ import {
     type CallSession,
     type CallsPostProps,
     type CallsTheme,
+    CallsTransport,
 } from '@calls/types/calls';
 import {Calls, Post, General} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
@@ -96,6 +97,17 @@ export function isSupportedServerCalls(serverVersion?: string) {
     }
 
     return false;
+}
+
+export function getCallsTransport(config: CallsConfigState): CallsTransport {
+    const isLiveKit = isMinimumServerVersion(
+        config.version.version,
+        Calls.LiveKitCallsVersion.MAJOR_VERSION,
+        Calls.LiveKitCallsVersion.MIN_VERSION,
+        Calls.LiveKitCallsVersion.PATCH_VERSION,
+    );
+
+    return isLiveKit ? CallsTransport.LiveKit : CallsTransport.Rtcd;
 }
 
 export function isHostControlsAllowed(config: CallsConfigState) {

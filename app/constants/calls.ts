@@ -19,6 +19,14 @@ const HostControlsCallsVersion = {
     PATCH_VERSION: 0,
 };
 
+// The calls plugin version that replaced the rtcd media transport with LiveKit.
+const LiveKitCallsVersion = {
+    FULL_VERSION: '2.0.0',
+    MAJOR_VERSION: 2,
+    MIN_VERSION: 0,
+    PATCH_VERSION: 0,
+};
+
 const PluginId = 'com.mattermost.calls';
 
 const REACTION_TIMEOUT = 10000;
@@ -54,6 +62,7 @@ export default {
     RefreshConfigMillis,
     RequiredServer,
     HostControlsCallsVersion,
+    LiveKitCallsVersion,
     PluginId,
     REACTION_TIMEOUT,
     REACTION_LIMIT,
