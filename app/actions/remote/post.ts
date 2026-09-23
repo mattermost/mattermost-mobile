@@ -634,6 +634,50 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
     }
 }
 
+/**
+ * Re-verifies the block of up to POST_CHUNK_SIZE posts older than `anchorPostId`, for posts the channel
+ * list shows from the database whose attachment decision fell behind the required epoch. The page runs
+ * the same sanitization as a channel fetch, so one request settles the whole block instead of one
+ * GET /posts/{id} per post.
+ *
+ * Unlike fetchPostsBefore it shows no loading state, since the list is not paginating, and leaves
+ * PostsInChannel alone: RECEIVED_BEFORE always extends the newest interval, which a re-check anchored
+ * anywhere else in history must not do.
+ * @returns the oldest create_at received, so the caller knows how far the block reached
+ */
+export async function revalidatePostsBefore(serverUrl: string, channelId: string, anchorPostId: string): Promise<{oldestCreateAt?: number; error?: unknown}> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const redactionVerifiedEpoch = await captureRedactionEpoch(serverUrl);
+        const data = await client.getPostsBefore(channelId, anchorPostId, 0, General.POST_CHUNK_SIZE, isCRTEnabled, isCRTEnabled);
+        const result = processPostsFetched(data);
+        if (!result.posts.length) {
+            return {};
+        }
+
+        const models = await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_BEFORE,
+            ...result,
+            prepareRecordsOnly: true,
+            skipPostsInChannel: true,
+            redactionVerifiedEpoch,
+        });
+        const {authors} = await fetchPostAuthors(serverUrl, result.posts, true);
+        if (authors?.length) {
+            models.push(...await operator.handleUsers({users: authors, prepareRecordsOnly: true}));
+        }
+        await operator.batchRecords(models, 'revalidatePostsBefore');
+
+        return {oldestCreateAt: Math.min(...result.posts.map((p) => p.create_at))};
+    } catch (error) {
+        logDebug('error on revalidatePostsBefore', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
 export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
     try {
         if (!fetchOnly) {

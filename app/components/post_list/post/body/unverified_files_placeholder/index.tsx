@@ -87,13 +87,13 @@ const UnverifiedFilesPlaceholder = ({postId, location, requiredEpoch}: Props) =>
 
     useEffect(() => {
         if (inViewPort && isConnected) {
-            RedactionRevalidationManager.enqueue(serverUrl, postId, requiredEpoch);
+            RedactionRevalidationManager.enqueue(serverUrl, postId, requiredEpoch, location);
         }
-    }, [inViewPort, isConnected, serverUrl, postId, requiredEpoch]);
+    }, [inViewPort, isConnected, serverUrl, postId, requiredEpoch, location]);
 
     const onRetry = usePreventDoubleTap(useCallback(() => {
-        RedactionRevalidationManager.enqueue(serverUrl, postId, requiredEpoch);
-    }, [serverUrl, postId, requiredEpoch]));
+        RedactionRevalidationManager.enqueue(serverUrl, postId, requiredEpoch, location);
+    }, [serverUrl, postId, requiredEpoch, location]));
 
     return (
         <View

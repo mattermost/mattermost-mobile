@@ -63,7 +63,9 @@ describe('components/post_list/post/body/unverified_files_placeholder', () => {
 
         const {getByText, queryByTestId} = renderPlaceholder();
 
-        expect(RedactionRevalidationManager.enqueue).toHaveBeenCalledWith(serverUrl, 'post1', 3);
+        // The location lets the channel list re-check its posts a page at a time.
+        expect(RedactionRevalidationManager.enqueue).toHaveBeenCalledTimes(1);
+        expect(RedactionRevalidationManager.enqueue).toHaveBeenCalledWith(serverUrl, 'post1', 3, Screens.CHANNEL);
         expect(getByText('Checking file access')).toBeTruthy();
         expect(queryByTestId('unverified-files-placeholder.retry')).toBeNull();
     });
@@ -87,7 +89,7 @@ describe('components/post_list/post/body/unverified_files_placeholder', () => {
 
         fireEvent.press(getByTestId('unverified-files-placeholder.retry'));
 
-        expect(RedactionRevalidationManager.enqueue).toHaveBeenCalledWith(serverUrl, 'post1', 3);
+        expect(RedactionRevalidationManager.enqueue).toHaveBeenCalledWith(serverUrl, 'post1', 3, Screens.CHANNEL);
     });
 
     it('should offer a retry when a re-check failed while connected', () => {

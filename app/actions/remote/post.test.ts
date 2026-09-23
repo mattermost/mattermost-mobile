@@ -9,6 +9,7 @@ import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -31,6 +32,7 @@ import {
     fetchPostsForUnreadChannels,
     fetchPosts,
     fetchPostsBefore,
+    revalidatePostsBefore,
     fetchPostsSince,
     fetchPostAuthors,
     fetchPostThread,
@@ -1052,6 +1054,74 @@ describe('get posts', () => {
             expect(result.error).toBeUndefined();
             expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
             expect(mockClient.getPosts).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('revalidatePostsBefore', () => {
+        const history = Array.from({length: 3}, (_, i) => TestHelper.fakePost({
+            id: `history-${i}`,
+            channel_id: channelId,
+            user_id: user1.id,
+            create_at: 5000 - (i * 100),
+            update_at: 5000 - (i * 100),
+            metadata: {redacted_file_count: 1},
+        }));
+
+        const setup = async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: history.map((p) => p.id),
+                posts: history,
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        };
+
+        it('should re-stamp the block under the dispatch epoch without touching history or the loading state', async () => {
+            await setup();
+            const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+            const intervalsBefore = (await queryPostsInChannel(database, channelId).fetch()).map((c) => [c.earliest, c.latest]);
+
+            // The block reaches past the stored interval: it must not be widened over it.
+            const older = TestHelper.fakePost({id: 'older', channel_id: channelId, user_id: user1.id, create_at: 4000, update_at: 4000});
+            const block = [history[1], history[2], older];
+            (mockClient.getPostsBefore as jest.Mock).mockImplementationOnce(() => ({
+                posts: Object.fromEntries(block.map((p) => [p.id, p])),
+                order: block.map((p) => p.id),
+            }));
+            const loading = jest.spyOn(EphemeralStore, 'addLoadingMessagesForChannel');
+
+            const result = await revalidatePostsBefore(serverUrl, channelId, history[0].id);
+
+            expect(result.error).toBeUndefined();
+            expect(result.oldestCreateAt).toBe(4000);
+            const rows = await queryPostsById(database, [history[0].id, history[1].id, history[2].id]).fetch();
+            const epochs = Object.fromEntries(rows.map((r) => [r.id, r.redactionVerifiedEpoch]));
+            expect(epochs).toEqual({[history[0].id]: 1, [history[1].id]: 2, [history[2].id]: 2});
+            expect((await queryPostsInChannel(database, channelId).fetch()).map((c) => [c.earliest, c.latest])).toEqual(intervalsBefore);
+            expect(loading).not.toHaveBeenCalled();
+            loading.mockRestore();
+        });
+
+        it('should return the error and leave the posts unverified when the page fails', async () => {
+            await setup();
+            (mockClient.getPostsBefore as jest.Mock).mockRejectedValueOnce(new Error('network down'));
+
+            const result = await revalidatePostsBefore(serverUrl, channelId, history[0].id);
+
+            expect(result.error).toBeTruthy();
+            const rows = await queryPostsById(DatabaseManager.serverDatabases[serverUrl]!.database, [history[1].id]).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(1);
         });
     });
 
