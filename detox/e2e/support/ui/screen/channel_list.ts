@@ -24,6 +24,17 @@ import {expect, waitFor} from 'detox';
 
 const MAX_CHANNEL_ITEM_VISIBILITY_SCROLLS = 6;
 
+// Detox actions carry no timeout, so one that never completes takes the whole file with it
+// (main 0869dc8). Only for optional scrolls — if the result is asserted right after, the
+// scroll must stay synchronized so the list settles.
+async function bestEffortScroll(scroll: () => Promise<unknown>): Promise<void> {
+    try {
+        await withSynchronizationDisabled(scroll);
+    } catch {
+        // List not scrollable, already at the boundary, or not mounted yet.
+    }
+}
+
 class ChannelListScreen {
     testID = {
         categoryHeaderPrefix: 'channel_list.category_header.',
@@ -81,6 +92,12 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    // Mention-count badge on a sidebar row. Badge returns null while its count is 0, so
+    // `not.toExist()` is the "unread but not mentioned" assertion, not a visibility check.
+    getChannelItemBadge = (categoryKey: string, channelName: string) => {
+        return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.badge`));
+    };
+
     ensureCategoryExpanded = async (categoryKey: string) => {
         try {
             await waitForElementToExist(this.getCategoryCollapsed(categoryKey), timeouts.TWO_SEC);
@@ -95,11 +112,7 @@ class ChannelListScreen {
         const deadline = Date.now() + timeout;
         const categories = ['channels', 'unreads', 'favorites'] as const;
 
-        try {
-            await this.channelList.scrollTo('top');
-        } catch {
-            // The list may already be at its boundary.
-        }
+        await bestEffortScroll(() => this.channelList.scrollTo('top'));
         await this.ensureCategoryExpanded('channels');
 
         try {
@@ -127,11 +140,7 @@ class ChannelListScreen {
                     // Not in this category yet — try the next
                 }
             }
-            try {
-                await this.channelList.scroll(280, 'down', 0.5, 0.45);
-            } catch {
-                // List not scrollable or already at the end.
-            }
+            await bestEffortScroll(() => this.channelList.scroll(280, 'down', 0.5, 0.45));
         }
         /* eslint-enable no-await-in-loop */
 
@@ -175,6 +184,8 @@ class ChannelListScreen {
                     break;
                 } catch {
                     try {
+                        // Synchronized on purpose: the next loop iteration asserts visibility,
+                        // so the list has to settle first.
                         await this.channelList.scroll(100, 'down', 0.5, 0.3);
                     } catch {
                         // The final assertion reports if the list edge still clips the row.
@@ -183,6 +194,15 @@ class ChannelListScreen {
             }
             /* eslint-enable no-await-in-loop */
             await expect(label).toBeVisible(40);
+
+            // Tap the label, mid-row: the edge tap below sits two pixels from the neighbouring
+            // row and can open the wrong channel.
+            try {
+                await label.tap();
+                return;
+            } catch {
+                // Clipped by the tab bar — fall through to the edge tap that handles that case.
+            }
 
             // The last row can remain clipped by the tab bar, so tap its exposed top edge.
             await container.tap({x: 20, y: 2});

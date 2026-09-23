@@ -224,33 +224,59 @@ async function dismissErrorAlert() {
 
 const itNotIos = isIos() ? it.skip : it;
 
+const DIALOG_PLUGIN_CONFIG = {
+    PluginSettings: {
+        PluginStates: {
+            [DemoPlugin.id]: {Enable: true},
+        },
+        Plugins: {
+            [DemoPlugin.id]: {
+                DialogOnlyMode: true,
+            },
+        },
+    },
+};
+
+const isDialogOnlyModeConfigured = async (): Promise<boolean> => {
+    const {config} = await System.apiGetConfig(siteOneUrl);
+    const pluginSettings = config?.PluginSettings;
+    return pluginSettings?.PluginStates?.[DemoPlugin.id]?.Enable === true &&
+        pluginSettings?.Plugins?.[DemoPlugin.id]?.DialogOnlyMode === true;
+};
+
+// Provisioning already applies this config, and re-sending it re-enters the server's
+// plugin-activation path, which outran the client's 45s timeout. Patch only when the state is
+// actually wrong, and gate on the read-back — a save that times out in transit often landed.
+const ensureDialogOnlyMode = async () => {
+    if (await isDialogOnlyModeConfigured()) {
+        return;
+    }
+
+    const {error} = await System.apiUpdateConfig(siteOneUrl, DIALOG_PLUGIN_CONFIG);
+    for (let attempt = 0; attempt < 15; attempt++) {
+        if (await isDialogOnlyModeConfigured()) {
+            return;
+        }
+        await wait(timeouts.TWO_SEC);
+    }
+
+    throw new Error(`Failed to configure demo plugin for dialog tests: ${error ? (error.message || JSON.stringify(error)) : 'config never reported DialogOnlyMode'}`);
+};
+
 describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testChannel: any;
     let testUser: any;
+    let setupFailed = false;
 
-    beforeAll(async () => {
+    const setUpSuite = async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
         testUser = user;
 
         await User.apiAdminLogin(siteOneUrl);
-        const configResult = await System.apiUpdateConfig(siteOneUrl, {
-            PluginSettings: {
-                PluginStates: {
-                    [DemoPlugin.id]: {Enable: true},
-                },
-                Plugins: {
-                    [DemoPlugin.id]: {
-                        DialogOnlyMode: true,
-                    },
-                },
-            },
-        });
-        if (configResult.error) {
-            throw new Error(`Failed to configure demo plugin for dialog tests: ${configResult.error.message || JSON.stringify(configResult.error)}`);
-        }
+        await ensureDialogOnlyMode();
 
         const statusCheck = await Plugin.apiGetPluginStatus(siteOneUrl, DemoPlugin.id);
         if (!statusCheck.isActive) {
@@ -270,6 +296,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await wait(timeouts.TWO_SEC);
             await ChannelScreen.postInput.clearText();
         } catch { /* best-effort */ }
+    };
+
+    beforeAll(async () => {
+        try {
+            await setUpSuite();
+        } catch (error) {
+            setupFailed = true;
+            throw error;
+        }
     });
 
     afterAll(async () => {
@@ -281,6 +316,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     afterEach(async () => {
+        if (setupFailed) {
+            return;
+        }
         await dismissErrorAlert();
         try {
             await IntegrationSelectorScreen.cancel();
@@ -955,17 +993,26 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // * Verify submission post: local_manual must be populated with a UTC ISO timestamp
         // whose minute portion is 30 (manual entry preserves typed minutes; rounded-picker values would be :00)
         await wait(1000);
-        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {post, error: lastPostError} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
 
-        // Match to end of line, not \s*(\S+): the bot renders the payload as a markdown
-        // list, so \s* would cross the newline and capture the next item's "-" bullet.
-        // That is how an empty field previously reported itself as "got: -".
+        // The helper returns {error} instead of throwing when every poll failed (CI 34290629488:
+        // a Cloudflare challenge answered the posts endpoint for two minutes, and this read as
+        // "Cannot read properties of undefined (reading 'message')" — a code bug's signature).
+        if (lastPostError || !post) {
+            throw new Error(`Could not read the submission post from channel ${testChannel.id}: ${JSON.stringify(lastPostError ?? 'no post returned')}`);
+        }
+
+        // Match to end of line, not \s*(\S+): the payload renders as a markdown list, so \s*
+        // would cross the newline and capture the next bullet (an empty field read "-").
         const match = post.message.match(/local_manual:[ \t]*([^\n]*)/);
         const submitted = match?.[1]?.trim() ?? '';
         if (!submitted) {
             throw new Error(`Expected local_manual to have a value but the field was empty. Full message: ${post.message}`);
         }
-        if (!/T\d{2}:30:00\.000Z$/.test(submitted)) {
+
+        // The minutes are the signal: manual entry keeps the typed :30, the rounded picker gives
+        // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
+        if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });

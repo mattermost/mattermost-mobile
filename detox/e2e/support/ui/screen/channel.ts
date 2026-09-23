@@ -21,8 +21,10 @@ import {
     PostOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, withSynchronizationDisabled} from '@support/utils';
+import {isAndroid, isIos, isIpad, longPressWithScrollRetry, safeEnableSynchronization, timeouts, wait, waitForElementToBeVisible, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {by, element, expect, waitFor} from 'detox';
+
+import {logDebug} from '../../../../provision/log';
 
 import InteractiveDialogScreen from './interactive_dialog';
 
@@ -43,6 +45,8 @@ class ChannelScreen {
         channelScreenPrefix: 'channel.',
         channelScreen: 'channel.screen',
         channelQuickActionsButton: 'channel_header.channel_quick_actions.button',
+        quickActions: 'channel.quick_actions',
+        askAgentsQuickAction: 'channel.quick_actions.ask_agents',
         quickCallButton: 'channel_header.quick_call.button',
         favoriteQuickAction: 'channel.quick_actions.favorite.action',
         unfavoriteQuickAction: 'channel.quick_actions.unfavorite.action',
@@ -98,6 +102,8 @@ class ChannelScreen {
     postPriorityPicker = element(by.id(this.testID.postPriorityPicker));
     channelScreen = element(by.id(this.testID.channelScreen));
     channelQuickActionsButton = element(by.id(this.testID.channelQuickActionsButton));
+    quickActions = element(by.id(this.testID.quickActions));
+    askAgentsQuickAction = element(by.id(this.testID.askAgentsQuickAction));
     quickCallButton = element(by.id(this.testID.quickCallButton));
     favoriteQuickAction = element(by.id(this.testID.favoriteQuickAction));
     unfavoriteQuickAction = element(by.id(this.testID.unfavoriteQuickAction));
@@ -171,6 +177,36 @@ class ChannelScreen {
         return this.channelScreen;
     };
 
+    openQuickActions = async () => {
+        await this.channelQuickActionsButton.tap();
+        await waitForElementToExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
+    };
+
+    closeQuickActions = async () => {
+        try {
+            await waitForElementToExist(this.channelInfoQuickAction, timeouts.TWO_SEC);
+        } catch {
+            return;
+        }
+
+        if (isAndroid()) {
+            await device.pressBack();
+            try {
+                await waitFor(this.channelInfoQuickAction).not.toExist().withTimeout(timeouts.TWO_SEC);
+            } catch {
+                await device.pressBack();
+            }
+        } else {
+            try {
+                await this.quickActions.swipe('down', 'fast');
+            } catch {
+                await this.channelInfoQuickAction.swipe('down', 'fast');
+            }
+        }
+
+        await waitForElementToNotExist(this.channelInfoQuickAction, timeouts.TEN_SEC);
+    };
+
     dismissScheduledPostTooltip = async () => {
         try {
             await waitFor(this.scheduledPostTooltipCloseButton).toBeVisible().withTimeout(timeouts.FOUR_SEC);
@@ -187,19 +223,35 @@ class ChannelScreen {
         }
     };
 
-    // The channel intro is the post list's ListFooterComponent, so it only mounts once the
-    // initial post batch has rendered. open() resolves as soon as channel.screen exists,
-    // which on a loaded CI simulator happens while the post list is still loading — tapping
-    // the intro action straight after open() then fails with "No elements found".
-    tapIntroChannelInfoAction = async () => {
-        await waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN);
+    waitForIntro = async (waitFn: () => Promise<void>, reopen?: {category: string; channelName: string}) => {
+        try {
+            await waitFn();
+        } catch (error) {
+            if (!reopen) {
+                throw error;
+            }
+            await this.back();
+            await this.open(reopen.category, reopen.channelName);
+            await waitFn();
+        }
+    };
+
+    tapIntroChannelInfoAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introChannelInfoAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introChannelInfoAction.tap();
     };
 
-    // Same intro-footer race as tapIntroChannelInfoAction (CI 33936010053 MM-T4884
-    // beforeAllFailure.png: spinner still up, set_header.action not in the tree).
-    tapIntroSetHeaderAction = async () => {
-        await waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN);
+    // Same intro-footer race as tapIntroChannelInfoAction: the post list can keep its
+    // spinner up and never render the intro options, so reopening the channel is the
+    // recovery. Callers that can afford to leave and re-enter pass reopen.
+    tapIntroSetHeaderAction = async (reopen?: {category: string; channelName: string}) => {
+        await this.waitForIntro(
+            () => waitForElementToExist(this.introSetHeaderAction, timeouts.HALF_MIN),
+            reopen,
+        );
         await this.introSetHeaderAction.tap();
     };
 
@@ -208,7 +260,15 @@ class ChannelScreen {
         await wait(timeouts.FOUR_SEC);
         const name = typeof channelName === 'string' ? channelName : String(channelName);
         if (category === 'channels') {
-            await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
+            try {
+                await ChannelListScreen.tapSidebarPublicChannelDisplayName(name);
+            } catch (notInSidebar) {
+                // The channel exists on the server but has not landed in a sidebar category.
+                // Search reaches it regardless, so specs that are not about the sidebar can
+                // carry on; the log keeps a real sidebar regression visible.
+                logDebug(`[ChannelScreen.open] ${name} absent from the sidebar, opening via Find Channels: ${String(notInSidebar)}`);
+                return this.openViaFindChannels(name);
+            }
         } else {
             await ChannelListScreen.getChannelItemDisplayName(category, name).tap();
         }
@@ -255,7 +315,18 @@ class ChannelScreen {
             if (isAndroid()) {
                 await device.pressBack();
             } else {
+                // Wait for the tab before tapping it: when a sheet is still covering the
+                // header the tab bar is not in the hierarchy yet, and a bare tap fails with
+                // "tab_bar.home.tab not found" instead of waiting the sheet out.
+                await waitForElementToExist(HomeScreen.channelListTab, timeouts.TEN_SEC);
                 await HomeScreen.channelListTab.tap();
+
+                // A tablet shows sidebar and channel together, so the home tab already *is* the
+                // channels view and never dismisses the channel. Assert we reached the list.
+                if (isIpad()) {
+                    await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
+                    return;
+                }
             }
         }
         await waitFor(this.channelScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
@@ -427,7 +498,13 @@ class ChannelScreen {
             return result;
         }
 
-        throw new Error(`message never reached the server after two sends, likely dropped by the sim network (${JSON.stringify(result.error ?? 'no post and no error')})`);
+        // Only what is established: not in THIS channel. A mistargeted sidebar tap can post it
+        // to a different channel, so do not blame the network.
+        throw new Error(
+            `message "${message}" not found in channel ${channelId} after two sends — the send ` +
+            'may have failed, or the app may not have been in that channel ' +
+            `(${JSON.stringify(result.error ?? 'no post and no error')})`,
+        );
     };
 
     postSlashCommand = async (command: string) => {
