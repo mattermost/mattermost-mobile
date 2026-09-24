@@ -375,3 +375,18 @@ appId: ${MAESTRO_APP_ID}
                 visible:
                   id: "tab_bar.home.tab"
                 timeout: 20000
+
+# # iOS raises the Save Password sheet only once the login screen is torn down, a few
+# seconds after the dismissals above ran. Simulator autofill restrictions do not stop it.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            text: "Not Now"
+          timeout: 5000
+          optional: true
+      - tapOn:
+          text: "Not Now"
+          optional: true
