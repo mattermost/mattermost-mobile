@@ -181,6 +181,37 @@ describe('ChannelBanner', () => {
         expect(screen.getByText('Test Banner Text')).toBeVisible();
     });
 
+    it('should strip attribute tokens without a value from the native banner text', async () => {
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: true,
+                    text: 'Test Banner Text{{classification}} {{program}}',
+                    background_color: '#FF0000',
+                };
+            });
+        });
+        await operator.handleConfigs({
+            configs: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        renderWithEverything(
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
+            {database},
+        );
+
+        expect(await screen.findByText('Test Banner Text')).toBeVisible();
+
+        await operator.handleConfigs({
+            configs: [],
+            configsToDelete: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            prepareRecordsOnly: false,
+        });
+    });
+
     it('opens bottom sheet when banner is pressed', async () => {
         renderWithEverything(
             <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,

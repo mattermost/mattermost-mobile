@@ -15,6 +15,7 @@ import {
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {
     deriveChannelAttributeBanner,
+    renderBannerTemplate,
     resolveChannelAttributes,
     type ChannelAttributeBannerState,
     type ResolvedChannelAttribute,
@@ -206,6 +207,34 @@ export const observeChannelAttributeBanner = (
         distinctUntilChanged((a, b) => a.hasBanner === b.hasBanner &&
             a.banner?.text === b.banner?.text &&
             a.banner?.background_color === b.banner?.background_color),
+    );
+};
+
+/**
+ * The channel's own banner_info with its text template resolved against this
+ * channel's attribute values, matching the webapp.
+ *
+ * The native banner is what shows when no designated attribute has a value, and
+ * its text is the same template the attribute banner renders, so without this an
+ * unset attribute leaves its raw "{{name}}" token on screen. With channel
+ * attributes off the text passes through untouched, as on the webapp.
+ */
+export const observeRenderedChannelBannerInfo = (
+    database: Database,
+    channelId: string,
+    bannerInfo?: ChannelBannerInfo,
+): Observable<ChannelBannerInfo | undefined> => {
+    const template = bannerInfo?.text;
+    if (!template?.includes('{{')) {
+        return of$(bannerInfo);
+    }
+
+    return combineLatest([
+        observeChannelAttributesEnabled(database),
+        observeResolvedChannelAttributes(database, channelId),
+    ]).pipe(
+        map(([attributesEnabled, attributes]) => (attributesEnabled ? {...bannerInfo, text: renderBannerTemplate(template, attributes)} : bannerInfo)),
+        distinctUntilChanged((a, b) => a?.text === b?.text),
     );
 };
 

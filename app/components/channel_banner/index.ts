@@ -7,7 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {ChannelBanner} from '@components/channel_banner/channel_banner';
 import {observeChannel} from '@queries/servers/channel';
-import {observeChannelAttributeBanner} from '@queries/servers/properties';
+import {observeChannelAttributeBanner, observeRenderedChannelBannerInfo} from '@queries/servers/properties';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -17,12 +17,16 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const channel = observeChannel(database, channelId);
-    const bannerInfo = channel.pipe(switchMap((c) => of$(c?.bannerInfo)));
+    const rawBannerInfo = channel.pipe(switchMap((c) => of$(c?.bannerInfo)));
 
     // Attribute-driven banners use banner_info as template/config storage even
     // while its native enabled flag is false.
-    const attributeBanner = bannerInfo.pipe(
+    const attributeBanner = rawBannerInfo.pipe(
         switchMap((bi) => observeChannelAttributeBanner(database, channelId, bi?.text, bi?.background_color)),
+    );
+
+    const bannerInfo = rawBannerInfo.pipe(
+        switchMap((bi) => observeRenderedChannelBannerInfo(database, channelId, bi)),
     );
 
     return {
