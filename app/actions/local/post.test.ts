@@ -508,6 +508,7 @@ describe('deletePostsInChannelsByCutoff', () => {
     // A cached model whose earliest advances has to go through the model layer (fires observers)
     it('advances the cached PostsInChannel earliest through the model layer', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        jest.spyOn(operator.database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => callback({value: 0}));
         const [pic] = await operator.handleReceivedPostsInChannel(postsInChannel);
 
         await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
@@ -517,6 +518,7 @@ describe('deletePostsInChannelsByCutoff', () => {
 
     it('advances the cached PostsInThread earliest through the model layer', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        jest.spyOn(operator.database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => callback({value: 0}));
         await writeRootPost('rootId', 'cId', OLD);
         const pit = await writePostsInThread('rootId', OLD, RECENT);
 
@@ -527,6 +529,7 @@ describe('deletePostsInChannelsByCutoff', () => {
 
     it('resets the cached MyChannel lastFetchedAt when no PostsInChannel range survives for the channel', async () => {
         jest.spyOn(operator.database.adapter, 'unsafeExecute').mockResolvedValue();
+        jest.spyOn(operator.database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => callback({value: 0}));
         const myChannel = await writeMyChannel('cId', RECENT);
 
         await deletePostsInChannelsByCutoff(serverUrl, ['cId'], CUTOFF);
@@ -547,6 +550,7 @@ describe('deletePostsInChannelsByCutoff', () => {
     it('includes the PostsInChannel destroy/update and MyChannel reset, in that order, in the same unsafeExecute call as the post delete', async () => {
         const database = operator.database;
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+        jest.spyOn(database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => callback({value: 0}));
 
         const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
 
@@ -573,18 +577,34 @@ describe('deletePostsInChannelsByCutoff', () => {
         });
     });
 
-    it('returns an error when the underlying transaction fails', async () => {
+    it('returns an error and no deleted count when the underlying transaction fails', async () => {
         const database = operator.database;
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.reject(new Error('fail')));
 
-        const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
 
         expect(error).toBeTruthy();
+        expect(deletedCount).toBe(0);
+    });
+
+    it('returns an error without deleting anything when counting matched posts fails', async () => {
+        const database = operator.database;
+        jest.spyOn(database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => {
+            callback({error: new Error('count failed')});
+        });
+        const unsafeExecuteSpy = jest.spyOn(database.adapter, 'unsafeExecute');
+
+        const {error, deletedCount} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF);
+
+        expect(error).toBeTruthy();
+        expect(deletedCount).toBe(0);
+        expect(unsafeExecuteSpy).not.toHaveBeenCalled();
     });
 
     it('scopes the post delete and its dependent subqueries to exclude the given post IDs', async () => {
         const database = operator.database;
         jest.spyOn(database.adapter, 'unsafeExecute').mockImplementation(() => Promise.resolve());
+        jest.spyOn(database.adapter.underlyingAdapter, 'count').mockImplementation((_query, callback) => callback({value: 0}));
 
         const {error} = await deletePostsInChannelsByCutoff(serverUrl, [channelId], CUTOFF, new Set(['excluded-1', 'excluded-2']));
 
