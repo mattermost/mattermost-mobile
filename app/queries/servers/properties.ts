@@ -15,8 +15,9 @@ import {
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {
     deriveChannelAttributeBanner,
-    renderBannerTemplate,
+    renderNativeBannerText,
     resolveChannelAttributes,
+    resolvedAttributesEqual,
     type ChannelAttributeBannerState,
     type ResolvedChannelAttribute,
 } from '@utils/channel_attributes';
@@ -203,77 +204,14 @@ export const observeChannelAttributeBanner = (
         observePropertyValuesByTargetId(database, channelId),
         observeChannelAttributesEnabled(database),
     ]).pipe(
-        map(([fields, values, attributesEnabled]) => deriveChannelAttributeBanner(fields, values, nativeBannerText, authoredColor, attributesEnabled)),
+        map(([fields, values, attributesEnabled]) => ({
+            ...deriveChannelAttributeBanner(fields, values, nativeBannerText, authoredColor, attributesEnabled),
+            nativeText: renderNativeBannerText(fields, values, nativeBannerText, attributesEnabled),
+        })),
         distinctUntilChanged((a, b) => a.hasBanner === b.hasBanner &&
             a.banner?.text === b.banner?.text &&
-            a.banner?.background_color === b.banner?.background_color),
+            a.banner?.background_color === b.banner?.background_color &&
+            a.nativeText === b.nativeText),
     );
 };
 
-/**
- * The channel's own banner_info with its text template resolved against this
- * channel's attribute values, matching the webapp.
- *
- * The native banner is what shows when no designated attribute has a value, and
- * its text is the same template the attribute banner renders, so without this an
- * unset attribute leaves its raw "{{name}}" token on screen. With channel
- * attributes off the text passes through untouched, as on the webapp.
- */
-export const observeRenderedChannelBannerInfo = (
-    database: Database,
-    channelId: string,
-    bannerInfo?: ChannelBannerInfo,
-): Observable<ChannelBannerInfo | undefined> => {
-    const template = bannerInfo?.text;
-    if (!template?.includes('{{')) {
-        return of$(bannerInfo);
-    }
-
-    return combineLatest([
-        observeChannelAttributesEnabled(database),
-        observeResolvedChannelAttributes(database, channelId),
-    ]).pipe(
-        map(([attributesEnabled, attributes]) => (attributesEnabled ? {...bannerInfo, text: renderBannerTemplate(template, attributes)} : bannerInfo)),
-        distinctUntilChanged((a, b) => a?.text === b?.text),
-    );
-};
-
-/**
- * Everything the downstream surfaces read, as one string per attribute.
- *
- * The configuration keys have to be in here, not just the rendered value: which
- * surface an attribute appears on is decided *after* this comparator runs, by
- * selectAttributesForAction reading attrs.actions and selectChannelInfoAttributes
- * reading attrs.required. Comparing only the value meant an administrator unticking
- * "show in header" produced an emission this treated as identical, so the chip
- * stayed on screen until the app restarted.
- */
-function renderSignature(attribute: ResolvedChannelAttribute): string {
-    const {attrs} = attribute.field;
-    const actions = Array.isArray(attrs?.actions) ? attrs.actions.join(',') : '';
-
-    return [
-        attribute.field.id,
-        attribute.field.name,
-        attribute.field.type,
-        attribute.displayValue,
-        attribute.option?.color ?? '',
-
-        // Multi-valued attributes carry per-value colours, never an option, so
-        // an option recolour only shows up here.
-        attribute.displayValues.map((entry) => entry.color ?? '').join(','),
-        attribute.unresolvedOptionIds?.join(',') ?? '',
-        actions,
-        attrs?.required === true ? '1' : '0',
-        attrs?.display_name ?? '',
-        typeof attrs?.sort_order === 'number' ? String(attrs.sort_order) : '',
-    ].join('|');
-}
-
-function resolvedAttributesEqual(a: ResolvedChannelAttribute[], b: ResolvedChannelAttribute[]): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    return a.every((attribute, index) => renderSignature(attribute) === renderSignature(b[index]));
-}

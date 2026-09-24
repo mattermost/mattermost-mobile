@@ -18,7 +18,7 @@ const MAX_CHARS = 15;
 // onto additional lines instead of running off-screen, right-aligned to match
 // a single chip's position. Shared by every surface that renders more than
 // one chip per attribute (header overflow sheet, Channel Info), so the
-// wrapping behaviour can't drift between them.
+// wrapping behavior can't drift between them.
 export const attributeChipGroupStyle = {
     flex: 1,
     flexDirection: 'row' as const,

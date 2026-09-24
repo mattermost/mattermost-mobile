@@ -12,7 +12,7 @@ import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import BottomSheetContent, {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
-import {flattenChannelAttributesToChips, groupChannelAttributeChipsByField, type ChannelAttributeChipItem, type ResolvedChannelAttribute} from '@utils/channel_attributes';
+import {flattenChannelAttributesToChips, groupChannelAttributeChipsByField, type ChannelAttributeChipGroup, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -95,34 +95,37 @@ type Props = {
 };
 
 type AttributeGroupRowProps = {
-    group: {fieldId: string; label: string; items: ChannelAttributeChipItem[]};
-    styles: ReturnType<typeof getStyleSheet>;
+    group: ChannelAttributeChipGroup;
 };
 
-// Extracted so the sheet's group-of-chips row isn't an inline callback nested
-// inside another inline callback (max-nested-callbacks).
-const AttributeGroupRow = ({group, styles}: AttributeGroupRowProps) => (
-    <View style={styles.sheetRow}>
-        <Text
-            style={styles.sheetLabel}
-            numberOfLines={1}
-        >
-            {group.label}
-        </Text>
-        <View style={styles.valueGroup}>
-            {group.items.map((item) => (
-                <AttributeChip
-                    key={item.key}
-                    label={item.label}
-                    value={item.value}
-                    color={item.color}
-                    announceLabel={false}
-                    testID={item.testID}
-                />
-            ))}
+const AttributeGroupRow = React.memo(({group}: AttributeGroupRowProps) => {
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
+
+    return (
+        <View style={styles.sheetRow}>
+            <Text
+                style={styles.sheetLabel}
+                numberOfLines={1}
+            >
+                {group.label}
+            </Text>
+            <View style={styles.valueGroup}>
+                {group.items.map((item) => (
+                    <AttributeChip
+                        key={item.key}
+                        label={item.label}
+                        value={item.value}
+                        color={item.color}
+                        announceLabel={false}
+                        testID={item.testID}
+                    />
+                ))}
+            </View>
         </View>
-    </View>
-);
+    );
+});
+AttributeGroupRow.displayName = 'AttributeGroupRow';
 
 /**
  * The channel's designated attribute values as chips, for the channel header.
@@ -164,7 +167,6 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
                     <AttributeGroupRow
                         key={group.fieldId}
                         group={group}
-                        styles={styles}
                     />
                 ))}
             </BottomSheetContent>
@@ -188,7 +190,7 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
         }
 
         bottomSheet(renderContent, snapPoints);
-    }, [intl, sheetGroups, styles]));
+    }, [intl, sheetGroups]));
 
     if (chipItems.length === 0) {
         return null;

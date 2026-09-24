@@ -3,11 +3,11 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import ChannelInfoAttributes from '@components/channel_info_attributes/channel_info_attributes';
 import {observeChannelAttributesEnabled, observeResolvedChannelAttributes} from '@queries/servers/properties';
-import {selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
+import {channelInfoAttributesEqual, selectChannelInfoAttributes, type ResolvedChannelAttribute} from '@utils/channel_attributes';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -21,6 +21,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const attributes = observeChannelAttributesEnabled(database).pipe(
         switchMap((enabled) => (enabled ? observeResolvedChannelAttributes(database, channelId) : of$(EMPTY))),
         map((resolved) => selectChannelInfoAttributes(resolved)),
+        distinctUntilChanged(channelInfoAttributesEqual),
     );
 
     return {attributes};

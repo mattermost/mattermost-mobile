@@ -32,7 +32,7 @@ export type ResolvedChannelAttribute = {
     displayValue: string;
 
     // One entry per underlying value, in order, each with its own resolved
-    // colour when the field is options-bearing. A single-valued attribute has
+    // color when the field is options-bearing. A single-valued attribute has
     // one entry; an unset attribute has none. Chip-rendering surfaces should
     // render one chip per entry instead of collapsing to displayValue, so a
     // multiselect or graph attribute shows each value as its own chip.
@@ -45,6 +45,10 @@ export type ResolvedChannelAttribute = {
 export type ChannelAttributeBannerState = {
     hasBanner: boolean;
     banner: ChannelBannerInfo | undefined;
+
+    // The channel's own banner_info text with its template resolved, for when
+    // no designated attribute produces a banner and the native one shows.
+    nativeText?: string;
 };
 
 const NO_BANNER: ChannelAttributeBannerState = {hasBanner: false, banner: undefined};
@@ -297,10 +301,9 @@ export type ChannelAttributeChipItem = {
 
 /**
  * Flattens every attribute's values into individual chip items, one per value,
- * so a caller can cap overflow by chip count rather than attribute count. A
- * single multi-valued attribute keeps the bare `{testIDPrefix}.{field.name}`
- * testID when it is the only value on its field, matching what a
- * single-valued attribute has always used; a multi-valued field gets an index
+ * so a caller can cap overflow by chip count rather than attribute count. An
+ * attribute with a single value keeps the bare `{testIDPrefix}.{field.name}`
+ * testID it has always used; an attribute with several values gets an index
  * suffix per chip so each one stays addressable.
  */
 export function flattenChannelAttributesToChips(attributes: ResolvedChannelAttribute[], testIDPrefix: string): ChannelAttributeChipItem[] {
@@ -318,13 +321,19 @@ export function flattenChannelAttributesToChips(attributes: ResolvedChannelAttri
     });
 }
 
+export type ChannelAttributeChipGroup = {
+    fieldId: string;
+    label: string;
+    items: ChannelAttributeChipItem[];
+};
+
 /**
  * Groups chip items back by field, in order, so a caller can render one row
  * per field with every value of that field as its own chip.
  */
-export function groupChannelAttributeChipsByField(items: ChannelAttributeChipItem[]): Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> {
-    const groups: Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> = [];
-    const byFieldId = new Map<string, {fieldId: string; label: string; items: ChannelAttributeChipItem[]}>();
+export function groupChannelAttributeChipsByField(items: ChannelAttributeChipItem[]): ChannelAttributeChipGroup[] {
+    const groups: ChannelAttributeChipGroup[] = [];
+    const byFieldId = new Map<string, ChannelAttributeChipGroup>();
     for (const item of items) {
         let group = byFieldId.get(item.fieldId);
         if (!group) {
@@ -335,6 +344,70 @@ export function groupChannelAttributeChipsByField(items: ChannelAttributeChipIte
         group.items.push(item);
     }
     return groups;
+}
+
+/**
+ * Everything the downstream surfaces read, as one string per attribute.
+ *
+ * The configuration keys have to be in here, not just the rendered value: which
+ * surface an attribute appears on is decided *after* this comparator runs, by
+ * selectAttributesForAction reading attrs.actions and selectChannelInfoAttributes
+ * reading attrs.required. Lives with the helpers it mirrors, since it touches no
+ * database; the observers in @queries/servers/properties only apply it. Comparing only the value meant an administrator unticking
+ * "show in header" produced an emission this treated as identical, so the chip
+ * stayed on screen until the app restarted.
+ */
+function renderSignature(attribute: ResolvedChannelAttribute): string {
+    const {attrs} = attribute.field;
+    const actions = Array.isArray(attrs?.actions) ? attrs.actions.join(',') : '';
+
+    return [
+        attribute.field.id,
+        attribute.field.name,
+        attribute.field.type,
+        attribute.displayValue,
+        attribute.option?.color ?? '',
+
+        // Multi-valued attributes carry per-value colors, never an option, so
+        // an option color change only shows up here.
+        attribute.displayValues.map((entry) => entry.color ?? '').join(','),
+        attribute.unresolvedOptionIds?.join(',') ?? '',
+        actions,
+        attrs?.required === true ? '1' : '0',
+        attrs?.display_name ?? '',
+        typeof attrs?.sort_order === 'number' ? String(attrs.sort_order) : '',
+    ].join('|');
+}
+
+export function resolvedAttributesEqual(a: ResolvedChannelAttribute[], b: ResolvedChannelAttribute[]): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    return a.every((attribute, index) => renderSignature(attribute) === renderSignature(b[index]));
+}
+
+/**
+ * What Channel Info renders for one attribute. Narrower than renderSignature on
+ * purpose: Channel Info lists attributes whatever their display actions, so an
+ * administrator toggling "show in header" must not re-render it.
+ */
+function channelInfoSignature(attribute: ResolvedChannelAttribute): string {
+    return [
+        attribute.field.id,
+        attribute.field.name,
+        getPropertyFieldLabel(attribute.field),
+        attribute.displayValues.map((entry) => `${entry.value}:${entry.color ?? ''}`).join(','),
+        isPropertyFieldRequired(attribute.field) ? '1' : '0',
+    ].join('|');
+}
+
+export function channelInfoAttributesEqual(a: ResolvedChannelAttribute[], b: ResolvedChannelAttribute[]): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    return a.every((attribute, index) => channelInfoSignature(attribute) === channelInfoSignature(b[index]));
 }
 
 function hasAction(field: ChannelAttributeField, action: PropertyFieldAction): boolean {
@@ -469,6 +542,33 @@ export function deriveChannelAttributeBanner(
 const SEPARATORS = '·|';
 
 const TOKEN_PATTERN = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+
+/**
+ * The channel's own banner_info text with its template resolved against this
+ * channel's attribute values, matching the webapp.
+ *
+ * The native banner shows when no designated attribute has a value, and its
+ * text is the same template the attribute banner renders, so without this an
+ * unset attribute leaves its raw "{{name}}" token on screen. With channel
+ * attributes off the text passes through untouched, as on the webapp.
+ *
+ * @param fields channel-object fields in the access_control group, any order
+ * @param values every property value on this channel
+ * @param [nativeBannerText] the channel's own banner_info.text template
+ * @param [attributesEnabled] whether the channel attributes feature is on
+ */
+export function renderNativeBannerText(
+    fields: ChannelAttributeField[],
+    values: ChannelAttributeValue[],
+    nativeBannerText?: string,
+    attributesEnabled = false,
+): string | undefined {
+    if (!attributesEnabled || !nativeBannerText?.includes('{{')) {
+        return nativeBannerText;
+    }
+
+    return renderBannerTemplate(nativeBannerText, resolveChannelAttributes(fields, values));
+}
 
 export function renderBannerTemplate(template: string, attributes: ResolvedChannelAttribute[]): string {
     if (!template || !template.includes('{{')) {

@@ -3,6 +3,7 @@
 
 import {
     canMoveToOption,
+    channelInfoAttributesEqual,
     compareChannelAttributeFields,
     deriveChannelAttributeBanner,
     flattenChannelAttributesToChips,
@@ -12,6 +13,7 @@ import {
     isPropertyFieldRequired,
     isPropertyValueSet,
     renderBannerTemplate,
+    renderNativeBannerText,
     resolveChannelAttributes,
     selectAttributesForAction,
     selectChannelInfoAttributes,
@@ -562,5 +564,30 @@ describe('groupChannelAttributeChipsByField', () => {
 
     it('should return an empty array for empty input', () => {
         expect(groupChannelAttributeChipsByField([])).toEqual([]);
+    });
+});
+
+describe('renderNativeBannerText', () => {
+    const classification = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS}});
+    const program = field({id: 'cf-2', name: 'program', attrs: {}});
+    const template = 'this is the text {{classification}} · {{program}}';
+
+    it('should resolve set attributes and drop unset ones when channel attributes are enabled', () => {
+        expect(renderNativeBannerText([classification, program], [classificationValue], template, true)).toBe('this is the text Secret');
+    });
+
+    it('should leave the text untouched when channel attributes are disabled', () => {
+        expect(renderNativeBannerText([classification, program], [classificationValue], template, false)).toBe(template);
+    });
+});
+
+describe('channelInfoAttributesEqual', () => {
+    it('should ignore a display action change but not a value change', () => {
+        const headerShown = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
+        const headerHidden = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
+        const before = resolveChannelAttributes([headerShown], [classificationValue]);
+
+        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerHidden], [classificationValue]))).toBe(true);
+        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerShown], []))).toBe(false);
     });
 });

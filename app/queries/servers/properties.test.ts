@@ -5,16 +5,13 @@ import {waitFor} from '@testing-library/react-native';
 import {firstValueFrom} from 'rxjs';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
-import {License} from '@constants';
 import {CLASSIFICATIONS_SYSTEM_VALUE_TARGET_ID} from '@constants/classification';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import {
     observeChannelAttributeBanner,
     observeChannelAttributeFields,
     observeClassificationBannerState,
-    observeRenderedChannelBannerInfo,
     observeResolvedChannelAttributes,
 } from './properties';
 
@@ -152,7 +149,7 @@ describe('observeResolvedChannelAttributes', () => {
         ]);
     });
 
-    it('should re-emit when an option of a multi-valued attribute is recoloured', async () => {
+    it('should re-emit when an option of a multi-valued attribute changes color', async () => {
         const options = [{id: 'noforn', name: 'NOFORN', color: '#FF0000'}, {id: 'orcon', name: 'ORCON', color: '#00FF00'}];
         await seedFields([makeField({id: 'cf-1', name: 'dissemination', type: 'multiselect', object_type: 'channel', attrs: {options}})]);
         await operator.handlePropertyValues({
@@ -218,47 +215,5 @@ describe('observeChannelAttributeBanner', () => {
 
         const state = await firstValueFrom(observeChannelAttributeBanner(database, channelId));
         expect(state.hasBanner).toBe(false);
-    });
-});
-
-describe('observeRenderedChannelBannerInfo', () => {
-    const channelId = 'channel-123';
-    const bannerInfo: ChannelBannerInfo = {
-        enabled: true,
-        text: 'this is the text {{classification}} · {{program}}',
-        background_color: '#00FF00',
-    };
-
-    beforeEach(async () => {
-        await seedFields([
-            makeField({id: 'cf-1', name: 'classification', object_type: 'channel', attrs: {options: [{id: 'level-secret', name: 'Secret'}]}}),
-            makeField({id: 'cf-2', name: 'program', object_type: 'channel', attrs: {options: [{id: 'aurora', name: 'AURORA'}]}}),
-        ]);
-        await seedValues([makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1', value: 'level-secret'})]);
-        await operator.handleSystem({
-            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
-            prepareRecordsOnly: false,
-        });
-        await operator.handleConfigs({
-            configs: [{id: 'BuildEnterpriseReady', value: 'true'}],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-    });
-
-    it('should resolve set attributes and drop unset ones when channel attributes are enabled', async () => {
-        await operator.handleConfigs({
-            configs: [{id: 'FeatureFlagChannelAttributes', value: 'true'}],
-            configsToDelete: [],
-            prepareRecordsOnly: false,
-        });
-
-        const rendered = await firstValueFrom(observeRenderedChannelBannerInfo(database, channelId, bannerInfo));
-        expect(rendered).toEqual({...bannerInfo, text: 'this is the text Secret'});
-    });
-
-    it('should leave the text untouched when channel attributes are disabled', async () => {
-        const rendered = await firstValueFrom(observeRenderedChannelBannerInfo(database, channelId, bannerInfo));
-        expect(rendered).toEqual(bannerInfo);
     });
 });
