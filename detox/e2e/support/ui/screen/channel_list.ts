@@ -195,6 +195,15 @@ class ChannelListScreen {
             /* eslint-enable no-await-in-loop */
             await expect(label).toBeVisible(40);
 
+            // Tap the label, mid-row: the edge tap below sits two pixels from the neighbouring
+            // row and can open the wrong channel.
+            try {
+                await label.tap();
+                return;
+            } catch {
+                // Clipped by the tab bar — fall through to the edge tap that handles that case.
+            }
+
             // The last row can remain clipped by the tab bar, so tap its exposed top edge.
             await container.tap({x: 20, y: 2});
             return;
