@@ -15,8 +15,10 @@ import {hasActiveNativeCall} from '@calls/native_call_mappings';
 import WebSocketClient from '@client/websocket';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {toMilliseconds} from '@utils/datetime';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
@@ -32,6 +34,7 @@ class WebsocketManagerSingleton {
     private isBackgroundTimerRunning = false;
     private netConnected = false;
     private netType: NetInfoStateType = NetInfoStateType.none;
+    private networkIdentity = '';
     private previousActiveState: boolean;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timeout> = {};
     private backgroundTimerId: ReturnType<typeof BackgroundTimer.setTimeout> | undefined;
@@ -258,6 +261,34 @@ class WebsocketManagerSingleton {
     private onNetStateChange = (netState: NetInfoState) => {
         const newState = Boolean(netState.isConnected);
         this.handleStateChange(newState, netState.type, this.previousActiveState);
+
+        // After handleStateChange so a network type switch has already closed the sockets: the
+        // revalidation then waits for the reconnect instead of going out mid-switch.
+        this.expireNetworkBoundDecisions(netState);
+    };
+
+    /**
+     * Network session attributes (SSID, interface type) feed ABAC decisions and change with no server
+     * event, so render-time decisions taken on the previous network are revalidated. Checked here and
+     * not in handleStateChange, which ignores a switch between two networks of the same type.
+     * iOS reports no SSID (NetInfo's shouldFetchWiFiSSID is off), so a Wi-Fi to Wi-Fi switch there is
+     * only seen through the disconnect between them: any reconnection counts as a new network.
+     */
+    private expireNetworkBoundDecisions = (netState: NetInfoState) => {
+        if (!netState.isConnected) {
+            this.networkIdentity = '';
+            return;
+        }
+        const ssid = netState.type === NetInfoStateType.wifi ? netState.details?.ssid : undefined;
+        const identity = `${netState.type}|${ssid ?? ''}`;
+        if (identity !== this.networkIdentity) {
+            this.networkIdentity = identity;
+
+            // Only servers that collect session attributes evaluate the device's network.
+            for (const serverUrl of SessionAttributesManager.getEnabledServers()) {
+                RenderPermissionsStore.expireServer(serverUrl);
+            }
+        }
     };
 
     private handleStateChange = (currentIsConnected: boolean, currentNetType: NetInfoStateType, currentIsActive: boolean) => {
