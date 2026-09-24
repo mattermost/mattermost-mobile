@@ -302,8 +302,18 @@ function AppsFormComponent({
                     const errorResponse = res.error;
                     const errorMsg = errorResponse.text;
                     const newErrors = errorResponse.data?.errors;
-                    const elements = fieldsAsElements(form.fields);
+
+                    // Flatten collapsible containers to leaf fields (matching the memoized
+                    // `elements` above) so a server error on a nested field matches its
+                    // element instead of falling back to the generic unknown-field message.
+                    const elements = fieldsAsElements(flattenAppFields(form.fields || []));
                     updateErrors(elements, newErrors, errorMsg);
+
+                    // Open any collapsed section that now holds a refreshed field error so
+                    // the user can see and correct it (mirrors the submit-validation path).
+                    if (newErrors) {
+                        bumpErroredSections(newErrors);
+                    }
                     return;
                 }
 
@@ -337,7 +347,7 @@ function AppsFormComponent({
         }
 
         dispatchValues({name, value});
-    }, [form, values, refreshOnSelect, updateErrors, intl]);
+    }, [form, values, refreshOnSelect, updateErrors, bumpErroredSections, intl]);
 
     // Memoize elements conversion for performance; flatten collapsible containers to leaf fields
     const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
@@ -449,6 +459,7 @@ function AppsFormComponent({
                     <Pressable
                         onPress={() => handleSubmit()}
                         disabled={submitting}
+                        accessibilityRole='button'
                         style={({pressed}) => pressed && style.headerSubmitPressed}
                     >
                         <Text style={[style.headerSubmitText, submitting && style.headerSubmitTextDisabled]}>

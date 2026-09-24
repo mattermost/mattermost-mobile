@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, Text, type PressableStateCallbackType} from 'react-native';
 import Animated, {Easing, FadeIn, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -18,6 +18,12 @@ import {typography} from '@utils/typography';
 const ANIMATION_MS = 250;
 const EASING = Easing.out(Easing.cubic);
 const INDENT_PER_LEVEL = 12;
+
+const messages = defineMessages({
+    collapseHint: {id: 'collapsible_section.hint.collapse', defaultMessage: 'Activates to collapse'},
+    expandHint: {id: 'collapsible_section.hint.expand', defaultMessage: 'Activates to expand'},
+    labelHasError: {id: 'collapsible_section.label.has_error', defaultMessage: '{label}, contains an error'},
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -125,15 +131,12 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
 
     const contentContainerStyle = depth > 0 ? [style.content, {paddingLeft: depth * INDENT_PER_LEVEL}] : style.content;
 
-    const accessibilityHint = isExpanded ? intl.formatMessage({id: 'collapsible_section.hint.collapse', defaultMessage: 'Activates to collapse'}) : intl.formatMessage({id: 'collapsible_section.hint.expand', defaultMessage: 'Activates to expand'});
+    const accessibilityHint = intl.formatMessage(isExpanded ? messages.collapseHint : messages.expandHint);
 
     // When collapsed with child errors, append to the a11y label so screen readers
     // announce "Section name, contains an error, collapsed, button" without relying
     // solely on the error icon color.
-    const accessibilityLabel = hasError && !isExpanded ? intl.formatMessage(
-        {id: 'collapsible_section.label.has_error', defaultMessage: '{label}, contains an error'},
-        {label},
-    ) : label;
+    const accessibilityLabel = hasError && !isExpanded ? intl.formatMessage(messages.labelHasError, {label}) : label;
 
     return (
         <Animated.View

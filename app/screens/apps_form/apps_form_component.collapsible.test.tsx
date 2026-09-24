@@ -265,14 +265,14 @@ describe('AppsFormComponent — recursive collapsible rendering', () => {
             ],
         };
 
-        const {queryByTestId, getByLabelText} = render(form);
+        const {queryByTestId, getByLabelText, queryByLabelText} = render(form);
 
         expect(getByLabelText('outer')).toBeTruthy();
         expect(queryByTestId('mockfield.f_outer')).toBeNull();
         expect(queryByTestId('mockfield.f_inner')).toBeNull();
 
         // The inner header itself is a descendant of the collapsed outer, so it is absent too.
-        expect(getByLabelText('outer')).toBeTruthy();
+        expect(queryByLabelText('inner')).toBeNull();
     });
 
     it('reveals a deeper level only after its intermediate ancestor is expanded', () => {

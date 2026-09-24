@@ -287,6 +287,8 @@ const AppsFormFieldComponent = React.memo(({
                             trackColor={trackColor}
                             thumbColor={thumbColor}
                             disabled={field.readonly}
+                            accessibilityLabel={displayName}
+                            accessibilityHint={errorText || field.description}
                             testID={`${testID}.toggled.${boolValue}.button`}
                         />
                     </View>
