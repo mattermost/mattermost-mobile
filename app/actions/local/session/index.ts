@@ -21,6 +21,7 @@ import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {logError, logWarning} from '@utils/log';
 import {clearCookiesForServer, getCSRFFromCookie, urlSafeBase64Encode} from '@utils/security';
@@ -154,6 +155,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     clearRedactionInvalidations(serverUrl);
     RedactionRevalidationManager.removeServer(serverUrl);
+    RenderPermissionsStore.removeServer(serverUrl);
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
     EphemeralStore.clearClassificationCache(serverUrl);
     EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);

@@ -7,6 +7,7 @@ import {addFilesToDraft} from '@actions/local/draft';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
 import DatabaseManager from '@database/manager';
 import {getDraft} from '@queries/servers/drafts';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
 import {exportedForTesting} from './index';
@@ -436,6 +437,58 @@ describe('draft upload manager', () => {
         expect(manager.isUploading(clientId)).toBe(false);
         expect(errorHandler).toHaveBeenCalledTimes(1);
         expect(nullErrorHandler).not.toHaveBeenCalled();
+    });
+
+    it('should pass the server error id to error handlers when the upload is refused', async () => {
+        // HTTP errors resolve rather than reject, so the id is only available on complete.
+        const manager = new DraftEditPostUploadManagerSingleton();
+        const uploadMocks = mockUpload();
+
+        const clientId = 'clientId';
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
+
+        const errorHandler = jest.fn();
+        manager.registerErrorHandler(clientId, errorHandler);
+
+        uploadMocks.resolvePromise!({ok: false, code: 403, data: {id: 'api.file.upload_file.abac_denied.app_error', message: 'denied'}});
+        await new Promise(process.nextTick);
+
+        expect(errorHandler).toHaveBeenCalledWith('denied', 'api.file.upload_file.abac_denied.app_error');
+    });
+
+    it('should revalidate the channel upload decision when the server refuses the upload by policy', async () => {
+        // The stored decision allowed an upload the server refused.
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        const manager = new DraftEditPostUploadManagerSingleton();
+        const uploadMocks = mockUpload();
+
+        const clientId = 'clientId';
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
+
+        uploadMocks.resolvePromise!({ok: false, code: 403, data: {id: 'api.file.upload_file.abac_denied.app_error', message: 'denied'}});
+        await new Promise(process.nextTick);
+
+        expect(expireEntry).toHaveBeenCalledTimes(1);
+        expect(expireEntry).toHaveBeenCalledWith(url, channelId);
+        expireEntry.mockRestore();
+    });
+
+    it('should keep the channel upload decision when the upload fails for another reason', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        const manager = new DraftEditPostUploadManagerSingleton();
+        const uploadMocks = mockUpload();
+
+        const clientId = 'clientId';
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
+
+        uploadMocks.resolvePromise!({ok: false, code: 413, data: {id: 'api.file.upload_file.too_large.app_error', message: 'too large'}});
+        await new Promise(process.nextTick);
+
+        expect(expireEntry).not.toHaveBeenCalled();
+        expireEntry.mockRestore();
     });
 
     it('should call updateFileCallback when isEditPost is true', async () => {
