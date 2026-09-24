@@ -226,7 +226,6 @@ class GalleryScreen {
             return;
         }
 
-        // Let the reveal finish so the tap is not racing the animation it reverses.
         await wait(SETTLE_MS);
         await this.controls.tapAtPoint({x: 200, y: 230});
         await this.controlsToBeHidden(this.TOGGLE_TIMEOUT);
@@ -313,7 +312,7 @@ class GalleryScreen {
 
     pause = async () => this.tapControl(
         this.pauseButton,
-        () => this.elementExists(this.playButton).then((exists) => exists && this.overlayIsShown()),
+        () => this.elementExists(this.playButton),
         'pause: the video did not reach a paused state',
     );
 

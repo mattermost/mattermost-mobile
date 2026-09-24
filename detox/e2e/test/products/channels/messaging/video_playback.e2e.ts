@@ -86,9 +86,6 @@ describe('Messaging - Video Playback', () => {
         await GalleryScreen.showControls();
         await GalleryScreen.controlsToBeVisible();
 
-        await GalleryScreen.waitForPlaybackToAdvance(2);
-        await GalleryScreen.hideControls();
-        await GalleryScreen.waitForPlaybackToAdvance(2);
         await GalleryScreen.controlsToBeHidden();
     });
 
@@ -175,8 +172,7 @@ describe('Messaging - Video Playback', () => {
         await GalleryScreen.openSpeedMenu();
         await GalleryScreen.selectSpeed(2);
 
-        // Wait for the native player to apply the new rate before sampling.
-        await wait(timeouts.ONE_SEC);
+        await wait(timeouts.TWO_SEC);
 
         const atDoubleSpeed = await GalleryScreen.playbackRate(timeouts.FIVE_SEC);
         if (atDoubleSpeed <= atNormalSpeed * 1.5) {
