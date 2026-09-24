@@ -46,10 +46,15 @@
 #      push: a new commit gets a fresh run and a fresh human judgment, unlike
 #      E2E/Override.
 #
-# Fork PR guard (github.event.pull_request.head.repo.full_name == github.repository)
-# is applied per-step. Fork PR contexts only get a read-only GITHUB_TOKEN, so
-# addLabels / removeLabel / run cancellation would all 403. Mandatory E2E for fork
-# PRs is enforced separately.
+# Fork PRs: this workflow is pull_request_target so label writes and PAT steps
+# receive this repo's secrets (fork pull_request runs do not). Workflow YAML and
+# composite actions are loaded from the default-branch SHA — never from the PR.
+#
+# Auto E2E/Run and synchronize refresh stay same-repo only. A fork push
+# removes old run labels and requires a maintainer to approve the new SHA.
+# E2E executes PR code with secrets, so approval cannot survive a fork push.
+# Matterwick must dispatch fork runs from the trusted origin default branch,
+# passing the approved SHA as MOBILE_VERSION. No origin mirror is created.
 #
 # Base-branch guard: auto E2E/Run refresh only runs for PRs targeting main.
 # Stacked PRs (base != main) are skipped so Matterwick is not triggered on every
@@ -58,7 +63,7 @@
 name: E2E label manager
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
@@ -66,8 +71,17 @@ on:
       - unlabeled
 
 concurrency:
-  group: e2e-label-manager-${{ github.event.pull_request.number }}
+  # PAT label mutations emit new events; they must not cancel the head job
+  # halfway through remove+re-add. Override/Verified must still serialize with
+  # head updates so an old override repost cannot outlive removal of the label.
+  group: e2e-label-manager-${{ github.event.pull_request.number }}-${{ github.event.label.name && !contains(fromJSON('["E2E/Override","E2E/Verified"]'), github.event.label.name) && 'labels' || 'head' }}
   cancel-in-progress: true
+
+# pull_request_target defaults to a write token. Jobs opt into the extra scopes
+# they need; nothing here executes PR-authored JavaScript.
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   # Skip E2E when PR has no app-impacting files.
@@ -75,7 +89,6 @@ jobs:
     if: >-
       (github.event.action == 'synchronize' || github.event.action == 'opened')
       && github.event.pull_request.base.ref == 'main'
-      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -83,10 +96,13 @@ jobs:
     outputs:
       app_impacting: ${{ steps.filter.outputs.app_impacting }}
     steps:
-      # Need the PR's paths.json so fingerprint + impact filter share one list.
+      # Default branch, not the PR head or a user-selected PR base. A PR-head
+      # checkout could run PR-authored JS with a write token. The file LIST still
+      # comes from pulls.listFiles (the PR). Patterns come from trusted paths.json
+      # so a fork cannot shrink the impact set to skip E2E.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
           sparse-checkout: |
             .github/actions/compute-e2e-build-fingerprint
@@ -106,12 +122,8 @@ jobs:
               const path = require('path');
 
               // paths.json is read as DATA, never require()d, and paths.js is never
-              // loaded here. Everything under the sparse checkout comes from the PR
-              // head, so require()ing any of it would execute PR-authored JavaScript
-              // on the runner — arbitrary code with this job's authenticated API
-              // client. JSON.parse cannot execute. (The job is already restricted to
-              // same-repo PRs by the head.repo check above, so this is defence in
-              // depth rather than the only barrier.)
+              // loaded here. The sparse checkout is the default branch (trusted). JSON.parse
+              // cannot execute; require()ing this tree would still be wrong.
               const paths = JSON.parse(fs.readFileSync(
                 path.join(
                   process.cwd(),
@@ -131,9 +143,8 @@ jobs:
                 ...Object.values(paths.fingerprintByPlatform).flat(),
               ].map(toGlob);
 
-              // Hardcoded, NOT read from paths.json: the pattern list itself comes
-              // from the PR head, so a PR that trimmed its own paths.json could
-              // otherwise make that edit look non-impacting and skip E2E.
+              // Changes to the filter itself always require E2E, even if a future
+              // paths.json omits its own directory.
               const ALWAYS_IMPACTING = ['.github/actions/compute-e2e-build-fingerprint/**'];
               const patterns = [...new Set([...ALWAYS_IMPACTING, ...fingerprintGlobs, ...paths.triggerExtra])];
 
@@ -182,6 +193,10 @@ jobs:
             }
             core.setOutput('app_impacting', result.appImpacting ? 'true' : 'false');
 
+  # Fork dispatch requires Matterwick to select the trusted origin default
+  # branch. Never create/update/delete an origin ref supplied by a fork: doing
+  # so promotes untrusted workflow YAML and cannot prove branch ownership.
+
   # Always cancel superseded runs on synchronize — including docs-only pushes —
   # so a prior app-impacting run does not keep burning minutes after skip statuses.
   # This is NOT covered by e2e-detox-pr.yml's `concurrency:` group: that group only
@@ -194,8 +209,8 @@ jobs:
   # never-cancel model, and this is now the only remaining caller of the
   # "force-cancel stale runs for a branch" behavior. The removed action's
   # default-branch guard (no pr_number + branch == default) is not reproduced here
-  # because it is unreachable for this caller: this job only runs on `pull_request`
-  # synchronize, which always carries a PR number.
+  # because it is unreachable for this caller: this job only runs on
+  # pull_request_target synchronize, which always carries a PR number.
   cancel-stale-e2e-on-push:
     needs: detect-e2e-impact
     if: >-
@@ -203,11 +218,11 @@ jobs:
       && needs.detect-e2e-impact.result == 'success'
       && github.event.action == 'synchronize'
       && github.event.pull_request.base.ref == 'main'
-      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       actions: write
       statuses: write
+      pull-requests: read
     steps:
       - name: Force-cancel in-flight E2E runs for the previous commit
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -216,10 +231,16 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
-            const headBranch = context.payload.pull_request.head.ref;
             const excludeHeadSha = context.payload.pull_request.head.sha;
+            const {data: currentPr} = await github.rest.pulls.get({
+              owner, repo, pull_number: prNumber,
+            });
+            if (currentPr.state !== 'open' || currentPr.head.sha !== excludeHeadSha) {
+              core.info('Superseded synchronize event — leaving current runs untouched.');
+              return;
+            }
             const reason = 'E2E superseded by new commit push';
-            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
+            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting', 'pending', 'requested'];
             const E2E_STATUS_CONTEXTS = [
               'e2e-test/detox-ios',
               'e2e-test/detox-android',
@@ -229,40 +250,47 @@ jobs:
             ];
 
             const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
-            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.path === '.github/workflows/e2e-detox-pr.yml');
             if (!e2eWorkflow) {
               core.info('No E2E workflow found in repository');
               return;
             }
 
+            // workflow_dispatch head_sha identifies the workflow branch, not
+            // MOBILE_VERSION. A commit can also belong to several PRs and MAIN.
+            // Only the explicit PR/SHA run-name contract proves run ownership.
+            const runIdentity = (run) => {
+              const match = /^E2E PR #(\d+) @ ([a-f0-9]{40})$/.exec(run.display_title || '');
+              return match && Number(match[1]) === prNumber ? match[2] : null;
+            };
+
             const runsToCancel = new Map();
             for (const status of ACTIVE_RUN_STATUSES) {
-              const {data} = await github.rest.actions.listWorkflowRuns({
-                owner, repo, workflow_id: e2eWorkflow.id, status, branch: headBranch,
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner, repo, workflow_id: e2eWorkflow.id, status,
+                event: 'workflow_dispatch', per_page: 100,
               });
-              for (const run of data.workflow_runs) {
-                const matchesPr = !run.pull_requests?.length ||
-                  run.pull_requests.some((pr) => pr.number === prNumber);
-                if (!matchesPr) {
-                  core.info(`Skipping run ${run.id}: not associated with PR #${prNumber}`);
+              for (const run of runs) {
+                const testedSha = runIdentity(run);
+                if (!testedSha) {
                   continue;
                 }
-                if (run.head_sha === excludeHeadSha) {
+                if (testedSha === excludeHeadSha) {
                   core.info(`Skipping run ${run.id}: already on current commit ${excludeHeadSha}`);
                   continue;
                 }
-                runsToCancel.set(run.id, run);
+                runsToCancel.set(run.id, {...run, testedSha});
               }
             }
 
             if (runsToCancel.size === 0) {
-              core.info(`No active E2E runs found for PR #${prNumber} on branch ${headBranch}`);
+              core.info(`No active E2E runs found for PR #${prNumber}`);
               return;
             }
 
             const shasToUpdate = new Set();
             for (const run of runsToCancel.values()) {
-              core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha})`);
+              core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.testedSha})`);
               try {
                 await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
                 // The plain cancel above is what stops the expensive build jobs —
@@ -274,7 +302,7 @@ jobs:
                 await github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/force-cancel', {
                   owner, repo, run_id: run.id,
                 });
-                shasToUpdate.add(run.head_sha);
+                shasToUpdate.add(run.testedSha);
               } catch (err) {
                 core.warning(`Cancelling run ${run.id}: ${err.message}`);
               }
@@ -302,10 +330,10 @@ jobs:
     if: >-
       always()
       && needs.detect-e2e-impact.result == 'success'
-      && needs.detect-e2e-impact.outputs.app_impacting == 'true'
+      && (needs.detect-e2e-impact.outputs.app_impacting == 'true' || github.event.pull_request.head.repo.full_name != github.repository)
+      && needs.cancel-stale-e2e-on-push.result != 'failure'
       && github.event.action == 'synchronize'
       && github.event.pull_request.base.ref == 'main'
-      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       issues: write
@@ -332,6 +360,28 @@ jobs:
               owner, repo, issue_number: prNumber,
             });
             const labelNames = labels.map((label) => label.name);
+            const {data: currentPr} = await github.rest.pulls.get({
+              owner, repo, pull_number: prNumber,
+            });
+            if (currentPr.state !== 'open' || currentPr.head.sha !== context.payload.pull_request.head.sha) {
+              core.info('Superseded PR event — leaving current labels untouched.');
+              return;
+            }
+            const isFork = currentPr.head.repo.full_name !== `${owner}/${repo}`;
+            if (isFork) {
+              // A label on the previous SHA is not approval to execute or waive
+              // required checks on new fork code. Override is not sticky across
+              // fork pushes; same-repo Override may still re-post below.
+              for (const name of runLabels.filter((label) => labelNames.includes(label))) {
+                try {
+                  await github.rest.issues.removeLabel({owner, repo, issue_number: prNumber, name});
+                } catch (err) {
+                  if (err.status !== 404) throw err;
+                }
+              }
+              core.info(`Fork PR #${prNumber} changed — a maintainer must approve the new SHA with E2E/Run*.`);
+              return;
+            }
 
             if (labelNames.includes('E2E/Override')) {
               core.info(`PR #${prNumber} has E2E/Override — stripping run labels only.`);
@@ -388,20 +438,20 @@ jobs:
       && needs.detect-e2e-impact.outputs.app_impacting != 'true'
       && (github.event.action == 'synchronize' || github.event.action == 'opened')
       && github.event.pull_request.base.ref == 'main'
-      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       statuses: write
     steps:
-      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # Default branch, not the PR head or a user-selected PR base. A local
+      # `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
       # PR-authored action code in a job holding write scopes — and the status
       # actions also require() detox/utils/build-tsio-job-config.js from it.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Post skip status for all E2E contexts
@@ -416,13 +466,11 @@ jobs:
   # dispatched (run labels were stripped), so re-post the bypass on the new head
   # SHA. Idempotent with the label-manager's `labeled` post.
   #
-  # Separate job on purpose. Checking out the PR and running a local action means
-  # running PR-authored code, so it must not share a runner with the step that
-  # receives MATTERMOST_BUILD_GH_TOKEN. This job holds no secret and only the two
-  # permissions the status post needs.
+  # Separate job keeps the PAT out of the status runner. Local actions are
+  # loaded only from the default-branch SHA and receive minimal permissions.
   #
   # No explicit app_impacting gate needed: this job needs refresh-e2e-run-label,
-  # and refresh-e2e-run-label's own `if` already requires app_impacting == 'true'.
+  # and refresh-e2e-run-label handles fork approval revocation on every push.
   # GitHub Actions skips a dependent job by default when its `needs` job is
   # skipped (no `always()` here), so this is skipped for free on a non-impacting
   # push — post-skip-status covers that case instead.
@@ -434,14 +482,15 @@ jobs:
       contents: read
       statuses: write
     steps:
-      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # Default branch, not the PR head or a user-selected PR base. A local
+      # `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
       # PR-authored action code in a job holding write scopes — and the status
       # actions also require() detox/utils/build-tsio-job-config.js from it.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Re-post E2E/Override success on new commit
@@ -512,22 +561,25 @@ jobs:
             });
 
   e2e-label-manager:
+    if: github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-24.04
     permissions:
+      contents: read
       issues: write
       pull-requests: write
       statuses: write
       # Override cancels the in-flight run (see the cancel step below).
       actions: write
     steps:
-      # Base, not the PR head. `uses: ./.github/actions/...` loads the composite
+      # Default branch, not the PR head or a user-selected PR base. A local
+      # `uses: ./.github/actions/...` loads the composite
       # action from the checked-out workspace, so a PR-head checkout would run
       # PR-authored action code in a job holding write scopes — and the status
       # actions also require() detox/utils/build-tsio-job-config.js from it.
       # Nothing here needs PR content: the SHAs come from the event payload.
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       # ── Honor E2E/Override: strip run labels, then cancel in-flight E2E ─────
@@ -535,7 +587,6 @@ jobs:
         if: >-
           github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
-          && github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
@@ -574,8 +625,7 @@ jobs:
       # label is set, so the check stays green and only the description differs.
       - name: Cancel in-flight E2E runs
         if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'labeled'
+          github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -583,39 +633,42 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const prNumber = context.payload.pull_request.number;
-            const headBranch = context.payload.pull_request.head.ref;
-            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting'];
+            const ACTIVE_RUN_STATUSES = ['in_progress', 'queued', 'waiting', 'pending', 'requested'];
 
             const {data: workflows} = await github.rest.actions.listRepoWorkflows({owner, repo});
-            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.name === 'E2E');
+            const e2eWorkflow = workflows.workflows.find((workflow) => workflow.path === '.github/workflows/e2e-detox-pr.yml');
             if (!e2eWorkflow) {
               core.info('No E2E workflow found in repository');
               return;
             }
 
+            const runIdentity = (run) => {
+              const match = /^E2E PR #(\d+) @ ([a-f0-9]{40})$/.exec(run.display_title || '');
+              return match && Number(match[1]) === prNumber ? match[2] : null;
+            };
+
             const runsToCancel = new Map();
             for (const status of ACTIVE_RUN_STATUSES) {
-              const {data} = await github.rest.actions.listWorkflowRuns({
-                owner, repo, workflow_id: e2eWorkflow.id, status, branch: headBranch,
+              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                owner, repo, workflow_id: e2eWorkflow.id, status,
+                event: 'workflow_dispatch', per_page: 100,
               });
-              for (const run of data.workflow_runs) {
-                const matchesPr = !run.pull_requests?.length ||
-                  run.pull_requests.some((pr) => pr.number === prNumber);
-                if (!matchesPr) {
-                  core.info(`Skipping run ${run.id}: not associated with PR #${prNumber}`);
+              for (const run of runs) {
+                const testedSha = runIdentity(run);
+                if (!testedSha) {
                   continue;
                 }
-                runsToCancel.set(run.id, run);
+                runsToCancel.set(run.id, {...run, testedSha});
               }
             }
 
             if (runsToCancel.size === 0) {
-              core.info(`No active E2E runs found for PR #${prNumber} on branch ${headBranch}`);
+              core.info(`No active E2E runs found for PR #${prNumber}`);
               return;
             }
 
             for (const run of runsToCancel.values()) {
-              core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.head_sha}) — E2E/Override applied`);
+              core.info(`Cancelling E2E run ${run.id} (${run.status}, sha ${run.testedSha}) — E2E/Override applied`);
               try {
                 await github.rest.actions.cancelWorkflowRun({owner, repo, run_id: run.id});
                 // The plain cancel above is what stops the expensive build jobs —
@@ -640,8 +693,7 @@ jobs:
       # No statuses are posted from the cancel step; this is the single writer.
       - name: Publish success on required E2E contexts
         if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'labeled'
+          github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Override'
         uses: ./.github/actions/e2e-override-status
         with:
@@ -652,8 +704,7 @@ jobs:
       # success posted above would linger on the head SHA forever.
       - name: Reset required E2E contexts when E2E/Override is removed
         if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'unlabeled'
+          github.event.action == 'unlabeled'
           && github.event.label.name == 'E2E/Override'
         uses: ./.github/actions/e2e-override-status
         with:
@@ -672,8 +723,7 @@ jobs:
       # green is left alone.
       - name: Publish success on flaky-verified E2E contexts
         if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'labeled'
+          github.event.action == 'labeled'
           && github.event.label.name == 'E2E/Verified'
         uses: ./.github/actions/e2e-verified-status
         with:
@@ -688,8 +738,7 @@ jobs:
       # was removed.
       - name: Reset E2E contexts verified flaky when E2E/Verified is removed
         if: >-
-          github.event.pull_request.head.repo.full_name == github.repository
-          && github.event.action == 'unlabeled'
+          github.event.action == 'unlabeled'
           && github.event.label.name == 'E2E/Verified'
         uses: ./.github/actions/e2e-verified-status
         with:
