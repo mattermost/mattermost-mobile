@@ -15,6 +15,7 @@ import SessionAttributesManager from '@managers/session_attributes_manager';
 import {getConfig, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
+import {isMinimumLicenseTier} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -39,6 +40,15 @@ export async function handleLicenseChangedEvent(serverUrl: string, msg: WebSocke
             } else {
                 SessionAttributesManager.removeServer(serverUrl);
             }
+        }
+
+        // The ABAC engine refuses to evaluate below Enterprise Advanced and every fail-closed decision
+        // becomes a deny, so crossing that tier flips file access without any policy event. Raised after
+        // the manifest refresh so the refetch already carries the session attributes the tier enables.
+        const wasAbacLicensed = isMinimumLicenseTier(prevLicense, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+        const isAbacLicensed = isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+        if (wasAbacLicensed !== isAbacLicensed) {
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.LicenseChanged);
         }
     } catch {
         // do nothing
@@ -96,6 +106,9 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             } else {
                 SessionAttributesManager.removeServer(serverUrl);
             }
+
+            // Session attributes are part of the ABAC subject, so sending them or not can flip decisions.
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.SessionAttributes);
         }
     } catch {
         // do nothing

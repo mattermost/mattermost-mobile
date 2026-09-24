@@ -306,6 +306,11 @@ describe('Image utils', () => {
             expect(msg).toBe("File couldn't be uploaded. Check your connection and try again.");
         });
 
+        it('should explain a refusal by a permission policy instead of showing the server text', () => {
+            const msg = getUploadErrorMessage(intl, 'server text', 'api.file.upload_file.abac_denied.app_error');
+            expect(msg).toBe('File uploads are restricted in this channel');
+        });
+
         it('should return original message for non-network errors', () => {
             const originalMessage = 'Some other error occurred';
             const msg = getUploadErrorMessage(intl, originalMessage);

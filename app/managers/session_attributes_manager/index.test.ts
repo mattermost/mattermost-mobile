@@ -171,6 +171,22 @@ describe('SessionAttributesManager', () => {
         expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);
     });
 
+    it('should list a server as collecting session attributes only while they are enabled for it', async () => {
+        // The server derives the IP on every request, so a failed manifest fetch still leaves it collecting.
+        mockFetchSessionAttributesManifest.mockResolvedValue({error: new Error('network error')});
+        await manager.refreshManifest(serverUrl);
+        expect(manager.getEnabledServers()).toEqual([serverUrl]);
+
+        jest.mocked(getConfigBooleanValue).mockResolvedValue(false);
+        await manager.refreshManifest(serverUrl);
+        expect(manager.getEnabledServers()).toEqual([]);
+
+        jest.mocked(getConfigBooleanValue).mockResolvedValue(true);
+        await manager.refreshManifest(serverUrl);
+        manager.removeServer(serverUrl);
+        expect(manager.getEnabledServers()).toEqual([]);
+    });
+
     it('should forward removeServer to native', () => {
         manager.removeServer(serverUrl);
         expect(mockRemoveSessionAttributesServer).toHaveBeenCalledWith(serverUrl);

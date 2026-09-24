@@ -3,8 +3,10 @@
 
 import React from 'react';
 
+import {RenderPermissionAction} from '@constants/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 import {renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -55,6 +57,7 @@ describe('EditPost', () => {
     });
 
     afterEach(async () => {
+        RenderPermissionsStore.removeServer(serverUrl);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
@@ -67,6 +70,34 @@ describe('EditPost', () => {
             expect(editPost.props.maxFileCount).toBe(10);
             expect(editPost.props.maxFileSize).toBe(1000);
             expect(editPost.props.canUploadFiles).toBe(true);
+        });
+    });
+
+    it('should pass the upload decision for the channel of the post being edited', async () => {
+        const channelId = 'channel-1';
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handlePosts({
+            actionType: 'POSTS.RECEIVED_NEW',
+            order: [baseProps.postId],
+            posts: [TestHelper.fakePost({id: baseProps.postId, channel_id: channelId})],
+            prepareRecordsOnly: false,
+        });
+        RenderPermissionsStore.setEntry(serverUrl, channelId, {
+            epoch: 1,
+            decisions: {[RenderPermissionAction.UploadFileAttachment]: {allowed: false, evaluated: true}},
+        }, RENDER_PERMISSIONS_TTL_MS);
+
+        const {getByTestId} = renderWithEverything(<EnhancedEditPost {...baseProps}/>, {database, serverUrl});
+
+        await waitFor(() => {
+            expect(getByTestId('edit-post').props.canUploadFilesByPolicy).toBe(false);
         });
     });
 });

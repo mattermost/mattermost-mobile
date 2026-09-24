@@ -13,15 +13,18 @@ import {
 } from '@actions/local/redaction';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
-import {USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
+import {getAccessControlGroupId} from '@queries/servers/properties';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
+
+import type {Database} from '@nozbe/watermelondb';
 
 // One CPA write emits both custom_profile_attributes_values_updated and property_values_updated;
 // batching by scope collapses them into a single epoch advance and refresh.
@@ -257,6 +260,21 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
 };
 
 /**
+ * Managed channel categories store per-channel values in the same property tables, so a channel
+ * values event only matters when the access control group wrote it. Each written value names its
+ * group; a clear of every value on the channel names none, and neither does the group while it is
+ * still unknown locally, and both are treated as affecting access rather than risk missing one.
+ */
+const isAccessControlValuesChange = async (database: Database, rawValues?: string) => {
+    const values = rawValues ? safeParseJSON(rawValues) as PropertyValue[] | undefined : undefined;
+    const groupId = await getAccessControlGroupId(database);
+    if (!Array.isArray(values) || !values.length || !groupId) {
+        return true;
+    }
+    return values.some((value) => value.group_id === groupId);
+};
+
+/**
  * Fires alongside the CPA event for an API write, and alone for plugin writers that bypass that API,
  * so both are handled and the coalescer collapses the duplicate. It omits the originating
  * connection, so it cannot simply replace the CPA event either.
@@ -271,11 +289,21 @@ export const handleRedactionForPropertyValuesUpdated = async (serverUrl: string,
             return;
         }
 
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // Channel attribute values are the resource side of every policy on that channel.
+        if (msg.data?.object_type === CHANNEL_ATTRIBUTE_OBJECT_TYPE) {
+            const channelId = msg.data?.target_id;
+            if (channelId && await isAccessControlValuesChange(database, msg.data?.values)) {
+                scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelAttributes, channelId);
+            }
+            return;
+        }
+
         if (msg.data?.object_type !== USER_ATTRIBUTE_OBJECT_TYPE) {
             return;
         }
 
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUserId = await getCurrentUserId(database);
         if (!currentUserId || msg.data?.target_id !== currentUserId) {
             return;
@@ -296,12 +324,30 @@ export const handleRedactionForPropertyValuesUpdated = async (serverUrl: string,
  * so adding, changing or removing a field changes the session subject from the next request on.
  * The coalescing window lets the manifest update reach the native client before the refetch.
  */
-export const handleRedactionForPropertyFieldChanged = (serverUrl: string, msg: WebSocketMessage) => {
+export const handleRedactionForPropertyFieldChanged = async (serverUrl: string, msg: WebSocketMessage) => {
     const field = safeParseJSON(msg.data?.property_field) as PropertyField | undefined;
     const objectType = msg.data?.object_type ?? field?.object_type;
 
     if (objectType === SESSION_ATTRIBUTES_OBJECT_TYPE) {
         scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.SessionAttributes);
+        return;
+    }
+
+    // An edited channel attribute field rewrites the resource side of policies on every channel that
+    // holds a value for it; which ones is not in the payload. Deleting one clears its values, which
+    // arrives as its own values event.
+    if (objectType === CHANNEL_ATTRIBUTE_OBJECT_TYPE) {
+        if (msg.event !== WebsocketEvents.PROPERTY_FIELD_UPDATED || !field?.group_id) {
+            return;
+        }
+        try {
+            const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            if (field.group_id === await getAccessControlGroupId(database)) {
+                scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelAttributes);
+            }
+        } catch (error) {
+            logError('handleRedactionForPropertyFieldChanged', getFullErrorMessage(error));
+        }
         return;
     }
 

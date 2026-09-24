@@ -5,7 +5,9 @@ import {AppState, type AppStateStatus} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
 import {uploadFile} from '@actions/remote/file';
+import {ServerErrors} from '@constants';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {getFullErrorMessage} from '@utils/errors';
 
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
@@ -139,7 +141,14 @@ class DraftEditPostUploadManagerSingleton {
             return;
         }
         if (response.code !== 201) {
-            this.handleError((response.data?.message as string | undefined) || 'Failed to upload the file: unknown error', clientId);
+            // The network client resolves HTTP errors rather than rejecting them, so the server's error
+            // id is only available here; it lets callers recognize specific refusals.
+            const errorId = response.data?.id as string | undefined;
+            if (errorId === ServerErrors.UPLOAD_DENIED_BY_POLICY_ERROR) {
+                // The stored decision allowed an upload the server refused, so it is out of date.
+                RenderPermissionsStore.expireEntry(h.serverUrl, h.channelId);
+            }
+            this.handleError((response.data?.message as string | undefined) || 'Failed to upload the file: unknown error', clientId, errorId);
             return;
         }
         if (!response.data) {
