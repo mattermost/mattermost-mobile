@@ -34,6 +34,10 @@ export const KNOWN_MODAL_CLOSE_BUTTON_IDS: readonly string[] = Object.freeze([
     'tutorial_highlight',
 ] as const);
 
+// Per-ID presence probe. Multiplied by the ~25 IDs above, this is the floor cost of every
+// dismissKnownModals() call, so it has to stay small.
+const MODAL_PROBE_TIMEOUT = 100;
+
 /**
  * Best-effort dismiss of a modal blocking the channel/post draft.
  * Repeats up to maxDepth times when nested modals are stacked.
@@ -45,7 +49,11 @@ export async function dismissKnownModals(maxDepth = 1): Promise<void> {
         for (const closeId of KNOWN_MODAL_CLOSE_BUTTON_IDS) {
             const btn = element(by.id(closeId));
             try {
-                await waitFor(btn).toExist().withTimeout(timeouts.HALF_SEC);
+                // A mounted modal's close button is already in the hierarchy, so this is a
+                // presence check rather than something to wait on. The timeout is paid once
+                // per ID on every call — at HALF_SEC across this list that was ~12s of dead
+                // time whenever no modal was open, which is the common case.
+                await waitFor(btn).toExist().withTimeout(MODAL_PROBE_TIMEOUT);
                 await btn.tap();
                 try {
                     await waitFor(btn).not.toExist().withTimeout(timeouts.FOUR_SEC);
