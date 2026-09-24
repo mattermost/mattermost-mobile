@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {timeouts} from '@support/utils';
+import {isIos, timeouts} from '@support/utils';
 import {waitFor} from 'detox';
 
 // testIDs are defined in app/components/channel_attribute_labels/index.tsx
@@ -32,6 +32,17 @@ class ChannelAttributeLabels {
     getChipValue = (fieldName: string, index?: number) => element(by.id(
         `${index === undefined ? `channel_attribute_labels.chip.${fieldName}` : `channel_attribute_labels.chip.${fieldName}.${index}`}.value`,
     ));
+
+    // Same dismissal as ThreadOptionsScreen.close(): swipe the sheet down on iOS,
+    // hardware back on Android.
+    closeOverflowSheet = async () => {
+        if (isIos()) {
+            await this.overflowSheet.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await waitFor(this.overflowSheet).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
+    };
 
     toNotBeVisible = async () => {
         // Use waitFor rather than an immediate expect — the chip row may take a moment

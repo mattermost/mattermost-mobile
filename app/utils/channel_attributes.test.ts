@@ -206,17 +206,17 @@ describe('selectAttributesForAction', () => {
 
 describe('selectChannelInfoAttributes', () => {
     it('should list a required attribute even when unset, and omit an optional unset one', () => {
-        const requiredUnset = field({id: '1', name: 'a', attrs: {actions: ['display_label_info'], required: true}});
-        const optionalUnset = field({id: '2', name: 'b', attrs: {actions: ['display_label_info']}});
+        const requiredUnset = field({id: '1', name: 'a', attrs: {required: true}});
+        const optionalUnset = field({id: '2', name: 'b', attrs: {}});
 
         const resolved = resolveChannelAttributes([requiredUnset, optionalUnset], []);
-        expect(selectChannelInfoAttributes(resolved, 'display_label_info').map((a) => a.field.id)).toEqual(['1']);
+        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['1']);
     });
 
-    it('should omit an attribute that is not designated for the info surface', () => {
-        const headerOnly = field({id: '1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
-        const resolved = resolveChannelAttributes([headerOnly], [classificationValue as ChannelAttributeValue]);
-        expect(selectChannelInfoAttributes(resolved, 'display_label_info')).toHaveLength(0);
+    it('should list a set attribute whatever its display locations', () => {
+        const noLocation = field({id: 'cf-1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
+        const resolved = resolveChannelAttributes([noLocation], [classificationValue]);
+        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['cf-1']);
     });
 });
 

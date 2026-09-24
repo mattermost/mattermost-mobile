@@ -243,8 +243,8 @@ export const observeRenderedChannelBannerInfo = (
  *
  * The configuration keys have to be in here, not just the rendered value: which
  * surface an attribute appears on is decided *after* this comparator runs, by
- * selectAttributesForAction and selectChannelInfoAttributes reading attrs.actions
- * and attrs.required. Comparing only the value meant an administrator unticking
+ * selectAttributesForAction reading attrs.actions and selectChannelInfoAttributes
+ * reading attrs.required. Comparing only the value meant an administrator unticking
  * "show in header" produced an emission this treated as identical, so the chip
  * stayed on screen until the app restarted.
  */
@@ -258,6 +258,10 @@ function renderSignature(attribute: ResolvedChannelAttribute): string {
         attribute.field.type,
         attribute.displayValue,
         attribute.option?.color ?? '',
+
+        // Multi-valued attributes carry per-value colours, never an option, so
+        // an option recolour only shows up here.
+        attribute.displayValues.map((entry) => entry.color ?? '').join(','),
         attribute.unresolvedOptionIds?.join(',') ?? '',
         actions,
         attrs?.required === true ? '1' : '0',

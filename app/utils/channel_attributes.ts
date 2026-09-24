@@ -268,23 +268,20 @@ export function selectAttributesForAction(
 }
 
 /**
- * The attributes listed in Channel Info: designated for the info surface, and
- * either set or required.
+ * The attributes listed in Channel Info: every attribute the channel holds a
+ * value for, plus every required one still unset.
  *
- * Wider than selectAttributesForAction on purpose — a required attribute is
- * listed even when unset, because that empty row is the only thing telling an
- * administrator the channel is incomplete. Optional unset attributes are
- * reachable through Add attribute instead, which is a later story.
+ * Listed by value, not by display configuration, matching the webapp: the
+ * display actions only place attributes in the header and banner, and Channel
+ * Info is where a channel's attributes are reviewed, so no display setting may
+ * hide one here. A required attribute is listed even when unset, because that
+ * empty row is the only thing telling an administrator the channel is
+ * incomplete. Optional unset attributes are reachable through Add attribute
+ * instead, which is a later story.
  */
-export function selectChannelInfoAttributes(
-    attributes: ResolvedChannelAttribute[],
-    action: PropertyFieldAction,
-): ResolvedChannelAttribute[] {
+export function selectChannelInfoAttributes(attributes: ResolvedChannelAttribute[]): ResolvedChannelAttribute[] {
     const listed = attributes.filter((attribute) => {
-        if (!hasAction(attribute.field, action)) {
-            return false;
-        }
-        return Boolean(attribute.displayValue) || isPropertyFieldRequired(attribute.field);
+        return isPropertyValueSet(attribute.rawValue) || isPropertyFieldRequired(attribute.field);
     });
     return listed.length === 0 ? EMPTY_RESOLVED : listed;
 }

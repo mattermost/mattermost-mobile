@@ -164,15 +164,20 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
 
         // A group's row can wrap to more than one line once its chips no longer fit
         // on one, so its height is estimated in line units rather than assumed to
-        // always be SHEET_ROW_HEIGHT. This is a rough estimate, not a measurement,
-        // so '80%' is always offered as a taller snap point the user can drag to
-        // if a field with many values wraps to more lines than estimated.
+        // always be SHEET_ROW_HEIGHT. This is a rough estimate, not a measurement.
         const estimatedRows = overflowedGroups.reduce(
             (total, group) => total + Math.max(1, Math.ceil(group.items.length / CHIPS_PER_LINE_ESTIMATE)),
             0,
         );
         const height = bottomSheetSnapPoint(Math.min(estimatedRows, SHEET_MAX_ROWS), SHEET_ROW_HEIGHT) + (2 * TITLE_HEIGHT);
-        const snapPoints: Array<string | number> = [1, height, '80%'];
+
+        // Only offer the taller snap point when the rows exceed the capped height.
+        // The sheet lays its content out at the tallest snap point, so an '80%'
+        // offered for a single row leaves that row in a mostly off-screen container.
+        const snapPoints: Array<string | number> = [1, height];
+        if (estimatedRows > SHEET_MAX_ROWS) {
+            snapPoints.push('80%');
+        }
 
         bottomSheet(renderContent, snapPoints);
     }, [intl, overflowedGroups, styles]));

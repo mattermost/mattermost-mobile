@@ -360,13 +360,14 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             await ChannelScreen.back();
         });
 
-        it('MM-T6305_1 - should show the attribute row in Channel Info when designated for display_label_info', async () => {
+        it('MM-T6305_1 - should show a set attribute in Channel Info even with no display location', async () => {
+            // # Channel Info lists attributes by value, so a field shown nowhere else still appears.
             const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
                 siteOneUrl,
                 {
                     fieldName: TEST_FIELD_NAME,
                     options: TEST_FIELD_OPTIONS,
-                    actions: ['display_label_info'],
+                    actions: [],
                 },
             );
 
@@ -695,6 +696,8 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         await waitFor(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 2)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 2)).toHaveText('LOW').withTimeout(timeouts.TEN_SEC);
 
+        // # Close the sheet first: it covers the header back button.
+        await ChannelAttributeLabels.closeOverflowSheet();
         await ChannelScreen.back();
     });
 
