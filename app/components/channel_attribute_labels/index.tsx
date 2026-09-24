@@ -19,6 +19,10 @@ import {typography} from '@utils/typography';
 
 const CHIP_TEST_ID_PREFIX = 'channel_attribute_labels.chip';
 
+// The header chips stay mounted behind the sheet, so the sheet's copies need
+// their own testIDs or every visible value would match twice.
+const SHEET_CHIP_TEST_ID_PREFIX = 'channel_attribute_labels.overflow_sheet.chip';
+
 // Maximum number of individual value chips to show inline, counted across all
 // attributes rather than per attribute — a single multi-valued attribute (e.g.
 // a graph field with several selected nodes) can exceed this on its own, and
@@ -90,14 +94,14 @@ type Props = {
     attributes: ResolvedChannelAttribute[];
 };
 
-type OverflowGroupRowProps = {
+type AttributeGroupRowProps = {
     group: {fieldId: string; label: string; items: ChannelAttributeChipItem[]};
     styles: ReturnType<typeof getStyleSheet>;
 };
 
-// Extracted so the overflow sheet's group-of-chips row isn't an inline
-// callback nested inside another inline callback (max-nested-callbacks).
-const OverflowGroupRow = ({group, styles}: OverflowGroupRowProps) => (
+// Extracted so the sheet's group-of-chips row isn't an inline callback nested
+// inside another inline callback (max-nested-callbacks).
+const AttributeGroupRow = ({group, styles}: AttributeGroupRowProps) => (
     <View style={styles.sheetRow}>
         <Text
             style={styles.sheetLabel}
@@ -124,8 +128,9 @@ const OverflowGroupRow = ({group, styles}: OverflowGroupRowProps) => (
  * The channel's designated attribute values as chips, for the channel header.
  *
  * Shows at most MAX_VISIBLE_CHIP_VALUES value chips inline, counted across all
- * attributes. Additional values are reachable through the +N overflow
- * affordance, which opens a bottom sheet.
+ * attributes. The +N overflow affordance opens a bottom sheet listing every
+ * header attribute with all of its values, not only the hidden ones, so a
+ * multi-valued attribute split across the header and the overflow reads whole.
  *
  * Chips are informational. Nothing here enforces access, and no string may
  * suggest otherwise.
@@ -141,8 +146,11 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
     const chipItems = useMemo(() => flattenChannelAttributesToChips(attributes, CHIP_TEST_ID_PREFIX), [attributes]);
     const visibleCount = Math.min(chipItems.length, MAX_VISIBLE_CHIP_VALUES);
     const visible = useMemo(() => chipItems.slice(0, visibleCount), [chipItems, visibleCount]);
-    const overflowed = useMemo(() => chipItems.slice(visibleCount), [chipItems, visibleCount]);
-    const overflowedGroups = useMemo(() => groupChannelAttributeChipsByField(overflowed), [overflowed]);
+    const overflowCount = chipItems.length - visibleCount;
+    const sheetGroups = useMemo(
+        () => groupChannelAttributeChipsByField(flattenChannelAttributesToChips(attributes, SHEET_CHIP_TEST_ID_PREFIX)),
+        [attributes],
+    );
 
     const showOverflow = usePreventDoubleTap(useCallback(() => {
         const renderContent = () => (
@@ -152,8 +160,8 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
                 title={intl.formatMessage(messages.sheetTitle)}
                 testID='channel_attribute_labels.overflow_sheet'
             >
-                {overflowedGroups.map((group) => (
-                    <OverflowGroupRow
+                {sheetGroups.map((group) => (
+                    <AttributeGroupRow
                         key={group.fieldId}
                         group={group}
                         styles={styles}
@@ -165,7 +173,7 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
         // A group's row can wrap to more than one line once its chips no longer fit
         // on one, so its height is estimated in line units rather than assumed to
         // always be SHEET_ROW_HEIGHT. This is a rough estimate, not a measurement.
-        const estimatedRows = overflowedGroups.reduce(
+        const estimatedRows = sheetGroups.reduce(
             (total, group) => total + Math.max(1, Math.ceil(group.items.length / CHIPS_PER_LINE_ESTIMATE)),
             0,
         );
@@ -180,7 +188,7 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
         }
 
         bottomSheet(renderContent, snapPoints);
-    }, [intl, overflowedGroups, styles]));
+    }, [intl, sheetGroups, styles]));
 
     if (chipItems.length === 0) {
         return null;
@@ -202,17 +210,17 @@ const ChannelAttributeLabels = ({attributes}: Props) => {
                 />
             ))}
 
-            {overflowed.length > 0 && (
+            {overflowCount > 0 && (
                 <Pressable
                     onPress={showOverflow}
                     style={({pressed}) => [styles.overflow, pressed && styles.pressed]}
                     accessibilityRole='button'
-                    accessibilityLabel={intl.formatMessage(messages.overflowAccessibility, {count: overflowed.length})}
+                    accessibilityLabel={intl.formatMessage(messages.overflowAccessibility, {count: overflowCount})}
                     testID='channel_attribute_labels.overflow'
                 >
                     <FormattedText
                         {...messages.overflow}
-                        values={{count: overflowed.length}}
+                        values={{count: overflowCount}}
                         style={styles.overflowText}
                     />
                 </Pressable>

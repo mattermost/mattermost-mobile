@@ -44,6 +44,12 @@ class ChannelAttributeLabels {
         await waitFor(this.overflowSheet).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 
+    // overflow_sheet.chip.{field.name}[.{index}] — the overflow sheet lists every header
+    // attribute, so its chips carry their own prefix to stay distinct from the header's.
+    getSheetChipValue = (fieldName: string, index?: number) => element(by.id(
+        `${index === undefined ? `channel_attribute_labels.overflow_sheet.chip.${fieldName}` : `channel_attribute_labels.overflow_sheet.chip.${fieldName}.${index}`}.value`,
+    ));
+
     toNotBeVisible = async () => {
         // Use waitFor rather than an immediate expect — the chip row may take a moment
         // to settle after navigation (e.g. DM channels where no chip should appear).

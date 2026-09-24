@@ -647,7 +647,7 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         await ChannelScreen.back();
     });
 
-    it('MM-T6313_1 - should overflow a single attribute\'s excess values into the +N sheet', async () => {
+    it('MM-T6313_1 - should overflow a single attribute\'s excess values and list all its values in the +N sheet', async () => {
         await enableChannelAttributes(siteOneUrl);
 
         // # Create a multiselect header-designated field with three values set — one more
@@ -687,14 +687,14 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
         await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 1)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
         await expect(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 2)).not.toExist();
 
-        // * The overflow button is visible, and opening it reveals the third value as its
-        // * own chip (indexed the same way as the header, since it belongs to the same
-        // * multi-valued field) — not folded into a joined string with the other two.
+        // * The overflow button is visible, and opening it lists the whole attribute — all
+        // * three values, each its own chip, not only the one hidden from the header.
         await waitFor(ChannelAttributeLabels.overflow).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelAttributeLabels.overflow.tap();
         await waitFor(ChannelAttributeLabels.overflowSheet).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 2)).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 2)).toHaveText('LOW').withTimeout(timeouts.TEN_SEC);
+        await waitFor(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 0)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+        await expect(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 1)).toHaveText('MEDIUM');
+        await expect(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 2)).toHaveText('LOW');
 
         // # Close the sheet first: it covers the header back button.
         await ChannelAttributeLabels.closeOverflowSheet();

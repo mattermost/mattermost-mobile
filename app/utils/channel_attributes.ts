@@ -320,9 +320,7 @@ export function flattenChannelAttributesToChips(attributes: ResolvedChannelAttri
 
 /**
  * Groups chip items back by field, in order, so a caller can render one row
- * per field with only the values it was given — e.g. a partially visible
- * multi-valued attribute lists just its remaining values, rather than
- * repeating the ones already shown elsewhere.
+ * per field with every value of that field as its own chip.
  */
 export function groupChannelAttributeChipsByField(items: ChannelAttributeChipItem[]): Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> {
     const groups: Array<{fieldId: string; label: string; items: ChannelAttributeChipItem[]}> = [];
