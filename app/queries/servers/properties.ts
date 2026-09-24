@@ -196,8 +196,7 @@ export const observeResolvedChannelAttributes = (
 export const observeChannelAttributeBanner = (
     database: Database,
     channelId: string,
-    nativeBannerText?: string,
-    authoredColor?: string,
+    bannerInfo?: ChannelBannerInfo,
 ): Observable<ChannelAttributeBannerState> => {
     return combineLatest([
         observeChannelAttributeFields(database),
@@ -205,8 +204,8 @@ export const observeChannelAttributeBanner = (
         observeChannelAttributesEnabled(database),
     ]).pipe(
         map(([fields, values, attributesEnabled]) => ({
-            ...deriveChannelAttributeBanner(fields, values, nativeBannerText, authoredColor, attributesEnabled),
-            nativeText: renderNativeBannerText(fields, values, nativeBannerText, attributesEnabled),
+            ...deriveChannelAttributeBanner(fields, values, bannerInfo, attributesEnabled),
+            nativeText: renderNativeBannerText(fields, values, bannerInfo?.text, attributesEnabled),
         })),
         distinctUntilChanged((a, b) => a.hasBanner === b.hasBanner &&
             a.banner?.text === b.banner?.text &&

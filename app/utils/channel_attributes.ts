@@ -434,13 +434,22 @@ function hasNoDisplayConfiguration(field: ChannelAttributeField): boolean {
 }
 
 /**
- * Resolves one channel banner from every attribute designated for that surface.
+ * Resolves one channel banner from every attribute designated for that surface,
+ * following the same rules as the webapp.
  *
  * Falls back to the classification field while that field carries no display
  * configuration at all, which is how an install that upgraded before an
  * administrator configured anything keeps the banner it has today. The fallback
  * switches off as soon as the field carries any actions, so an unticked Banner
  * means no banner.
+ *
+ * On the designated path the channel's own banner settings are honored: once a
+ * channel has authored banner text, switching its banner off hides it whatever
+ * attributes are designated, unless one of them is required. The authored text
+ * wins over the designated default even when every attribute it references is
+ * unset. Classification's color is enforced only while classification actually
+ * appears on the banner; once the channel removes its token, the color is the
+ * channel's.
  *
  * The classification field is matched by name because mobile does not persist
  * linked_field_id. That is sufficient rather than lax: the template field is
@@ -449,14 +458,13 @@ function hasNoDisplayConfiguration(field: ChannelAttributeField): boolean {
  *
  * @param fields channel-object fields in the access_control group, any order
  * @param values every property value on this channel
- * @param nativeBannerText the channel's own banner_info.text template
- * @param authoredColor the channel's own banner_info.background_color
+ * @param [bannerInfo] the channel's own banner_info: template, color and toggle
+ * @param [attributesEnabled] whether the channel attributes feature is on
  */
 export function deriveChannelAttributeBanner(
     fields: ChannelAttributeField[],
     values: ChannelAttributeValue[],
-    nativeBannerText?: string,
-    authoredColor?: string,
+    bannerInfo?: ChannelBannerInfo,
     attributesEnabled = false,
 ): ChannelAttributeBannerState {
     const ordered = [...fields].sort(compareChannelAttributeFields);
@@ -468,26 +476,26 @@ export function deriveChannelAttributeBanner(
     const candidates = attributesEnabled ? ordered : ordered.filter((field) => field.name === CLASSIFICATIONS_FIELD_NAME);
 
     const designatedFields = candidates.filter(hasBannerAction);
-    const designated = designatedFields[0];
     const fallback = designatedFields.length > 0 ? undefined : candidates.find(
         (field) => field.name === CLASSIFICATIONS_FIELD_NAME && hasNoDisplayConfiguration(field),
     );
 
-    const bannerField = designated ?? fallback;
-    if (!bannerField) {
+    if (designatedFields.length === 0 && !fallback) {
         return NO_BANNER;
     }
 
     const resolvedAttributes = resolveChannelAttributes(ordered, values);
+    const templateAttributes = withoutUnresolvedOptions(resolvedAttributes);
+    const authoredText = bannerInfo?.text;
 
-    if (designatedFields.length === 0) {
-        const resolved = resolvedAttributes.find((attribute) => attribute.field.id === bannerField.id);
+    if (fallback) {
+        const resolved = resolvedAttributes.find((attribute) => attribute.field.id === fallback.id);
         if (!resolved?.option?.name || resolved.unresolvedOptionIds?.length) {
             return NO_BANNER;
         }
 
-        const text = nativeBannerText ?
-            renderBannerTemplate(nativeBannerText, resolvedAttributes) :
+        const text = authoredText ?
+            renderBannerTemplate(authoredText, templateAttributes) :
             `**${resolved.option.name}**`;
         if (!text) {
             return NO_BANNER;
@@ -503,28 +511,45 @@ export function deriveChannelAttributeBanner(
         };
     }
 
+    // A channel that never authored a banner carries enabled=false and still shows
+    // the designated default, so the toggle only counts once text exists.
+    const bannerRequired = designatedFields.some(isPropertyFieldRequired);
+    if (authoredText !== undefined && !bannerInfo?.enabled && !bannerRequired) {
+        return NO_BANNER;
+    }
+
     const contributions = designatedFields.
         map((field) => resolvedAttributes.find((attribute) => attribute.field.id === field.id)).
         filter((attribute): attribute is ResolvedChannelAttribute => Boolean(
             attribute?.displayValue && !attribute.unresolvedOptionIds?.length,
         ));
 
-    if (contributions.length === 0) {
+    let text: string;
+    if (authoredText !== undefined) {
+        text = authoredText ? renderBannerTemplate(authoredText, templateAttributes) : '';
+    } else if (contributions.length === 0) {
+        return NO_BANNER;
+    } else {
+        text = contributions.map((attribute) => attribute.displayValue).join(' · ');
+    }
+    if (!text.trim()) {
         return NO_BANNER;
     }
 
-    const text = nativeBannerText ?
-        renderBannerTemplate(nativeBannerText, resolvedAttributes) :
-        contributions.map((attribute) => attribute.displayValue).join(' · ');
-    if (!text) {
-        return NO_BANNER;
-    }
-
-    const classificationDesignated = designatedFields.some((field) => field.name === CLASSIFICATIONS_FIELD_NAME);
     const classificationContribution = contributions.find((attribute) => attribute.field.name === CLASSIFICATIONS_FIELD_NAME);
-    const backgroundColor = classificationDesignated ?
-        classificationContribution?.option?.color || DEFAULT_BANNER_COLOR :
-        authoredColor || (contributions.length === 1 ? contributions[0].option?.color : undefined) || DEFAULT_BANNER_COLOR;
+    const classificationColor = classificationContribution?.option?.color;
+    const classificationInBanner = Boolean(classificationColor) &&
+        (authoredText === undefined || hasAttributeToken(authoredText, CLASSIFICATIONS_FIELD_NAME));
+
+    let backgroundColor: string;
+    if (classificationInBanner && classificationColor) {
+        backgroundColor = classificationColor;
+    } else {
+        const colorContributions = contributions.filter((attribute) => attribute !== classificationContribution);
+        backgroundColor = bannerInfo?.background_color ||
+            (colorContributions.length === 1 ? colorContributions[0].option?.color : undefined) ||
+            DEFAULT_BANNER_COLOR;
+    }
 
     return {
         hasBanner: true,
@@ -534,6 +559,14 @@ export function deriveChannelAttributeBanner(
             background_color: backgroundColor,
         },
     };
+}
+
+// A deleted option would otherwise render its raw id in the banner.
+function withoutUnresolvedOptions(attributes: ResolvedChannelAttribute[]): ResolvedChannelAttribute[] {
+    if (!attributes.some((attribute) => attribute.unresolvedOptionIds?.length)) {
+        return attributes;
+    }
+    return attributes.map((attribute) => (attribute.unresolvedOptionIds?.length ? {...attribute, displayValue: '', displayValues: []} : attribute));
 }
 
 // Separators the banner composer offers. Excludes '-' and '/': a banner authored
@@ -568,6 +601,15 @@ export function renderNativeBannerText(
     }
 
     return renderBannerTemplate(nativeBannerText, resolveChannelAttributes(fields, values));
+}
+
+export function hasAttributeToken(text: string, fieldName: string): boolean {
+    for (const match of text.matchAll(TOKEN_PATTERN)) {
+        if (match[1] === fieldName) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export function renderBannerTemplate(template: string, attributes: ResolvedChannelAttribute[]): string {

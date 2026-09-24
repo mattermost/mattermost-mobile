@@ -270,18 +270,18 @@ describe('deriveChannelAttributeBanner', () => {
     });
 
     it('should render nothing when the designated attribute has no value on this channel', () => {
-        expect(deriveChannelAttributeBanner([designated], [], undefined, undefined, true).hasBanner).toBe(false);
+        expect(deriveChannelAttributeBanner([designated], [], undefined, true).hasBanner).toBe(false);
     });
 
     it('should select the attribute designated for the banner', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], undefined, true);
         expect(result.hasBanner).toBe(true);
         expect(result.banner).toEqual({enabled: true, text: 'AURORA', background_color: '#112233'});
     });
 
     it('should match the value by field id rather than taking the first value on the channel', () => {
         const values = [classificationValue, designatedValue];
-        const result = deriveChannelAttributeBanner([classificationField, designated], values, undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([classificationField, designated], values, undefined, true);
         expect(result.banner?.text).toBe('AURORA');
     });
 
@@ -297,22 +297,22 @@ describe('deriveChannelAttributeBanner', () => {
     });
 
     it('should prefer a designated attribute over the classification fallback', () => {
-        const result = deriveChannelAttributeBanner([classificationField, designated], [classificationValue, designatedValue], undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([classificationField, designated], [classificationValue, designatedValue], undefined, true);
         expect(result.banner?.text).toBe('AURORA');
     });
 
     it('should use the channel banner text when it is set', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], 'CONTROLLED UNCLASSIFIED', undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: 'CONTROLLED UNCLASSIFIED'}, true);
         expect(result.banner?.text).toBe('CONTROLLED UNCLASSIFIED');
     });
 
     it('should resolve attribute tokens in channel banner text', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], '{{program}} · Team', undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: '{{program}} · Team'}, true);
         expect(result.banner?.text).toBe('AURORA · Team');
     });
 
     it('should prefer an authored colour for a non-classification banner', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], 'Text', '#ABCDEF', true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: 'Text', background_color: '#ABCDEF'}, true);
         expect(result.banner?.background_color).toBe('#ABCDEF');
     });
 
@@ -323,18 +323,18 @@ describe('deriveChannelAttributeBanner', () => {
             attrs: {options: [{id: 'opt', name: 'LABEL'}], actions: ['display_banner_top']},
         });
         const val = {fieldId: 'cf-20', value: 'opt'} as ChannelAttributeValue;
-        const result = deriveChannelAttributeBanner([noColor], [val], 'Text', '#ABCDEF', true);
+        const result = deriveChannelAttributeBanner([noColor], [val], {enabled: true, text: 'Text', background_color: '#ABCDEF'}, true);
         expect(result.banner?.background_color).toBe('#ABCDEF');
     });
 
     it('should keep the option colour for the classification fallback, whatever banner_info carries', () => {
-        const result = deriveChannelAttributeBanner([classificationField], [classificationValue], 'Text', '#ABCDEF');
+        const result = deriveChannelAttributeBanner([classificationField], [classificationValue], {enabled: true, text: 'Text', background_color: '#ABCDEF'});
         expect(result.banner?.background_color).toBe('#FF0000');
     });
 
     it('should render nothing when the stored option no longer exists', () => {
         const value = {fieldId: 'cf-9', value: 'gone'} as ChannelAttributeValue;
-        expect(deriveChannelAttributeBanner([designated], [value], undefined, undefined, true).hasBanner).toBe(false);
+        expect(deriveChannelAttributeBanner([designated], [value], undefined, true).hasBanner).toBe(false);
     });
 
     it('should compose every banner attribute in sort order', () => {
@@ -345,7 +345,7 @@ describe('deriveChannelAttributeBanner', () => {
         });
         const values = [designatedValue, {fieldId: 'cf-10', value: 'noforn'} as ChannelAttributeValue];
 
-        const result = deriveChannelAttributeBanner([designated, second], values, undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([designated, second], values, undefined, true);
         expect(result.banner?.text).toBe('NOFORN · AURORA');
         expect(result.banner?.background_color).toBe('#DDDDDD');
     });
@@ -374,8 +374,7 @@ describe('deriveChannelAttributeBanner', () => {
         const result = deriveChannelAttributeBanner(
             [programme, configuredClassification],
             values,
-            undefined,
-            '#ABCDEF',
+            {enabled: false, background_color: '#ABCDEF'},
             true,
         );
 
@@ -421,7 +420,6 @@ describe('deriveChannelAttributeBanner', () => {
             [classificationField, multiselect, select, text],
             values,
             undefined,
-            undefined,
             true,
         );
 
@@ -429,6 +427,58 @@ describe('deriveChannelAttributeBanner', () => {
             enabled: true,
             text: 'val1, val2 · sel2 · text req -info-banner',
             background_color: '#DDDDDD',
+        });
+    });
+
+    describe('with an authored channel banner', () => {
+        const classificationDesignated = field({
+            id: 'cf-1',
+            name: 'classification',
+            attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_banner_top']},
+        });
+
+        it('should hide the banner when the channel switched it off, whatever is designated', () => {
+            const bannerInfo = {enabled: false, text: '{{classification}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([classificationDesignated], [classificationValue], bannerInfo, true).hasBanner).toBe(false);
+        });
+
+        it('should keep the banner a required designated attribute mandates, even when switched off', () => {
+            const required = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_banner_top'], required: true}});
+            const bannerInfo = {enabled: false, text: '{{classification}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([required], [classificationValue], bannerInfo, true).banner).toEqual({
+                enabled: true,
+                text: 'Secret',
+                background_color: '#FF0000',
+            });
+        });
+
+        it('should enforce the classification color only while its token is in the text', () => {
+            const withToken = {enabled: true, text: '{{classification}} · {{program}}', background_color: '#ABCDEF'};
+            const withoutToken = {enabled: true, text: 'this is the text {{program}}', background_color: '#ABCDEF'};
+            const fields = [classificationDesignated, designated];
+            const values = [classificationValue, designatedValue];
+
+            expect(deriveChannelAttributeBanner(fields, values, withToken, true).banner?.background_color).toBe('#FF0000');
+            expect(deriveChannelAttributeBanner(fields, values, withoutToken, true).banner).toEqual({
+                enabled: true,
+                text: 'this is the text AURORA',
+                background_color: '#ABCDEF',
+            });
+        });
+
+        it('should show the authored text even when every attribute it references is unset', () => {
+            const bannerInfo = {enabled: true, text: 'this is the text {{program}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([designated], [], bannerInfo, true).banner).toEqual({
+                enabled: true,
+                text: 'this is the text',
+                background_color: '#ABCDEF',
+            });
+        });
+
+        it('should drop a deleted option from the text rather than show its raw id', () => {
+            const bannerInfo = {enabled: true, text: 'Marking {{program}}', background_color: '#ABCDEF'};
+            const gone = {fieldId: 'cf-9', value: 'gone'} as ChannelAttributeValue;
+            expect(deriveChannelAttributeBanner([designated], [gone], bannerInfo, true).banner?.text).toBe('Marking');
         });
     });
 

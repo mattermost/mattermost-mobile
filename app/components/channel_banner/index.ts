@@ -28,7 +28,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     // Attribute-driven banners use banner_info as template/config storage even
     // while its native enabled flag is false.
     const attributeBanner = bannerInfo.pipe(
-        switchMap((bi) => observeChannelAttributeBanner(database, channelId, bi?.text, bi?.background_color)),
+        switchMap((bi) => observeChannelAttributeBanner(database, channelId, bi)),
     );
 
     return {
