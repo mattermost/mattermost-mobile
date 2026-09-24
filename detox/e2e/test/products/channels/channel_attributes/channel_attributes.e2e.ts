@@ -598,14 +598,8 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             // The only other flag write in the suite; see beforeAll above.
             canControlFlag = await disableChannelAttributes(siteOneUrl);
 
-            // Fail here rather than letting each test return early. A test that returns without
-            // asserting is recorded by Jest as passed, so an installation that owns the flag used
-            // to report three green flag-off tests that never ran — the same thing as reporting
-            // the feature works when it was never switched off. Every provisioned server in CI
-            // accepts this write, so this is a real change in the environment, not a normal skip.
+            // Fail here: tests that return early are recorded by Jest as passed.
             if (!canControlFlag) {
-                // The helper returns false both for a failed patch and for a flag that never
-                // reported false; its own log says which.
                 throw new Error(
                     'disableChannelAttributes could not confirm FeatureFlagChannelAttributes ' +
                     'is off, so the flag-off tests below have no pre-condition to assert ' +

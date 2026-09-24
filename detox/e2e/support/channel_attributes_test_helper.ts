@@ -18,19 +18,12 @@ const observedFlagValues = async (baseUrl: string) => {
 };
 
 /**
- * Attempt to disable the ChannelAttributes feature flag on the server.
- *
- * Returns true once client config reports the flag as false. Returns false if every
- * attempt's patch was rejected or never propagated; the logged warnings say which.
- * Never throws — callers that require the flag to be off should fail on false.
+ * Disable the ChannelAttributes flag. Returns false if no attempt was confirmed; never throws.
  */
 export const disableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
     let lastObserved: {server?: unknown; client?: unknown} = {};
 
-    // Re-patch between polls, the way enableChannelAttributes does. Disabling used to patch
-    // once and then wait, so a server that dropped or was slow to propagate that single write
-    // made this return false — the same answer it gives when the installation owns the flag,
-    // even though a second patch would have taken. Both directions now get the same budget.
+    // Re-patch between polls like enableChannelAttributes; a single write can be dropped.
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
         const patchResult = await System.apiPatchConfig(baseUrl, {
@@ -55,9 +48,7 @@ export const disableChannelAttributes = async (baseUrl: string): Promise<boolean
 
         lastObserved = await observedFlagValues(baseUrl);
 
-        // Say which of the two failed. A rejected patch and a patch that was accepted but
-        // never propagated both land here, and the observed values alone cannot tell them
-        // apart — that ambiguity is what made this helper's `false` mean two different things.
+        // Say whether the patch was rejected or never propagated.
         const cause = patchResult.error ?
             `patch rejected: ${JSON.stringify(patchResult.error).slice(0, 200)}` :
             'patch accepted but the client config did not report false in time';

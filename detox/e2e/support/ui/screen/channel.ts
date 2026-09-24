@@ -375,9 +375,7 @@ class ChannelScreen {
         const postTestID = `${this.testID.channelScreenPrefix}post_list.post.${postId}`;
         const longPressTarget = element(by.id(postTestID));
 
-        // Each attempt gets its own iOS budget. A long press that degrades into a tap is
-        // only detected after the first attempt spends its budget, so a shared deadline
-        // left the recovery retry none. Only one recovery is allowed, so this is bounded.
+        // Each attempt gets its own iOS budget; a shared one left the single recovery none.
         const attemptOpenPostOptions = async (attempt: number): Promise<void> => {
             try {
                 await longPressWithScrollRetry(

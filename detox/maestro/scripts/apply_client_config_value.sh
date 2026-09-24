@@ -41,9 +41,7 @@ patch_json="$3"
 key="$4"
 expected="$5"
 
-# Every request here is a small JSON read or patch against one server. Without a ceiling a
-# stalled connection blocks curl indefinitely: the script cannot reach its retry or exit path
-# and the caller burns its whole CI job timeout on one unanswered socket.
+# Bound every request so a stalled connection cannot hang the script past its retry path.
 CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
 MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
 

@@ -92,9 +92,8 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
-    // The sidebar row is written after the channel itself, so once it exists the app has
-    // stored a channel the user was just added to. Archiving before that point races the
-    // app's own fetch of the channel, and the pre-archive copy can land last.
+    // The row is written after the channel, so wait for it before archiving a channel the
+    // user was just added to; otherwise the app's pre-archive fetch can land last.
     waitForChannelItem = async (categoryKey: string, channelName: string) => {
         await waitFor(this.getChannelItemDisplayName(categoryKey, channelName)).toExist().withTimeout(timeouts.HALF_MIN);
     };
