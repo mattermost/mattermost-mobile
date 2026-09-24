@@ -362,7 +362,7 @@ class GalleryScreen {
 
         await this.showControls();
         await this.speedButton.tap();
-        await waitForElementToExist(this.speedMenu, this.TOGGLE_TIMEOUT);
+        await waitForElementToExist(this.speedMenu, timeouts.TEN_SEC);
     };
 
     selectSpeed = async (rate: number) => {
