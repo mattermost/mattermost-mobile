@@ -5,12 +5,13 @@ import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Pressable, Text, View} from 'react-native';
+import {Keyboard, Pressable, View} from 'react-native';
 import {KeyboardAwareScrollView, type KeyboardAwareScrollViewRef} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {handleGotoLocation} from '@actions/remote/command';
 import Button from '@components/button';
+import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
@@ -58,12 +59,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         buttonsWrapper: {
             marginHorizontal: 5,
         },
-        headerSubmitText: {
-            color: theme.sidebarHeaderTextColor,
-            ...typography('Body', 200, 'SemiBold'),
+        headerSubmitButton: {
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: theme.buttonBg,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
-        headerSubmitTextDisabled: {
-            color: changeOpacity(theme.sidebarHeaderTextColor, 0.32),
+        headerSubmitButtonDisabled: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.32),
+        },
+        headerSubmitIcon: {
+            color: theme.buttonColor,
         },
         headerSubmitPressed: {
             opacity: 0.72,
@@ -460,11 +468,18 @@ function AppsFormComponent({
                         onPress={() => handleSubmit()}
                         disabled={submitting}
                         accessibilityRole='button'
-                        style={({pressed}) => pressed && style.headerSubmitPressed}
+                        accessibilityLabel={submitLabel}
+                        style={({pressed}) => [
+                            style.headerSubmitButton,
+                            submitting && style.headerSubmitButtonDisabled,
+                            pressed && style.headerSubmitPressed,
+                        ]}
                     >
-                        <Text style={[style.headerSubmitText, submitting && style.headerSubmitTextDisabled]}>
-                            {submitLabel}
-                        </Text>
+                        <CompassIcon
+                            name='check'
+                            size={24}
+                            style={style.headerSubmitIcon}
+                        />
                     </Pressable>
                 </View>
             ),

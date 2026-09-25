@@ -168,7 +168,7 @@ describe('AppsFormComponent submit button', () => {
         expect(getByTestId('interactive_dialog.submit.button')).toBeTruthy();
     });
 
-    it('honors form.submit_label as the button text', () => {
+    it('honors form.submit_label as the submit button accessibility label', () => {
         renderWithEverything(
             <AppsFormComponent {...getProps({submit_label: 'Triage'})}/>,
             {database, serverUrl},
@@ -177,8 +177,10 @@ describe('AppsFormComponent submit button', () => {
         const headerRight = getHeaderSubmit();
         expect(headerRight).toBeTruthy();
 
-        const {getByText} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
-        expect(getByText('Triage')).toBeTruthy();
+        // The header submit is now a checkmark icon button, so the label is exposed
+        // to assistive tech via accessibilityLabel rather than visible text.
+        const {getByLabelText} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+        expect(getByLabelText('Triage')).toBeTruthy();
     });
 });
 
