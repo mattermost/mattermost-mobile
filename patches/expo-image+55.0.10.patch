@@ -547,11 +547,31 @@ index 4d23e20..5e6d392 100644
 diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
 +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ExpoImageViewWrapper.kt
-@@ -448,6 +448,15 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(c
+@@ -69,6 +69,7 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(
+
+   private var firstTarget = ImageViewWrapperTarget(WeakReference(this))
+   private var secondTarget = ImageViewWrapperTarget(WeakReference(this))
++  private var foregroundTarget: ImageViewWrapperTarget? = null
+
+   internal val onLoadStart by EventDispatcher<Unit>()
+   internal val onProgress by EventDispatcher<ImageProgressEvent>()
+@@ -385,6 +386,7 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(
+       it.applyTransformationMatrix()
+     }
+     target.isUsed = true
++    foregroundTarget = target
+
+     if (resource is Animatable) {
+       resource.start()
+@@ -450,6 +452,19 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(
      requestManager.clear(secondTarget)
    }
  
 +  fun onTargetCleared(target: ImageViewWrapperTarget) {
++    if (foregroundTarget === target) {
++      foregroundTarget = null
++    }
++
 +    if (firstView.currentTarget === target) {
 +      firstView.recycleView()
 +    }
@@ -563,6 +583,21 @@ diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/Ex
    private fun cleanIfNeeded(
      newBestSource: Source?,
      newBestSourceModel: GlideModelProvider?,
+@@ -551,10 +566,10 @@ class ExpoImageViewWrapper(context: Context, appContext: AppContext) : ExpoView(
+       }
+
+       onLoadStart.invoke(Unit)
+-      val newTarget = if (secondTarget.isUsed) {
+-        firstTarget
+-      } else {
+-        secondTarget
++      val newTarget = when (foregroundTarget) {
++        firstTarget -> secondTarget
++        secondTarget -> firstTarget
++        else -> if (secondTarget.isUsed) firstTarget else secondTarget
+       }
+       newTarget.hasSource = sourceToLoad != null
+
 diff --git a/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt b/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
 --- a/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
 +++ b/node_modules/expo-image/android/src/main/java/expo/modules/image/ImageViewWrapperTarget.kt
