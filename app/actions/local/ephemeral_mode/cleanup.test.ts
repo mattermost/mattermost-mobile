@@ -9,6 +9,7 @@ import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
@@ -17,6 +18,7 @@ import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {autoCacheCleanup} from './cleanup';
 
@@ -48,6 +50,10 @@ jest.mock('@store/ephemeral_store', () => ({
 }));
 
 jest.mock('@utils/log');
+
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
+}));
 
 jest.mock('@queries/servers/system', () => ({
     getCurrentChannelId: jest.fn(),
@@ -670,5 +676,33 @@ describe('autoCacheCleanup', () => {
             occurredAt: NOW,
             errorReason: 'cleanup failed before completion',
         });
+    });
+
+    it('should show the cache-cleanup snackbar with the total deleted post count and cleanup days after a successful run on the active server', async () => {
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(SERVER_URL);
+        await writePiC('ch-notify');
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 5});
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).toHaveBeenCalledWith({
+            barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_CACHE_CLEANUP,
+            messageValues: {count: 5, days: 1},
+        });
+    });
+
+    it('should not show the cache-cleanup snackbar when no posts were deleted', async () => {
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
+    });
+
+    it('should not show the cache-cleanup snackbar when the server is not active', async () => {
+        await writePiC('ch-notify-inactive');
+        jest.mocked(LocalPost.deletePostsInChannelsByCutoff).mockResolvedValueOnce({error: undefined, deletedCount: 5});
+
+        await autoCacheCleanup(SERVER_URL);
+
+        expect(showSnackBar).not.toHaveBeenCalled();
     });
 });
