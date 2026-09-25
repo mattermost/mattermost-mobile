@@ -1039,6 +1039,47 @@ describe('dialog_conversion', () => {
             });
         });
 
+        it('should set source when a refresh field is nested inside a collapsible section', () => {
+            const configWithNestedRefresh = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        {
+                            name: 'section',
+                            type: DialogElementTypes.COLLAPSIBLE,
+                            display_name: 'Section',
+                            collapsible_config: {
+                                elements: [
+                                    {
+                                        name: 'refresh_field',
+                                        type: DialogElementTypes.SELECT,
+                                        display_name: 'Refresh Field',
+                                        refresh: true,
+                                        options: [{value: 'option1', text: 'Option 1'}],
+                                        optional: false,
+                                        default: '',
+                                        placeholder: '',
+                                        help_text: '',
+                                        min_length: 0,
+                                        max_length: 0,
+                                        data_source: '',
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            };
+
+            const result = convertDialogToAppForm(configWithNestedRefresh as InteractiveDialogConfig);
+
+            expect(result.source).toEqual({
+                path: '/dialog/refresh',
+                expand: {},
+            });
+        });
+
         it('should set source when source_url is provided', () => {
             const configWithSourceUrl = {
                 ...mockConfig,

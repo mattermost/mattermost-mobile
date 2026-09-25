@@ -354,7 +354,7 @@ function AppsFormComponent({
 
     // Memoize filtered fields to avoid recalculation on every render
     const visibleFields = useMemo(() =>
-        form.fields?.filter((f) => f.name !== form.submit_buttons) || [],
+        form.fields?.filter((f) => !form.submit_buttons || f.name !== form.submit_buttons) || [],
     [form.fields, form.submit_buttons],
     );
 
@@ -540,7 +540,7 @@ function AppsFormComponent({
 
     const renderField = useCallback((field: AppField, isFirstField: boolean, depth = 0): React.ReactNode => {
         if (field.type === AppFieldTypes.COLLAPSIBLE) {
-            const childFields = (field.collapsible_config?.fields || []).filter((f) => f.name !== form.submit_buttons);
+            const childFields = (field.collapsible_config?.fields || []).filter((f) => !form.submit_buttons || f.name !== form.submit_buttons);
 
             // Don't render a toggle for a section with no visible fields (matches
             // CollapsibleBlock, which returns null when it has no content).

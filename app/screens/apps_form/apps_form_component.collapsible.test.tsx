@@ -452,10 +452,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
             },
         } as AppField;
 
-        // submit_buttons must be set (to a name no field matches) so the visibleFields
-        // filter `f.name !== form.submit_buttons` keeps the unnamed section — it would
-        // otherwise be dropped when submit_buttons is undefined.
-        const form = {fields: [unnamedOuter], submit_buttons: 'nonexistent'};
+        const form = {fields: [unnamedOuter]};
 
         const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(
             <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
@@ -807,6 +804,102 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
 
         expect(submit).toHaveBeenCalledTimes(1);
         expect(submit.mock.calls[0][0].action).toBe('reject');
+    });
+});
+
+describe('AppsFormComponent — state keyed by name, not label', () => {
+    let database: Database;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        mockSetOptions.mockClear();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    // Two sections that look identical to the user (same label) but have distinct
+    // names. State is keyed by field name (React key + expandVersions), so toggling
+    // one must not leak into the other — a regression if state ever keys off label.
+    const labelled = (name: string, label: string, fields: AppField[]): AppField => ({
+        name,
+        label,
+        type: AppFieldTypes.COLLAPSIBLE,
+        collapsible_config: {expanded: true, bordered: true, fields},
+    } as AppField);
+
+    it('keeps two same-labelled sections independent when one is collapsed', () => {
+        const form = {
+            fields: [
+                labelled('sec_1', 'Details', [text('first')]),
+                labelled('sec_2', 'Details', [text('second')]),
+            ],
+        };
+
+        const {getAllByLabelText, getByTestId, queryByTestId} = renderWithEverything(
+            <FormWithHeader {...getProps(form)}/>, {database, serverUrl},
+        );
+
+        const headers = getAllByLabelText('Details');
+        expect(headers).toHaveLength(2);
+
+        // Collapse only the first "Details" section.
+        fireEvent.press(headers[0]);
+
+        expect(queryByTestId('mockfield.first')).toBeNull();
+        expect(getByTestId('mockfield.second')).toBeTruthy();
+        expect(expandedState(getAllByLabelText('Details')[1])).toBe(true);
+    });
+});
+
+describe('AppsFormComponent — refresh-driven auto-expansion', () => {
+    let database: Database;
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        mockSetOptions.mockClear();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('expands a collapsed section holding a field that a refresh call flags as errored', async () => {
+        // Editing a refresh-enabled field can surface a server error on a *different*
+        // field living in a still-collapsed section. That section must open so the
+        // user can see the error — the same reveal contract as submit validation, but
+        // driven by the refresh path (onChange -> refreshOnSelect -> bumpErroredSections).
+        const refreshOnSelect = jest.fn().mockResolvedValue({
+            error: {text: '', data: {errors: {target: 'Server rejected this'}}},
+        });
+        const form = {
+            fields: [
+                section('visible', [text('trigger', {refresh: true})], {expanded: true}),
+                section('hidden', [text('target')], {expanded: false}),
+            ],
+        };
+
+        const {getByTestId, getByLabelText} = renderWithEverything(
+            <AppsFormComponent {...getProps(form, {refreshOnSelect})}/>, {database, serverUrl},
+        );
+
+        expect(expandedState(getByLabelText('hidden'))).toBe(false);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('edit.trigger'));
+            await new Promise((r) => setImmediate(r));
+        });
+
+        expect(refreshOnSelect).toHaveBeenCalledTimes(1);
+
+        // The previously-hidden section opens and its field now shows the server error.
+        expect(expandedState(getByLabelText('hidden'))).toBe(true);
+        expect(getByTestId('mockfield.target.error').props.children).toBe('Server rejected this');
     });
 });
 
