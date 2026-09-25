@@ -451,6 +451,7 @@ describe('AppsFormComponent — validation auto-expansion', () => {
                 fields: [section('inner', [text('deep', {is_required: true})], {expanded: false})],
             },
         } as AppField;
+
         // submit_buttons must be set (to a name no field matches) so the visibleFields
         // filter `f.name !== form.submit_buttons` keeps the unnamed section — it would
         // otherwise be dropped when submit_buttons is undefined.
