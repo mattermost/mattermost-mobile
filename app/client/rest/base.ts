@@ -13,7 +13,7 @@ export default class ClientBase extends ClientTracking {
         super(apiClient);
 
         if (bearerToken || preauthSecret) {
-            this.setClientCredentials(bearerToken || '', preauthSecret || '');
+            this.setClientCredentials(bearerToken ?? '', preauthSecret);
         }
         if (csrfToken) {
             this.setCSRFToken(csrfToken);
