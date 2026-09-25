@@ -11,6 +11,7 @@ import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
 import {createCallRequest, filterEmptyOptions} from '@utils/apps';
+import {flattenAppFields} from '@utils/dialog_utils';
 
 import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from './mentions';
 
@@ -265,6 +266,20 @@ export class ParsedCommand {
                 }, {
                     error: 'unreachable: invalid binding, neither or both Submit and Form',
                 }));
+            }
+
+            // Collapsible sections are a UI-only grouping; the command parser deals
+            // only in real parameters. Flatten them to their leaf fields once here so
+            // every downstream step (parameter matching, missing-field detection,
+            // option expansion, default/readonly values) sees a flat list — mirroring
+            // how apps_form_component and the dialog adapter flatten before
+            // validation/submission. Building a new form object avoids mutating the
+            // cached binding form, and flattening is idempotent for flat forms.
+            if (this.resolvedForm?.fields) {
+                this.resolvedForm = {
+                    ...this.resolvedForm,
+                    fields: flattenAppFields(this.resolvedForm.fields),
+                };
             }
         }
         return this;
