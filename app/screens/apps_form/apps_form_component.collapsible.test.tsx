@@ -436,6 +436,39 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         expect(queryByTestId('mockfield.deep')).toBeTruthy();
     });
 
+    it('expands a named nested section whose errored subtree sits under an unnamed section', async () => {
+        const submit = okSubmit();
+
+        // An unnamed collapsible section cannot itself force-expand (versions are keyed
+        // by name), but it must not hide its named descendants: the inner section still
+        // has to open when it holds an invalid field.
+        const unnamedOuter = {
+            label: '',
+            type: AppFieldTypes.COLLAPSIBLE,
+            collapsible_config: {
+                expanded: true,
+                bordered: true,
+                fields: [section('inner', [text('deep', {is_required: true})], {expanded: false})],
+            },
+        } as AppField;
+        // submit_buttons must be set (to a name no field matches) so the visibleFields
+        // filter `f.name !== form.submit_buttons` keeps the unnamed section — it would
+        // otherwise be dropped when submit_buttons is undefined.
+        const form = {fields: [unnamedOuter], submit_buttons: 'nonexistent'};
+
+        const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(
+            <FormWithHeader {...getProps(form, {submit})}/>, {database, serverUrl},
+        );
+
+        expect(expandedState(getByLabelText('inner'))).toBe(false);
+
+        await submitForm(getByTestId);
+
+        expect(submit).not.toHaveBeenCalled();
+        expect(expandedState(getByLabelText('inner'))).toBe(true);
+        expect(queryByTestId('mockfield.deep')).toBeTruthy();
+    });
+
     it('expands multiple errored sections while leaving an error-free section untouched', async () => {
         const submit = okSubmit();
         const form = {

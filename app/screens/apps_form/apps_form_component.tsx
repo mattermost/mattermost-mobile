@@ -5,14 +5,14 @@ import {useNavigation} from 'expo-router';
 import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Pressable, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
 import {KeyboardAwareScrollView, type KeyboardAwareScrollViewRef} from 'react-native-keyboard-controller';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {handleGotoLocation} from '@actions/remote/command';
 import Button from '@components/button';
-import CompassIcon from '@components/compass_icon';
 import Markdown from '@components/markdown';
+import NavigationButton from '@components/navigation_button';
 import {Screens} from '@constants';
 import {AppCallResponseTypes, AppFieldTypes, DEFAULT_TIME_INTERVAL_MINUTES} from '@constants/apps';
 import {useServerUrl} from '@context/server';
@@ -58,23 +58,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         buttonsWrapper: {
             marginHorizontal: 5,
-        },
-        headerSubmitButton: {
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: theme.buttonBg,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        headerSubmitButtonDisabled: {
-            backgroundColor: changeOpacity(theme.buttonBg, 0.32),
-        },
-        headerSubmitIcon: {
-            color: theme.buttonColor,
-        },
-        headerSubmitPressed: {
-            opacity: 0.72,
         },
     };
 });
@@ -135,10 +118,14 @@ function computeExpandBumps(
 ): Record<string, number> {
     const next: Record<string, number> = {};
     fields.forEach((f) => {
-        if (f.type !== AppFieldTypes.COLLAPSIBLE || !f.name) {
+        if (f.type !== AppFieldTypes.COLLAPSIBLE) {
             return;
         }
-        if (sectionHasError(f, errors)) {
+
+        // Only a named section can be force-expanded (expandVersions is keyed by name),
+        // but always recurse: an unnamed section may still hold named nested sections
+        // that need to open when they contain an error.
+        if (f.name && sectionHasError(f, errors)) {
             next[f.name] = (prev[f.name] || 0) + 1;
         }
         Object.assign(next, computeExpandBumps(f.collapsible_config?.fields || [], errors, prev));
@@ -472,24 +459,17 @@ function AppsFormComponent({
 
                 // The View testID constrains the Detox hit area so a header tap lands
                 // on the button rather than the title (see edit_profile.save.button).
+                // Match the app's header-action convention (NavigationButton, tinted
+                // with sidebarHeaderTextColor, no filled background) — a filled circle
+                // here collides with iOS 26's bar-button glass capsule.
                 <View testID='interactive_dialog.submit.button'>
-                    <Pressable
+                    <NavigationButton
                         onPress={() => handleSubmit()}
                         disabled={submitting}
-                        accessibilityRole='button'
+                        iconName='check'
+                        iconSize={24}
                         accessibilityLabel={submitLabel}
-                        style={({pressed}) => [
-                            style.headerSubmitButton,
-                            submitting && style.headerSubmitButtonDisabled,
-                            pressed && style.headerSubmitPressed,
-                        ]}
-                    >
-                        <CompassIcon
-                            name='check'
-                            size={24}
-                            style={style.headerSubmitIcon}
-                        />
-                    </Pressable>
+                    />
                 </View>
             ),
         });
