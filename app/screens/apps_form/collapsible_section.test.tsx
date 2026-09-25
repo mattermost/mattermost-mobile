@@ -140,14 +140,16 @@ describe('CollapsibleSection prop-driven expansion', () => {
         expect(queryByText(CHILD)).toBeTruthy();
     });
 
-    it('does not force-expand from a forceExpandVersion present only at mount', () => {
-        // Version reacts to *increments*, not to an initial value — a section that
-        // mounts collapsed with a version already set must stay collapsed.
+    it('mounts expanded when a forceExpandVersion is already present at mount', () => {
+        // A nested section under a collapsed ancestor only mounts once the ancestor
+        // expands, by which point its force-expand version is already set. useDidUpdate
+        // skips the mount, so the initial state must seed from the version to reveal
+        // the invalid field that triggered the expand.
         const {queryByText} = renderWithIntlAndTheme(
             <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1})}/>,
         );
 
-        expect(queryByText(CHILD)).toBeNull();
+        expect(queryByText(CHILD)).toBeTruthy();
     });
 
     it('force-expands a user-collapsed section when forceExpandVersion increments', () => {
@@ -170,7 +172,7 @@ describe('CollapsibleSection prop-driven expansion', () => {
             <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1})}/>,
         );
 
-        // First increment opens it.
+        // Seeded from the mount-time version, then a further increment keeps it open.
         rerender(<CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 2})}/>);
         expect(queryByText(CHILD)).toBeTruthy();
 

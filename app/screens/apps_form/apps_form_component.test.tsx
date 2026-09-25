@@ -331,6 +331,38 @@ describe('AppsFormComponent collapsible field data flow', () => {
         expect(submitMock).toHaveBeenCalledTimes(1);
         expect(submitMock.mock.calls[0][0]).toMatchObject({priority: 'high'});
     });
+
+    it('blocks a second submit while the first is still in flight', async () => {
+        // A rapid double-tap on the header button must not submit twice. The in-flight
+        // ref guard rejects the second press synchronously, before the first resolves.
+        let resolveSubmit: (value: DoAppCallResult<FormResponseData>) => void = () => {};
+        const submitMock = jest.fn(() => new Promise<DoAppCallResult<FormResponseData>>((resolve) => {
+            resolveSubmit = resolve;
+        }));
+        const form: Partial<AppForm> = {
+            fields: [{name: 'name', type: 'text', value: 'Alice'} as AppField],
+        };
+        const props = {...getProps(form), submit: submitMock};
+
+        renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+        const headerRight = getHeaderSubmit();
+        const {getByTestId} = renderWithEverything(<>{headerRight!()}</>, {database, serverUrl});
+
+        await act(async () => {
+            const button = getByTestId('interactive_dialog.submit.button');
+            pressSubmit(button);
+            pressSubmit(button);
+            await new Promise((r) => setImmediate(r));
+        });
+
+        expect(submitMock).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            resolveSubmit({data: {type: 'ok'}});
+            await new Promise((r) => setImmediate(r));
+        });
+    });
 });
 
 describe('AppsFormComponent collapsible section rendering', () => {

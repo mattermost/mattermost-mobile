@@ -227,6 +227,11 @@ function AppsFormComponent({
 }: Props) {
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
+
+    // Synchronous in-flight guard. `submitting` state only updates after a re-render,
+    // so a rapid double-tap on the header button would run the same stale closure twice
+    // and submit twice. The ref blocks the second call before any await.
+    const submittingRef = useRef(false);
     const [submitting, setSubmitting] = useState(false);
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -367,7 +372,7 @@ function AppsFormComponent({
     );
 
     const handleSubmit = useCallback(async (button?: string) => {
-        if (submitting) {
+        if (submittingRef.current) {
             return;
         }
 
@@ -397,6 +402,7 @@ function AppsFormComponent({
             submission[form.submit_buttons] = button;
         }
 
+        submittingRef.current = true;
         setSubmitting(true);
 
         const res = await submit(submission);
@@ -417,6 +423,7 @@ function AppsFormComponent({
             if (errorResponse.data?.errors) {
                 bumpErroredSections(errorResponse.data.errors);
             }
+            submittingRef.current = false;
             setSubmitting(false);
             return;
         }
@@ -435,6 +442,7 @@ function AppsFormComponent({
                 handleGotoLocation(serverUrl, intl, callResponse.navigate_to_url!);
                 return;
             case AppCallResponseTypes.FORM:
+                submittingRef.current = false;
                 setSubmitting(false);
                 return;
             default:
@@ -444,9 +452,10 @@ function AppsFormComponent({
                 }, {
                     type: callResponse.type,
                 }));
+                submittingRef.current = false;
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, submitting, updateErrors, bumpErroredSections, serverUrl, intl]);
+    }, [elements, form, values, submit, updateErrors, bumpErroredSections, serverUrl, intl]);
 
     // Present the default submit action in the modal header (matching edit_profile /
     // custom_status) so it stays above the keyboard and is always reachable. Forms

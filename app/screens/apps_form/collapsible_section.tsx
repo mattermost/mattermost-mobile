@@ -87,12 +87,17 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
     const style = getStyleSheet(theme);
     const intl = useIntl();
     const reducedMotion = useReducedMotion();
-    const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
+
+    // Seed from forceExpandVersion too: a nested section under a collapsed ancestor
+    // only mounts once the ancestor expands, by which point its force-expand version is
+    // already set. useDidUpdate skips that first run, so without seeding here the section
+    // would mount collapsed and hide the invalid field that triggered the expand.
+    const [isExpanded, setIsExpanded] = useState(() => initiallyExpanded || Boolean(forceExpandVersion));
 
     // Drives the chevron rotation only. The content itself mounts/unmounts at its
     // natural height and the container's height change is animated by LinearTransition —
     // this keeps an initially-expanded section correct without measuring a clipped view.
-    const rotation = useSharedValue(initiallyExpanded ? 1 : 0);
+    const rotation = useSharedValue(initiallyExpanded || forceExpandVersion ? 1 : 0);
 
     // Re-sync when the prop changes (e.g. multistep dialog refreshes).
     useDidUpdate(() => {
