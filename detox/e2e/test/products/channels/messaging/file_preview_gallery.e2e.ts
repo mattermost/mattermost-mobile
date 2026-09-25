@@ -23,6 +23,7 @@ import {
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
+import jestExpect from 'expect';
 
 // iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
 const dismissGallery = async () => {
@@ -170,6 +171,15 @@ describe('Messaging - File Preview Gallery', () => {
 
         // * Verify file preview is dismissed (channel screen is visible again)
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // * Verify the image thumbnail is shown again: the gallery hides it (alpha 0) while open
+        const galleryItem = element(by.id(`${fileId}-file.gallery_item`));
+        await waitFor(galleryItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        if (isAndroid()) {
+            await wait(timeouts.ONE_SEC);
+            const attributes = await galleryItem.getAttributes();
+            jestExpect('alpha' in attributes ? attributes.alpha : undefined).toBe(1);
+        }
 
         // # Go back to channel list screen
         await ChannelScreen.back();
