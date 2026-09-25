@@ -15,7 +15,9 @@ import {
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {
     deriveChannelAttributeBanner,
+    renderNativeBannerText,
     resolveChannelAttributes,
+    resolvedAttributesEqual,
     type ChannelAttributeBannerState,
     type ResolvedChannelAttribute,
 } from '@utils/channel_attributes';
@@ -194,53 +196,21 @@ export const observeResolvedChannelAttributes = (
 export const observeChannelAttributeBanner = (
     database: Database,
     channelId: string,
-    nativeBannerText?: string,
-    authoredColor?: string,
+    bannerInfo?: ChannelBannerInfo,
 ): Observable<ChannelAttributeBannerState> => {
     return combineLatest([
         observeChannelAttributeFields(database),
         observePropertyValuesByTargetId(database, channelId),
         observeChannelAttributesEnabled(database),
     ]).pipe(
-        map(([fields, values, attributesEnabled]) => deriveChannelAttributeBanner(fields, values, nativeBannerText, authoredColor, attributesEnabled)),
+        map(([fields, values, attributesEnabled]) => ({
+            ...deriveChannelAttributeBanner(fields, values, bannerInfo, attributesEnabled),
+            nativeText: renderNativeBannerText(fields, values, bannerInfo?.text, attributesEnabled),
+        })),
         distinctUntilChanged((a, b) => a.hasBanner === b.hasBanner &&
             a.banner?.text === b.banner?.text &&
-            a.banner?.background_color === b.banner?.background_color),
+            a.banner?.background_color === b.banner?.background_color &&
+            a.nativeText === b.nativeText),
     );
 };
 
-/**
- * Everything the downstream surfaces read, as one string per attribute.
- *
- * The configuration keys have to be in here, not just the rendered value: which
- * surface an attribute appears on is decided *after* this comparator runs, by
- * selectAttributesForAction and selectChannelInfoAttributes reading attrs.actions
- * and attrs.required. Comparing only the value meant an administrator unticking
- * "show in header" produced an emission this treated as identical, so the chip
- * stayed on screen until the app restarted.
- */
-function renderSignature(attribute: ResolvedChannelAttribute): string {
-    const {attrs} = attribute.field;
-    const actions = Array.isArray(attrs?.actions) ? attrs.actions.join(',') : '';
-
-    return [
-        attribute.field.id,
-        attribute.field.name,
-        attribute.field.type,
-        attribute.displayValue,
-        attribute.option?.color ?? '',
-        attribute.unresolvedOptionIds?.join(',') ?? '',
-        actions,
-        attrs?.required === true ? '1' : '0',
-        attrs?.display_name ?? '',
-        typeof attrs?.sort_order === 'number' ? String(attrs.sort_order) : '',
-    ].join('|');
-}
-
-function resolvedAttributesEqual(a: ResolvedChannelAttribute[], b: ResolvedChannelAttribute[]): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    return a.every((attribute, index) => renderSignature(attribute) === renderSignature(b[index]));
-}
