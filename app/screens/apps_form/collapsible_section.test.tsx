@@ -3,9 +3,11 @@
 
 import {fireEvent} from '@testing-library/react-native';
 import React from 'react';
-import {Text} from 'react-native';
+import {StyleSheet, Text} from 'react-native';
 
-import {renderWithIntlAndTheme} from '@test/intl-test-helper';
+import Preferences from '@constants/preferences';
+import {ThemeContext} from '@context/theme';
+import {renderWithIntl, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import CollapsibleSection from './collapsible_section';
 
@@ -31,6 +33,19 @@ function getProps(overrides: Partial<React.ComponentProps<typeof CollapsibleSect
         children: <Text>{CHILD}</Text>,
         ...overrides,
     };
+}
+
+// The five core themes the PR checklist requires us to verify against.
+const CORE_THEME_KEYS = Object.keys(Preferences.THEMES) as Array<keyof typeof Preferences.THEMES>;
+
+// renderWithIntlAndTheme is pinned to the default theme, so drive the theme
+// explicitly through the context to exercise each core theme in turn.
+function renderInTheme(theme: Theme, props: React.ComponentProps<typeof CollapsibleSection>) {
+    return renderWithIntl(
+        <ThemeContext.Provider value={theme}>
+            <CollapsibleSection {...props}/>
+        </ThemeContext.Provider>,
+    );
 }
 
 describe('CollapsibleSection expand/collapse', () => {
@@ -232,5 +247,38 @@ describe('CollapsibleSection reduced motion', () => {
         // The reduced-motion branch skips the enter animation but must not skip
         // mounting the content.
         expect(queryByText(CHILD)).toBeTruthy();
+    });
+});
+
+describe('CollapsibleSection theme consistency', () => {
+    beforeEach(() => {
+        mockUseReducedMotion.mockReturnValue(false);
+    });
+
+    // Fails loudly if the shipped set of core themes changes, so this suite can't
+    // silently stop covering all five.
+    it('exercises the five core themes', () => {
+        expect(CORE_THEME_KEYS).toEqual(['denim', 'sapphire', 'quartz', 'indigo', 'onyx']);
+    });
+
+    it.each(CORE_THEME_KEYS)('renders with theme-derived colors in the %s theme', (key) => {
+        const theme = Preferences.THEMES[key];
+        const {getByText} = renderInTheme(theme, getProps({initiallyExpanded: true}));
+
+        // Renders without crashing under this theme...
+        expect(getByText(CHILD)).toBeTruthy();
+
+        // ...and the header label pulls its color from the theme token rather than a
+        // hardcoded value, so it stays legible across the light themes and dark (onyx).
+        const labelColor = StyleSheet.flatten(getByText('Section').props.style).color;
+        expect(labelColor).toBe(theme.centerChannelColor);
+    });
+
+    it.each(CORE_THEME_KEYS)('keeps the collapsed error affordance available in the %s theme', (key) => {
+        const theme = Preferences.THEMES[key];
+        const {getByLabelText} = renderInTheme(theme, getProps({initiallyExpanded: false, hasError: true}));
+
+        // The error state renders and stays screen-reader friendly in every theme.
+        expect(getByLabelText('Section, contains an error')).toBeTruthy();
     });
 });
