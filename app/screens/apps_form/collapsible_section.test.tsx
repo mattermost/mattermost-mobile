@@ -234,6 +234,71 @@ describe('CollapsibleSection error affordance', () => {
     });
 });
 
+describe('CollapsibleSection accessibility hint', () => {
+    beforeEach(() => {
+        mockUseReducedMotion.mockReturnValue(false);
+    });
+
+    it('advertises the collapse action while expanded and the expand action while collapsed', () => {
+        // The hint tells assistive tech what activating the header will do; it must
+        // track the current state, not stay fixed to the initial one.
+        const {getByLabelText} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({initiallyExpanded: true})}/>,
+        );
+
+        const header = getByLabelText('Section');
+        expect(header.props.accessibilityHint).toBe('Activates to collapse');
+
+        fireEvent.press(header);
+
+        expect(header.props.accessibilityHint).toBe('Activates to expand');
+    });
+});
+
+describe('CollapsibleSection layout', () => {
+    beforeEach(() => {
+        mockUseReducedMotion.mockReturnValue(false);
+    });
+
+    // Pressable resolves its style-callback to a concrete style array on the host
+    // node, but fall back to invoking the callback in case that changes.
+    const flattenHeader = (node: any) => {
+        const style = node.props.style;
+        return StyleSheet.flatten(typeof style === 'function' ? style({pressed: false}) : style);
+    };
+
+    it('indents the header further for a more deeply nested section', () => {
+        // Depth is the only visible cue that one section sits inside another, so a
+        // deeper section must carry more left inset than a shallower one.
+        const shallow = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 0})}/>);
+        const deep = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 2})}/>);
+
+        const shallowInset = flattenHeader(shallow.getByLabelText('Section')).paddingLeft ?? 0;
+        const deepInset = flattenHeader(deep.getByLabelText('Section')).paddingLeft ?? 0;
+
+        expect(deepInset).toBeGreaterThan(shallowInset);
+    });
+
+    it('applies the bordered chrome only when bordered is true', () => {
+        // bordered drives the section's card treatment (tinted header background); an
+        // unbordered section must render flat so nested sections don't stack borders.
+        const bordered = renderWithIntlAndTheme(<CollapsibleSection {...getProps({bordered: true})}/>);
+        expect(flattenHeader(bordered.getByLabelText('Section')).backgroundColor).toBeDefined();
+
+        const flat = renderWithIntlAndTheme(<CollapsibleSection {...getProps({bordered: false})}/>);
+        expect(flattenHeader(flat.getByLabelText('Section')).backgroundColor).toBeUndefined();
+    });
+
+    it('unmounts cleanly while expanded without throwing', () => {
+        const {unmount, queryByText} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({initiallyExpanded: true})}/>,
+        );
+        expect(queryByText(CHILD)).toBeTruthy();
+
+        expect(() => unmount()).not.toThrow();
+    });
+});
+
 describe('CollapsibleSection reduced motion', () => {
     it('still reveals children on expand when reduced motion is enabled', () => {
         mockUseReducedMotion.mockReturnValue(true);
