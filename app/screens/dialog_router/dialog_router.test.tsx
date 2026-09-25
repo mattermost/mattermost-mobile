@@ -22,11 +22,13 @@ jest.mock('@screens/apps_form/apps_form_component', () => {
 
 jest.mock('@actions/remote/integrations', () => ({
     submitInteractiveDialog: jest.fn(),
+    lookupInteractiveDialog: jest.fn(),
 }));
 
 jest.mock('@utils/interactive_dialog_adapter');
 
 const mockSubmitInteractiveDialog = require('@actions/remote/integrations').submitInteractiveDialog;
+const mockLookupInteractiveDialog = require('@actions/remote/integrations').lookupInteractiveDialog;
 const mockUseServerUrl = require('@context/server').useServerUrl;
 const mockAppsFormComponent = require('@screens/apps_form/apps_form_component');
 const mockInteractiveDialogAdapter = InteractiveDialogAdapter as jest.Mocked<typeof InteractiveDialogAdapter>;
@@ -202,6 +204,45 @@ describe('DialogRouter', () => {
                     },
                 },
             });
+        });
+
+        it('resolves a dynamic-select lookup for a field nested inside a collapsible section', async () => {
+            // Regression: findDialogElement previously searched only the top-level
+            // element list, so a dynamic select nested in a collapsible was never
+            // found and its lookup silently returned no options.
+            const nestedConfig: InteractiveDialogConfig = {
+                ...mockConfig,
+                dialog: {
+                    ...mockConfig.dialog,
+                    elements: [
+                        {
+                            type: 'collapsible',
+                            name: 'section',
+                            display_name: 'Section',
+                            collapsible_config: {
+                                elements: [
+                                    {
+                                        name: 'city',
+                                        type: 'select',
+                                        display_name: 'City',
+                                        data_source: 'dynamic',
+                                        data_source_url: '/plugins/example/lookup',
+                                    } as unknown as DialogElement,
+                                ],
+                            },
+                        } as unknown as DialogElement,
+                    ],
+                },
+            };
+            mockLookupInteractiveDialog.mockResolvedValue({data: {items: [{text: 'Paris', value: 'paris'}]}});
+
+            renderWithIntl(<DialogRouter config={nestedConfig}/>);
+
+            const performLookupCall = mockAppsFormComponent.mock.calls[0][0].performLookupCall;
+            const result = await performLookupCall({name: 'city'} as AppField, {} as AppFormValues, '');
+
+            expect(mockLookupInteractiveDialog).toHaveBeenCalledTimes(1);
+            expect(result).toEqual({data: {type: 'ok', data: {items: [{label: 'Paris', value: 'paris'}]}}});
         });
 
         it('should provide refreshOnSelect that returns ok response', async () => {

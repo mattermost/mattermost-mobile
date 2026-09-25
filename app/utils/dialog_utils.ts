@@ -30,6 +30,7 @@ export const DialogElementTypes = {
     BOOL: 'bool' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
+    COLLAPSIBLE: 'collapsible' as const,
 } as const;
 
 /**
@@ -173,4 +174,39 @@ export function supportsOptions(fieldType: InteractiveDialogElementType | AppFie
  */
 export function supportsDataSource(fieldType: InteractiveDialogElementType): boolean {
     return fieldType === DialogElementTypes.SELECT;
+}
+
+/**
+ * Recursively flattens a list by expanding collapsible containers into their children.
+ */
+export function flattenCollapsible<T>(
+    items: T[],
+    isCollapsible: (item: T) => boolean,
+    getChildren: (item: T) => T[] | undefined,
+): T[] {
+    return items.flatMap((item) =>
+        (isCollapsible(item)? flattenCollapsible(getChildren(item) || [], isCollapsible, getChildren): [item]),
+    );
+}
+
+/**
+ * Returns only the leaf (non-collapsible) elements from a dialog element tree.
+ */
+export function flattenDialogElements(elements: DialogElement[]): DialogElement[] {
+    return flattenCollapsible(
+        elements,
+        (el) => el.type === DialogElementTypes.COLLAPSIBLE,
+        (el) => el.collapsible_config?.elements,
+    );
+}
+
+/**
+ * Returns only the leaf (non-collapsible) fields from an AppField tree.
+ */
+export function flattenAppFields(fields: AppField[]): AppField[] {
+    return flattenCollapsible(
+        fields,
+        (f) => f.type === 'collapsible',
+        (f) => f.collapsible_config?.fields,
+    );
 }
