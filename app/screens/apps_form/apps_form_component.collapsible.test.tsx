@@ -467,6 +467,32 @@ describe('AppsFormComponent — validation auto-expansion', () => {
         expect(queryByTestId('mockfield.deep')).toBeTruthy();
     });
 
+    it('auto-expands an unnamed collapsed section that directly holds an errored required field', async () => {
+        const submit = okSubmit();
+
+        // Regression: force-expand was keyed by name, so an *unnamed* section holding
+        // an invalid field would block submit yet stay collapsed — the field could
+        // never be revealed. Identity now falls back to a stable path, so unnamed
+        // sections open just like named ones.
+        const unnamedCollapsed = {
+            label: 'Advanced',
+            type: AppFieldTypes.COLLAPSIBLE,
+            collapsible_config: {expanded: false, bordered: true, fields: [text('secret', {is_required: true})]},
+        } as AppField;
+
+        const {getByTestId, getByLabelText, queryByTestId} = renderWithEverything(
+            <FormWithHeader {...getProps({fields: [unnamedCollapsed]}, {submit})}/>, {database, serverUrl},
+        );
+
+        expect(queryByTestId('mockfield.secret')).toBeNull();
+
+        await submitForm(getByTestId);
+
+        expect(submit).not.toHaveBeenCalled();
+        expect(expandedState(getByLabelText('Advanced'))).toBe(true);
+        expect(queryByTestId('mockfield.secret')).toBeTruthy();
+    });
+
     it('expands multiple errored sections while leaving an error-free section untouched', async () => {
         const submit = okSubmit();
         const form = {

@@ -108,6 +108,20 @@ function sectionHasError(field: AppField, errors: Errors): boolean {
     return (field.collapsible_config?.fields || []).some((child) => sectionHasError(child, errors));
 }
 
+// A section's identity for expand tracking and React keys: its name when it has
+// one, otherwise a stable path derived from its position in the field tree. The
+// path lets unnamed sections participate in force-expand and gives sibling
+// sections distinct React keys (an unnamed section would otherwise key on
+// `undefined` and collide with its unnamed siblings). Both this helper and
+// renderField must derive the path the same way over the same (unfiltered) arrays.
+function sectionKeyFor(field: AppField, path: string): string {
+    return field.name || path;
+}
+
+function childPath(parentPath: string, index: number): string {
+    return parentPath === '' ? `${index}` : `${parentPath}/${index}`;
+}
+
 // Returns a partial version map — only entries for sections that contain errors,
 // each incremented by 1 relative to `prev`. Extracted here so bumpErroredSections
 // stays within the max-nested-callbacks lint limit.
@@ -115,20 +129,22 @@ function computeExpandBumps(
     fields: AppField[],
     errors: Errors,
     prev: Record<string, number>,
+    parentPath = '',
 ): Record<string, number> {
     const next: Record<string, number> = {};
-    fields.forEach((f) => {
+    fields.forEach((f, index) => {
         if (f.type !== AppFieldTypes.COLLAPSIBLE) {
             return;
         }
 
-        // Only a named section can be force-expanded (expandVersions is keyed by name),
-        // but always recurse: an unnamed section may still hold named nested sections
-        // that need to open when they contain an error.
-        if (f.name && sectionHasError(f, errors)) {
-            next[f.name] = (prev[f.name] || 0) + 1;
+        // Bump this section if its subtree holds an error, then always recurse: a
+        // section may itself be error-free while a nested section still needs to open.
+        const path = childPath(parentPath, index);
+        if (sectionHasError(f, errors)) {
+            const key = sectionKeyFor(f, path);
+            next[key] = (prev[key] || 0) + 1;
         }
-        Object.assign(next, computeExpandBumps(f.collapsible_config?.fields || [], errors, prev));
+        Object.assign(next, computeExpandBumps(f.collapsible_config?.fields || [], errors, prev, path));
     });
     return next;
 }
@@ -352,12 +368,6 @@ function AppsFormComponent({
     // Memoize elements conversion for performance; flatten collapsible containers to leaf fields
     const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
 
-    // Memoize filtered fields to avoid recalculation on every render
-    const visibleFields = useMemo(() =>
-        form.fields?.filter((f) => !form.submit_buttons || f.name !== form.submit_buttons) || [],
-    [form.fields, form.submit_buttons],
-    );
-
     const handleSubmit = useCallback(async (button?: string) => {
         if (submittingRef.current) {
             return;
@@ -538,30 +548,37 @@ function AppsFormComponent({
         };
     }, []);
 
-    const renderField = useCallback((field: AppField, isFirstField: boolean, depth = 0): React.ReactNode => {
+    // `path` is the section's position in the (unfiltered) field tree; it must be
+    // derived the same way as in computeExpandBumps so force-expand keys line up.
+    // Children are mapped over the raw array (not pre-filtered) so those indices
+    // stay aligned — filtered-out fields simply render as null.
+    const renderField = useCallback((field: AppField, path: string, depth = 0): React.ReactNode => {
         if (field.type === AppFieldTypes.COLLAPSIBLE) {
-            const childFields = (field.collapsible_config?.fields || []).filter((f) => !form.submit_buttons || f.name !== form.submit_buttons);
+            const rawChildren = field.collapsible_config?.fields || [];
+            const renderedChildren = rawChildren.map((child, i) => renderField(child, childPath(path, i), depth + 1));
 
             // Don't render a toggle for a section with no visible fields (matches
-            // CollapsibleBlock, which returns null when it has no content).
-            if (childFields.length === 0) {
+            // CollapsibleBlock, which returns null when it has no content). A section
+            // holding only the submit_buttons field or empty nested sections collapses away.
+            if (!renderedChildren.some(Boolean)) {
                 return null;
             }
+            const key = sectionKeyFor(field, path);
             return (
                 <CollapsibleSection
-                    key={field.name}
+                    key={key}
                     label={field.label || field.name || ''}
                     initiallyExpanded={field.collapsible_config?.expanded ?? true}
                     bordered={field.collapsible_config?.bordered ?? true}
                     depth={depth}
                     hasError={sectionHasError(field, errors)}
-                    forceExpandVersion={expandVersions[field.name ?? '']}
+                    forceExpandVersion={expandVersions[key]}
                 >
-                    {childFields.map((child, i) => renderField(child, isFirstField && i === 0, depth + 1))}
+                    {renderedChildren}
                 </CollapsibleSection>
             );
         }
-        if (!field.name) {
+        if (!field.name || field.name === form.submit_buttons) {
             return null;
         }
         const value = secureGetFromRecord(values, field.name);
@@ -607,7 +624,7 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {visibleFields.map((field, index) => renderField(field, index === 0))}
+                {(form.fields || []).map((field, index) => renderField(field, childPath('', index)))}
                 {hasSubmitButtonsField && (
                     <View
                         style={style.buttonsWrapper}

@@ -4,7 +4,7 @@
 import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Pressable, Text, type PressableStateCallbackType} from 'react-native';
-import Animated, {Easing, FadeIn, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {Easing, FadeIn, FadeOut, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -184,6 +184,10 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
             {isExpanded && (
                 <Animated.View
                     entering={reducedMotion ? undefined : FadeIn.duration(ANIMATION_MS)}
+
+                    // Fade the content out on collapse so it doesn't pop away before the
+                    // container height finishes animating (symmetry with the FadeIn above).
+                    exiting={reducedMotion ? undefined : FadeOut.duration(ANIMATION_MS)}
                     style={contentContainerStyle}
                 >
                     {children}
