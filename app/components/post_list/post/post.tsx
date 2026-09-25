@@ -95,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         consecutivePostContainer: {
             marginBottom: 10,
             marginRight: 10,
-            marginLeft: PROFILE_PICTURE_SIZE,
+            width: PROFILE_PICTURE_SIZE,
             marginTop: 10,
         },
         container: {flexDirection: 'row'},
