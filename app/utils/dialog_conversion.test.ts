@@ -358,6 +358,95 @@ describe('dialog_conversion', () => {
             expect(result.errors).toEqual([]);
         });
 
+        it('should pass through checkbox_group array values unchanged', () => {
+            const mockCheckboxGroupElement: DialogElement = {
+                name: 'checkbox_group_field',
+                type: DialogElementTypes.CHECKBOX_GROUP,
+                display_name: 'Checkbox Group',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [
+                    {value: 'opt1', text: 'Option 1'},
+                    {value: 'opt2', text: 'Option 2'},
+                ],
+            };
+
+            const values: AppFormValues = {
+                checkbox_group_field: ['opt1', 'opt2'],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxGroupElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_group_field: ['opt1', 'opt2'],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should pass through an empty checkbox_group array unchanged', () => {
+            const mockCheckboxGroupElement: DialogElement = {
+                name: 'checkbox_group_field',
+                type: DialogElementTypes.CHECKBOX_GROUP,
+                display_name: 'Checkbox Group',
+                optional: true,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+            };
+
+            const values: AppFormValues = {
+                checkbox_group_field: [],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxGroupElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_group_field: [],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
+        it('should pass through checkbox_matrix array values unchanged', () => {
+            const mockCheckboxMatrixElement: DialogElement = {
+                name: 'checkbox_matrix_field',
+                type: DialogElementTypes.CHECKBOX_MATRIX,
+                display_name: 'Checkbox Matrix',
+                optional: false,
+                default: '',
+                placeholder: '',
+                help_text: '',
+                min_length: 0,
+                max_length: 0,
+                data_source: '',
+                options: [],
+                matrix_config: {
+                    rows: [{value: 'row1', text: 'Row 1'}],
+                    columns: [{value: 'col1', text: 'Col 1'}],
+                    row_selection: 'multiple',
+                },
+            };
+
+            const values: AppFormValues = {
+                checkbox_matrix_field: ['row1:col1'],
+            };
+
+            const result = convertAppFormValuesToDialogSubmission(values, [mockCheckboxMatrixElement]);
+
+            expect(result.submission).toEqual({
+                checkbox_matrix_field: ['row1:col1'],
+            });
+            expect(result.errors).toEqual([]);
+        });
+
         it('should not affect single select with multiselect=false', () => {
             const mockSingleSelectElement: DialogElement = {
                 name: 'single_select',
@@ -666,6 +755,144 @@ describe('dialog_conversion', () => {
             const result = convertDialogElementToAppField(element);
 
             expect(result.value).toBeUndefined();
+        });
+
+        describe('checkbox_group and checkbox_matrix conversion', () => {
+            it('should parse a comma-separated default into an array for checkbox_group', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_group_field',
+                    type: DialogElementTypes.CHECKBOX_GROUP,
+                    display_name: 'Checkbox Group',
+                    help_text: '',
+                    optional: true,
+                    options: [
+                        {value: 'opt1', text: 'Option 1'},
+                        {value: 'opt2', text: 'Option 2'},
+                    ],
+                    default: 'opt1, opt2',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual(['opt1', 'opt2']);
+                expect(result.options).toEqual([
+                    {label: 'Option 1', value: 'opt1'},
+                    {label: 'Option 2', value: 'opt2'},
+                ]);
+            });
+
+            it('should default checkbox_group value to an empty array when default is absent', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_group_field',
+                    type: DialogElementTypes.CHECKBOX_GROUP,
+                    display_name: 'Checkbox Group',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual([]);
+            });
+
+            it('should parse a semicolon-separated default into an array for checkbox_matrix', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_matrix_field',
+                    type: DialogElementTypes.CHECKBOX_MATRIX,
+                    display_name: 'Checkbox Matrix',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: 'row1:col1,col2; row2:col3',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    matrix_config: {
+                        rows: [
+                            {value: 'row1', text: 'Row 1'},
+                            {value: 'row2', text: 'Row 2'},
+                        ],
+                        columns: [
+                            {value: 'col1', text: 'Col 1'},
+                            {value: 'col2', text: 'Col 2'},
+                            {value: 'col3', text: 'Col 3'},
+                        ],
+                        row_selection: 'multiple',
+                    },
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.value).toEqual(['row1:col1,col2', 'row2:col3']);
+                expect(result.matrix_config).toEqual({
+                    rows: [
+                        {label: 'Row 1', value: 'row1'},
+                        {label: 'Row 2', value: 'row2'},
+                    ],
+                    columns: [
+                        {label: 'Col 1', value: 'col1'},
+                        {label: 'Col 2', value: 'col2'},
+                        {label: 'Col 3', value: 'col3'},
+                    ],
+                    row_selection: 'multiple',
+                });
+            });
+
+            it('should default checkbox_matrix row_selection to multiple when absent', () => {
+                const element: DialogElement = {
+                    name: 'checkbox_matrix_field',
+                    type: DialogElementTypes.CHECKBOX_MATRIX,
+                    display_name: 'Checkbox Matrix',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                    matrix_config: {
+                        rows: [{value: 'row1', text: 'Row 1'}],
+                        columns: [{value: 'col1', text: 'Col 1'}],
+                    },
+                };
+
+                const result = convertDialogElementToAppField(element);
+
+                expect(result.matrix_config?.row_selection).toBe('multiple');
+                expect(result.value).toEqual([]);
+            });
+
+            it('should pass through label_position when set to before or after', () => {
+                const baseElement: DialogElement = {
+                    name: 'bool_field',
+                    type: DialogElementTypes.BOOL,
+                    display_name: 'Boolean Field',
+                    help_text: '',
+                    optional: true,
+                    options: [],
+                    default: '',
+                    placeholder: '',
+                    min_length: 0,
+                    max_length: 0,
+                    data_source: '',
+                };
+
+                expect(convertDialogElementToAppField({...baseElement, label_position: 'before'}).label_position).toBe('before');
+                expect(convertDialogElementToAppField({...baseElement, label_position: 'after'}).label_position).toBe('after');
+                expect(convertDialogElementToAppField(baseElement).label_position).toBeUndefined();
+            });
         });
 
         describe('datetime configuration preservation', () => {
