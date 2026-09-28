@@ -106,7 +106,7 @@ describe('Smoke Test - Account', () => {
         await expect(accountCustomStatusExpiry).toBeVisible();
 
         // # Tap on clear button for custom status from display field
-        await AccountScreen.customStatusClearButton.tap();
+        await AccountScreen.clearCustomStatus();
 
         // * Verify custom status is cleared from account screen
         const defaultStatusText = 'Set a custom status';

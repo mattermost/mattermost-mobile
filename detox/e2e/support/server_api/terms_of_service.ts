@@ -86,7 +86,14 @@ export const apiDisableCustomTermsOfService = async (baseUrl: string): Promise<a
 export const apiAssertCustomTermsOfServiceActive = async (baseUrl: string, termsId: string): Promise<void> => {
     const enabled = await System.waitForClientConfigFlag(baseUrl, 'EnableCustomTermsOfService', 'true');
     if (!enabled) {
-        throw new Error('apiAssertCustomTermsOfServiceActive: client config EnableCustomTermsOfService never became "true" — check the Enterprise licence covers CustomTermsOfService');
+        // Report both sides: server=false means the write was lost, server=true means client config never caught up.
+        const {config: serverConfig} = await System.apiGetConfig(baseUrl);
+        const {config: clientConfig} = await System.apiGetClientConfigOld(baseUrl);
+        throw new Error(
+            'apiAssertCustomTermsOfServiceActive: client config EnableCustomTermsOfService never became "true". ' +
+            `server SupportSettings.CustomTermsOfServiceEnabled=${String(serverConfig?.SupportSettings?.CustomTermsOfServiceEnabled)} ` +
+            `client EnableCustomTermsOfService=${String(clientConfig?.EnableCustomTermsOfService)}.`,
+        );
     }
 
     const {config, error, status} = await System.apiGetClientConfigOld(baseUrl);
