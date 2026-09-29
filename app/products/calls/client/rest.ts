@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ApiResp} from '@calls/types/calls';
+import {buildQueryString} from '@utils/helpers';
+
+import type {ApiResp, LiveKitTokenResponse} from '@calls/types/calls';
 import type {RTCIceServer} from '@livekit/react-native-webrtc';
 import type {CallChannelState, CallJobState, CallsConfig, CallsVersionInfo} from '@mattermost/calls/lib/types';
 
@@ -11,6 +13,7 @@ export interface ClientCallsMix {
     getCallForChannel: (channelId: string) => Promise<CallChannelState>;
     getCallsConfig: (groupLabel?: RequestGroupLabel) => Promise<CallsConfig>;
     getVersion: (groupLabel?: RequestGroupLabel) => Promise<CallsVersionInfo>;
+    getLiveKitToken: (channelId: string, sessionId: string) => Promise<LiveKitTokenResponse>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
@@ -57,6 +60,13 @@ const ClientCalls = (superclass: any) => class extends superclass {
             `${this.getCallsRoute()}/config`,
             {method: 'get', groupLabel},
         ) as CallsConfig;
+    };
+
+    getLiveKitToken = async (channelId: string, sessionId: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/livekit-token${buildQueryString({channel_id: channelId, session_id: sessionId})}`,
+            {method: 'get'},
+        ) as LiveKitTokenResponse;
     };
 
     getVersion = async (groupLabel?: RequestGroupLabel) => {

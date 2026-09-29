@@ -167,6 +167,35 @@ PODS:
   - libwebp/sharpyuv (1.5.0)
   - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
+  - livekit-react-native (2.12.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - livekit-react-native-webrtc
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - livekit-react-native-webrtc (144.1.2):
     - React-Core
     - WebRTC-SDK (= 144.7559.10)
@@ -4003,6 +4032,7 @@ DEPENDENCIES:
   - Gekidou (from `./Gekidou`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - "livekit-react-native (from `../node_modules/@livekit/react-native`)"
   - "livekit-react-native-webrtc (from `../node_modules/@livekit/react-native-webrtc`)"
   - "mattermost-calls-native (from `../libraries/@mattermost/calls-native`)"
   - "mattermost-hardware-keyboard (from `../libraries/@mattermost/hardware-keyboard`)"
@@ -4203,6 +4233,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v0.14.1
+  livekit-react-native:
+    :path: "../node_modules/@livekit/react-native"
   livekit-react-native-webrtc:
     :path: "../node_modules/@livekit/react-native-webrtc"
   mattermost-calls-native:
@@ -4467,6 +4499,7 @@ SPEC CHECKSUMS:
   hermes-engine: f069ae87099ec6027a727dbebbd48a208405d92d
   KituraContracts: e845e60dc8627ad0a76fa55ef20a45451d8f830b
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
+  livekit-react-native: fdecaea86ea91c7943c56ada4ab4bf9f22ee6ff3
   livekit-react-native-webrtc: 5ff3e8d229a3fcd34f99fe4cb1c2c93f92017b0c
   LoggerAPI: ad9c4a6f1e32f518fdb43a1347ac14d765ab5e3d
   Logging: beeb016c9c80cf77042d62e83495816847ef108b

@@ -181,6 +181,16 @@ describe('ClientCalls', () => {
         });
     });
 
+    describe('getLiveKitToken', () => {
+        it('makes correct API call', async () => {
+            await client.getLiveKitToken('channel-id', 'session-id');
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/com.plugins.calls/livekit-token?channel_id=channel-id&session_id=session-id',
+                {method: 'get'},
+            );
+        });
+    });
+
     describe('genTURNCredentials', () => {
         it('makes correct API call', async () => {
             await client.genTURNCredentials();

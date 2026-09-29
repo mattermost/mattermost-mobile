@@ -255,6 +255,8 @@ export const joinCall = async (
     // inbound-push flow and the native layer already reported the call.
     const ownedNativeUUID = await registerOutgoingNativeCall(serverUrl, channelId, rootId);
 
+    const config = getCallsConfig(serverUrl);
+
     // Held locally as well as on the module-level `connection`: waitForPeerConnection has its own
     // 5s timeout that a disconnect doesn't settle early, so a join we've already abandoned can
     // reject long after the user has started or answered a different call. The close callback and
@@ -273,7 +275,7 @@ export const joinCall = async (
                 logDebug('calls: error on close', getFullErrorMessage(err));
                 showErrorAlertOnClose(err, intl);
             }
-        }, setScreenShareURL, hasMicPermission, intl, title, rootId);
+        }, setScreenShareURL, hasMicPermission, intl, config, title, rootId);
         connection = conn;
     } catch (error) {
         endNativeCall(serverUrl, channelId, 'failed');

@@ -188,6 +188,44 @@ jest.mock('@livekit/react-native-webrtc', () => {
     };
 });
 
+jest.mock('@livekit/react-native', () => ({
+    registerGlobals: jest.fn(),
+}));
+
+// Enum values mirror livekit-client's own string enums; Room and LocalAudioTrack are left as
+// bare mocks so individual tests can drive them via mockImplementation.
+jest.mock('livekit-client', () => ({
+    Room: jest.fn(),
+    LocalAudioTrack: jest.fn(),
+    AudioPresets: {speech: {maxBitrate: 24000}},
+    ConnectionQuality: {
+        Excellent: 'excellent',
+        Good: 'good',
+        Poor: 'poor',
+        Lost: 'lost',
+        Unknown: 'unknown',
+    },
+    Track: {
+        Source: {
+            Microphone: 'microphone',
+            ScreenShare: 'screen_share',
+            ScreenShareAudio: 'screen_share_audio',
+        },
+    },
+    RoomEvent: {
+        Connected: 'connected',
+        Disconnected: 'disconnected',
+        TrackMuted: 'trackMuted',
+        TrackUnmuted: 'trackUnmuted',
+        TrackSubscribed: 'trackSubscribed',
+        TrackUnsubscribed: 'trackUnsubscribed',
+        ActiveSpeakersChanged: 'activeSpeakersChanged',
+        ParticipantAttributesChanged: 'participantAttributesChanged',
+        DataReceived: 'dataReceived',
+        ConnectionQualityChanged: 'connectionQualityChanged',
+    },
+}));
+
 jest.mock('@nozbe/watermelondb/utils/common/randomId/randomId', () => ({}));
 jest.mock('@nozbe/watermelondb/react/withObservables/garbageCollector', () => {
     return {

@@ -20,6 +20,7 @@ import {
 import {Calls, Post, General} from '@constants';
 import {NOTIFICATION_SUB_TYPE} from '@constants/push_notification';
 import {isMinimumServerVersion} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {ensureNumber, ensureString, isArrayOf, isRecordOf, isStringArray} from '@utils/types';
 import {displayUsername, getUserIdFromChannelName} from '@utils/user';
 
@@ -107,7 +108,10 @@ export function getCallsTransport(config: CallsConfigState): CallsTransport {
         Calls.LiveKitCallsVersion.PATCH_VERSION,
     );
 
-    return isLiveKit ? CallsTransport.LiveKit : CallsTransport.Rtcd;
+    const transport = isLiveKit ? CallsTransport.LiveKit : CallsTransport.Rtcd;
+    logDebug('calls: using transport', transport, 'for plugin version', config.version.version);
+
+    return transport;
 }
 
 export function isHostControlsAllowed(config: CallsConfigState) {

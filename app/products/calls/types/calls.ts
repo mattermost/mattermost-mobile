@@ -185,6 +185,13 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 export {AudioDevice};
 export type {AudioDeviceType, AudioRoute};
 
+// Response from the plugin's livekit-token endpoint: the room URL to connect to
+// and the JWT granting access to it, both scoped to one session.
+export type LiveKitTokenResponse = {
+    token: string;
+    url: string;
+}
+
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
