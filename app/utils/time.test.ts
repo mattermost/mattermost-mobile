@@ -19,6 +19,15 @@ describe('getFormattedTime', () => {
         expect(result).toBe('8:00');
     });
 
+    it.each([
+        {region: 'Alberta', timezone: 'America/Edmonton', value: '2026-11-15T12:00:00Z', expected: '6:00'},
+        {region: 'Northwest Territories', timezone: 'America/Inuvik', value: '2026-11-15T12:00:00Z', expected: '6:00'},
+        {region: 'Morocco', timezone: 'Africa/Casablanca', value: '2026-10-01T12:00:00Z', expected: '12:00'},
+        {region: 'British Columbia', timezone: 'America/Vancouver', value: '2026-11-15T12:00:00Z', expected: '5:00'},
+    ])('should format post times for $region with 2026d timezone rules', ({timezone, value, expected}) => {
+        expect(getFormattedTime(true, timezone, value)).toBe(expected);
+    });
+
     test('returns time in 12-hour format with AM/PM', () => {
         const result = getFormattedTime(false, 'America/New_York', '2025-03-31T12:00:00Z');
         expect(result).toBe('8:00 AM');
