@@ -15,6 +15,7 @@ import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
 import ClientCustomAttributes, {type ClientCustomAttributesMix} from './custom_profile_attributes';
 import ClientEmojis, {type ClientEmojisMix} from './emojis';
+import ClientEphemeralMode, {type ClientEphemeralModeMix} from './ephemeral_mode';
 import ClientFiles, {type ClientFilesMix} from './files';
 import ClientGeneral, {type ClientGeneralMix} from './general';
 import ClientGroups, {type ClientGroupsMix} from './groups';
@@ -38,6 +39,7 @@ interface Client extends ClientBase,
     ClientChannelsMix,
     ClientChannelBookmarksMix,
     ClientEmojisMix,
+    ClientEphemeralModeMix,
     ClientFilesMix,
     ClientGeneralMix,
     ClientGroupsMix,
@@ -67,6 +69,7 @@ class Client extends mix(ClientBase).with(
     ClientChannels,
     ClientChannelBookmarks,
     ClientEmojis,
+    ClientEphemeralMode,
     ClientFiles,
     ClientGeneral,
     ClientGroups,

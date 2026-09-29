@@ -92,6 +92,12 @@ class ChannelListScreen {
         return element(by.id(`${this.testID.categoryPrefix}${categoryKey}.channel_item.${channelName}.display_name`));
     };
 
+    // The row is written after the channel, so wait for it before archiving a channel the
+    // user was just added to; otherwise the app's pre-archive fetch can land last.
+    waitForChannelItem = async (categoryKey: string, channelName: string) => {
+        await waitFor(this.getChannelItemDisplayName(categoryKey, channelName)).toExist().withTimeout(timeouts.HALF_MIN);
+    };
+
     // Mention-count badge on a sidebar row. Badge returns null while its count is 0, so
     // `not.toExist()` is the "unread but not mentioned" assertion, not a visibility check.
     getChannelItemBadge = (categoryKey: string, channelName: string) => {
@@ -194,6 +200,15 @@ class ChannelListScreen {
             }
             /* eslint-enable no-await-in-loop */
             await expect(label).toBeVisible(40);
+
+            // Tap the label, mid-row: the edge tap below sits two pixels from the neighbouring
+            // row and can open the wrong channel.
+            try {
+                await label.tap();
+                return;
+            } catch {
+                // Clipped by the tab bar — fall through to the edge tap that handles that case.
+            }
 
             // The last row can remain clipped by the tab bar, so tap its exposed top edge.
             await container.tap({x: 20, y: 2});

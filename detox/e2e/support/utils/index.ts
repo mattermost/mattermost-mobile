@@ -34,6 +34,21 @@ export const getRandomId = (length = 6): string => {
     return uuidv4().replace(/-/g, '').substring(MAX_SUBSTRING_INDEX - length, MAX_SUBSTRING_INDEX);
 };
 
+/**
+ * Build a message of exactly `length` characters made of ordinary space-separated words.
+ *
+ * Never use `'a'.repeat(length)` for the character-limit specs: a single unbreakable token
+ * makes Android's LineBreaker degenerate, and the post input then blocks the main thread for
+ * ~25s at 262145 chars (vs ~2s for the same length as words). Measured on API 35.
+ */
+export const buildMessageOfLength = (length: number): string => {
+    const phrase = 'lorem ipsum dolor sit amet ';
+    const text = phrase.repeat(Math.ceil(length / phrase.length)).slice(0, length);
+
+    // A trailing space would be lost to the app's own trim() and shorten the message by one.
+    return text.endsWith(' ') ? `${text.slice(0, -1)}x` : text;
+};
+
 export const capitalize = (text: string): string => {
     return text.charAt(0).toUpperCase() + text.slice(1);
 };

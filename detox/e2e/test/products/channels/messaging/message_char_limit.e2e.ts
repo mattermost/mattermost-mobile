@@ -24,7 +24,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid} from '@support/utils';
+import {buildMessageOfLength} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Character Limit', () => {
@@ -55,13 +55,9 @@ describe('Messaging - Message Character Limit', () => {
         await HomeScreen.logout();
     });
 
-    // 262145 runes in the input ANRs Android (LineBreaker.nComputeLineBreaks on the main thread),
-    // so the over-limit assertions run on iOS only until the app bounds text measurement.
-    const itNotAndroid = isAndroid() ? it.skip : it;
-
-    itNotAndroid('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
+    it('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
         // # Open a channel and type a message one rune over the server's limit
-        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
+        const overLimitMessage = buildMessageOfLength(maxPostSize + 1);
         const {post: lastPostBefore} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();

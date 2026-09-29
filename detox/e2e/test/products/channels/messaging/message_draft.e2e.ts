@@ -25,7 +25,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {buildMessageOfLength, getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
@@ -128,13 +128,9 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // 262145 runes in the input ANRs Android (LineBreaker.nComputeLineBreaks on the main thread),
-    // so the over-limit assertions run on iOS only until the app bounds text measurement.
-    const itNotAndroid = isAndroid() ? it.skip : it;
-
-    itNotAndroid('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
+    it('MM-T4781_3 - should show character count warning when message exceeds character limit', async () => {
         // # Open a channel screen and create a message draft one rune over the server's limit
-        let message = 'a'.repeat(maxPostSize + 1);
+        let message = buildMessageOfLength(maxPostSize + 1);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();
         await ChannelScreen.postInput.clearText();
@@ -147,7 +143,7 @@ describe('Messaging - Message Draft', () => {
         await expect(ChannelScreen.sendButtonDisabled).toBeVisible();
 
         // # Replace message draft with a length exactly at the limit
-        message = 'a'.repeat(maxPostSize);
+        message = buildMessageOfLength(maxPostSize);
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify warning message is not displayed and send button is enabled
@@ -160,9 +156,8 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    // Same Android ANR as MM-T4781_3 above.
-    itNotAndroid('MM-T107 - should show alert when message exceeds character limit', async () => {
-        const overLimitMessage = 'a'.repeat(maxPostSize + 1);
+    it('MM-T107 - should show alert when message exceeds character limit', async () => {
+        const overLimitMessage = buildMessageOfLength(maxPostSize + 1);
 
         // # Open a channel and type a message over the character limit
         await ChannelScreen.open(channelsCategory, testChannel.name);

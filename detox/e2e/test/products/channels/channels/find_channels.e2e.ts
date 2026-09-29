@@ -157,6 +157,7 @@ describe('Channels - Find Channels', () => {
         // # Archive a channel, open find channels screen, and search for the archived channel
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.TEN_SEC); // Adding a short wait to ensure channel is archived before searching
         await FindChannelsScreen.open();
@@ -175,8 +176,16 @@ describe('Channels - Find Channels', () => {
         }
         await wait(timeouts.TWO_SEC);
 
-        // * Verify on archievd channel name
-        await verifyDetailsOnChannelScreen(archivedChannel.display_name);
+        // * Verify on the archived channel.
+        // Not verifyDetailsOnChannelScreen: that ends on the channel intro, and an archived
+        // channel does not reliably render one. Its post list can sit on the loading spinner
+        // instead, and the intro and the spinner are mutually exclusive, so the assertion
+        // waits 30s for something that is never coming. The header plus the archived footer
+        // are what this test is actually about — that the archived channel was found and
+        // opened — and both are present in that state.
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText(archivedChannel.display_name);
+        await waitFor(ChannelScreen.postDraftArchived).toBeVisible().withTimeout(timeouts.HALF_MIN);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
