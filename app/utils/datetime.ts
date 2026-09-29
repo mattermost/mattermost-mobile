@@ -2,24 +2,19 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import {Platform} from 'react-native';
 
 import type {IntlShape} from 'react-intl';
 
 export type ValidMinuteInterval = 1 | 2 | 3 | 4 | 5 | 6 | 10 | 12 | 15 | 20 | 30;
 
-const IOS_VALID_INTERVALS = new Set<ValidMinuteInterval>([1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]);
+const VALID_INTERVALS = new Set<ValidMinuteInterval>([1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]);
 
 export function toValidMinuteInterval(interval?: number): ValidMinuteInterval {
-    if (Platform.OS !== 'ios') {
-        // Android doesn't use minuteInterval — return 30 as a no-op default
-        return 30;
-    }
-    if (interval && IOS_VALID_INTERVALS.has(interval as ValidMinuteInterval)) {
+    if (interval && VALID_INTERVALS.has(interval as ValidMinuteInterval)) {
         return interval as ValidMinuteInterval;
     }
 
-    // iOS doesn't support 60+ — clamp to 30
+    // Neither platform supports 60+ — clamp to 30
     return 30;
 }
 
