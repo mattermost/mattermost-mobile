@@ -8,7 +8,7 @@ import logger from '@nozbe/watermelondb/utils/common/logger';
 import {File} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {AiBotModel, AiThreadModel} from '@agents/database/models';
+import {AiBotModel, AiThreadModel, LocalAgentConversationModel, LocalAgentMessageModel} from '@agents/database/models';
 import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -58,7 +58,7 @@ class DatabaseManagerSingleton {
             ScheduledPostModel, SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
             ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, BoardViewModel,
             PlaybookRunModel, PlaybookChecklistModel, PlaybookChecklistItemModel, PlaybookRunPropertyFieldModel, PlaybookRunPropertyValueModel,
-            AiBotModel, AiThreadModel,
+            AiBotModel, AiThreadModel, LocalAgentConversationModel, LocalAgentMessageModel,
         ];
         this.databaseDirectory = '';
     }

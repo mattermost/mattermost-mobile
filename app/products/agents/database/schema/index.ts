@@ -3,3 +3,5 @@
 
 export {default as AiBotSchema} from './ai_bot';
 export {default as AiThreadSchema} from './ai_thread';
+export {default as LocalAgentConversationSchema} from './local_agent_conversation';
+export {default as LocalAgentMessageSchema} from './local_agent_message';

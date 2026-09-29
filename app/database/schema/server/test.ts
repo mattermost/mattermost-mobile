@@ -11,7 +11,7 @@ import {PLAYBOOK_TABLES} from '@playbooks/constants/database';
 
 import {serverSchema} from './index';
 
-const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
+const {AI_BOT, AI_THREAD, LOCAL_AGENT_CONVERSATION, LOCAL_AGENT_MESSAGE} = AGENTS_TABLES;
 const {BOARD_VIEW} = BOARDS_TABLES;
 
 const {
@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 21,
+            version: 22,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -105,6 +105,42 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'reply_count', type: 'number'},
                         {name: 'update_at', type: 'number', isIndexed: true},
+                    ],
+                },
+                [LOCAL_AGENT_CONVERSATION]: {
+                    name: LOCAL_AGENT_CONVERSATION,
+                    unsafeSql: undefined,
+                    columns: {
+                        title: {name: 'title', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                        update_at: {name: 'update_at', type: 'number', isIndexed: true},
+                    },
+                    columnArray: [
+                        {name: 'title', type: 'string'},
+                        {name: 'create_at', type: 'number'},
+                        {name: 'update_at', type: 'number', isIndexed: true},
+                    ],
+                },
+                [LOCAL_AGENT_MESSAGE]: {
+                    name: LOCAL_AGENT_MESSAGE,
+                    unsafeSql: undefined,
+                    columns: {
+                        conversation_id: {name: 'conversation_id', type: 'string', isIndexed: true},
+                        role: {name: 'role', type: 'string'},
+                        message: {name: 'message', type: 'string'},
+                        reasoning: {name: 'reasoning', type: 'string', isOptional: true},
+                        tool_calls: {name: 'tool_calls', type: 'string', isOptional: true},
+                        status: {name: 'status', type: 'string'},
+                        create_at: {name: 'create_at', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'conversation_id', type: 'string', isIndexed: true},
+                        {name: 'role', type: 'string'},
+                        {name: 'message', type: 'string'},
+                        {name: 'reasoning', type: 'string', isOptional: true},
+                        {name: 'tool_calls', type: 'string', isOptional: true},
+                        {name: 'status', type: 'string'},
+                        {name: 'create_at', type: 'number'},
                     ],
                 },
                 [CATEGORY]: {

@@ -9,7 +9,7 @@ import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {Directory, File, Paths} from 'expo-file-system';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
-import {AiBotModel, AiThreadModel} from '@agents/database/models';
+import {AiBotModel, AiThreadModel, LocalAgentConversationModel, LocalAgentMessageModel} from '@agents/database/models';
 import {Events} from '@constants';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
@@ -52,7 +52,7 @@ class DatabaseManagerSingleton {
     constructor() {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            AiBotModel, AiThreadModel,
+            AiBotModel, AiThreadModel, LocalAgentConversationModel, LocalAgentMessageModel,
             CategoryModel, CategoryChannelModel, ChannelModel, ChannelBookmarkModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, CustomProfileFieldModel, CustomProfileAttributeModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, PropertyFieldModel, PropertyValueModel, ReactionModel, RoleModel,

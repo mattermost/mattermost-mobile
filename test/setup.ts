@@ -71,9 +71,40 @@ jest.mock('expo-file-system', () => {
         Paths: {
             cache: makeDirectoryInstance('file://test-cache-directory/'),
             document: makeDirectoryInstance('file:///test-directory/'),
+            bundle: makeDirectoryInstance('file:///test-bundle/'),
         },
     };
 });
+
+/* eslint-disable max-nested-callbacks -- mock factory needs nested jest.fn definitions */
+jest.mock('react-native-litert-lm', () => {
+    const conversation = {
+        id: 'mock-conversation',
+        execute: jest.fn(() => Promise.resolve('')),
+        executeWithEvents: jest.fn(() => Promise.resolve('')),
+        getHistory: jest.fn(() => []),
+        release: jest.fn(() => Promise.resolve(undefined)),
+    };
+
+    return {
+        createLLM: jest.fn(() => ({
+            loadModel: jest.fn(() => Promise.resolve(undefined)),
+            unload: jest.fn(),
+            close: jest.fn(),
+            execute: jest.fn(() => Promise.resolve('')),
+            executeWithEvents: jest.fn(() => Promise.resolve('')),
+            createConversation: jest.fn(() => conversation),
+            setMemoryWarningCallback: jest.fn(),
+            isReady: jest.fn(() => true),
+            getMemoryUsage: jest.fn(() => ({nativeHeapBytes: 0, residentBytes: 0, availableMemoryBytes: 0, isLowMemory: false})),
+            getMemoryForecast: jest.fn(() => null),
+            getStats: jest.fn(() => ({promptTokens: 0, completionTokens: 0, totalTokens: 0, timeToFirstToken: 0, totalTime: 0, tokensPerSecond: 0})),
+            estimateMemory: jest.fn(() => null),
+        })),
+        isMemoryError: jest.fn(() => false),
+    };
+});
+/* eslint-enable max-nested-callbacks */
 
 jest.mock('expo-web-browser', () => ({
     openAuthSessionAsync: jest.fn().mockResolvedValue(({

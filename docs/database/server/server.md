@@ -1,4 +1,4 @@
-# Server Database - Schema Version 21
+# Server Database - Schema Version 22
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -447,6 +447,27 @@ title string
 channel_id string INDEX FK >- Channel.id
 reply_count number
 update_at number INDEX
+
+
+LocalAgentConversation
+-
+# Local-only on-device agent chats. Never synced to the server.
+id PK string
+title string
+create_at number
+update_at number INDEX
+
+
+LocalAgentMessage
+-
+id PK string
+conversation_id string INDEX FK >- LocalAgentConversation.id
+role string # user | assistant
+message string
+reasoning string NULL
+tool_calls string NULL # JSON-encoded ToolCall[]
+status string # complete | streaming | error | cancelled
+create_at number
 
 
 BoardView

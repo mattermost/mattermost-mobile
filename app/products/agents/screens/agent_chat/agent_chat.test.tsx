@@ -91,6 +91,10 @@ jest.mock('@agents/screens/navigation', () => ({
     goToAgentThreadsList: jest.fn(),
 }));
 
+jest.mock('@agents/local/engine', () => ({
+    isLocalAgentAvailable: jest.fn(() => false),
+}));
+
 // --- Navigation state mocks ---
 jest.mock('@react-navigation/native', () => ({
     useIsFocused: jest.fn(() => true),

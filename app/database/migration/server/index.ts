@@ -27,10 +27,35 @@ const {
 } = MM_TABLES.SERVER;
 
 const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_ATTRIBUTE, PLAYBOOK_RUN_ATTRIBUTE_VALUE} = PLAYBOOK_TABLES;
-const {AI_BOT, AI_THREAD} = AGENTS_TABLES;
+const {AI_BOT, AI_THREAD, LOCAL_AGENT_CONVERSATION, LOCAL_AGENT_MESSAGE} = AGENTS_TABLES;
 const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 22,
+        steps: [
+            createTable({
+                name: LOCAL_AGENT_CONVERSATION,
+                columns: [
+                    {name: 'title', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                    {name: 'update_at', type: 'number', isIndexed: true},
+                ],
+            }),
+            createTable({
+                name: LOCAL_AGENT_MESSAGE,
+                columns: [
+                    {name: 'conversation_id', type: 'string', isIndexed: true},
+                    {name: 'role', type: 'string'},
+                    {name: 'message', type: 'string'},
+                    {name: 'reasoning', type: 'string', isOptional: true},
+                    {name: 'tool_calls', type: 'string', isOptional: true},
+                    {name: 'status', type: 'string'},
+                    {name: 'create_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 21,
         steps: [

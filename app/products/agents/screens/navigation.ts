@@ -4,8 +4,8 @@
 import AgentScreens from '@agents/constants/screens';
 import {navigateToScreen} from '@screens/navigation';
 
-export function goToAgentChat() {
-    navigateToScreen(AgentScreens.AGENT_CHAT);
+export function goToAgentChat(props?: {localConversationId?: string}) {
+    navigateToScreen(AgentScreens.AGENT_CHAT, props);
 }
 
 export function goToAgentThreadsList() {

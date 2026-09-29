@@ -1,0 +1,19 @@
+diff --git a/node_modules/react-native-litert-lm/ios/HybridLiteRTLM.swift b/node_modules/react-native-litert-lm/ios/HybridLiteRTLM.swift
+index 05f80ca..97da7dd 100644
+--- a/node_modules/react-native-litert-lm/ios/HybridLiteRTLM.swift
++++ b/node_modules/react-native-litert-lm/ios/HybridLiteRTLM.swift
+@@ -367,8 +367,12 @@ public class HybridLiteRTLM: HybridLiteRTLMSpec_base, HybridLiteRTLMSpec_protoco
+                     }
+                 }
+                 
+-                // Cache dir set to parent directory of model path
+-                let cacheDir = (modelPath as NSString).deletingLastPathComponent
++                // Cache dir set to parent directory of model path, unless it is read-only
++                // (e.g. a model bundled in the .app), in which case use the app's Caches dir
++                // so the XNNPack weight cache can be written and memory-mapped.
++                let modelDir = (modelPath as NSString).deletingLastPathComponent
++                let cachesDir = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first
++                let cacheDir = FileManager.default.isWritableFile(atPath: modelDir) ? modelDir : (cachesDir ?? modelDir)
+                 cacheDir.withCString { cacheC in
+                     litert_lm_engine_settings_set_cache_dir(s, cacheC)
+                 }

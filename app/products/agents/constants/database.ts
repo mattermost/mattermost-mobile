@@ -4,4 +4,6 @@
 export const AGENTS_TABLES = {
     AI_BOT: 'AiBot',
     AI_THREAD: 'AiThread',
+    LOCAL_AGENT_CONVERSATION: 'LocalAgentConversation',
+    LOCAL_AGENT_MESSAGE: 'LocalAgentMessage',
 } as const;

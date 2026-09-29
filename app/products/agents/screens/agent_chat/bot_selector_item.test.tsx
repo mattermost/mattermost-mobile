@@ -6,9 +6,7 @@ import React, {type ComponentProps} from 'react';
 
 import {Preferences} from '@constants';
 
-import BotSelectorItem from './bot_selector_item';
-
-import type AiBotModel from '@agents/types/database/models/ai_bot';
+import BotSelectorItem, {type AgentSelectorItem} from './bot_selector_item';
 
 // Mock SlideUpPanelItem to avoid complex dependencies
 jest.mock('@components/slide_up_panel_item', () => {
@@ -45,19 +43,12 @@ jest.mock('@components/slide_up_panel_item', () => {
 });
 
 describe('BotSelectorItem', () => {
-    // Mock bot data with camelCase properties matching AiBotModel
-    const mockBot = {
+    const mockBot: AgentSelectorItem = {
         id: 'bot-123',
         displayName: 'Test Bot',
-        username: 'testbot',
-        lastIconUpdate: 0,
-        dmChannelId: 'dm-channel-123',
-        channelAccessLevel: 0,
-        channelIds: [],
-        userAccessLevel: 0,
-        userIds: [],
-        teamIds: [],
-    } as unknown as AiBotModel;
+        avatarUrl: undefined,
+        isLocal: false,
+    };
 
     const getBaseProps = (): ComponentProps<typeof BotSelectorItem> => ({
         bot: mockBot,
@@ -101,7 +92,7 @@ describe('BotSelectorItem', () => {
 
     it('should use avatar url when provided', () => {
         const props = getBaseProps();
-        props.avatarUrl = 'https://example.com/avatar.png';
+        props.bot = {...props.bot, avatarUrl: 'https://example.com/avatar.png'};
         const {getByText} = render(<BotSelectorItem {...props}/>);
 
         // Avatar URL should be passed to leftIcon
@@ -110,8 +101,6 @@ describe('BotSelectorItem', () => {
 
     it('should use fallback icon when no avatar url', () => {
         const props = getBaseProps();
-
-        // avatarUrl is undefined
         const {getByText} = render(<BotSelectorItem {...props}/>);
 
         // Fallback icon name should be used

@@ -4,7 +4,7 @@
 import {BoardViewSchema} from '@boards/database/schema';
 import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 
-import {AiBotSchema, AiThreadSchema} from '@agents/database/schema';
+import {AiBotSchema, AiThreadSchema, LocalAgentConversationSchema, LocalAgentMessageSchema} from '@agents/database/schema';
 import {PlaybookRunSchema, PlaybookChecklistSchema, PlaybookChecklistItemSchema, PlaybookRunAttributeSchema, PlaybookRunAttributeValueSchema} from '@playbooks/database/schema';
 
 import {
@@ -49,10 +49,12 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 21,
+    version: 22,
     tables: [
         AiBotSchema,
         AiThreadSchema,
+        LocalAgentConversationSchema,
+        LocalAgentMessageSchema,
         CategorySchema,
         CategoryChannelSchema,
         ChannelSchema,

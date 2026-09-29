@@ -1,0 +1,15 @@
+diff --git a/node_modules/react-native-nitro-modules/NitroModules.podspec b/node_modules/react-native-nitro-modules/NitroModules.podspec
+index 9163edc..09506df 100644
+--- a/node_modules/react-native-nitro-modules/NitroModules.podspec
++++ b/node_modules/react-native-nitro-modules/NitroModules.podspec
+@@ -51,10 +51,6 @@ Pod::Spec.new do |s|
+     "cpp/utils/NitroDefines.hpp",
+     "cpp/utils/PropNameIDCache.hpp",
+     "cpp/views/CachedProp.hpp",
+-    "cpp/views/RawPropsCompat.hpp",
+-    "cpp/views/ReactProp.hpp",
+-    "cpp/views/ViewComponentDescriptor.hpp",
+-    "cpp/views/ViewPropsHolderState.hpp",
+     # Public iOS-specific headers that will be exposed in modulemap (for Swift)
+     "ios/core/ArrayBufferHolder.hpp",
+     "ios/core/PromiseHolder.hpp",

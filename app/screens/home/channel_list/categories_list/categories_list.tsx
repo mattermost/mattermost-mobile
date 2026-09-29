@@ -8,6 +8,7 @@ import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {handleTeamChange} from '@actions/remote/team';
 import AgentsButton from '@agents/components/agents_button';
+import {isLocalAgentAvailable} from '@agents/local/engine';
 import {ROW_HEIGHT} from '@components/channel_item/channel_item';
 import DraftsButton from '@components/drafts_buttton';
 import Loading from '@components/loading';
@@ -174,7 +175,7 @@ const CategoriesList = ({
     }, [activeScreen, draftsCount, isTablet, scheduledPostCount, scheduledPostHasError, scheduledPostsEnabled]);
 
     const agentsButtonComponent = useMemo(() => {
-        if (!agentsEnabled) {
+        if (!agentsEnabled && !isLocalAgentAvailable()) {
             return null;
         }
 

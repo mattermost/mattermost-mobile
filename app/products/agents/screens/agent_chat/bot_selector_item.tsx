@@ -5,24 +5,38 @@ import React, {useCallback} from 'react';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 
-import type AiBotModel from '@agents/types/database/models/ai_bot';
+export type AgentSelectorItem = {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+    isLocal?: boolean;
+};
 
 type Props = {
-    bot: AiBotModel;
-    avatarUrl?: string;
+    bot: AgentSelectorItem;
     isSelected: boolean;
-    onSelect: (bot: AiBotModel) => void;
+    onSelect: (bot: AgentSelectorItem) => void;
     theme: Theme;
 };
 
-const BotSelectorItem = ({bot, avatarUrl, isSelected, onSelect, theme}: Props) => {
+function leftIconForBot(bot: AgentSelectorItem) {
+    if (bot.avatarUrl) {
+        return {uri: bot.avatarUrl} as const;
+    }
+    if (bot.isLocal) {
+        return 'creation-outline' as const;
+    }
+    return 'account-outline' as const;
+}
+
+const BotSelectorItem = ({bot, isSelected, onSelect, theme}: Props) => {
     const handlePress = useCallback(() => {
         onSelect(bot);
     }, [bot, onSelect]);
 
     return (
         <SlideUpPanelItem
-            leftIcon={avatarUrl ? {uri: avatarUrl} : 'account-outline'}
+            leftIcon={leftIconForBot(bot)}
             leftImageStyles={{borderRadius: 12}}
             onPress={handlePress}
             testID={`agent_chat.bot_selector.bot_item.${bot.id}`}

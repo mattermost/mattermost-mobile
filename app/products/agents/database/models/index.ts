@@ -3,3 +3,5 @@
 
 export {default as AiBotModel} from './ai_bot';
 export {default as AiThreadModel} from './ai_thread';
+export {default as LocalAgentConversationModel} from './local_agent_conversation';
+export {default as LocalAgentMessageModel} from './local_agent_message';

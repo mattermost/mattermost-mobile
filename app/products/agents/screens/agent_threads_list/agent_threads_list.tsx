@@ -10,7 +10,9 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {fetchAIThreads} from '@agents/actions/remote/threads';
-import ThreadItem from '@agents/screens/agent_threads_list/thread_item';
+import {LOCAL_AGENT_DISPLAY_NAME} from '@agents/local/constants';
+import HistoryItem, {type HistoryListItem} from '@agents/screens/agent_threads_list/history_item';
+import {goToAgentChat} from '@agents/screens/navigation';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -24,10 +26,12 @@ import {typography} from '@utils/typography';
 
 import type AiBotModel from '@agents/types/database/models/ai_bot';
 import type AiThreadModel from '@agents/types/database/models/ai_thread';
+import type LocalAgentConversationModel from '@agents/types/database/models/local_agent_conversation';
 
 type Props = {
     threads: AiThreadModel[];
     bots: AiBotModel[];
+    localConversations: LocalAgentConversationModel[];
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -116,6 +120,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AgentThreadsList = ({
     threads,
     bots,
+    localConversations,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -123,13 +128,11 @@ const AgentThreadsList = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    // Track if this is the first load (show loading spinner only on first load with no cached data)
     const initialLoadDone = useRef(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Create a map of channel_id to bot display name
     const botNameByChannelId = useMemo(() => {
         const map: Record<string, string> = {};
         for (const bot of bots) {
@@ -140,13 +143,35 @@ const AgentThreadsList = ({
         return map;
     }, [bots]);
 
-    // Refresh data from network (updates database, observers will update UI)
+    const historyItems = useMemo((): HistoryListItem[] => {
+        const serverItems: HistoryListItem[] = threads.map((thread) => ({
+            id: thread.id,
+            title: thread.title,
+            message: thread.message,
+            updateAt: thread.updateAt,
+            replyCount: thread.replyCount,
+            botName: botNameByChannelId[thread.channelId],
+            isLocal: false,
+        }));
+
+        const localItems: HistoryListItem[] = localConversations.map((conversation) => ({
+            id: conversation.id,
+            title: conversation.title,
+            message: '',
+            updateAt: conversation.updateAt,
+            replyCount: 0,
+            botName: LOCAL_AGENT_DISPLAY_NAME,
+            isLocal: true,
+        }));
+
+        return [...serverItems, ...localItems].sort((a, b) => b.updateAt - a.updateAt);
+    }, [threads, localConversations, botNameByChannelId]);
+
     const refreshData = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
             setRefreshing(true);
         }
 
-        // Fetch both bots and threads in parallel
         const [botsResult, threadsResult] = await Promise.all([
             fetchAIBots(serverUrl),
             fetchAIThreads(serverUrl),
@@ -156,8 +181,7 @@ const AgentThreadsList = ({
             setRefreshing(false);
         }
 
-        // Only show error if both calls failed and we have no cached data
-        if (botsResult.error && threadsResult.error && threads.length === 0) {
+        if (botsResult.error && threadsResult.error && threads.length === 0 && localConversations.length === 0) {
             setError(intl.formatMessage({
                 id: 'agents.threads_list.error_loading',
                 defaultMessage: 'Failed to load conversations. Please try again.',
@@ -166,17 +190,14 @@ const AgentThreadsList = ({
             setError(null);
         }
 
-        // Mark initial load as done
         if (!initialLoadDone.current) {
             initialLoadDone.current = true;
             setLoading(false);
         }
-    }, [serverUrl, intl, threads.length]);
+    }, [serverUrl, intl, threads.length, localConversations.length]);
 
-    // On mount, refresh data from network
     useEffect(() => {
-        // If we have cached data, don't show loading spinner
-        if (threads.length > 0 || bots.length > 0) {
+        if (threads.length > 0 || bots.length > 0 || localConversations.length > 0) {
             initialLoadDone.current = true;
             setLoading(false);
         }
@@ -193,23 +214,25 @@ const AgentThreadsList = ({
         refreshData(true);
     }, [refreshData]);
 
-    const handleThreadPress = useCallback(async (thread: AiThreadModel) => {
-        // Navigate to the thread
-        await fetchAndSwitchToThread(serverUrl, thread.id, false);
+    const handleItemPress = useCallback(async (item: HistoryListItem) => {
+        if (item.isLocal) {
+            await navigateBack();
+            goToAgentChat({localConversationId: item.id});
+            return;
+        }
 
-        // fetchAndSwitchToThread handles navigation, so we don't need to exit
+        await fetchAndSwitchToThread(serverUrl, item.id, false);
     }, [serverUrl]);
 
-    const renderItem: ListRenderItem<AiThreadModel> = useCallback(({item}) => {
+    const renderItem: ListRenderItem<HistoryListItem> = useCallback(({item}) => {
         return (
-            <ThreadItem
-                thread={item}
-                onPress={handleThreadPress}
-                botName={botNameByChannelId[item.channelId]}
+            <HistoryItem
+                item={item}
+                onPress={handleItemPress}
                 theme={theme}
             />
         );
-    }, [botNameByChannelId, handleThreadPress, theme]);
+    }, [handleItemPress, theme]);
 
     const renderEmptyState = useCallback(() => {
         if (error) {
@@ -253,8 +276,7 @@ const AgentThreadsList = ({
         );
     }, [error, styles, theme]);
 
-    // Show loading only on first load with no cached data
-    if (loading && threads.length === 0) {
+    if (loading && historyItems.length === 0) {
         return (
             <Loading
                 containerStyle={styles.loadingContainer}
@@ -266,10 +288,8 @@ const AgentThreadsList = ({
 
     return (
         <View style={styles.container}>
-            {/* Header */}
             <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
                 <View style={styles.headerContent}>
-                    {/* Left - Back button */}
                     <View style={styles.headerLeft}>
                         <Pressable
                             onPress={exit}
@@ -284,7 +304,6 @@ const AgentThreadsList = ({
                         </Pressable>
                     </View>
 
-                    {/* Center - Title */}
                     <View style={styles.headerCenter}>
                         <FormattedText
                             id='agents.threads_list.title'
@@ -293,7 +312,6 @@ const AgentThreadsList = ({
                         />
                     </View>
 
-                    {/* Right - New chat button */}
                     <View style={styles.headerRight}>
                         <Pressable
                             onPress={exit}
@@ -310,10 +328,9 @@ const AgentThreadsList = ({
                 </View>
             </View>
 
-            {/* Main content */}
             <View style={styles.mainContent}>
                 <FlashList
-                    data={threads}
+                    data={historyItems}
                     renderItem={renderItem}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={renderEmptyState}
