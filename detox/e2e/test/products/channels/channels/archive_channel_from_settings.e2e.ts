@@ -292,13 +292,33 @@ describe('Channels - Archive Channel from Settings', () => {
             await ChannelDropdownMenuScreen.open();
             await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
             await wait(timeouts.ONE_SEC);
-            await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
 
-            // * Verify archived channel appears in the list
-            await wait(timeouts.ONE_SEC);
-            await expect(
-                BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name),
-            ).toHaveText(archivedChannel.display_name);
+            // * Verify archived channel appears in the list.
+            // The channel was archived through the UI seconds ago and the server's archived
+            // search does not always have it yet: the screen answers "No matches found" for
+            // the query it already ran. It does not re-query on its own, so waiting on the
+            // row would poll for something that cannot arrive until a new search is issued.
+            // Retype the term to issue a fresh query, and give up only after several.
+            const archivedRow = BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name);
+            let archivedRowFound = false;
+
+            /* eslint-disable no-await-in-loop -- each attempt re-runs the search the last one missed */
+            for (let attempt = 1; attempt <= 6 && !archivedRowFound; attempt++) {
+                await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
+                try {
+                    await waitFor(archivedRow).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+                    archivedRowFound = true;
+                } catch {
+                    await BrowseChannelsScreen.searchInput.clearText();
+                    await wait(timeouts.TWO_SEC);
+                }
+            }
+            /* eslint-enable no-await-in-loop */
+
+            if (!archivedRowFound) {
+                throw new Error(`MM-T1703_1: ${archivedChannel.name} never appeared under the archived filter`);
+            }
+            await expect(archivedRow).toHaveText(archivedChannel.display_name);
 
             await BrowseChannelsScreen.close();
         }

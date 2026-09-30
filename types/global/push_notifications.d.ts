@@ -33,6 +33,7 @@ interface NotificationData {
     sender_id?: string;
     sender_name?: string;
     server_id?: string;
+    signature?: string;
     server_url?: string;
     team_id?: string;
     type: string;

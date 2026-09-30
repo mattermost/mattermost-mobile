@@ -191,6 +191,9 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
 
 /**
  * Replace server configuration with a complete config object.
+ *
+ * Do not use this against a shared test server: it reverts every setting another
+ * shard changed since the config was read. Use apiPatchConfig instead.
  * @param {string} baseUrl - the base server URL
  * @param {Object} config - complete server configuration
  * @return {Object} returns {config} on success or {error, status} on error

@@ -200,6 +200,23 @@ async function serverSetup() {
         `  Enterprise:   ${cfg.BuildEnterpriseReady}\n`,
     );
 
+    // Jest starts workers after globalSetup, so this env reaches every spec file, letting a
+    // suite gate itself synchronously at describe() time. A flag the server does not define is
+    // ABSENT from the client config rather than "false", so presence is the feature signal.
+    // Version is always present, so its absence means this is not a client config at all —
+    // treating that as "feature absent" would quarantine a suite silently.
+    if (!cfg.Version) {
+        throw new Error(
+            `[globalSetup] client config from ${SITE_URL} has no Version field, so feature detection is unreliable. ` +
+            `Received keys: ${Object.keys(cfg).slice(0, 10).join(', ') || '(none)'}`,
+        );
+    }
+
+    process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES = cfg.FeatureFlagChannelAttributes === undefined ? 'false' : 'true';
+    if (process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'false') {
+        process.stdout.write(`[globalSetup] FeatureFlagChannelAttributes is absent on ${cfg.Version} — the Channel Attributes suite will be skipped\n`);
+    }
+
     const login = await retryAxios(
         () => axios.post(`${SITE_URL}/api/v4/users/login`, {
             login_id: ADMIN_USERNAME,

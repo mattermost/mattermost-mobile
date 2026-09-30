@@ -463,6 +463,49 @@ export const apiSetChannelAttributeValue = async (
 };
 
 /**
+ * Wait until the given channel attribute fields all have a value on a channel.
+ *
+ * Values supplied at channel-creation time are not always readable back immediately, and a
+ * test that goes straight to the UI cannot tell "the server never stored this" from "the app
+ * has not rendered it yet" — both look like a missing element. Read them back first so the
+ * two are distinguishable.
+ *
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - the channel to read values from
+ * @param {string[]} fieldIds - field ids that must each have a non-empty value
+ * @return {boolean} true once every field has a value, false if the budget runs out
+ */
+export const waitForChannelAttributeValues = async (
+    baseUrl: string,
+    channelId: string,
+    fieldIds: string[],
+    {maxAttempts = 10, pollMs = 1000}: {maxAttempts?: number; pollMs?: number} = {},
+): Promise<boolean> => {
+    const hasValue = (value: unknown) => {
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        return value !== undefined && value !== null && value !== '';
+    };
+
+    /* eslint-disable no-await-in-loop -- polling is sequential by definition */
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const result = await apiGetPropertyValues(baseUrl, GROUP_NAME, CHANNEL_OBJECT_TYPE, channelId);
+        const values: Array<{field_id: string; value: unknown}> = 'values' in result ? result.values ?? [] : [];
+        const present = new Set(values.filter((v) => hasValue(v.value)).map((v) => v.field_id));
+        if (fieldIds.every((id) => present.has(id))) {
+            return true;
+        }
+        if (attempt < maxAttempts) {
+            await wait(pollMs);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
+
+    return false;
+};
+
+/**
  * Delete all non-deleted channel attribute fields with the given names, plus their templates.
  *
  * Channel-linked fields are deleted first (server enforces dependency ordering: linked before
@@ -526,6 +569,7 @@ export const Properties = {
     apiSetupChannelAttributeField,
     apiSetChannelAttributeValue,
     apiCleanupChannelAttributeFields,
+    waitForChannelAttributeValues,
 };
 
 export default Properties;

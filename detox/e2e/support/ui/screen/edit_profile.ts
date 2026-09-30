@@ -89,6 +89,26 @@ class EditProfileScreen {
         return this.toBeVisible();
     };
 
+    // PATCH /users/me/patch can time out against a busy site, and the app reports it as
+    // "Received invalid response from the server." with the screen still up. The same
+    // patch body is idempotent, so re-send it rather than failing the caller's next
+    // assertion on a screen that never dismissed.
+    save = async (attempts = 2) => {
+        /* eslint-disable no-await-in-loop -- each send has to settle before the next */
+        for (let attempt = 1; attempt <= attempts; attempt++) {
+            await this.saveButton.tap();
+            try {
+                await waitFor(this.editProfileScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+                return;
+            } catch (stillOpen) {
+                if (attempt === attempts) {
+                    throw stillOpen;
+                }
+            }
+        }
+        /* eslint-enable no-await-in-loop */
+    };
+
     close = async () => {
         await this.closeButton.tap();
 

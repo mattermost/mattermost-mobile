@@ -395,12 +395,31 @@ jobs:
           # The always() restore step below stays as the safety net for runner
           # hard-kills, which never reach onFlowComplete.
 
+          # Confirm the client config actually serves false instead of assuming a 200
+          # means the write took: an installation that supplies this setting through an
+          # environment variable answers 200 and keeps its own value, and the flow then
+          # asserts against a toggle the server never turned off. Same treatment
+          # ReportAProblemType already gets below.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            AllowDownloadLogs false || {
+              rc=$?
+              # 3 = the installation forbids the write, so the flow's pre-condition cannot
+              # be created here; record a skip rather than a red. Anything else is real.
+              if [ "$rc" -eq 3 ]; then
+                bash detox/maestro/scripts/write_maestro_skip_stub.sh \
+                  build/maestro-report-T67856_4.xml \
+                  detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
+                  "AllowDownloadLogs=false is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
+                exit 0
+              fi
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T67856_4.xml \
+                detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
+                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force"
+              exit 1
+            }
 
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
@@ -1000,12 +1019,31 @@ jobs:
           # The always() restore step below stays as the safety net for runner
           # hard-kills, which never reach onFlowComplete.
 
+          # Confirm the client config actually serves false instead of assuming a 200
+          # means the write took: an installation that supplies this setting through an
+          # environment variable answers 200 and keeps its own value, and the flow then
+          # asserts against a toggle the server never turned off. Same treatment
+          # ReportAProblemType already gets below.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          curl -f -sS --show-error -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":false}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":false}}' \
+            AllowDownloadLogs false || {
+              rc=$?
+              # 3 = the installation forbids the write, so the flow's pre-condition cannot
+              # be created here; record a skip rather than a red. Anything else is real.
+              if [ "$rc" -eq 3 ]; then
+                bash detox/maestro/scripts/write_maestro_skip_stub.sh \
+                  build/maestro-report-T67856_4.xml \
+                  detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
+                  "AllowDownloadLogs=false is not writable on this server (set by environment variable, patch silently ignored); flow cannot run here"
+                exit 0
+              fi
+              bash detox/maestro/scripts/write_maestro_failure_stub.sh \
+                build/maestro-report-T67856_4.xml \
+                detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
+                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force"
+              exit 1
+            }
 
           ~/.maestro/bin/maestro test \
             --format junit \
