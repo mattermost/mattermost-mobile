@@ -1120,11 +1120,24 @@ jobs:
   tsio-triage:
     name: Triage E2E failures (${{ matrix.job-key }})
     runs-on: ubuntu-24.04
+    # Only a red run is worth triaging: a verdict can turn a red run green and
+    # never the other way round, so on a run where every platform passed there is
+    # nothing for it to change. The platform jobs resolve their own commit
+    # statuses via tsio-report-status.js, so skipping this leaves nothing pending.
+    #
+    # The gate is per run rather than per platform: this job is a matrix over job
+    # keys and the key cannot be matched to its platform job here. A platform that
+    # passed therefore still gets a triage run when a sibling failed, finds no
+    # failures in its own lane, and posts nothing.
     if: >-
       always() &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
-      needs.calculate-tsio-identity.result == 'success'
+      needs.calculate-tsio-identity.result == 'success' &&
+      (needs.run-detox-ios.result == 'failure' ||
+       needs.run-detox-android.result == 'failure' ||
+       needs.run-maestro-ios.result == 'failure' ||
+       needs.run-maestro-android.result == 'failure')
     needs:
       - resolve-e2e-policy
       - calculate-tsio-identity
