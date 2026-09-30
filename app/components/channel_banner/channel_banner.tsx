@@ -65,7 +65,14 @@ export function ChannelBanner({bannerInfo, attributeBanner, isTopItem, skipHeade
     // A designated attribute takes priority over the channel's own banner. The
     // values it reads are fetched on channel switch, not here: the chips and the
     // Channel Info section need them on channels that render no banner at all.
-    const effectiveBanner = attributeBanner.hasBanner ? attributeBanner.banner : bannerInfo;
+    // The native fallback carries the same template, resolved by the observer so
+    // an unset attribute never leaves its raw "{{name}}" token on screen.
+    const effectiveBanner = useMemo(() => {
+        if (attributeBanner.hasBanner) {
+            return attributeBanner.banner;
+        }
+        return bannerInfo && {...bannerInfo, text: attributeBanner.nativeText};
+    }, [attributeBanner, bannerInfo]);
 
     const bannerTextColor = getContrastingSimpleColor(effectiveBanner?.background_color || '');
 

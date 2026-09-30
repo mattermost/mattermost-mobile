@@ -36,7 +36,6 @@ export const CHANNEL_ATTRIBUTE_OBJECT_TYPE = 'channel';
 export const DISPLAY_BANNER_TOP = 'display_banner_top';
 export const DISPLAY_BANNER_BOTTOM = 'display_banner_bottom';
 export const DISPLAY_LABEL_HEADER = 'display_label_header';
-export const DISPLAY_LABEL_INFO = 'display_label_info';
 
 // Feature flag config keys — stored as constants so callers don't spread bare
 // strings and grep can find all references.
