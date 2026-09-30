@@ -12,7 +12,7 @@ import {observeConfig, observeConfigBooleanValue, observePushVerificationStatus}
 import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {isZeroPersistenceConfig} from '@utils/config';
+import {isZeroPersistenceConfig, parseNonNegativeConfigNumber} from '@utils/config';
 
 import ChannelListHeader from './header';
 
@@ -84,6 +84,14 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         ),
         ephemeralModeEnabled: config.pipe(
             map((c) => c?.MobileEphemeralModeEnabled === 'true'),
+            distinctUntilChanged(),
+        ),
+        ephemeralModePurgeHours: config.pipe(
+            map((c) => parseNonNegativeConfigNumber(c?.MobileEphemeralModeOfflinePersistenceTimerHours)),
+            distinctUntilChanged(),
+        ),
+        ephemeralModeCleanupDays: config.pipe(
+            map((c) => parseNonNegativeConfigNumber(c?.MobileEphemeralModeAutoCacheCleanupDays)),
             distinctUntilChanged(),
         ),
         isZeroPersistenceMode: config.pipe(

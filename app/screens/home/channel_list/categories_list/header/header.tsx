@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {type Insets, Pressable, type PressableStateCallbackType, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import Tooltip from 'react-native-walkthrough-tooltip';
 
 import {logout} from '@actions/remote/session';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -21,6 +20,7 @@ import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -42,6 +42,8 @@ type Props = {
     hasMoreThanOneTeam: boolean;
     iconPad?: boolean;
     ephemeralModeEnabled: boolean;
+    ephemeralModePurgeHours: number;
+    ephemeralModeCleanupDays: number;
     isZeroPersistenceMode: boolean;
     pushProxyStatus: string;
 }
@@ -105,19 +107,6 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.sidebarTextActiveBorder,
         fontSize: 16,
     },
-    ephemeralModeTooltip: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowRadius: 2,
-        shadowOpacity: 0.16,
-    },
-    ephemeralModeTooltipContent: {
-        backgroundColor: theme.centerChannelBg,
-    },
-    ephemeralModeTooltipText: {
-        color: theme.centerChannelColor,
-        ...typography('Body', 75),
-    },
     pushAlert: {
         marginLeft: 5,
     },
@@ -159,12 +148,13 @@ const ChannelListHeader = ({
     hasMoreThanOneTeam,
     iconPad,
     ephemeralModeEnabled,
+    ephemeralModePurgeHours,
+    ephemeralModeCleanupDays,
     isZeroPersistenceMode,
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
     const intl = useIntl();
-    const [ephemeralModeTooltipVisible, setEphemeralModeTooltipVisible] = useState(false);
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
@@ -175,12 +165,6 @@ const ChannelListHeader = ({
     useEffect(() => {
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad, marginLeft]);
-
-    useEffect(() => {
-        if (!ephemeralModeEnabled) {
-            setEphemeralModeTooltipVisible(false);
-        }
-    }, [ephemeralModeEnabled]);
 
     const hasTeamMenuItems = canJoinOtherTeams || hasMoreThanOneTeam;
 
@@ -253,12 +237,15 @@ const ChannelListHeader = ({
     }, [styles.ephemeralModeButton, styles.ephemeralModePressed]);
 
     const onEphemeralModePress = useCallback(() => {
-        setEphemeralModeTooltipVisible(true);
-    }, []);
-
-    const onEphemeralModeTooltipClose = useCallback(() => {
-        setEphemeralModeTooltipVisible(false);
-    }, []);
+        if (isZeroPersistenceMode) {
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+            return;
+        }
+        showSnackBar({
+            barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED,
+            descriptionValues: {hours: ephemeralModePurgeHours, days: ephemeralModeCleanupDays},
+        });
+    }, [isZeroPersistenceMode, ephemeralModePurgeHours, ephemeralModeCleanupDays]);
 
     let header;
     if (displayName) {
@@ -319,41 +306,16 @@ const ChannelListHeader = ({
                 </View>
                 <View style={styles.headerActions}>
                     {ephemeralModeEnabled && (
-                        <Tooltip
-                            isVisible={ephemeralModeTooltipVisible}
-                            placement='bottom'
-                            content={
-                                isZeroPersistenceMode ? (
-                                    <FormattedText
-                                        id='channel_list_header.zero_persistence.tooltip'
-                                        defaultMessage='Zero Persistence is on'
-                                        style={styles.ephemeralModeTooltipText}
-                                    />
-                                ) : (
-                                    <FormattedText
-                                        id='channel_list_header.ephemeral_mode.tooltip'
-                                        defaultMessage='Ephemeral mode is on'
-                                        style={styles.ephemeralModeTooltipText}
-                                    />
-                                )
-                            }
-                            onClose={onEphemeralModeTooltipClose}
-                            contentStyle={styles.ephemeralModeTooltipContent}
-                            tooltipStyle={styles.ephemeralModeTooltip}
-                            showChildInTooltip={false}
-                            backgroundColor='transparent'
+                        <Pressable
+                            onPress={onEphemeralModePress}
+                            style={ephemeralModePressableStyle}
+                            testID='channel_list_header.ephemeral_mode'
                         >
-                            <Pressable
-                                onPress={onEphemeralModePress}
-                                style={ephemeralModePressableStyle}
-                                testID='channel_list_header.ephemeral_mode'
-                            >
-                                <CompassIcon
-                                    style={styles.ephemeralModeIcon}
-                                    name='shield-lock-outline'
-                                />
-                            </Pressable>
-                        </Tooltip>
+                            <CompassIcon
+                                style={styles.ephemeralModeIcon}
+                                name='shield-lock-outline'
+                            />
+                        </Pressable>
                     )}
                     <TouchableWithFeedback
                         hitSlop={hitSlop}

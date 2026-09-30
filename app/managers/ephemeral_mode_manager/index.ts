@@ -17,6 +17,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
 import {getDisconnectedSince, getLastSeenTime, getOfflineSince, observeConfigValue} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
+import {parseNonNegativeConfigNumber} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
 import {getFullErrorMessage} from '@utils/errors';
 import {deleteFileCache} from '@utils/file';
@@ -26,11 +27,6 @@ import {showSnackBar, type ShowSnackBarArgs} from '@utils/snack_bar';
 type ServerEntry =
     | {kind: 'zpm'}
     | {kind: 'mem'; thresholdMs: number; purgeThresholdMs: number; cleanupDays: number};
-
-function parseNonNegativeConfigNumber(value: string | undefined): number {
-    const parsed = Number(value ?? '0');
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
-}
 
 // Conservative checkpoints since the offline-persistence timer is configured in whole
 // hours — a sub-minute heads-up isn't meaningful lead time at that scale.

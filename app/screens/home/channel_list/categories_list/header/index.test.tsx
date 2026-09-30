@@ -104,6 +104,26 @@ describe('ChannelListHeader Index', () => {
         });
     });
 
+    it('should pass the parsed ephemeral mode timers', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'MobileEphemeralModeEnabled', value: 'true'},
+                {id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: '24'},
+                {id: 'MobileEphemeralModeAutoCacheCleanupDays', value: '7'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database, serverUrl});
+
+        await waitFor(() => {
+            const component = getByTestId('channel-list-header');
+            expect(component.props.ephemeralModePurgeHours).toBe(24);
+            expect(component.props.ephemeralModeCleanupDays).toBe(7);
+        });
+    });
+
     describe('isZeroPersistenceMode', () => {
         it('should be true when cleanup days is zero', async () => {
             await operator.handleConfigs({
