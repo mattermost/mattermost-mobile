@@ -1104,4 +1104,52 @@ describe('AgentPostNew — stream settle handover', () => {
 
         expect(await findByTestId('agents.tool_card.tu_live.approve')).toBeTruthy();
     });
+
+    it('should keep a decision made on the live round when the persisted round replaces it', async () => {
+        const pendingBlock = (id: string) => ({type: BlockType.ToolUse, id, name: 'search_docs', input: {q: id}, status: ToolCallStatusString.Pending});
+        mockFetchConversation.mockResolvedValueOnce({data: makeConversation()});
+        mockFetchConversation.mockResolvedValueOnce({data: makeConversation({
+            turns: [
+                {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, approval_state: 'call', content: [pendingBlock('a'), pendingBlock('b')]},
+            ],
+        })});
+
+        const {findByTestId, getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: ''})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({
+                post_id: POST_ID,
+                control: CONTROL_SIGNALS.TOOL_CALL,
+                tool_call: JSON.stringify([
+                    {id: 'a', name: 'search_docs', description: '', arguments: {q: 'a'}, status: 0},
+                    {id: 'b', name: 'search_docs', description: '', arguments: {q: 'b'}, status: 0},
+                ]),
+            });
+            await flush();
+        });
+        await findByTestId('agents.tool_card.a.approve');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
+            await flush();
+        });
+        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+
+        expect(await findByTestId('agents.tool_card.b.approve')).toBeTruthy();
+        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
+    });
 });

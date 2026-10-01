@@ -41,6 +41,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
 const POST_MESSAGE_ROUND_ID = 'post-message';
+const ANCHOR_ROUND_KEY = 'anchor';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -393,9 +394,14 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             ) : null}
             {renderedRounds.map((round, idx) => {
                 const isLive = round.id === LIVE_ROUND_ID;
+
+                // The anchor round keeps its key when the live round is
+                // replaced by the persisted one, so in-progress tool decisions,
+                // answers and an in-flight submit survive the refetch.
+                const key = idx === lastRenderedIdx ? ANCHOR_ROUND_KEY : round.id;
                 return (
                     <RoundView
-                        key={round.id}
+                        key={key}
                         round={round}
                         postId={post.id}
                         conversationId={conversationId}
