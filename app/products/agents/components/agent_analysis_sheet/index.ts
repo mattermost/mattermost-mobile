@@ -6,7 +6,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {observeAIBots} from '@agents/database/queries/bot';
 import {observeSelectedAgentId} from '@agents/queries/agents';
 
-import UnreadsSummarizeSheet from './unreads_summarize_sheet';
+import AgentAnalysisSheet, {type AnalysisOption} from './agent_analysis_sheet';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -15,4 +15,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     selectedAgentId: observeSelectedAgentId(database),
 }));
 
-export default withDatabase(enhanced(UnreadsSummarizeSheet));
+export type {AnalysisOption};
+
+export default withDatabase(enhanced(AgentAnalysisSheet));
