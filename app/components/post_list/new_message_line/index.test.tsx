@@ -3,9 +3,10 @@
 
 import React from 'react';
 
+import {setAgentsVersion} from '@agents/actions/local/version';
 import {Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {renderWithEverything, waitFor} from '@test/intl-test-helper';
+import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import NewMessagesLine from './index';
@@ -40,13 +41,13 @@ describe('NewMessagesLine', () => {
             prepareRecordsOnly: false,
         });
         await operator.handleAIBots({bots: [TestHelper.fakeLLMBot()], prepareRecordsOnly: false});
+        await setAgentsVersion(serverUrl, '2.9.0');
     };
 
     const baseProps = {
         theme: Preferences.THEMES.denim,
         testID: 'post_list.new_messages_line',
         channelId,
-        lastViewedAt: 1723000000000,
         location: Screens.CHANNEL,
     };
 
@@ -74,6 +75,26 @@ describe('NewMessagesLine', () => {
             expect(getByTestId('post_list.new_messages_line.ask_ai')).toBeTruthy();
         });
         expect(getByTestId('post_list.new_messages_line')).toBeTruthy();
+    });
+
+    it('should hide the pill once the agents plugin is disabled, even with agents still stored', async () => {
+        await makeAgentsAvailable();
+
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <NewMessagesLine {...baseProps}/>,
+            {database, serverUrl},
+        );
+        await waitFor(() => {
+            expect(getByTestId('post_list.new_messages_line.ask_ai')).toBeTruthy();
+        });
+
+        await act(async () => {
+            await setAgentsVersion(serverUrl, '');
+        });
+
+        await waitFor(() => {
+            expect(queryByTestId('post_list.new_messages_line.ask_ai')).toBeNull();
+        });
     });
 
     it('should not show the pill in the thread view even when agents are available', async () => {

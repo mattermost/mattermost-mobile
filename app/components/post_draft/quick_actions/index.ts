@@ -6,8 +6,9 @@ import React from 'react';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 
-import {observeHasAvailableAgents} from '@agents/queries/agents';
+import {observeIsAIRewriteAvailable} from '@agents/queries/agents';
 import {Preferences} from '@constants';
+import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanUploadFiles} from '@queries/servers/security';
@@ -17,7 +18,11 @@ import QuickActions from './quick_actions';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+type EnhancedProps = WithDatabaseArgs & {
+    serverUrl: string;
+}
+
+const enhanced = withObservables([], ({database, serverUrl}: EnhancedProps) => {
     const canUploadFiles = observeCanUploadFiles(database);
     const maxFileCount = observeMaxFileCount(database);
     const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
@@ -27,7 +32,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         canUploadFiles,
-        isAgentsEnabled: observeHasAvailableAgents(database),
+        isAgentsEnabled: observeIsAIRewriteAvailable(database, serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         isBoREnabled: observeIsBoREnabled(database),
         maxFileCount,
@@ -37,4 +42,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default React.memo(withDatabase(enhanced(QuickActions)));
+export default React.memo(withDatabase(withServerUrl(enhanced(QuickActions))));

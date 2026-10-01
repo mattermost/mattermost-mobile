@@ -31,9 +31,13 @@ describe('AgentsHandler', () => {
             expect(result).toEqual([]);
         });
 
-        it('should return empty array when bots array is empty', async () => {
-            const result = await operator.handleAIBots({bots: [], prepareRecordsOnly: false});
-            expect(result).toEqual([]);
+        it('should delete every stored bot when the server returns an empty list', async () => {
+            await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'})], prepareRecordsOnly: false});
+
+            await operator.handleAIBots({bots: [], prepareRecordsOnly: false});
+
+            const records = await operator.database.collections.get<AiBotModel>(AI_BOT).query().fetch();
+            expect(records).toHaveLength(0);
         });
 
         it('should create new bot records in the database', async () => {
@@ -103,9 +107,13 @@ describe('AgentsHandler', () => {
             expect(result).toEqual([]);
         });
 
-        it('should return empty array when threads array is empty', async () => {
-            const result = await operator.handleAIThreads({threads: [], prepareRecordsOnly: false});
-            expect(result).toEqual([]);
+        it('should delete every stored thread when the server returns an empty list', async () => {
+            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1'})], prepareRecordsOnly: false});
+
+            await operator.handleAIThreads({threads: [], prepareRecordsOnly: false});
+
+            const records = await operator.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
+            expect(records).toHaveLength(0);
         });
 
         it('should create new thread records in the database', async () => {

@@ -176,11 +176,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
         switchMap((enabled) => (enabled ? observeThreadById(database, post.id) : of$(undefined))),
     );
 
-    // Thread analysis entry point: needs at least one agent and the
-    // Professional-tier license the plugin's analyze endpoints require; never
-    // shown for system/ephemeral/deleted or burn-on-read posts.
-    const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post)) ? of$(false) : combineLatest([
-        observeHasAvailableAgents(database),
+    // Thread analysis entry point: needs an agent usable in this channel and
+    // the license the plugin's analyze endpoints require; never shown for
+    // system/ephemeral/deleted or burn-on-read posts.
+    const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post) || post.deleteAt !== 0) ? of$(false) : combineLatest([
+        observeHasAvailableAgents(database, post.channelId),
         observeIsAgentsAnalysisLicensed(database),
     ]).pipe(
         switchMap(([hasAgents, isAnalysisLicensed]) => of$(hasAgents && isAnalysisLicensed)),

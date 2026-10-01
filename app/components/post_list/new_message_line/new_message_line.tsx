@@ -12,18 +12,12 @@ import {bottomSheet} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {AvailableScreens} from '@typings/screens/navigation';
-
 type NewMessagesLineProps = {
     style?: StyleProp<ViewStyle>;
     theme: Theme;
     testID?: string;
     channelId: string;
     lastViewedAt: number;
-
-    // Consumed by the enhanced wrapper (index.ts) to gate canSummarizeUnreads
-    // to the channel view; passed through to keep the call site typed.
-    location: AvailableScreens;
     canSummarizeUnreads: boolean;
 }
 
