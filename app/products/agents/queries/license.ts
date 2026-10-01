@@ -1,16 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
+import {observeAgentsVersion} from '@agents/database/queries/version';
 import {SKU_SHORT_NAME} from '@constants/license';
 import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import type {Database} from '@nozbe/watermelondb';
 
 // SKUs at the Professional level or above in the plugin's tier chart
-// (enterprise/license.go LevelFor).
+// (enterprise/license.go LevelFor), introduced in plugin 2.8.0.
 const PROFESSIONAL_OR_HIGHER_SKUS = new Set<string>([
     SKU_SHORT_NAME.E10,
     SKU_SHORT_NAME.E20,
@@ -20,22 +22,39 @@ const PROFESSIONAL_OR_HIGHER_SKUS = new Set<string>([
     SKU_SHORT_NAME.EnterpriseAdvanced,
 ]);
 
+// Before 2.8.0 the plugin gated analysis on pluginapi.IsE20LicensedOrDevelopment,
+// which only accepts SKUs at core's Enterprise tier or above.
+const ENTERPRISE_OR_HIGHER_SKUS = new Set<string>([
+    SKU_SHORT_NAME.Enterprise,
+    SKU_SHORT_NAME.Entry,
+    SKU_SHORT_NAME.EnterpriseAdvanced,
+]);
+
+const isTierChartPlugin = (pluginVersion: string) => isMinimumServerVersion(pluginVersion, 2, 8, 0);
+
 /**
- * Mirror of the Agents plugin's channel/thread summarization capability
- * check: Professional or higher, or developer mode (EnableDeveloper +
- * EnableTesting). Other SKUs fall back to license features; the client
- * license only carries LDAP, which marks Professional.
+ * Mirror of the Agents plugin's channel/thread summarization license check.
+ * Developer mode (EnableDeveloper + EnableTesting) always passes. Plugin 2.8+
+ * requires Professional or higher, falling back to license features for
+ * unrecognised SKUs (the client license only carries LDAP, which marks
+ * Professional); older plugins require Enterprise or higher.
  */
-export const isAgentsAnalysisLicensed = (
+const isAgentsAnalysisLicensed = (
     license: ClientLicense | undefined,
     enableDeveloper: boolean,
     enableTesting: boolean,
+    pluginVersion: string,
 ): boolean => {
     if (enableDeveloper && enableTesting) {
         return true;
     }
 
-    if (PROFESSIONAL_OR_HIGHER_SKUS.has(license?.SkuShortName ?? '')) {
+    const sku = license?.SkuShortName ?? '';
+    if (!isTierChartPlugin(pluginVersion)) {
+        return ENTERPRISE_OR_HIGHER_SKUS.has(sku);
+    }
+
+    if (PROFESSIONAL_OR_HIGHER_SKUS.has(sku)) {
         return true;
     }
 
@@ -52,8 +71,9 @@ export const observeIsAgentsAnalysisLicensed = (database: Database) => {
         observeLicense(database),
         observeConfigBooleanValue(database, 'EnableDeveloper'),
         observeConfigBooleanValue(database, 'EnableTesting'),
+        observeAgentsVersion(database),
     ]).pipe(
-        switchMap(([license, enableDeveloper, enableTesting]) => of$(isAgentsAnalysisLicensed(license, enableDeveloper, enableTesting))),
+        map(([license, enableDeveloper, enableTesting, pluginVersion]) => isAgentsAnalysisLicensed(license, enableDeveloper, enableTesting, pluginVersion)),
         distinctUntilChanged(),
     );
 };

@@ -15,6 +15,7 @@ describe('observeIsAgentsAnalysisLicensed', () => {
     beforeEach(async () => {
         await DatabaseManager.init([serverUrl]);
         operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        await setPluginVersion('2.9.0');
     });
 
     afterEach(async () => {
@@ -24,6 +25,13 @@ describe('observeIsAgentsAnalysisLicensed', () => {
     const setLicense = (value: Partial<ClientLicense>) => {
         return operator.handleSystem({
             systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value}],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    const setPluginVersion = (value: string) => {
+        return operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.AGENTS_VERSION, value}],
             prepareRecordsOnly: false,
         });
     };
@@ -68,5 +76,29 @@ describe('observeIsAgentsAnalysisLicensed', () => {
     it('should emit false when unlicensed and only one developer-mode flag is set', async () => {
         await setConfigs([{id: 'EnableDeveloper', value: 'true'}]);
         expect(subscribe()).toHaveBeenCalledWith(false);
+    });
+
+    describe('with a plugin older than 2.8.0', () => {
+        beforeEach(async () => {
+            await setPluginVersion('2.7.0');
+        });
+
+        it('should emit false for a Professional SKU', async () => {
+            await setLicense({SkuShortName: 'professional', LDAP: 'true'});
+            expect(subscribe()).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit true for an Enterprise SKU', async () => {
+            await setLicense({SkuShortName: 'enterprise', LDAP: 'true'});
+            expect(subscribe()).toHaveBeenCalledWith(true);
+        });
+
+        it('should still emit true in developer mode', async () => {
+            await setConfigs([
+                {id: 'EnableDeveloper', value: 'true'},
+                {id: 'EnableTesting', value: 'true'},
+            ]);
+            expect(subscribe()).toHaveBeenCalledWith(true);
+        });
     });
 });

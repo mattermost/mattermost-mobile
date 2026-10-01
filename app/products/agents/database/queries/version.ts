@@ -3,7 +3,7 @@
 
 import {Q, type Database} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {MINIMUM_MAJOR_VERSION, MINIMUM_MINOR_VERSION, MINIMUM_PATCH_VERSION} from '@agents/constants/version';
 import {SYSTEM_IDENTIFIERS, MM_TABLES} from '@constants/database';
@@ -36,10 +36,15 @@ export async function fetchAgentsVersion(database: Database): Promise<string> {
     return systems[0]?.value || '';
 }
 
+export function observeAgentsVersion(database: Database) {
+    return queryAgentsVersion(database).observeWithColumns(['value']).pipe(
+        map((systems): string => systems[0]?.value || ''),
+        distinctUntilChanged(),
+    );
+}
+
 export function observeIsAgentsVersionSupported(database: Database) {
-    return database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).query(
-        Q.where('id', SYSTEM_IDENTIFIERS.AGENTS_VERSION),
-    ).observeWithColumns(['value']).pipe(
+    return queryAgentsVersion(database).observeWithColumns(['value']).pipe(
         switchMap((systems) => {
             return of$(isVersionSupportedFromSystemModel(systems));
         }),
