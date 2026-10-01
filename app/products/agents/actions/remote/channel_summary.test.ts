@@ -25,6 +25,7 @@ describe('requestChannelSummary', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.mocked(switchToChannelById).mockResolvedValue({});
         jest.mocked(getCurrentTeamId).mockResolvedValue('');
     });
 

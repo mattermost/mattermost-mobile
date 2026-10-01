@@ -19,6 +19,7 @@ describe('switchToAgentResponseChannel', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.mocked(switchToChannelById).mockResolvedValue({});
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
     });
 
@@ -51,6 +52,15 @@ describe('switchToAgentResponseChannel', () => {
 
         expect(switchToChannelById).not.toHaveBeenCalled();
         expect(result.error).toBe('offline');
+    });
+
+    it('should report a failed switch instead of success', async () => {
+        jest.mocked(getMyChannel).mockResolvedValue({id: 'dm-id'} as any);
+        jest.mocked(switchToChannelById).mockResolvedValue({error: 'database not found'});
+
+        const result = await switchToAgentResponseChannel(serverUrl, response);
+
+        expect(result.error).toBe('database not found');
     });
 
     it('should reject a response missing the post or channel id', async () => {

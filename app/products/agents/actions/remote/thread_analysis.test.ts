@@ -22,6 +22,7 @@ describe('requestThreadAnalysis', () => {
 
     beforeEach(() => {
         jest.resetAllMocks();
+        jest.mocked(switchToChannelById).mockResolvedValue({});
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
     });
 

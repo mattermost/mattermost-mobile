@@ -31,6 +31,10 @@ export async function switchToAgentResponseChannel(serverUrl: string, response: 
         }
     }
 
-    await switchToChannelById(serverUrl, response.channelid);
+    const switchResult: {error?: unknown} = await switchToChannelById(serverUrl, response.channelid);
+    if (switchResult.error) {
+        logDebug('[switchToAgentResponseChannel] Failed to switch to response DM channel', getFullErrorMessage(switchResult.error));
+        return {error: getFullErrorMessage(switchResult.error)};
+    }
     return {};
 }
