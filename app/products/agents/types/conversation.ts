@@ -10,6 +10,7 @@ export const BlockType = {
     File: 'file',
     Image: 'image',
     Annotations: 'annotations',
+    ServerToolUse: 'server_tool_use',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -26,6 +27,38 @@ export const ToolCallStatusString = {
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ToolCallStatusString = typeof ToolCallStatusString[keyof typeof ToolCallStatusString];
+
+export const ServerToolStatus = {
+    InProgress: 'in_progress',
+    Success: 'success',
+    Error: 'error',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type ServerToolStatus = typeof ServerToolStatus[keyof typeof ServerToolStatus];
+
+export const ServerToolName = {
+    WebSearch: 'web_search',
+    WebFetch: 'web_fetch',
+    CodeInterpreter: 'code_interpreter',
+} as const;
+
+/**
+ * A provider-executed tool invocation (e.g. web search or sandbox code run).
+ * Informational only: there is no approval flow. Mirrors llm.ServerToolUse.
+ */
+export interface ServerToolUse {
+    id: string;
+    tool: string;
+    status: ServerToolStatus;
+    query?: string;
+    url?: string;
+    title?: string;
+    sub_tool?: string;
+    command?: string;
+    output?: string;
+    error_code?: string;
+}
 
 export interface Citation {
     type: string;
@@ -77,6 +110,8 @@ export interface ContentBlock {
     file_id?: string;
 
     web_search_context?: WebSearchContext;
+
+    server_tool?: ServerToolUse;
 }
 
 export type TurnRole = 'user' | 'assistant' | 'tool_result';

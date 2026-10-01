@@ -666,6 +666,40 @@ describe('StreamingStoreSingleton', () => {
         });
     });
 
+    describe('server_tool control signal', () => {
+        const webSearch = (status: string) => JSON.stringify([{id: 'srv1', tool: 'web_search', status, query: 'q'}]);
+
+        it('should replace the current round activity with each cumulative snapshot', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('in_progress')});
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('success')});
+
+            const state = streamingStore.getStreamingState(SERVER_URL, 'post1');
+            expect(state?.serverTools).toHaveLength(1);
+            expect(state?.serverTools[0].status).toBe('success');
+            expect(state?.precontent).toBe(false);
+        });
+
+        it('should snapshot the activity with its round when the tool round resolves', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('success')});
+            streamingStore.handleWebSocketMessage(SERVER_URL, {
+                post_id: 'post1',
+                control: CONTROL_SIGNALS.TOOL_CALL,
+                tool_call: JSON.stringify([{id: 'tc1', name: 'tool', description: '', arguments: {}, status: ToolCallStatus.Success}]),
+            });
+
+            const state = streamingStore.getStreamingState(SERVER_URL, 'post1');
+            expect(state?.rounds).toHaveLength(1);
+            expect(state?.rounds[0].serverTools.map((t) => t.id)).toEqual(['srv1']);
+            expect(state?.serverTools).toEqual([]);
+        });
+
+        it('should ignore a payload that is not an array', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: '{"id":"x"}'});
+
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')).toBeUndefined();
+        });
+    });
+
     describe('progress control signal', () => {
         const sendProgress = (phase: string, seq: number) => {
             streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.PROGRESS, progress_phase: phase, progress_seq: seq});

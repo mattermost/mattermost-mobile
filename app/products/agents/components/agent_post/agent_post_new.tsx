@@ -31,6 +31,7 @@ import {typography} from '@utils/typography';
 import CitationsList from '../citations_list';
 import ControlsBar from '../controls_bar';
 import ReasoningDisplay from '../reasoning_display';
+import ServerToolSet from '../server_tool_set';
 import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
@@ -82,8 +83,9 @@ interface RoundViewProps {
     unsafeLinks: boolean;
 }
 
-// Renders one assistant round as a vertical sequence reasoning -> text -> tools,
-// reproducing the true text/tool interleaving of a multi-step agent response.
+// Renders one assistant round as a vertical sequence reasoning -> provider
+// activity -> text -> tools, reproducing the true interleaving of a
+// multi-step agent response.
 const RoundView = ({
     round,
     postId,
@@ -116,6 +118,9 @@ const RoundView = ({
                     reasoningSummary={round.reasoning.summary}
                     isReasoningLoading={isReasoningLoading}
                 />
+            )}
+            {round.serverTools.length > 0 && (
+                <ServerToolSet serverTools={round.serverTools}/>
             )}
             {text !== '' && (
                 <View style={styles.messageContainer}>
@@ -191,8 +196,8 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         if (!streamingState) {
             return null;
         }
-        const {message, toolCalls, reasoning, annotations} = streamingState;
-        if (message === '' && toolCalls.length === 0 && reasoning === '' && annotations.length === 0) {
+        const {message, toolCalls, reasoning, annotations, serverTools} = streamingState;
+        if (message === '' && toolCalls.length === 0 && reasoning === '' && annotations.length === 0 && serverTools.length === 0) {
             return null;
         }
         return {
@@ -201,6 +206,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             toolCalls,
             reasoning: {summary: reasoning, signature: ''},
             annotations,
+            serverTools,
         };
     }, [streamingState]);
 

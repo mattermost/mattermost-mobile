@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BlockType, ToolApprovalStage, ToolCallStatus, ToolCallStatusString, type ContentBlock, type ConversationResponse, type Turn} from '@agents/types';
+import {BlockType, ServerToolName, ServerToolStatus, ToolApprovalStage, ToolCallStatus, ToolCallStatusString, type ContentBlock, type ConversationResponse, type Turn} from '@agents/types';
 
 import {
     anyToolHasArguments,
@@ -10,7 +10,6 @@ import {
     collectResponseTurns,
     deriveApprovalStageForPost,
     extractAnnotationsFromTurn,
-    extractReasoningFromTurn,
     statusStringToEnum,
     stripOpenAICitations,
 } from './turn_content';
@@ -137,35 +136,6 @@ describe('collectResponseTurns', () => {
         const turns = collectResponseTurns(conversation, POST_ID);
 
         expect(turns.map((t) => t.sequence)).toEqual([2, 3, 4]);
-    });
-});
-
-describe('extractReasoningFromTurn', () => {
-    it('should concatenate thinking blocks', () => {
-        const turn = makeTurn({
-            sequence: 1,
-            role: 'assistant',
-            content: [
-                {type: BlockType.Thinking, text: 'first thought'},
-                {type: BlockType.Thinking, text: 'second thought', signature: 'sig-2'},
-                {type: BlockType.Text, text: 'visible'},
-            ],
-        });
-
-        const result = extractReasoningFromTurn(turn);
-
-        expect(result.summary).toBe('first thought\nsecond thought');
-        expect(result.signature).toBe('sig-2');
-    });
-
-    it('should return empty when the turn has no thinking blocks', () => {
-        const turn = makeTurn({sequence: 1, role: 'assistant', content: [{type: BlockType.Text, text: 'hi'}]});
-
-        expect(extractReasoningFromTurn(turn)).toEqual({summary: '', signature: ''});
-    });
-
-    it('should tolerate an undefined turn', () => {
-        expect(extractReasoningFromTurn(undefined)).toEqual({summary: '', signature: ''});
     });
 });
 
@@ -379,6 +349,53 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds[0].toolCalls[0]).toMatchObject({id: 'call1', result: 'result text', status: ToolCallStatus.Success});
         expect(rounds[1].text).toBe('Done');
         expect(rounds[1].toolCalls).toHaveLength(0);
+    });
+
+    it('should split a turn so provider activity renders between the text before and after it', () => {
+        const search = {id: 'srv1', tool: ServerToolName.WebSearch, status: ServerToolStatus.Success, query: 'weather'};
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.Thinking, text: 'plan', signature: 'sig'},
+                    {type: BlockType.Text, text: 'Let me check. '},
+                    {type: BlockType.ServerToolUse, server_tool: search},
+                    {type: BlockType.Text, text: 'It is sunny.', citations: [{type: 'url', url: 'https://w.example', start_index: 0, end_index: 5}]},
+                    {type: BlockType.ToolUse, id: 'call1', name: 'save_note', status: ToolCallStatusString.Pending},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(2);
+        expect(rounds[0]).toMatchObject({id: 'turn-1', text: 'Let me check. ', reasoning: {summary: 'plan', signature: 'sig'}, serverTools: [], toolCalls: []});
+        expect(rounds[1]).toMatchObject({id: 'turn-1-1', text: 'It is sunny.', serverTools: [search]});
+        expect(rounds[1].toolCalls.map((t) => t.id)).toEqual(['call1']);
+        expect(rounds[1].annotations.map((a) => a.url)).toEqual(['https://w.example']);
+    });
+
+    it('should join consecutive thinking blocks into one reasoning summary', () => {
+        const conversation = makeConversation([
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.Thinking, text: 'first'},
+                    {type: BlockType.Thinking, text: 'second', signature: 'sig2'},
+                    {type: BlockType.Text, text: 'answer'},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].reasoning).toEqual({summary: 'first\nsecond', signature: 'sig2'});
     });
 
     it('should skip non-assistant turns so round count equals the assistant-turn count', () => {

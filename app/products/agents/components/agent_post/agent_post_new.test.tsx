@@ -775,6 +775,37 @@ describe('AgentPostNew — response placeholder created before setup', () => {
     });
 });
 
+describe('AgentPostNew — provider server tools', () => {
+    it('should render live provider activity alongside the streamed text', async () => {
+        mockFetchConversation.mockResolvedValue({data: makeConversation()});
+
+        const {findByTestId, findByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost()}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({
+                post_id: POST_ID,
+                control: CONTROL_SIGNALS.SERVER_TOOL,
+                server_tool: JSON.stringify([{id: 'srv1', tool: 'web_search', status: 'success', query: 'forecast'}]),
+            });
+            sendPostUpdate({post_id: POST_ID, next: 'Sunny all week'});
+            await flush();
+        });
+
+        expect(await findByTestId('agents.server_tool.srv1')).toBeTruthy();
+        expect(await findByText('Searched the web for "forecast"')).toBeTruthy();
+        expect(await findByText('Sunny all week')).toBeTruthy();
+    });
+});
+
 describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () => {
     it('should clear live buffers and show the generating placeholder on a continue resume', async () => {
         mockFetchConversation.mockResolvedValue({data: makeConversation()});

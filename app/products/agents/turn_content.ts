@@ -9,7 +9,6 @@ import {
     type Annotation,
     type ContentBlock,
     type ConversationResponse,
-    type Reasoning,
     type Round,
     type ToolCall,
     type Turn,
@@ -106,19 +105,6 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
     };
 }
 
-export function extractReasoningFromTurn(turn: Turn | undefined): Reasoning {
-    if (!turn) {
-        return {summary: '', signature: ''};
-    }
-    const thinkingBlocks = turn.content.filter((b) => b.type === BlockType.Thinking);
-    if (thinkingBlocks.length === 0) {
-        return {summary: '', signature: ''};
-    }
-    const summary = thinkingBlocks.map((b) => b.text ?? '').join('\n');
-    const signature = thinkingBlocks[thinkingBlocks.length - 1]?.signature ?? '';
-    return {summary, signature};
-}
-
 export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[] {
     if (!turn) {
         return [];
@@ -183,15 +169,57 @@ export function stripOpenAICitations(text: string): string {
     return text.replace(openAICitationRegex, '').replace(/[ \t]+\./g, '.');
 }
 
-// Build the ordered rounds for a post's response: one Round per assistant turn,
-// in sequence order, so multi-step tool answers render in their true order
-// instead of being flattened into a single block.
+function emptyRound(id: string): Round {
+    return {id, text: '', toolCalls: [], reasoning: {summary: '', signature: ''}, annotations: [], serverTools: []};
+}
+
+// Split one assistant turn into rounds rendered reasoning -> activity -> text:
+// a block whose slot is already filled starts a new round, so provider
+// activity that follows text renders below it (webapp splitTurnIntoRounds).
+// Client tool_use blocks and the turn's annotations stay on the last round —
+// toolrunner persists each client tool round as its own turn, and citations
+// render as one combined list per post.
+function splitTurnIntoRounds(turn: Turn, resultMap: Map<string, ContentBlock>): Round[] {
+    const rounds = [emptyRound(turn.id)];
+    const current = () => rounds[rounds.length - 1];
+    const startRound = () => rounds.push(emptyRound(`${turn.id}-${rounds.length}`));
+
+    for (const block of turn.content) {
+        if (block.type === BlockType.Thinking && block.text) {
+            if (current().text !== '' || current().serverTools.length > 0) {
+                startRound();
+            }
+            const {reasoning} = current();
+            reasoning.summary = reasoning.summary === '' ? block.text : `${reasoning.summary}\n${block.text}`;
+            reasoning.signature = block.signature ?? reasoning.signature;
+        } else if (block.type === BlockType.ServerToolUse && block.server_tool) {
+            if (current().text !== '') {
+                startRound();
+            }
+            current().serverTools.push(block.server_tool);
+        } else if (block.type === BlockType.Text) {
+            current().text += block.text ?? '';
+        }
+    }
+
+    const last = current();
+    last.toolCalls = turn.content.
+        filter((b) => b.type === BlockType.ToolUse).
+        map((block) => toolUseBlockToToolCall(block, resultMap));
+    last.annotations = extractAnnotationsFromTurn(turn);
+    return rounds;
+}
+
+// Build the ordered rounds for a post's response: one or more Rounds per
+// assistant turn, in sequence order, so multi-step tool answers render in
+// their true order instead of being flattened into a single block.
 //
 // BlockType.File / BlockType.Image blocks are intentionally not rendered,
 // mirroring the plugin webapp (turn_content_utils.ts only reads Text, Thinking,
-// ToolUse, ToolResult and Annotations blocks): generated files are merged into
-// post.FileIds by the plugin, so they render through the standard post file
-// attachments chrome (Files inside the post Body), not from conversation turns.
+// ToolUse, ToolResult, ServerToolUse and Annotations blocks): generated files
+// are merged into post.FileIds by the plugin, so they render through the
+// standard post file attachments chrome (Files inside the post Body), not from
+// conversation turns.
 export function buildRoundsFromTurns(conversation: ConversationResponse, postId: string): Round[] {
     const turns = collectResponseTurns(conversation, postId);
     if (turns.length === 0) {
@@ -199,27 +227,9 @@ export function buildRoundsFromTurns(conversation: ConversationResponse, postId:
     }
 
     const resultMap = buildToolResultMap(conversation);
-    const rounds: Round[] = [];
-    for (const turn of turns) {
-        if (turn.role !== 'assistant') {
-            continue;
-        }
-        const text = turn.content.
-            filter((b) => b.type === BlockType.Text).
-            map((b) => b.text ?? '').
-            join('');
-        const toolCalls = turn.content.
-            filter((b) => b.type === BlockType.ToolUse).
-            map((block) => toolUseBlockToToolCall(block, resultMap));
-        rounds.push({
-            id: turn.id,
-            text,
-            toolCalls,
-            reasoning: extractReasoningFromTurn(turn),
-            annotations: extractAnnotationsFromTurn(turn),
-        });
-    }
-    return rounds;
+    return turns.
+        filter((turn) => turn.role === 'assistant').
+        flatMap((turn) => splitTurnIntoRounds(turn, resultMap));
 }
 
 // Defaults to Done when the anchor or approval_state is missing so the UI

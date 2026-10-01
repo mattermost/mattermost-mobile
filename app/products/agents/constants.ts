@@ -37,6 +37,7 @@ export const CONTROL_SIGNALS = {
     REASONING_SUMMARY_DONE: 'reasoning_summary_done',
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
+    SERVER_TOOL: 'server_tool',
     PROGRESS: 'progress',
 } as const;
 

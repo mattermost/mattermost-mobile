@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {ProgressPhase} from '@agents/constants';
+import type {ServerToolUse} from '@agents/types/conversation';
 
 /**
  * Tool call status values
@@ -114,6 +115,9 @@ export interface Round {
     toolCalls: ToolCall[];
     reasoning: Reasoning;
     annotations: Annotation[];
+
+    // Provider-executed activity; renders between reasoning and text.
+    serverTools: ServerToolUse[];
 }
 
 /**
@@ -126,6 +130,7 @@ export interface PostUpdateWebsocketMessage {
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations
+    server_tool?: string; // JSON-encoded cumulative ServerToolUse[] for the current round
     progress_phase?: string;
     progress_seq?: number;
 }
@@ -143,6 +148,7 @@ export interface StreamingState {
     showReasoning: boolean; // True if reasoning should be displayed
     toolCalls: ToolCall[]; // Tool calls pending approval or processed (current round)
     annotations: Annotation[]; // Citations/annotations for the post (current round)
+    serverTools: ServerToolUse[]; // Provider-executed activity (current round)
     rounds: Round[]; // Completed rounds snapshotted as each tool round resolves
     stopped: boolean; // True after the user taps Stop; suppresses late `next` events
     continueSeq: number; // Bumped on a tool-approval `continue` resume to trigger a refetch
@@ -239,9 +245,12 @@ export interface AIBotsResponse {
 
 export {
     BlockType,
+    ServerToolName,
+    ServerToolStatus,
     ToolCallStatusString,
     type Citation,
     type ContentBlock,
+    type ServerToolUse,
     type ConversationResponse,
     type Turn,
     type TurnRole,

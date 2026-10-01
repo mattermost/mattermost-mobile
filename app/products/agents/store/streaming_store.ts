@@ -5,7 +5,8 @@ import {useEffect, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
 
 import {CONTROL_SIGNALS, PROGRESS_PHASES, type ProgressPhase} from '@agents/constants';
-import {ToolCallStatus, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ToolCall} from '@agents/types';
+import {ToolCallStatus, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ServerToolUse, type ToolCall} from '@agents/types';
+import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 
 // A round resolves once every tool in the current round reaches a terminal
@@ -28,6 +29,7 @@ function hasStreamedContent(state: StreamingState): boolean {
         state.reasoning !== '' ||
         state.toolCalls.length > 0 ||
         state.annotations.length > 0 ||
+        state.serverTools.length > 0 ||
         state.rounds.length > 0;
 }
 
@@ -79,6 +81,7 @@ class StreamingStoreSingleton {
             existing && (
                 existing.toolCalls.length > 0 ||
                 existing.annotations.length > 0 ||
+                existing.serverTools.length > 0 ||
                 existing.rounds.length > 0 ||
                 existing.message !== '' ||
                 existing.reasoning !== ''
@@ -95,6 +98,7 @@ class StreamingStoreSingleton {
             showReasoning: existing?.showReasoning ?? false,
             toolCalls: existing?.toolCalls ?? [],
             annotations: existing?.annotations ?? [],
+            serverTools: existing?.serverTools ?? [],
             rounds: existing?.rounds ?? [],
             stopped: false,
             continueSeq: existing?.continueSeq ?? 0,
@@ -117,6 +121,7 @@ class StreamingStoreSingleton {
             showReasoning: false,
             toolCalls: [],
             annotations: [],
+            serverTools: [],
             rounds: [],
             stopped: false,
             continueSeq: 0,
@@ -139,6 +144,7 @@ class StreamingStoreSingleton {
             showReasoning: false,
             toolCalls: [],
             annotations: [],
+            serverTools: [],
             rounds: [],
             stopped: false,
             continueSeq: (existing?.continueSeq ?? 0) + 1,
@@ -229,6 +235,7 @@ class StreamingStoreSingleton {
                     toolCalls: merged,
                     reasoning: {summary: state.reasoning, signature: ''},
                     annotations: state.annotations,
+                    serverTools: state.serverTools,
                 };
                 this.getSubject(serverUrl, postId).next({
                     ...state,
@@ -239,6 +246,7 @@ class StreamingStoreSingleton {
                     showReasoning: false,
                     toolCalls: [],
                     annotations: [],
+                    serverTools: [],
                     precontent: false,
                     progressPhase: null,
                 });
@@ -272,6 +280,25 @@ class StreamingStoreSingleton {
         }
     };
 
+    // Each event carries the cumulative activity for the current round, so it
+    // replaces the previous list rather than merging into it.
+    updateServerTools = (serverUrl: string, postId: string, serverToolsJson: string): void => {
+        const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
+        const serverTools = safeParseJSON(serverToolsJson);
+        if (!Array.isArray(serverTools)) {
+            logWarning('[StreamingStoreSingleton.updateServerTools] payload is not an array', {serverUrl, postId});
+            return;
+        }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            serverTools: serverTools as ServerToolUse[],
+            generating: true,
+            precontent: false,
+            progressPhase: null,
+        });
+    };
+
     // Pre-stream setup progress. Phases only move forward and stop mattering
     // once the response produces content (webapp llmbot_post parity).
     updateProgress = (serverUrl: string, postId: string, phase: string | undefined, sequence: number | undefined): void => {
@@ -290,7 +317,7 @@ class StreamingStoreSingleton {
     };
 
     handleWebSocketMessage = (serverUrl: string, data: PostUpdateWebsocketMessage): void => {
-        const {post_id, next, control, reasoning, tool_call, annotations} = data;
+        const {post_id, next, control, reasoning, tool_call, annotations, server_tool} = data;
 
         if (!post_id) {
             return;
@@ -359,6 +386,11 @@ class StreamingStoreSingleton {
         // Handle annotation events
         if (control === CONTROL_SIGNALS.ANNOTATIONS && annotations) {
             this.updateAnnotations(serverUrl, post_id, annotations);
+            return;
+        }
+
+        if (control === CONTROL_SIGNALS.SERVER_TOOL && server_tool) {
+            this.updateServerTools(serverUrl, post_id, server_tool);
             return;
         }
 
