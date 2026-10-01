@@ -22,8 +22,6 @@ export type ChannelAnalysisResponse = {
     postid: string;
     channelid: string;
 };
-export type ChannelIntervalResponse = ChannelAnalysisResponse;
-export type ThreadAnalysisResponse = ChannelAnalysisResponse;
 
 /**
  * Response from agents status API

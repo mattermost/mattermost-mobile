@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer} from '@agents/types';
-import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, ChannelIntervalResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
+import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
     getAgentsRoute: () => string;
@@ -22,12 +22,12 @@ export interface ClientAgentsMix {
         startTime: number,
         presetPrompt: string,
         botUsername: string,
-    ) => Promise<ChannelIntervalResponse>;
+    ) => Promise<ChannelAnalysisResponse>;
     doThreadAnalysis: (
         postId: string,
         analysisType: string,
         botUsername: string,
-    ) => Promise<ThreadAnalysisResponse>;
+    ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: {[toolId: string]: ToolAnswer}) => Promise<void>;
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
@@ -123,7 +123,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
         startTime: number,
         presetPrompt: string,
         botUsername: string,
-    ): Promise<ChannelIntervalResponse> => {
+    ): Promise<ChannelAnalysisResponse> => {
         return this.doFetch(
             `${this.getAgentsRoute()}/channel/${channelId}/interval?botUsername=${encodeURIComponent(botUsername)}`,
             {
@@ -142,7 +142,7 @@ const ClientAgents = (superclass: any) => class extends superclass {
         postId: string,
         analysisType: string,
         botUsername: string,
-    ): Promise<ThreadAnalysisResponse> => {
+    ): Promise<ChannelAnalysisResponse> => {
         return this.doFetch(
             `${this.getAgentsRoute()}/post/${postId}/analyze?botUsername=${encodeURIComponent(botUsername)}`,
             {
