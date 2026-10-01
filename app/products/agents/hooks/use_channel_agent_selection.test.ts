@@ -26,7 +26,7 @@ const makeBot = (id: string, overrides: Partial<AiBotModel> = {}) => ({
 
 describe('useChannelAgentSelection', () => {
     beforeEach(() => {
-        jest.mocked(saveSelectedAgent).mockResolvedValue({});
+        jest.mocked(saveSelectedAgent).mockResolvedValue({preferences: []});
     });
 
     it('should only offer agents usable in the channel and refresh the bot list on open', () => {
