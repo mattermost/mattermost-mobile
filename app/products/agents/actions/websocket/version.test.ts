@@ -66,6 +66,21 @@ describe('handleAgentsPluginEnabled', () => {
 
         expect(setAgentsVersion).toHaveBeenCalledWith(serverUrl, '');
     });
+
+    it('should clear stored bots instead of fetching when the enabled plugin is unsupported', async () => {
+        const manifest: ClientPluginManifest = {
+            id: AGENTS_PLUGIN_ID,
+            version: '1.7.2',
+            webapp: {
+                bundle_path: '/static/agents.js',
+            },
+        };
+
+        await handleAgentsPluginEnabled(serverUrl, manifest);
+
+        expect(fetchAIBots).not.toHaveBeenCalled();
+        expect(clearAIBots).toHaveBeenCalledWith(serverUrl);
+    });
 });
 
 describe('handleAgentsPluginDisabled', () => {

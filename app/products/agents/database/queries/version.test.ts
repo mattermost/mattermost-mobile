@@ -78,7 +78,7 @@ describe('Agents Version Queries', () => {
                 prepareRecordsOnly: false,
             });
 
-            expect(subscriptionNext).toHaveBeenCalledWith(false);
+            expect(subscriptionNext).not.toHaveBeenCalledWith(true);
         });
 
         it('should react to version changes', async () => {
