@@ -143,6 +143,7 @@ class ChannelScreen {
     postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
     attachmentAction = PostDraft.getAttachmentAction(this.testID.channelScreenPrefix);
     attachmentActionDisabled = PostDraft.getAttachmentActionDisabled(this.testID.channelScreenPrefix);
+    borAction = PostDraft.getBoRAction(this.testID.channelScreenPrefix);
     sendButton = SendButton.getSendButton(this.testID.channelScreenPrefix);
     sendButtonDisabled = SendButton.getSendButtonDisabled(this.testID.channelScreenPrefix);
 

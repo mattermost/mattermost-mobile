@@ -9,6 +9,7 @@ class PostDraft {
         postInputSuffix: 'post_draft.post.input',
         attachmentActionSuffix: 'post_draft.quick_actions.attachment_action',
         attachmentActionDisabledSuffix: 'post_draft.quick_actions.attachment_action.disabled',
+        borActionSuffix: 'post_draft.quick_actions.bor_action',
     };
 
     getPostDraft = (screenPrefix: string) => {
@@ -37,6 +38,10 @@ class PostDraft {
 
     getAttachmentActionDisabled = (screenPrefix: string) => {
         return element(by.id(`${screenPrefix}${this.testID.attachmentActionDisabledSuffix}`));
+    };
+
+    getBoRAction = (screenPrefix: string) => {
+        return element(by.id(`${screenPrefix}${this.testID.borActionSuffix}`));
     };
 }
 
