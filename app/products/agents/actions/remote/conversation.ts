@@ -141,7 +141,8 @@ export function refetchConversation(serverUrl: string, conversationId: string, o
 
 /**
  * Discard any inflight fetch so its result never reaches the store, keeping
- * the cached conversation as-is.
+ * the cached conversation as-is. Settle callbacks stay queued for the next
+ * successful fetch, since the cache still lacks the turns they wait for.
  */
 export function cancelConversationFetch(serverUrl: string, conversationId: string): void {
     const key = inflightKey(serverUrl, conversationId);
@@ -153,7 +154,6 @@ export function cancelConversationFetch(serverUrl: string, conversationId: strin
         conversation: prev.conversation,
         loading: false,
     });
-    drainSettleCallbacks(key);
 }
 
 /** Drop every cached conversation belonging to a single server (per-server logout). */

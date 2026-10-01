@@ -229,6 +229,19 @@ describe('cancelConversationFetch', () => {
         await late;
         expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Chat');
     });
+
+    it('should keep settle callbacks queued until a later fetch succeeds', async () => {
+        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>(() => undefined));
+        const onSettled = jest.fn();
+        refetchConversation(serverUrl, conversationId, onSettled);
+
+        cancelConversationFetch(serverUrl, conversationId);
+        expect(onSettled).not.toHaveBeenCalled();
+
+        mockClient.getConversation.mockResolvedValueOnce(makeConversation(conversationId));
+        await refetchConversation(serverUrl, conversationId);
+        expect(onSettled).toHaveBeenCalledTimes(1);
+    });
 });
 
 describe('clearConversationCacheForServer', () => {
