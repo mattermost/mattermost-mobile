@@ -477,6 +477,15 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.annotations).toEqual([]);
         });
 
+        it('should ignore a payload that is valid JSON but not a list', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.updateAnnotations(SERVER_URL, postId, 'null');
+
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.annotations).toEqual([]);
+        });
+
         it('should create state with annotations when the start event was missed', () => {
             const postId = 'post123';
             const annotations: Annotation[] = [

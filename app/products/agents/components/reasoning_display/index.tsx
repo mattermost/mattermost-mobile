@@ -102,6 +102,8 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
             <Pressable
                 onPress={handleToggle}
                 style={({pressed}) => [isExpanded ? styles.expandedHeader : styles.minimalContent, pressed && {opacity: 0.72}]}
+                accessibilityRole='button'
+                accessibilityState={{expanded: isExpanded}}
             >
                 <Animated.View style={chevronAnimatedStyle}>
                     <CompassIcon

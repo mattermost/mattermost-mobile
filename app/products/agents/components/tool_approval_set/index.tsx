@@ -437,6 +437,7 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                         <Pressable
                             onPress={handleAcceptAll}
                             style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                            accessibilityRole='button'
                             testID='agents.tool_approval_set.accept_all'
                         >
                             <FormattedText
@@ -448,6 +449,7 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                         <Pressable
                             onPress={handleRejectAll}
                             style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                            accessibilityRole='button'
                             testID='agents.tool_approval_set.reject_all'
                         >
                             <FormattedText
@@ -468,6 +470,7 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                     <Pressable
                         onPress={handleRunTools}
                         style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                        accessibilityRole='button'
                         testID='agents.tool_approval_set.run_tools'
                     >
                         <FormattedText

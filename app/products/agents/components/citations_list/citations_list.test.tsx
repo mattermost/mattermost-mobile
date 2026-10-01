@@ -73,7 +73,7 @@ describe('CitationsList', () => {
             const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
 
             // Items are always in the tree; collapse is handled via animated height
-            expect(getByTestId('citations.list.item.1')).toBeTruthy();
+            expect(getByTestId('citations.list.item.0')).toBeTruthy();
         });
 
         it('should toggle without error when pressed multiple times', () => {
@@ -84,7 +84,7 @@ describe('CitationsList', () => {
             fireEvent.press(getByTestId('citations.list.toggle'));
 
             // Items remain accessible after toggling
-            expect(getByTestId('citations.list.item.1')).toBeTruthy();
+            expect(getByTestId('citations.list.item.0')).toBeTruthy();
         });
     });
 
@@ -151,7 +151,7 @@ describe('CitationsList', () => {
             const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
 
             fireEvent.press(getByTestId('citations.list.toggle'));
-            fireEvent.press(getByTestId('citations.list.item.1'));
+            fireEvent.press(getByTestId('citations.list.item.0'));
 
             expect(tryOpenURL).toHaveBeenCalledWith('https://example.com/specific-page');
         });
@@ -164,9 +164,9 @@ describe('CitationsList', () => {
             const {getByTestId} = renderWithIntlAndTheme(<CitationsList {...props}/>);
 
             fireEvent.press(getByTestId('citations.list.toggle'));
-            fireEvent.press(getByTestId('citations.list.item.1'));
+            fireEvent.press(getByTestId('citations.list.item.0'));
 
-            expect(getByTestId('citations.list.item.1')).toBeDisabled();
+            expect(getByTestId('citations.list.item.0')).toBeDisabled();
             expect(tryOpenURL).not.toHaveBeenCalled();
         });
     });

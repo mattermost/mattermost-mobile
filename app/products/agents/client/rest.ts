@@ -30,8 +30,7 @@ export interface ClientAgentsMix {
     ) => Promise<ChannelAnalysisResponse>;
     submitToolApproval: (postId: string, acceptedToolIds: string[], toolAnswers?: {[toolId: string]: ToolAnswer}) => Promise<void>;
 
-    // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
-    // New plugin scopes privacy at the conversation-fetch / websocket layer.
+    // Result-stage share decision for executed tool calls.
     submitToolResult: (postId: string, acceptedToolIds: string[]) => Promise<void>;
 
     // Conversation entity (plugin >= 2.0): source of truth for tool calls,

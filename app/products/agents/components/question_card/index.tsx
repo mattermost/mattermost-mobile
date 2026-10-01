@@ -464,6 +464,7 @@ const QuestionCard = ({
                         <Pressable
                             onPress={handleSkip}
                             style={({pressed}) => [styles.skipButton, pressed && {opacity: 0.72}]}
+                            accessibilityRole='button'
                             testID={`${testIdPrefix}.skip`}
                         >
                             <FormattedText
@@ -477,6 +478,8 @@ const QuestionCard = ({
                                 onPress={handleSubmit}
                                 disabled={!canSubmit}
                                 style={({pressed}) => [styles.submitButton, !canSubmit && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                                accessibilityRole='button'
+                                accessibilityState={{disabled: !canSubmit}}
                                 testID={`${testIdPrefix}.submit`}
                             >
                                 <FormattedText

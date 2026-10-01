@@ -165,7 +165,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                             onPress={() => handleCitationPress(annotation.url)}
                             disabled={!annotation.url}
                             style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
-                            testID={`citations.list.item.${annotation.index}`}
+                            testID={`citations.list.item.${position}`}
                         >
                             <View style={styles.citationIcon}>
                                 <CompassIcon
