@@ -236,8 +236,12 @@ const ToolCard = ({
     // A pending call flagged would_auto_execute is executed server-side, so it
     // must never offer an approval decision — only the result-stage
     // share/keep-private controls stay available.
-    const showDecisionButtons = Boolean(onApprove && onReject) &&
-        (isResultPhase || (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute));
+    // onApprove is withheld for calls that can't be accepted from this card
+    // (questions the app can't render), leaving only Reject in the call stage.
+    const showDecisionButtons = Boolean(onReject) && (
+        (isResultPhase && Boolean(onApprove)) ||
+        (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute)
+    );
 
     // An MCP-declared title wins. Otherwise prettify the bare name: the
     // server-provided mcp_bare_name (`||` because it is redacted to an empty
@@ -570,18 +574,20 @@ const ToolCard = ({
 
             {isPending && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.buttonContainer}>
-                    <Pressable
-                        onPress={handleApprove}
-                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
-                        hitSlop={BUTTON_HIT_SLOP}
-                        testID={`${testIdPrefix}.approve`}
-                    >
-                        <FormattedText
-                            id='agents.tool_call.approve'
-                            defaultMessage='Accept'
-                            style={styles.buttonText}
-                        />
-                    </Pressable>
+                    {Boolean(onApprove) && (
+                        <Pressable
+                            onPress={handleApprove}
+                            style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
+                            hitSlop={BUTTON_HIT_SLOP}
+                            testID={`${testIdPrefix}.approve`}
+                        >
+                            <FormattedText
+                                id='agents.tool_call.approve'
+                                defaultMessage='Accept'
+                                style={styles.buttonText}
+                            />
+                        </Pressable>
+                    )}
                     <Pressable
                         onPress={handleReject}
                         style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}

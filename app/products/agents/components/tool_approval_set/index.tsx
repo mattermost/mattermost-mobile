@@ -8,6 +8,7 @@ import {Pressable, View} from 'react-native';
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {submitToolResult} from '@agents/actions/remote/tool_result';
+import conversationStore from '@agents/store/conversation_store';
 import {ToolApprovalStage, ToolCallStatus, UserInteractionSelect, type ToolAnswer, type ToolCall} from '@agents/types';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -210,11 +211,18 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
         pendingToolCalls.length > 0 &&
         pendingToolCalls.every((call) => call.would_auto_execute);
 
+    // isSubmitting state lags a render behind, so two taps in one frame (e.g.
+    // Accept then Reject on the same card) would both submit without this.
+    const submitInFlightRef = useRef(false);
+
+    // Resolves with whether the submit succeeded, plus the conversation
+    // refetch it triggered (if any).
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
             filter(([, isApproved]) => isApproved).
             map(([id]) => id);
 
+        submitInFlightRef.current = true;
         setIsSubmitting(true);
         let error: unknown;
         if (approvalStage === ToolApprovalStage.Result) {
@@ -232,14 +240,13 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
             ({error} = await submitToolApproval(serverUrl, postId, approvedToolIds, hasAnswers ? answers : undefined));
         }
 
+        submitInFlightRef.current = false;
         setIsSubmitting(false);
 
         // Accepting in a channel neither streams nor emits an event until the
         // share decision, and a rejected submit is often a stale click, so the
         // conversation is the only way to learn the new stage either way.
-        if (conversationId) {
-            refetchConversation(serverUrl, conversationId);
-        }
+        const refetch = conversationId ? refetchConversation(serverUrl, conversationId) : undefined;
 
         if (error) {
             // Drop the decisions so the cards offer their buttons again.
@@ -249,23 +256,30 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
             showSnackBar({barType});
         }
 
-        return !error;
+        return {succeeded: !error, refetch};
     }, [serverUrl, postId, conversationId, approvalStage, setToolDecisions]);
 
     // Record decisions and submit the batch once nothing actionable remains
-    // undecided.
+    // undecided. Decisions for tools that are no longer actionable are dropped
+    // so they can't reach the submitted list.
     const applyDecisions = useCallback(async (decisions: ToolDecision) => {
-        if (isSubmitting) {
+        if (submitInFlightRef.current) {
             return;
         }
 
-        const updatedDecisions = {...toolDecisionsRef.current, ...decisions};
+        const merged = {...toolDecisionsRef.current, ...decisions};
+        const updatedDecisions: ToolDecision = {};
+        for (const tool of actionableTools) {
+            if (tool.id in merged) {
+                updatedDecisions[tool.id] = merged[tool.id];
+            }
+        }
         setToolDecisions(updatedDecisions);
 
         if (actionableTools.every((tool) => tool.id in updatedDecisions)) {
             await submitDecisions(updatedDecisions);
         }
-    }, [isSubmitting, actionableTools, setToolDecisions, submitDecisions]);
+    }, [actionableTools, setToolDecisions, submitDecisions]);
 
     const handleToolDecision = useCallback((toolId: string, approved: boolean) => {
         applyDecisions({[toolId]: approved});
@@ -310,13 +324,22 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
     // the server executes the policy-approved calls itself after re-checking
     // the auto-execution policy (matches the webapp's Run tools submission).
     const handleRunTools = usePreventDoubleTap(useCallback(async () => {
-        if (isSubmitting) {
+        if (submitInFlightRef.current) {
             return;
         }
-        if (await submitDecisions({})) {
-            setResumedToolCalls(toolCalls);
+        const {succeeded, refetch} = await submitDecisions({});
+        if (!succeeded) {
+            return;
         }
-    }, [isSubmitting, submitDecisions, toolCalls]));
+        setResumedToolCalls(toolCalls);
+
+        // A failed refetch leaves toolCalls unchanged, which would otherwise
+        // keep the round showing "Submitting..." forever.
+        await refetch;
+        if (conversationId && conversationStore.getState(serverUrl, conversationId).error) {
+            setResumedToolCalls(null);
+        }
+    }, [submitDecisions, toolCalls, conversationId, serverUrl]));
 
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);
@@ -386,6 +409,8 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                     }
                 }
 
+                // The server rejects accepting a question without an answer, so
+                // one that falls back to the generic card can only be skipped.
                 return (
                     <ToolCard
                         key={tool.id}
@@ -394,7 +419,7 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                         isProcessing={(isActionable && isSubmitting) || (isInterruptedAutoRound && isResuming)}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
-                        onApprove={isActionable ? handleApprove : undefined}
+                        onApprove={isActionable && !(isCallStage && tool.user_interaction) ? handleApprove : undefined}
                         onReject={isActionable ? handleReject : undefined}
                         approvalStage={approvalStage}
                         canExpand={canExpand}

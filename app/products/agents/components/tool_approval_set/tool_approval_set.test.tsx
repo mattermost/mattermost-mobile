@@ -6,6 +6,7 @@ import React from 'react';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
+import conversationStore from '@agents/store/conversation_store';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 
@@ -201,6 +202,30 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
         await act(async () => {
             fireEvent.press(getByTestId('agents.tool_card.a.approve'));
             fireEvent.press(getByTestId('agents.tool_card.b.reject'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledTimes(1);
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a'], undefined);
+    });
+
+    it('should submit only once when Accept and Reject are tapped on the same card before a re-render', async () => {
+        const tool = makeTool({id: 'a', status: ToolCallStatus.Pending, result: undefined});
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={[tool]}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+                unsafeLinks={false}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
+            fireEvent.press(getByTestId('agents.tool_card.a.reject'));
         });
 
         expect(submitToolApproval).toHaveBeenCalledTimes(1);
@@ -524,6 +549,34 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
         expect(getByTestId('agents.tool_approval_set.run_tools')).toBeTruthy();
     });
 
+    it('should offer Run tools again when the refetch after resuming fails', async () => {
+        jest.mocked(refetchConversation).mockImplementationOnce(async (serverUrl, conversationId) => {
+            conversationStore.setState(serverUrl, conversationId, {loading: false, error: 'network'});
+        });
+        const autoTools: ToolCall[] = [
+            makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
+        ];
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                conversationId='c1'
+                toolCalls={autoTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+                unsafeLinks={false}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.run_tools'));
+        });
+
+        expect(getByTestId('agents.tool_approval_set.run_tools')).toBeTruthy();
+    });
+
     it('should not offer the resume button to a viewer who cannot approve', () => {
         const autoTools: ToolCall[] = [
             makeTool({id: 'auto_a', name: 'first_tool', status: ToolCallStatus.Pending, result: undefined, would_auto_execute: true}),
@@ -704,6 +757,13 @@ describe('ToolApprovalSet — question cards (AskUserQuestion)', () => {
 
         expect(queryByTestId('agents.question_card.q1')).toBeNull();
         expect(getByTestId('agents.tool_card.q1')).toBeTruthy();
+    });
+
+    it('should only offer Reject for a question that falls back to the generic card, since accepting needs an answer', () => {
+        const {getByTestId, queryByTestId} = renderSet([makeQuestionTool({arguments: {not_a_question: true}})]);
+
+        expect(getByTestId('agents.tool_card.q1.reject')).toBeTruthy();
+        expect(queryByTestId('agents.tool_card.q1.approve')).toBeNull();
     });
 
     it('should show a question answered while other tools in the batch still await decisions', async () => {
