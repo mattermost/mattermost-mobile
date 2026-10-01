@@ -84,6 +84,7 @@
   "agents.server_tool.searched": "Searched the web",
   "agents.server_tool.searched_for": "Searched the web for \"{query}\"",
   "agents.server_tool.used_tool": "Used a provider tool",
+  "agents.thread_analysis.ask_agents": "Ask Agents",
   "agents.thread_analysis.error_title": "Unable to run analysis",
   "agents.thread_analysis.option.action_items": "Find action items",
   "agents.thread_analysis.option.open_questions": "Find open questions",

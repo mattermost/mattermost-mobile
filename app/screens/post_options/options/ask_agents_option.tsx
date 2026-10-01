@@ -14,7 +14,7 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const messages = defineMessages({
     askAgents: {
-        id: 'agents.channel_summary.ask_agents',
+        id: 'agents.thread_analysis.ask_agents',
         defaultMessage: 'Ask Agents',
     },
 });
