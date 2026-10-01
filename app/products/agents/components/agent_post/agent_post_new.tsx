@@ -234,21 +234,10 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         return {renderedRounds: out, lastPersistedIdx: -1};
     }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, regenerating]);
 
-    // Invalidate the cached conversation when a stream finishes so the next
-    // fetch surfaces the finalised turns.
-    const wasGeneratingRef = useRef(isGenerating);
-    useEffect(() => {
-        const wasGenerating = wasGeneratingRef.current;
-        wasGeneratingRef.current = isGenerating;
-        if (wasGenerating && !isGenerating) {
-            refetchConversation(serverUrl, conversationId);
-        }
-    }, [serverUrl, conversationId, isGenerating]);
-
-    // A tool-approval `continue` resume bumps continueSeq; refetch so the
-    // just-resolved prior round (now persisted server-side) appears above the
-    // resumed live round. Safe to fire alongside the stream-end refetch above —
-    // refetchConversation dedupes in-flight requests.
+    // The stream-end refetch is owned by the websocket handler
+    // (handleAgentPostUpdate). A tool-approval `continue` resume bumps
+    // continueSeq; refetch so the just-resolved prior round (now persisted
+    // server-side) appears above the resumed live round.
     const continueSeq = streamingState?.continueSeq ?? 0;
     const lastContinueSeqRef = useRef(continueSeq);
     useEffect(() => {
@@ -263,8 +252,8 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     }, [serverUrl, conversationId, continueSeq]);
 
     // Lift the regenerate suppression once a fresh conversation object lands
-    // (the post-stream refetch delivering the regenerated turns — this covers
-    // both `end` and `cancel`, since any generating→false transition refetches).
+    // (the post-stream refetch delivering the regenerated turns — the
+    // websocket handler refetches on both `end` and `cancel`).
     // Also lift it when a refetch fails after the stream settled so the post
     // falls back to whatever it has instead of staying blank. Webapp parity:
     // llmbot_post clears `regenerating` in its pendingRefetch layout-effect

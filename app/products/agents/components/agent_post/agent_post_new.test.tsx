@@ -7,10 +7,12 @@ import {Alert} from 'react-native';
 
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import {regenerateResponse} from '@agents/actions/remote/generation_controls';
+import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
-import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
+import {BlockType, ToolCallStatusString, type ConversationResponse, type PostUpdateWebsocketMessage} from '@agents/types';
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -46,6 +48,9 @@ jest.mock('@managers/network_manager', () => ({
     },
 }));
 jest.mock('@actions/remote/session');
+jest.mock('@queries/servers/post', () => ({
+    getPostById: jest.fn(async () => ({props: {conversation_id: 'conv1'}})),
+}));
 jest.mock('@utils/errors', () => ({
     getFullErrorMessage: jest.fn((err) => (err instanceof Error ? err.message : String(err))),
 }));
@@ -88,6 +93,12 @@ function makeConversation(overrides: Partial<ConversationResponse> = {}): Conver
     };
 }
 
+// Route events through the real websocket entry point: it owns the
+// stream-end conversation refetch.
+function sendPostUpdate(data: PostUpdateWebsocketMessage) {
+    handleAgentPostUpdate('https://test.mattermost.com', {data} as WebSocketMessage<PostUpdateWebsocketMessage>);
+}
+
 async function flush(): Promise<void> {
     await Promise.resolve();
     await Promise.resolve();
@@ -95,6 +106,7 @@ async function flush(): Promise<void> {
 }
 
 beforeEach(() => {
+    jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({database: {}} as ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>);
     streamingStore.removeServer('https://test.mattermost.com');
     clearConversationCacheForServer('https://test.mattermost.com');
     mockFetchConversation.mockReset();
@@ -117,7 +129,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
 
         // Simulate the plugin's websocket events in order.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
             await flush();
         });
 
@@ -125,7 +137,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
         expect(getByText('Generating response...')).toBeTruthy();
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'Hello from the bot'});
+            sendPostUpdate({post_id: POST_ID, next: 'Hello from the bot'});
             await flush();
         });
 
@@ -253,11 +265,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Kick off a stream, receive tool calls over the wire, then end.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
+            sendPostUpdate({post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
+            sendPostUpdate({
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -277,7 +289,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         // Now end the stream. Effect 3 invalidates, the re-fetch resolves with
         // the finalized turns, Effect 1 re-populates from the conversation.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
+            sendPostUpdate({post_id: POST_ID, control: 'end'});
             await flush();
         });
 
@@ -384,11 +396,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream start + tool_call event (status 0 === Pending).
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
+            sendPostUpdate({post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
+            sendPostUpdate({
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -407,7 +419,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream ends awaiting approval.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
+            sendPostUpdate({post_id: POST_ID, control: 'end'});
             await flush();
         });
 
@@ -645,8 +657,8 @@ describe('AgentPostNew — regenerate suppresses the stale answer (7a)', () => {
 
         // While the new stream runs, the old answer must not stack above it.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'New answer streaming'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'New answer streaming'});
             await flush();
         });
         expect(getByText('New answer streaming')).toBeTruthy();
@@ -655,7 +667,7 @@ describe('AgentPostNew — regenerate suppresses the stale answer (7a)', () => {
         // Stream end → refetch delivers the regenerated turns → the flag
         // clears and the persisted new answer takes over cleanly.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
             await flush();
         });
         expect(getByText('New answer')).toBeTruthy();
@@ -740,14 +752,14 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         );
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'first round text'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'first round text'});
             await flush();
         });
         expect(getByText('first round text')).toBeTruthy();
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.CONTINUE});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.CONTINUE});
             await flush();
         });
 
@@ -769,8 +781,8 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         );
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'partial answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'partial answer'});
             await flush();
         });
         expect(getByText('partial answer')).toBeTruthy();
@@ -781,7 +793,7 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         });
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'late text'});
+            sendPostUpdate({post_id: POST_ID, next: 'late text'});
             await flush();
         });
 
