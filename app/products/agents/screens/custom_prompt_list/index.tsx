@@ -12,6 +12,7 @@ import {customPromptErrorMessages} from '@agents/components/custom_prompt_pills'
 import {useCustomPromptsState} from '@agents/store/custom_prompts_store';
 import {buildCustomPromptDraft} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -51,9 +52,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 12,
         ...typography('Body', 200),
     },
+    loading: {
+        paddingVertical: 12,
+    },
 }));
 
 const keyExtractor = (item: CustomPrompt) => item.id;
+
+type LoadState = 'loading' | 'loaded' | 'error';
 
 /**
  * Bottom-sheet list of all custom prompts visible to the user, opened from
@@ -76,11 +82,16 @@ const CustomPromptList = ({
 
     const {prompts} = useCustomPromptsState(serverUrl);
     const [renderingId, setRenderingId] = useState<string | null>(null);
+    const [loadState, setLoadState] = useState<LoadState>('loading');
     const bottomSheetRef = useRef<BottomSheetRef>(null);
     const mountedRef = useRef(true);
 
     useDidMount(() => {
-        fetchCustomPrompts(serverUrl);
+        fetchCustomPrompts(serverUrl).then(({error}) => {
+            if (mountedRef.current) {
+                setLoadState(error ? 'error' : 'loaded');
+            }
+        });
         return () => {
             mountedRef.current = false;
             CallbackStore.removeCallback();
@@ -137,14 +148,35 @@ const CustomPromptList = ({
         />
     ), [renderingId, handleSelectPrompt]);
 
-    const renderEmpty = useCallback(() => (
-        <FormattedText
-            id='agents.custom_prompts.empty'
-            defaultMessage='No custom prompts yet'
-            style={styles.emptyText}
-            testID='agents.custom_prompts.list.empty'
-        />
-    ), [styles.emptyText]);
+    const renderEmpty = useCallback(() => {
+        if (loadState === 'loading') {
+            return (
+                <Loading
+                    containerStyle={styles.loading}
+                    color={theme.buttonBg}
+                    testID='agents.custom_prompts.list.loading'
+                />
+            );
+        }
+        if (loadState === 'error') {
+            return (
+                <FormattedText
+                    id='agents.custom_prompts.load_error'
+                    defaultMessage='Unable to load custom prompts.'
+                    style={styles.emptyText}
+                    testID='agents.custom_prompts.list.error'
+                />
+            );
+        }
+        return (
+            <FormattedText
+                id='agents.custom_prompts.empty'
+                defaultMessage='No custom prompts yet'
+                style={styles.emptyText}
+                testID='agents.custom_prompts.list.empty'
+            />
+        );
+    }, [loadState, styles.emptyText, styles.loading, theme.buttonBg]);
 
     const snapPoints = useMemo(() => {
         const paddingBottom = 10;

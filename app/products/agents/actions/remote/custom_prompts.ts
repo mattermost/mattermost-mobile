@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {createPost} from '@actions/remote/post';
-import {setCustomPromptsState} from '@agents/store/custom_prompts_store';
+import {setCustomPromptsState, type CustomPromptsState} from '@agents/store/custom_prompts_store';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -19,15 +19,22 @@ import type {CustomPromptRenderRequest, CustomPromptRenderResponse} from '@agent
 export async function fetchCustomPrompts(serverUrl: string): Promise<{data?: boolean; error?: unknown}> {
     try {
         const client = NetworkManager.getClient(serverUrl);
-        const [prompts, pinnedPromptIds] = await Promise.all([
+        const [promptsResult, pinsResult] = await Promise.allSettled([
             client.getCustomPrompts(),
             client.getCustomPromptPins(),
         ]);
+        if (promptsResult.status === 'rejected') {
+            throw promptsResult.reason;
+        }
 
-        setCustomPromptsState(serverUrl, {
-            prompts: prompts ?? [],
-            pinnedPromptIds: pinnedPromptIds ?? [],
-        });
+        // Without pins the prompts are still usable; keep the previous pins.
+        const state: Partial<CustomPromptsState> = {prompts: promptsResult.value ?? []};
+        if (pinsResult.status === 'fulfilled') {
+            state.pinnedPromptIds = pinsResult.value ?? [];
+        } else {
+            logDebug('error on fetchCustomPrompts pins', getFullErrorMessage(pinsResult.reason));
+        }
+        setCustomPromptsState(serverUrl, state);
 
         return {data: true};
     } catch (error) {

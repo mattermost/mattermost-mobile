@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {createPost} from '@actions/remote/post';
-import {getCustomPromptsState} from '@agents/store/custom_prompts_store';
+import {getCustomPromptsState, setCustomPromptsState} from '@agents/store/custom_prompts_store';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -58,9 +58,9 @@ describe('fetchCustomPrompts', () => {
         });
     });
 
-    it('should return error and leave the store untouched when the request fails', async () => {
-        mockClient.getCustomPrompts.mockResolvedValue([]);
-        mockClient.getCustomPromptPins.mockRejectedValue(new Error('network down'));
+    it('should return error and leave the store untouched when the prompts request fails', async () => {
+        mockClient.getCustomPrompts.mockRejectedValue(new Error('network down'));
+        mockClient.getCustomPromptPins.mockResolvedValue(['prompt-2']);
 
         const before = getCustomPromptsState(serverUrl);
         const result = await fetchCustomPrompts(serverUrl);
@@ -68,6 +68,21 @@ describe('fetchCustomPrompts', () => {
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
         expect(getCustomPromptsState(serverUrl)).toEqual(before);
+    });
+
+    it('should keep the fetched prompts and the previous pins when only the pins request fails', async () => {
+        setCustomPromptsState(serverUrl, {prompts: [prompt], pinnedPromptIds: ['prompt-1']});
+        const updated = {...prompt, name: 'Retro notes'};
+        mockClient.getCustomPrompts.mockResolvedValue([updated]);
+        mockClient.getCustomPromptPins.mockRejectedValue(new Error('network down'));
+
+        const result = await fetchCustomPrompts(serverUrl);
+
+        expect(result.error).toBeUndefined();
+        expect(getCustomPromptsState(serverUrl)).toEqual({
+            prompts: [updated],
+            pinnedPromptIds: ['prompt-1'],
+        });
     });
 });
 

@@ -49,6 +49,7 @@
   "agents.custom_prompts.empty": "No custom prompts yet",
   "agents.custom_prompts.error_message": "Something went wrong. Please try again.",
   "agents.custom_prompts.error_title": "Unable to run prompt",
+  "agents.custom_prompts.load_error": "Unable to load custom prompts.",
   "agents.custom_prompts.menu_label": "Custom prompts",
   "agents.generating": "Generating response...",
   "agents.home_button.title": "Agents",
