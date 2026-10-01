@@ -9,7 +9,7 @@ const {describe, it} = require('node:test');
 
 const {sanitize} = require('../e2e/path_builder');
 
-const {timedOutTests, busyReports, summarize, buildEvidence} = require('./triage-evidence');
+const {timedOutTests, busyReports, serverErrors, summarize, buildEvidence} = require('./triage-evidence');
 
 // detox-ios on mattermost-mobile#10172 (run 36863495910): MM-T4786_4 hit the
 // 300 s Jest timeout while the app waited on a pin request the server never answered.
@@ -46,6 +46,18 @@ const RESULTS = {
     }],
 };
 
+// detox-ios machine 17 on run 36901673758: MM-T4781_4 timed out without the app
+// ever being busy; the test's own setup calls got Cloudflare challenge pages.
+const CF_TITLE = 'MM-T4781_4 - should be able to create a message draft from reply thread';
+const CF_LOG = [
+    `18:31:15.758 detox[30878] i Messaging - Message Draft: ${CF_TITLE}`,
+    '18:32:37.058 detox[30878] i [provision] [client] "_cf_chl_opt" HTML from server — retry 1/3 in 3000ms for https://site-1.test.mattermost.cloud/api/v4/channels/5rij/members',
+    '18:32:40.234 detox[30878] i [provision] [client] "_cf_chl_opt" HTML from server — retry 2/3 in 6000ms for https://site-1.test.mattermost.cloud/api/v4/channels/9xk2/members',
+    '18:32:55.639 detox[30878] i [getResponseFromError] Network error: No response from server: Server returned "_cf_chl_opt" HTML for https://site-1.test.mattermost.cloud/api/v4/channels/5rij',
+    '    at Object.<anonymous> (/Users/runner/work/detox/e2e/support/server_api/client.ts:40:15) No response from server',
+    `18:36:40.700 detox[30878] i Messaging - Message Draft: ${CF_TITLE} [FAIL]`,
+].join('\n');
+
 describe('triage-evidence', () => {
     it('should pick only the tests that hit the Jest timeout, keyed by repository path', () => {
         assert.deepEqual(timedOutTests(RESULTS), [{file: 'detox/e2e/test/products/channels/smoke_test/messaging.e2e.ts', title: TITLE, fullName: FULL}]);
@@ -65,6 +77,15 @@ describe('triage-evidence', () => {
         assert.doesNotMatch(notes, /dispatch queue|Run loop/, 'routine tasks are present whenever the app runs');
         assert.doesNotMatch(notes, /stats/, 'a request that finished earlier is not what it was stuck on');
         assert.equal(summarize([]), '');
+    });
+
+    it('should count the test\'s failed server calls, grouped without their URLs', () => {
+        const errors = serverErrors(CF_LOG, CF_TITLE);
+        assert.deepEqual(errors.map((e) => e.count), [2, 1]);
+        assert.match(errors[0].message, /^\[provision\] \[client\] "_cf_chl_opt" HTML from server — retry N\/N in Nms for <url>$/);
+        assert.deepEqual(serverErrors(LOG, TITLE), [], 'a stuck app is not a failed server call');
+        const notes = summarize(busyReports(CF_LOG, CF_TITLE), errors);
+        assert.match(notes, /^The test's own calls to the test server failed 3 time\(s\) while it ran: .*_cf_chl_opt.*\(x2\)/);
     });
 
     it('should pair the timeout screenshot with the notes in the evidence-dir format', () => {
