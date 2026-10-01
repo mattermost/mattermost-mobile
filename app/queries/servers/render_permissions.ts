@@ -5,10 +5,10 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {RenderPermissionAction, type RenderPermissionActionName} from '@constants/access_control';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
 
 /**
@@ -32,6 +32,25 @@ export const observeRenderPermission = (
         RenderPermissionsStore.observeEntry(serverUrl, channelId),
     ]).pipe(
         map(([enforced, entry]) => resolveRenderPermission(enforced, entry, action, defaultAllowed)),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Whether to offer the burn-on-read control in a channel.
+ * If the policy is not enforced, then we do not gate the feature, otherwise we default to not
+ * allowing while waiting for a response from the server. Similar to webapp's useCreateBurnOnReadAccess.
+ */
+export const observeCreateBurnOnReadPermission = (
+    database: Database,
+    serverUrl: string,
+    channelId: string | undefined,
+): Observable<boolean> => {
+    return combineLatest([
+        observeRedactionEnforced(database),
+        observeRenderPermission(database, serverUrl, channelId, RenderPermissionAction.CreateBurnOnReadPost, false),
+    ]).pipe(
+        map(([enforced, allowed]) => (enforced ? allowed : true)),
         distinctUntilChanged(),
     );
 };

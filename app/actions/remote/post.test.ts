@@ -10,6 +10,7 @@ import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -267,6 +268,36 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - should revalidate the channel decisions when the server refuses a burn-on-read post', async () => {
+        // The stored decision allowed a burn-on-read post the server refused, so it is out of date.
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: 'api.post.create_post.burn_on_read.abac_denied.app_error'};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        await createPost(serverUrl, post1);
+
+        expect(expireEntry).toHaveBeenCalledTimes(1);
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+        expireEntry.mockRestore();
+    });
+
+    it('createPost - should keep the channel decisions when the post fails for another reason', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        await createPost(serverUrl, post1);
+
+        expect(expireEntry).not.toHaveBeenCalled();
+        expireEntry.mockRestore();
     });
 
     it('createPost - root', async () => {

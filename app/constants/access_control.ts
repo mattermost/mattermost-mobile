@@ -6,6 +6,7 @@
 // decisions are requested in discovery mode, so every registered action comes back in one request.
 export const RenderPermissionAction = {
     UploadFileAttachment: 'upload_file_attachment',
+    CreateBurnOnReadPost: 'create_burn_on_read_post',
 } as const;
 export type RenderPermissionActionName = typeof RenderPermissionAction[keyof typeof RenderPermissionAction];
 

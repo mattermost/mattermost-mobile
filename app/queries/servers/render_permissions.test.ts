@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 
-import {observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
+import {observeCreateBurnOnReadPermission, observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -109,5 +109,62 @@ describe('render permission observables', () => {
         expect(searchChannelActionDecisions).toHaveBeenCalledTimes(2);
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.decisions).toEqual(denied);
         subscription.unsubscribe();
+    });
+
+    describe('observeCreateBurnOnReadPermission', () => {
+        // The name the server registers the action under, spelled out rather than taken from the
+        // constant: the wire contract is what the decisions map is keyed by.
+        const bor = 'create_burn_on_read_post';
+
+        it('should offer the control on a server that does not govern the action', async () => {
+            await operator.handleConfigs({
+                configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+
+            const values: boolean[] = [];
+            const subscription = observeCreateBurnOnReadPermission(operator.database, serverUrl, channelId).subscribe((v) => values.push(v));
+            await flush();
+
+            expect(values).toEqual([true]);
+            subscription.unsubscribe();
+        });
+
+        it('should withhold the control until the decision arrives, then follow it', async () => {
+            const values: boolean[] = [];
+            const subscription = observeCreateBurnOnReadPermission(operator.database, serverUrl, channelId).subscribe((v) => values.push(v));
+            await flush();
+
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[bor]: {allowed: true, evaluated: true}}}, RENDER_PERMISSIONS_TTL_MS);
+            await flush();
+
+            expect(values).toEqual([false, true]);
+            subscription.unsubscribe();
+        });
+
+        it('should stay withheld when the policy denies it, without emitting twice', async () => {
+            const values: boolean[] = [];
+            const subscription = observeCreateBurnOnReadPermission(operator.database, serverUrl, channelId).subscribe((v) => values.push(v));
+            await flush();
+
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[bor]: {allowed: false, evaluated: true}}}, RENDER_PERMISSIONS_TTL_MS);
+            await flush();
+
+            expect(values).toEqual([false]);
+            subscription.unsubscribe();
+        });
+
+        it('should ignore an upload decision, which is governed separately', async () => {
+            const values: boolean[] = [];
+            const subscription = observeCreateBurnOnReadPermission(operator.database, serverUrl, channelId).subscribe((v) => values.push(v));
+            await flush();
+
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[upload]: {allowed: true, evaluated: true}}}, RENDER_PERMISSIONS_TTL_MS);
+            await flush();
+
+            expect(values).toEqual([false]);
+            subscription.unsubscribe();
+        });
     });
 });

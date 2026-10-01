@@ -12,7 +12,7 @@ import {RenderPermissionAction} from '@constants/access_control';
 import {withServerUrl} from '@context/server';
 import {observeIsBoREnabled, observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeRenderPermission} from '@queries/servers/render_permissions';
+import {observeCreateBurnOnReadPermission, observeRenderPermission} from '@queries/servers/render_permissions';
 import {observeCanUploadFiles} from '@queries/servers/security';
 import {observeConfigBooleanValue, observeMaxFileCount} from '@queries/servers/system';
 
@@ -34,6 +34,13 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
         distinctUntilChanged(),
     );
+    const isBoREnabled = combineLatest([
+        observeIsBoREnabled(database),
+        observeCreateBurnOnReadPermission(database, serverUrl, channelId),
+    ]).pipe(
+        map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
+        distinctUntilChanged(),
+    );
     const maxFileCount = observeMaxFileCount(database);
     const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
     const attachLogsEnabled = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
@@ -44,7 +51,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         canUploadFiles,
         isAgentsEnabled: observeIsAgentsEnabled(serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
-        isBoREnabled: observeIsBoREnabled(database),
+        isBoREnabled,
         maxFileCount,
         showAttachLogs: combineLatest([allowDownloadLogs, attachLogsEnabled]).pipe(
             map(([allowed, enabled]) => allowed && enabled),
