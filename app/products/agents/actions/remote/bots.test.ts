@@ -38,9 +38,24 @@ beforeEach(() => {
 });
 
 describe('fetchAIBots', () => {
+    it('should mark the first bot as the default when the plugin sends no isDefault flag', async () => {
+        mockClient.getAIBots.mockResolvedValue({
+            bots: [{id: 'bot2', displayName: 'Zed'}, {id: 'bot1', displayName: 'Alpha'}],
+            searchEnabled: false,
+            allowUnsafeLinks: false,
+        });
+
+        await fetchAIBots(serverUrl);
+
+        const {bots} = mockOperator.handleAIBots.mock.calls[0][0];
+        expect(bots).toHaveLength(2);
+        expect(bots[0]).toEqual({id: 'bot2', displayName: 'Zed', isDefault: true});
+        expect(bots[1].isDefault).toBeUndefined();
+    });
+
     it('should persist bots to database and return config flags', async () => {
         const mockResponse = {
-            bots: [{id: 'bot1', name: 'Test Bot'}],
+            bots: [{id: 'bot1', name: 'Test Bot', isDefault: true}],
             searchEnabled: true,
             allowUnsafeLinks: false,
         };
@@ -74,7 +89,7 @@ describe('fetchAIBots', () => {
 
     it('should refresh missing bot user profiles on success', async () => {
         const mockResponse = {
-            bots: [{id: 'bot1', name: 'Test Bot'}],
+            bots: [{id: 'bot1', name: 'Test Bot', isDefault: true}],
             searchEnabled: false,
             allowUnsafeLinks: false,
         };
@@ -87,7 +102,7 @@ describe('fetchAIBots', () => {
 
     it('should handle profile refresh failure gracefully', async () => {
         const mockResponse = {
-            bots: [{id: 'bot1', name: 'Test Bot'}],
+            bots: [{id: 'bot1', name: 'Test Bot', isDefault: true}],
             searchEnabled: false,
             allowUnsafeLinks: false,
         };

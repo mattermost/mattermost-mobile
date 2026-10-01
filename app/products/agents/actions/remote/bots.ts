@@ -16,6 +16,14 @@ type FetchAIBotsResult = {bots?: LLMBot[]; searchEnabled?: boolean; allowUnsafeL
 // syncs would both try to create the same records.
 const inFlight = new Map<string, Promise<FetchAIBotsResult>>();
 
+// Plugins before 2.5 don't send isDefault; they list the default bot first.
+function withDefaultFlag(bots: LLMBot[]): LLMBot[] {
+    if (bots.length === 0 || bots.some((bot) => bot.isDefault)) {
+        return bots;
+    }
+    return [{...bots[0], isDefault: true}, ...bots.slice(1)];
+}
+
 /**
  * Fetch all AI bots from the server and store them in the database.
  * Concurrent calls for the same server share one request.
@@ -35,7 +43,7 @@ async function doFetchAIBots(serverUrl: string): Promise<FetchAIBotsResult> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIBots();
-        const bots = response.bots ?? [];
+        const bots = withDefaultFlag(response.bots ?? []);
 
         // Persist the global unsafe-links config so agent renderers can gate
         // markdown links. Partial update — pluginEnabled is owned by
