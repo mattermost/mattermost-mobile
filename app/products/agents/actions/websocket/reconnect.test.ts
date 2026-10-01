@@ -5,16 +5,20 @@ import {clearAIBots} from '@agents/actions/local/bots';
 import {setAgentsVersion} from '@agents/actions/local/version';
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {updateAgentsVersion} from '@agents/actions/remote/version';
+import streamingStore from '@agents/store/streaming_store';
 import DatabaseManager from '@database/manager';
 import {logDebug} from '@utils/log';
 
 import {handleAgentsReconnect} from './reconnect';
+
+import {settleStreamedPost} from './index';
 
 const serverUrl = 'test-server.com';
 
 jest.mock('@agents/actions/remote/bots');
 jest.mock('@agents/actions/local/bots');
 jest.mock('@agents/actions/remote/version');
+jest.mock('./index', () => ({settleStreamedPost: jest.fn()}));
 jest.mock('@utils/log');
 
 describe('handleAgentsReconnect', () => {
@@ -58,6 +62,17 @@ describe('handleAgentsReconnect', () => {
 
         expect(fetchAIBots).not.toHaveBeenCalled();
         expect(clearAIBots).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should settle posts whose stream end may have been missed while disconnected', async () => {
+        streamingStore.startStreaming(serverUrl, 'post1');
+
+        await handleAgentsReconnect(serverUrl);
+
+        expect(streamingStore.getStreamingState(serverUrl, 'post1')?.generating).toBe(false);
+        expect(settleStreamedPost).toHaveBeenCalledWith(serverUrl, 'post1');
+        expect(settleStreamedPost).toHaveBeenCalledTimes(1);
+        streamingStore.removeServer(serverUrl);
     });
 
     it('should handle error from updateAgentsVersion', async () => {

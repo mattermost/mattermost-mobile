@@ -10,6 +10,8 @@ import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {AGENT_POST_TYPES} from '@agents/constants';
+import streamingStore from '@agents/store/streaming_store';
 import {Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
@@ -400,6 +402,26 @@ describe('WebSocket Post Actions', () => {
 
             expect(logWarningSpy).toHaveBeenCalledWith('Failed to sync permalink previews for edited post:', expect.any(Error));
             expect(batchRecordsSpy).toHaveBeenCalledWith([expect.any(PostsInChannelModel)], 'handlePostEdited');
+        });
+
+        it('should leave streaming state to the stream-end refetch for conversation-backed agent posts', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            const removePostSpy = jest.spyOn(streamingStore, 'removePost');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(removePostSpy).not.toHaveBeenCalled();
+        });
+
+        it('should clear streaming state for legacy agent posts without a conversation', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {}};
+            const removePostSpy = jest.spyOn(streamingStore, 'removePost');
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(removePostSpy).toHaveBeenCalledWith(serverUrl, 'post1');
         });
 
         it('should handle post edited event - no operator', async () => {

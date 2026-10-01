@@ -282,7 +282,9 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
     await operator.batchRecords(models, 'handlePostEdited');
 
-    if (isAgentPost(post)) {
+    // Conversation-backed agent posts are edited before the stream's `end`;
+    // their streaming state is dropped once the post-stream refetch lands.
+    if (isAgentPost(post) && !post.props?.conversation_id) {
         streamingStore.removePost(serverUrl, post.id);
     }
 }

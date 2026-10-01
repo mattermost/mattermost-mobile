@@ -26,42 +26,45 @@ export function handleAgentPostUpdate(serverUrl: string, msg: WebSocketMessage<P
 
     // A settling stream (`end`/`cancel`) is the moment the server has
     // finalised the response turns, so refresh the cached conversation here
-    // rather than only from the mounted post component. The component's
-    // generating->false refetch can miss the transition entirely when a short
-    // stream's start/end events coalesce into a single render (seen with
-    // regenerations that pause immediately for tool approval), and it never
-    // fires when the post isn't mounted — leaving a stale cache for re-entry.
+    // rather than only from the mounted post component, which can miss the
+    // transition (coalesced start/end renders) or not be mounted at all.
     // Webapp parity: llmbot_post invalidates the conversation on `end`.
     const {control, post_id} = msg.data;
     if (post_id && (control === CONTROL_SIGNALS.END || control === CONTROL_SIGNALS.CANCEL)) {
-        refetchConversationForPost(serverUrl, post_id);
+        settleStreamedPost(serverUrl, post_id);
     }
 }
 
 /**
- * Refetch the cached conversation belonging to a post, resolving the
- * conversation id from the post's props. Skips posts whose conversation was
- * never viewed (nothing cached) — the first view fetches fresh data anyway.
+ * Hand a finished stream over to the persisted conversation. The streamed
+ * content stays on screen until the refetch lands (the plugin edits the post
+ * before sending `end`, so POST_EDITED is too early), then the streaming state
+ * is dropped in the same update. Posts whose conversation was never viewed
+ * have nothing cached to refresh; the first view fetches fresh data anyway.
  */
-async function refetchConversationForPost(serverUrl: string, postId: string): Promise<void> {
+export async function settleStreamedPost(serverUrl: string, postId: string): Promise<void> {
+    const dropStreamingState = () => streamingStore.removePost(serverUrl, postId);
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const post = await getPostById(database, postId);
         const conversationId = (post?.props as Record<string, unknown> | undefined)?.conversation_id;
         if (typeof conversationId !== 'string' || conversationId === '') {
-            logDebug('[refetchConversationForPost] no conversation_id on post', {postId});
+            logDebug('[settleStreamedPost] no conversation_id on post', {postId});
+            dropStreamingState();
             return;
         }
         const cached = conversationStore.getState(serverUrl, conversationId);
         if (!cached.conversation && !cached.loading && !cached.error) {
+            dropStreamingState();
             return;
         }
 
         // Await so normalization/store rejections hit this catch instead of
         // surfacing as unhandled promise rejections.
-        await refetchConversation(serverUrl, conversationId);
+        await refetchConversation(serverUrl, conversationId, dropStreamingState);
     } catch (error) {
-        logDebug('error on refetchConversationForPost', getFullErrorMessage(error));
+        logDebug('error on settleStreamedPost', getFullErrorMessage(error));
+        dropStreamingState();
     }
 }
 

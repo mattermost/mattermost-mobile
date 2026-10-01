@@ -187,15 +187,29 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.showReasoning).toBe(true);
         });
 
-        it('should set generating to false when isLoading is true', () => {
+        it('should keep generating true while reasoning loads', () => {
             const postId = 'post123';
             streamingStore.startStreaming(SERVER_URL, postId);
 
             streamingStore.updateReasoning(SERVER_URL, postId, 'Analyzing...', true);
 
             const state = streamingStore.getStreamingState(SERVER_URL, postId);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
             expect(state?.precontent).toBe(false);
+        });
+
+        it('should stay generating after the reasoning summary ends and tool calls follow', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+            streamingStore.updateReasoning(SERVER_URL, postId, 'Plan', true);
+            streamingStore.updateReasoning(SERVER_URL, postId, 'Plan', false);
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.isReasoningLoading).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should preserve generating state when isLoading is false', () => {
@@ -254,14 +268,14 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.toolCalls).toEqual([]);
         });
 
-        it('should create minimal state if post is not streaming', () => {
+        it('should create a generating state if start was missed', () => {
             const postId = 'post123';
             streamingStore.updateToolCalls(SERVER_URL, postId, '[]');
 
             const state = streamingStore.getStreamingState(SERVER_URL, postId);
             expect(state).toBeDefined();
             expect(state?.toolCalls).toEqual([]);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should merge additional tool rounds by id instead of replacing', () => {
@@ -545,7 +559,7 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.reasoning).toBe('Thinking step 1...');
             expect(state?.isReasoningLoading).toBe(true);
             expect(state?.showReasoning).toBe(true);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should handle REASONING_SUMMARY_DONE with reasoning text', () => {

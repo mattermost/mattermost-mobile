@@ -6,6 +6,7 @@ import {BehaviorSubject, type Observable} from 'rxjs';
 
 import {CONTROL_SIGNALS, PROGRESS_PHASES, type ProgressPhase} from '@agents/constants';
 import {ToolCallStatus, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ServerToolUse, type ToolCall} from '@agents/types';
+import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 
@@ -182,7 +183,8 @@ class StreamingStoreSingleton {
         });
     };
 
-    // Preserves message; POST_EDITED clears via removePost.
+    // Preserves the streamed content; the post-stream conversation refetch
+    // (or POST_EDITED for legacy posts) clears it via removePost.
     endStreaming = (serverUrl: string, postId: string): void => {
         const state = this.getStreamingState(serverUrl, postId);
         if (!state) {
@@ -199,20 +201,18 @@ class StreamingStoreSingleton {
         });
     };
 
+    // Every content event marks the stream as generating (webapp parity); the
+    // renderer hides the cursor while reasoning is loading.
     updateReasoning = (serverUrl: string, postId: string, reasoning: string, isLoading: boolean): void => {
         const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
-
-        // While reasoning, generating is false to suppress the blinking cursor.
-        const generating = isLoading ? false : state.generating;
-        const precontent = isLoading ? false : state.precontent;
 
         this.getSubject(serverUrl, postId).next({
             ...state,
             reasoning,
             isReasoningLoading: isLoading,
             showReasoning: true,
-            generating,
-            precontent,
+            generating: true,
+            precontent: false,
             progressPhase: null,
         });
     };
@@ -247,6 +247,7 @@ class StreamingStoreSingleton {
                     toolCalls: [],
                     annotations: [],
                     serverTools: [],
+                    generating: true,
                     precontent: false,
                     progressPhase: null,
                 });
@@ -256,11 +257,12 @@ class StreamingStoreSingleton {
             this.getSubject(serverUrl, postId).next({
                 ...state,
                 toolCalls: merged,
+                generating: true,
                 precontent: false,
                 progressPhase: null,
             });
         } catch (error) {
-            logWarning('[StreamingStoreSingleton.updateToolCalls]', error, {serverUrl, postId, toolCallsJson});
+            logWarning('[StreamingStoreSingleton.updateToolCalls] invalid payload', getFullErrorMessage(error), {serverUrl, postId, length: toolCallsJson.length});
         }
     };
 
@@ -272,11 +274,12 @@ class StreamingStoreSingleton {
             this.getSubject(serverUrl, postId).next({
                 ...state,
                 annotations,
+                generating: true,
                 precontent: false,
                 progressPhase: null,
             });
         } catch (error) {
-            logWarning('[StreamingStoreSingleton.updateAnnotations]', error, {serverUrl, postId, annotationsJson});
+            logWarning('[StreamingStoreSingleton.updateAnnotations] invalid payload', getFullErrorMessage(error), {serverUrl, postId, length: annotationsJson.length});
         }
     };
 
@@ -409,13 +412,19 @@ class StreamingStoreSingleton {
         return this.getSubject(serverUrl, postId).asObservable();
     };
 
+    // Posts that currently hold streaming state on this server.
+    getPostIds = (serverUrl: string): string[] => {
+        const subjects = this.streamingSubjects[serverUrl] ?? {};
+        return Object.keys(subjects).filter((postId) => subjects[postId].value !== undefined);
+    };
+
     isStreaming = (serverUrl: string, postId: string): boolean => {
         const state = this.getStreamingState(serverUrl, postId);
         return state?.generating ?? false;
     };
 
-    // Called from POST_EDITED so the component switches from streaming state
-    // to the persisted database row. Subject is kept for potential reuse.
+    // Switches the renderer from streaming state to the persisted data once it
+    // is available. Subject is kept for potential reuse.
     removePost = (serverUrl: string, postId: string): void => {
         const subject = this.streamingSubjects[serverUrl]?.[postId];
         if (!subject) {

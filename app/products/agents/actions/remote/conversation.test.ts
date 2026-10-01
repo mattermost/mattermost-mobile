@@ -8,6 +8,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {
+    cancelConversationFetch,
     clearConversationCacheForServer,
     ensureConversation,
     fetchConversation,
@@ -170,6 +171,60 @@ describe('refetchConversation', () => {
         const state = conversationStore.getState(serverUrl, conversationId);
         expect(state.conversation?.title).toBe('Second');
         expect(state.loading).toBe(false);
+    });
+});
+
+describe('refetchConversation onSettled', () => {
+    it('should run once the result is in the store, even when a later fetch supersedes the one that registered it', async () => {
+        let resolveFirst: (value: ConversationResponse) => void = () => undefined;
+        mockClient.getConversation.
+            mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
+                resolveFirst = resolve;
+            })).
+            mockImplementationOnce(() => Promise.resolve({...makeConversation(conversationId), title: 'Second'}));
+        const titlesSeenOnSettle: Array<string | undefined> = [];
+        const onSettled = jest.fn(() => {
+            titlesSeenOnSettle.push(conversationStore.getState(serverUrl, conversationId).conversation?.title);
+        });
+
+        const firstRefetch = refetchConversation(serverUrl, conversationId, onSettled);
+        await refetchConversation(serverUrl, conversationId);
+
+        expect(onSettled).toHaveBeenCalledTimes(1);
+        expect(titlesSeenOnSettle).toEqual(['Second']);
+
+        resolveFirst(makeConversation(conversationId));
+        await firstRefetch;
+        expect(onSettled).toHaveBeenCalledTimes(1);
+    });
+
+    it('should run when the fetch fails', async () => {
+        mockClient.getConversation.mockRejectedValue(new Error('network'));
+        const onSettled = jest.fn();
+
+        await refetchConversation(serverUrl, conversationId, onSettled);
+
+        expect(onSettled).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('cancelConversationFetch', () => {
+    it('should discard the inflight result and keep the cached conversation', async () => {
+        mockClient.getConversation.mockResolvedValueOnce(makeConversation(conversationId));
+        await ensureConversation(serverUrl, conversationId);
+
+        let resolveLate: (value: ConversationResponse) => void = () => undefined;
+        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
+            resolveLate = resolve;
+        }));
+        const late = refetchConversation(serverUrl, conversationId);
+
+        cancelConversationFetch(serverUrl, conversationId);
+        expect(conversationStore.getState(serverUrl, conversationId).loading).toBe(false);
+
+        resolveLate({...makeConversation(conversationId), title: 'Late'});
+        await late;
+        expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Chat');
     });
 });
 

@@ -17,6 +17,7 @@ jest.mock('@agents/store/streaming_store', () => ({
     __esModule: true,
     default: {
         handleWebSocketMessage: jest.fn(),
+        removePost: jest.fn(),
     },
 }));
 
@@ -136,12 +137,17 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         });
     });
 
-    it('should refetch the cached conversation when the stream ends', async () => {
+    it('should keep the streamed content until the refetch settles, then drop it', async () => {
         handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
         await flushAsync();
 
         expect(refetchConversation).toHaveBeenCalledTimes(1);
-        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123');
+        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123', expect.any(Function));
+        expect(streamingStore.removePost).not.toHaveBeenCalled();
+
+        const onSettled = jest.mocked(refetchConversation).mock.calls[0][2];
+        onSettled?.();
+        expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
     });
 
     it('should refetch the cached conversation when the stream is cancelled', async () => {
@@ -149,7 +155,7 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         await flushAsync();
 
         expect(refetchConversation).toHaveBeenCalledTimes(1);
-        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123');
+        expect(refetchConversation).toHaveBeenCalledWith(SERVER_URL, 'conv123', expect.any(Function));
     });
 
     it('should not refetch on non-settling control events', async () => {
@@ -160,16 +166,17 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         expect(refetchConversation).not.toHaveBeenCalled();
     });
 
-    it('should not refetch when the conversation was never viewed (nothing cached)', async () => {
+    it('should drop the streaming state without refetching when the conversation was never viewed', async () => {
         jest.mocked(conversationStore.getState).mockReturnValue({loading: false});
 
         handleAgentPostUpdate(SERVER_URL, makeMsg('end'));
         await flushAsync();
 
         expect(refetchConversation).not.toHaveBeenCalled();
+        expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
     });
 
-    it('should not refetch when the post carries no conversation_id', async () => {
+    it('should drop the streaming state without refetching when the post carries no conversation_id', async () => {
         jest.mocked(getPostById).mockResolvedValue({
             props: {},
         } as unknown as Awaited<ReturnType<typeof getPostById>>);
@@ -178,6 +185,7 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         await flushAsync();
 
         expect(refetchConversation).not.toHaveBeenCalled();
+        expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
     });
 
     it('should catch refetch rejections instead of leaving them unhandled', async () => {
@@ -187,7 +195,8 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         await flushAsync();
 
         expect(refetchConversation).toHaveBeenCalledTimes(1);
-        expect(logDebug).toHaveBeenCalledWith('error on refetchConversationForPost', expect.anything());
+        expect(logDebug).toHaveBeenCalledWith('error on settleStreamedPost', expect.anything());
+        expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
     });
 });
 

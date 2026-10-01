@@ -10,7 +10,7 @@ import {regenerateResponse} from '@agents/actions/remote/generation_controls';
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
-import {BlockType, ToolCallStatusString, type ConversationResponse, type PostUpdateWebsocketMessage} from '@agents/types';
+import {BlockType, ToolCallStatusString, type ConversationResponse, type PostUpdateWebsocketMessage, type Turn} from '@agents/types';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -952,5 +952,117 @@ describe('AgentPostNew — combined Sources aggregation', () => {
         // Both url-less citations survive; a strict dedup-by-url would have
         // collapsed them into a single 'Sources (1)'.
         expect(await findByText('Sources (2)')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — stream settle handover', () => {
+    function deferred<T>() {
+        let resolve!: (value: T) => void;
+        const promise = new Promise<T>((res) => {
+            resolve = res;
+        });
+        return {promise, resolve};
+    }
+
+    const textTurn = (id: string, sequence: number, text: string): Turn => ({
+        id, post_id: POST_ID, role: 'assistant', sequence, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text}],
+    });
+
+    it('should keep the streamed answer under the persisted prefix until the post-stream refetch lands', async () => {
+        const settled = deferred<{data: ConversationResponse}>();
+        mockFetchConversation.mockResolvedValueOnce({data: makeConversation({turns: [textTurn('t1', 1, 'Earlier round')]})});
+        mockFetchConversation.mockReturnValueOnce(settled.promise);
+
+        const {findByText, getByText, getAllByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Earlier round'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await findByText('Earlier round');
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'Fresh answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+        expect(getByText('Earlier round')).toBeTruthy();
+        expect(getByText('Fresh answer')).toBeTruthy();
+
+        await act(async () => {
+            settled.resolve({data: makeConversation({turns: [textTurn('t1', 1, 'Earlier round'), textTurn('t2', 2, 'Fresh answer')]})});
+            await flush();
+        });
+        expect(getAllByText('Fresh answer')).toHaveLength(1);
+        expect(streamingStore.getStreamingState('https://test.mattermost.com', POST_ID)).toBeUndefined();
+    });
+
+    it('should not bring the old answer back when a fetch issued before regenerate lands late', async () => {
+        const oldConversation = makeConversation({turns: [textTurn('t1', 1, 'Old answer')]});
+        const lateFetch = deferred<{data: ConversationResponse}>();
+        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
+        mockFetchConversation.mockReturnValueOnce(lateFetch.promise);
+        jest.spyOn(Alert, 'alert');
+
+        const {findByText, getByTestId, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Old answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await findByText('Old answer');
+
+        // The previous stream's end refetch is still in flight.
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
+            const buttons = jest.mocked(Alert.alert).mock.lastCall?.[2];
+            buttons?.find((b) => b.text === 'Regenerate')?.onPress?.();
+            await flush();
+        });
+        expect(queryByText('Old answer')).toBeNull();
+
+        await act(async () => {
+            lateFetch.resolve({data: makeConversation({turns: [textTurn('t1', 1, 'Old answer')]})});
+            await flush();
+        });
+        expect(queryByText('Old answer')).toBeNull();
+    });
+
+    it('should let the requester act on a pending tool call while the stream is still live', async () => {
+        mockFetchConversation.mockResolvedValue({data: makeConversation()});
+
+        const {findByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: ''})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({
+                post_id: POST_ID,
+                control: CONTROL_SIGNALS.TOOL_CALL,
+                tool_call: JSON.stringify([{id: 'tu_live', name: 'search_docs', description: '', arguments: {q: 'x'}, status: 0}]),
+            });
+            await flush();
+        });
+
+        expect(await findByTestId('agents.tool_card.tu_live.approve')).toBeTruthy();
     });
 });
