@@ -231,6 +231,20 @@ describe('stripOpenAICitations', () => {
         expect(stripOpenAICitations(input)).toBe('The sky is blue.');
     });
 
+    it('should keep a single space when the citation sits between words', () => {
+        expect(stripOpenAICitations('Water is wet (source: https://example.com) and cold.')).toBe('Water is wet and cold.');
+    });
+
+    it('should stop at the first closing parenthesis', () => {
+        expect(stripOpenAICitations('See (source: https://a.com),next(x) here')).toBe('See,next(x) here');
+    });
+
+    it('should leave code blocks and inline code untouched', () => {
+        const input = '```js\nfoo()\n    .then(x)\n    .catch(y) (src: https://a.com)\n```\nUse `fn(url: https://x)` now (source: https://b.com).';
+
+        expect(stripOpenAICitations(input)).toBe('```js\nfoo()\n    .then(x)\n    .catch(y) (src: https://a.com)\n```\nUse `fn(url: https://x)` now.');
+    });
+
     it('should leave text without citation noise unchanged', () => {
         const input = 'A normal sentence with a [link](https://example.com) in it.\nAnd a second line.';
 

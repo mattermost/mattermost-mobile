@@ -157,17 +157,36 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
 }
 
 // Matches OpenAI-style inline citation clutter like "(source: https://…)"
-// that some models emit mid-sentence. Ported from the plugin webapp's
-// citation_processor.tsx openAICitationRegex.
-const openAICitationRegex = /\([^\s:]+\s*:\s*https?:\/\/[\S^)]*\)/g;
+// that some models emit mid-sentence, with the spaces around it when it sits
+// before punctuation. Adapted from the plugin webapp's citation_processor.tsx,
+// which runs on rendered text nodes; here it runs on markdown source, so the
+// URL stops at the first `)`.
+const openAICitationRegex = /[ \t]*\([^\s:()]+\s*:\s*https?:\/\/[^\s)]*\)(?:[ \t]+(?=[.,;:!?]))?/g;
+
+// Fenced code blocks and inline code spans, captured so split() keeps them.
+const codeSegmentRegex = /(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`)/;
+
+const CITATION_FOLLOWER = /[\s.,;:!?)]/;
+
+function stripCitationsFromProse(text: string): string {
+    return text.replace(openAICitationRegex, (match: string, offset: number) => {
+        const next = text.charAt(offset + match.length);
+        if (next === '' || CITATION_FOLLOWER.test(next)) {
+            return '';
+        }
+
+        // Glued to the next word: keep the separating whitespace.
+        return match.slice(0, match.indexOf('('));
+    });
+}
 
 // Strip inline "(source: https://…)" noise from agent-generated text before
-// rendering. The trailing cleanup collapses the " ." left behind by a
-// mid-sentence removal; it intentionally only eats spaces/tabs (not newlines,
-// which are structural in markdown — the webapp runs on post-render text
-// nodes where that distinction doesn't exist).
+// rendering, leaving code untouched.
 export function stripOpenAICitations(text: string): string {
-    return text.replace(openAICitationRegex, '').replace(/[ \t]+\./g, '.');
+    return text.
+        split(codeSegmentRegex).
+        map((segment, i) => (i % 2 === 1 ? segment : stripCitationsFromProse(segment))).
+        join('');
 }
 
 function emptyRound(id: string): Round {
