@@ -34,6 +34,7 @@ import ReasoningDisplay from '../reasoning_display';
 import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
+import WorkingIndicator from './working_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -57,11 +58,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageText: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
-        },
-        precontentContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
         },
         precontentText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
@@ -318,11 +314,12 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const showCursorOnLive = isGenerating && !isPrecontent;
 
     // Beyond the streaming precontent phase, show the placeholder when there is
-    // nothing else to render: on a cold open while the conversation fetch is in
-    // flight (web parity: llmbot_post.tsx), and right after a regenerate tap
-    // before the new stream's `start` event arrives.
+    // nothing else to render: while the plugin prepares a response it created
+    // empty (web parity: precontent starts as post.message === ''), on a cold
+    // open while the conversation fetch is in flight, and right after a
+    // regenerate tap before the new stream's `start` event arrives.
     const showPlaceholder = isPrecontent ||
-        (!hasContent && (regenerating || (conversationLoading && !isGenerating)));
+        (!hasContent && (post.message === '' || regenerating || (conversationLoading && !isGenerating)));
 
     const handleStop = useCallback(async () => {
         // Mark stopped first so late `next` events are ignored before the
@@ -378,14 +375,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                 );
             })}
             {showPlaceholder && (
-                <View style={styles.precontentContainer}>
-                    <FormattedText
-                        id='agents.generating'
-                        defaultMessage='Generating response...'
-                        style={styles.precontentText}
-                    />
-                    <StreamingIndicator/>
-                </View>
+                <WorkingIndicator progressPhase={streamingState?.progressPhase}/>
             )}
             {annotations.length > 0 && (
                 <CitationsList annotations={annotations}/>

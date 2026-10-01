@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {ProgressPhase} from '@agents/constants';
+
 /**
  * Tool call status values
  */
@@ -120,10 +122,12 @@ export interface Round {
 export interface PostUpdateWebsocketMessage {
     post_id: string;
     next?: string; // Full accumulated message text
-    control?: string; // Control signals: 'start', 'end', 'cancel', 'continue', 'reasoning_summary', 'reasoning_summary_done', 'tool_call', 'annotations'
+    control?: string; // One of CONTROL_SIGNALS
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations
+    progress_phase?: string;
+    progress_seq?: number;
 }
 
 /**
@@ -142,6 +146,7 @@ export interface StreamingState {
     rounds: Round[]; // Completed rounds snapshotted as each tool round resolves
     stopped: boolean; // True after the user taps Stop; suppresses late `next` events
     continueSeq: number; // Bumped on a tool-approval `continue` resume to trigger a refetch
+    progressPhase: ProgressPhase | null; // Latest pre-stream setup phase; cleared once content arrives
 }
 
 // Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).

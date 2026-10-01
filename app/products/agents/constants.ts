@@ -37,7 +37,16 @@ export const CONTROL_SIGNALS = {
     REASONING_SUMMARY_DONE: 'reasoning_summary_done',
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
+    PROGRESS: 'progress',
 } as const;
+
+/**
+ * Phases the plugin reports before a response starts streaming, in order
+ * (conversations/progress.go). Each event carries its 1-based position as
+ * progress_seq.
+ */
+export const PROGRESS_PHASES = ['checking_mcp', 'loading_conversation', 'preparing_request', 'connecting_provider'] as const;
+export type ProgressPhase = typeof PROGRESS_PHASES[number];
 
 export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
 export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';

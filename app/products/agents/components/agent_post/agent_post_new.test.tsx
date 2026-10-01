@@ -737,6 +737,44 @@ describe('AgentPostNew — cold-open loading placeholder (7c)', () => {
     });
 });
 
+describe('AgentPostNew — response placeholder created before setup', () => {
+    it('should show the setup progress on an empty response post until content streams', async () => {
+        mockFetchConversation.mockResolvedValue({
+            data: makeConversation({
+                turns: [{id: 't0', post_id: null, role: 'user', sequence: 0, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'question'}]}],
+            }),
+        });
+
+        const {findByText, getByText, queryByTestId} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost()}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await act(async () => {
+            await flush();
+        });
+
+        // The conversation has no response turns yet, but the empty post is still working.
+        expect(getByText('Generating response...')).toBeTruthy();
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.PROGRESS, progress_phase: 'connecting_provider', progress_seq: 4});
+        });
+        expect(getByText('Connecting to provider...')).toBeTruthy();
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'First words'});
+        });
+        expect(await findByText('First words')).toBeTruthy();
+        expect(queryByTestId('agents.post.working')).toBeNull();
+    });
+});
+
 describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () => {
     it('should clear live buffers and show the generating placeholder on a continue resume', async () => {
         mockFetchConversation.mockResolvedValue({data: makeConversation()});

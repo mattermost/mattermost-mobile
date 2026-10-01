@@ -666,6 +666,39 @@ describe('StreamingStoreSingleton', () => {
         });
     });
 
+    describe('progress control signal', () => {
+        const sendProgress = (phase: string, seq: number) => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.PROGRESS, progress_phase: phase, progress_seq: seq});
+        };
+
+        it('should track setup phases in order and keep the phase through start', () => {
+            sendProgress('checking_mcp', 1);
+            sendProgress('preparing_request', 3);
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('preparing_request');
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.START});
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('preparing_request');
+        });
+
+        it('should ignore stale, mismatched and unknown phases', () => {
+            sendProgress('loading_conversation', 2);
+            sendProgress('checking_mcp', 1);
+            sendProgress('connecting_provider', 3);
+            sendProgress('unknown_phase', 5);
+
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('loading_conversation');
+        });
+
+        it('should clear the phase on content and ignore progress afterwards', () => {
+            sendProgress('checking_mcp', 1);
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', next: 'Hello'});
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBeNull();
+
+            sendProgress('connecting_provider', 4);
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBeNull();
+        });
+    });
+
     describe('markStopped', () => {
         it('should set stopped and clear generating/reasoning flags', () => {
             const postId = 'post123';

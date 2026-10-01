@@ -4,7 +4,7 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
 
-import {CONTROL_SIGNALS} from '@agents/constants';
+import {CONTROL_SIGNALS, PROGRESS_PHASES, type ProgressPhase} from '@agents/constants';
 import {ToolCallStatus, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ToolCall} from '@agents/types';
 import {logDebug, logWarning} from '@utils/log';
 
@@ -21,6 +21,14 @@ function isResolvedToolCallEvent(toolCalls: ToolCall[]): boolean {
         tc.status === ToolCallStatus.AutoApproved ||
         tc.status === ToolCallStatus.Rejected,
     );
+}
+
+function hasStreamedContent(state: StreamingState): boolean {
+    return state.message !== '' ||
+        state.reasoning !== '' ||
+        state.toolCalls.length > 0 ||
+        state.annotations.length > 0 ||
+        state.rounds.length > 0;
 }
 
 // Merge incoming tool calls into the existing list by id: update in place when
@@ -90,6 +98,7 @@ class StreamingStoreSingleton {
             rounds: existing?.rounds ?? [],
             stopped: false,
             continueSeq: existing?.continueSeq ?? 0,
+            progressPhase: existing?.progressPhase ?? null,
         };
 
         this.getSubject(serverUrl, postId).next(state);
@@ -111,6 +120,7 @@ class StreamingStoreSingleton {
             rounds: [],
             stopped: false,
             continueSeq: 0,
+            progressPhase: null,
         };
     };
 
@@ -132,6 +142,7 @@ class StreamingStoreSingleton {
             rounds: [],
             stopped: false,
             continueSeq: (existing?.continueSeq ?? 0) + 1,
+            progressPhase: null,
         });
     };
 
@@ -161,6 +172,7 @@ class StreamingStoreSingleton {
             message,
             precontent: false,
             generating: true,
+            progressPhase: null,
         });
     };
 
@@ -177,6 +189,7 @@ class StreamingStoreSingleton {
             precontent: false,
             isReasoningLoading: false,
             stopped: false,
+            progressPhase: null,
         });
     };
 
@@ -194,6 +207,7 @@ class StreamingStoreSingleton {
             showReasoning: true,
             generating,
             precontent,
+            progressPhase: null,
         });
     };
 
@@ -226,6 +240,7 @@ class StreamingStoreSingleton {
                     toolCalls: [],
                     annotations: [],
                     precontent: false,
+                    progressPhase: null,
                 });
                 return;
             }
@@ -234,6 +249,7 @@ class StreamingStoreSingleton {
                 ...state,
                 toolCalls: merged,
                 precontent: false,
+                progressPhase: null,
             });
         } catch (error) {
             logWarning('[StreamingStoreSingleton.updateToolCalls]', error, {serverUrl, postId, toolCallsJson});
@@ -249,10 +265,28 @@ class StreamingStoreSingleton {
                 ...state,
                 annotations,
                 precontent: false,
+                progressPhase: null,
             });
         } catch (error) {
             logWarning('[StreamingStoreSingleton.updateAnnotations]', error, {serverUrl, postId, annotationsJson});
         }
+    };
+
+    // Pre-stream setup progress. Phases only move forward and stop mattering
+    // once the response produces content (webapp llmbot_post parity).
+    updateProgress = (serverUrl: string, postId: string, phase: string | undefined, sequence: number | undefined): void => {
+        const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
+        const phaseSequence = PROGRESS_PHASES.indexOf(phase as ProgressPhase) + 1;
+        const currentSequence = state.progressPhase ? PROGRESS_PHASES.indexOf(state.progressPhase) + 1 : 0;
+        if (phaseSequence === 0 || sequence !== phaseSequence || phaseSequence <= currentSequence || hasStreamedContent(state)) {
+            logDebug('[StreamingStoreSingleton.updateProgress] ignoring progress event', {postId, phase, sequence});
+            return;
+        }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            progressPhase: PROGRESS_PHASES[phaseSequence - 1],
+        });
     };
 
     handleWebSocketMessage = (serverUrl: string, data: PostUpdateWebsocketMessage): void => {
@@ -283,6 +317,11 @@ class StreamingStoreSingleton {
         // signals handled above clears the stopped flag.
         if (this.getStreamingState(serverUrl, post_id)?.stopped) {
             logDebug('[StreamingStoreSingleton.handleWebSocketMessage] ignoring event while stopped', {serverUrl, postId: post_id, control});
+            return;
+        }
+
+        if (control === CONTROL_SIGNALS.PROGRESS) {
+            this.updateProgress(serverUrl, post_id, data.progress_phase, data.progress_seq);
             return;
         }
 

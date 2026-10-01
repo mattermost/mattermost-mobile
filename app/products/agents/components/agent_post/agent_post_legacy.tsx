@@ -11,14 +11,13 @@ import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {stripOpenAICitations} from '@agents/turn_content';
 import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost, mergeToolCalls} from '@agents/utils';
-import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {safeParseJSON} from '@utils/helpers';
 import {showSnackBar} from '@utils/snack_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import CitationsList from '../citations_list';
@@ -27,6 +26,7 @@ import ReasoningDisplay from '../reasoning_display';
 import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
+import WorkingIndicator from './working_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -44,17 +44,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageText: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
-        },
-        precontentContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
-        },
-        precontentText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontStyle: 'italic',
-            marginRight: 8,
-            ...typography('Body', 100),
         },
     };
 });
@@ -241,6 +230,10 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const noRegen = noRegenProp === true || noRegenProp === 'true';
     const showStopButton = isGenerationInProgress && isRequester;
     const hasContent = displayMessage !== '' || reasoningSummary !== '';
+
+    // The plugin creates the response post empty (and without a
+    // conversation_id yet) before setup, so an empty post is still working.
+    const showPlaceholder = isPrecontent || (!hasContent && mergedToolCalls.length === 0);
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
 
     // Handler for stop button
@@ -271,15 +264,8 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                     isReasoningLoading={isReasoningLoading}
                 />
             )}
-            {isPrecontent ? (
-                <View style={styles.precontentContainer}>
-                    <FormattedText
-                        id='agents.generating'
-                        defaultMessage='Generating response...'
-                        style={styles.precontentText}
-                    />
-                    <StreamingIndicator/>
-                </View>
+            {showPlaceholder ? (
+                <WorkingIndicator progressPhase={streamingState?.progressPhase}/>
             ) : (
                 <View style={styles.messageContainer}>
                     {displayMessage ? (
