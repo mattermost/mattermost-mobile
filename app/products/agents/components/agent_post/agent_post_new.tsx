@@ -42,6 +42,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
+const POST_MESSAGE_ROUND_ID = 'post-message';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -233,8 +234,40 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             return {renderedRounds: visiblePersisted, lastPersistedIdx: visiblePersisted.length - 1};
         }
         const out = liveRound ? [...storeRounds, liveRound] : [...storeRounds];
+
+        // Webapp currentRound parity: until the cached conversation holds this
+        // response's turns (e.g. the stream-end event was missed), render the
+        // persisted post message rather than a blank body. Skipped on a cold
+        // open so the loading placeholder shows until the first fetch lands.
+        const coldOpen = conversationLoading && !conversation;
+        if (out.length === 0 && !regenerating && !coldOpen && post.message !== '') {
+            out.push({
+                id: POST_MESSAGE_ROUND_ID,
+                text: post.message,
+                toolCalls: [],
+                reasoning: {summary: '', signature: ''},
+                annotations: [],
+                serverTools: [],
+            });
+        }
         return {renderedRounds: out, lastPersistedIdx: -1};
-    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, regenerating]);
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, regenerating, conversationLoading, conversation, post.message]);
+
+    // ensureConversation never refreshes a cached entry, so a cache fetched
+    // before this response's turns were persisted stays stale whenever the
+    // stream-end refetch is missed (websocket down, app backgrounded). Refetch
+    // once per post revision when a finished post has text but no turns.
+    const staleRefetchRevisionRef = useRef<number | undefined>(undefined);
+    useEffect(() => {
+        if (!conversation || conversationLoading || conversationError || isGenerationInProgress || regenerating) {
+            return;
+        }
+        if (post.message === '' || persistedRounds.length > 0 || staleRefetchRevisionRef.current === post.updateAt) {
+            return;
+        }
+        staleRefetchRevisionRef.current = post.updateAt;
+        refetchConversation(serverUrl, conversationId);
+    }, [conversation, conversationLoading, conversationError, isGenerationInProgress, regenerating, post.message, post.updateAt, persistedRounds.length, serverUrl, conversationId]);
 
     // The stream-end refetch is owned by the websocket handler
     // (handleAgentPostUpdate). A tool-approval `continue` resume bumps

@@ -737,6 +737,49 @@ describe('AgentPostNew — cold-open loading placeholder (7c)', () => {
     });
 });
 
+describe('AgentPostNew — stale cached conversation after a missed stream end', () => {
+    it('should render the post message and refetch when the cached conversation lacks the response turns', async () => {
+        const userTurn = {id: 't0', post_id: null, role: 'user' as const, sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'question'}]};
+        let resolveRefetch: (value: {data: ConversationResponse}) => void = () => {};
+        mockFetchConversation.
+            mockResolvedValueOnce({data: makeConversation({turns: [userTurn]})}).
+            mockReturnValueOnce(new Promise((resolve) => {
+                resolveRefetch = resolve;
+            }));
+
+        const {findByText, getByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Summary text'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await act(async () => {
+            await flush();
+        });
+
+        expect(getByText('Summary text')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+
+        await act(async () => {
+            resolveRefetch({
+                data: makeConversation({
+                    turns: [
+                        userTurn,
+                        {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 2, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Persisted summary'}]},
+                    ],
+                }),
+            });
+            await flush();
+        });
+
+        expect(await findByText('Persisted summary')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+    });
+});
+
 describe('AgentPostNew — response placeholder created before setup', () => {
     it('should show the setup progress on an empty response post until content streams', async () => {
         mockFetchConversation.mockResolvedValue({
