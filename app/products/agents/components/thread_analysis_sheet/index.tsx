@@ -41,7 +41,7 @@ const ThreadAnalysisSheet = ({postId, channelId}: Props) => {
             options={ANALYSIS_OPTIONS}
             onSubmit={handleSubmit}
             errorTitle={messages.errorTitle}
-            testID='post_options.ask_agents'
+            testID='agents.thread_analysis'
         />
     );
 };

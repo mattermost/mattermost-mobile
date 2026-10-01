@@ -4,6 +4,7 @@
 import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl, type IntlShape} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 
 import {ServerToolName, ServerToolStatus, type ServerToolUse} from '@agents/types';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
@@ -31,6 +32,9 @@ const messages = defineMessages({
 
 const HIT_SLOP = {top: 8, bottom: 8};
 
+// Webapp parity: long sandbox output scrolls inside the card.
+const DETAIL_MAX_HEIGHT = 240;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {
         flexDirection: 'row',
@@ -55,11 +59,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         textTransform: 'uppercase',
         ...typography('Body', 25, 'SemiBold'),
     },
-    detailContent: {
+    detailScroll: {
         marginTop: 2,
-        padding: 8,
+        maxHeight: DETAIL_MAX_HEIGHT,
         borderRadius: 4,
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
+    },
+    detailContent: {
+        padding: 8,
         color: theme.centerChannelColor,
         fontFamily: getCodeFont(),
         ...typography('Body', 50),
@@ -155,6 +162,8 @@ const ServerToolCard = ({tool}: Props) => {
                 disabled={!canExpand}
                 hitSlop={HIT_SLOP}
                 style={({pressed}) => [styles.header, pressed && {opacity: 0.72}]}
+                accessibilityRole={canExpand ? 'button' : undefined}
+                accessibilityState={canExpand ? {expanded} : undefined}
                 testID={`${testID}.header`}
             >
                 <View style={styles.chevron}>
@@ -185,12 +194,20 @@ const ServerToolCard = ({tool}: Props) => {
                     style={styles.detail}
                 >
                     <Text style={styles.detailLabel}>{detail.label}</Text>
-                    <Text
-                        style={styles.detailContent}
-                        selectable={true}
+
+                    {/* RNGH ScrollView so it wins gesture arbitration against
+                        the post list (see ReasoningDisplay). */}
+                    <ScrollView
+                        style={styles.detailScroll}
+                        nestedScrollEnabled={true}
                     >
-                        {detail.content}
-                    </Text>
+                        <Text
+                            style={styles.detailContent}
+                            selectable={true}
+                        >
+                            {detail.content}
+                        </Text>
+                    </ScrollView>
                 </View>
             ))}
         </View>

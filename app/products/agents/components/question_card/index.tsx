@@ -165,6 +165,8 @@ const OptionRow = ({label, description, index, multiSelect, selected, interactiv
             onPress={handlePress}
             disabled={!interactive}
             style={({pressed}) => [styles.optionRow, selected && styles.optionRowSelected, interactive && pressed && {opacity: 0.72}]}
+            accessibilityRole={multiSelect ? 'checkbox' : 'radio'}
+            accessibilityState={{checked: selected, disabled: !interactive}}
             testID={`${testIdPrefix}.option.${index}`}
         >
             <CompassIcon
@@ -306,7 +308,7 @@ const QuestionCard = ({
                     />
                     <FormattedText
                         id='agents.question.submitting'
-                        defaultMessage='Submitting…'
+                        defaultMessage='Submitting...'
                         style={styles.statusText}
                     />
                 </View>
@@ -401,6 +403,9 @@ const QuestionCard = ({
                                 onPress={handleToggleFreeForm}
                                 disabled={!interactive}
                                 style={({pressed}) => [interactive && pressed && {opacity: 0.72}]}
+                                accessibilityRole={question.multiSelect ? 'checkbox' : 'radio'}
+                                accessibilityState={{checked: true, disabled: !interactive}}
+                                accessibilityLabel={intl.formatMessage(messages.somethingElse)}
                                 testID={`${testIdPrefix}.free_form.marker`}
                             >
                                 <CompassIcon
@@ -424,6 +429,8 @@ const QuestionCard = ({
                             onPress={handleToggleFreeForm}
                             disabled={!interactive}
                             style={({pressed}) => [styles.optionRow, interactive && pressed && {opacity: 0.72}]}
+                            accessibilityRole={question.multiSelect ? 'checkbox' : 'radio'}
+                            accessibilityState={{checked: false, disabled: !interactive}}
                             testID={`${testIdPrefix}.free_form`}
                         >
                             <CompassIcon

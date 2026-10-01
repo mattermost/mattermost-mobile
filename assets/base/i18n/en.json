@@ -62,7 +62,7 @@
   "agents.question.skipped": "Skipped",
   "agents.question.something_else": "Something else…",
   "agents.question.submit": "Submit",
-  "agents.question.submitting": "Submitting…",
+  "agents.question.submitting": "Submitting...",
   "agents.question.waiting_for_requester": "Waiting for an answer from the requester",
   "agents.reasoning.thinking": "Thinking",
   "agents.regenerate.cancel": "Cancel",

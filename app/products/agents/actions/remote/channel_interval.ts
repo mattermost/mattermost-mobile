@@ -11,8 +11,8 @@ import type {ChannelIntervalResponse} from '@agents/types/api';
 
 /**
  * Ask an agent to summarize the channel messages since `startTime` (unix
- * milliseconds — the channel's lastViewedAt, i.e. where the New Messages line
- * sits). The plugin streams the result into a DM with the bot and returns
+ * milliseconds — the channel member's viewedAt, i.e. where the New Messages
+ * line sits). The plugin streams the result into a DM with the bot and returns
  * that DM's post/channel ids; on success the app switches into it.
  */
 export async function requestChannelInterval(

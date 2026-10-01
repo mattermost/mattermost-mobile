@@ -157,9 +157,11 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                     onLayout={handleContentLayout}
                     style={styles.citationsContentWrapper}
                 >
-                    {annotations.map((annotation) => (
+                    {annotations.map((annotation, position) => (
                         <Pressable
-                            key={`citation-${annotation.index}-${annotation.url}`}
+
+                            // Combined across rounds, so annotation.index can repeat.
+                            key={`citation-${position}-${annotation.url ?? ''}`}
                             onPress={() => handleCitationPress(annotation.url)}
                             disabled={!annotation.url}
                             style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
