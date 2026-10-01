@@ -6,9 +6,8 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Alert, Keyboard, TextInput, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {useAgentSelection, useRewrite} from '@agents/hooks';
-import {isAgentDMChannel, resolveAgentSelection} from '@agents/utils';
+import {useRewrite, useSavedAgentSelection} from '@agents/hooks';
+import {isAgentDMChannel} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -19,9 +18,8 @@ import useDidMount from '@hooks/did_mount';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissBottomSheet, navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
-import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logError, logWarning} from '@utils/log';
+import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -164,14 +162,7 @@ const RewriteOptions = ({
 
     const [customPrompt, setCustomPrompt] = useState('');
 
-    const {agent: autoResolvedAgent, showPicker} = useMemo(
-        () => resolveAgentSelection(bots, selectedAgentId),
-        [bots, selectedAgentId],
-    );
-
-    // Follows auto-resolution (saved pref -> default -> first) until the user
-    // picks an agent; re-resolves if the pick leaves the bot list.
-    const {selectedAgent, selectAgent} = useAgentSelection(bots, autoResolvedAgent);
+    const {selectedAgent, showPicker, pickAgent} = useSavedAgentSelection(bots, selectedAgentId);
     const textInputRef = useRef<TextInput>(null);
 
     useDidMount(() => {
@@ -264,19 +255,12 @@ const RewriteOptions = ({
     }, [customPrompt, handleRewrite]);
 
     const handleOpenAgentSelector = useCallback(() => {
-        const onSelectAgent = async (agent: SelectableAgent) => {
-            selectAgent(agent);
-            const {error} = await saveSelectedAgent(serverUrl, agent.id);
-            if (error) {
-                logError('Failed to persist agent selection', getFullErrorMessage(error));
-            }
-        };
-        CallbackStore.setCallback(onSelectAgent);
+        CallbackStore.setCallback(pickAgent);
 
         // Map DB records to plain objects: navigation params are serialised.
         const agents: SelectableAgent[] = bots.map((bot) => ({id: bot.id, displayName: bot.displayName, username: bot.username}));
         navigateToScreen(Screens.AGENTS_SELECTOR, {agents, selectedAgentId: selectedAgent?.id || ''});
-    }, [bots, selectedAgent, selectAgent, serverUrl]);
+    }, [bots, selectedAgent, pickAgent]);
 
     const handleOpenCustomPrompts = useCallback(() => {
         // The prompt list renders the selection server-side and pushes the

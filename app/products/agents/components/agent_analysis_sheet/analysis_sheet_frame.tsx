@@ -14,11 +14,11 @@ import NoAgentsAvailable from './no_agents_available';
 import PrivacyFooter from './privacy_footer';
 import SelectedAgentRow from './selected_agent_row';
 
-import type {useChannelAgentSelection} from '@agents/hooks';
+import type {useSavedAgentSelection} from '@agents/hooks';
 import type {SelectableAgent} from '@agents/types';
 
 type Props = {
-    selection: ReturnType<typeof useChannelAgentSelection>;
+    selection: ReturnType<typeof useSavedAgentSelection>;
     submitting: boolean;
     testID: string;
     children: ReactNode;
@@ -45,7 +45,7 @@ const AnalysisSheetFrame = ({selection, submitting, testID, children}: Props) =>
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const [showAgentSelector, setShowAgentSelector] = useState(false);
-    const {channelBots, selectedAgent, showPicker, pickAgent} = selection;
+    const {agents, selectedAgent, showPicker, pickAgent} = selection;
 
     const openAgentSelector = useCallback(() => setShowAgentSelector(true), []);
     const closeAgentSelector = useCallback(() => setShowAgentSelector(false), []);
@@ -55,14 +55,14 @@ const AnalysisSheetFrame = ({selection, submitting, testID, children}: Props) =>
         pickAgent(agent);
     }, [pickAgent]);
 
-    if (channelBots.length === 0) {
+    if (agents.length === 0) {
         return <NoAgentsAvailable testID={`${testID}.no_agents`}/>;
     }
 
     if (showAgentSelector) {
         return (
             <AgentSelectorPanel
-                agents={channelBots}
+                agents={agents}
                 currentAgentUsername={selectedAgent?.username ?? ''}
                 onSelectAgent={handleAgentSelect}
                 onBack={closeAgentSelector}

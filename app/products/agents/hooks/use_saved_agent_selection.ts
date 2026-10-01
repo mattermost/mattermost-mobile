@@ -16,19 +16,20 @@ import type {SelectableAgent} from '@agents/types';
 import type AiBotModel from '@agents/types/database/models/ai_bot';
 
 /**
- * Agent selection for a channel-scoped analysis sheet. Only agents the server
- * accepts for the channel are offered (anything else 403s), the bot list is
- * refreshed on open, and an explicit pick is persisted as the saved agent.
+ * Agent selection for an agent entry point: resolves the saved agent (saved
+ * pref -> default -> first), refreshes the bot list on open, and persists an
+ * explicit pick as the saved agent. With `channelId`, only agents the server
+ * accepts in that channel are offered (anything else 403s).
  */
-export function useChannelAgentSelection(bots: AiBotModel[], channelId: string, selectedAgentId: string) {
+export function useSavedAgentSelection(bots: AiBotModel[], selectedAgentId: string, channelId?: string) {
     const serverUrl = useServerUrl();
 
-    const channelBots = useMemo(() => filterAgentsForChannel(bots, channelId), [bots, channelId]);
+    const agents = useMemo(() => (channelId ? filterAgentsForChannel(bots, channelId) : bots), [bots, channelId]);
     const {agent: autoResolvedAgent, showPicker} = useMemo(
-        () => resolveAgentSelection(channelBots, selectedAgentId),
-        [channelBots, selectedAgentId],
+        () => resolveAgentSelection(agents, selectedAgentId),
+        [agents, selectedAgentId],
     );
-    const {selectedAgent, selectAgent} = useAgentSelection(channelBots, autoResolvedAgent);
+    const {selectedAgent, selectAgent} = useAgentSelection(agents, autoResolvedAgent);
 
     useEffect(() => {
         fetchAIBots(serverUrl);
@@ -38,9 +39,9 @@ export function useChannelAgentSelection(bots: AiBotModel[], channelId: string, 
         selectAgent(agent);
         const {error} = await saveSelectedAgent(serverUrl, agent.id);
         if (error) {
-            logError('[useChannelAgentSelection] Failed to persist agent selection', getFullErrorMessage(error));
+            logError('[useSavedAgentSelection] Failed to persist agent selection', getFullErrorMessage(error));
         }
     }, [serverUrl, selectAgent]);
 
-    return {channelBots, selectedAgent, showPicker, pickAgent};
+    return {agents, selectedAgent, showPicker, pickAgent};
 }

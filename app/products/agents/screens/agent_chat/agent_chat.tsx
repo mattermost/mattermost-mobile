@@ -12,11 +12,10 @@ import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import {fetchAIBots} from '@agents/actions/remote/bots';
-import {saveSelectedAgent} from '@agents/actions/remote/preference';
+import {useSavedAgentSelection} from '@agents/hooks';
 import AgentChatPostList from '@agents/screens/agent_chat/agent_chat_post_list';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
-import {resolveSelectedAgent} from '@agents/utils';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -32,9 +31,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
-import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
-import {logError} from '@utils/log';
 
 import AgentChatContent from './agent_chat_content';
 import AgentChatHeader from './header';
@@ -70,7 +67,6 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     // Track if this is the first load
     const initialLoadDone = useRef(false);
-    const [selectedBot, setSelectedBot] = useState<AiBotModel | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [channelId, setChannelId] = useState<string | null>(null);
@@ -92,12 +88,10 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         return ['left', 'right', 'bottom'];
     }, [isTablet]);
 
-    // Auto-resolve the selected bot (saved pref -> default -> first) without persisting.
-    useEffect(() => {
-        if (bots.length > 0 && !selectedBot) {
-            setSelectedBot(resolveSelectedAgent(bots, selectedAgentId));
-        }
-    }, [bots, selectedBot, selectedAgentId]);
+    // Resolves saved pref -> default -> first without persisting; only an
+    // explicit pick is saved.
+    const {selectedAgent: selectedBot, pickAgent} = useSavedAgentSelection(bots, selectedAgentId);
+    const selectedBotId = selectedBot?.id;
 
     // Refresh bots from network on mount
     useEffect(() => {
@@ -144,14 +138,14 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     // Get or create DM channel when bot is selected
     useEffect(() => {
         const getChannel = async () => {
-            if (!selectedBot) {
+            if (!selectedBotId) {
                 setChannelId(null);
                 return;
             }
 
             const {data, error: channelError} = await createDirectChannel(
                 serverUrl,
-                selectedBot.id,
+                selectedBotId,
             );
 
             if (channelError || !data) {
@@ -166,7 +160,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         };
 
         getChannel();
-    }, [selectedBot, serverUrl, intl]);
+    }, [selectedBotId, serverUrl, intl]);
 
     const exit = useCallback(() => {
         navigateBack();
@@ -188,20 +182,19 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         goToAgentThreadsList();
     }, []);
 
-    const handleBotSelect = useCallback(async (bot: AiBotModel) => {
-        setSelectedBot(bot);
+    const handleBotSelect = useCallback((bot: AiBotModel) => {
+        dismissBottomSheet();
+        if (bot.id === selectedBotId) {
+            return;
+        }
 
         // Switching bots starts a fresh conversation against the new bot's DM.
         // Clear the channel immediately too, so a fast send can't post into the
         // previous bot's DM before the new channel resolves.
         setRootId(null);
         setChannelId(null);
-        dismissBottomSheet();
-        const {error: saveError} = await saveSelectedAgent(serverUrl, bot.id);
-        if (saveError) {
-            logError('Failed to persist agent selection', getFullErrorMessage(saveError));
-        }
-    }, [serverUrl]);
+        pickAgent(bot);
+    }, [selectedBotId, pickAgent]);
 
     const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {
         if (bots.length <= 1) {
@@ -222,7 +215,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                                 key={bot.id}
                                 bot={bot}
                                 avatarUrl={avatarUrl}
-                                isSelected={selectedBot?.id === bot.id}
+                                isSelected={selectedBotId === bot.id}
                                 onSelect={handleBotSelect}
                                 theme={theme}
                             />
@@ -234,7 +227,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
         const snapPoint = bottomSheetSnapPoint(bots.length, ITEM_HEIGHT);
         bottomSheet(renderContent, [1, (snapPoint + TITLE_HEIGHT)]);
-    }, [bots, serverUrl, selectedBot?.id, handleBotSelect, theme]));
+    }, [bots, serverUrl, selectedBotId, handleBotSelect, theme]));
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);

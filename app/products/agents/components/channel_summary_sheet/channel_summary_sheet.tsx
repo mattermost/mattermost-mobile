@@ -9,7 +9,7 @@ import {requestChannelSummary} from '@agents/actions/remote/channel_summary';
 import AnalysisSheetFrame from '@agents/components/agent_analysis_sheet/analysis_sheet_frame';
 import {useAnalysisSubmit} from '@agents/components/agent_analysis_sheet/use_analysis_submit';
 import {CHANNEL_ANALYSIS_TYPES} from '@agents/constants';
-import {useChannelAgentSelection} from '@agents/hooks';
+import {useSavedAgentSelection} from '@agents/hooks';
 import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_input/floating_text_input_label';
 import OptionItem from '@components/option_item';
@@ -88,7 +88,7 @@ const ChannelSummarySheet = ({channelId, bots, selectedAgentId, viewedAt}: Props
     const [customPrompt, setCustomPrompt] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const selection = useChannelAgentSelection(bots, channelId, selectedAgentId);
+    const selection = useSavedAgentSelection(bots, selectedAgentId, channelId);
     const {submitting, runSubmit} = useAnalysisSubmit(messages.errorTitle);
     const {selectedAgent} = selection;
 

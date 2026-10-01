@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl, type MessageDescriptor} from 'react-intl';
 import {View, StyleSheet} from 'react-native';
 
-import {useChannelAgentSelection} from '@agents/hooks';
+import {useSavedAgentSelection} from '@agents/hooks';
 import OptionItem from '@components/option_item';
 
 import AnalysisSheetFrame from './analysis_sheet_frame';
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
  */
 const AgentAnalysisSheet = ({channelId, bots, selectedAgentId, options, onSubmit, errorTitle, testID}: Props) => {
     const intl = useIntl();
-    const selection = useChannelAgentSelection(bots, channelId, selectedAgentId);
+    const selection = useSavedAgentSelection(bots, selectedAgentId, channelId);
     const {submitting, runSubmit} = useAnalysisSubmit(errorTitle);
     const {selectedAgent} = selection;
 
