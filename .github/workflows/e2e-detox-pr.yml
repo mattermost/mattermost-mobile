@@ -1157,7 +1157,7 @@ jobs:
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@5d164f18649bf74b9df5d17536a3de26cea17a69 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@24864c1f9ed21de582f6e0902c0ccc5ae4fe88e0 # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
