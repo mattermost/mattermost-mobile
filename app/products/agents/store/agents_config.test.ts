@@ -112,4 +112,11 @@ describe('useAgentsConfig', () => {
         });
         expect(result.current).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
     });
+
+    it('should start from the current config on first render', () => {
+        setAgentsConfig('hook-test-seed', {allowUnsafeLinks: true});
+
+        const {result} = renderHook(() => useAgentsConfig('hook-test-seed'));
+        expect(result.current.allowUnsafeLinks).toBe(true);
+    });
 });

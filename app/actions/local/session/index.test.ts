@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
+import {getAgentsConfig, setAgentsConfig} from '@agents/store/agents_config';
 import {getCustomPromptsState, setCustomPromptsState} from '@agents/store/custom_prompts_store';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
@@ -311,6 +312,14 @@ describe('session actions', () => {
             await terminateSession(mockServerUrl, false);
 
             expect(getCustomPromptsState(mockServerUrl)).toEqual({prompts: [], pinnedPromptIds: []});
+        });
+
+        it('should reset the agents config for the server', async () => {
+            setAgentsConfig(mockServerUrl, {pluginEnabled: true, allowUnsafeLinks: true});
+
+            await terminateSession(mockServerUrl, false);
+
+            expect(getAgentsConfig(mockServerUrl)).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
         });
 
         it('should call deleteServerDatabase when removeServer=false', async () => {

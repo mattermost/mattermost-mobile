@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import {removeAgentsConfig} from '@agents/store/agents_config';
 import {removeCustomPromptsServer} from '@agents/store/custom_prompts_store';
 import loopInStore from '@agents/store/loop_in_store';
 import streamingStore from '@agents/store/streaming_store';
@@ -167,6 +168,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
     streamingStore.removeServer(serverUrl);
     loopInStore.removeServer(serverUrl);
     removeCustomPromptsServer(serverUrl);
+    removeAgentsConfig(serverUrl);
 
     // Remove push disabled acknowledgment (non-critical)
     if (removeServer) {
