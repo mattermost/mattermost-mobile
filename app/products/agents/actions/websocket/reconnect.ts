@@ -17,9 +17,9 @@ export async function handleAgentsReconnect(serverUrl: string) {
     }
 
     // A stream's `end` may have been missed while the socket was down. Settle
-    // every post still holding streaming state. One that is genuinely still
-    // streaming marks itself generating again on its next event, which keeps
-    // its state when the refetch lands.
+    // every post still holding streaming state; settleStreamedPost keeps the
+    // state of one that is genuinely still streaming, and its next event marks
+    // it generating again.
     for (const postId of streamingStore.getPostIds(serverUrl)) {
         streamingStore.endStreaming(serverUrl, postId);
         settleStreamedPost(serverUrl, postId, true);

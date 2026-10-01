@@ -5,6 +5,7 @@ import {refetchConversation} from '@agents/actions/remote/conversation';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import conversationStore from '@agents/store/conversation_store';
 import streamingStore from '@agents/store/streaming_store';
+import {getResponseAnchorSequence} from '@agents/turn_content';
 import DatabaseManager from '@database/manager';
 import {getPostById} from '@queries/servers/post';
 import {getFullErrorMessage} from '@utils/errors';
@@ -46,6 +47,11 @@ export function handleAgentPostUpdate(serverUrl: string, msg: WebSocketMessage<P
  * Posts without a conversation render `post.message`, so POST_EDITED drops
  * their state once the edited post is stored. After a reconnect that edit may
  * have been missed, so `afterReconnect` drops it here.
+ *
+ * After a reconnect it is unknown whether the stream ended or is still running
+ * (the plugin only persists the response when it finishes), so the state is
+ * only dropped once the refetch shows a newer response anchor for the post.
+ * Otherwise it is kept, so a live stream doesn't lose its rounds and tool calls.
  */
 export async function settleStreamedPost(serverUrl: string, postId: string, afterReconnect = false): Promise<void> {
     const dropStreamingState = () => {
@@ -70,12 +76,25 @@ export async function settleStreamedPost(serverUrl: string, postId: string, afte
             return;
         }
 
+        let onSettled = dropStreamingState;
+        if (afterReconnect) {
+            const baseline = cached.conversation ? getResponseAnchorSequence(cached.conversation, postId) : -1;
+            onSettled = () => {
+                const {conversation} = conversationStore.getState(serverUrl, conversationId);
+                if (conversation && getResponseAnchorSequence(conversation, postId) > baseline) {
+                    dropStreamingState();
+                }
+            };
+        }
+
         // Await so normalization/store rejections hit this catch instead of
         // surfacing as unhandled promise rejections.
-        await refetchConversation(serverUrl, conversationId, dropStreamingState);
+        await refetchConversation(serverUrl, conversationId, onSettled);
     } catch (error) {
         logDebug('error on settleStreamedPost', getFullErrorMessage(error));
-        dropStreamingState();
+        if (!afterReconnect) {
+            dropStreamingState();
+        }
     }
 }
 

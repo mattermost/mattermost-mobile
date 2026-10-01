@@ -204,6 +204,42 @@ describe('handleAgentPostUpdate stream-settle refetch', () => {
         expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
     });
 
+    describe('after a reconnect', () => {
+        const anchorTurn = (sequence: number) => ({id: `t${sequence}`, post_id: 'post123', role: 'assistant', sequence, content: []});
+        const withTurns = (turns: Array<ReturnType<typeof anchorTurn>>) => ({
+            conversation: {id: 'conv123', turns} as never,
+            loading: false,
+        });
+
+        it('should keep the state of a still-running stream when the refetch has no newer response', async () => {
+            jest.mocked(conversationStore.getState).mockReturnValue(withTurns([anchorTurn(1)]));
+
+            await settleStreamedPost(SERVER_URL, 'post123', true);
+            jest.mocked(refetchConversation).mock.calls[0][2]?.();
+
+            expect(streamingStore.removePost).not.toHaveBeenCalled();
+        });
+
+        it('should drop the state once the refetch shows the response finished', async () => {
+            jest.mocked(conversationStore.getState).mockReturnValue(withTurns([anchorTurn(1)]));
+
+            await settleStreamedPost(SERVER_URL, 'post123', true);
+            jest.mocked(conversationStore.getState).mockReturnValue(withTurns([anchorTurn(1), anchorTurn(3)]));
+            jest.mocked(refetchConversation).mock.calls[0][2]?.();
+
+            expect(streamingStore.removePost).toHaveBeenCalledWith(SERVER_URL, 'post123');
+        });
+
+        it('should keep the state when the refetch throws', async () => {
+            jest.mocked(conversationStore.getState).mockReturnValue(withTurns([]));
+            jest.mocked(refetchConversation).mockRejectedValueOnce(new Error('network'));
+
+            await settleStreamedPost(SERVER_URL, 'post123', true);
+
+            expect(streamingStore.removePost).not.toHaveBeenCalled();
+        });
+    });
+
     it('should catch refetch rejections instead of leaving them unhandled', async () => {
         jest.mocked(refetchConversation).mockRejectedValueOnce(new Error('normalization failed'));
 
