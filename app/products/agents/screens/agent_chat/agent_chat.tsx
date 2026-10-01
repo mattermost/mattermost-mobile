@@ -27,6 +27,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
+import useDidUpdate from '@hooks/did_update';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
@@ -93,8 +94,18 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     const {selectedAgent: selectedBot, pickAgent} = useSavedAgentSelection(bots, selectedAgentId);
     const selectedBotId = selectedBot?.id;
 
-    // Refresh bots from network on mount
-    useEffect(() => {
+    // Switching agents (an explicit pick, or the saved/default agent changing
+    // underneath) starts a fresh conversation against the new agent's DM.
+    // Clear the channel too so nothing posts into the previous DM before the
+    // new channel resolves.
+    useDidUpdate(() => {
+        setRootId(null);
+        setChannelId(null);
+    }, [selectedBotId]);
+
+    // Await the bot refresh useSavedAgentSelection starts (fetchAIBots shares
+    // the in-flight request) to drive the loading and error states.
+    useDidMount(() => {
         const refreshBots = async () => {
             // If we have cached data, don't show loading spinner
             if (bots.length > 0) {
@@ -120,7 +131,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         };
 
         refreshBots();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
+    });
 
     // Show error if no bots after loading
     useEffect(() => {
@@ -187,12 +198,6 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         if (bot.id === selectedBotId) {
             return;
         }
-
-        // Switching bots starts a fresh conversation against the new bot's DM.
-        // Clear the channel immediately too, so a fast send can't post into the
-        // previous bot's DM before the new channel resolves.
-        setRootId(null);
-        setChannelId(null);
         pickAgent(bot);
     }, [selectedBotId, pickAgent]);
 

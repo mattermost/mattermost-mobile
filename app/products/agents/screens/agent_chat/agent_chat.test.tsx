@@ -125,6 +125,33 @@ jest.mock('@agents/components/illustrations', () => {
     };
 });
 
+// Lets a test start a conversation (the first post becomes the root) without
+// driving the real composer.
+jest.mock('./agent_chat_content', () => {
+    const {Pressable, View} = require('react-native');
+    const ActualContent = jest.requireActual('./agent_chat_content').default;
+    return {
+        __esModule: true,
+        default: (props: {onPromptPosted: (postId: string) => void}) => (
+            <View>
+                <ActualContent {...props}/>
+                <Pressable
+                    testID='mock.start_conversation'
+                    onPress={() => props.onPromptPosted('root-post')}
+                />
+            </View>
+        ),
+    };
+});
+
+jest.mock('@agents/screens/agent_chat/agent_chat_post_list', () => {
+    const {View} = require('react-native');
+    return {
+        __esModule: true,
+        default: () => <View testID='mock.agent_chat_post_list'/>,
+    };
+});
+
 const mockBot = {
     id: 'bot-123',
     displayName: 'Test Agent',
@@ -293,6 +320,36 @@ describe('AgentChat', () => {
         fireEvent.press(getSheetByTestId(`agent_chat.bot_selector.bot_item.${mockBot2.id}`));
 
         expect(saveSelectedAgent).toHaveBeenCalledWith(SERVER_URL, mockBot2.id);
+
+        await act(async () => {});
+    });
+
+    it('should start a fresh conversation when the resolved agent changes underneath it', async () => {
+        const {getByTestId, queryByTestId, rerender} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot.id}
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
+        });
+        fireEvent.press(getByTestId('mock.start_conversation'));
+        expect(getByTestId('mock.agent_chat_post_list')).toBeTruthy();
+
+        rerender(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot2.id}
+            />,
+        );
+
+        await waitFor(() => {
+            expect(createDirectChannel).toHaveBeenLastCalledWith(SERVER_URL, mockBot2.id);
+        });
+        expect(queryByTestId('mock.agent_chat_post_list')).toBeNull();
 
         await act(async () => {});
     });
