@@ -30,7 +30,7 @@ import PromptItem from './prompt_item';
 import type {CustomPrompt} from '@agents/types/api';
 
 export type Props = {
-    channelId: string;
+    channelId?: string;
     botUsername: string;
     isBotDMChannel: boolean;
     updateValue?: (value: string) => void;
@@ -77,10 +77,12 @@ const CustomPromptList = ({
     const {prompts} = useCustomPromptsState(serverUrl);
     const [renderingId, setRenderingId] = useState<string | null>(null);
     const bottomSheetRef = useRef<BottomSheetRef>(null);
+    const mountedRef = useRef(true);
 
     useDidMount(() => {
         fetchCustomPrompts(serverUrl);
         return () => {
+            mountedRef.current = false;
             CallbackStore.removeCallback();
         };
     });
@@ -104,6 +106,11 @@ const CustomPromptList = ({
             bot_username: botUsername || undefined,
         });
 
+        // The user closed the sheet while the prompt was rendering; don't
+        // touch a draft they may have edited since or dismiss another sheet.
+        if (!mountedRef.current) {
+            return;
+        }
         setRenderingId(null);
 
         if (error || rendered === undefined) {
