@@ -117,6 +117,23 @@ describe('components/post_list/post/body/Body', () => {
         expect(getByTestId('reactions')).toBeTruthy();
     });
 
+    it('should not render link previews or other embeds for agent posts', () => {
+        const props = getBaseProps();
+        props.isAgentPost = true;
+        props.post = TestHelper.fakePostModel({
+            type: AGENT_POST_TYPES.LLMBOT,
+            message: 'See https://example.com',
+            metadata: {
+                embeds: [{type: 'opengraph', url: 'https://example.com'}],
+            },
+        });
+
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<Body {...props}/>);
+
+        expect(getByTestId('agent-post')).toBeTruthy();
+        expect(queryByTestId('content')).toBeNull();
+    });
+
     it('should render Message and not AgentPost for non-agent posts', () => {
         const props = getBaseProps();
 

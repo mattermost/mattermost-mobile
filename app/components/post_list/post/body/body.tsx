@@ -128,7 +128,10 @@ const Body = ({
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
     const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
-    const hasContent = Boolean(
+
+    // Agent posts only get the permalink preview: the webapp skips the extra
+    // embeds (link previews, images, attachments) for plugin post types.
+    const hasContent = isAgentPost ? post.metadata?.embeds?.[0]?.type === 'permalink' : Boolean(
         post.metadata?.embeds?.length ||
         (appsEnabled && nBindings) ||
         hasInteractivePostContent(post, mmBlocksEnabled) ||
