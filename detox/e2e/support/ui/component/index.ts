@@ -5,6 +5,7 @@ import Alert from './alert';
 import AttachmentOptions from './attachment_options';
 import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
+import ChannelAttributeLabels from './channel_attribute_labels';
 import FileQuickAction from './file_quick_action';
 import GlobalClassificationBanner from './global_classification_banner';
 import ImageQuickAction from './image_quick_action';
@@ -25,6 +26,7 @@ export {
     AttachmentOptions,
     Autocomplete,
     CameraQuickAction,
+    ChannelAttributeLabels,
     FileQuickAction,
     GlobalClassificationBanner,
     ImageQuickAction,

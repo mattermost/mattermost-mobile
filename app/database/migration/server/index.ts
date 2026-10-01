@@ -32,7 +32,7 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 21,
+        toVersion: 22,
         steps: [
             addColumns({
                 table: AI_BOT,
@@ -44,6 +44,17 @@ export default schemaMigrations({migrations: [
                 table: AI_THREAD,
                 columns: [
                     {name: 'turn_count', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'urgent_mention_count', type: 'number'},
                 ],
             }),
         ],

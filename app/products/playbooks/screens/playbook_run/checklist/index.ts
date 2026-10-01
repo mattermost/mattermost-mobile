@@ -30,25 +30,15 @@ const getIds = (items: PlaybookChecklistItemModel[]) => {
     return items.map((i) => i.id);
 };
 
-const filterVisibleItems = (items: PlaybookChecklistItemModel[]) => {
-    return items.filter((item) => {
-        if (item.conditionAction === 'hidden' && !item.completedAt) {
-            return false;
-        }
-        return true;
-    });
-};
-
+// Items are emitted unfiltered and in the checklist's canonical order: their position in this
+// array is the index the server expects for item mutations. Visibility and user filters are
+// applied when rendering, so that hiding an item cannot shift another item's index.
 const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
     if ('observe' in checklist) {
         const observedChecklist = checklist.observe();
-        const items = checklist.items.observeWithColumns(['state', 'condition_action', 'state_modified']);
-        const filteredAndSortedItems = combineLatest([observedChecklist, items]).pipe(
-            switchMap(([cl, i]) => {
-                // Filter out hidden incomplete items
-                const visibleItems = filterVisibleItems(i);
-                return of$(sortItems(cl, visibleItems));
-            }),
+        const items = checklist.items.observeWithColumns(['state', 'condition_action', 'state_modified', 'assignee_id']);
+        const sortedItems = combineLatest([observedChecklist, items]).pipe(
+            switchMap(([cl, i]) => of$(sortItems(cl, i))),
             distinctUntilChanged((a, b) => areItemsOrdersEqual(getIds(a), getIds(b))),
         );
 
@@ -58,22 +48,14 @@ const enhanced = withObservables(['checklist'], ({checklist}: OwnProps) => {
 
         return {
             checklist: observedChecklist,
-            items: filteredAndSortedItems,
+            items: sortedItems,
             checklistProgress,
         };
     }
 
-    // Filter visible items for non-model checklist
-    const visibleItems = checklist.items.filter((item) => {
-        if (item.condition_action === 'hidden' && !item.completed_at) {
-            return false;
-        }
-        return true;
-    });
-
     return {
         checklist: of$(checklist),
-        items: of$(visibleItems),
+        items: of$(checklist.items),
         checklistProgress: of$(getChecklistProgress(checklist.items)),
     };
 });

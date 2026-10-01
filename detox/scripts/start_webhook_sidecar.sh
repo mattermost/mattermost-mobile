@@ -64,7 +64,7 @@ mark_ready() {
 
 mark_unavailable() {
     local reason="$1"
-    echo "::warning::Webhook sidecar unavailable — mm_blocks specs on this shard will fail their health check. ${reason}"
+    echo "::warning::Webhook sidecar unavailable — mm_blocks specs needing Cloud→sidecar callbacks will SKIP (hasStableWebhookIngress=false). ${reason}"
     if [[ -n "${GITHUB_ENV:-}" ]]; then
         {
             echo "WEBHOOK_BASE_URL="
@@ -207,6 +207,7 @@ if [[ -n "${WEBHOOK_PUBLIC_BASE_URL:-}" ]]; then
 fi
 
 # --- Last resort: trycloudflare quick tunnel (flaky DNS) ---
+
 if ! ensure_cloudflared; then
     mark_unavailable "Failed to download cloudflared (or unsupported platform $(uname -s)-$(uname -m))"
     exit 0

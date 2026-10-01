@@ -14,8 +14,6 @@ import {buildCustomPromptDraft} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
-import {isEdgeToEdge} from '@constants/device';
-import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -145,13 +143,12 @@ const CustomPromptList = ({
         const paddingBottom = 10;
 
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(Math.max(prompts.length, 1), ITEM_HEIGHT);
-        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
 
         // Clamp to 80% of the window so long lists scroll within the sheet
         // and the snap points always stay strictly ascending, even on small
         // screens where the content height could exceed the window.
         const maxHeight = windowHeight * 0.8;
-        const componentHeight = Math.min(optionsHeight + paddingBottom + bottom, maxHeight);
+        const componentHeight = Math.min(optionsHeight + paddingBottom + insets.bottom, maxHeight);
 
         return [1, componentHeight];
     }, [prompts.length, insets.bottom, windowHeight]);

@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {isAndroid, timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {expect, waitFor} from 'detox';
 
 class InteractiveDialogScreen {
     testID = {
         interactiveDialogScreen: 'interactive_dialog.screen',
-        dialogTitle: 'interactive_dialog.dialog_title',
+        interactiveDialogScrollView: 'interactive_dialog.scroll_view',
         submitButton: 'interactive_dialog.submit.button',
         closeButton: 'close.interactive_dialog.button',
         cancelButton: 'interactive_dialog.cancel.button',
@@ -21,8 +21,6 @@ class InteractiveDialogScreen {
 
     platformCancelButton = isAndroid() ? element(by.text('CANCEL')) : element(by.label('Cancel')).atIndex(0);
 
-    // Close button (X in header) - interactive dialogs render via the dialog_router route,
-    // whose testID is set in app/routes/(modals)/dialog_router.tsx
     appsFormCloseButton = element(by.id('close.interactive_dialog.button'));
 
     // replaceText avoids the iOS paste-permission dialog (MM-66558).
@@ -40,10 +38,18 @@ class InteractiveDialogScreen {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScreen));
-            await dialogScrollView.scroll(isPasswordOrTextarea ? 200 : 100, 'down');
+            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
             if (isPasswordOrTextarea) {
+                try {
+                    await dialogScrollView.tap({x: 20, y: 20});
+                    await wait(500);
+                } catch {
+                    // No keyboard up, or the tap landed on a field — scrolling still helps.
+                }
+                await dialogScrollView.scrollTo('bottom');
                 await wait(500);
+            } else {
+                await dialogScrollView.scroll(100, 'down');
             }
         } catch (scrollError) {
             // Could not scroll dialog, continuing without scroll
@@ -57,8 +63,7 @@ class InteractiveDialogScreen {
         await wait(isPasswordOrTextarea ? 1500 : 1000);
 
         try {
-            const dialogHeader = element(by.id(this.testID.dialogTitle));
-            await dialogHeader.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch {
             try {
                 await this.interactiveDialogScreen.tap();
@@ -96,7 +101,10 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        await expect(this.submitButton).toExist();
+        try {
+            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
+        } catch { /* short dialogs may not scroll */ }
+        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
@@ -164,10 +172,10 @@ class InteractiveDialogScreen {
         await this.setDialogInputText(textInput, value);
         await wait(1000);
 
-        // Dismiss keyboard by tapping outside
+        // Dismiss the keyboard by tapping the scroll view's background. 'screen.title.text' is
+        // not rendered by this screen, so the previous target never dismissed anything.
         try {
-            const dialogTitle = element(by.id('screen.title.text'));
-            await dialogTitle.tap();
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
         } catch (error) {
             // Could not dismiss keyboard, continue
         }

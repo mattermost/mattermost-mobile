@@ -150,8 +150,15 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
         const tableStyle: StyleProp<ViewStyle> = [style.table];
 
         const renderAsFlex = shouldRenderAsFlex(isFullView);
-        if (renderAsFlex) {
+
+        // Preview uses flex:1 to fill the post. Full view must not — flex:1 inside
+        // the table screen ScrollView sizes the table to the viewport and clips later rows.
+        if (renderAsFlex && !isFullView) {
             tableStyle.push(style.displayFlex);
+            return tableStyle;
+        }
+
+        if (renderAsFlex) {
             return tableStyle;
         }
 
@@ -204,7 +211,10 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
         });
 
         return (
-            <View style={tableStyle}>
+            <View
+                style={tableStyle}
+                testID={isFullView ? 'markdown_table.full_rows' : 'markdown_table.preview_rows'}
+            >
                 {rows}
             </View>
         );
@@ -213,13 +223,16 @@ function MarkdownTable({children, numColumns}: MarkdownTableProps) {
     const handlePress = usePreventDoubleTap(useCallback(() => {
         const screen = Screens.TABLE;
         const passProps = {
-            renderAsFlex: false,
+
+            // Android expanded tables already scroll horizontally at CELL_MAX_WIDTH.
+            // Only iOS needs renderAsFlex so the full-view container gets a real width.
+            renderAsFlex: Platform.OS === 'ios' && shouldRenderAsFlex(true),
             width: getTableWidth(true),
         };
         CallbackStore.setCallback(renderRows);
 
         navigateToScreen(screen, passProps);
-    }, [getTableWidth, renderRows]));
+    }, [getTableWidth, renderRows, shouldRenderAsFlex]));
 
     const handleContainerLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerWidth(e.nativeEvent.layout.width);

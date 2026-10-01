@@ -102,13 +102,13 @@ class RNUtilsModule(context: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun setSoftKeyboardToAdjustResize() {
-        implementation.setSoftKeyboardToAdjustResize()
+    fun beginDatabaseActivity(serverUrl: String?, task: String?, promise: Promise?) {
+        implementation.beginDatabaseActivity(serverUrl, task, promise)
     }
 
     @ReactMethod
-    fun setSoftKeyboardToAdjustNothing() {
-        implementation.setSoftKeyboardToAdjustNothing()
+    fun endDatabaseActivity(token: String?, promise: Promise?) {
+        implementation.endDatabaseActivity(token, promise)
     }
 
     @ReactMethod

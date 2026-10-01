@@ -7,6 +7,7 @@ import urlParse from 'url-parse';
 import {DeepLink} from '@constants';
 import {parseDeepLink} from '@utils/deep_link';
 import {escapeRegex} from '@utils/markdown';
+import {findPhoneNumbers} from '@utils/phone_number';
 import {safeDecodeURIComponent} from '@utils/url';
 
 import type {HighlightWithoutNotificationKey, SearchPattern, UserMentionKey} from '@typings/global/markdown';
@@ -317,6 +318,53 @@ export function highlightTextNode(node: Node, start: number, end: number, type: 
     }
 
     return highlighted;
+}
+
+const PHONE_AUTOLINK_SKIP_TYPES = new Set(['link', 'image']);
+
+function hasSkippedPhoneAutolinkAncestor(node: Node) {
+    let current = node.parent;
+    while (current) {
+        if (PHONE_AUTOLINK_SKIP_TYPES.has(current.type)) {
+            return true;
+        }
+        current = current.parent;
+    }
+
+    return false;
+}
+
+export function autolinkPhoneNumbers(ast: Node) {
+    const walker = ast.walker();
+
+    let e;
+    while ((e = walker.next())) {
+        if (!e.entering) {
+            continue;
+        }
+
+        const node = e.node;
+        if (node.type !== 'text' || !node.literal) {
+            continue;
+        }
+
+        if (hasSkippedPhoneAutolinkAncestor(node)) {
+            continue;
+        }
+
+        const match = findPhoneNumbers(node.literal)[0];
+        if (!match) {
+            continue;
+        }
+
+        const linkNode = highlightTextNode(node, match.index, match.index + match.length, 'link');
+        linkNode.destination = match.href;
+        linkNode.title = '';
+
+        walker.resumeAt(linkNode, false);
+    }
+
+    return ast;
 }
 
 // Wraps a given node in another node of the given type. The wrapper will take the place of

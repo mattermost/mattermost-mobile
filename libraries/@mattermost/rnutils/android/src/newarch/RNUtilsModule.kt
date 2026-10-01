@@ -69,12 +69,12 @@ class RNUtilsModule(val reactContext: ReactApplicationContext) : NativeRNUtilsSp
         implementation.removeServerNotifications(serverUrl)
     }
 
-    override fun setSoftKeyboardToAdjustResize() {
-        implementation.setSoftKeyboardToAdjustResize()
+    override fun beginDatabaseActivity(serverUrl: String?, task: String?, promise: Promise?) {
+        implementation.beginDatabaseActivity(serverUrl, task, promise)
     }
 
-    override fun setSoftKeyboardToAdjustNothing() {
-        implementation.setSoftKeyboardToAdjustNothing()
+    override fun endDatabaseActivity(token: String?, promise: Promise?) {
+        implementation.endDatabaseActivity(token, promise)
     }
 
     override fun createZipFile(paths: ReadableArray, promise: Promise?) {

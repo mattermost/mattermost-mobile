@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, type ReactNode} from 'react';
+import React, {useCallback, useEffect, useRef, type ReactNode} from 'react';
 import {BackHandler, DeviceEventEmitter, Platform, type StyleProp, StyleSheet, type ViewStyle, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardGestureArea} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedStyle} from 'react-native-reanimated';
@@ -9,14 +9,9 @@ import {scheduleOnUI} from 'react-native-worklets';
 
 import CustomEmojiPicker from '@components/post_draft/custom_emoji_picker';
 import {Events} from '@constants';
-import {isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import useDidMount from '@hooks/did_mount';
 import {dismissKeyboard} from '@utils/keyboard';
-
-// Use KeyboardGestureArea on iOS and Android 35+ (with edge-to-edge)
-// Android < 35 uses native keyboard handling with adjustResize
-const Wrapper = isEdgeToEdge ? KeyboardGestureArea : View;
 
 type Props = {
     children: ReactNode;
@@ -58,7 +53,7 @@ export const KeyboardAwarePostDraftContainer = ({
     const inputContainerAnimatedStyle = useAnimatedStyle(
         () => {
             return {
-                transform: [{translateY: isEdgeToEdge ? -stateContext.postInputTranslateY.value : 0}],
+                transform: [{translateY: -stateContext.postInputTranslateY.value}],
             };
         },
         [],
@@ -167,20 +162,10 @@ export const KeyboardAwarePostDraftContainer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showInputAccessoryView]);
 
-    const wrapperProps = useMemo(() => {
-        if (isEdgeToEdge) {
-            return {
-                textInputNativeID,
-
-                style: styles.gestureArea,
-            };
-        }
-        return {style: styles.gestureArea};
-    }, [textInputNativeID]);
-
     return (
-        <Wrapper
-            {...wrapperProps}
+        <KeyboardGestureArea
+            textInputNativeID={textInputNativeID}
+            style={styles.gestureArea}
             enableSwipeToDismiss={false} // this applies only to Android
         >
             <View style={styles.gestureArea}>
@@ -190,7 +175,7 @@ export const KeyboardAwarePostDraftContainer = ({
                 <Animated.View
                     style={[
                         inputContainerAnimatedStyle,
-                        isEdgeToEdge && styles.inputContainer,
+                        styles.inputContainer,
                     ]}
                 >
                     <View onLayout={onLayout}>
@@ -199,6 +184,6 @@ export const KeyboardAwarePostDraftContainer = ({
                 </Animated.View>
                 {showInputAccessoryView && <CustomEmojiPicker/>}
             </View>
-        </Wrapper>
+        </KeyboardGestureArea>
     );
 };

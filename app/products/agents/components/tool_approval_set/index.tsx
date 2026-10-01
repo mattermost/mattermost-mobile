@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {defineMessages} from 'react-intl';
 import {Pressable, View} from 'react-native';
 
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
@@ -20,6 +21,13 @@ import {typography} from '@utils/typography';
 import QuestionCard from '../question_card';
 import {parseQuestionArgs} from '../question_card/utils';
 import ToolCard from '../tool_card';
+
+const messages = defineMessages({
+    runTools: {
+        id: 'agents.tool_call.run_tools',
+        defaultMessage: 'Run tools',
+    },
+});
 
 interface ToolApprovalSetProps {
     postId: string;
@@ -126,6 +134,8 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
 
+    const isCallStage = approvalStage === ToolApprovalStage.Call;
+
     // Structured answers for accepted user-interaction tools (questions),
     // keyed by tool call ID. Sent as tool_answers alongside accepted_tool_ids.
     const toolAnswersRef = useRef<{[toolId: string]: ToolAnswer}>({});
@@ -178,13 +188,10 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     // stream died before they ran). The user is never offered per-tool
     // decisions for those; a single "Run tools" action resumes the round and
     // the server re-checks the auto-execution policy before running them.
-    const isInterruptedAutoRound = useMemo(() => {
-        if (approvalStage !== ToolApprovalStage.Call) {
-            return false;
-        }
-        const pendingToolCalls = toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
-        return pendingToolCalls.length > 0 && pendingToolCalls.every((call) => call.would_auto_execute);
-    }, [toolCalls, approvalStage]);
+    const pendingToolCalls = toolCalls.filter((call) => call.status === ToolCallStatus.Pending);
+    const isInterruptedAutoRound = isCallStage &&
+        pendingToolCalls.length > 0 &&
+        pendingToolCalls.every((call) => call.would_auto_execute);
 
     const submitDecisions = useCallback(async (decisions: ToolDecision) => {
         const approvedToolIds = Object.entries(decisions).
@@ -293,11 +300,11 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     // Resume an interrupted all-auto round. Submits an empty accepted list —
     // the server executes the policy-approved calls itself after re-checking
     // the auto-execution policy (matches the webapp's Run tools submission).
-    const handleRunTools = usePreventDoubleTap(useCallback(() => {
+    const handleRunTools = usePreventDoubleTap(useCallback(async () => {
         if (isSubmitting) {
             return;
         }
-        submitDecisions({});
+        await submitDecisions({});
     }, [isSubmitting, submitDecisions]));
 
     const toggleCollapse = useCallback((toolId: string) => {
@@ -327,7 +334,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
     }
 
     const actionableIds = new Set(actionableTools.map((t) => t.id));
-    const isCallStage = approvalStage === ToolApprovalStage.Call;
+    const showResumeControls = isInterruptedAutoRound && canApprove;
 
     const isToolCollapsed = (tool: ToolCall) => {
         return !(expandedTools[tool.id] ?? isDefaultExpanded(tool, approvalStage));
@@ -391,7 +398,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 );
             })}
 
-            {approvalDecisionTools.length > 1 && isSubmitting && (
+            {(approvalDecisionTools.length > 1 || showResumeControls) && isSubmitting && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.submitting'
@@ -446,36 +453,21 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
                 </View>
             )}
 
-            {isInterruptedAutoRound && canApprove && (
+            {showResumeControls && !isSubmitting && (
                 <View
                     style={styles.statusBar}
-                    testID='agents.tool_approval_set.run_tools_bar'
+                    testID='agents.tool_approval_set.resume'
                 >
-                    {isSubmitting ? (
-                        <>
-                            <Loading
-                                size='small'
-                                color={changeOpacity(theme.centerChannelColor, 0.64)}
-                            />
-                            <FormattedText
-                                id='agents.tool_call.submitting'
-                                defaultMessage='Submitting...'
-                                style={styles.statusText}
-                            />
-                        </>
-                    ) : (
-                        <Pressable
-                            onPress={handleRunTools}
-                            style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
-                            testID='agents.tool_approval_set.run_tools'
-                        >
-                            <FormattedText
-                                id='agents.tool_call.run_tools'
-                                defaultMessage='Run tools'
-                                style={styles.batchButtonText}
-                            />
-                        </Pressable>
-                    )}
+                    <Pressable
+                        onPress={handleRunTools}
+                        style={({pressed}) => [styles.batchButton, pressed && {opacity: 0.72}]}
+                        testID='agents.tool_approval_set.run_tools'
+                    >
+                        <FormattedText
+                            {...messages.runTools}
+                            style={styles.batchButtonText}
+                        />
+                    </Pressable>
                 </View>
             )}
         </View>

@@ -82,31 +82,32 @@ describe('Checklist', () => {
             expect(getChecklistProgress).toHaveBeenCalledWith(props.checklist.items);
         });
 
-        it('should filter out hidden incomplete items', () => {
+        it('should pass hidden incomplete items through, keeping the canonical order', () => {
             const props = getBaseProps();
-            props.checklist.items = [
+            const items: PlaybookChecklistItem[] = [
                 TestHelper.createPlaybookItem(checklistId, 0), // visible normal item
                 {
                     ...TestHelper.createPlaybookItem(checklistId, 1),
                     condition_action: 'hidden',
                     completed_at: 0,
-                }, // hidden incomplete - should be filtered
+                }, // hidden incomplete - hidden when rendering, but keeps its slot here
                 {
                     ...TestHelper.createPlaybookItem(checklistId, 2),
                     state: 'closed',
                     completed_at: Date.now(),
                 }, // completed item
             ];
+            props.checklist.items = items;
 
             const {getByTestId} = renderWithEverything(<Checklist {...props}/>, {database});
 
             const checklist = getByTestId('checklist');
             expect(checklist).toBeTruthy();
 
-            // Should only have 2 items (hidden incomplete is filtered out)
-            expect(checklist.props.items).toHaveLength(2);
-            expect(checklist.props.items[0].id).toBe(props.checklist.items[0].id);
-            expect(checklist.props.items[1].id).toBe(props.checklist.items[2].id);
+            // An item's index in this array is the index the server expects for that item, so nothing
+            // may be dropped here. Hiding is applied when rendering instead.
+            expect(checklist.props.items).toHaveLength(3);
+            expect(checklist.props.items.map((i: {id: string}) => i.id)).toEqual(items.map((i) => i.id));
         });
 
         it('should include hidden completed items', () => {
@@ -218,7 +219,7 @@ describe('Checklist', () => {
             });
         });
 
-        it('should filter out hidden incomplete items from database', async () => {
+        it('should pass hidden incomplete items from database through, keeping the canonical order', async () => {
             const checklist = TestHelper.createPlaybookChecklist('', 3, 0);
 
             // Set condition fields on items
@@ -253,13 +254,14 @@ describe('Checklist', () => {
             const checklistComponent = getByTestId('checklist');
             expect(checklistComponent).toBeTruthy();
 
-            // Should only have 2 items (hidden incomplete is filtered out)
-            expect(checklistComponent.props.items).toHaveLength(2);
-            expect(checklistComponent.props.items[0].id).toBe(checklist.items[0].id);
-            expect(checklistComponent.props.items[1].id).toBe(checklist.items[2].id);
+            // Nothing is dropped here: an item's index is the index the server expects for it.
+            expect(checklistComponent.props.items).toHaveLength(3);
+            expect(checklistComponent.props.items.map((i: {id: string}) => i.id)).toEqual(
+                checklist.items.map((i) => i.id),
+            );
         });
 
-        it('should react to condition_action changes in real-time', async () => {
+        it('should keep emitting an item after it becomes hidden, so indices stay stable', async () => {
             const checklist = TestHelper.createPlaybookChecklist('', 2, 0);
             const model = await operator.handlePlaybookChecklist({
                 prepareRecordsOnly: false,
@@ -285,11 +287,9 @@ describe('Checklist', () => {
             const checklistComponent = getByTestId('checklist');
             expect(checklistComponent.props.items).toHaveLength(2);
 
-            // Get the items in their rendered order
             const initialFirstItemId = checklistComponent.props.items[0].id;
             const initialSecondItemId = checklistComponent.props.items[1].id;
 
-            // Update first visible item to be hidden
             const items = await props.checklist.items.fetch();
             const itemToHide = items.find((i) => i.id === initialFirstItemId);
             await act(async () => {
@@ -300,65 +300,12 @@ describe('Checklist', () => {
                 });
             });
 
-            // Should now only have 1 visible item (the second one)
-            await waitFor(() => {
-                expect(checklistComponent.props.items).toHaveLength(1);
-                expect(checklistComponent.props.items[0].id).toBe(initialSecondItemId);
-            });
-        });
-
-        it('should react to completedAt changes for hidden items', async () => {
-            const checklist = TestHelper.createPlaybookChecklist('', 2, 0);
-
-            // Make first item hidden and incomplete
-            checklist.items[0].condition_action = 'hidden';
-            checklist.items[0].completed_at = 0;
-
-            const model = await operator.handlePlaybookChecklist({
-                prepareRecordsOnly: false,
-                checklists: [{
-                    run_id: 'run-id',
-                    ...checklist,
-                }],
-                processChildren: true,
-            });
-
-            const props = {
-                checklist: model[0] as PlaybookChecklistModel,
-                checklistNumber: 0,
-                channelId: 'channel-id',
-                playbookRunId: 'run-id',
-                playbookRunName: 'Test Run',
-                isFinished: false,
-                isParticipant: true,
-            };
-
-            const {getByTestId} = renderWithEverything(<Checklist {...props}/>, {database});
-
-            const checklistComponent = getByTestId('checklist');
-
-            // Should only have 1 item (hidden incomplete is filtered out)
-            expect(checklistComponent.props.items).toHaveLength(1);
-            const visibleItemId = checklistComponent.props.items[0].id;
-
-            // Find and mark the hidden item as completed
-            const items = await props.checklist.items.fetch();
-            const hiddenItem = items.find((i) => i.id !== visibleItemId);
-            expect(hiddenItem).toBeDefined();
-
-            await act(async () => {
-                database.write(async () => {
-                    await hiddenItem?.update((item) => {
-                        item.completedAt = Date.now();
-                        item.conditionAction = 'shown_because_modified';
-                        item.state = 'closed';
-                    });
-                });
-            });
-
-            // Should now have 2 visible items (hidden completed item is now shown)
+            // Hiding an item must not remove it here: dropping it would shift the index of every
+            // item after it, and those indices are what item mutations are sent to the server with.
             await waitFor(() => {
                 expect(checklistComponent.props.items).toHaveLength(2);
+                expect(checklistComponent.props.items[0].id).toBe(initialFirstItemId);
+                expect(checklistComponent.props.items[1].id).toBe(initialSecondItemId);
             });
         });
     });

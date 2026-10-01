@@ -15,6 +15,17 @@ export type UserAttributesSetupResult =
 
 type CustomProfileField = {id?: string; name?: string};
 
+/**
+ * Custom profile attributes graduated out of the server's feature-flag set: as of v11.11
+ * `FeatureFlagCustomProfileAttributes` is gone from server/public/model/feature_flags.go, so
+ * the key is simply *absent* from client config and matterwick's
+ * MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true is a no-op against such a server.
+ *
+ * An absent key therefore means "not gated any more", not "off" -- the previous
+ * `=== 'true'` test could never be satisfied, so it burned the full 30s poll and reported the
+ * suite unprovisionable on every run. Only an explicit 'false' still counts as gated, which
+ * keeps this correct against older servers that do define the flag.
+ */
 const waitForCustomProfileAttributesClientFlag = async (
     siteOneUrl: string,
     {maxAttempts = 30, intervalMs = timeouts.ONE_SEC} = {},
@@ -25,7 +36,13 @@ const waitForCustomProfileAttributesClientFlag = async (
         if (error) {
             throw new Error(`Could not read client config: ${JSON.stringify(error)}`);
         }
-        if (config?.FeatureFlagCustomProfileAttributes === 'true') {
+
+        const flag = config?.FeatureFlagCustomProfileAttributes;
+        if (flag === undefined) {
+            // Server no longer publishes the flag — the feature is always on.
+            return true;
+        }
+        if (flag === 'true') {
             return true;
         }
 
@@ -45,7 +62,9 @@ export const ensureCustomProfileAttributesFeatureFlag = async (siteOneUrl: strin
     const {config: latestConfig} = await System.apiGetClientConfigOld(siteOneUrl);
     return (
         `FeatureFlagCustomProfileAttributes is "${latestConfig?.FeatureFlagCustomProfileAttributes ?? 'missing'}". ` +
-        'Cloud Spinwick installations must set MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true in Matterwick PriorityEnv'
+        'A server that still defines this flag must have it enabled ' +
+        '(MM_FEATUREFLAGS_CUSTOMPROFILEATTRIBUTES=true in Matterwick PriorityEnv); ' +
+        'servers from v11.11 on drop the flag entirely and are treated as enabled.'
     );
 };
 
@@ -161,18 +180,21 @@ export const assertUserAttributesReady = (reason: string | undefined): void => {
     }
 };
 
-const customAttributeFieldContainerMatcher = (fieldName: string) =>
-    by.id(/^edit_profile_form\.customAttributes\.[^.]+$/).withDescendant(by.text(fieldName));
+/**
+ * Match the input by its exact testID, built from the field id the provisioning probe already
+ * resolved. The previous matcher paired a regex id with `withAncestor(<regex id>
+ * .withDescendant(by.text(fieldName)))`; the view hierarchy at failure time proves every part
+ * of that existed -- `edit_profile_form.customAttributes.<id>`, `...<id>.input` holding
+ * "Mobile engineer", and an `RCTParagraphComponentView text="Bio"` inside the same container --
+ * yet the compound ancestor-of-descendant predicate still resolved to nothing on iOS. Since
+ * the field ids are known, address the input directly and drop the nesting entirely.
+ */
+export const getCustomAttributeInput = (fieldId: string) =>
+    element(by.id(`edit_profile_form.customAttributes.${fieldId}.input`));
 
-export const getCustomAttributeInputByName = (fieldName: typeof USER_ATTRIBUTE_FIELD_NAMES[number]) =>
-    element(
-        by.id(/^edit_profile_form\.customAttributes\.[^.]+\.input$/).
-            withAncestor(customAttributeFieldContainerMatcher(fieldName)),
-    );
-
-export const waitForEditProfileCustomAttributes = async (): Promise<void> => {
+export const waitForEditProfileCustomAttributes = async (firstFieldId: string): Promise<void> => {
     const scrollView = element(by.id('edit_profile.scroll_view'));
-    const firstInput = getCustomAttributeInputByName(USER_ATTRIBUTE_FIELD_NAMES[0]);
+    const firstInput = getCustomAttributeInput(firstFieldId);
 
     await device.disableSynchronization();
     try {

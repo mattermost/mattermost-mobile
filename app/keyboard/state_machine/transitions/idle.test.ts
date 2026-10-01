@@ -4,7 +4,7 @@
 import {calculateKeyboardUpdates, isSoftwareKeyboard} from '@keyboard/state_machine/keyboard_utils';
 import {InputContainerStateType, StateMachineEventType, type StateSnapshot, type StateEvent} from '@keyboard/state_machine/types';
 
-import {idleTransitions, idleTransitionsNonEdgeToEdge} from './idle';
+import {idleTransitions} from './idle';
 
 jest.mock('@keyboard/state_machine/keyboard_utils', () => ({
     calculateKeyboardUpdates: jest.fn((snapshot, height) => ({
@@ -42,21 +42,6 @@ function makeSnapshot(overrides = {}): StateSnapshot {
 function makeEvent(overrides: Partial<StateEvent> = {}): StateEvent {
     return {type: StateMachineEventType.USER_OPEN_EMOJI, ...overrides};
 }
-
-describe('idleTransitionsNonEdgeToEdge', () => {
-    it('should have correct from/event/to for [0]', () => {
-        const t = idleTransitionsNonEdgeToEdge[0];
-        expect(t.from).toBe(InputContainerStateType.IDLE);
-        expect(t.event).toBe(StateMachineEventType.USER_OPEN_EMOJI);
-        expect(t.to).toBe(InputContainerStateType.EMOJI_PICKER_OPEN);
-    });
-
-    it('should return isWaitingForKeyboard=true from action', () => {
-        const t = idleTransitionsNonEdgeToEdge[0];
-        const result = t.action!(makeSnapshot(), makeEvent());
-        expect(result).toEqual({isWaitingForKeyboard: {value: true, animated: false}});
-    });
-});
 
 describe('idleTransitions', () => {
     beforeEach(() => {

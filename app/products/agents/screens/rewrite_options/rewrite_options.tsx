@@ -12,8 +12,6 @@ import {isAgentDMChannel, resolveAgentSelection} from '@agents/utils';
 import CompassIcon, {type CompassIconName} from '@components/compass_icon';
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
-import {isEdgeToEdge} from '@constants/device';
-import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -303,8 +301,7 @@ const RewriteOptions = ({
         // Use the same height for both generation and editing modes
         // (6 rewrite options + the custom prompts entry)
         const optionsHeight = OPTIONS_PADDING + bottomSheetSnapPoint(7, ITEM_HEIGHT);
-        const bottom = isEdgeToEdge ? insets.bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
-        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + bottom;
+        const COMPONENT_HEIGHT = agentSelectorHeight + CUSTOM_PROMPT_INPUT_HEIGHT + optionsHeight + paddingBottom + insets.bottom;
 
         return [1, COMPONENT_HEIGHT];
     }, [showPicker, insets.bottom]);

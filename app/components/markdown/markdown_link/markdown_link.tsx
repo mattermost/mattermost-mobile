@@ -13,6 +13,7 @@ import {useServerUrl} from '@context/server';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint, isEmail} from '@utils/helpers';
+import {isTelHref} from '@utils/phone_number';
 import {openLink} from '@utils/url/links';
 
 type MarkdownLinkProps = {
@@ -27,6 +28,10 @@ const messages = defineMessages({
     copyEmail: {
         id: 'mobile.markdown.link.copy_email',
         defaultMessage: 'Copy Email Address',
+    },
+    copyPhone: {
+        id: 'mobile.markdown.link.copy_phone',
+        defaultMessage: 'Copy Phone Number',
     },
     copyURL: {
         id: 'mobile.markdown.link.copy_url',
@@ -53,6 +58,18 @@ const parseLinkLiteral = (literal: string) => {
     return parsed.href;
 };
 
+function getCopyLinkMessage(href: string) {
+    if (isTelHref(href)) {
+        return messages.copyPhone;
+    }
+
+    if (isEmail(href.replace(/^(mailto:|tel:)/i, ''))) {
+        return messages.copyEmail;
+    }
+
+    return messages.copyURL;
+}
+
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL, onLinkLongPress}: MarkdownLinkProps) => {
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -69,8 +86,8 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                 return;
             }
 
-            const cleanHref = href.replace(/^mailto:/, '');
-            const isEmailLink = isEmail(cleanHref);
+            const cleanHref = href.replace(/^(mailto:|tel:)/i, '');
+            const copyMessage = getCopyLinkMessage(href);
 
             const renderContent = () => {
                 return (
@@ -85,7 +102,7 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
                                 Clipboard.setString(cleanHref);
                             }}
                             testID='at_mention.bottom_sheet.copy_url'
-                            text={intl.formatMessage(isEmailLink ? messages.copyEmail : messages.copyURL)}
+                            text={intl.formatMessage(copyMessage)}
                         />
                         <SlideUpPanelItem
                             destructive={true}

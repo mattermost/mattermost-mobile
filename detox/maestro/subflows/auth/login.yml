@@ -22,9 +22,13 @@ appId: ${MAESTRO_APP_ID}
     when:
       platform: iOS
     commands:
-      - launchApp:
-          stopApp: true
-          clearState: true
+      # # Retry iOS launchApp after a previous batch; do not retry the whole login.
+      - retry:
+          maxRetries: 3
+          commands:
+            - launchApp:
+                stopApp: true
+                clearState: true
       # # After clearState, the JS bundle loads fresh + notification dialog
       # may appear. Wait longer for bundle + permission dialog.
       - waitForAnimationToEnd:
@@ -202,16 +206,14 @@ appId: ${MAESTRO_APP_ID}
       # field (FloatingTextInput + secureTextEntry). Empty password keeps
       # testID login_form.signin.button.disabled — Maestro then fails waiting
       # for login_form.signin.button.
-      # Evidence: CI 30340678924 MM-T67856_2 (first batch after MM-T1325 skip);
-      # same flow passed as batch-2 on 30334294934 once the sim was warm.
-      # Tap email label each attempt; erase before retype. Do not insert
-      # waitForAnimationToEnd between Next and password — it dismisses the
-      # keyboard so Next is no longer hittable.
       - retry:
           maxRetries: 4
           commands:
             - tapOn:
-                text: "Email, Username or AD/LDAP Username"
+                # # Full-string regex: the placeholder is assembled from server
+                # auth config (Email / Username / AD-LDAP segments), so match the
+                # stable ends rather than one server's exact composition.
+                text: "Email.*Username"
             - eraseText: 80
             - inputText: ${TEST_USER_EMAIL}
             - tapOn:
@@ -224,47 +226,85 @@ appId: ${MAESTRO_APP_ID}
             - tapOn:
                 id: "login_options.description.enter_credentials"
                 optional: true
+            # * Empty password keeps testID login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      text: "Password"
+                      optional: true
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
             - extendedWaitUntil:
                 visible:
                   id: "login_form.signin.button"
-                timeout: 20000
+                timeout: 45000
 - runFlow:
     when:
       platform: Android
     commands:
-      - tapOn:
-          id: "login_form.username.input"
-      - inputText: ${TEST_USER_EMAIL}
-      - tapOn:
-          id: "login_form.password.input"
-      - inputText: ${TEST_USER_PASSWORD}
-      - extendedWaitUntil:
-          visible:
-            id: "login_form.signin.button"
-          timeout: 10000
+      # # Same empty-password / dropped-keystroke failure as iOS: enabled
+      # login_form.signin.button never appears (CI 33867825384, 10/10 Android
+      # flows, ~270s). Keyboard can also cover Log In — connect_server.yml
+      # already hideKeyboard on Android; Detox taps enter_credentials first.
+      - retry:
+          maxRetries: 4
+          commands:
+            - tapOn:
+                id: "login_form.username.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_EMAIL}
+            - tapOn:
+                id: "login_form.password.input"
+            - eraseText: 80
+            - inputText: ${TEST_USER_PASSWORD}
+            - hideKeyboard
+            - tapOn:
+                id: "login_options.description.enter_credentials"
+                optional: true
+            # * Empty password keeps login_form.signin.button.disabled.
+            - runFlow:
+                when:
+                  visible:
+                    id: "login_form.signin.button.disabled"
+                commands:
+                  - tapOn:
+                      id: "login_form.password.input"
+                  - eraseText: 80
+                  - inputText: ${TEST_USER_PASSWORD}
+                  - hideKeyboard
+            - extendedWaitUntil:
+                visible:
+                  id: "login_form.signin.button"
+                timeout: 10000
 
-# # Submit the login, retrying because iOS URLSession can drop the first login POST
-# right after server connect on cold sims.
-# iOS per-attempt home wait is sized to hedge two competing failure modes:
-#   - dropped POST  → the wait must expire soon enough for a retry to re-tap Log In
-#   - slow cold sim → the wait must be long enough that a working login is not cut short
-# 180s nested wait_for_home_tab starved retries (CI 30447839548 MM-T67856_1/_2 timed out
-# at ~232–282s with no effective re-login); 60s risks killing a login that merely needs
-# ~90s (#9893 run 30424009936 passed these flows with batch 1 at 5m39s). 100s gives two
-# full attempts in ~3.5 min and clears the observed slow-but-working case.
-# Android keeps the original 180s budget from wait_for_home_tab.yml — Android login was
-# never the failing path (all flows pass in ~57s), so shortening it would only add risk.
 - retry:
     maxRetries: 3
     commands:
       - runFlow:
           when:
-            platform: iOS
+            notVisible:
+              id: "tab_bar.home.tab"
           commands:
-            - waitForAnimationToEnd:
-                timeout: 8000
-      - tapOn:
-          id: "login_form.signin.button"
+            - runFlow:
+                when:
+                  platform: iOS
+                commands:
+                  - waitForAnimationToEnd:
+                      timeout: 8000
+            # # Re-check after the animation wait: a slow login can land during those 8s,
+            # at which point the button is gone and tapping it would fail the retry.
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                  visible:
+                    id: "login_form.signin.button"
+                commands:
+                  - tapOn:
+                      id: "login_form.signin.button"
       # # Dismiss password/save prompts each attempt so they do not block home tab.
       - tapOn:
           text: "Not Now"
@@ -278,6 +318,46 @@ appId: ${MAESTRO_APP_ID}
       - tapOn:
           text: "Skip"
           optional: true
+      # # Android: login often restores the last channel (tab bar hidden). Waiting
+      # 180s for tab_bar.home.tab inside this retry (CI 33902065028, ~4m50s per
+      # flow) never retries. navigation.header.back is not the Android channel
+      # chevron — ChannelScreen.back falls through to pressBack. Pop with Back
+      # when the composer is showing; keep the home wait short so retries fire.
+      - runFlow:
+          when:
+            platform: Android
+          commands:
+            - extendedWaitUntil:
+                visible:
+                  id: "tab_bar.home.tab"
+                timeout: 20000
+                optional: true
+            - runFlow:
+                when:
+                  notVisible:
+                    id: "tab_bar.home.tab"
+                commands:
+                  - extendedWaitUntil:
+                      visible:
+                        id: "channel.post_draft.post.input"
+                      timeout: 20000
+                      optional: true
+                  - runFlow:
+                      when:
+                        visible:
+                          id: "channel.post_draft.post.input"
+                      commands:
+                        - tapOn:
+                            id: "navigation.header.back"
+                            optional: true
+                        - runFlow:
+                            when:
+                              visible:
+                                id: "channel.post_draft.post.input"
+                            commands:
+                              - pressKey: Back
+                              - waitForAnimationToEnd:
+                                  timeout: 3000
       # * Verify login succeeded by waiting for the home tab.
       - runFlow:
           when:
@@ -294,4 +374,19 @@ appId: ${MAESTRO_APP_ID}
             - extendedWaitUntil:
                 visible:
                   id: "tab_bar.home.tab"
-                timeout: 180000
+                timeout: 20000
+
+# # iOS raises the Save Password sheet only once the login screen is torn down, a few
+# seconds after the dismissals above ran. Simulator autofill restrictions do not stop it.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - extendedWaitUntil:
+          visible:
+            text: "Not Now"
+          timeout: 5000
+          optional: true
+      - tapOn:
+          text: "Not Now"
+          optional: true

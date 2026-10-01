@@ -14,6 +14,7 @@ import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import {setCurrentUserId} from '@queries/servers/system';
+import {propsToParams} from '@screens/navigation';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 
@@ -60,7 +61,7 @@ export const restoreServerAfterDatabaseWipe = async (serverUrl: string): Promise
         await DatabaseManager.updatePersistenceFlag(serverUrl, '');
 
         const launchRoute = await determineRouteFromLaunchProps({launchType: Launch.Normal, serverUrl, coldStart: true});
-        router.replace({pathname: launchRoute.route, params: launchRoute.params});
+        router.replace({pathname: launchRoute.route, params: propsToParams(launchRoute.params)});
         return {};
     } catch (error) {
         logError('restoreServerAfterDatabaseWipe', serverUrl, getFullErrorMessage(error));

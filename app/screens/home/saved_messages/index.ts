@@ -4,7 +4,7 @@
 import {Q} from '@nozbe/watermelondb';
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observeSavedPostsByIds, queryPostsById} from '@queries/servers/post';
@@ -21,18 +21,32 @@ function getPostIDs(preferences: PreferenceModel[]) {
     return preferences.map((preference) => preference.name);
 }
 
+function sameIds(previous: string[], next: string[]) {
+    return previous.length === next.length && previous.every((id, index) => id === next[index]);
+}
+
 const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
+
+        // observeSavedPostsByIds emits a fresh Set on every emission of either of
+        // its two sources, so without the distinctUntilChanged guards below the
+        // switchMap tore down and rebuilt the posts query on changes that left the
+        // saved-post ids identical. That churn is what made the list flicker.
         posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
-            switchMap((rows) => {
-                const ids = getPostIDs(rows);
+            map(getPostIDs),
+            distinctUntilChanged(sameIds),
+            switchMap((ids) => {
                 if (!ids.length) {
                     return of$(new Set<string>());
                 }
                 return observeSavedPostsByIds(database, ids);
             }),
-            switchMap((savedPostIds) => {
-                const ids = [...savedPostIds];
+
+            // Sorted so the comparison below is order-insensitive; queryPostsById
+            // applies the real ordering.
+            map((savedPostIds) => [...savedPostIds].sort()),
+            distinctUntilChanged(sameIds),
+            switchMap((ids) => {
                 if (!ids.length) {
                     return of$([]);
                 }

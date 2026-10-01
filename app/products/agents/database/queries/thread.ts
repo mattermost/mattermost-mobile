@@ -83,3 +83,12 @@ export async function getAIThreadById(database: Database, threadId: string) {
 export async function getAllAIThreads(database: Database) {
     return queryAIThreads(database).fetch();
 }
+
+/**
+ * Returns a query for AI threads last updated before the given cutoff.
+ */
+export function queryAIThreadsBefore(database: Database, cutoff: number) {
+    return database.get<AiThreadModel>(AI_THREAD).query(
+        Q.where('update_at', Q.lt(cutoff)),
+    );
+}

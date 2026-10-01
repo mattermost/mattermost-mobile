@@ -12,7 +12,7 @@ import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {fetchOpenGraph} from '@utils/opengraph';
+import {fetchOpenGraph, normalizeOpenGraphImageUrl} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUrlAfterRedirect, sanitizeUrl} from '@utils/url';
@@ -173,7 +173,7 @@ const BookmarkLink = ({disabled, initialUrl = '', resetBookmark, setBookmark, se
                 ]);
                 if (ogResult && mySequence === requestSequenceRef.current) {
                     title = ogResult.title || title;
-                    imageUrl = ogResult.favIcon || ogResult.imageURL || '';
+                    imageUrl = normalizeOpenGraphImageUrl(ogResult.favIcon || ogResult.imageURL, resolvedUrl) || '';
                 }
             } catch {
                 // Use link text as title when OG fetch fails or times out

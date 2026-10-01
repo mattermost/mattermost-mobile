@@ -28,8 +28,7 @@ jest.setTimeout(360000);
 
 describe('Share with connected workspaces', () => {
     // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
-    // license + EnableSharedChannels + remote clusters (run 29935363789 both platforms).
-    // Re-enable when Matterwick PR cloud guarantees Shared Channels remotes.
+    // license + EnableSharedChannels + remote clusters.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
@@ -74,22 +73,13 @@ describe('Share with connected workspaces', () => {
 
         await User.apiAdminLogin(siteOneUrl);
         const {license} = await System.apiGetClientLicense(siteOneUrl);
-        const hasSharedChannelsLicense = license?.SharedChannels === 'true';
 
-        if (hasSharedChannelsLicense) {
-            await System.apiPatchConfig(siteOneUrl, {
-                ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
-            });
+        // Provisioning already enables both ConnectedWorkspacesSettings flags, and the
+        // remote-cluster service only starts at boot — patching them here never made the probe
+        // answer, and resetting them afterwards disabled shared channels for every other shard.
+        if (license?.SharedChannels === 'true') {
             const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
             sharedChannelsAvailable = !rcError;
-
-            // Reset to clean state regardless of outcome.
-            await System.apiPatchConfig(siteOneUrl, {
-                ConnectedWorkspacesSettings: {
-                    EnableSharedChannels: false,
-                    EnableRemoteClusterService: false,
-                },
-            });
         }
 
         // Enable autotranslation so the Configuration option is always visible in Channel Settings
@@ -112,13 +102,16 @@ describe('Share with connected workspaces', () => {
     afterAll(async () => {
         await User.apiAdminLogin(siteOneUrl);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
+
+        // Hand the shared server back as provisioning left it. TC-MOB-02 switches the workspace
+        // flags off mid-suite, so leaving them would strand later shards without shared channels.
         await System.apiPatchConfig(siteOneUrl, {
             AutoTranslationSettings: {
                 Enable: false,
             },
             ConnectedWorkspacesSettings: {
-                EnableSharedChannels: false,
-                EnableRemoteClusterService: false,
+                EnableSharedChannels: true,
+                EnableRemoteClusterService: true,
             },
         });
         await HomeScreen.logout();
