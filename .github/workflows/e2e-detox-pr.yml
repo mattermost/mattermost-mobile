@@ -1165,5 +1165,5 @@ jobs:
           test-root: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          mode: ${{ vars.E2E_TRIAGE_MODE || 'report-only' }}
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
           post-pr-comment: "false"
