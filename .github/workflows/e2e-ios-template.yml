@@ -707,13 +707,16 @@ jobs:
           set +e
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
-          # the existing detox/artifacts/ upload.
+          # the existing detox/artifacts/ upload. The output is also kept for the
+          # triage evidence step: on a Jest timeout it is the only record of what
+          # the app was still waiting on.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
+            DETOX_EXIT_CODE=${PIPESTATUS[0]}
           else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
+            DETOX_EXIT_CODE=${PIPESTATUS[0]}
           fi
-          DETOX_EXIT_CODE=$?
           if [ ! -f artifacts/jest-results.json ]; then
             if [ -f artifacts/jest-stare/ios-data.json ]; then
               echo "⚠️ Detox left no jest-results.json — promoting jest-stare/ios-data.json"
@@ -740,6 +743,23 @@ jobs:
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
+
+      # For the E2E triage judge: tests that hit the Jest timeout say nothing in
+      # their error, so record the screenshot e2e/timeout_evidence.js took and the
+      # requests Detox reported the app was still waiting on.
+      - name: Collect triage evidence for timed-out tests
+        if: always()
+        continue-on-error: true
+        working-directory: detox
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/triage-evidence/
 
       - name: Cleanup Simulator State
         if: always()

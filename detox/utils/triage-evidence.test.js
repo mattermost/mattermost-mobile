@@ -1,0 +1,88 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const {describe, it} = require('node:test');
+
+const {sanitize} = require('../e2e/path_builder');
+
+const {timedOutTests, busyReports, summarize, buildEvidence} = require('./triage-evidence');
+
+// detox-ios on mattermost-mobile#10172 (run 36863495910): MM-T4786_4 hit the
+// 300 s Jest timeout while the app waited on a pin request the server never answered.
+const TITLE = 'MM-T4786_4 - should be able to follow/unfollow a message, save/unsave a message, and pin/unpin a message';
+const FULL = `Smoke Test - Messaging ${TITLE}`;
+const SPEC = '/Users/runner/work/mattermost-mobile/mattermost-mobile/detox/e2e/test/products/channels/smoke_test/messaging.e2e.ts';
+const PIN = 'The event "Network Request" is taking place with object: "URL: “https://site-1.test.mattermost.cloud/api/v4/posts/6qgx5feu7pbhtqgyejwyudj6pr/pin”".';
+const LOG = [
+    '14:18:38.358 detox[28001] i Smoke Test - Messaging: MM-T4786_3 - should be able to include emojis in a message',
+    '14:20:01.000 detox[28001] i The app is busy with the following tasks:',
+    '• The event "Network Request" is taking place with object: "URL: “https://site-1/api/v4/reactions”".',
+    '14:21:32.149 detox[28001] i Smoke Test - Messaging: MM-T4786_3 - should be able to include emojis in a message [OK]',
+    `14:21:32.151 detox[28001] i Smoke Test - Messaging: ${TITLE}`,
+    '14:22:19.700 detox[28001] i The app is busy with the following tasks:',
+    '• There are 1 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".',
+    '• The event "Network Request" is taking place with object: "URL: “https://site-1/api/v4/channels/667d/stats”".',
+    '• Run loop "Main Run Loop" is awake.',
+    '14:26:30.439 detox[28001] i \u001b[90mThe app is busy with the following tasks:\u001b[39m',
+    '• There are 1 work items pending on the dispatch queue: "Main Queue (<OS_dispatch_queue_main: com.apple.main-thread>)".',
+    `• ${PIN}`,
+    '• Run loop "Main Run Loop" is awake.',
+    '14:26:53.620 detox[28001] i cannot save an already discarded artifact to: artifacts/ios.sim.debug/Smoke Test - Messaging MM-T4786_4',
+    `14:26:53.685 detox[28001] i Smoke Test - Messaging: ${TITLE} [FAIL]`,
+    '14:26:53.711 detox[28001] i Smoke Test - Messaging: MM-T4786_5 - should be able to post a message with at-mention',
+].join('\n');
+const RESULTS = {
+    testResults: [{
+        testFilePath: SPEC,
+        assertionResults: [
+            {status: 'passed', title: 'MM-T4786_3 - should be able to include emojis in a message', fullName: 'Smoke Test - Messaging MM-T4786_3 - should be able to include emojis in a message', failureMessages: []},
+            {status: 'failed', title: TITLE, fullName: FULL, failureMessages: ['thrown: "Exceeded timeout of 300000 ms for a test.\nAdd a timeout value to this test to increase the timeout']},
+            {status: 'failed', title: 'MM-T4786_5 - should be able to post a message with at-mention', fullName: 'Smoke Test - Messaging MM-T4786_5', failureMessages: ['Error: Test Failed: No elements found for “MATCHER(id == “post_list”)”']},
+        ],
+    }],
+};
+
+describe('triage-evidence', () => {
+    it('should pick only the tests that hit the Jest timeout, keyed by repository path', () => {
+        assert.deepEqual(timedOutTests(RESULTS), [{file: 'detox/e2e/test/products/channels/smoke_test/messaging.e2e.ts', title: TITLE, fullName: FULL}]);
+    });
+
+    it('should read the busy reports printed while that test ran, not the previous one', () => {
+        const reports = busyReports(LOG, TITLE);
+        assert.deepEqual(reports.map((r) => r.time), ['14:22:19', '14:26:30']);
+        assert.ok(reports[1].tasks.includes(PIN));
+        assert.deepEqual(busyReports(LOG, 'a test that never ran'), []);
+    });
+
+    it('should name what the app was still waiting on when the test timed out', () => {
+        const notes = summarize(busyReports(LOG, TITLE));
+        assert.match(notes, /^Detox reported the app busy 2 time\(s\) between 14:22:19 and 14:26:30/);
+        assert.match(notes, /posts\/6qgx5feu7pbhtqgyejwyudj6pr\/pin/);
+        assert.doesNotMatch(notes, /dispatch queue|Run loop/, 'routine tasks are present whenever the app runs');
+        assert.doesNotMatch(notes, /stats/, 'a request that finished earlier is not what it was stuck on');
+        assert.equal(summarize([]), '');
+    });
+
+    it('should pair the timeout screenshot with the notes in the evidence-dir format', () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'triage-evidence-'));
+        try {
+            fs.mkdirSync(path.join(dir, sanitize(FULL)), {recursive: true});
+            fs.writeFileSync(path.join(dir, sanitize(FULL), 'timeout.png'), 'png');
+            const [entry, ...rest] = buildEvidence({results: RESULTS, logText: LOG, evidenceDir: dir});
+            assert.equal(rest.length, 0);
+            assert.equal(entry.file, 'detox/e2e/test/products/channels/smoke_test/messaging.e2e.ts');
+            assert.equal(entry.full_title, FULL);
+            assert.deepEqual(entry.images, [path.join(sanitize(FULL), 'timeout.png')]);
+            assert.match(entry.notes, /pin/);
+
+            // No screenshot and no busy reports: nothing to say beyond the error.
+            assert.deepEqual(buildEvidence({results: RESULTS, logText: '', evidenceDir: path.join(dir, 'none')}), []);
+        } finally {
+            fs.rmSync(dir, {recursive: true, force: true});
+        }
+    });
+});

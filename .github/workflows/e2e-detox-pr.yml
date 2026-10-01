@@ -1154,14 +1154,23 @@ jobs:
       matrix:
         job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
     steps:
+      # iOS lanes upload a screenshot and Detox's busy report for each test that
+      # hit the Jest timeout; the judge reads them as producer evidence.
+      - name: Download triage evidence
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: triage-evidence-${{ matrix.job-key }}-*
+          path: triage-evidence
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@b22f85821d4fa0e724f9b7c2308e2a05879e1910 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@c361f65afd0c44ec942e22ea6d95362e11323fea # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
           lane: ${{ matrix.job-key }}
+          evidence-dir: triage-evidence
           test-root: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
