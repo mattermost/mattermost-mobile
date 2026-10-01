@@ -67,3 +67,11 @@ export const observeSelectedAgentId = (database: Database) => {
         observeWithColumns(['value']).
         pipe(map((prefs) => prefs[0]?.value ?? ''));
 };
+
+/**
+ * Props for an agent picker: every stored agent plus the saved selection.
+ */
+export const observeAgentSelectionProps = (database: Database) => ({
+    bots: observeAIBots(database),
+    selectedAgentId: observeSelectedAgentId(database),
+});

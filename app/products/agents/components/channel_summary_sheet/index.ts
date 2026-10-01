@@ -4,8 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import {observeAIBots} from '@agents/database/queries/bot';
-import {observeSelectedAgentId} from '@agents/queries/agents';
+import {observeAgentSelectionProps} from '@agents/queries/agents';
 import {observeMyChannel} from '@queries/servers/channel';
 
 import ChannelSummarySheet from './channel_summary_sheet';
@@ -17,8 +16,7 @@ type OwnProps = {
 };
 
 const enhanced = withObservables(['channelId'], ({database, channelId}: WithDatabaseArgs & OwnProps) => ({
-    bots: observeAIBots(database),
-    selectedAgentId: observeSelectedAgentId(database),
+    ...observeAgentSelectionProps(database),
 
     // "Summarize unreads" bounds the analysis to messages since the user
     // last opened the channel. Entering the channel already advanced
