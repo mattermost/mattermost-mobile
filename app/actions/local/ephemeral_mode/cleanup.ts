@@ -9,6 +9,7 @@ import {Screens} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import {AUTO_CACHE_CLEANUP_PROTECTION_BUFFER} from '@constants/post';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {queryPlaybookRunsBefore} from '@playbooks/database/queries/run';
@@ -22,6 +23,7 @@ import {NavigationStore} from '@store/navigation_store';
 import {toMilliseconds} from '@utils/datetime';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import type {Database, Model} from '@nozbe/watermelondb';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -320,6 +322,10 @@ export async function autoCacheCleanup(serverUrl: string): Promise<{error?: unkn
             playbookRunsDeleted = await cleanupPlaybookRuns(database, operator, cutoff, limits.viewedPlaybookRunId);
 
             await setLastAutoCacheCleanupRun(serverUrl);
+
+            if (postsDeleted > 0 && isActive) {
+                showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_CACHE_CLEANUP, messageValues: {count: postsDeleted, days: cleanupDays}});
+            }
 
             logDebug(
                 'autoCacheCleanup: completed successfully for', serverUrl,
