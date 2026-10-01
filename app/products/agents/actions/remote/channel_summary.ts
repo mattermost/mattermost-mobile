@@ -1,13 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchMyChannel} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
+
+import {switchToAgentResponseChannel} from './response_channel';
 
 import type {ChannelAnalysisOptions, ChannelAnalysisResponse} from '@agents/types/api';
 
@@ -72,17 +74,16 @@ export async function requestChannelSummary(
         const client = NetworkManager.getClient(serverUrl);
         const result = await client.doChannelAnalysis(channelId, analysisType, botUsername, analysisOptions);
 
-        if (!result?.postid || !result?.channelid) {
-            logDebug('[requestChannelSummary] Invalid response - missing postid or channelid');
-            return {error: 'Invalid response from server'};
+        const {error} = await switchToAgentResponseChannel(serverUrl, result);
+        if (error) {
+            return {error};
         }
-
-        await switchToChannelById(serverUrl, result.channelid);
 
         return {data: result};
     } catch (error) {
-        logError('[requestChannelSummary]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[requestChannelSummary] Failed to request channel summary', errorMessage);
+        return {error: errorMessage};
     }
 }
 

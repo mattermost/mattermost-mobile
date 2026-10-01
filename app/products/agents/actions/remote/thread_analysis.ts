@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
-import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getMyChannel} from '@queries/servers/channel';
 import {getFullErrorMessage} from '@utils/errors';
-import {logDebug, logError} from '@utils/log';
+import {logError} from '@utils/log';
+
+import {switchToAgentResponseChannel} from './response_channel';
 
 import type {ThreadAnalysisResponse} from '@agents/types/api';
 
@@ -25,25 +24,10 @@ export async function requestThreadAnalysis(
         const client = NetworkManager.getClient(serverUrl);
         const result = await client.doThreadAnalysis(postId, analysisType, botUsername);
 
-        if (!result?.postid || !result?.channelid) {
-            logDebug('[requestThreadAnalysis] Invalid response - missing postid or channelid');
-            return {error: 'Invalid response from server'};
+        const {error} = await switchToAgentResponseChannel(serverUrl, result);
+        if (error) {
+            return {error};
         }
-
-        // The bot DM may have just been created server-side (StreamToNewDM);
-        // switchToChannelById expects the channel membership to exist locally,
-        // so fetch it first when it hasn't arrived over the websocket yet.
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const myChannel = await getMyChannel(database, result.channelid);
-        if (!myChannel) {
-            const channelResult = await fetchMyChannel(serverUrl, '', result.channelid);
-            if (channelResult.error) {
-                logDebug('[requestThreadAnalysis] Failed to fetch analysis DM channel', getFullErrorMessage(channelResult.error));
-                return {error: getFullErrorMessage(channelResult.error)};
-            }
-        }
-
-        await switchToChannelById(serverUrl, result.channelid);
 
         return {data: result};
     } catch (error) {

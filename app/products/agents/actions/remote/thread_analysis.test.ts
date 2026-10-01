@@ -39,29 +39,6 @@ describe('requestThreadAnalysis', () => {
         expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
     });
 
-    it('fetches the DM channel before switching when it is not in the database yet', async () => {
-        const doThreadAnalysis = jest.fn().mockResolvedValue({postid: 'dm-post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
-        jest.mocked(getMyChannel).mockResolvedValue(undefined);
-        jest.mocked(fetchMyChannel).mockResolvedValue({channels: [], memberships: []});
-
-        const result = await requestThreadAnalysis(serverUrl, postId, 'action_items', botUsername);
-
-        expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, '', 'dm-id');
-        expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'dm-id');
-        expect(result.error).toBeUndefined();
-    });
-
-    it('returns an error when the response is missing postid or channelid', async () => {
-        const doThreadAnalysis = jest.fn().mockResolvedValue({});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
-
-        const result = await requestThreadAnalysis(serverUrl, postId, 'open_questions', botUsername);
-
-        expect(switchToChannelById).not.toHaveBeenCalled();
-        expect(result.error).toBe('Invalid response from server');
-    });
-
     it('surfaces errors from the client', async () => {
         const doThreadAnalysis = jest.fn().mockRejectedValue(new Error('boom'));
         jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
