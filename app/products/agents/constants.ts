@@ -61,7 +61,6 @@ export const THREAD_ANALYSIS_TYPES = {
     ACTION_ITEMS: 'action_items',
     OPEN_QUESTIONS: 'open_questions',
 } as const;
-export type ThreadAnalysisType = typeof THREAD_ANALYSIS_TYPES[keyof typeof THREAD_ANALYSIS_TYPES];
 
 /**
  * The preset_prompt values accepted by the plugin's channel interval endpoint
@@ -74,4 +73,3 @@ export const CHANNEL_INTERVAL_PRESETS = {
     ACTION_ITEMS: 'action_items',
     OPEN_QUESTIONS: 'open_questions',
 } as const;
-export type ChannelIntervalPreset = typeof CHANNEL_INTERVAL_PRESETS[keyof typeof CHANNEL_INTERVAL_PRESETS];

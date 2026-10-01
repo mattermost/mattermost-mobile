@@ -37,10 +37,6 @@ export const setCustomPromptsState = (serverUrl: string, state: Partial<CustomPr
     subject.next({...subject.value, ...state});
 };
 
-export const resetCustomPromptsState = (serverUrl: string) => {
-    getCustomPromptsSubject(serverUrl).next(DefaultCustomPromptsState);
-};
-
 /** Drop a server's cached prompts and pins (per-server logout). */
 export const removeCustomPromptsServer = (serverUrl: string) => {
     const subject = customPromptsSubjects[serverUrl];
@@ -50,10 +46,6 @@ export const removeCustomPromptsServer = (serverUrl: string) => {
     subject.next(DefaultCustomPromptsState);
     subject.complete();
     delete customPromptsSubjects[serverUrl];
-};
-
-export const observeCustomPromptsState = (serverUrl: string) => {
-    return getCustomPromptsSubject(serverUrl).asObservable();
 };
 
 export const useCustomPromptsState = (serverUrl: string) => {
