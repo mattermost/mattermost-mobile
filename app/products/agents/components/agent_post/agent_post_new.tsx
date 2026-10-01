@@ -147,6 +147,7 @@ const RoundView = memo(({
                     canExpand={canExpand}
                     showArguments={showArguments}
                     showResults={showResults}
+                    unsafeLinks={unsafeLinks}
                 />
             )}
         </View>

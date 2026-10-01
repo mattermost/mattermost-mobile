@@ -188,7 +188,7 @@ interface QuestionCardProps {
     tool: ToolCall;
     question: QuestionArgs;
     isProcessing: boolean;
-    localDecision?: boolean | null; // true = answered, false = skipped, null/undefined = undecided
+    localDecision?: boolean; // true = answered, false = skipped, undefined = undecided
     canAnswer: boolean;
     onAnswer?: (toolId: string, selections: string[], custom: string) => void;
     onSkip?: (toolId: string) => void;
@@ -222,7 +222,7 @@ const QuestionCard = ({
     const isPending = tool.status === ToolCallStatus.Pending || tool.status === ToolCallStatus.Accepted;
     const isAnswered = tool.status === ToolCallStatus.Success;
     const isSkipped = tool.status === ToolCallStatus.Rejected;
-    const hasLocalDecision = localDecision !== undefined && localDecision !== null;
+    const hasLocalDecision = localDecision !== undefined;
     const interactive = isPending && canAnswer && !isProcessing && !hasLocalDecision && Boolean(onAnswer && onSkip);
 
     // A decided question renders the recorded answer, not local state.
@@ -296,7 +296,9 @@ const QuestionCard = ({
     }
 
     const renderStatus = () => {
-        if (isProcessing || (hasLocalDecision && isPending)) {
+        // A local decision can wait on other tools in the batch before
+        // anything is sent, so it reads as answered/skipped, not submitting.
+        if (isProcessing) {
             return (
                 <View
                     style={styles.statusLine}
@@ -314,7 +316,7 @@ const QuestionCard = ({
                 </View>
             );
         }
-        if (isAnswered) {
+        if (isAnswered || localDecision === true) {
             return (
                 <View
                     style={styles.statusLine}
@@ -333,7 +335,7 @@ const QuestionCard = ({
                 </View>
             );
         }
-        if (isSkipped) {
+        if (isSkipped || localDecision === false) {
             return (
                 <View
                     style={styles.statusLine}

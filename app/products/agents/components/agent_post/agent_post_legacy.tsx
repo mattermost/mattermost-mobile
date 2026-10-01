@@ -199,6 +199,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                     canExpand={canExpand}
                     showArguments={showToolPayloads}
                     showResults={showToolPayloads}
+                    unsafeLinks={unsafeLinks}
                 />
             )}
             {annotations.length > 0 && (

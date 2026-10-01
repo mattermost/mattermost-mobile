@@ -41,10 +41,11 @@ interface ToolApprovalSetProps {
     canExpand: boolean;
     showArguments: boolean;
     showResults: boolean;
+    unsafeLinks: boolean;
 }
 
 type ToolDecision = {
-    [toolId: string]: boolean | null; // true = approved, false = rejected, null = undecided
+    [toolId: string]: boolean; // true = approved, false = rejected
 };
 
 // A tool requires an explicit user decision in the given stage. Calls that
@@ -129,12 +130,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 /**
  * Container component for displaying and managing tool approval requests
  */
-const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults}: ToolApprovalSetProps) => {
+const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults, unsafeLinks}: ToolApprovalSetProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // The tool calls a successful "Run tools" resumed. Until the next
+    // conversation update delivers new ones, the round still reads as
+    // interrupted, so keep showing it as submitting.
+    const [resumedToolCalls, setResumedToolCalls] = useState<ToolCall[] | null>(null);
+    const awaitingResume = resumedToolCalls === toolCalls;
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
     const [toolDecisions, setToolDecisionsState] = useState<ToolDecision>({});
 
@@ -245,22 +252,24 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
         return !error;
     }, [serverUrl, postId, conversationId, approvalStage, setToolDecisions]);
 
-    const handleToolDecision = useCallback(async (toolId: string, approved: boolean) => {
+    // Record decisions and submit the batch once nothing actionable remains
+    // undecided.
+    const applyDecisions = useCallback(async (decisions: ToolDecision) => {
         if (isSubmitting) {
             return;
         }
 
-        const updatedDecisions = {...toolDecisionsRef.current, [toolId]: approved};
+        const updatedDecisions = {...toolDecisionsRef.current, ...decisions};
         setToolDecisions(updatedDecisions);
 
-        const hasUndecided = actionableTools.some((tool) => {
-            return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
-        });
-
-        if (!hasUndecided) {
+        if (actionableTools.every((tool) => tool.id in updatedDecisions)) {
             await submitDecisions(updatedDecisions);
         }
     }, [isSubmitting, actionableTools, setToolDecisions, submitDecisions]);
+
+    const handleToolDecision = useCallback((toolId: string, approved: boolean) => {
+        applyDecisions({[toolId]: approved});
+    }, [applyDecisions]);
 
     const handleApprove = useCallback((toolId: string) => {
         handleToolDecision(toolId, true);
@@ -284,27 +293,15 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
     // Batch decide every actionable tool in one tap. Questions cannot be
     // batch-decided — an answer (or explicit skip) is required per question —
     // so submission waits until the remaining questions are answered/skipped.
-    const handleBatchDecision = useCallback(async (approved: boolean) => {
-        if (isSubmitting) {
-            return;
-        }
-        const updatedDecisions = {...toolDecisionsRef.current};
+    const handleBatchDecision = useCallback((approved: boolean) => {
+        const decisions: ToolDecision = {};
         for (const tool of actionableTools) {
-            if (approvalStage === ToolApprovalStage.Call && tool.user_interaction) {
-                continue;
+            if (!(isCallStage && tool.user_interaction)) {
+                decisions[tool.id] = approved;
             }
-            updatedDecisions[tool.id] = approved;
         }
-        setToolDecisions(updatedDecisions);
-
-        const hasUndecided = actionableTools.some((tool) => {
-            return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
-        });
-
-        if (!hasUndecided) {
-            await submitDecisions(updatedDecisions);
-        }
-    }, [isSubmitting, actionableTools, approvalStage, setToolDecisions, submitDecisions]);
+        applyDecisions(decisions);
+    }, [actionableTools, isCallStage, applyDecisions]);
 
     const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
     const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));
@@ -316,8 +313,10 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
         if (isSubmitting) {
             return;
         }
-        await submitDecisions({});
-    }, [isSubmitting, submitDecisions]));
+        if (await submitDecisions({})) {
+            setResumedToolCalls(toolCalls);
+        }
+    }, [isSubmitting, submitDecisions, toolCalls]));
 
     const toggleCollapse = useCallback((toolId: string) => {
         const tool = toolCalls.find((t) => t.id === toolId);
@@ -341,12 +340,9 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
         ).length;
     }, [approvalDecisionTools, toolDecisions]);
 
-    if (toolCalls.length === 0) {
-        return null;
-    }
-
     const actionableIds = new Set(actionableTools.map((t) => t.id));
     const showResumeControls = isInterruptedAutoRound && canApprove;
+    const isResuming = showResumeControls && (isSubmitting || awaitingResume);
 
     const isToolCollapsed = (tool: ToolCall) => {
         return !(expandedTools[tool.id] ?? isDefaultExpanded(tool, approvalStage));
@@ -395,22 +391,21 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                         key={tool.id}
                         tool={tool}
                         isCollapsed={isToolCollapsed(tool)}
-                        isProcessing={(isActionable || isInterruptedAutoRound) && isSubmitting}
+                        isProcessing={(isActionable && isSubmitting) || (isInterruptedAutoRound && isResuming)}
                         localDecision={isActionable ? toolDecisions[tool.id] : undefined}
                         onToggleCollapse={toggleCollapse}
                         onApprove={isActionable ? handleApprove : undefined}
                         onReject={isActionable ? handleReject : undefined}
                         approvalStage={approvalStage}
                         canExpand={canExpand}
-                        canApprove={canApprove}
                         showArguments={showArguments}
                         showResults={showResults}
-                        isAutoApproved={tool.status === ToolCallStatus.AutoApproved}
+                        unsafeLinks={unsafeLinks}
                     />
                 );
             })}
 
-            {(approvalDecisionTools.length > 1 || showResumeControls) && isSubmitting && (
+            {((approvalDecisionTools.length > 1 && isSubmitting) || isResuming) && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.submitting'
@@ -465,7 +460,7 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                 </View>
             )}
 
-            {showResumeControls && !isSubmitting && (
+            {showResumeControls && !isResuming && (
                 <View
                     style={styles.statusBar}
                     testID='agents.tool_approval_set.resume'

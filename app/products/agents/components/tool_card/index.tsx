@@ -5,7 +5,6 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {Platform, Pressable, Text, View} from 'react-native';
 import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {useAgentsConfig} from '@agents/store/agents_config';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {stripWirePrefix} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
@@ -13,7 +12,6 @@ import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {safeParseJSON} from '@utils/helpers';
@@ -30,16 +28,18 @@ interface ToolCardProps {
     tool: ToolCall;
     isCollapsed: boolean;
     isProcessing: boolean;
-    localDecision?: boolean | null; // true = approved, false = rejected, null/undefined = undecided
+    localDecision?: boolean; // true = approved, false = rejected, undefined = undecided
     onToggleCollapse: (toolId: string) => void;
     onApprove?: (toolId: string) => void;
     onReject?: (toolId: string) => void;
     approvalStage: ToolApprovalStage;
     canExpand?: boolean;
-    canApprove?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
-    isAutoApproved?: boolean;
+
+    // Tool arguments/results are agent-generated, so they follow the
+    // unsafe-links setting of the agent post that carries them.
+    unsafeLinks: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -135,9 +135,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             minHeight: 32,
         },
-        buttonDisabled: {
-            opacity: 0.5,
-        },
         buttonText: {
             color: theme.buttonBg,
             ...typography('Body', 75, 'SemiBold'),
@@ -209,21 +206,12 @@ const ToolCard = ({
     onReject,
     approvalStage,
     canExpand = true,
-    canApprove = true,
     showArguments = true,
     showResults = true,
-    isAutoApproved = false,
+    unsafeLinks,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const serverUrl = useServerUrl();
-
-    // Tool arguments/results are agent-generated too, so they gate on the
-    // global config alone (webapp tool_card parity: unsafeLinks =
-    // !allowUnsafeLinks). The post model isn't available here, but every
-    // agent post carries the unsafe_links prop anyway.
-    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
-    const unsafeLinks = !allowUnsafeLinks;
 
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
@@ -236,8 +224,8 @@ const ToolCard = ({
     // Accepted is the in-flight state between approval and the result landing;
     // show the same processing spinner as Pending.
     const isAccepted = tool.status === ToolCallStatus.Accepted;
-    const hasLocalDecision = localDecision !== undefined && localDecision !== null;
-    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
+    const hasLocalDecision = localDecision !== undefined;
+    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved;
 
     // Treat auto-approved as success so the result affordances render.
     const isSuccess = tool.status === ToolCallStatus.Success || isAutoApprovedStatus;
@@ -371,6 +359,8 @@ const ToolCard = ({
             <Pressable
                 onPress={canExpand ? handleToggle : undefined}
                 style={({pressed}) => [styles.header, canExpand && pressed && {opacity: 0.72}]}
+                accessibilityRole={canExpand ? 'button' : undefined}
+                accessibilityState={canExpand ? {expanded: !isCollapsed} : undefined}
                 testID={`${testIdPrefix}.header`}
             >
                 {canExpand ? (
@@ -477,7 +467,7 @@ const ToolCard = ({
                                     isUnsafeLinksPost={unsafeLinks}
                                 />
                             </View>
-                            {isResultPhase && canApprove && (
+                            {isResultPhase && showDecisionButtons && !hasLocalDecision && (
                                 <View
                                     style={styles.warningCallout}
                                     testID={`${testIdPrefix}.warning`}
@@ -582,8 +572,7 @@ const ToolCard = ({
                 <View style={styles.buttonContainer}>
                     <Pressable
                         onPress={handleApprove}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
                         hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.approve`}
                     >
@@ -595,8 +584,7 @@ const ToolCard = ({
                     </Pressable>
                     <Pressable
                         onPress={handleReject}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
                         hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.reject`}
                     >
@@ -613,8 +601,7 @@ const ToolCard = ({
                 <View style={styles.resultButtonContainer}>
                     <Pressable
                         onPress={handleApprove}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.shareButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.shareButton, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.share`}
                     >
                         <CompassIcon
@@ -630,8 +617,7 @@ const ToolCard = ({
                     </Pressable>
                     <Pressable
                         onPress={handleReject}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.keepPrivateButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.keepPrivateButton, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.keep_private`}
                     >
                         <CompassIcon

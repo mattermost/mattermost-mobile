@@ -43,6 +43,7 @@ describe('ToolCard', () => {
         onApprove: jest.fn(),
         onReject: jest.fn(),
         approvalStage: ToolApprovalStage.Call,
+        unsafeLinks: false,
     });
 
     describe('tool name display', () => {
@@ -405,8 +406,8 @@ describe('ToolCard', () => {
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
         });
 
-        it('should hide the warning callout when the viewer cannot approve (C1)', () => {
-            const props = {...getResultPhaseProps(), canApprove: false};
+        it('should hide the warning callout when the result needs no share decision', () => {
+            const props = {...getResultPhaseProps(), onApprove: undefined, onReject: undefined};
             const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
