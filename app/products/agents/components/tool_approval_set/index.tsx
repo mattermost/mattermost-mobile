@@ -132,7 +132,15 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
-    const [toolDecisions, setToolDecisions] = useState<ToolDecision>({});
+    const [toolDecisions, setToolDecisionsState] = useState<ToolDecision>({});
+
+    // Mirrors toolDecisions synchronously so a decision can build on one made
+    // moments earlier, before React has re-rendered with it.
+    const toolDecisionsRef = useRef<ToolDecision>({});
+    const setToolDecisions = useCallback((decisions: ToolDecision) => {
+        toolDecisionsRef.current = decisions;
+        setToolDecisionsState(decisions);
+    }, []);
 
     const isCallStage = approvalStage === ToolApprovalStage.Call;
 
@@ -148,7 +156,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             setToolDecisions({});
             toolAnswersRef.current = {};
         }
-    }, [approvalStage]);
+    }, [approvalStage, setToolDecisions]);
 
     // Clear local decisions when tool status changes from actionable to something else
     useEffect(() => {
@@ -166,13 +174,11 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return updated;
         };
 
-        setToolDecisions((prev) => {
-            const updated = filterActionableDecisions(prev);
-            const updatedCount = Object.keys(updated).length;
-            const prevCount = Object.keys(prev).length;
-            return updatedCount === prevCount ? prev : updated;
-        });
-    }, [toolCalls, approvalStage]);
+        const updated = filterActionableDecisions(toolDecisionsRef.current);
+        if (Object.keys(updated).length !== Object.keys(toolDecisionsRef.current).length) {
+            setToolDecisions(updated);
+        }
+    }, [toolCalls, approvalStage, setToolDecisions]);
 
     const actionableTools = useMemo(() => {
         // Non-requesters can view but not act, so nothing is actionable for
@@ -230,13 +236,8 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
             return;
         }
 
-        // Capture the latest decisions via the functional setter so two rapid
-        // taps each see the previous tap's choice rather than a stale snapshot.
-        let updatedDecisions: ToolDecision = {};
-        setToolDecisions((prev) => {
-            updatedDecisions = {...prev, [toolId]: approved};
-            return updatedDecisions;
-        });
+        const updatedDecisions = {...toolDecisionsRef.current, [toolId]: approved};
+        setToolDecisions(updatedDecisions);
 
         const hasUndecided = actionableTools.some((tool) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
@@ -245,7 +246,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!hasUndecided) {
             await submitDecisions(updatedDecisions);
         }
-    }, [isSubmitting, actionableTools, submitDecisions]);
+    }, [isSubmitting, actionableTools, setToolDecisions, submitDecisions]);
 
     const handleApprove = useCallback((toolId: string) => {
         handleToolDecision(toolId, true);
@@ -273,17 +274,14 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (isSubmitting) {
             return;
         }
-        let updatedDecisions: ToolDecision = {};
-        setToolDecisions((prev) => {
-            updatedDecisions = {...prev};
-            for (const tool of actionableTools) {
-                if (approvalStage === ToolApprovalStage.Call && tool.user_interaction) {
-                    continue;
-                }
-                updatedDecisions[tool.id] = approved;
+        const updatedDecisions = {...toolDecisionsRef.current};
+        for (const tool of actionableTools) {
+            if (approvalStage === ToolApprovalStage.Call && tool.user_interaction) {
+                continue;
             }
-            return updatedDecisions;
-        });
+            updatedDecisions[tool.id] = approved;
+        }
+        setToolDecisions(updatedDecisions);
 
         const hasUndecided = actionableTools.some((tool) => {
             return !(tool.id in updatedDecisions) || updatedDecisions[tool.id] === null;
@@ -292,7 +290,7 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
         if (!hasUndecided) {
             await submitDecisions(updatedDecisions);
         }
-    }, [isSubmitting, actionableTools, approvalStage, submitDecisions]);
+    }, [isSubmitting, actionableTools, approvalStage, setToolDecisions, submitDecisions]);
 
     const handleAcceptAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(true), [handleBatchDecision]));
     const handleRejectAll = usePreventDoubleTap(useCallback(() => handleBatchDecision(false), [handleBatchDecision]));

@@ -175,6 +175,28 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
         makeTool({id: 'b', name: 'second_tool', status: ToolCallStatus.Pending, result: undefined}),
     ];
 
+    it('should submit once the last decision lands even when both taps are processed before a re-render', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
+            fireEvent.press(getByTestId('agents.tool_card.b.reject'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledTimes(1);
+        expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a'], undefined);
+    });
+
     it('should accept every actionable tool in one tap', async () => {
         const {getByTestId} = renderWithIntlAndTheme(
             <ToolApprovalSet
