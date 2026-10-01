@@ -93,7 +93,8 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
     return {
         id: block.id ?? '',
         name: block.name ?? '',
-        description: '',
+        title: block.title || undefined,
+        description: block.description ?? '',
         arguments: block.input ?? undefined,
         result: resultBlock?.content ?? undefined,
         status: statusStringToEnum(block.status),

@@ -251,18 +251,20 @@ const ToolCard = ({
     const showDecisionButtons = Boolean(onApprove && onReject) &&
         (isResultPhase || (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute));
 
-    // Prefer the server-provided bare name for MCP tools; title-casing the
-    // raw wire name would render the namespace prefix (e.g. "Mattermost
-    // Read Post"). `||` because the server redacts mcp_bare_name to an empty
-    // string for non-requesters. When mcp_bare_name is absent (persisted
-    // conversation payloads don't carry it), strip the `<ns>__` prefix
-    // heuristically before title-casing (webapp tool_card parity).
+    // An MCP-declared title wins. Otherwise prettify the bare name: the
+    // server-provided mcp_bare_name (`||` because it is redacted to an empty
+    // string for non-requesters), else the wire name with its `<ns>__` prefix
+    // stripped — title-casing the raw wire name would render the namespace
+    // (webapp toolDisplayName parity).
     const displayName = useMemo(() => {
+        if (tool.title) {
+            return tool.title;
+        }
         const baseName = tool.mcp_bare_name || stripWirePrefix(tool.name);
         return baseName.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
-    }, [tool.mcp_bare_name, tool.name]);
+    }, [tool.title, tool.mcp_bare_name, tool.name]);
 
     // Null arguments were redacted for this viewer — render no arguments
     // section at all. An empty object gets a "No parameters required" line

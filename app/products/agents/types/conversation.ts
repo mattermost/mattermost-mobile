@@ -84,6 +84,8 @@ export interface ContentBlock {
 
     id?: string;
     name?: string;
+    title?: string;
+    description?: string;
     server_origin?: string;
     input?: Record<string, unknown> | null;
     mcp_bare_name?: string;

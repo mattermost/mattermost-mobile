@@ -79,6 +79,15 @@ describe('ToolCard', () => {
             expect(queryByText('Mattermost  Read Post')).toBeNull();
         });
 
+        it('should show the MCP-declared title verbatim when the tool provides one', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'github__list_prs', mcp_bare_name: 'list_prs', title: 'List pull requests'});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('List pull requests')).toBeTruthy();
+            expect(queryByText('List Prs')).toBeNull();
+        });
+
         it('should strip the MCP namespace prefix from the wire name when mcp_bare_name is absent', () => {
             const props = getBaseProps();
             props.tool = createMockTool({name: 'mattermost__get_me'});

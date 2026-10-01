@@ -60,6 +60,9 @@ export interface ToolCall {
     result?: string;
     status: ToolCallStatus;
 
+    // MCP-declared display name; preferred over the prettified tool name.
+    title?: string;
+
     // Identifies the MCP server the tool came from (omitempty on the server;
     // present only for MCP tools).
     server_origin?: string;

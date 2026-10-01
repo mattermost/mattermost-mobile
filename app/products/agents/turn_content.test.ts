@@ -498,6 +498,8 @@ describe('buildRoundsFromTurns', () => {
                     type: BlockType.ToolUse,
                     id: 'call1',
                     name: 'mattermost__read_post',
+                    title: 'Read post',
+                    description: 'Reads a post by id',
                     mcp_bare_name: 'read_post',
                     server_origin: 'https://mcp.example.com',
                     user_interaction: 'select',
@@ -512,6 +514,8 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds[0].toolCalls[0]).toMatchObject({
             id: 'call1',
             name: 'mattermost__read_post',
+            title: 'Read post',
+            description: 'Reads a post by id',
             mcp_bare_name: 'read_post',
             server_origin: 'https://mcp.example.com',
             user_interaction: 'select',
