@@ -70,7 +70,7 @@ describe('handleAgentsReconnect', () => {
         await handleAgentsReconnect(serverUrl);
 
         expect(streamingStore.getStreamingState(serverUrl, 'post1')?.generating).toBe(false);
-        expect(settleStreamedPost).toHaveBeenCalledWith(serverUrl, 'post1');
+        expect(settleStreamedPost).toHaveBeenCalledWith(serverUrl, 'post1', true);
         expect(settleStreamedPost).toHaveBeenCalledTimes(1);
         streamingStore.removeServer(serverUrl);
     });

@@ -74,18 +74,20 @@ function runFetch(serverUrl: string, conversationId: string): Promise<void> {
         const prev = conversationStore.getState(serverUrl, conversationId);
         if (error) {
             // Preserve cached data on error so transient failures don't blank
-            // the UI; invalidate() is required to drop it.
+            // the UI; invalidate() is required to drop it. Settle callbacks
+            // stay queued: the cache doesn't hold the new turns yet.
             conversationStore.setState(serverUrl, conversationId, {
                 conversation: prev.conversation,
                 loading: false,
                 error,
             });
-        } else {
-            conversationStore.setState(serverUrl, conversationId, {
-                conversation: data && normalizeConversationResponse(data),
-                loading: false,
-            });
+            return;
         }
+
+        conversationStore.setState(serverUrl, conversationId, {
+            conversation: data && normalizeConversationResponse(data),
+            loading: false,
+        });
 
         // Synchronously after the store update so subscribers see both
         // changes in one render.
@@ -119,7 +121,7 @@ export function ensureConversation(serverUrl: string, conversationId: string): P
  * the UI doesn't blank out during streaming-end re-syncs. runFetch replaces
  * the inflight map entry, so a superseded fetch that resolves later fails the
  * identity check and its result is discarded.
- * `onSettled` runs once a result (or error) from this or a superseding fetch
+ * `onSettled` runs once a successful result from this or a superseding fetch
  * has been written to the store.
  */
 export function refetchConversation(serverUrl: string, conversationId: string, onSettled?: () => void): Promise<void> {

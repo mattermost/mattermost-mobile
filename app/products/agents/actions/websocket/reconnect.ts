@@ -18,11 +18,12 @@ export async function handleAgentsReconnect(serverUrl: string) {
     }
 
     // A stream's `end` may have been missed while the socket was down. Settle
-    // every post still holding streaming state; one that is genuinely still
-    // streaming resumes on its next event.
+    // every post still holding streaming state. One that is genuinely still
+    // streaming marks itself generating again on its next event, which keeps
+    // its state when the refetch lands.
     for (const postId of streamingStore.getPostIds(serverUrl)) {
         streamingStore.endStreaming(serverUrl, postId);
-        settleStreamedPost(serverUrl, postId);
+        settleStreamedPost(serverUrl, postId, true);
     }
 
     // Set the version of the agents plugin to the systems table

@@ -198,12 +198,16 @@ describe('refetchConversation onSettled', () => {
         expect(onSettled).toHaveBeenCalledTimes(1);
     });
 
-    it('should run when the fetch fails', async () => {
-        mockClient.getConversation.mockRejectedValue(new Error('network'));
+    it('should wait for a later successful fetch when the fetch fails', async () => {
+        mockClient.getConversation.
+            mockRejectedValueOnce(new Error('network')).
+            mockResolvedValueOnce(makeConversation(conversationId));
         const onSettled = jest.fn();
 
         await refetchConversation(serverUrl, conversationId, onSettled);
+        expect(onSettled).not.toHaveBeenCalled();
 
+        await refetchConversation(serverUrl, conversationId);
         expect(onSettled).toHaveBeenCalledTimes(1);
     });
 });

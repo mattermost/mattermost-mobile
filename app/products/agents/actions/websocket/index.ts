@@ -24,13 +24,13 @@ export function handleAgentPostUpdate(serverUrl: string, msg: WebSocketMessage<P
     // Delegate to the streaming store
     streamingStore.handleWebSocketMessage(serverUrl, msg.data);
 
-    // A settling stream (`end`/`cancel`) is the moment the server has
-    // finalised the response turns, so refresh the cached conversation here
-    // rather than only from the mounted post component, which can miss the
-    // transition (coalesced start/end renders) or not be mounted at all.
+    // `end` is the moment the server has finalised the response turns (a
+    // `cancel` is always followed by one), so refresh the cached conversation
+    // here rather than only from the mounted post component, which can miss
+    // the transition (coalesced start/end renders) or not be mounted at all.
     // Webapp parity: llmbot_post invalidates the conversation on `end`.
     const {control, post_id} = msg.data;
-    if (post_id && (control === CONTROL_SIGNALS.END || control === CONTROL_SIGNALS.CANCEL)) {
+    if (post_id && control === CONTROL_SIGNALS.END) {
         settleStreamedPost(serverUrl, post_id);
     }
 }
@@ -39,18 +39,29 @@ export function handleAgentPostUpdate(serverUrl: string, msg: WebSocketMessage<P
  * Hand a finished stream over to the persisted conversation. The streamed
  * content stays on screen until the refetch lands (the plugin edits the post
  * before sending `end`, so POST_EDITED is too early), then the streaming state
- * is dropped in the same update. Posts whose conversation was never viewed
- * have nothing cached to refresh; the first view fetches fresh data anyway.
+ * is dropped in the same update — unless the post started streaming again in
+ * the meantime. Posts whose conversation was never viewed have nothing cached
+ * to refresh; the first view fetches fresh data anyway.
+ *
+ * Posts without a conversation render `post.message`, so POST_EDITED drops
+ * their state once the edited post is stored. After a reconnect that edit may
+ * have been missed, so `afterReconnect` drops it here.
  */
-export async function settleStreamedPost(serverUrl: string, postId: string): Promise<void> {
-    const dropStreamingState = () => streamingStore.removePost(serverUrl, postId);
+export async function settleStreamedPost(serverUrl: string, postId: string, afterReconnect = false): Promise<void> {
+    const dropStreamingState = () => {
+        if (!streamingStore.isStreaming(serverUrl, postId)) {
+            streamingStore.removePost(serverUrl, postId);
+        }
+    };
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const post = await getPostById(database, postId);
         const conversationId = (post?.props as Record<string, unknown> | undefined)?.conversation_id;
         if (typeof conversationId !== 'string' || conversationId === '') {
-            logDebug('[settleStreamedPost] no conversation_id on post', {postId});
-            dropStreamingState();
+            logDebug('[settleStreamedPost] no conversation_id on post', {postId, afterReconnect});
+            if (afterReconnect) {
+                dropStreamingState();
+            }
             return;
         }
         const cached = conversationStore.getState(serverUrl, conversationId);
