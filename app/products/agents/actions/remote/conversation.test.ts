@@ -73,7 +73,7 @@ describe('fetchConversation', () => {
 
         const result = await fetchConversation(serverUrl, conversationId);
 
-        expect(logError).toHaveBeenCalledWith('[fetchConversation] Failed to fetch conversation', error);
+        expect(logError).toHaveBeenCalledWith('[fetchConversation] Failed to fetch conversation', errorMessage);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
         expect(result).toEqual({error: errorMessage});
     });

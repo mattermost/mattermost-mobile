@@ -26,7 +26,8 @@ export async function submitToolApproval(
         await client.submitToolApproval(postId, acceptedToolIds, toolAnswers);
         return {};
     } catch (error) {
-        logError('[submitToolApproval]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[submitToolApproval]', errorMessage);
+        return {error: errorMessage};
     }
 }

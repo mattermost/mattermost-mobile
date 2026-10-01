@@ -28,7 +28,8 @@ export async function rewriteMessage(
         const rewrittenText = await client.getRewrittenMessage(message, action, customPrompt, agentId);
         return {rewrittenText};
     } catch (error) {
-        logError('[rewriteMessage]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[rewriteMessage]', errorMessage);
+        return {error: errorMessage};
     }
 }

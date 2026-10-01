@@ -54,9 +54,10 @@ export async function fetchConversation(
         const data = await client.getConversation(conversationId);
         return {data};
     } catch (error) {
-        logError('[fetchConversation] Failed to fetch conversation', error);
+        const errorMessage = getFullErrorMessage(error);
+        logError('[fetchConversation] Failed to fetch conversation', errorMessage);
         forceLogoutIfNecessary(serverUrl, error);
-        return {error: getFullErrorMessage(error)};
+        return {error: errorMessage};
     }
 }
 
