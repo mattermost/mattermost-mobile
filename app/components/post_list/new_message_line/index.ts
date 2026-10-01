@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, map, startWith} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {startWith} from 'rxjs/operators';
 
-import {observeHasAvailableAgents} from '@agents/queries/agents';
-import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
+import {observeCanAnalyzeChannel} from '@agents/queries/agents';
 import {Screens} from '@constants';
-import {observeMyChannel} from '@queries/servers/channel';
 
 import NewMessagesLine from './new_message_line';
 
@@ -23,31 +21,11 @@ type OwnProps = WithDatabaseArgs & {
 // This renders in the hot post list, so the gating stays cheap: a single
 // boolean observable per separator instance (the separator appears at most
 // once per channel view). Ask AI only applies to the channel view (webapp
-// parity: it registers on the channel New Messages line), and only when
-// analysis is licensed and at least one agent is usable in this channel.
-// startWith(false) keeps the first paint synchronous, identical to the
-// pill-less separator, while the DB observables resolve.
-const enhanced = withObservables(['channelId', 'location'], ({channelId, location, database}: OwnProps) => {
-    if (location !== Screens.CHANNEL) {
-        return {canSummarizeUnreads: of$(false), lastViewedAt: of$(0)};
-    }
-
-    return {
-        canSummarizeUnreads: combineLatest([
-            observeIsAgentsAnalysisLicensed(database),
-            observeHasAvailableAgents(database, channelId),
-        ]).pipe(
-            map(([licensed, hasAgents]) => licensed && hasAgents),
-            startWith(false),
-            distinctUntilChanged(),
-        ),
-
-        // The same value the channel post list draws the separator from.
-        lastViewedAt: observeMyChannel(database, channelId).pipe(
-            map((myChannel) => myChannel?.viewedAt ?? 0),
-            distinctUntilChanged(),
-        ),
-    };
-});
+// parity: it registers on the channel New Messages line). startWith(false)
+// keeps the first paint synchronous, identical to the pill-less separator,
+// while the DB observables resolve.
+const enhanced = withObservables(['channelId', 'location'], ({channelId, location, database}: OwnProps) => ({
+    canSummarizeUnreads: location === Screens.CHANNEL ? observeCanAnalyzeChannel(database, channelId).pipe(startWith(false)) : of$(false),
+}));
 
 export default withDatabase(enhanced(NewMessagesLine));

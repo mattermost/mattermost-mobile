@@ -49,6 +49,7 @@ describe('NewMessagesLine', () => {
         testID: 'post_list.new_messages_line',
         channelId,
         location: Screens.CHANNEL,
+        lastViewedAt: 1000,
     };
 
     it('should render only the separator when agents are unavailable', async () => {
