@@ -59,6 +59,15 @@ describe('AgentsHandler', () => {
             expect(records[0].displayName).toBe('New Name');
         });
 
+        it('should not rewrite an unchanged bot whose lists arrive as null', async () => {
+            const bot = TestHelper.fakeLLMBot({id: 'bot1', channelIDs: null, userIDs: null, teamIDs: undefined});
+            await operator.handleAIBots({bots: [bot], prepareRecordsOnly: false});
+
+            const result = await operator.handleAIBots({bots: [bot], prepareRecordsOnly: false});
+
+            expect(result).toHaveLength(0);
+        });
+
         it('should delete stale bots not in the incoming list', async () => {
             await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'}), TestHelper.fakeLLMBot({id: 'bot2'})], prepareRecordsOnly: false});
 

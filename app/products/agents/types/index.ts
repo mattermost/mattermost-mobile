@@ -212,10 +212,14 @@ export interface LLMBot {
     lastIconUpdate: number;
     dmChannelID: string;
     channelAccessLevel: ChannelAccessLevel;
-    channelIDs: string[];
+
+    // Go marshals empty lists as null.
+    channelIDs: string[] | null;
     userAccessLevel: UserAccessLevel;
-    userIDs: string[];
-    teamIDs: string[];
+    userIDs: string[] | null;
+
+    // Only sent by plugins before 2.0.
+    teamIDs?: string[] | null;
 
     // System-wide default bot flag. Sent as camelCase `isDefault` with
     // omitempty by the plugin, so it is absent when false.

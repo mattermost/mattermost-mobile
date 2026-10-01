@@ -12,8 +12,8 @@ import type AiBotModel from '@agents/types/database/models/ai_bot';
 const {AI_BOT} = AGENTS_TABLES;
 
 /**
- * Returns a query for all AI bots in the database, mirroring the server's
- * ordering: the system default bot first, then by display name.
+ * Returns a query for all AI bots in the database: the system default bot
+ * first (as the server lists it), then by display name for a stable order.
  */
 export function queryAIBots(database: Database) {
     return database.get<AiBotModel>(AI_BOT).query(
@@ -60,11 +60,4 @@ export async function getAIBotById(database: Database, botId: string) {
     } catch {
         return undefined;
     }
-}
-
-/**
- * Gets all AI bots from the database.
- */
-export async function getAllAIBots(database: Database) {
-    return queryAIBots(database).fetch();
 }

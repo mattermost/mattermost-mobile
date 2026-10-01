@@ -28,23 +28,6 @@ export function observeAIThreads(database: Database) {
 }
 
 /**
- * Returns a query for AI threads by channel ID.
- */
-export function queryAIThreadsByChannelId(database: Database, channelId: string) {
-    return database.get<AiThreadModel>(AI_THREAD).query(
-        Q.where('channel_id', channelId),
-        Q.sortBy('update_at', Q.desc),
-    );
-}
-
-/**
- * Returns an observable for AI threads by channel ID.
- */
-export function observeAIThreadsByChannelId(database: Database, channelId: string) {
-    return queryAIThreadsByChannelId(database, channelId).observeWithColumns(['update_at', 'turn_count']);
-}
-
-/**
  * Returns a query for an AI thread by ID.
  */
 export function queryAIThreadById(database: Database, threadId: string) {
