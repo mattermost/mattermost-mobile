@@ -170,11 +170,13 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
 // that some models emit mid-sentence, with the spaces around it when it sits
 // before punctuation. Adapted from the plugin webapp's citation_processor.tsx,
 // which runs on rendered text nodes; here it runs on markdown source, so the
-// URL stops at the first `)`.
-const openAICitationRegex = /[ \t]*\([^\s:()]+\s*:\s*https?:\/\/[^\s)]*\)(?:[ \t]+(?=[.,;:!?]))?/g;
+// URL allows one level of balanced parentheses (e.g. Wikipedia links) and
+// otherwise stops at the first `)`.
+const openAICitationRegex = /[ \t]*\([^\s:()]+\s*:\s*https?:\/\/(?:[^\s()]|\([^\s()]*\))*\)(?:[ \t]+(?=[.,;:!?]))?/g;
 
-// Fenced code blocks and inline code spans, captured so split() keeps them.
-const codeSegmentRegex = /(```[\s\S]*?(?:```|$)|~~~[\s\S]*?(?:~~~|$)|`[^`\n]*`)/;
+const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+const INDENTED_CODE = /^(?: {4}|\t)/;
 
 const CITATION_FOLLOWER = /[\s.,;:!?)]/;
 
@@ -190,13 +192,97 @@ function stripCitationsFromProse(text: string): string {
     });
 }
 
+function backtickRunEnd(text: string, start: number): number {
+    let end = start;
+    while (text[end] === '`') {
+        end++;
+    }
+    return end;
+}
+
+// Strips citations from a block of prose lines, skipping inline code spans
+// (a backtick run closed by a run of the same length).
+function stripCitationsOutsideInlineCode(text: string): string {
+    let result = '';
+    let proseStart = 0;
+    let i = 0;
+    while (i < text.length) {
+        if (text[i] !== '`') {
+            i++;
+            continue;
+        }
+        const openEnd = backtickRunEnd(text, i);
+        const runLength = openEnd - i;
+        let closeEnd = -1;
+        let k = openEnd;
+        while (k < text.length) {
+            if (text[k] === '`') {
+                const runEnd = backtickRunEnd(text, k);
+                if (runEnd - k === runLength) {
+                    closeEnd = runEnd;
+                    break;
+                }
+                k = runEnd;
+            } else {
+                k++;
+            }
+        }
+        if (closeEnd === -1) {
+            i = openEnd;
+            continue;
+        }
+        result += stripCitationsFromProse(text.slice(proseStart, i)) + text.slice(i, closeEnd);
+        proseStart = closeEnd;
+        i = closeEnd;
+    }
+    return result + stripCitationsFromProse(text.slice(proseStart));
+}
+
 // Strip inline "(source: https://…)" noise from agent-generated text before
-// rendering, leaving code untouched.
+// rendering, leaving fenced, indented and inline code untouched.
 export function stripOpenAICitations(text: string): string {
-    return text.
-        split(codeSegmentRegex).
-        map((segment, i) => (i % 2 === 1 ? segment : stripCitationsFromProse(segment))).
-        join('');
+    const out: string[] = [];
+    let prose: string[] = [];
+    const flushProse = () => {
+        if (prose.length) {
+            out.push(stripCitationsOutsideInlineCode(prose.join('\n')));
+            prose = [];
+        }
+    };
+
+    let fence: {char: string; length: number} | undefined;
+    let prevBlankOrCode = true;
+    for (const line of text.split('\n')) {
+        if (fence) {
+            out.push(line);
+            const close = FENCE_CLOSE.exec(line);
+            if (close && close[1][0] === fence.char && close[1].length >= fence.length) {
+                fence = undefined;
+            }
+            continue;
+        }
+
+        const open = FENCE_OPEN.exec(line);
+        if (open && !(open[1][0] === '`' && open[2].includes('`'))) {
+            flushProse();
+            out.push(line);
+            fence = {char: open[1][0], length: open[1].length};
+            prevBlankOrCode = true;
+            continue;
+        }
+
+        // Indented code can't interrupt a paragraph.
+        if (prevBlankOrCode && INDENTED_CODE.test(line) && line.trim() !== '') {
+            flushProse();
+            out.push(line);
+            continue;
+        }
+
+        prose.push(line);
+        prevBlankOrCode = line.trim() === '';
+    }
+    flushProse();
+    return out.join('\n');
 }
 
 function emptyRound(id: string): Round {

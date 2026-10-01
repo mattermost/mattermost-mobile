@@ -235,8 +235,23 @@ describe('stripOpenAICitations', () => {
         expect(stripOpenAICitations('Water is wet (source: https://example.com) and cold.')).toBe('Water is wet and cold.');
     });
 
-    it('should stop at the first closing parenthesis', () => {
+    it('should stop at the first unbalanced closing parenthesis', () => {
         expect(stripOpenAICitations('See (source: https://a.com),next(x) here')).toBe('See,next(x) here');
+    });
+
+    it('should remove a citation whose URL contains balanced parentheses', () => {
+        expect(stripOpenAICitations('See this (source: https://en.wikipedia.org/wiki/Foo_(bar)) for more.')).toBe('See this for more.');
+    });
+
+    it('should leave indented code, longer fences and multi-backtick code spans untouched', () => {
+        const indented = 'Example:\n\n    call() (source: https://a.com) here\n\nDone (source: https://b.com).';
+        expect(stripOpenAICitations(indented)).toBe('Example:\n\n    call() (source: https://a.com) here\n\nDone.');
+
+        const nestedFence = '````\n```\nx (source: https://a.com) y\n```\n````\nText (source: https://b.com).';
+        expect(stripOpenAICitations(nestedFence)).toBe('````\n```\nx (source: https://a.com) y\n```\n````\nText.');
+
+        const doubleTick = 'Use ``code `x` (source: https://a.com) y`` here (source: https://b.com).';
+        expect(stripOpenAICitations(doubleTick)).toBe('Use ``code `x` (source: https://a.com) y`` here.');
     });
 
     it('should leave code blocks and inline code untouched', () => {
