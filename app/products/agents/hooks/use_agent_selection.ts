@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 
 import type {SelectableAgent} from '@agents/types';
 
@@ -20,27 +20,19 @@ export function useAgentSelection(
     eligibleAgents: Array<{id: string}>,
     autoResolvedAgent: SelectableAgent | null,
 ): {selectedAgent: SelectableAgent | null; selectAgent: (agent: SelectableAgent) => void} {
-    const [selectedAgent, setSelectedAgent] = useState<SelectableAgent | null>(autoResolvedAgent);
-    const userSelectedRef = useRef(false);
+    const [userPick, setUserPick] = useState<SelectableAgent | null>(null);
+    const pickIsEligible = isEligible(eligibleAgents, userPick);
 
-    const selectAgent = useCallback((agent: SelectableAgent) => {
-        userSelectedRef.current = true;
-        setSelectedAgent(agent);
-    }, []);
-
+    // Drop a pick that left the eligible list for good, so it doesn't come
+    // back if the agent later reappears.
     useEffect(() => {
-        setSelectedAgent((current) => {
-            if (userSelectedRef.current && isEligible(eligibleAgents, current)) {
-                return current;
-            }
+        if (userPick && !pickIsEligible) {
+            setUserPick(null);
+        }
+    }, [userPick, pickIsEligible]);
 
-            // Either the user hasn't picked in this sheet session (keep
-            // following auto-resolution) or their pick vanished from the
-            // eligible list (reset so auto-resolution owns the selection).
-            userSelectedRef.current = false;
-            return autoResolvedAgent;
-        });
-    }, [eligibleAgents, autoResolvedAgent]);
-
-    return {selectedAgent, selectAgent};
+    return {
+        selectedAgent: pickIsEligible ? userPick : autoResolvedAgent,
+        selectAgent: setUserPick,
+    };
 }
