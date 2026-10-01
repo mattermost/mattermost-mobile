@@ -50,7 +50,18 @@ export const PROGRESS_PHASES = ['checking_mcp', 'loading_conversation', 'prepari
 export type ProgressPhase = typeof PROGRESS_PHASES[number];
 
 export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
-export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';
+
+/**
+ * The analysis_type labels the plugin webapp sends to the channel analyze
+ * endpoint (channel_summarize_popover.tsx). The server only records them for
+ * token accounting; the request options determine the actual window.
+ */
+export const CHANNEL_ANALYSIS_TYPES = {
+    SUMMARIZE_UNREADS: 'summarize_unreads',
+    DAYS: 'days',
+    DATE_RANGE: 'date_range',
+    CUSTOM: 'custom',
+} as const;
 
 /**
  * The analysis_type values accepted by the plugin's thread analysis endpoint

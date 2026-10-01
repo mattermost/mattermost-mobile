@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeAIBots} from '@agents/database/queries/bot';
 import {observeSelectedAgentId} from '@agents/queries/agents';
@@ -26,7 +25,8 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: WithData
     // lastViewedAt to "now", so observe viewedAt — the previous visit's
     // timestamp that also drives the New Messages line.
     viewedAt: observeMyChannel(database, channelId).pipe(
-        switchMap((myChannel) => of$(myChannel?.viewedAt ?? 0)),
+        map((myChannel) => myChannel?.viewedAt ?? 0),
+        distinctUntilChanged(),
     ),
 }));
 

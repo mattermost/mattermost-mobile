@@ -1,164 +1,79 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getMyChannel} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 
 import {requestChannelSummary} from './channel_summary';
+import {switchToAgentResponseChannel} from './response_channel';
 
-jest.mock('@actions/remote/channel');
+import type {ChannelAnalysisResponse} from '@agents/types/api';
+
 jest.mock('@managers/network_manager');
 jest.mock('@database/manager', () => ({
     getServerDatabaseAndOperator: jest.fn(),
 }));
-jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/system');
+jest.mock('./response_channel');
+
+type MockClient = ReturnType<typeof NetworkManager.getClient>;
+type ServerDatabase = ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>;
 
 describe('requestChannelSummary', () => {
     const serverUrl = 'https://server.example.com';
     const channelId = 'channel-id';
     const botUsername = 'ai-bot';
-    const analysisType = 'summarize_channel';
+    const analysisType = 'days';
+    const response: ChannelAnalysisResponse = {postid: 'post-id', channelid: 'dm-id'};
+
+    const mockClient = (doChannelAnalysis: jest.Mock) => {
+        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as unknown as MockClient);
+    };
 
     beforeEach(() => {
         jest.resetAllMocks();
-        jest.mocked(switchToChannelById).mockResolvedValue({});
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as unknown as ServerDatabase);
+        jest.mocked(switchToAgentResponseChannel).mockResolvedValue({});
         jest.mocked(getCurrentTeamId).mockResolvedValue('');
     });
 
-    it('calls client, ensures channel membership, and switches channel on success', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId} as any);
+    it('should request the analysis and switch to the response DM', async () => {
+        const doChannelAnalysis = jest.fn().mockResolvedValue(response);
+        mockClient(doChannelAnalysis);
 
         const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {days: 7});
 
-        expect(getMyChannel).toHaveBeenCalledWith({}, channelId);
-        expect(fetchMyChannel).not.toHaveBeenCalled();
         expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {days: 7});
-        expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'dm-id');
-        expect(result.error).toBeUndefined();
-        expect(result.data).toEqual({postid: 'post-id', channelid: 'dm-id'});
+        expect(switchToAgentResponseChannel).toHaveBeenCalledWith(serverUrl, response);
+        expect(result).toEqual({data: response});
     });
 
-    it('should resolve sinceLastViewed into an ISO since bound from the pre-entry viewedAt when present', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        const viewedAt = 1754560000000;
-        const lastViewedAt = 1754570000000;
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId, lastViewedAt} as any);
-
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {sinceLastViewed: true, viewedAt});
-
-        expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {
-            since: new Date(viewedAt).toISOString(),
-        });
-        expect('sinceLastViewed' in doChannelAnalysis.mock.calls[0][3]).toBe(false);
-        expect('viewedAt' in doChannelAnalysis.mock.calls[0][3]).toBe(false);
-        expect(result.error).toBeUndefined();
-    });
-
-    it('should fall back to the channel member lastViewedAt when viewedAt is absent', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        const lastViewedAt = 1754570000000;
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId, lastViewedAt} as any);
-
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {sinceLastViewed: true});
-
-        expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {
-            since: new Date(lastViewedAt).toISOString(),
-        });
-        expect(result.error).toBeUndefined();
-    });
-
-    it('should return an error instead of sending the Unix epoch when no last viewed bound is available', async () => {
-        const doChannelAnalysis = jest.fn();
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-
-        // Membership fetch succeeds but still yields no membership record.
-        jest.mocked(getMyChannel).mockResolvedValue(undefined);
-        jest.mocked(fetchMyChannel).mockResolvedValue({channels: [], memberships: []});
-
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {sinceLastViewed: true});
-
-        expect(doChannelAnalysis).not.toHaveBeenCalled();
-        expect(switchToChannelById).not.toHaveBeenCalled();
-        expect(result.error).toBe('Unable to determine channel last viewed time');
-    });
-
-    it('includes the current team id so the server can set the LLM context team for DM/GM channels', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId} as any);
+    it('should include the current team id so the server can set the LLM context team for DM/GM channels', async () => {
+        const doChannelAnalysis = jest.fn().mockResolvedValue(response);
+        mockClient(doChannelAnalysis);
         jest.mocked(getCurrentTeamId).mockResolvedValue('team-id');
 
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {days: 7});
+        await requestChannelSummary(serverUrl, channelId, analysisType, botUsername, {days: 7});
 
         expect(doChannelAnalysis).toHaveBeenCalledWith(channelId, analysisType, botUsername, {days: 7, team_id: 'team-id'});
-        expect(result.error).toBeUndefined();
     });
 
-    it('fetches channel membership if it does not exist in database before requesting', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({postid: 'post-id', channelid: 'dm-id'});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue(undefined);
-        jest.mocked(fetchMyChannel).mockResolvedValue({channels: [], memberships: []});
-
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername);
-
-        expect(getMyChannel).toHaveBeenCalledWith({}, channelId);
-        expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, '', channelId);
-        expect(doChannelAnalysis).toHaveBeenCalled();
-        expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'dm-id');
-        expect(result.error).toBeUndefined();
-        expect(result.data).toEqual({postid: 'post-id', channelid: 'dm-id'});
-    });
-
-    it('returns error if fetching channel membership fails before requesting', async () => {
-        const doChannelAnalysis = jest.fn();
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue(undefined);
-        jest.mocked(fetchMyChannel).mockResolvedValue({error: 'Failed to fetch channel'});
-
-        const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername);
-
-        expect(fetchMyChannel).toHaveBeenCalledWith(serverUrl, '', channelId);
-        expect(doChannelAnalysis).not.toHaveBeenCalled();
-        expect(switchToChannelById).not.toHaveBeenCalled();
-        expect(result.error).toBe('Failed to fetch channel');
-    });
-
-    it('returns error when response is invalid', async () => {
-        const doChannelAnalysis = jest.fn().mockResolvedValue({});
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId} as any);
+    it('should return the error when switching to the response DM fails', async () => {
+        mockClient(jest.fn().mockResolvedValue({}));
+        jest.mocked(switchToAgentResponseChannel).mockResolvedValue({error: 'Invalid response from server'});
 
         const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername);
 
         expect(result.error).toBe('Invalid response from server');
     });
 
-    it('surfaces errors from client', async () => {
-        const doChannelAnalysis = jest.fn().mockRejectedValue(new Error('boom'));
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelAnalysis} as any);
-        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
-        jest.mocked(getMyChannel).mockResolvedValue({id: channelId} as any);
+    it('should surface errors from the client', async () => {
+        mockClient(jest.fn().mockRejectedValue(new Error('boom')));
 
         const result = await requestChannelSummary(serverUrl, channelId, analysisType, botUsername);
 
         expect(result.error).toBe('boom');
+        expect(switchToAgentResponseChannel).not.toHaveBeenCalled();
     });
 });
-
