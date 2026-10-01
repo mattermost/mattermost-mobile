@@ -177,7 +177,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     );
 
     // Thread analysis entry point: needs at least one agent and the
-    // enterprise-tier license the plugin's analyze endpoints require; never
+    // Professional-tier license the plugin's analyze endpoints require; never
     // shown for system/ephemeral/deleted or burn-on-read posts.
     const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post)) ? of$(false) : combineLatest([
         observeHasAvailableAgents(database),

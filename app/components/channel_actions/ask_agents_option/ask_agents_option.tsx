@@ -43,9 +43,9 @@ const AskAgentsOption = ({
         );
     }, [channelId]);
 
-    // The Agents plugin 403s the channel/thread analysis endpoints unless the
-    // server has an enterprise-tier license (or dev mode), so hide the entry
-    // point entirely when unlicensed (webapp parity).
+    // The Agents plugin 403s the channel/thread analysis endpoints below the
+    // Professional license tier (outside dev mode), so hide the entry point
+    // entirely when unlicensed (webapp parity).
     if (!isAnalysisLicensed) {
         return null;
     }

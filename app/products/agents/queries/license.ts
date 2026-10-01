@@ -9,20 +9,22 @@ import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system
 
 import type {Database} from '@nozbe/watermelondb';
 
-// SKUs the server's LicenseToLicenseTier recognises; any other SKU is unknown
-// and may only qualify through the MessageExport feature fallback.
-const KNOWN_SKUS = new Set<string>([
+// SKUs at the Professional level or above in the plugin's tier chart
+// (enterprise/license.go LevelFor).
+const PROFESSIONAL_OR_HIGHER_SKUS = new Set<string>([
+    SKU_SHORT_NAME.E10,
+    SKU_SHORT_NAME.E20,
     SKU_SHORT_NAME.Professional,
     SKU_SHORT_NAME.Enterprise,
-    SKU_SHORT_NAME.EnterpriseAdvanced,
     SKU_SHORT_NAME.Entry,
+    SKU_SHORT_NAME.EnterpriseAdvanced,
 ]);
 
 /**
- * Mirror of the Agents plugin's IsE20LicensedOrDevelopment / webapp
- * useIsBasicsLicensed check: enterprise-tier SKU (entry, enterprise,
- * advanced), unknown-SKU MessageExport fallback, or developer mode
- * (EnableDeveloper + EnableTesting).
+ * Mirror of the Agents plugin's channel/thread summarization capability
+ * check: Professional or higher, or developer mode (EnableDeveloper +
+ * EnableTesting). Other SKUs fall back to license features; the client
+ * license only carries LDAP, which marks Professional.
  */
 export const isAgentsAnalysisLicensed = (
     license: ClientLicense | undefined,
@@ -33,12 +35,11 @@ export const isAgentsAnalysisLicensed = (
         return true;
     }
 
-    const sku = license?.SkuShortName ?? '';
-    if (sku === SKU_SHORT_NAME.Entry || sku === SKU_SHORT_NAME.Enterprise || sku === SKU_SHORT_NAME.EnterpriseAdvanced) {
+    if (PROFESSIONAL_OR_HIGHER_SKUS.has(license?.SkuShortName ?? '')) {
         return true;
     }
 
-    return !KNOWN_SKUS.has(sku) && license?.MessageExport === 'true';
+    return license?.LDAP === 'true';
 };
 
 /**

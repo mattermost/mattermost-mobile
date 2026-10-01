@@ -42,18 +42,18 @@ describe('observeIsAgentsAnalysisLicensed', () => {
         return subscriptionNext;
     };
 
-    it('should emit true for enterprise-tier SKUs', async () => {
-        await setLicense({SkuShortName: 'enterprise'});
+    it('should emit true for a Professional SKU, the lowest tier that allows analysis', async () => {
+        await setLicense({SkuShortName: 'professional', LDAP: 'false'});
         expect(subscribe()).toHaveBeenCalledWith(true);
     });
 
-    it('should emit false for a professional SKU without the fallback feature', async () => {
-        await setLicense({SkuShortName: 'professional', MessageExport: 'false'});
+    it('should emit false for a starter or unlicensed server', async () => {
+        await setLicense({IsLicensed: 'false', SkuShortName: 'starter', LDAP: 'false'});
         expect(subscribe()).toHaveBeenCalledWith(false);
     });
 
-    it('should emit true for an unknown SKU with the MessageExport feature fallback', async () => {
-        await setLicense({SkuShortName: 'E20', MessageExport: 'true'});
+    it('should emit true for an unrecognised SKU carrying the LDAP feature (Professional fallback)', async () => {
+        await setLicense({SkuShortName: 'custom', LDAP: 'true'});
         expect(subscribe()).toHaveBeenCalledWith(true);
     });
 
