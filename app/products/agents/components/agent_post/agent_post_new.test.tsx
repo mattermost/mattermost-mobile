@@ -699,6 +699,45 @@ describe('AgentPostNew — regenerate suppresses the stale answer (7a)', () => {
 
         expect(getByText('Old answer')).toBeTruthy();
     });
+
+    it('should keep hiding the old answer when an earlier conversation fetch had failed', async () => {
+        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
+        mockFetchConversation.mockResolvedValueOnce({error: 'network'});
+
+        const {findByText, getByText, getByTestId, queryByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Old answer'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await findByText('Old answer');
+
+        // A stream-end refetch fails, leaving an error next to the cached answer.
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+        await findByText('Failed to load conversation data');
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
+            confirmRegenerate();
+            await flush();
+        });
+        expect(queryByText('Old answer')).toBeNull();
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'New answer streaming'});
+            await flush();
+        });
+        expect(getByText('New answer streaming')).toBeTruthy();
+        expect(queryByText('Old answer')).toBeNull();
+    });
 });
 
 describe('AgentPostNew — cold-open loading placeholder (7c)', () => {

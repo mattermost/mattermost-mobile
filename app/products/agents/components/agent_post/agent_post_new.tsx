@@ -188,6 +188,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // Conversation object captured when regenerate was tapped; any different
     // object afterwards is a fresh fetch of the regenerated turns.
     const regenBaselineRef = useRef<ConversationResponse | undefined>(undefined);
+    const regenFetchStartedRef = useRef(false);
     const conversationRef = useRef(conversation);
     conversationRef.current = conversation;
 
@@ -297,9 +298,15 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         if (!regenerating) {
             return;
         }
+
+        // An error cached from before the tap must not lift the suppression
+        // before the new stream starts; only a fetch since the tap counts.
+        if (conversationLoading) {
+            regenFetchStartedRef.current = true;
+        }
         if (conversation !== regenBaselineRef.current) {
             setRegenerating(false);
-        } else if (conversationError && !conversationLoading && !isGenerationInProgress) {
+        } else if (conversationError && !conversationLoading && !isGenerationInProgress && regenFetchStartedRef.current) {
             setRegenerating(false);
         }
     }, [regenerating, conversation, conversationError, conversationLoading, isGenerationInProgress]);
@@ -369,6 +376,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         // lift the suppression; discard it.
         cancelConversationFetch(serverUrl, conversationId);
         regenBaselineRef.current = conversationRef.current;
+        regenFetchStartedRef.current = false;
         setRegenerating(true);
     }, [serverUrl, conversationId]);
     const onRegenerateError = useCallback(() => setRegenerating(false), []);
