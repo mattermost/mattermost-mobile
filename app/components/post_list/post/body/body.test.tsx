@@ -124,7 +124,7 @@ describe('components/post_list/post/body/Body', () => {
             type: AGENT_POST_TYPES.LLMBOT,
             message: 'See https://example.com',
             metadata: {
-                embeds: [{type: 'opengraph', url: 'https://example.com'}],
+                embeds: [{type: 'opengraph', url: 'https://example.com', data: {}}],
             },
         });
 
