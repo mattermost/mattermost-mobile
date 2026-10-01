@@ -5,11 +5,11 @@ import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 're
 import {View} from 'react-native';
 
 import {cancelConversationFetch, refetchConversation} from '@agents/actions/remote/conversation';
-import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
+import {useGenerationControls} from '@agents/hooks/use_generation_controls';
 import {isConversationRequester} from '@agents/requester';
 import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
-import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
+import {useStreamingState} from '@agents/store/streaming_store';
 import {
     anyToolHasArguments,
     anyToolHasResult,
@@ -21,10 +21,8 @@ import {ToolApprovalStage, ToolCallStatus, type Annotation, type ConversationRes
 import {isUnsafeLinksPost} from '@agents/utils';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -360,39 +358,24 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // empty (web parity: precontent starts as post.message === ''), on a cold
     // open while the conversation fetch is in flight, and right after a
     // regenerate tap before the new stream's `start` event arrives.
+    const showLoadError = Boolean(conversationError) && !isGenerating && !conversationLoading;
     const showPlaceholder = isPrecontent ||
-        (!hasContent && (post.message === '' || regenerating || (conversationLoading && !isGenerating)));
+        (!hasContent && !showLoadError && (post.message === '' || regenerating || (conversationLoading && !isGenerating)));
 
-    const handleStop = useCallback(async () => {
-        // Mark stopped first so late `next` events are ignored before the
-        // server's cancel/end lands.
-        streamingStore.markStopped(serverUrl, post.id);
-        const {error} = await stopGeneration(serverUrl, post.id);
-        if (error) {
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
-        }
-    }, [serverUrl, post.id]);
-
-    const handleRegenerate = useCallback(async () => {
-        // Suppress the stale persisted rounds and clear the streaming store so
-        // the new stream starts from a clean slate instead of showing the
-        // previous round's data.
-        // A fetch still in flight (e.g. the previous stream's end refetch)
-        // would carry the old answer and lift the suppression; discard it.
+    const beforeRegenerate = useCallback(() => {
+        // Suppress the stale persisted rounds. A fetch still in flight (e.g.
+        // the previous stream's end refetch) would carry the old answer and
+        // lift the suppression; discard it.
         cancelConversationFetch(serverUrl, conversationId);
         regenBaselineRef.current = conversationRef.current;
         setRegenerating(true);
-        streamingStore.removePost(serverUrl, post.id);
-        const {error} = await regenerateResponse(serverUrl, post.id);
-        if (error) {
-            setRegenerating(false);
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
-        }
-    }, [serverUrl, post.id, conversationId]);
+    }, [serverUrl, conversationId]);
+    const onRegenerateError = useCallback(() => setRegenerating(false), []);
+    const {stop: handleStop, regenerate: handleRegenerate} = useGenerationControls(post.id, {beforeRegenerate, onRegenerateError});
 
     return (
         <View style={styles.container}>
-            {conversationError && !isGenerating && !conversationLoading ? (
+            {showLoadError ? (
                 <FormattedText
                     id='agents.conversation.load_error'
                     defaultMessage='Failed to load conversation data'

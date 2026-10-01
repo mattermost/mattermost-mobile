@@ -1,21 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
 
-import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
+import {useGenerationControls} from '@agents/hooks/use_generation_controls';
 import {useAgentsConfig} from '@agents/store/agents_config';
-import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
+import {useStreamingState} from '@agents/store/streaming_store';
 import {stripOpenAICitations} from '@agents/turn_content';
 import {type Annotation, type ToolCall} from '@agents/types';
 import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost} from '@agents/utils';
 import Markdown from '@components/markdown';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {safeParseJSON} from '@utils/helpers';
-import {showSnackBar} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -164,25 +162,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const showPlaceholder = isPrecontent || (!hasContent && toolCalls.length === 0);
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
 
-    // Handler for stop button
-    const handleStop = useCallback(async () => {
-        const {error} = await stopGeneration(serverUrl, post.id);
-        if (error) {
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
-        }
-    }, [serverUrl, post.id]);
-
-    // Handler for regenerate button
-    const handleRegenerate = useCallback(async () => {
-        // Clear the streaming store so the new stream starts from a clean
-        // slate — startStreaming preserves early buffers, so a leftover state
-        // from the previous stream would resurface the old answer.
-        streamingStore.removePost(serverUrl, post.id);
-        const {error} = await regenerateResponse(serverUrl, post.id);
-        if (error) {
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
-        }
-    }, [serverUrl, post.id]);
+    const {stop: handleStop, regenerate: handleRegenerate} = useGenerationControls(post.id);
 
     return (
         <View style={styles.container}>
@@ -205,7 +185,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                             isUnsafeLinksPost={unsafeLinks}
                         />
                     ) : null}
-                    {isGenerating && !isPrecontent && (
+                    {isGenerating && !isPrecontent && !isReasoningLoading && (
                         <StreamingIndicator/>
                     )}
                 </View>
