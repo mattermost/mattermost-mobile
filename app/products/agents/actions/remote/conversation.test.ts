@@ -12,7 +12,6 @@ import {
     clearConversationCacheForServer,
     ensureConversation,
     fetchConversation,
-    invalidateConversation,
     refetchConversation,
 } from './conversation';
 
@@ -229,21 +228,6 @@ describe('cancelConversationFetch', () => {
         resolveLate({...makeConversation(conversationId), title: 'Late'});
         await late;
         expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Chat');
-    });
-});
-
-describe('invalidateConversation', () => {
-    it('should drop the cache entry without triggering a fetch', async () => {
-        mockClient.getConversation.mockResolvedValue(makeConversation(conversationId));
-        await ensureConversation(serverUrl, conversationId);
-        expect(mockClient.getConversation).toHaveBeenCalledTimes(1);
-
-        invalidateConversation(serverUrl, conversationId);
-
-        const state = conversationStore.getState(serverUrl, conversationId);
-        expect(state.conversation).toBeUndefined();
-        expect(state.loading).toBe(false);
-        expect(mockClient.getConversation).toHaveBeenCalledTimes(1);
     });
 });
 

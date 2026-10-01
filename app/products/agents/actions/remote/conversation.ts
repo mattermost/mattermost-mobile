@@ -65,7 +65,7 @@ function runFetch(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
     const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
         // Identity-check the inflight promise so a fetch superseded mid-flight
-        // by refetchConversation/invalidateConversation can't overwrite the
+        // by refetchConversation/cancelConversationFetch can't overwrite the
         // newer fetch's result with stale pre-stream-end data.
         if (inflight.get(key) !== promise) {
             return;
@@ -74,8 +74,8 @@ function runFetch(serverUrl: string, conversationId: string): Promise<void> {
         const prev = conversationStore.getState(serverUrl, conversationId);
         if (error) {
             // Preserve cached data on error so transient failures don't blank
-            // the UI; invalidate() is required to drop it. Settle callbacks
-            // stay queued: the cache doesn't hold the new turns yet.
+            // the UI. Settle callbacks stay queued: the cache doesn't hold the
+            // new turns yet.
             conversationStore.setState(serverUrl, conversationId, {
                 conversation: prev.conversation,
                 loading: false,
@@ -153,17 +153,6 @@ export function cancelConversationFetch(serverUrl: string, conversationId: strin
         conversation: prev.conversation,
         loading: false,
     });
-    drainSettleCallbacks(key);
-}
-
-/**
- * Drop the cached entry without re-fetching. Subscribers see the initial
- * (loading: false, no conversation) state.
- */
-export function invalidateConversation(serverUrl: string, conversationId: string): void {
-    const key = inflightKey(serverUrl, conversationId);
-    inflight.delete(key);
-    conversationStore.evict(serverUrl, conversationId);
     drainSettleCallbacks(key);
 }
 

@@ -56,7 +56,6 @@ describe('BotSelectorItem', () => {
         channelIds: [],
         userAccessLevel: 0,
         userIds: [],
-        teamIds: [],
     } as unknown as AiBotModel;
 
     const getBaseProps = (): ComponentProps<typeof BotSelectorItem> => ({

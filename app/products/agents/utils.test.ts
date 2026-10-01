@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, resolveSelectedAgent, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -331,21 +331,6 @@ describe('resolveSelectedAgent', () => {
 
     it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
-    });
-});
-
-describe('resolveAgentSelection', () => {
-    it('should not warrant a picker with zero or one agent', () => {
-        expect(resolveAgentSelection([], undefined)).toEqual({agent: null, showPicker: false});
-
-        const only = {id: 'a1'};
-        expect(resolveAgentSelection([only], undefined)).toEqual({agent: only, showPicker: false});
-    });
-
-    it('should warrant a picker and resolve the default with multiple agents', () => {
-        const a1 = {id: 'a1'};
-        const a2 = {id: 'a2', isDefault: true};
-        expect(resolveAgentSelection([a1, a2], undefined)).toEqual({agent: a2, showPicker: true});
     });
 });
 

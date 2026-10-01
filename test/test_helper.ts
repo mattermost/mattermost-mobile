@@ -1035,7 +1035,6 @@ class TestHelperSingleton {
             channelIDs: [],
             userAccessLevel: UserAccessLevel.All,
             userIDs: [],
-            teamIDs: [],
             ...overwrite,
         };
     };

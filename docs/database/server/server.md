@@ -436,7 +436,6 @@ channel_access_level number
 channel_ids string
 user_access_level number
 user_ids string
-team_ids string
 is_default bool
 
 

@@ -38,7 +38,6 @@ export const transformAiBotRecord = ({action, database, value}: TransformerArgs<
         bot.channelIds = raw.channelIDs ?? [];
         bot.userAccessLevel = raw.userAccessLevel ?? record?.userAccessLevel ?? 0;
         bot.userIds = raw.userIDs ?? [];
-        bot.teamIds = raw.teamIDs ?? [];
 
         // The wire omits isDefault when false, so absence means false.
         bot.isDefault = raw.isDefault ?? false;

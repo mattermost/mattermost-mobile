@@ -175,7 +175,6 @@ export type RawAIThread = {
     turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;
-    bot_id?: string;
 };
 
 /**
@@ -217,9 +216,6 @@ export interface LLMBot {
     channelIDs: string[] | null;
     userAccessLevel: UserAccessLevel;
     userIDs: string[] | null;
-
-    // Only sent by plugins before 2.0.
-    teamIDs?: string[] | null;
 
     // System-wide default bot flag. Sent as camelCase `isDefault` with
     // omitempty by the plugin, so it is absent when false.

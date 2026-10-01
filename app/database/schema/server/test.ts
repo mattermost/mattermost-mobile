@@ -75,7 +75,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         channel_ids: {name: 'channel_ids', type: 'string'},
                         user_access_level: {name: 'user_access_level', type: 'number'},
                         user_ids: {name: 'user_ids', type: 'string'},
-                        team_ids: {name: 'team_ids', type: 'string'},
                         is_default: {name: 'is_default', type: 'boolean'},
                     },
                     columnArray: [
@@ -87,7 +86,6 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_ids', type: 'string'},
                         {name: 'user_access_level', type: 'number'},
                         {name: 'user_ids', type: 'string'},
-                        {name: 'team_ids', type: 'string'},
                         {name: 'is_default', type: 'boolean'},
                     ],
                 },

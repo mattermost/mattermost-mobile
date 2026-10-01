@@ -21,11 +21,10 @@ export const shouldUpdateAiBotRecord = (existingRecord: AiBotModel, newRaw: LLMB
         // The wire omits isDefault when false.
         existingRecord.isDefault !== (newRaw.isDefault ?? false) ||
 
-        // Go marshals nil slices as null (and 2.x dropped teamIDs entirely),
-        // so normalize to [] before comparing to avoid perpetual updates.
+        // Go marshals nil slices as null, so normalize to [] before comparing
+        // to avoid perpetual updates.
         JSON.stringify(existingRecord.channelIds) !== JSON.stringify(newRaw.channelIDs ?? []) ||
-        JSON.stringify(existingRecord.userIds) !== JSON.stringify(newRaw.userIDs ?? []) ||
-        JSON.stringify(existingRecord.teamIds) !== JSON.stringify(newRaw.teamIDs ?? [])
+        JSON.stringify(existingRecord.userIds) !== JSON.stringify(newRaw.userIDs ?? [])
     );
 };
 

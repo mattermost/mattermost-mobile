@@ -162,7 +162,6 @@ const mockBot = {
     channelIds: [],
     userAccessLevel: 0,
     userIds: [],
-    teamIds: [],
 } as unknown as AiBotModel;
 
 const mockBot2 = {

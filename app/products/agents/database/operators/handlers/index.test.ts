@@ -60,7 +60,7 @@ describe('AgentsHandler', () => {
         });
 
         it('should not rewrite an unchanged bot whose lists arrive as null', async () => {
-            const bot = TestHelper.fakeLLMBot({id: 'bot1', channelIDs: null, userIDs: null, teamIDs: undefined});
+            const bot = TestHelper.fakeLLMBot({id: 'bot1', channelIDs: null, userIDs: null});
             await operator.handleAIBots({bots: [bot], prepareRecordsOnly: false});
 
             const result = await operator.handleAIBots({bots: [bot], prepareRecordsOnly: false});

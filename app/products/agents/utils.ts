@@ -42,18 +42,6 @@ export function filterAgentsForChannel<T extends {channelAccessLevel: ChannelAcc
 }
 
 /**
- * Resolve the agent an entry point should use and whether an agent picker is
- * warranted. Pickers only appear when more than one agent is available; with
- * exactly one agent, it is used silently.
- */
-export function resolveAgentSelection<T extends {id: string; isDefault?: boolean}>(agents: T[], savedPrefId?: string | null): {agent: T | null; showPicker: boolean} {
-    return {
-        agent: resolveSelectedAgent(agents, savedPrefId),
-        showPicker: agents.length > 1,
-    };
-}
-
-/**
  * Build the composer draft for a rendered custom prompt. Outside a bot DM the
  * agent's @mention is prepended so the agent actually answers when the message
  * is posted (webapp parity: custom_prompts_dropdown.tsx); inside a bot DM the

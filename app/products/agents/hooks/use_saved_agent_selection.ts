@@ -5,7 +5,7 @@ import {useCallback, useEffect, useMemo} from 'react';
 
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {filterAgentsForChannel, resolveAgentSelection} from '@agents/utils';
+import {filterAgentsForChannel, resolveSelectedAgent} from '@agents/utils';
 import {useServerUrl} from '@context/server';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
@@ -25,10 +25,10 @@ export function useSavedAgentSelection(bots: AiBotModel[], selectedAgentId: stri
     const serverUrl = useServerUrl();
 
     const agents = useMemo(() => (channelId ? filterAgentsForChannel(bots, channelId) : bots), [bots, channelId]);
-    const {agent: autoResolvedAgent, showPicker} = useMemo(
-        () => resolveAgentSelection(agents, selectedAgentId),
-        [agents, selectedAgentId],
-    );
+    const autoResolvedAgent = useMemo(() => resolveSelectedAgent(agents, selectedAgentId), [agents, selectedAgentId]);
+
+    // With exactly one agent it is used silently.
+    const showPicker = agents.length > 1;
     const {selectedAgent, selectAgent} = useAgentSelection(agents, autoResolvedAgent);
 
     useEffect(() => {

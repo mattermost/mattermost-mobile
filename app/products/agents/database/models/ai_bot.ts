@@ -46,9 +46,6 @@ export default class AiBotModel extends Model implements AiBotModelInterface {
     /** user_ids : Array of user IDs the bot has access to */
     @json('user_ids', safeParseJSONStringArray) userIds!: string[];
 
-    /** team_ids : Array of team IDs the bot belongs to */
-    @json('team_ids', safeParseJSONStringArray) teamIds!: string[];
-
     /** is_default : Whether this bot is the system-wide default */
     @field('is_default') isDefault!: boolean;
 }
