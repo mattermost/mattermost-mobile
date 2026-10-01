@@ -12,14 +12,12 @@ import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
     channelId: string;
-    isAnalysisLicensed: boolean;
     showAsLabel?: boolean;
     testID?: string;
 }
 
 const AskAgentsOption = ({
     channelId,
-    isAnalysisLicensed,
     showAsLabel,
     testID,
 }: Props) => {
@@ -42,13 +40,6 @@ const AskAgentsOption = ({
             [1, Platform.select({ios: '60%', default: '40%'})],
         );
     }, [channelId]);
-
-    // The Agents plugin 403s the channel/thread analysis endpoints below the
-    // Professional license tier (outside dev mode), so hide the entry point
-    // entirely when unlicensed (webapp parity).
-    if (!isAnalysisLicensed) {
-        return null;
-    }
 
     if (showAsLabel) {
         return (

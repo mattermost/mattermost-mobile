@@ -7,7 +7,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import TestHelper from '@test/test_helper';
 
-import {observeHasAvailableAgents} from './agents';
+import {observeCanAnalyzeChannel, observeHasAvailableAgents} from './agents';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -46,6 +46,41 @@ describe('observeHasAvailableAgents', () => {
         await TestHelper.wait(0);
 
         expect(next).toHaveBeenLastCalledWith(false);
+        subscription.unsubscribe();
+    });
+});
+
+describe('observeCanAnalyzeChannel', () => {
+    const serverUrl = 'agents-analyze.test.com';
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.AGENTS_VERSION, value: '2.9.0'}],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'})], prepareRecordsOnly: false});
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should require an analysis license in addition to a usable agent', async () => {
+        const next = jest.fn();
+        const subscription = observeCanAnalyzeChannel(operator.database, 'channel1').subscribe({next});
+        await TestHelper.wait(0);
+        expect(next).toHaveBeenLastCalledWith(false);
+
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {SkuShortName: 'professional'}}],
+            prepareRecordsOnly: false,
+        });
+        await TestHelper.wait(0);
+
+        expect(next).toHaveBeenLastCalledWith(true);
         subscription.unsubscribe();
     });
 });

@@ -6,6 +6,7 @@ import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeAIBots} from '@agents/database/queries/bot';
 import {observeIsAgentsVersionSupported} from '@agents/database/queries/version';
+import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
 import {observeAgentsConfig} from '@agents/store/agents_config';
 import {filterAgentsForChannel} from '@agents/utils';
 import {Preferences} from '@constants';
@@ -24,6 +25,21 @@ export const observeHasAvailableAgents = (database: Database, channelId?: string
         observeAIBots(database),
     ]).pipe(
         map(([supported, bots]) => supported && (channelId ? filterAgentsForChannel(bots, channelId) : bots).length > 0),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Observe whether the channel/thread analysis entry points apply in
+ * `channelId`: an agent is usable there and the server is licensed for the
+ * plugin's analyze endpoints.
+ */
+export const observeCanAnalyzeChannel = (database: Database, channelId: string) => {
+    return combineLatest([
+        observeHasAvailableAgents(database, channelId),
+        observeIsAgentsAnalysisLicensed(database),
+    ]).pipe(
+        map(([hasAgents, licensed]) => hasAgents && licensed),
         distinctUntilChanged(),
     );
 };

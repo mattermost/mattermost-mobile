@@ -5,8 +5,7 @@ import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeHasAvailableAgents} from '@agents/queries/agents';
-import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
+import {observeCanAnalyzeChannel} from '@agents/queries/agents';
 import {Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
@@ -179,13 +178,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sour
     // Thread analysis entry point: needs an agent usable in this channel and
     // the license the plugin's analyze endpoints require; never shown for
     // system/ephemeral/deleted or burn-on-read posts.
-    const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post) || post.deleteAt !== 0) ? of$(false) : combineLatest([
-        observeHasAvailableAgents(database, post.channelId),
-        observeIsAgentsAnalysisLicensed(database),
-    ]).pipe(
-        switchMap(([hasAgents, isAnalysisLicensed]) => of$(hasAgents && isAnalysisLicensed)),
-        distinctUntilChanged(),
-    );
+    const canAskAgents = (borPost || isSystemMessage(post) || isPostEphemeral(post) || post.deleteAt !== 0) ? of$(false) : observeCanAnalyzeChannel(database, post.channelId);
 
     const canViewTranslation = observeIsChannelAutotranslated(database, post.channelId).pipe(
         combineLatestWith(currentUser),
