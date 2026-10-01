@@ -73,6 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 interface RoundViewProps {
     round: Round;
     postId: string;
+    conversationId: string;
     location: AvailableScreens;
     isDM: boolean;
     approvalStage: ToolApprovalStage;
@@ -90,6 +91,7 @@ interface RoundViewProps {
 const RoundView = ({
     round,
     postId,
+    conversationId,
     location,
     isDM,
     approvalStage,
@@ -140,6 +142,7 @@ const RoundView = ({
             {round.toolCalls.length > 0 && (
                 <ToolApprovalSet
                     postId={postId}
+                    conversationId={conversationId}
                     toolCalls={round.toolCalls}
                     approvalStage={approvalStage}
                     canApprove={canApprove}
@@ -401,6 +404,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         key={round.id}
                         round={round}
                         postId={post.id}
+                        conversationId={conversationId}
                         location={location}
                         isDM={isDM}
                         approvalStage={stage}

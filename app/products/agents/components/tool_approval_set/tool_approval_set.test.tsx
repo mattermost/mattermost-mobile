@@ -4,6 +4,7 @@
 import {act} from '@testing-library/react-native';
 import React from 'react';
 
+import {refetchConversation} from '@agents/actions/remote/conversation';
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -26,6 +27,9 @@ jest.mock('@context/server', () => ({
 jest.mock('@agents/actions/remote/tool_approval', () => ({
     submitToolApproval: jest.fn().mockResolvedValue({}),
 }));
+
+jest.mock('@agents/actions/remote/conversation');
+jest.mock('@utils/snack_bar');
 
 jest.mock('@agents/actions/remote/tool_result', () => ({
     submitToolResult: jest.fn().mockResolvedValue({}),
@@ -195,6 +199,52 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
 
         expect(submitToolApproval).toHaveBeenCalledTimes(1);
         expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a'], undefined);
+    });
+
+    it('should refetch the conversation after submitting so a channel accept reaches the share step', async () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                conversationId='c1'
+                toolCalls={pendingTools}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
+        });
+
+        expect(refetchConversation).toHaveBeenCalledWith('https://test.mattermost.com', 'c1');
+    });
+
+    it('should offer the decision buttons again after a failed submit', async () => {
+        jest.mocked(submitToolApproval).mockResolvedValueOnce({error: 'stale click'});
+        const tool = makeTool({id: 'a', status: ToolCallStatus.Pending, result: undefined});
+        const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                conversationId='c1'
+                toolCalls={[tool]}
+                approvalStage={ToolApprovalStage.Call}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledTimes(1);
+        expect(queryByTestId('agents.tool_card.a.approve')).not.toBeNull();
+        expect(queryByTestId('agents.tool_card.a.status.local_decision')).toBeNull();
     });
 
     it('should accept every actionable tool in one tap', async () => {
@@ -548,6 +598,28 @@ describe('ToolApprovalSet — question cards (AskUserQuestion)', () => {
 
         expect(submitToolApproval).toHaveBeenCalledWith(
             'https://test.mattermost.com', 'p1', ['q1'], {q1: {selected: [], custom: 'my own idea'}},
+        );
+    });
+
+    it('should let the question be answered again after a failed submit', async () => {
+        jest.mocked(submitToolApproval).mockResolvedValueOnce({error: 'network'});
+        const {getByTestId} = renderSet([makeQuestionTool()]);
+
+        const now = jest.spyOn(Date, 'now').mockReturnValue(1000);
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.question_card.q1.option.0'));
+        });
+
+        // Step past the double-tap guard.
+        now.mockReturnValue(10000);
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.question_card.q1.option.1'));
+        });
+        now.mockRestore();
+
+        expect(submitToolApproval).toHaveBeenCalledTimes(2);
+        expect(submitToolApproval).toHaveBeenLastCalledWith(
+            'https://test.mattermost.com', 'p1', ['q1'], {q1: {selected: ['Option B']}},
         );
     });
 

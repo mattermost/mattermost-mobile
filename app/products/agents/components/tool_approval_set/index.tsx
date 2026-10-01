@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages} from 'react-intl';
 import {Pressable, View} from 'react-native';
 
+import {refetchConversation} from '@agents/actions/remote/conversation';
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
 import {submitToolResult} from '@agents/actions/remote/tool_result';
 import {ToolApprovalStage, ToolCallStatus, UserInteractionSelect, type ToolAnswer, type ToolCall} from '@agents/types';
@@ -31,6 +32,9 @@ const messages = defineMessages({
 
 interface ToolApprovalSetProps {
     postId: string;
+
+    // Absent for legacy posts, which update through POST_EDITED instead.
+    conversationId?: string;
     toolCalls: ToolCall[];
     approvalStage: ToolApprovalStage;
     canApprove: boolean;
@@ -125,7 +129,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 /**
  * Container component for displaying and managing tool approval requests
  */
-const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults}: ToolApprovalSetProps) => {
+const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults}: ToolApprovalSetProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -223,13 +227,23 @@ const ToolApprovalSet = ({postId, toolCalls, approvalStage, canApprove, canExpan
 
         setIsSubmitting(false);
 
+        // Accepting in a channel neither streams nor emits an event until the
+        // share decision, and a rejected submit is often a stale click, so the
+        // conversation is the only way to learn the new stage either way.
+        if (conversationId) {
+            refetchConversation(serverUrl, conversationId);
+        }
+
         if (error) {
-            const barType = approvalStage === ToolApprovalStage.Result? SNACK_BAR_TYPE.AGENT_TOOL_RESULT_ERROR: SNACK_BAR_TYPE.AGENT_TOOL_APPROVAL_ERROR;
+            // Drop the decisions so the cards offer their buttons again.
+            setToolDecisions({});
+            toolAnswersRef.current = {};
+            const barType = approvalStage === ToolApprovalStage.Result ? SNACK_BAR_TYPE.AGENT_TOOL_RESULT_ERROR : SNACK_BAR_TYPE.AGENT_TOOL_APPROVAL_ERROR;
             showSnackBar({barType});
         }
 
         return !error;
-    }, [serverUrl, postId, approvalStage]);
+    }, [serverUrl, postId, conversationId, approvalStage, setToolDecisions]);
 
     const handleToolDecision = useCallback(async (toolId: string, approved: boolean) => {
         if (isSubmitting) {
