@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {clearAIBots} from '@agents/actions/local/bots';
+import {setAgentsVersion} from '@agents/actions/local/version';
 import {fetchAIBots} from '@agents/actions/remote/bots';
 import {updateAgentsVersion} from '@agents/actions/remote/version';
 import DatabaseManager from '@database/manager';
@@ -11,6 +13,7 @@ import {handleAgentsReconnect} from './reconnect';
 const serverUrl = 'test-server.com';
 
 jest.mock('@agents/actions/remote/bots');
+jest.mock('@agents/actions/local/bots');
 jest.mock('@agents/actions/remote/version');
 jest.mock('@utils/log');
 
@@ -20,6 +23,9 @@ describe('handleAgentsReconnect', () => {
 
         jest.mocked(updateAgentsVersion).mockResolvedValue({data: true});
         jest.mocked(fetchAIBots).mockResolvedValue({bots: []});
+        jest.mocked(clearAIBots).mockClear();
+        jest.mocked(fetchAIBots).mockClear();
+        await setAgentsVersion(serverUrl, '2.9.0');
     });
 
     afterEach(async () => {
@@ -42,6 +48,16 @@ describe('handleAgentsReconnect', () => {
         expect(updateAgentsVersion).toHaveBeenCalledTimes(1);
         expect(fetchAIBots).toHaveBeenCalledWith(serverUrl);
         expect(fetchAIBots).toHaveBeenCalledTimes(1);
+        expect(clearAIBots).not.toHaveBeenCalled();
+    });
+
+    it('should clear stored bots instead of fetching when no supported plugin is installed', async () => {
+        await setAgentsVersion(serverUrl, '');
+
+        await handleAgentsReconnect(serverUrl);
+
+        expect(fetchAIBots).not.toHaveBeenCalled();
+        expect(clearAIBots).toHaveBeenCalledWith(serverUrl);
     });
 
     it('should handle error from updateAgentsVersion', async () => {

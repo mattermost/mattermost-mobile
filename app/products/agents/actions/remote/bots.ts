@@ -10,35 +10,49 @@ import {logDebug, logError} from '@utils/log';
 
 import type {LLMBot} from '@agents/types';
 
+type FetchAIBotsResult = {bots?: LLMBot[]; searchEnabled?: boolean; allowUnsafeLinks?: boolean; error?: unknown};
+
+// handleAIBots diffs against rows read outside the writer, so overlapping
+// syncs would both try to create the same records.
+const inFlight = new Map<string, Promise<FetchAIBotsResult>>();
+
 /**
- * Fetch all AI bots from the server and store them in the database
+ * Fetch all AI bots from the server and store them in the database.
+ * Concurrent calls for the same server share one request.
  * @param serverUrl The server URL
  * @returns {bots, searchEnabled, allowUnsafeLinks, error} - Bot configuration on success, error on failure
  */
-export async function fetchAIBots(
-    serverUrl: string,
-): Promise<{bots?: LLMBot[]; searchEnabled?: boolean; allowUnsafeLinks?: boolean; error?: unknown}> {
+export function fetchAIBots(serverUrl: string): Promise<FetchAIBotsResult> {
+    let request = inFlight.get(serverUrl);
+    if (!request) {
+        request = doFetchAIBots(serverUrl).finally(() => inFlight.delete(serverUrl));
+        inFlight.set(serverUrl, request);
+    }
+    return request;
+}
+
+async function doFetchAIBots(serverUrl: string): Promise<FetchAIBotsResult> {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAIBots();
+        const bots = response.bots ?? [];
 
         // Persist the global unsafe-links config so agent renderers can gate
-        // markdown links. fetchAIBots runs on cold start and websocket
-        // reconnect, keeping this current. Partial update — pluginEnabled is
-        // owned by checkIsAgentsPluginEnabled and stays untouched.
+        // markdown links. Partial update — pluginEnabled is owned by
+        // checkIsAgentsPluginEnabled and stays untouched.
         setAgentsConfig(serverUrl, {allowUnsafeLinks: Boolean(response.allowUnsafeLinks)});
 
         // Store bots in database and remove any that no longer exist on the server
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         await operator.handleAIBots({
-            bots: response.bots,
+            bots,
             prepareRecordsOnly: false,
         });
 
         // Refresh bot user profiles to keep User.deleteAt current.
         // This prevents stale deactivation status from showing "archived channel" in agent chat.
         // Only fetches profiles not already in the DB.
-        const botUserIds = (response.bots || []).map((b) => b.id).filter(Boolean);
+        const botUserIds = bots.map((b) => b.id).filter(Boolean);
         if (botUserIds.length) {
             try {
                 await fetchMissingProfilesByIds(serverUrl, botUserIds);
@@ -48,12 +62,13 @@ export async function fetchAIBots(
         }
 
         return {
-            bots: response.bots,
+            bots,
             searchEnabled: response.searchEnabled,
             allowUnsafeLinks: response.allowUnsafeLinks,
         };
     } catch (error) {
-        logError('[fetchAIBots] Failed to fetch AI bots', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[fetchAIBots] Failed to fetch AI bots', errorMessage);
+        return {error: errorMessage};
     }
 }

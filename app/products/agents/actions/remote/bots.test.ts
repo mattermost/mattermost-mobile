@@ -109,8 +109,28 @@ describe('fetchAIBots', () => {
 
         const result = await fetchAIBots(serverUrl);
 
-        expect(logError).toHaveBeenCalledWith('[fetchAIBots] Failed to fetch AI bots', error);
+        expect(logError).toHaveBeenCalledWith('[fetchAIBots] Failed to fetch AI bots', errorMessage);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
+    });
+
+    it('should purge stored bots when the server sends a null bot list', async () => {
+        mockClient.getAIBots.mockResolvedValue({bots: null, searchEnabled: false, allowUnsafeLinks: false});
+
+        await fetchAIBots(serverUrl);
+
+        expect(mockOperator.handleAIBots).toHaveBeenCalledWith({bots: [], prepareRecordsOnly: false});
+    });
+
+    it('should share one request between concurrent calls for the same server', async () => {
+        mockClient.getAIBots.mockResolvedValue({bots: [], searchEnabled: false, allowUnsafeLinks: false});
+
+        const [first, second] = await Promise.all([fetchAIBots(serverUrl), fetchAIBots(serverUrl)]);
+
+        expect(mockClient.getAIBots).toHaveBeenCalledTimes(1);
+        expect(second).toBe(first);
+
+        await fetchAIBots(serverUrl);
+        expect(mockClient.getAIBots).toHaveBeenCalledTimes(2);
     });
 });
