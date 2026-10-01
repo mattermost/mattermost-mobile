@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
-import {fetchAIBots} from './bots';
+import {clearAIBots, fetchAIBots} from './bots';
 
 const mockOperator = {
     handleAIBots: jest.fn(),
@@ -137,15 +137,66 @@ describe('fetchAIBots', () => {
         expect(mockOperator.handleAIBots).toHaveBeenCalledWith({bots: [], prepareRecordsOnly: false});
     });
 
-    it('should share one request between concurrent calls for the same server', async () => {
-        mockClient.getAIBots.mockResolvedValue({bots: [], searchEnabled: false, allowUnsafeLinks: false});
+    it('should refetch after a running sync when called mid-flight, coalescing repeated calls', async () => {
+        let resolveFirst: (value: unknown) => void = () => undefined;
+        mockClient.getAIBots.
+            mockImplementationOnce(() => new Promise((resolve) => {
+                resolveFirst = resolve;
+            })).
+            mockResolvedValue({bots: [{id: 'bot2', isDefault: true}], searchEnabled: false, allowUnsafeLinks: false});
 
-        const [first, second] = await Promise.all([fetchAIBots(serverUrl), fetchAIBots(serverUrl)]);
+        const first = fetchAIBots(serverUrl);
+        await Promise.resolve();
+        const second = fetchAIBots(serverUrl);
+        const third = fetchAIBots(serverUrl);
+        expect(third).toBe(second);
 
-        expect(mockClient.getAIBots).toHaveBeenCalledTimes(1);
-        expect(second).toBe(first);
+        resolveFirst({bots: [{id: 'bot1', isDefault: true}], searchEnabled: false, allowUnsafeLinks: false});
 
-        await fetchAIBots(serverUrl);
+        expect((await first).bots?.[0].id).toBe('bot1');
+        expect((await second).bots?.[0].id).toBe('bot2');
         expect(mockClient.getAIBots).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('clearAIBots', () => {
+    it('should run after a fetch already in flight so the fetch cannot restore cleared bots', async () => {
+        let resolveFetch: (value: unknown) => void = () => undefined;
+        mockClient.getAIBots.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveFetch = resolve;
+        }));
+
+        const fetchRequest = fetchAIBots(serverUrl);
+        await Promise.resolve();
+        const clearRequest = clearAIBots(serverUrl);
+
+        resolveFetch({bots: [{id: 'bot1', isDefault: true}], searchEnabled: false, allowUnsafeLinks: false});
+        await Promise.all([fetchRequest, clearRequest]);
+
+        expect(mockOperator.handleAIBots).toHaveBeenCalledTimes(2);
+        expect(mockOperator.handleAIBots.mock.calls[0][0].bots).toHaveLength(1);
+        expect(mockOperator.handleAIBots.mock.calls[1][0]).toEqual({bots: [], prepareRecordsOnly: false});
+    });
+
+    it('should not let a fetch requested after the clear join a fetch queued before it', async () => {
+        let resolveFirst: (value: unknown) => void = () => undefined;
+        mockClient.getAIBots.
+            mockImplementationOnce(() => new Promise((resolve) => {
+                resolveFirst = resolve;
+            })).
+            mockResolvedValue({bots: [{id: 'bot1', isDefault: true}], searchEnabled: false, allowUnsafeLinks: false});
+
+        const running = fetchAIBots(serverUrl);
+        await Promise.resolve();
+        const queuedBeforeClear = fetchAIBots(serverUrl);
+        const clearRequest = clearAIBots(serverUrl);
+        const requestedAfterClear = fetchAIBots(serverUrl);
+        expect(requestedAfterClear).not.toBe(queuedBeforeClear);
+
+        resolveFirst({bots: [], searchEnabled: false, allowUnsafeLinks: false});
+        await Promise.all([running, queuedBeforeClear, clearRequest, requestedAfterClear]);
+
+        const lastCall = mockOperator.handleAIBots.mock.calls[mockOperator.handleAIBots.mock.calls.length - 1][0];
+        expect(lastCall.bots).toHaveLength(1);
     });
 });

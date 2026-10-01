@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {clearAIBots} from '@agents/actions/local/bots';
-import {fetchAIBots} from '@agents/actions/remote/bots';
+import {clearAIBots, fetchAIBots} from '@agents/actions/remote/bots';
 import {updateAgentsVersion} from '@agents/actions/remote/version';
 import {fetchIsAgentsVersionSupported} from '@agents/database/queries/version';
 import streamingStore from '@agents/store/streaming_store';
