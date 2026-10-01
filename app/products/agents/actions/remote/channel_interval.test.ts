@@ -27,7 +27,7 @@ describe('requestChannelInterval', () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
     });
 
-    it('requests the interval and switches to the returned bot DM on success', async () => {
+    it('should request the interval and switch to the returned bot DM on success', async () => {
         const doChannelInterval = jest.fn().mockResolvedValue({postid: 'dm-post-id', channelid: 'dm-id'});
         jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelInterval} as any);
         jest.mocked(getMyChannel).mockResolvedValue({id: 'dm-id'} as any);
@@ -41,7 +41,7 @@ describe('requestChannelInterval', () => {
         expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
     });
 
-    it('surfaces errors from the client', async () => {
+    it('should surface errors from the client', async () => {
         const doChannelInterval = jest.fn().mockRejectedValue(new Error('boom'));
         jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelInterval} as any);
 

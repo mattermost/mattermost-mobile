@@ -26,7 +26,7 @@ describe('requestThreadAnalysis', () => {
         jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
     });
 
-    it('calls the client and switches to the returned bot DM on success', async () => {
+    it('should call the client and switch to the returned bot DM on success', async () => {
         const doThreadAnalysis = jest.fn().mockResolvedValue({postid: 'dm-post-id', channelid: 'dm-id'});
         jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
         jest.mocked(getMyChannel).mockResolvedValue({id: 'dm-id'} as any);
@@ -40,7 +40,7 @@ describe('requestThreadAnalysis', () => {
         expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
     });
 
-    it('surfaces errors from the client', async () => {
+    it('should surface errors from the client', async () => {
         const doThreadAnalysis = jest.fn().mockRejectedValue(new Error('boom'));
         jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
 

@@ -149,7 +149,7 @@ describe('refetchConversation', () => {
     });
 
     it('should discard a superseded refetch result so only the newest fetch writes to the store', async () => {
-        let resolveFirst: (value: ConversationResponse) => void;
+        let resolveFirst: (value: ConversationResponse) => void = () => undefined;
         const firstResponse = new Promise<ConversationResponse>((resolve) => {
             resolveFirst = resolve;
         });
@@ -164,7 +164,7 @@ describe('refetchConversation', () => {
         expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Second');
 
         // The stale first fetch resolves AFTER the second one already landed.
-        resolveFirst!({...makeConversation(conversationId), title: 'First'});
+        resolveFirst({...makeConversation(conversationId), title: 'First'});
         await firstRefetch;
 
         const state = conversationStore.getState(serverUrl, conversationId);

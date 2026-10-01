@@ -433,8 +433,7 @@ const QuestionCard = ({
                             />
                             <View style={styles.optionTextContainer}>
                                 <FormattedText
-                                    id='agents.question.something_else'
-                                    defaultMessage='Something else…'
+                                    {...messages.somethingElse}
                                     style={styles.optionLabel}
                                 />
                             </View>
