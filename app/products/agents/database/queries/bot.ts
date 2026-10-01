@@ -22,11 +22,23 @@ export function queryAIBots(database: Database) {
     );
 }
 
+// Fields that entry-point gating, pickers and the sort order read; changes to
+// them must re-emit even when the set of bots is unchanged.
+const OBSERVED_BOT_COLUMNS = [
+    'display_name',
+    'username',
+    'last_icon_update',
+    'dm_channel_id',
+    'channel_access_level',
+    'channel_ids',
+    'is_default',
+];
+
 /**
  * Returns an observable for all AI bots in the database.
  */
 export function observeAIBots(database: Database) {
-    return queryAIBots(database).observe();
+    return queryAIBots(database).observeWithColumns(OBSERVED_BOT_COLUMNS);
 }
 
 /**
