@@ -180,34 +180,3 @@ export function stripWirePrefix(toolName: string): string {
     }
     return toolName.slice(idx + 2);
 }
-
-/**
- * Merge public tool calls with private data, preserving status from public and arguments/results from private
- */
-export function mergeToolCalls(publicCalls: ToolCall[], privateCalls: ToolCall[] | null): ToolCall[] {
-    if (!privateCalls?.length) {
-        return publicCalls;
-    }
-
-    const privateById = new Map(privateCalls.map((tc) => [tc.id, tc]));
-
-    const merged = publicCalls.map((publicTool) => {
-        const privateTool = privateById.get(publicTool.id);
-        if (!privateTool) {
-            return publicTool;
-        }
-        privateById.delete(publicTool.id);
-        return {
-            ...publicTool,
-            arguments: privateTool.arguments,
-            ...(privateTool.result != null && {result: privateTool.result}),
-        };
-    });
-
-    // Append any private-only tools not found in public calls
-    for (const privateTool of privateById.values()) {
-        merged.push(privateTool);
-    }
-
-    return merged;
-}

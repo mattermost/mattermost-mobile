@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
 import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
-import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
 import {useAgentsConfig} from '@agents/store/agents_config';
 import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {stripOpenAICitations} from '@agents/turn_content';
-import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
-import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost, mergeToolCalls} from '@agents/utils';
+import {type Annotation, type ToolCall} from '@agents/types';
+import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost} from '@agents/utils';
 import Markdown from '@components/markdown';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
@@ -56,10 +55,10 @@ export interface AgentPostLegacyProps {
 }
 
 /**
- * Legacy agent post renderer for servers running mattermost-plugin-agents
- * without conversation entities. Sources tool calls, reasoning, annotations,
- * and redaction state from post props, and fetches private tool data via the
- * legacy /tool_call_private and /tool_result_private endpoints.
+ * Agent post renderer for posts without a conversation entity (history from
+ * before the plugin's conversation model). Sources tool calls, reasoning,
+ * annotations, and redaction state from post props. Redacted tool payloads
+ * stay hidden: the private-data endpoints were removed in plugin 2.0.
  */
 const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyProps) => {
     const theme = useTheme();
@@ -138,10 +137,6 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
         return currentUserId ? isPostRequester(post, currentUserId) : false;
     }, [post, currentUserId]);
 
-    // Channel tool calling state
-    const [privateToolCalls, setPrivateToolCalls] = useState<ToolCall[] | null>(null);
-    const [privateToolResults, setPrivateToolResults] = useState<ToolCall[] | null>(null);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps -- post.props is the reactive value that drives redaction state
     const isRedacted = useMemo(() => isToolCallRedacted(post), [post.props]);
 
@@ -153,74 +148,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
 
     const canApprove = isRequester;
     const canExpand = isRequester;
-    const showArguments = isDM || (isRequester && (!isRedacted || privateToolCalls !== null));
-    const showResults = isDM || (isRequester && (!isRedacted || privateToolResults !== null));
-
-    const mergedToolCalls = useMemo(() => {
-        if (approvalStage === ToolApprovalStage.Result && privateToolResults) {
-            return mergeToolCalls(toolCalls, privateToolResults);
-        }
-        if (privateToolCalls) {
-            return mergeToolCalls(toolCalls, privateToolCalls);
-        }
-        return toolCalls;
-    }, [toolCalls, privateToolCalls, privateToolResults, approvalStage]);
-
-    // Fetch private tool call data when in Phase 1
-    useEffect(() => {
-        let cancelled = false;
-        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Call && toolCalls.length > 0 && !privateToolCalls) {
-            fetchToolCallPrivate(serverUrl, post.id).then(({data, error}) => {
-                if (cancelled) {
-                    return;
-                }
-                if (data) {
-                    setPrivateToolCalls(data);
-                }
-                if (error) {
-                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
-                }
-            });
-        }
-        return () => {
-            cancelled = true;
-        };
-    }, [isRedacted, isRequester, approvalStage, toolCalls, privateToolCalls, serverUrl, post.id]);
-
-    // Fetch private tool results when in Phase 2
-    useEffect(() => {
-        let cancelled = false;
-        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Result && !privateToolResults) {
-            fetchToolResultPrivate(serverUrl, post.id).then(({data, error}) => {
-                if (cancelled) {
-                    return;
-                }
-                if (data) {
-                    setPrivateToolResults(data);
-                }
-                if (error) {
-                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
-                }
-            });
-        }
-        return () => {
-            cancelled = true;
-        };
-    }, [isRedacted, isRequester, approvalStage, privateToolResults, serverUrl, post.id]);
-
-    // Clear private data when streaming tool calls actually change so a
-    // re-render with the same reference doesn't wipe persisted state.
-    const prevStreamingToolCallsRef = useRef(streamingState?.toolCalls);
-    useEffect(() => {
-        const currentToolCalls = streamingState?.toolCalls;
-        const prevToolCalls = prevStreamingToolCallsRef.current;
-        prevStreamingToolCallsRef.current = currentToolCalls;
-
-        if (currentToolCalls !== prevToolCalls && (currentToolCalls || prevToolCalls)) {
-            setPrivateToolCalls(null);
-            setPrivateToolResults(null);
-        }
-    }, [streamingState?.toolCalls]);
+    const showToolPayloads = isDM || (isRequester && !isRedacted);
 
     // Determine if generation is in progress (generating or reasoning)
     const isGenerationInProgress = isGenerating || isReasoningLoading;
@@ -233,7 +161,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
 
     // The plugin creates the response post empty (and without a
     // conversation_id yet) before setup, so an empty post is still working.
-    const showPlaceholder = isPrecontent || (!hasContent && mergedToolCalls.length === 0);
+    const showPlaceholder = isPrecontent || (!hasContent && toolCalls.length === 0);
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
 
     // Handler for stop button
@@ -282,15 +210,15 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                     )}
                 </View>
             )}
-            {mergedToolCalls.length > 0 && (
+            {toolCalls.length > 0 && (
                 <ToolApprovalSet
                     postId={post.id}
-                    toolCalls={mergedToolCalls}
+                    toolCalls={toolCalls}
                     approvalStage={approvalStage}
                     canApprove={canApprove}
                     canExpand={canExpand}
-                    showArguments={showArguments}
-                    showResults={showResults}
+                    showArguments={showToolPayloads}
+                    showResults={showToolPayloads}
                 />
             )}
             {annotations.length > 0 && (

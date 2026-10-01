@@ -36,8 +36,6 @@ function hasStreamedContent(state: StreamingState): boolean {
 
 // Merge incoming tool calls into the existing list by id: update in place when
 // the id is known (status transitions), append when new, preserving order.
-// Named distinctly from the unrelated `mergeToolCalls` in @agents/utils (which
-// merges public + private redaction data) to avoid conflating the two.
 function mergeToolCallsById(existing: ToolCall[], incoming: ToolCall[]): ToolCall[] {
     const byId = new Map<string, number>();
     const merged = [...existing];

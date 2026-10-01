@@ -5,7 +5,7 @@ import {AGENT_POST_TYPES} from '@agents/constants';
 import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, resolveSelectedAgent, resolveAgentSelection, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -296,79 +296,6 @@ describe('stripWirePrefix', () => {
 
     it('should leave names whose prefix token has invalid characters unchanged', () => {
         expect(stripWirePrefix('with space__tool')).toBe('with space__tool');
-    });
-});
-
-describe('mergeToolCalls', () => {
-    const makeToolCall = (overrides: Partial<ToolCall> & {id: string}): ToolCall => ({
-        name: 'tool',
-        description: 'A tool',
-        arguments: {},
-        status: ToolCallStatus.Pending,
-        ...overrides,
-    });
-
-    it('should return publicCalls unchanged when privateCalls is null', () => {
-        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
-        expect(mergeToolCalls(publicCalls, null)).toBe(publicCalls);
-    });
-
-    it('should return publicCalls unchanged when privateCalls is empty', () => {
-        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
-        expect(mergeToolCalls(publicCalls, [])).toBe(publicCalls);
-    });
-
-    it('should merge private arguments into public calls while preserving public status', () => {
-        const publicCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Accepted, arguments: {redacted: true}})];
-        const privateCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Pending, arguments: {q: 'secret'}})];
-
-        const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result).toHaveLength(1);
-        expect(result[0].arguments).toEqual({q: 'secret'});
-        expect(result[0].status).toBe(ToolCallStatus.Accepted);
-    });
-
-    it('should merge private result when present', () => {
-        const publicCalls = [makeToolCall({id: 'tc1'})];
-        const privateCalls = [makeToolCall({id: 'tc1', result: 'done'})];
-
-        const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result[0].result).toBe('done');
-    });
-
-    it('should not overwrite result when private result is undefined', () => {
-        const publicCalls = [makeToolCall({id: 'tc1', result: 'original'})];
-        const privateCalls = [makeToolCall({id: 'tc1', result: undefined})];
-
-        const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result[0].result).toBe('original');
-    });
-
-    it('should preserve public tools and append private-only tools', () => {
-        const publicCalls = [makeToolCall({id: 'tc1'})];
-        const privateCalls = [makeToolCall({id: 'tc_unknown', name: 'private_only', arguments: {x: 1}})];
-
-        const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result).toHaveLength(2);
-        expect(result[0].id).toBe('tc1');
-        expect(result[1].id).toBe('tc_unknown');
-        expect(result[1].name).toBe('private_only');
-        expect(result[1].arguments).toEqual({x: 1});
-    });
-
-    it('should preserve public-only tools when private is a subset', () => {
-        const publicCalls = [
-            makeToolCall({id: 'tc1', arguments: {q: 'hello'}}),
-            makeToolCall({id: 'tc2', arguments: {q: 'world'}}),
-        ];
-        const privateCalls = [makeToolCall({id: 'tc1', arguments: {q: 'secret'}})];
-
-        const result = mergeToolCalls(publicCalls, privateCalls);
-        expect(result).toHaveLength(2);
-        expect(result[0].id).toBe('tc1');
-        expect(result[0].arguments).toEqual({q: 'secret'});
-        expect(result[1].id).toBe('tc2');
-        expect(result[1].arguments).toEqual({q: 'world'});
     });
 });
 

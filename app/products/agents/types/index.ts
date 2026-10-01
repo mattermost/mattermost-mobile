@@ -165,13 +165,9 @@ export interface AIThread {
     channel_id: string;
     turn_count: number;
     update_at: number;
-
-    // Raw plugin >= 2.0 fields, surfaced for callers that need them.
-    root_post_id?: string | null;
-    bot_id?: string;
 }
 
-// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+// Wire-format AI thread before normalisation.
 export type RawAIThread = {
     id: string;
     title?: string;

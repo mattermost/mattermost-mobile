@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer, ToolCall} from '@agents/types';
+import type {AIBotsResponse, ConversationResponse, RawAIThread, ToolAnswer} from '@agents/types';
 import type {AgentsStatusResponse, ChannelAnalysisOptions, ChannelAnalysisResponse, ChannelIntervalResponse, CustomPrompt, CustomPromptRenderRequest, CustomPromptRenderResponse, RewriteRequest, RewriteResponse, ThreadAnalysisResponse} from '@agents/types/api';
 
 export interface ClientAgentsMix {
@@ -32,8 +32,6 @@ export interface ClientAgentsMix {
 
     // Legacy endpoints (plugin < 2.0): redaction fetched via dedicated routes.
     // New plugin scopes privacy at the conversation-fetch / websocket layer.
-    getToolCallPrivate: (postId: string) => Promise<ToolCall[]>;
-    getToolResultPrivate: (postId: string) => Promise<ToolCall[]>;
     submitToolResult: (postId: string, acceptedToolIds: string[]) => Promise<void>;
 
     // Conversation entity (plugin >= 2.0): source of truth for tool calls,
@@ -161,20 +159,6 @@ const ClientAgents = (superclass: any) => class extends superclass {
                 method: 'post',
                 body: toolAnswers ? {accepted_tool_ids: acceptedToolIds, tool_answers: toolAnswers} : {accepted_tool_ids: acceptedToolIds},
             },
-        );
-    };
-
-    getToolCallPrivate = async (postId: string): Promise<ToolCall[]> => {
-        return this.doFetch(
-            `${this.getAgentsRoute()}/post/${postId}/tool_call_private`,
-            {method: 'get'},
-        );
-    };
-
-    getToolResultPrivate = async (postId: string): Promise<ToolCall[]> => {
-        return this.doFetch(
-            `${this.getAgentsRoute()}/post/${postId}/tool_result_private`,
-            {method: 'get'},
         );
     };
 
