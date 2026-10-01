@@ -156,7 +156,7 @@ describe('CitationsList', () => {
             expect(tryOpenURL).toHaveBeenCalledWith('https://example.com/specific-page');
         });
 
-        it('should not call tryOpenURL for empty URL', () => {
+        it('should render a citation without a URL as a non-interactive row', () => {
             const props = getBaseProps();
             props.annotations = [
                 createMockAnnotation({url: ''}),
@@ -166,6 +166,7 @@ describe('CitationsList', () => {
             fireEvent.press(getByTestId('citations.list.toggle'));
             fireEvent.press(getByTestId('citations.list.item.1'));
 
+            expect(getByTestId('citations.list.item.1')).toBeDisabled();
             expect(tryOpenURL).not.toHaveBeenCalled();
         });
     });

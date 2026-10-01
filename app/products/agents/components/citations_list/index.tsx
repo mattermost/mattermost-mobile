@@ -161,6 +161,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                         <Pressable
                             key={`citation-${annotation.index}-${annotation.url}`}
                             onPress={() => handleCitationPress(annotation.url)}
+                            disabled={!annotation.url}
                             style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
                             testID={`citations.list.item.${annotation.index}`}
                         >
@@ -178,18 +179,22 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                                 >
                                     {annotation.title || getUrlDomain(annotation.url ?? '')}
                                 </Text>
-                                <Text
-                                    style={styles.citationUrl}
-                                    numberOfLines={1}
-                                >
-                                    {getUrlDomain(annotation.url ?? '')}
-                                </Text>
+                                {Boolean(annotation.url) && (
+                                    <Text
+                                        style={styles.citationUrl}
+                                        numberOfLines={1}
+                                    >
+                                        {getUrlDomain(annotation.url ?? '')}
+                                    </Text>
+                                )}
                             </View>
-                            <CompassIcon
-                                name='open-in-new'
-                                size={16}
-                                color={changeOpacity(theme.centerChannelColor, 0.56)}
-                            />
+                            {Boolean(annotation.url) && (
+                                <CompassIcon
+                                    name='open-in-new'
+                                    size={16}
+                                    color={changeOpacity(theme.centerChannelColor, 0.56)}
+                                />
+                            )}
                         </Pressable>
                     ))}
                 </View>
