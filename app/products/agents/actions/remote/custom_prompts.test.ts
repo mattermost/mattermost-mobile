@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {createPost} from '@actions/remote/post';
 import {getCustomPromptsState} from '@agents/store/custom_prompts_store';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
-import {fetchCustomPrompts, renderCustomPrompt} from './custom_prompts';
+import {fetchCustomPrompts, postCustomPrompt, renderCustomPrompt} from './custom_prompts';
 
 import type {CustomPrompt} from '@agents/types/api';
 
+jest.mock('@actions/remote/post');
 jest.mock('@managers/network_manager');
 jest.mock('@utils/log');
 
@@ -85,5 +89,49 @@ describe('renderCustomPrompt', () => {
 
         expect(result.error).toBeDefined();
         expect(result.data).toBeUndefined();
+    });
+});
+
+describe('postCustomPrompt', () => {
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        await DatabaseManager.serverDatabases[serverUrl]!.operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'me'}],
+            prepareRecordsOnly: false,
+        });
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should post the rendered prompt as the current user and return the post id', async () => {
+        mockClient.renderCustomPrompt.mockResolvedValue({rendered: 'Summarize my week'});
+        jest.mocked(createPost).mockResolvedValue({data: true, post: {id: 'post-1'} as Post});
+
+        const result = await postCustomPrompt(serverUrl, 'prompt-1', 'dm-1', 'ai-bot');
+
+        expect(mockClient.renderCustomPrompt).toHaveBeenCalledWith('prompt-1', {channel_id: 'dm-1', bot_username: 'ai-bot'});
+        expect(createPost).toHaveBeenCalledWith(serverUrl, {channel_id: 'dm-1', message: 'Summarize my week', user_id: 'me'});
+        expect(result).toEqual({postId: 'post-1'});
+    });
+
+    it('should not post when the render fails', async () => {
+        mockClient.renderCustomPrompt.mockRejectedValue(new Error('render failed'));
+
+        const result = await postCustomPrompt(serverUrl, 'prompt-1', 'dm-1');
+
+        expect(createPost).not.toHaveBeenCalled();
+        expect(result.error).toBeDefined();
+    });
+
+    it('should report an error when the send failed and the post was kept locally for retry', async () => {
+        mockClient.renderCustomPrompt.mockResolvedValue({rendered: 'Summarize my week'});
+        jest.mocked(createPost).mockResolvedValue({data: true});
+
+        const result = await postCustomPrompt(serverUrl, 'prompt-1', 'dm-1');
+
+        expect(result.postId).toBeUndefined();
+        expect(result.error).toBeDefined();
     });
 });

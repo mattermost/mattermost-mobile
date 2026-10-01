@@ -1,12 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, StyleSheet, View} from 'react-native';
 
-import {createPost} from '@actions/remote/post';
-import {fetchCustomPrompts, renderCustomPrompt} from '@agents/actions/remote/custom_prompts';
+import {fetchCustomPrompts, postCustomPrompt} from '@agents/actions/remote/custom_prompts';
 import {useCustomPromptsState} from '@agents/store/custom_prompts_store';
 import {useServerUrl} from '@context/server';
 import useDidMount from '@hooks/did_mount';
@@ -54,20 +53,20 @@ const CustomPromptPills = ({channelId, botUsername, onPostCreated}: Props) => {
     const {prompts, pinnedPromptIds} = useCustomPromptsState(serverUrl);
     const [executingId, setExecutingId] = useState<string | null>(null);
 
+    // Switching agents unmounts the pills; a prompt still in flight for the
+    // previous agent's DM must not hand its post to the new conversation.
+    const mountedRef = useRef(true);
+
     useDidMount(() => {
         fetchCustomPrompts(serverUrl);
+        return () => {
+            mountedRef.current = false;
+        };
     });
 
     const pinnedPrompts = useMemo(() => {
         return prompts.filter((prompt) => pinnedPromptIds.includes(prompt.id));
     }, [prompts, pinnedPromptIds]);
-
-    const showError = useCallback(() => {
-        Alert.alert(
-            intl.formatMessage(customPromptErrorMessages.errorTitle),
-            intl.formatMessage(customPromptErrorMessages.errorMessage),
-        );
-    }, [intl]);
 
     const handlePromptPress = useCallback(async (prompt: CustomPrompt) => {
         if (executingId) {
@@ -75,28 +74,22 @@ const CustomPromptPills = ({channelId, botUsername, onPostCreated}: Props) => {
         }
         setExecutingId(prompt.id);
 
-        // bot_username lets the server resolve {{.BotName}} for the selected agent.
-        const {data: rendered, error: renderError} = await renderCustomPrompt(serverUrl, prompt.id, {
-            channel_id: channelId,
-            bot_username: botUsername,
-        });
-
-        if (renderError || rendered === undefined) {
-            setExecutingId(null);
-            showError();
+        const {postId, error} = await postCustomPrompt(serverUrl, prompt.id, channelId, botUsername);
+        if (!mountedRef.current) {
             return;
         }
-
-        const {post, error: postError} = await createPost(serverUrl, {channel_id: channelId, message: rendered});
         setExecutingId(null);
 
-        if (postError || !post?.id) {
-            showError();
+        if (error || !postId) {
+            Alert.alert(
+                intl.formatMessage(customPromptErrorMessages.errorTitle),
+                intl.formatMessage(customPromptErrorMessages.errorMessage),
+            );
             return;
         }
 
-        onPostCreated(post.id);
-    }, [botUsername, channelId, executingId, onPostCreated, serverUrl, showError]);
+        onPostCreated(postId);
+    }, [botUsername, channelId, executingId, intl, onPostCreated, serverUrl]);
 
     if (pinnedPrompts.length === 0) {
         return null;

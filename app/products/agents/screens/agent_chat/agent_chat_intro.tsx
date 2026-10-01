@@ -76,6 +76,7 @@ const AgentChatIntro = ({loading, error, channelId, botUsername, onPromptPosted}
             />
             {channelId && (
                 <CustomPromptPills
+                    key={channelId}
                     channelId={channelId}
                     botUsername={botUsername}
                     onPostCreated={onPromptPosted}
