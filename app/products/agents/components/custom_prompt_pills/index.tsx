@@ -68,16 +68,22 @@ const CustomPromptPills = ({channelId, botUsername, onPostCreated}: Props) => {
         return prompts.filter((prompt) => pinnedPromptIds.includes(prompt.id));
     }, [prompts, pinnedPromptIds]);
 
+    // executingId lags a render behind, so taps on two pills in the same frame
+    // would both post without this.
+    const executingRef = useRef(false);
+
     const handlePromptPress = useCallback(async (prompt: CustomPrompt) => {
-        if (executingId) {
+        if (executingRef.current) {
             return;
         }
+        executingRef.current = true;
         setExecutingId(prompt.id);
 
         const {postId, error} = await postCustomPrompt(serverUrl, prompt.id, channelId, botUsername);
         if (!mountedRef.current) {
             return;
         }
+        executingRef.current = false;
         setExecutingId(null);
 
         if (error || !postId) {
@@ -89,7 +95,7 @@ const CustomPromptPills = ({channelId, botUsername, onPostCreated}: Props) => {
         }
 
         onPostCreated(postId);
-    }, [botUsername, channelId, executingId, intl, onPostCreated, serverUrl]);
+    }, [botUsername, channelId, intl, onPostCreated, serverUrl]);
 
     if (pinnedPrompts.length === 0) {
         return null;
