@@ -18,7 +18,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type Props = {
     testID?: string;
     canUploadFiles: boolean;
-    channelId?: string;
     fileCount: number;
     isAgentsEnabled: boolean;
     isPostPriorityEnabled: boolean;
@@ -55,7 +54,6 @@ const style = StyleSheet.create({
 export default function QuickActions({
     testID,
     canUploadFiles,
-    channelId,
     value,
     fileCount,
     isAgentsEnabled,
@@ -130,7 +128,6 @@ export default function QuickActions({
                 <AIRewriteAction
                     testID={aiRewriteActionTestID}
                     value={value}
-                    channelId={channelId}
                     updateValue={updateValue}
                 />
             )}

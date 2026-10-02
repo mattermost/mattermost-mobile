@@ -9,6 +9,7 @@ import {
     type Annotation,
     type ContentBlock,
     type ConversationResponse,
+    type Reasoning,
     type Round,
     type ToolCall,
     type Turn,
@@ -66,15 +67,8 @@ export function collectResponseTurns(conversation: ConversationResponse, postId:
             break;
         }
 
-        // Any post-anchored turn bounds this response: either a foreign post's
-        // anchor (sweeping on would pull in its tool_use blocks) or a
-        // superseded generation of this same post — regen paths that don't
-        // scrub prior response turns (e.g. thread analysis) leave one anchored
-        // assistant turn per generation, and collecting them would stack every
-        // prior answer above the current one. Mid-response turns never carry a
-        // post_id: tool rounds are written without one and a continuation
-        // demotes the prior anchor to null before the new anchor is created.
-        if (t.post_id) {
+        // Crossed into a foreign post's response; stop or we'd sweep in its tool_use blocks.
+        if (t.post_id && t.post_id !== postId) {
             break;
         }
         out.unshift(t);
@@ -103,17 +97,27 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
     return {
         id: block.id ?? '',
         name: block.name ?? '',
-        title: block.title || undefined,
-        description: block.description ?? '',
+        description: '',
         arguments: block.input ?? undefined,
         result: resultBlock?.content ?? undefined,
         status: statusStringToEnum(block.status),
-        server_origin: block.server_origin ?? undefined,
-        mcp_bare_name: block.mcp_bare_name ?? undefined,
         user_interaction: block.user_interaction ?? undefined,
-        would_auto_execute: block.would_auto_execute ?? undefined,
+        would_auto_execute: block.would_auto_execute,
         decided: resultBlock?.decided_at != null,
     };
+}
+
+export function extractReasoningFromTurn(turn: Turn | undefined): Reasoning {
+    if (!turn) {
+        return {summary: '', signature: ''};
+    }
+    const thinkingBlocks = turn.content.filter((b) => b.type === BlockType.Thinking);
+    if (thinkingBlocks.length === 0) {
+        return {summary: '', signature: ''};
+    }
+    const summary = thinkingBlocks.map((b) => b.text ?? '').join('\n');
+    const signature = thinkingBlocks[thinkingBlocks.length - 1]?.signature ?? '';
+    return {summary, signature};
 }
 
 export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[] {
@@ -125,37 +129,14 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
     let runningIndex = 0;
 
     for (const block of turn.content) {
-        // Annotations block (web search context). The streamer persists the
-        // live annotations array verbatim into web_search_context.results, so
-        // surface those without re-deriving indices.
-        if (block.type === BlockType.Annotations && block.web_search_context) {
-            const results = block.web_search_context.results;
-            if (Array.isArray(results)) {
-                for (const r of results as Array<Partial<Annotation>>) {
-                    if (r && r.type === 'url_citation') {
-                        annotations.push({
-                            type: 'url_citation',
-                            start_index: r.start_index ?? 0,
-                            end_index: r.end_index ?? 0,
-                            url: r.url,
-                            title: r.title,
-                            cited_text: r.cited_text,
-                            index: r.index ?? runningIndex,
-                        });
-                        runningIndex++;
-                    }
-                }
-            }
-        }
-
         if (block.type === BlockType.Text && block.citations) {
             for (const c of block.citations) {
                 annotations.push({
                     type: 'url_citation',
                     start_index: c.start_index,
                     end_index: c.end_index,
-                    url: c.url,
-                    title: c.title,
+                    url: c.url ?? '',
+                    title: c.title ?? '',
                     index: runningIndex,
                 });
                 runningIndex++;
@@ -166,176 +147,9 @@ export function extractAnnotationsFromTurn(turn: Turn | undefined): Annotation[]
     return annotations;
 }
 
-// Matches OpenAI-style inline citation clutter like "(source: https://…)"
-// that some models emit mid-sentence, with the spaces around it when it sits
-// before punctuation. Adapted from the plugin webapp's citation_processor.tsx,
-// which runs on rendered text nodes; here it runs on markdown source, so the
-// URL allows one level of balanced parentheses (e.g. Wikipedia links) and
-// otherwise stops at the first `)`.
-const openAICitationRegex = /[ \t]*\([^\s:()]+\s*:\s*https?:\/\/(?:[^\s()]|\([^\s()]*\))*\)(?:[ \t]+(?=[.,;:!?]))?/g;
-
-const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})(.*)$/;
-const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
-const INDENTED_CODE = /^(?: {4}|\t)/;
-
-const CITATION_FOLLOWER = /[\s.,;:!?)]/;
-
-function stripCitationsFromProse(text: string): string {
-    return text.replace(openAICitationRegex, (match: string, offset: number) => {
-        const next = text.charAt(offset + match.length);
-        if (next === '' || CITATION_FOLLOWER.test(next)) {
-            return '';
-        }
-
-        // Glued to the next word: keep the separating whitespace.
-        return match.slice(0, match.indexOf('('));
-    });
-}
-
-function backtickRunEnd(text: string, start: number): number {
-    let end = start;
-    while (text[end] === '`') {
-        end++;
-    }
-    return end;
-}
-
-// Strips citations from a block of prose lines, skipping inline code spans
-// (a backtick run closed by a run of the same length).
-function stripCitationsOutsideInlineCode(text: string): string {
-    let result = '';
-    let proseStart = 0;
-    let i = 0;
-    while (i < text.length) {
-        if (text[i] !== '`') {
-            i++;
-            continue;
-        }
-        const openEnd = backtickRunEnd(text, i);
-        const runLength = openEnd - i;
-        let closeEnd = -1;
-        let k = openEnd;
-        while (k < text.length) {
-            if (text[k] === '`') {
-                const runEnd = backtickRunEnd(text, k);
-                if (runEnd - k === runLength) {
-                    closeEnd = runEnd;
-                    break;
-                }
-                k = runEnd;
-            } else {
-                k++;
-            }
-        }
-        if (closeEnd === -1) {
-            i = openEnd;
-            continue;
-        }
-        result += stripCitationsFromProse(text.slice(proseStart, i)) + text.slice(i, closeEnd);
-        proseStart = closeEnd;
-        i = closeEnd;
-    }
-    return result + stripCitationsFromProse(text.slice(proseStart));
-}
-
-// Strip inline "(source: https://…)" noise from agent-generated text before
-// rendering, leaving fenced, indented and inline code untouched.
-export function stripOpenAICitations(text: string): string {
-    const out: string[] = [];
-    let prose: string[] = [];
-    const flushProse = () => {
-        if (prose.length) {
-            out.push(stripCitationsOutsideInlineCode(prose.join('\n')));
-            prose = [];
-        }
-    };
-
-    let fence: {char: string; length: number} | undefined;
-    let prevBlankOrCode = true;
-    for (const line of text.split('\n')) {
-        if (fence) {
-            out.push(line);
-            const close = FENCE_CLOSE.exec(line);
-            if (close && close[1][0] === fence.char && close[1].length >= fence.length) {
-                fence = undefined;
-            }
-            continue;
-        }
-
-        const open = FENCE_OPEN.exec(line);
-        if (open && !(open[1][0] === '`' && open[2].includes('`'))) {
-            flushProse();
-            out.push(line);
-            fence = {char: open[1][0], length: open[1].length};
-            prevBlankOrCode = true;
-            continue;
-        }
-
-        // Indented code can't interrupt a paragraph.
-        if (prevBlankOrCode && INDENTED_CODE.test(line) && line.trim() !== '') {
-            flushProse();
-            out.push(line);
-            continue;
-        }
-
-        prose.push(line);
-        prevBlankOrCode = line.trim() === '';
-    }
-    flushProse();
-    return out.join('\n');
-}
-
-function emptyRound(id: string): Round {
-    return {id, text: '', toolCalls: [], reasoning: {summary: '', signature: ''}, annotations: [], serverTools: []};
-}
-
-// Split one assistant turn into rounds rendered reasoning -> activity -> text:
-// a block whose slot is already filled starts a new round, so provider
-// activity that follows text renders below it (webapp splitTurnIntoRounds).
-// Client tool_use blocks and the turn's annotations stay on the last round —
-// toolrunner persists each client tool round as its own turn, and citations
-// render as one combined list per post.
-function splitTurnIntoRounds(turn: Turn, resultMap: Map<string, ContentBlock>): Round[] {
-    const rounds = [emptyRound(turn.id)];
-    const current = () => rounds[rounds.length - 1];
-    const startRound = () => rounds.push(emptyRound(`${turn.id}-${rounds.length}`));
-
-    for (const block of turn.content) {
-        if (block.type === BlockType.Thinking && block.text) {
-            if (current().text !== '' || current().serverTools.length > 0) {
-                startRound();
-            }
-            const {reasoning} = current();
-            reasoning.summary = reasoning.summary === '' ? block.text : `${reasoning.summary}\n${block.text}`;
-            reasoning.signature = block.signature ?? reasoning.signature;
-        } else if (block.type === BlockType.ServerToolUse && block.server_tool) {
-            if (current().text !== '') {
-                startRound();
-            }
-            current().serverTools.push(block.server_tool);
-        } else if (block.type === BlockType.Text) {
-            current().text += block.text ?? '';
-        }
-    }
-
-    const last = current();
-    last.toolCalls = turn.content.
-        filter((b) => b.type === BlockType.ToolUse).
-        map((block) => toolUseBlockToToolCall(block, resultMap));
-    last.annotations = extractAnnotationsFromTurn(turn);
-    return rounds;
-}
-
-// Build the ordered rounds for a post's response: one or more Rounds per
-// assistant turn, in sequence order, so multi-step tool answers render in
-// their true order instead of being flattened into a single block.
-//
-// BlockType.File / BlockType.Image blocks are intentionally not rendered,
-// mirroring the plugin webapp (turn_content_utils.ts only reads Text, Thinking,
-// ToolUse, ToolResult, ServerToolUse and Annotations blocks): generated files
-// are merged into post.FileIds by the plugin, so they render through the
-// standard post file attachments chrome (Files inside the post Body), not from
-// conversation turns.
+// Build the ordered rounds for a post's response: one Round per assistant turn,
+// in sequence order, so multi-step tool answers render in their true order
+// instead of being flattened into a single block.
 export function buildRoundsFromTurns(conversation: ConversationResponse, postId: string): Round[] {
     const turns = collectResponseTurns(conversation, postId);
     if (turns.length === 0) {
@@ -343,9 +157,27 @@ export function buildRoundsFromTurns(conversation: ConversationResponse, postId:
     }
 
     const resultMap = buildToolResultMap(conversation);
-    return turns.
-        filter((turn) => turn.role === 'assistant').
-        flatMap((turn) => splitTurnIntoRounds(turn, resultMap));
+    const rounds: Round[] = [];
+    for (const turn of turns) {
+        if (turn.role !== 'assistant') {
+            continue;
+        }
+        const text = turn.content.
+            filter((b) => b.type === BlockType.Text).
+            map((b) => b.text ?? '').
+            join('');
+        const toolCalls = turn.content.
+            filter((b) => b.type === BlockType.ToolUse).
+            map((block) => toolUseBlockToToolCall(block, resultMap));
+        rounds.push({
+            id: turn.id,
+            text,
+            toolCalls,
+            reasoning: extractReasoningFromTurn(turn),
+            annotations: extractAnnotationsFromTurn(turn),
+        });
+    }
+    return rounds;
 }
 
 // Defaults to Done when the anchor or approval_state is missing so the UI

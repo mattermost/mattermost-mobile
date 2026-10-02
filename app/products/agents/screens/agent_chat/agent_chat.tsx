@@ -5,34 +5,35 @@ import {PortalHost} from '@gorhom/portal';
 import {useIsFocused} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, type LayoutChangeEvent, StyleSheet} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets, type Edge} from 'react-native-safe-area-context';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
 import {fetchAIBots} from '@agents/actions/remote/bots';
-import {useSavedAgentSelection} from '@agents/hooks';
+import {saveSelectedAgent} from '@agents/actions/remote/preference';
 import AgentChatPostList from '@agents/screens/agent_chat/agent_chat_post_list';
 import BotSelectorItem from '@agents/screens/agent_chat/bot_selector_item';
 import {goToAgentThreadsList} from '@agents/screens/navigation';
+import {resolveSelectedAgent} from '@agents/utils';
 import {KeyboardAwarePostDraftContainer} from '@components/keyboard_aware_post_draft_container';
 import PostDraft from '@components/post_draft';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Events, Screens} from '@constants';
+import {Screens} from '@constants';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {KeyboardStateProvider} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
-import useDidMount from '@hooks/did_mount';
-import useDidUpdate from '@hooks/did_update';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
+import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
+import {logError} from '@utils/log';
 
 import AgentChatContent from './agent_chat_content';
 import AgentChatHeader from './header';
@@ -68,6 +69,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     // Track if this is the first load
     const initialLoadDone = useRef(false);
+    const [selectedBot, setSelectedBot] = useState<AiBotModel | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [channelId, setChannelId] = useState<string | null>(null);
@@ -89,24 +91,15 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         return ['left', 'right', 'bottom'];
     }, [isTablet]);
 
-    // Resolves saved pref -> default -> first without persisting; only an
-    // explicit pick is saved.
-    const {selectedAgent: selectedBot, pickAgent} = useSavedAgentSelection(bots, selectedAgentId);
-    const selectedBotId = selectedBot?.id;
+    // Auto-resolve the selected bot (saved pref -> default -> first) without persisting.
+    useEffect(() => {
+        if (bots.length > 0 && !selectedBot) {
+            setSelectedBot(resolveSelectedAgent(bots, selectedAgentId));
+        }
+    }, [bots, selectedBot, selectedAgentId]);
 
-    // Switching agents (an explicit pick, or the saved/default agent changing
-    // underneath) starts a fresh conversation against the new agent's DM.
-    // Clear the channel too so nothing posts into the previous DM before the
-    // new channel resolves.
-    useDidUpdate(() => {
-        setRootId(null);
-        setChannelId(null);
-    }, [selectedBotId]);
-
-    // Await the bot refresh useSavedAgentSelection starts (fetchAIBots calls
-    // made before a queued request starts share it) to drive the loading and
-    // error states.
-    useDidMount(() => {
+    // Refresh bots from network on mount
+    useEffect(() => {
         const refreshBots = async () => {
             // If we have cached data, don't show loading spinner
             if (bots.length > 0) {
@@ -132,7 +125,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         };
 
         refreshBots();
-    });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps -- only run on mount
 
     // Show error if no bots after loading
     useEffect(() => {
@@ -149,23 +142,16 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     // Get or create DM channel when bot is selected
     useEffect(() => {
-        // A late result for a previously selected agent must not replace the
-        // current agent's channel, or the draft would post to the wrong DM.
-        let cancelled = false;
         const getChannel = async () => {
-            if (!selectedBotId) {
+            if (!selectedBot) {
                 setChannelId(null);
                 return;
             }
 
             const {data, error: channelError} = await createDirectChannel(
                 serverUrl,
-                selectedBotId,
+                selectedBot.id,
             );
-
-            if (cancelled) {
-                return;
-            }
 
             if (channelError || !data) {
                 setError(intl.formatMessage({
@@ -179,10 +165,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         };
 
         getChannel();
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedBotId, serverUrl, intl]);
+    }, [selectedBot, serverUrl, intl]);
 
     const exit = useCallback(() => {
         navigateBack();
@@ -190,27 +173,24 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     useAndroidHardwareBackHandler(Screens.AGENT_CHAT, exit);
 
-    // The threads list's "new chat" button emits this before popping back to
-    // this still-mounted screen. Clearing the root starts a fresh conversation
-    // while keeping the currently-selected agent (and its DM channel).
-    useDidMount(() => {
-        const listener = DeviceEventEmitter.addListener(Events.AGENT_NEW_CHAT, () => {
-            setRootId(null);
-        });
-        return () => listener.remove();
-    });
-
     const handleHistoryPress = useCallback(() => {
         goToAgentThreadsList();
     }, []);
 
-    const handleBotSelect = useCallback((bot: AiBotModel) => {
+    const handleBotSelect = useCallback(async (bot: AiBotModel) => {
+        setSelectedBot(bot);
+
+        // Switching bots starts a fresh conversation against the new bot's DM.
+        // Clear the channel immediately too, so a fast send can't post into the
+        // previous bot's DM before the new channel resolves.
+        setRootId(null);
+        setChannelId(null);
         dismissBottomSheet();
-        if (bot.id === selectedBotId) {
-            return;
+        const {error: saveError} = await saveSelectedAgent(serverUrl, bot.id);
+        if (saveError) {
+            logError('Failed to persist agent selection', getFullErrorMessage(saveError));
         }
-        pickAgent(bot);
-    }, [selectedBotId, pickAgent]);
+    }, [serverUrl]);
 
     const handleBotSelectorPress = usePreventDoubleTap(useCallback(() => {
         if (bots.length <= 1) {
@@ -231,7 +211,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                                 key={bot.id}
                                 bot={bot}
                                 avatarUrl={avatarUrl}
-                                isSelected={selectedBotId === bot.id}
+                                isSelected={selectedBot?.id === bot.id}
                                 onSelect={handleBotSelect}
                                 theme={theme}
                             />
@@ -243,7 +223,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
         const snapPoint = bottomSheetSnapPoint(bots.length, ITEM_HEIGHT);
         bottomSheet(renderContent, [1, (snapPoint + TITLE_HEIGHT)]);
-    }, [bots, serverUrl, selectedBotId, handleBotSelect, theme]));
+    }, [bots, serverUrl, selectedBot?.id, handleBotSelect, theme]));
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -284,9 +264,6 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                         <AgentChatContent
                             loading={loading && bots.length === 0}
                             error={error}
-                            channelId={channelId}
-                            botUsername={selectedBot?.username}
-                            onPromptPosted={handlePostCreated}
                         />
                     ))}
                 >

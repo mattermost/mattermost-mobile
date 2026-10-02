@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {AGENT_POST_TYPES} from '@agents/constants';
-import {ChannelAccessLevel, ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import TestHelper from '@test/test_helper';
 
-import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, isUnsafeLinksPost, getToolApprovalStage, resolveSelectedAgent, filterAgentsForChannel, buildCustomPromptDraft, isAgentDMChannel, stripWirePrefix} from './utils';
+import {isAgentMentionReminderPost, isAgentPost, isPostRequester, isToolCallRedacted, isPendingToolResult, getToolApprovalStage, mergeToolCalls, resolveSelectedAgent} from './utils';
 
 describe('isAgentPost', () => {
     describe('with Post objects', () => {
@@ -63,23 +63,6 @@ describe('isAgentMentionReminderPost', () => {
     it('returns false for other agent and non-agent post types', () => {
         expect(isAgentMentionReminderPost(TestHelper.fakePost({type: AGENT_POST_TYPES.LLMBOT}))).toBe(false);
         expect(isAgentMentionReminderPost(TestHelper.fakePost({type: ''}))).toBe(false);
-    });
-});
-
-describe('isUnsafeLinksPost', () => {
-    it('should return true when the post carries the unsafe_links prop and the config disallows rendering', () => {
-        const post = TestHelper.fakePostModel({props: {unsafe_links: 'true'}});
-        expect(isUnsafeLinksPost(post, false)).toBe(true);
-    });
-
-    it('should return false when the server config allows unsafe links', () => {
-        const post = TestHelper.fakePostModel({props: {unsafe_links: 'true'}});
-        expect(isUnsafeLinksPost(post, true)).toBe(false);
-    });
-
-    it('should return false for posts without the unsafe_links prop', () => {
-        const post = TestHelper.fakePostModel({props: {}});
-        expect(isUnsafeLinksPost(post, false)).toBe(false);
     });
 });
 
@@ -277,31 +260,82 @@ describe('getToolApprovalStage', () => {
     });
 });
 
-// Mirrors the plugin webapp's stripWirePrefix tests (tool_names.test.ts);
-// keep the two in sync.
-describe('stripWirePrefix', () => {
-    it('should strip the wire prefix from a namespaced name', () => {
-        expect(stripWirePrefix('mattermost__get_me')).toBe('get_me');
-        expect(stripWirePrefix('com_mattermost_plugin-mcp-demo__echo')).toBe('echo');
+describe('mergeToolCalls', () => {
+    const makeToolCall = (overrides: Partial<ToolCall> & {id: string}): ToolCall => ({
+        name: 'tool',
+        description: 'A tool',
+        arguments: {},
+        status: ToolCallStatus.Pending,
+        ...overrides,
     });
 
-    it('should leave plain tool names unchanged', () => {
-        expect(stripWirePrefix('read_channel')).toBe('read_channel');
-        expect(stripWirePrefix('search')).toBe('search');
+    it('should return publicCalls unchanged when privateCalls is null', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
+        expect(mergeToolCalls(publicCalls, null)).toBe(publicCalls);
     });
 
-    it('should leave names with a leading "__" unchanged (no prefix token)', () => {
-        expect(stripWirePrefix('__weird')).toBe('__weird');
+    it('should return publicCalls unchanged when privateCalls is empty', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', arguments: {q: 'hello'}})];
+        expect(mergeToolCalls(publicCalls, [])).toBe(publicCalls);
     });
 
-    it('should leave names whose prefix token has invalid characters unchanged', () => {
-        expect(stripWirePrefix('with space__tool')).toBe('with space__tool');
+    it('should merge private arguments into public calls while preserving public status', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Accepted, arguments: {redacted: true}})];
+        const privateCalls = [makeToolCall({id: 'tc1', status: ToolCallStatus.Pending, arguments: {q: 'secret'}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(1);
+        expect(result[0].arguments).toEqual({q: 'secret'});
+        expect(result[0].status).toBe(ToolCallStatus.Accepted);
+    });
+
+    it('should merge private result when present', () => {
+        const publicCalls = [makeToolCall({id: 'tc1'})];
+        const privateCalls = [makeToolCall({id: 'tc1', result: 'done'})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result[0].result).toBe('done');
+    });
+
+    it('should not overwrite result when private result is undefined', () => {
+        const publicCalls = [makeToolCall({id: 'tc1', result: 'original'})];
+        const privateCalls = [makeToolCall({id: 'tc1', result: undefined})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result[0].result).toBe('original');
+    });
+
+    it('should preserve public tools and append private-only tools', () => {
+        const publicCalls = [makeToolCall({id: 'tc1'})];
+        const privateCalls = [makeToolCall({id: 'tc_unknown', name: 'private_only', arguments: {x: 1}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(2);
+        expect(result[0].id).toBe('tc1');
+        expect(result[1].id).toBe('tc_unknown');
+        expect(result[1].name).toBe('private_only');
+        expect(result[1].arguments).toEqual({x: 1});
+    });
+
+    it('should preserve public-only tools when private is a subset', () => {
+        const publicCalls = [
+            makeToolCall({id: 'tc1', arguments: {q: 'hello'}}),
+            makeToolCall({id: 'tc2', arguments: {q: 'world'}}),
+        ];
+        const privateCalls = [makeToolCall({id: 'tc1', arguments: {q: 'secret'}})];
+
+        const result = mergeToolCalls(publicCalls, privateCalls);
+        expect(result).toHaveLength(2);
+        expect(result[0].id).toBe('tc1');
+        expect(result[0].arguments).toEqual({q: 'secret'});
+        expect(result[1].id).toBe('tc2');
+        expect(result[1].arguments).toEqual({q: 'world'});
     });
 });
 
 describe('resolveSelectedAgent', () => {
     const a1 = {id: 'a1'};
-    const a2 = {id: 'a2', isDefault: true};
+    const a2 = {id: 'a2', is_default: true};
     const a3 = {id: 'a3'};
     const agents = [a1, a2, a3];
 
@@ -331,69 +365,5 @@ describe('resolveSelectedAgent', () => {
 
     it('should prefer the saved preference over the system default', () => {
         expect(resolveSelectedAgent(agents, 'a1')).toBe(a1);
-    });
-});
-
-describe('filterAgentsForChannel', () => {
-    const channelId = 'channel-1';
-    const all = {id: 'all', channelAccessLevel: ChannelAccessLevel.All, channelIds: []};
-    const allowedHere = {id: 'allowed-here', channelAccessLevel: ChannelAccessLevel.Allow, channelIds: [channelId, 'other']};
-    const allowedElsewhere = {id: 'allowed-elsewhere', channelAccessLevel: ChannelAccessLevel.Allow, channelIds: ['other']};
-    const blockedHere = {id: 'blocked-here', channelAccessLevel: ChannelAccessLevel.Block, channelIds: [channelId]};
-    const blockedElsewhere = {id: 'blocked-elsewhere', channelAccessLevel: ChannelAccessLevel.Block, channelIds: ['other']};
-
-    it('should keep All agents, Allow agents listing the channel, and Block agents not listing it', () => {
-        const result = filterAgentsForChannel([all, allowedHere, allowedElsewhere, blockedHere, blockedElsewhere], channelId);
-
-        expect(result).toHaveLength(3);
-        expect(result.map((a) => a.id)).toEqual(['all', 'allowed-here', 'blocked-elsewhere']);
-    });
-
-    it('should treat missing channelIds as an empty list', () => {
-        const allowNoIds = {id: 'allow-no-ids', channelAccessLevel: ChannelAccessLevel.Allow, channelIds: null};
-        const blockNoIds = {id: 'block-no-ids', channelAccessLevel: ChannelAccessLevel.Block, channelIds: null};
-
-        const result = filterAgentsForChannel([allowNoIds, blockNoIds], channelId);
-
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe('block-no-ids');
-    });
-
-    it('should return an empty list when no agent is usable in the channel', () => {
-        expect(filterAgentsForChannel([allowedElsewhere, blockedHere], channelId)).toHaveLength(0);
-    });
-});
-
-describe('buildCustomPromptDraft', () => {
-    it('should prepend the agent @mention outside a bot DM', () => {
-        expect(buildCustomPromptDraft('Summarize this channel', 'ai-bot', false)).toBe('@ai-bot Summarize this channel');
-    });
-
-    it('should not prepend inside a bot DM', () => {
-        expect(buildCustomPromptDraft('Summarize this channel', 'ai-bot', true)).toBe('Summarize this channel');
-    });
-
-    it('should not prepend when no agent username is available', () => {
-        expect(buildCustomPromptDraft('Summarize this channel', undefined, false)).toBe('Summarize this channel');
-    });
-});
-
-describe('isAgentDMChannel', () => {
-    const bots = [
-        {id: 'bot-a', dmChannelId: 'dm-a'},
-        {id: 'bot-b', dmChannelId: 'dm-b'},
-    ];
-
-    it('should return true when the channel is the selected agent\'s DM', () => {
-        expect(isAgentDMChannel(bots, 'bot-a', 'dm-a')).toBe(true);
-    });
-
-    it('should return false when the channel is another bot\'s DM', () => {
-        expect(isAgentDMChannel(bots, 'bot-b', 'dm-a')).toBe(false);
-    });
-
-    it('should return false when no agent is selected or no channel is given', () => {
-        expect(isAgentDMChannel(bots, undefined, 'dm-a')).toBe(false);
-        expect(isAgentDMChannel(bots, 'bot-a', undefined)).toBe(false);
     });
 });

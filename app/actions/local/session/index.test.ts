@@ -6,8 +6,6 @@ import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
-import {getAgentsConfig, setAgentsConfig} from '@agents/store/agents_config';
-import {getCustomPromptsState, setCustomPromptsState} from '@agents/store/custom_prompts_store';
 import DatabaseManager from '@database/manager';
 import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -291,35 +289,6 @@ describe('session actions', () => {
             expect(deleteFileCache).toHaveBeenCalledWith(mockServerUrl);
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('mmPasteInput');
             expect(deleteFileCacheByDir).toHaveBeenCalledWith('thumbnails');
-        });
-
-        it('should clear the custom prompts store for the server', async () => {
-            setCustomPromptsState(mockServerUrl, {
-                prompts: [{
-                    id: 'prompt-1',
-                    creator_id: 'user-1',
-                    name: 'Standup update',
-                    description: '',
-                    template: 'Draft my standup update',
-                    is_shared: true,
-                    created_at: 1,
-                    updated_at: 1,
-                    deleted_at: 0,
-                }],
-                pinnedPromptIds: ['prompt-1'],
-            });
-
-            await terminateSession(mockServerUrl, false);
-
-            expect(getCustomPromptsState(mockServerUrl)).toEqual({prompts: [], pinnedPromptIds: []});
-        });
-
-        it('should reset the agents config for the server', async () => {
-            setAgentsConfig(mockServerUrl, {pluginEnabled: true, allowUnsafeLinks: true});
-
-            await terminateSession(mockServerUrl, false);
-
-            expect(getAgentsConfig(mockServerUrl)).toEqual({pluginEnabled: false, allowUnsafeLinks: false});
         });
 
         it('should call deleteServerDatabase when removeServer=false', async () => {

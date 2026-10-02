@@ -3,11 +3,9 @@
 
 import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
-import {DeviceEventEmitter} from 'react-native';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
-import {Events} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -125,33 +123,6 @@ jest.mock('@agents/components/illustrations', () => {
     };
 });
 
-// Lets a test start a conversation (the first post becomes the root) without
-// driving the real composer.
-jest.mock('./agent_chat_content', () => {
-    const {Pressable, View} = require('react-native');
-    const ActualContent = jest.requireActual('./agent_chat_content').default;
-    return {
-        __esModule: true,
-        default: (props: {channelId: string | null; onPromptPosted: (postId: string) => void}) => (
-            <View testID={`mock.agent_chat_content.channel.${props.channelId ?? 'none'}`}>
-                <ActualContent {...props}/>
-                <Pressable
-                    testID='mock.start_conversation'
-                    onPress={() => props.onPromptPosted('root-post')}
-                />
-            </View>
-        ),
-    };
-});
-
-jest.mock('@agents/screens/agent_chat/agent_chat_post_list', () => {
-    const {View} = require('react-native');
-    return {
-        __esModule: true,
-        default: () => <View testID='mock.agent_chat_post_list'/>,
-    };
-});
-
 const mockBot = {
     id: 'bot-123',
     displayName: 'Test Agent',
@@ -162,6 +133,7 @@ const mockBot = {
     channelIds: [],
     userAccessLevel: 0,
     userIds: [],
+    teamIds: [],
 } as unknown as AiBotModel;
 
 const mockBot2 = {
@@ -274,34 +246,6 @@ describe('AgentChat', () => {
         await act(async () => {});
     });
 
-    it('should start a new conversation on AGENT_NEW_CHAT and stop listening once unmounted', async () => {
-        const baseline = DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT);
-
-        const {getByTestId, queryByTestId, unmount} = renderWithEverything(
-            <AgentChat
-                bots={[mockBot]}
-                selectedAgentId=''
-            />,
-            {database},
-        );
-
-        await waitFor(() => {
-            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
-        });
-        fireEvent.press(getByTestId('mock.start_conversation'));
-        expect(getByTestId('mock.agent_chat_post_list')).toBeTruthy();
-
-        act(() => {
-            DeviceEventEmitter.emit(Events.AGENT_NEW_CHAT);
-        });
-        expect(queryByTestId('mock.agent_chat_post_list')).toBeNull();
-
-        await act(async () => {});
-        unmount();
-
-        expect(DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT)).toBe(baseline);
-    });
-
     it('should persist the preference when a bot is explicitly selected', async () => {
         const {getByTestId} = renderWithEverything(
             <AgentChat
@@ -324,72 +268,5 @@ describe('AgentChat', () => {
         expect(saveSelectedAgent).toHaveBeenCalledWith(SERVER_URL, mockBot2.id);
 
         await act(async () => {});
-    });
-
-    it('should start a fresh conversation when the resolved agent changes underneath it', async () => {
-        const {getByTestId, queryByTestId, rerender} = renderWithEverything(
-            <AgentChat
-                bots={[mockBot, mockBot2]}
-                selectedAgentId={mockBot.id}
-            />,
-            {database},
-        );
-
-        await waitFor(() => {
-            expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
-        });
-        fireEvent.press(getByTestId('mock.start_conversation'));
-        expect(getByTestId('mock.agent_chat_post_list')).toBeTruthy();
-
-        rerender(
-            <AgentChat
-                bots={[mockBot, mockBot2]}
-                selectedAgentId={mockBot2.id}
-            />,
-        );
-
-        await waitFor(() => {
-            expect(createDirectChannel).toHaveBeenLastCalledWith(SERVER_URL, mockBot2.id);
-        });
-        expect(queryByTestId('mock.agent_chat_post_list')).toBeNull();
-
-        await act(async () => {});
-    });
-
-    it('should ignore a DM lookup for the previous agent that resolves after switching', async () => {
-        const currentChannelId = TestHelper.basicChannel!.id;
-        let resolveStale: (value: {data: {id: string}}) => void = () => undefined;
-        (createDirectChannel as jest.Mock).mockImplementation((_url: string, botId: string) => {
-            if (botId === mockBot.id) {
-                return new Promise((resolve) => {
-                    resolveStale = resolve;
-                });
-            }
-            return Promise.resolve({data: {id: currentChannelId}});
-        });
-
-        const {getByTestId, queryByTestId, rerender} = renderWithEverything(
-            <AgentChat
-                bots={[mockBot, mockBot2]}
-                selectedAgentId={mockBot.id}
-            />,
-            {database},
-        );
-        rerender(
-            <AgentChat
-                bots={[mockBot, mockBot2]}
-                selectedAgentId={mockBot2.id}
-            />,
-        );
-        await waitFor(() => {
-            expect(getByTestId(`mock.agent_chat_content.channel.${currentChannelId}`)).toBeTruthy();
-        });
-
-        await act(async () => {
-            resolveStale({data: {id: 'stale-dm'}});
-        });
-
-        expect(getByTestId(`mock.agent_chat_content.channel.${currentChannelId}`)).toBeTruthy();
-        expect(queryByTestId('mock.agent_chat_content.channel.stale-dm')).toBeNull();
     });
 });

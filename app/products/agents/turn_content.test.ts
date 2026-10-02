@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BlockType, ServerToolName, ServerToolStatus, ToolApprovalStage, ToolCallStatus, ToolCallStatusString, type ContentBlock, type ConversationResponse, type Turn} from '@agents/types';
+import {BlockType, ToolApprovalStage, ToolCallStatus, ToolCallStatusString, type ContentBlock, type ConversationResponse, type Turn} from '@agents/types';
 
 import {
     anyToolHasArguments,
@@ -10,8 +10,9 @@ import {
     collectResponseTurns,
     deriveApprovalStageForPost,
     extractAnnotationsFromTurn,
+    extractReasoningFromTurn,
+    getResponseAnchorSequence,
     statusStringToEnum,
-    stripOpenAICitations,
 } from './turn_content';
 
 const POST_ID = 'anchorPost';
@@ -106,10 +107,7 @@ describe('collectResponseTurns', () => {
         expect(turns.map((t) => t.sequence)).toEqual([1, 2, 3]);
     });
 
-    it('should collect only the highest-sequence anchor when multiple assistant turns share post_id', () => {
-        // Regen paths that don't scrub prior response turns (e.g. thread
-        // analysis) leave one anchored assistant turn per generation. Only the
-        // newest generation may render or every prior answer stacks above it.
+    it('should anchor on the highest-sequence assistant turn when multiple share post_id', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({sequence: 1, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'stale'}]}),
@@ -118,24 +116,36 @@ describe('collectResponseTurns', () => {
 
         const turns = collectResponseTurns(conversation, POST_ID);
 
-        expect(turns.map((t) => t.sequence)).toEqual([2]);
+        expect(turns.map((t) => t.sequence)).toEqual([1, 2]);
+    });
+});
+
+describe('extractReasoningFromTurn', () => {
+    it('should concatenate thinking blocks', () => {
+        const turn = makeTurn({
+            sequence: 1,
+            role: 'assistant',
+            content: [
+                {type: BlockType.Thinking, text: 'first thought'},
+                {type: BlockType.Thinking, text: 'second thought', signature: 'sig-2'},
+                {type: BlockType.Text, text: 'visible'},
+            ],
+        });
+
+        const result = extractReasoningFromTurn(turn);
+
+        expect(result.summary).toBe('first thought\nsecond thought');
+        expect(result.signature).toBe('sig-2');
     });
 
-    it('should still collect unanchored tool-round turns between a superseded anchor and the current one', () => {
-        // A superseded generation bounds the walk, but the current
-        // generation's own tool rounds (written without a post_id) and a
-        // demoted continuation anchor (post_id nulled) belong to the response.
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({sequence: 1, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'superseded'}]}),
-            makeTurn({sequence: 2, role: 'assistant', content: [{type: BlockType.ToolUse, id: 't1', name: 'search'}]}),
-            makeTurn({sequence: 3, role: 'tool_result', content: [{type: BlockType.ToolResult, tool_use_id: 't1', content: 'ok'}]}),
-            makeTurn({sequence: 4, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'current'}]}),
-        ]);
+    it('should return empty when the turn has no thinking blocks', () => {
+        const turn = makeTurn({sequence: 1, role: 'assistant', content: [{type: BlockType.Text, text: 'hi'}]});
 
-        const turns = collectResponseTurns(conversation, POST_ID);
+        expect(extractReasoningFromTurn(turn)).toEqual({summary: '', signature: ''});
+    });
 
-        expect(turns.map((t) => t.sequence)).toEqual([2, 3, 4]);
+    it('should tolerate an undefined turn', () => {
+        expect(extractReasoningFromTurn(undefined)).toEqual({summary: '', signature: ''});
     });
 });
 
@@ -168,102 +178,6 @@ describe('extractAnnotationsFromTurn', () => {
         expect(annotations).toHaveLength(2);
         expect(annotations.map((a) => a.index)).toEqual([0, 1]);
         expect(annotations[1]).toMatchObject({url: 'https://c', title: 'C'});
-    });
-
-    it('should extract url_citation annotations from an Annotations block web_search_context', () => {
-        const turn = makeTurn({
-            sequence: 1,
-            role: 'assistant',
-            content: [
-                {type: BlockType.Text, text: 'answer'},
-                {
-                    type: BlockType.Annotations,
-                    web_search_context: {
-                        results: [
-                            {type: 'url_citation', start_index: 0, end_index: 5, url: 'https://a', title: 'A', cited_text: 'quoted', index: 3},
-                            {type: 'other_kind', url: 'https://ignored'},
-                            {type: 'url_citation', url: 'https://b'},
-                        ],
-                        executed_queries: null,
-                        count: 3,
-                    },
-                },
-            ],
-        });
-
-        const annotations = extractAnnotationsFromTurn(turn);
-
-        expect(annotations).toHaveLength(2);
-        expect(annotations[0]).toEqual({
-            type: 'url_citation',
-            start_index: 0,
-            end_index: 5,
-            url: 'https://a',
-            title: 'A',
-            cited_text: 'quoted',
-            index: 3,
-        });
-
-        // Missing indices default to 0 and the running index is preserved.
-        expect(annotations[1]).toMatchObject({url: 'https://b', start_index: 0, end_index: 0, index: 1});
-    });
-
-    it('should ignore an Annotations block whose results are not an array', () => {
-        const turn = makeTurn({
-            sequence: 1,
-            role: 'assistant',
-            content: [
-                {
-                    type: BlockType.Annotations,
-                    web_search_context: {results: {not: 'an array'}, executed_queries: null, count: 0},
-                },
-            ],
-        });
-
-        expect(extractAnnotationsFromTurn(turn)).toEqual([]);
-    });
-});
-
-describe('stripOpenAICitations', () => {
-    it('should remove inline (source: https://…) noise and tidy the space left before punctuation', () => {
-        const input = 'The sky is blue (source: https://example.com/sky) .';
-
-        expect(stripOpenAICitations(input)).toBe('The sky is blue.');
-    });
-
-    it('should keep a single space when the citation sits between words', () => {
-        expect(stripOpenAICitations('Water is wet (source: https://example.com) and cold.')).toBe('Water is wet and cold.');
-    });
-
-    it('should stop at the first unbalanced closing parenthesis', () => {
-        expect(stripOpenAICitations('See (source: https://a.com),next(x) here')).toBe('See,next(x) here');
-    });
-
-    it('should remove a citation whose URL contains balanced parentheses', () => {
-        expect(stripOpenAICitations('See this (source: https://en.wikipedia.org/wiki/Foo_(bar)) for more.')).toBe('See this for more.');
-    });
-
-    it('should leave indented code, longer fences and multi-backtick code spans untouched', () => {
-        const indented = 'Example:\n\n    call() (source: https://a.com) here\n\nDone (source: https://b.com).';
-        expect(stripOpenAICitations(indented)).toBe('Example:\n\n    call() (source: https://a.com) here\n\nDone.');
-
-        const nestedFence = '````\n```\nx (source: https://a.com) y\n```\n````\nText (source: https://b.com).';
-        expect(stripOpenAICitations(nestedFence)).toBe('````\n```\nx (source: https://a.com) y\n```\n````\nText.');
-
-        const doubleTick = 'Use ``code `x` (source: https://a.com) y`` here (source: https://b.com).';
-        expect(stripOpenAICitations(doubleTick)).toBe('Use ``code `x` (source: https://a.com) y`` here.');
-    });
-
-    it('should leave code blocks and inline code untouched', () => {
-        const input = '```js\nfoo()\n    .then(x)\n    .catch(y) (src: https://a.com)\n```\nUse `fn(url: https://x)` now (source: https://b.com).';
-
-        expect(stripOpenAICitations(input)).toBe('```js\nfoo()\n    .then(x)\n    .catch(y) (src: https://a.com)\n```\nUse `fn(url: https://x)` now.');
-    });
-
-    it('should leave text without citation noise unchanged', () => {
-        const input = 'A normal sentence with a [link](https://example.com) in it.\nAnd a second line.';
-
-        expect(stripOpenAICitations(input)).toBe(input);
     });
 });
 
@@ -380,53 +294,6 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds[1].toolCalls).toHaveLength(0);
     });
 
-    it('should split a turn so provider activity renders between the text before and after it', () => {
-        const search = {id: 'srv1', tool: ServerToolName.WebSearch, status: ServerToolStatus.Success, query: 'weather'};
-        const conversation = makeConversation([
-            makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [
-                    {type: BlockType.Thinking, text: 'plan', signature: 'sig'},
-                    {type: BlockType.Text, text: 'Let me check. '},
-                    {type: BlockType.ServerToolUse, server_tool: search},
-                    {type: BlockType.Text, text: 'It is sunny.', citations: [{type: 'url', url: 'https://w.example', start_index: 0, end_index: 5}]},
-                    {type: BlockType.ToolUse, id: 'call1', name: 'save_note', status: ToolCallStatusString.Pending},
-                ],
-            }),
-        ]);
-
-        const rounds = buildRoundsFromTurns(conversation, POST_ID);
-
-        expect(rounds).toHaveLength(2);
-        expect(rounds[0]).toMatchObject({id: 'turn-1', text: 'Let me check. ', reasoning: {summary: 'plan', signature: 'sig'}, serverTools: [], toolCalls: []});
-        expect(rounds[1]).toMatchObject({id: 'turn-1-1', text: 'It is sunny.', serverTools: [search]});
-        expect(rounds[1].toolCalls.map((t) => t.id)).toEqual(['call1']);
-        expect(rounds[1].annotations.map((a) => a.url)).toEqual(['https://w.example']);
-    });
-
-    it('should join consecutive thinking blocks into one reasoning summary', () => {
-        const conversation = makeConversation([
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [
-                    {type: BlockType.Thinking, text: 'first'},
-                    {type: BlockType.Thinking, text: 'second', signature: 'sig2'},
-                    {type: BlockType.Text, text: 'answer'},
-                ],
-            }),
-        ]);
-
-        const rounds = buildRoundsFromTurns(conversation, POST_ID);
-
-        expect(rounds).toHaveLength(1);
-        expect(rounds[0].reasoning).toEqual({summary: 'first\nsecond', signature: 'sig2'});
-    });
-
     it('should skip non-assistant turns so round count equals the assistant-turn count', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
@@ -516,41 +383,58 @@ describe('buildRoundsFromTurns', () => {
         expect(rounds[0].toolCalls[0].result).toBe('late result');
     });
 
-    it('should carry the tool_use block metadata onto the tool call', () => {
+    it('should yield undefined arguments when the tool_use input was nulled by the privacy filter', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
             makeTurn({
                 sequence: 1,
                 role: 'assistant',
                 post_id: POST_ID,
-                content: [{
-                    type: BlockType.ToolUse,
-                    id: 'call1',
-                    name: 'mattermost__read_post',
-                    title: 'Read post',
-                    description: 'Reads a post by id',
-                    mcp_bare_name: 'read_post',
-                    server_origin: 'https://mcp.example.com',
-                    user_interaction: 'select',
-                    would_auto_execute: true,
-                    status: ToolCallStatusString.Pending,
-                }],
+                content: [{type: BlockType.ToolUse, id: 'call1', name: 'search', input: null, status: ToolCallStatusString.Success}],
             }),
         ]);
 
         const rounds = buildRoundsFromTurns(conversation, POST_ID);
 
-        expect(rounds[0].toolCalls[0]).toMatchObject({
-            id: 'call1',
-            name: 'mattermost__read_post',
-            title: 'Read post',
-            description: 'Reads a post by id',
-            mcp_bare_name: 'read_post',
-            server_origin: 'https://mcp.example.com',
-            user_interaction: 'select',
-            would_auto_execute: true,
-            decided: false,
-        });
+        expect(rounds[0].toolCalls[0].arguments).toBeUndefined();
+    });
+
+    it('should carry would_auto_execute from the tool_use block so the card hides its approval controls', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [
+                    {type: BlockType.ToolUse, id: 'auto', name: 'search', status: ToolCallStatusString.Pending, would_auto_execute: true},
+                    {type: BlockType.ToolUse, id: 'manual', name: 'write', status: ToolCallStatusString.Pending},
+                ],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds).toHaveLength(1);
+        expect(rounds[0].toolCalls).toHaveLength(2);
+        expect(rounds[0].toolCalls[0].would_auto_execute).toBe(true);
+        expect(rounds[0].toolCalls[1].would_auto_execute).toBeUndefined();
+    });
+
+    it('should carry user_interaction from the tool_use block so questions render as question cards', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+            makeTurn({
+                sequence: 1,
+                role: 'assistant',
+                post_id: POST_ID,
+                content: [{type: BlockType.ToolUse, id: 'question', name: 'AskUserQuestion', status: ToolCallStatusString.Pending, user_interaction: 'select'}],
+            }),
+        ]);
+
+        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+
+        expect(rounds[0].toolCalls[0].user_interaction).toBe('select');
     });
 
     it('should mark a tool call decided when its result block records decided_at', () => {
@@ -579,47 +463,27 @@ describe('buildRoundsFromTurns', () => {
 
         expect(rounds[0].toolCalls.map((t) => t.decided)).toEqual([true, false]);
     });
+});
 
-    it('should render only the latest generation when regens left multiple turns anchored to the post', () => {
-        // Mirrors the server state after regenerating a thread-analysis post
-        // twice: that regen path appends a new anchored assistant turn per
-        // generation without scrubbing the previous ones. Only the newest
-        // generation (text + its annotations) may render.
-        const conversation = makeConversation([
-            makeTurn({sequence: 1, role: 'user', content: [{type: BlockType.Text, text: 'analyze this thread'}]}),
-            makeTurn({sequence: 2, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'gen1'}]}),
-            makeTurn({
-                sequence: 3,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [
-                    {type: BlockType.Text, text: 'gen2', citations: [{type: 'url', start_index: 0, end_index: 1, url: 'https://stale', title: 'Stale'}]},
-                ],
-            }),
-            makeTurn({sequence: 4, role: 'assistant', post_id: POST_ID, content: [{type: BlockType.Text, text: 'gen3'}]}),
-        ]);
-
-        const rounds = buildRoundsFromTurns(conversation, POST_ID);
-
-        expect(rounds).toHaveLength(1);
-        expect(rounds[0].text).toBe('gen3');
-        expect(rounds[0].annotations).toHaveLength(0);
-    });
-
-    it('should yield undefined arguments when the tool_use input was nulled by the privacy filter', () => {
+describe('getResponseAnchorSequence', () => {
+    it('should return the sequence of the post\'s highest-sequence assistant turn', () => {
         const conversation = makeConversation([
             makeTurn({sequence: 0, role: 'user', content: []}),
-            makeTurn({
-                sequence: 1,
-                role: 'assistant',
-                post_id: POST_ID,
-                content: [{type: BlockType.ToolUse, id: 'call1', name: 'search', input: null, status: ToolCallStatusString.Success}],
-            }),
+            makeTurn({sequence: 1, role: 'assistant', post_id: POST_ID, content: []}),
+            makeTurn({sequence: 2, role: 'user', content: []}),
+            makeTurn({sequence: 3, role: 'assistant', post_id: POST_ID, content: []}),
+            makeTurn({sequence: 4, role: 'assistant', post_id: 'otherPost', content: []}),
         ]);
 
-        const rounds = buildRoundsFromTurns(conversation, POST_ID);
+        expect(getResponseAnchorSequence(conversation, POST_ID)).toBe(3);
+    });
 
-        expect(rounds[0].toolCalls[0].arguments).toBeUndefined();
+    it('should return -1 when the post has no response turn yet', () => {
+        const conversation = makeConversation([
+            makeTurn({sequence: 0, role: 'user', content: []}),
+        ]);
+
+        expect(getResponseAnchorSequence(conversation, POST_ID)).toBe(-1);
     });
 });
 

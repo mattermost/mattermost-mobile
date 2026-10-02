@@ -60,7 +60,7 @@ const {PLAYBOOK_RUN, PLAYBOOK_CHECKLIST, PLAYBOOK_CHECKLIST_ITEM, PLAYBOOK_RUN_A
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 22,
+            version: 21,
             unsafeSql: undefined,
             tables: {
                 [AI_BOT]: {
@@ -75,7 +75,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         channel_ids: {name: 'channel_ids', type: 'string'},
                         user_access_level: {name: 'user_access_level', type: 'number'},
                         user_ids: {name: 'user_ids', type: 'string'},
-                        is_default: {name: 'is_default', type: 'boolean'},
+                        team_ids: {name: 'team_ids', type: 'string'},
                     },
                     columnArray: [
                         {name: 'display_name', type: 'string'},
@@ -86,22 +86,24 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_ids', type: 'string'},
                         {name: 'user_access_level', type: 'number'},
                         {name: 'user_ids', type: 'string'},
-                        {name: 'is_default', type: 'boolean'},
+                        {name: 'team_ids', type: 'string'},
                     ],
                 },
                 [AI_THREAD]: {
                     name: AI_THREAD,
                     unsafeSql: undefined,
                     columns: {
+                        message: {name: 'message', type: 'string'},
                         title: {name: 'title', type: 'string'},
                         channel_id: {name: 'channel_id', type: 'string', isIndexed: true},
-                        turn_count: {name: 'turn_count', type: 'number'},
+                        reply_count: {name: 'reply_count', type: 'number'},
                         update_at: {name: 'update_at', type: 'number', isIndexed: true},
                     },
                     columnArray: [
+                        {name: 'message', type: 'string'},
                         {name: 'title', type: 'string'},
                         {name: 'channel_id', type: 'string', isIndexed: true},
-                        {name: 'turn_count', type: 'number'},
+                        {name: 'reply_count', type: 'number'},
                         {name: 'update_at', type: 'number', isIndexed: true},
                     ],
                 },

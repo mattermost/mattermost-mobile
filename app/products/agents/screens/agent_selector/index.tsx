@@ -18,12 +18,12 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AgentItem from './agent_item';
 
-import type {SelectableAgent} from '@agents/types';
+import type {Agent} from '@agents/types';
 
 export type Props = {
-    agents: SelectableAgent[];
+    agents: Agent[];
     selectedAgentId: string;
-    onSelectAgent?: (agent: SelectableAgent) => void;
+    onSelectAgent?: (agent: Agent) => void;
 };
 
 const OPTIONS_PADDING = 12;
@@ -38,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const keyExtractor = (item: SelectableAgent) => item.id;
+const keyExtractor = (item: Agent) => item.id;
 
 const AgentSelector = ({
     agents,
@@ -63,12 +63,12 @@ const AgentSelector = ({
 
     useAndroidHardwareBackHandler(Screens.AGENTS_SELECTOR, close);
 
-    const handleSelectAgent = useCallback((agent: SelectableAgent) => {
+    const handleSelectAgent = useCallback((agent: Agent) => {
         onSelectAgent?.(agent);
         close();
     }, [onSelectAgent, close]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<SelectableAgent>) => (
+    const renderItem = useCallback(({item}: ListRenderItemInfo<Agent>) => (
         <AgentItem
             agent={item}
             selectedAgentId={selectedAgentId}

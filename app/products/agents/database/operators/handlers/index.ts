@@ -41,8 +41,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI bot records.
      */
     handleAIBots = async ({bots, prepareRecordsOnly}: HandleAIBotsArgs): Promise<Model[]> => {
-        // An empty list is a valid sync result and must still purge stale rows.
-        if (!bots) {
+        if (!bots?.length) {
             logDebug('[AgentsHandler.handleAIBots] No bots to handle');
             return [];
         }
@@ -96,8 +95,7 @@ const AgentsHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
      * @returns {Promise<Model[]>} - A promise that resolves to an array of handled AI thread records.
      */
     handleAIThreads = async ({threads, prepareRecordsOnly}: HandleAIThreadsArgs): Promise<Model[]> => {
-        // An empty list is a valid sync result and must still purge stale rows.
-        if (!threads) {
+        if (!threads?.length) {
             logDebug('[AgentsHandler.handleAIThreads] No threads to handle');
             return [];
         }

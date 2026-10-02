@@ -12,33 +12,17 @@ import type AiBotModel from '@agents/types/database/models/ai_bot';
 const {AI_BOT} = AGENTS_TABLES;
 
 /**
- * Returns a query for all AI bots in the database: the system default bot
- * first (as the server lists it), then by display name for a stable order.
+ * Returns a query for all AI bots in the database.
  */
 export function queryAIBots(database: Database) {
-    return database.get<AiBotModel>(AI_BOT).query(
-        Q.sortBy('is_default', Q.desc),
-        Q.sortBy('display_name', Q.asc),
-    );
+    return database.get<AiBotModel>(AI_BOT).query();
 }
-
-// Fields that entry-point gating, pickers and the sort order read; changes to
-// them must re-emit even when the set of bots is unchanged.
-const OBSERVED_BOT_COLUMNS = [
-    'display_name',
-    'username',
-    'last_icon_update',
-    'dm_channel_id',
-    'channel_access_level',
-    'channel_ids',
-    'is_default',
-];
 
 /**
  * Returns an observable for all AI bots in the database.
  */
 export function observeAIBots(database: Database) {
-    return queryAIBots(database).observeWithColumns(OBSERVED_BOT_COLUMNS);
+    return queryAIBots(database).observe();
 }
 
 /**
@@ -72,4 +56,11 @@ export async function getAIBotById(database: Database, botId: string) {
     } catch {
         return undefined;
     }
+}
+
+/**
+ * Gets all AI bots from the database.
+ */
+export async function getAllAIBots(database: Database) {
+    return queryAIBots(database).fetch();
 }

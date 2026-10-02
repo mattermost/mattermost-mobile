@@ -68,8 +68,8 @@ function runFetch(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
     const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
         // Identity-check the inflight promise so a fetch superseded mid-flight
-        // by refetchConversation/cancelConversationFetch can't overwrite the
-        // newer fetch's result with stale pre-stream-end data.
+        // by refetchConversation can't overwrite the newer fetch's result with
+        // stale pre-stream-end data.
         if (inflight.get(key) !== promise) {
             return;
         }
@@ -140,23 +140,6 @@ export function refetchConversation(serverUrl: string, conversationId: string, o
         error: undefined,
     });
     return runFetch(serverUrl, conversationId);
-}
-
-/**
- * Discard any inflight fetch so its result never reaches the store, keeping
- * the cached conversation as-is. Settle callbacks stay queued for the next
- * successful fetch, since the cache still lacks the turns they wait for.
- */
-export function cancelConversationFetch(serverUrl: string, conversationId: string): void {
-    const key = inflightKey(serverUrl, conversationId);
-    if (!inflight.delete(key)) {
-        return;
-    }
-    const prev = conversationStore.getState(serverUrl, conversationId);
-    conversationStore.setState(serverUrl, conversationId, {
-        conversation: prev.conversation,
-        loading: false,
-    });
 }
 
 /** Drop every cached conversation belonging to a single server (per-server logout). */

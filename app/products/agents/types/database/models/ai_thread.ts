@@ -15,14 +15,17 @@ declare class AiThreadModel extends Model {
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
+    /** The preview message text */
+    message: string;
+
     /** The thread title */
     title: string;
 
     /** Foreign key to the DM channel with the bot */
     channelId: string;
 
-    /** Number of assistant turns in the conversation */
-    turnCount: number;
+    /** Number of replies in the thread */
+    replyCount: number;
 
     /** Timestamp when the thread was last updated */
     updateAt: number;

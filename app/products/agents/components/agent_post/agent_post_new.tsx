@@ -1,39 +1,36 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 
-import {cancelConversationFetch, refetchConversation} from '@agents/actions/remote/conversation';
-import {useGenerationControls} from '@agents/hooks/use_generation_controls';
+import {refetchConversation} from '@agents/actions/remote/conversation';
+import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
 import {isConversationRequester} from '@agents/requester';
-import {useAgentsConfig} from '@agents/store/agents_config';
 import {useConversation} from '@agents/store/conversation_store';
-import {useStreamingState} from '@agents/store/streaming_store';
+import streamingStore, {useStreamingState} from '@agents/store/streaming_store';
 import {
     anyToolHasArguments,
     anyToolHasResult,
     buildRoundsFromTurns,
     deriveApprovalStageForPost,
-    stripOpenAICitations,
 } from '@agents/turn_content';
-import {ToolApprovalStage, ToolCallStatus, type Annotation, type ConversationResponse, type Round} from '@agents/types';
-import {isUnsafeLinksPost} from '@agents/utils';
+import {ToolApprovalStage, type Annotation, type Round} from '@agents/types';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import CitationsList from '../citations_list';
 import ControlsBar from '../controls_bar';
 import ReasoningDisplay from '../reasoning_display';
-import ServerToolSet from '../server_tool_set';
 import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
-import WorkingIndicator from './working_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -41,7 +38,6 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
 const POST_MESSAGE_ROUND_ID = 'post-message';
-const ANCHOR_ROUND_KEY = 'anchor';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -59,6 +55,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageText: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
+        },
+        precontentContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingVertical: 8,
         },
         precontentText: {
             color: changeOpacity(theme.centerChannelColor, 0.6),
@@ -81,13 +82,11 @@ interface RoundViewProps {
     showCursor: boolean;
     isReasoningLoading: boolean;
     isFirst: boolean;
-    unsafeLinks: boolean;
 }
 
-// Renders one assistant round as a vertical sequence reasoning -> provider
-// activity -> text -> tools, reproducing the true interleaving of a
-// multi-step agent response.
-const RoundView = memo(({
+// Renders one assistant round as a vertical sequence reasoning -> text -> tools,
+// reproducing the true text/tool interleaving of a multi-step agent response.
+const RoundView = ({
     round,
     postId,
     conversationId,
@@ -99,7 +98,6 @@ const RoundView = memo(({
     showCursor,
     isReasoningLoading,
     isFirst,
-    unsafeLinks,
 }: RoundViewProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -109,10 +107,6 @@ const RoundView = memo(({
     const showArguments = isDM || anyToolHasArguments(round.toolCalls);
     const showResults = isDM || anyToolHasResult(round.toolCalls);
 
-    // Applies to both streaming (live/snapshotted) and persisted rounds since
-    // every agent round renders through this component.
-    const text = useMemo(() => stripOpenAICitations(round.text), [round.text]);
-
     return (
         <View style={isFirst ? undefined : styles.roundSpacing}>
             {round.reasoning.summary !== '' && (
@@ -121,17 +115,13 @@ const RoundView = memo(({
                     isReasoningLoading={isReasoningLoading}
                 />
             )}
-            {round.serverTools.length > 0 && (
-                <ServerToolSet serverTools={round.serverTools}/>
-            )}
-            {text !== '' && (
+            {round.text !== '' && (
                 <View style={styles.messageContainer}>
                     <Markdown
                         baseTextStyle={styles.messageText}
-                        value={text}
+                        value={round.text}
                         theme={theme}
                         location={location}
-                        isUnsafeLinksPost={unsafeLinks}
                     />
                     {showCursor && (
                         <StreamingIndicator/>
@@ -148,13 +138,11 @@ const RoundView = memo(({
                     canExpand={canExpand}
                     showArguments={showArguments}
                     showResults={showResults}
-                    unsafeLinks={unsafeLinks}
                 />
             )}
         </View>
     );
-});
-RoundView.displayName = 'RoundView';
+};
 
 export interface AgentPostNewProps {
     post: PostModel;
@@ -169,9 +157,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
-    const unsafeLinks = isUnsafeLinksPost(post, allowUnsafeLinks);
-
     const {conversation, loading: conversationLoading, error: conversationError} = useConversation(serverUrl, conversationId);
 
     const streamingState = useStreamingState(serverUrl, post.id);
@@ -179,19 +164,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const isPrecontent = streamingState?.precontent ?? false;
     const isReasoningLoading = streamingState?.isReasoningLoading ?? false;
     const isGenerationInProgress = isGenerating || isReasoningLoading;
-
-    // Suppresses the stale persisted rounds while a regenerate is in flight —
-    // the server deletes the prior response turns as soon as regeneration
-    // starts, but the cached conversation still holds them until the
-    // stream-end refetch lands. Mirrors the webapp's `regenerating` state.
-    const [regenerating, setRegenerating] = useState(false);
-
-    // Conversation object captured when regenerate was tapped; any different
-    // object afterwards is a fresh fetch of the regenerated turns.
-    const regenBaselineRef = useRef<ConversationResponse | undefined>(undefined);
-    const regenFetchStartedRef = useRef(false);
-    const conversationRef = useRef(conversation);
-    conversationRef.current = conversation;
 
     // Persisted rounds derived from the conversation turns (the server truth).
     const persistedRounds = useMemo(
@@ -204,8 +176,8 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         if (!streamingState) {
             return null;
         }
-        const {message, toolCalls, reasoning, annotations, serverTools} = streamingState;
-        if (message === '' && toolCalls.length === 0 && reasoning === '' && annotations.length === 0 && serverTools.length === 0) {
+        const {message, toolCalls, reasoning, annotations} = streamingState;
+        if (message === '' && toolCalls.length === 0 && reasoning === '' && annotations.length === 0) {
             return null;
         }
         return {
@@ -214,7 +186,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             toolCalls,
             reasoning: {summary: reasoning, signature: ''},
             annotations,
-            serverTools,
         };
     }, [streamingState]);
 
@@ -224,11 +195,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     // that delivers the post-stream refetch, so content never blinks out or
     // renders twice.
     const {renderedRounds, lastPersistedIdx} = useMemo(() => {
-        // While regenerating, the cached persisted rounds are the prior answer
-        // the server has already deleted — hide them so the old response never
-        // stacks above the new stream (webapp computeRenderedRounds parity).
-        const visiblePersisted = regenerating ? [] : persistedRounds;
-        const out = [...visiblePersisted];
+        const out = [...persistedRounds];
         if (streamingState) {
             out.push(...streamingState.rounds);
             if (liveRound) {
@@ -236,23 +203,22 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             }
         }
 
-        // Webapp currentRound parity: until the cached conversation holds this
-        // response's turns (e.g. the stream-end event was missed), render the
+        // Until the cached conversation holds this response's turns (e.g. the
+        // stream-end event was missed or the refetch failed), render the
         // persisted post message rather than a blank body. Skipped on a cold
-        // open so the loading placeholder shows until the first fetch lands.
+        // open so nothing flashes before the first fetch lands.
         const coldOpen = conversationLoading && !conversation;
-        if (out.length === 0 && !isGenerationInProgress && !regenerating && !coldOpen && post.message !== '') {
+        if (out.length === 0 && !isGenerationInProgress && !coldOpen && post.message !== '') {
             out.push({
                 id: POST_MESSAGE_ROUND_ID,
                 text: post.message,
                 toolCalls: [],
                 reasoning: {summary: '', signature: ''},
                 annotations: [],
-                serverTools: [],
             });
         }
-        return {renderedRounds: out, lastPersistedIdx: visiblePersisted.length - 1};
-    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, regenerating, conversationLoading, conversation, post.message]);
+        return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, conversationLoading, conversation, post.message]);
 
     // ensureConversation never refreshes a cached entry, so a cache fetched
     // before this response's turns were persisted stays stale whenever the
@@ -261,7 +227,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const staleRefetchRevisionRef = useRef<number | undefined>(undefined);
     useEffect(() => {
         // While streaming state exists the websocket handler owns the refetch.
-        if (!conversation || conversationLoading || conversationError || streamingState || regenerating) {
+        if (!conversation || conversationLoading || conversationError || streamingState) {
             return;
         }
         if (post.message === '' || persistedRounds.length > 0 || staleRefetchRevisionRef.current === post.updateAt) {
@@ -269,7 +235,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
         staleRefetchRevisionRef.current = post.updateAt;
         refetchConversation(serverUrl, conversationId);
-    }, [conversation, conversationLoading, conversationError, streamingState, regenerating, post.message, post.updateAt, persistedRounds.length, serverUrl, conversationId]);
+    }, [conversation, conversationLoading, conversationError, streamingState, post.message, post.updateAt, persistedRounds.length, serverUrl, conversationId]);
 
     // The stream-end refetch is owned by the websocket handler
     // (handleAgentPostUpdate). A tool-approval `continue` resume bumps
@@ -288,52 +254,15 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         }
     }, [serverUrl, conversationId, continueSeq]);
 
-    // Lift the regenerate suppression once a fresh conversation object lands
-    // (the post-stream refetch delivering the regenerated turns — the
-    // websocket handler refetches on both `end` and `cancel`).
-    // Also lift it when a refetch fails after the stream settled so the post
-    // falls back to whatever it has instead of staying blank. Webapp parity:
-    // llmbot_post clears `regenerating` in its pendingRefetch layout-effect
-    // and on the `cancel` control event.
-    useEffect(() => {
-        if (!regenerating) {
-            return;
-        }
-
-        // An error cached from before the tap must not lift the suppression
-        // before the new stream starts; only a fetch since the tap counts.
-        if (conversationLoading) {
-            regenFetchStartedRef.current = true;
-        }
-        if (conversation !== regenBaselineRef.current) {
-            setRegenerating(false);
-        } else if (conversationError && !conversationLoading && !isGenerationInProgress && regenFetchStartedRef.current) {
-            setRegenerating(false);
-        }
-    }, [regenerating, conversation, conversationError, conversationLoading, isGenerationInProgress]);
-
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
     const canExpand = isRequester;
 
-    // Only the anchor round gets a real approval stage: the last persisted
-    // round when nothing follows it, or a live round with calls awaiting the
-    // requester, so Accept shows before the post-stream refetch lands (webapp
-    // livePendingForRequester parity). Snapshotted rounds render as 'done'.
+    // Only the post anchor (last persisted round, when it is also the last
+    // rendered round) gets a real approval stage; live/snapshotted rounds always
+    // render as 'done'.
+    const anchorStage = conversation ? deriveApprovalStageForPost(conversation, post.id) : ToolApprovalStage.Done;
     const lastRenderedIdx = renderedRounds.length - 1;
-    const lastRendered = renderedRounds[lastRenderedIdx];
-    const livePendingForRequester = isRequester && lastRendered?.id === LIVE_ROUND_ID &&
-        lastRendered.toolCalls.some((call) => call.status === ToolCallStatus.Pending && !call.would_auto_execute);
-    const persistedAnchorStage = conversation ? deriveApprovalStageForPost(conversation, post.id) : ToolApprovalStage.Done;
-    const getRoundStage = (idx: number) => {
-        if (idx !== lastRenderedIdx) {
-            return ToolApprovalStage.Done;
-        }
-        if (livePendingForRequester) {
-            return ToolApprovalStage.Call;
-        }
-        return idx === lastPersistedIdx ? persistedAnchorStage : ToolApprovalStage.Done;
-    };
 
     // Combined Sources list at the bottom, aggregated across rounds. Dedupe only
     // by non-empty url; citations without a url can't be meaningfully deduped and
@@ -343,12 +272,10 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         const all: Annotation[] = [];
         for (const round of renderedRounds) {
             for (const annotation of round.annotations) {
-                if (annotation.url) {
-                    if (seen.has(annotation.url)) {
-                        continue;
-                    }
-                    seen.add(annotation.url);
+                if (annotation.url && seen.has(annotation.url)) {
+                    continue;
                 }
+                seen.add(annotation.url);
                 all.push(annotation);
             }
         }
@@ -360,32 +287,31 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
     const hasContent = renderedRounds.length > 0;
     const showStopButton = isGenerationInProgress && isRequester;
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
-    const showCursorOnLive = isGenerating && !isPrecontent && !isReasoningLoading;
+    const showCursorOnLive = isGenerating && !isPrecontent;
 
-    // Beyond the streaming precontent phase, show the placeholder when there is
-    // nothing else to render: while the plugin prepares a response it created
-    // empty (web parity: precontent starts as post.message === ''), on a cold
-    // open while the conversation fetch is in flight, and right after a
-    // regenerate tap before the new stream's `start` event arrives.
-    const showLoadError = Boolean(conversationError) && !isGenerating && !conversationLoading;
-    const showPlaceholder = isPrecontent ||
-        (!hasContent && !showLoadError && (post.message === '' || regenerating || (conversationLoading && !isGenerating)));
+    const handleStop = useCallback(async () => {
+        // Mark stopped first so late `next` events are ignored before the
+        // server's cancel/end lands.
+        streamingStore.markStopped(serverUrl, post.id);
+        const {error} = await stopGeneration(serverUrl, post.id);
+        if (error) {
+            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
+        }
+    }, [serverUrl, post.id]);
 
-    const beforeRegenerate = useCallback(() => {
-        // Suppress the stale persisted rounds. A fetch still in flight (e.g.
-        // the previous stream's end refetch) would carry the old answer and
-        // lift the suppression; discard it.
-        cancelConversationFetch(serverUrl, conversationId);
-        regenBaselineRef.current = conversationRef.current;
-        regenFetchStartedRef.current = false;
-        setRegenerating(true);
-    }, [serverUrl, conversationId]);
-    const onRegenerateError = useCallback(() => setRegenerating(false), []);
-    const {stop: handleStop, regenerate: handleRegenerate} = useGenerationControls(post.id, {beforeRegenerate, onRegenerateError});
+    const handleRegenerate = useCallback(async () => {
+        // Clear the streaming store so the new stream starts from a clean slate
+        // instead of showing the previous round's data.
+        streamingStore.removePost(serverUrl, post.id);
+        const {error} = await regenerateResponse(serverUrl, post.id);
+        if (error) {
+            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
+        }
+    }, [serverUrl, post.id]);
 
     return (
         <View style={styles.container}>
-            {showLoadError ? (
+            {conversationError && !isGenerating && !conversationLoading ? (
                 <FormattedText
                     id='agents.conversation.load_error'
                     defaultMessage='Failed to load conversation data'
@@ -394,31 +320,33 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             ) : null}
             {renderedRounds.map((round, idx) => {
                 const isLive = round.id === LIVE_ROUND_ID;
-
-                // The anchor round keeps its key when the live round is
-                // replaced by the persisted one, so in-progress tool decisions,
-                // answers and an in-flight submit survive the refetch.
-                const key = idx === lastRenderedIdx ? ANCHOR_ROUND_KEY : round.id;
+                const stage = (idx === lastPersistedIdx && idx === lastRenderedIdx) ? anchorStage : ToolApprovalStage.Done;
                 return (
                     <RoundView
-                        key={key}
+                        key={round.id}
                         round={round}
                         postId={post.id}
                         conversationId={conversationId}
                         location={location}
                         isDM={isDM}
-                        approvalStage={getRoundStage(idx)}
+                        approvalStage={stage}
                         canApprove={canApprove}
                         canExpand={canExpand}
                         showCursor={isLive && showCursorOnLive}
                         isReasoningLoading={isLive && isReasoningLoading}
                         isFirst={idx === 0}
-                        unsafeLinks={unsafeLinks}
                     />
                 );
             })}
-            {showPlaceholder && (
-                <WorkingIndicator progressPhase={streamingState?.progressPhase}/>
+            {isPrecontent && (
+                <View style={styles.precontentContainer}>
+                    <FormattedText
+                        id='agents.generating'
+                        defaultMessage='Generating response...'
+                        style={styles.precontentText}
+                    />
+                    <StreamingIndicator/>
+                </View>
             )}
             {annotations.length > 0 && (
                 <CitationsList annotations={annotations}/>

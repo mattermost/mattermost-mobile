@@ -6,7 +6,6 @@ import React from 'react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
-import {observeCanAnalyzeChannel} from '@agents/queries/agents';
 import {General} from '@constants';
 import {DISPLAY_LABEL_HEADER} from '@constants/channel_attributes';
 import {queryPlaybookRunsPerChannel} from '@playbooks/database/queries/run';
@@ -170,7 +169,6 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         ),
         isPlaybooksEnabled,
         activeRunId,
-        canAskAgents: observeCanAnalyzeChannel(database, channelId),
 
         // searchTerm,
     };

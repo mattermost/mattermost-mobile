@@ -3,12 +3,18 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeAgentSelectionProps} from '@agents/queries/agents';
+import {observeAIBots} from '@agents/database/queries/bot';
+import {observeSelectedAgentId} from '@agents/queries/agents';
 
 import AgentChat from './agent_chat';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => observeAgentSelectionProps(database));
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    return {
+        bots: observeAIBots(database),
+        selectedAgentId: observeSelectedAgentId(database),
+    };
+});
 
 export default withDatabase(enhanced(AgentChat));

@@ -8,19 +8,24 @@ import {logError} from '@utils/log';
 
 import type {AIThread, RawAIThread} from '@agents/types';
 
-// Threads are keyed by their root post. Returns null for threadless
-// conversations so callers can filter them out.
+// plugin >= 2.0 carries root_post_id; plugin < 2.0 has the post id in `id`.
+// Returns null for threadless conversations so callers can filter them out.
 function normaliseThread(raw: RawAIThread): AIThread | null {
-    if (!raw.root_post_id) {
+    const hasRootPostField = 'root_post_id' in raw;
+    const postId = hasRootPostField ? raw.root_post_id : raw.id;
+    if (!postId) {
         return null;
     }
 
     return {
-        id: raw.root_post_id,
+        id: postId,
+        message: raw.message ?? '',
         title: raw.title ?? '',
         channel_id: raw.channel_id ?? '',
-        turn_count: raw.turn_count ?? 0,
+        reply_count: raw.reply_count ?? 0,
         update_at: raw.update_at ?? 0,
+        root_post_id: raw.root_post_id ?? undefined,
+        bot_id: raw.bot_id,
     };
 }
 
@@ -48,8 +53,7 @@ export async function fetchAIThreads(
 
         return {threads};
     } catch (error) {
-        const errorMessage = getFullErrorMessage(error);
-        logError('[fetchAIThreads] Failed to fetch AI threads', errorMessage);
-        return {error: errorMessage};
+        logError('[fetchAIThreads] Failed to fetch AI threads', error);
+        return {error: getFullErrorMessage(error)};
     }
 }

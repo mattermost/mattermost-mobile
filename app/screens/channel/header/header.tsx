@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform, Text, View} from 'react-native';
 
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useNavigationHeaderCallButtonForDM} from '@calls/hooks';
 import {getCallsConfig} from '@calls/state';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
@@ -62,7 +63,6 @@ type ChannelProps = {
     activeRunId?: string;
     isChannelAutotranslated: boolean;
     channelAttributes: ResolvedChannelAttribute[];
-    canAskAgents: boolean;
 
     // searchTerm: string;
 };
@@ -118,7 +118,6 @@ const ChannelHeader = ({
     activeRunId,
     isChannelAutotranslated,
     channelAttributes,
-    canAskAgents,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -128,6 +127,7 @@ const ChannelHeader = ({
     const serverUrl = useServerUrl();
 
     const callsConfig = getCallsConfig(serverUrl);
+    const {pluginEnabled: agentsEnabled} = useAgentsConfig(serverUrl);
 
     // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
     //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
@@ -182,7 +182,7 @@ const ChannelHeader = ({
         if (hasPlaybookRuns && !isDMorGM) {
             items += 1;
         }
-        if (canAskAgents) {
+        if (agentsEnabled) {
             items += 1; // Ask Agents action (shown in all channel types)
         }
         const height = CHANNEL_ACTIONS_OPTIONS_HEIGHT + SEPARATOR_HEIGHT + (MARGIN * 2) + (items * ITEM_HEIGHT);
@@ -194,13 +194,12 @@ const ChannelHeader = ({
                     callsEnabled={callsAvailable}
                     isDMorGM={isDMorGM}
                     hasPlaybookRuns={hasPlaybookRuns}
-                    canAskAgents={canAskAgents}
                 />
             );
         };
 
         bottomSheet(renderContent, [1, height]);
-    }, [callsAvailable, isDMorGM, hasPlaybookRuns, canAskAgents, channelId]);
+    }, [callsAvailable, isDMorGM, hasPlaybookRuns, agentsEnabled, channelId]);
 
     const openPlaybooksRuns = useCallback(() => {
         // If no active runs, create a new one instead

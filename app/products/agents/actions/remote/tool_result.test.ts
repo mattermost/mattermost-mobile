@@ -49,7 +49,7 @@ describe('submitToolResult', () => {
 
         const result = await submitToolResult(serverUrl, postId, acceptedToolIds);
 
-        expect(logError).toHaveBeenCalledWith('[submitToolResult]', errorMessage);
+        expect(logError).toHaveBeenCalledWith('[submitToolResult]', error);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});

@@ -48,12 +48,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 8,
         ...typography('Body', 50),
     },
+    threadPreview: {
+        color: theme.centerChannelColor,
+        ...typography('Body', 200),
+    },
     threadMeta: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
     },
-    threadTurnCount: {
+    threadReplyCount: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
         paddingHorizontal: 8,
         paddingVertical: 4.5,
@@ -103,6 +107,14 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
                         style={styles.threadTimestamp}
                     />
                 </View>
+                {thread.message && (
+                    <Text
+                        style={styles.threadPreview}
+                        numberOfLines={2}
+                    >
+                        {thread.message}
+                    </Text>
+                )}
                 <View style={styles.threadMeta}>
                     <CompassIcon
                         name='reply-outline'
@@ -110,10 +122,10 @@ const ThreadItem = ({thread, onPress, botName, theme}: Props) => {
                         color={changeOpacity(theme.centerChannelColor, 0.64)}
                     />
                     <FormattedText
-                        id='agents.threads_list.message_count'
-                        defaultMessage='{count, plural, one {# message} other {# messages}}'
-                        values={{count: thread.turnCount}}
-                        style={styles.threadTurnCount}
+                        id='agents.threads_list.reply_count'
+                        defaultMessage='{count, plural, one {# reply} other {# replies}}'
+                        values={{count: thread.replyCount}}
+                        style={styles.threadReplyCount}
                     />
                     {botName && (
                         <View style={styles.agentTag}>

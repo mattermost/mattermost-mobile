@@ -3,7 +3,6 @@
 
 import React, {useCallback, useState} from 'react';
 import {Pressable, Text, View} from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {TOUCH_TARGET_SIZE} from '@agents/constants';
@@ -102,8 +101,6 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
             <Pressable
                 onPress={handleToggle}
                 style={({pressed}) => [isExpanded ? styles.expandedHeader : styles.minimalContent, pressed && {opacity: 0.72}]}
-                accessibilityRole='button'
-                accessibilityState={{expanded: isExpanded}}
             >
                 <Animated.View style={chevronAnimatedStyle}>
                     <CompassIcon
@@ -123,23 +120,11 @@ const ReasoningDisplay = ({reasoningSummary, isReasoningLoading}: ReasoningDispl
             </Pressable>
             {isExpanded && reasoningSummary ? (
                 <Animated.View style={[styles.reasoningContentContainer, contentAnimatedStyle]}>
-                    {/* Content taller than the height cap stays reachable by
-                        scrolling within the block. Must be the RNGH ScrollView:
-                        the post list is an inverted FlatList wrapped in a
-                        GestureDetector (Gesture.Native), and a plain RN
-                        ScrollView never wins the gesture arbitration against
-                        it on Android — RNGH-registered scrollables do.
-                        nestedScrollEnabled lets Android hand off between this
-                        and the post list. */}
-                    <ScrollView
-                        style={styles.reasoningContent}
-                        nestedScrollEnabled={true}
-                        testID='agents.reasoning.scroll_view'
-                    >
+                    <View style={styles.reasoningContent}>
                         <Text style={styles.reasoningText}>
                             {reasoningSummary}
                         </Text>
-                    </ScrollView>
+                    </View>
                 </Animated.View>
             ) : null}
         </View>

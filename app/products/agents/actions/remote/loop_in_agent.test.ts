@@ -46,7 +46,7 @@ describe('loopInAgent', () => {
 
         const result = await loopInAgent(serverUrl, postId, botUsername);
 
-        expect(logError).toHaveBeenCalledWith('[loopInAgent]', errorMessage);
+        expect(logError).toHaveBeenCalledWith('[loopInAgent]', error);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

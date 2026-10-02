@@ -49,7 +49,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 22,
+    version: 21,
     tables: [
         AiBotSchema,
         AiThreadSchema,

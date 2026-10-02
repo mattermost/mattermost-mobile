@@ -3,10 +3,8 @@
 
 import {act} from '@testing-library/react-native';
 import React from 'react';
-import {Alert} from 'react-native';
 
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
-import {regenerateResponse} from '@agents/actions/remote/generation_controls';
 import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
@@ -608,174 +606,6 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
     });
 });
 
-describe('AgentPostNew — regenerate suppresses the stale answer (7a)', () => {
-    jest.spyOn(Alert, 'alert');
-
-    // The regenerate button opens a confirmation Alert; press its
-    // destructive "Regenerate" option to run the actual handler.
-    function confirmRegenerate() {
-        const buttons = jest.mocked(Alert.alert).mock.lastCall?.[2];
-        buttons?.find((b) => b.text === 'Regenerate')?.onPress?.();
-    }
-
-    const oldConversation = makeConversation({
-        turns: [
-            {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Old answer'}]},
-        ],
-    });
-    const newConversation = makeConversation({
-        turns: [
-            {id: 't2', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'New answer'}]},
-        ],
-    });
-
-    it('should hide the old persisted answer for the whole regeneration and clear the flag once the stream-end refetch lands', async () => {
-        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
-        mockFetchConversation.mockResolvedValueOnce({data: newConversation});
-
-        const {findByText, getByText, getByTestId, queryByText} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: 'Old answer'})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-
-        await findByText('Old answer');
-
-        // Tap regenerate: the stale answer disappears immediately and the
-        // placeholder covers the gap until the new stream starts.
-        await act(async () => {
-            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
-            confirmRegenerate();
-            await flush();
-        });
-        expect(queryByText('Old answer')).toBeNull();
-        expect(getByText('Generating response...')).toBeTruthy();
-
-        // While the new stream runs, the old answer must not stack above it.
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({post_id: POST_ID, next: 'New answer streaming'});
-            await flush();
-        });
-        expect(getByText('New answer streaming')).toBeTruthy();
-        expect(queryByText('Old answer')).toBeNull();
-
-        // Stream end → refetch delivers the regenerated turns → the flag
-        // clears and the persisted new answer takes over cleanly.
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
-            await flush();
-        });
-        expect(getByText('New answer')).toBeTruthy();
-        expect(queryByText('Old answer')).toBeNull();
-        expect(queryByText('New answer streaming')).toBeNull();
-    });
-
-    it('should restore the old answer when the regenerate request fails so the post is not left blank', async () => {
-        mockFetchConversation.mockResolvedValue({data: oldConversation});
-        jest.mocked(regenerateResponse).mockResolvedValueOnce({error: 'boom'});
-
-        const {findByText, getByText, getByTestId} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: 'Old answer'})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-
-        await findByText('Old answer');
-
-        await act(async () => {
-            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
-            confirmRegenerate();
-            await flush();
-        });
-
-        expect(getByText('Old answer')).toBeTruthy();
-    });
-
-    it('should keep hiding the old answer when an earlier conversation fetch had failed', async () => {
-        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
-        mockFetchConversation.mockResolvedValueOnce({error: 'network'});
-
-        const {findByText, getByText, getByTestId, queryByText} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: 'Old answer'})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-        await findByText('Old answer');
-
-        // A stream-end refetch fails, leaving an error next to the cached answer.
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
-            await flush();
-        });
-        await findByText('Failed to load conversation data');
-
-        await act(async () => {
-            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
-            confirmRegenerate();
-            await flush();
-        });
-        expect(queryByText('Old answer')).toBeNull();
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({post_id: POST_ID, next: 'New answer streaming'});
-            await flush();
-        });
-        expect(getByText('New answer streaming')).toBeTruthy();
-        expect(queryByText('Old answer')).toBeNull();
-    });
-});
-
-describe('AgentPostNew — cold-open loading placeholder (7c)', () => {
-    it('should show the placeholder while the conversation fetch is in flight instead of a blank body', async () => {
-        let resolveFetch: (value: {data: ConversationResponse}) => void = () => {};
-        mockFetchConversation.mockReturnValue(new Promise((resolve) => {
-            resolveFetch = resolve;
-        }));
-
-        const {findByText, getByText, queryByText} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: 'Final answer'})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-
-        // Nothing is renderable yet — the placeholder fills the body.
-        expect(getByText('Generating response...')).toBeTruthy();
-
-        await act(async () => {
-            resolveFetch({
-                data: makeConversation({
-                    turns: [
-                        {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Final answer'}]},
-                    ],
-                }),
-            });
-            await flush();
-        });
-
-        expect(await findByText('Final answer')).toBeTruthy();
-        expect(queryByText('Generating response...')).toBeNull();
-    });
-});
-
 describe('AgentPostNew — stale cached conversation after a missed stream end', () => {
     it('should render the post message and refetch when the cached conversation lacks the response turns', async () => {
         const userTurn = {id: 't0', post_id: null, role: 'user' as const, sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'question'}]};
@@ -817,74 +647,52 @@ describe('AgentPostNew — stale cached conversation after a missed stream end',
         expect(await findByText('Persisted summary')).toBeTruthy();
         expect(mockFetchConversation).toHaveBeenCalledTimes(2);
     });
-});
 
-describe('AgentPostNew — response placeholder created before setup', () => {
-    it('should show the setup progress on an empty response post until content streams', async () => {
-        mockFetchConversation.mockResolvedValue({
-            data: makeConversation({
-                turns: [{id: 't0', post_id: null, role: 'user', sequence: 0, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'question'}]}],
-            }),
-        });
+    it('should render the post message when the conversation cannot be loaded', async () => {
+        mockFetchConversation.mockResolvedValueOnce({error: 'network'});
 
-        const {findByText, getByText, queryByTestId} = renderWithIntlAndTheme(
+        const {findByText, getByText} = renderWithIntlAndTheme(
             <AgentPostNew
-                post={makePost()}
+                post={makePost({message: 'Summary text'})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
-        await act(async () => {
-            await flush();
-        });
 
-        // The conversation has no response turns yet, but the empty post is still working.
-        expect(getByText('Generating response...')).toBeTruthy();
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.PROGRESS, progress_phase: 'connecting_provider', progress_seq: 4});
-        });
-        expect(getByText('Connecting to provider...')).toBeTruthy();
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({post_id: POST_ID, next: 'First words'});
-        });
-        expect(await findByText('First words')).toBeTruthy();
-        expect(queryByTestId('agents.post.working')).toBeNull();
+        expect(await findByText('Summary text')).toBeTruthy();
+        expect(getByText('Failed to load conversation data')).toBeTruthy();
     });
-});
 
-describe('AgentPostNew — provider server tools', () => {
-    it('should render live provider activity alongside the streamed text', async () => {
-        mockFetchConversation.mockResolvedValue({data: makeConversation()});
+    it('should keep the streamed answer when the post-stream refetch fails', async () => {
+        mockFetchConversation.
+            mockResolvedValueOnce({data: makeConversation()}).
+            mockResolvedValueOnce({error: 'network'});
 
-        const {findByTestId, findByText} = renderWithIntlAndTheme(
+        const {findByText} = renderWithIntlAndTheme(
             <AgentPostNew
-                post={makePost()}
+                post={makePost({message: ''})}
                 conversationId={CONV_ID}
                 currentUserId={USER_ID}
                 location={Screens.CHANNEL}
                 isDM={true}
             />,
         );
-
         await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({
-                post_id: POST_ID,
-                control: CONTROL_SIGNALS.SERVER_TOOL,
-                server_tool: JSON.stringify([{id: 'srv1', tool: 'web_search', status: 'success', query: 'forecast'}]),
-            });
-            sendPostUpdate({post_id: POST_ID, next: 'Sunny all week'});
             await flush();
         });
 
-        expect(await findByTestId('agents.server_tool.srv1')).toBeTruthy();
-        expect(await findByText('Searched the web for "forecast"')).toBeTruthy();
-        expect(await findByText('Sunny all week')).toBeTruthy();
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'Streamed answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+
+        expect(await findByText('Streamed answer')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+        expect(streamingStore.getStreamingState('https://test.mattermost.com', POST_ID)).toBeDefined();
     });
 });
 
@@ -1038,118 +846,5 @@ describe('AgentPostNew — stream settle handover', () => {
         });
         expect(getAllByText('Fresh answer')).toHaveLength(1);
         expect(streamingStore.getStreamingState('https://test.mattermost.com', POST_ID)).toBeUndefined();
-    });
-
-    it('should not bring the old answer back when a fetch issued before regenerate lands late', async () => {
-        const oldConversation = makeConversation({turns: [textTurn('t1', 1, 'Old answer')]});
-        const lateFetch = deferred<{data: ConversationResponse}>();
-        mockFetchConversation.mockResolvedValueOnce({data: oldConversation});
-        mockFetchConversation.mockReturnValueOnce(lateFetch.promise);
-        jest.spyOn(Alert, 'alert');
-
-        const {findByText, getByTestId, queryByText} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: 'Old answer'})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-        await findByText('Old answer');
-
-        // The previous stream's end refetch is still in flight.
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
-            await flush();
-        });
-
-        await act(async () => {
-            fireEvent.press(getByTestId('agents.controls_bar.regenerate_button'));
-            const buttons = jest.mocked(Alert.alert).mock.lastCall?.[2];
-            buttons?.find((b) => b.text === 'Regenerate')?.onPress?.();
-            await flush();
-        });
-        expect(queryByText('Old answer')).toBeNull();
-
-        await act(async () => {
-            lateFetch.resolve({data: makeConversation({turns: [textTurn('t1', 1, 'Old answer')]})});
-            await flush();
-        });
-        expect(queryByText('Old answer')).toBeNull();
-    });
-
-    it('should let the requester act on a pending tool call while the stream is still live', async () => {
-        mockFetchConversation.mockResolvedValue({data: makeConversation()});
-
-        const {findByTestId} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: ''})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({
-                post_id: POST_ID,
-                control: CONTROL_SIGNALS.TOOL_CALL,
-                tool_call: JSON.stringify([{id: 'tu_live', name: 'search_docs', description: '', arguments: {q: 'x'}, status: 0}]),
-            });
-            await flush();
-        });
-
-        expect(await findByTestId('agents.tool_card.tu_live.approve')).toBeTruthy();
-    });
-
-    it('should keep a decision made on the live round when the persisted round replaces it', async () => {
-        const pendingBlock = (id: string) => ({type: BlockType.ToolUse, id, name: 'search_docs', input: {q: id}, status: ToolCallStatusString.Pending});
-        mockFetchConversation.mockResolvedValueOnce({data: makeConversation()});
-        mockFetchConversation.mockResolvedValueOnce({data: makeConversation({
-            turns: [
-                {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 1, tokens_in: 0, tokens_out: 0, approval_state: 'call', content: [pendingBlock('a'), pendingBlock('b')]},
-            ],
-        })});
-
-        const {findByTestId, getByTestId, queryByTestId} = renderWithIntlAndTheme(
-            <AgentPostNew
-                post={makePost({message: ''})}
-                conversationId={CONV_ID}
-                currentUserId={USER_ID}
-                location={Screens.CHANNEL}
-                isDM={true}
-            />,
-        );
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            sendPostUpdate({
-                post_id: POST_ID,
-                control: CONTROL_SIGNALS.TOOL_CALL,
-                tool_call: JSON.stringify([
-                    {id: 'a', name: 'search_docs', description: '', arguments: {q: 'a'}, status: 0},
-                    {id: 'b', name: 'search_docs', description: '', arguments: {q: 'b'}, status: 0},
-                ]),
-            });
-            await flush();
-        });
-        await findByTestId('agents.tool_card.a.approve');
-
-        await act(async () => {
-            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
-            await flush();
-        });
-        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
-
-        await act(async () => {
-            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
-            await flush();
-        });
-
-        expect(await findByTestId('agents.tool_card.b.approve')).toBeTruthy();
-        expect(queryByTestId('agents.tool_card.a.approve')).toBeNull();
     });
 });

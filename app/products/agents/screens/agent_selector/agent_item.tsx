@@ -5,12 +5,12 @@ import React, {useCallback} from 'react';
 
 import OptionItem from '@components/option_item';
 
-import type {SelectableAgent} from '@agents/types';
+import type {Agent} from '@agents/types';
 
 type Props = {
-    agent: SelectableAgent;
+    agent: Agent;
     selectedAgentId: string;
-    onSelect: (agent: SelectableAgent) => void;
+    onSelect: (agent: Agent) => void;
 };
 
 const AgentItem = ({agent, selectedAgentId, onSelect}: Props) => {
@@ -21,7 +21,7 @@ const AgentItem = ({agent, selectedAgentId, onSelect}: Props) => {
     return (
         <OptionItem
             label={agent.displayName}
-            description={`@${agent.username}`}
+            description={`@${agent.username} • ${agent.service_type}`}
             action={handleSelect}
             type='radio'
             selected={agent.id === selectedAgentId}

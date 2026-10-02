@@ -42,7 +42,6 @@ interface ToolApprovalSetProps {
     canExpand: boolean;
     showArguments: boolean;
     showResults: boolean;
-    unsafeLinks: boolean;
 }
 
 type ToolDecision = {
@@ -131,7 +130,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 /**
  * Container component for displaying and managing tool approval requests
  */
-const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults, unsafeLinks}: ToolApprovalSetProps) => {
+const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canApprove, canExpand, showArguments, showResults}: ToolApprovalSetProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -418,7 +417,6 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
                         canExpand={canExpand}
                         showArguments={showArguments}
                         showResults={showResults}
-                        unsafeLinks={unsafeLinks}
                     />
                 );
             })}

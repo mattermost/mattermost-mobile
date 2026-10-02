@@ -37,50 +37,7 @@ export const CONTROL_SIGNALS = {
     REASONING_SUMMARY_DONE: 'reasoning_summary_done',
     TOOL_CALL: 'tool_call',
     ANNOTATIONS: 'annotations',
-    SERVER_TOOL: 'server_tool',
-    PROGRESS: 'progress',
 } as const;
-
-/**
- * Phases the plugin reports before a response starts streaming, in order
- * (conversations/progress.go). Each event carries its 1-based position as
- * progress_seq.
- */
-export const PROGRESS_PHASES = ['checking_mcp', 'loading_conversation', 'preparing_request', 'connecting_provider'] as const;
-export type ProgressPhase = typeof PROGRESS_PHASES[number];
 
 export const DEFAULT_AGENT_BOT_USERNAME = 'ai-bot';
-
-/**
- * The analysis_type labels the plugin webapp sends to the channel analyze
- * endpoint (channel_summarize_popover.tsx). The server only records them for
- * token accounting; the request options determine the actual window.
- */
-export const CHANNEL_ANALYSIS_TYPES = {
-    SUMMARIZE_UNREADS: 'summarize_unreads',
-    DAYS: 'days',
-    DATE_RANGE: 'date_range',
-    CUSTOM: 'custom',
-} as const;
-
-/**
- * The analysis_type values accepted by the plugin's thread analysis endpoint
- * (api/api_post.go handleThreadAnalysis).
- */
-export const THREAD_ANALYSIS_TYPES = {
-    SUMMARIZE_THREAD: 'summarize_thread',
-    ACTION_ITEMS: 'action_items',
-    OPEN_QUESTIONS: 'open_questions',
-} as const;
-
-/**
- * The preset_prompt values accepted by the plugin's channel interval endpoint
- * (api/api_channel.go handleInterval); anything else is rejected with a 400.
- * A fourth preset, summarize_range, exists but is not used by the unreads
- * summarization feature.
- */
-export const CHANNEL_INTERVAL_PRESETS = {
-    SUMMARIZE_UNREADS: 'summarize_unreads',
-    ACTION_ITEMS: 'action_items',
-    OPEN_QUESTIONS: 'open_questions',
-} as const;
+export const AGENT_ANALYSIS_SUMMARY = 'summarize_channel';

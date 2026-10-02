@@ -17,14 +17,9 @@ export const shouldUpdateAiBotRecord = (existingRecord: AiBotModel, newRaw: LLMB
         existingRecord.dmChannelId !== newRaw.dmChannelID ||
         existingRecord.channelAccessLevel !== newRaw.channelAccessLevel ||
         existingRecord.userAccessLevel !== newRaw.userAccessLevel ||
-
-        // The wire omits isDefault when false.
-        existingRecord.isDefault !== (newRaw.isDefault ?? false) ||
-
-        // Go marshals nil slices as null, so normalize to [] before comparing
-        // to avoid perpetual updates.
-        JSON.stringify(existingRecord.channelIds) !== JSON.stringify(newRaw.channelIDs ?? []) ||
-        JSON.stringify(existingRecord.userIds) !== JSON.stringify(newRaw.userIDs ?? [])
+        JSON.stringify(existingRecord.channelIds) !== JSON.stringify(newRaw.channelIDs) ||
+        JSON.stringify(existingRecord.userIds) !== JSON.stringify(newRaw.userIDs) ||
+        JSON.stringify(existingRecord.teamIds) !== JSON.stringify(newRaw.teamIDs)
     );
 };
 
@@ -34,9 +29,10 @@ export const shouldUpdateAiBotRecord = (existingRecord: AiBotModel, newRaw: LLMB
 export const shouldUpdateAiThreadRecord = (existingRecord: AiThreadModel, newRaw: AIThread): boolean => {
     // Check for any changes that would require an update
     return (
+        existingRecord.message !== newRaw.message ||
         existingRecord.title !== newRaw.title ||
         existingRecord.channelId !== newRaw.channel_id ||
-        existingRecord.turnCount !== newRaw.turn_count ||
+        existingRecord.replyCount !== newRaw.reply_count ||
         existingRecord.updateAt !== newRaw.update_at
     );
 };

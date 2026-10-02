@@ -1,4 +1,4 @@
-# Server Database - Schema Version 22
+# Server Database - Schema Version 21
 # Please bump the version by 1, any time the schema changes.
 # Also, include the migration plan under app/database/migration/server,
 # update all models, relationships and types.
@@ -436,15 +436,16 @@ channel_access_level number
 channel_ids string
 user_access_level number
 user_ids string
-is_default bool
+team_ids string
 
 
 AiThread
 -
 id PK string
+message string
 title string
 channel_id string INDEX FK >- Channel.id
-turn_count number
+reply_count number
 update_at number INDEX
 
 

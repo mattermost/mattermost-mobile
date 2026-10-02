@@ -16,7 +16,8 @@ describe('ThreadItem', () => {
         id: 'thread-123',
         channelId: 'channel-456',
         title: 'Test Conversation',
-        turnCount: 5,
+        message: 'This is a preview of the conversation',
+        replyCount: 5,
         updateAt: Date.now() - 60000, // 1 minute ago
     } as unknown as unknown as AiThreadModel;
 
@@ -41,6 +42,22 @@ describe('ThreadItem', () => {
         expect(getByText('Conversation with Agents')).toBeTruthy();
     });
 
+    it('should render message preview when present', () => {
+        const props = getBaseProps();
+        const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
+
+        expect(getByText('This is a preview of the conversation')).toBeTruthy();
+    });
+
+    it('should not render message preview when empty', () => {
+        const props = getBaseProps();
+        props.thread = {...mockThread, message: ''} as unknown as AiThreadModel;
+        const {queryByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
+
+        // Message should not be present
+        expect(queryByText('This is a preview of the conversation')).toBeNull();
+    });
+
     it('should call onPress with thread when pressed', () => {
         const props = getBaseProps();
         const {getByTestId} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
@@ -49,12 +66,28 @@ describe('ThreadItem', () => {
         expect(props.onPress).toHaveBeenCalledWith(mockThread);
     });
 
-    it('should render plural "messages" from the turn count', () => {
+    it('should render plural "replies" for multiple replies', () => {
         const props = getBaseProps();
-        props.thread = {...mockThread, turnCount: 5} as unknown as AiThreadModel;
+        props.thread = {...mockThread, replyCount: 5} as unknown as AiThreadModel;
         const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
 
-        expect(getByText('5 messages')).toBeTruthy();
+        expect(getByText('5 replies')).toBeTruthy();
+    });
+
+    it('should render singular "reply" for one reply', () => {
+        const props = getBaseProps();
+        props.thread = {...mockThread, replyCount: 1} as unknown as AiThreadModel;
+        const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
+
+        expect(getByText('1 reply')).toBeTruthy();
+    });
+
+    it('should render zero replies', () => {
+        const props = getBaseProps();
+        props.thread = {...mockThread, replyCount: 0} as unknown as AiThreadModel;
+        const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
+
+        expect(getByText('0 replies')).toBeTruthy();
     });
 
     it('should render bot name tag when provided', () => {

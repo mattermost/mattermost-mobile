@@ -11,6 +11,10 @@ import ChannelQuickActions from './index';
 
 import type {Database} from '@nozbe/watermelondb';
 
+jest.mock('@agents/store/agents_config', () => ({
+    useAgentsConfig: jest.fn(() => ({pluginEnabled: true})),
+}));
+
 jest.mock('@playbooks/components/channel_actions/playbook_runs_option', () => ({
     __esModule: true,
     default: jest.fn(),
@@ -26,7 +30,6 @@ describe('ChannelQuickAction', () => {
             callsEnabled: false,
             isDMorGM: false,
             hasPlaybookRuns: false,
-            canAskAgents: false,
         };
     }
 
@@ -64,19 +67,18 @@ describe('ChannelQuickAction', () => {
         expect(queryByTestId('playbook-runs-option')).toBeNull();
     });
 
-    it('should show Ask Agents option in DM/GM channels when channel analysis is available', () => {
+    it('shows Ask Agents option in all channel types', () => {
         const props = getBaseProps();
-        props.isDMorGM = true;
-        props.canAskAgents = true;
         const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
 
         expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
     });
 
-    it('should not show Ask Agents option when channel analysis is unavailable', () => {
+    it('shows Ask Agents option in DM/GM channels', () => {
         const props = getBaseProps();
-        const {queryByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
+        props.isDMorGM = true;
+        const {getByTestId} = renderWithEverything(<ChannelQuickActions {...props}/>, {database});
 
-        expect(queryByTestId('channel.quick_actions.ask_agents')).toBeNull();
+        expect(getByTestId('channel.quick_actions.ask_agents')).toBeTruthy();
     });
 });

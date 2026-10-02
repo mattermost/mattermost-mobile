@@ -110,7 +110,7 @@ const CitationsList = ({annotations}: CitationsListProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- contentHeight is a stable shared value ref
     }, []);
 
-    const handleCitationPress = useCallback((url?: string) => {
+    const handleCitationPress = useCallback((url: string) => {
         if (url) {
             tryOpenURL(url);
         }
@@ -157,15 +157,12 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                     onLayout={handleContentLayout}
                     style={styles.citationsContentWrapper}
                 >
-                    {annotations.map((annotation, position) => (
+                    {annotations.map((annotation) => (
                         <Pressable
-
-                            // Combined across rounds, so annotation.index can repeat.
-                            key={`citation-${position}-${annotation.url ?? ''}`}
+                            key={`citation-${annotation.index}-${annotation.url}`}
                             onPress={() => handleCitationPress(annotation.url)}
-                            disabled={!annotation.url}
                             style={({pressed}) => [styles.citationItem, pressed && {opacity: 0.72}]}
-                            testID={`citations.list.item.${position}`}
+                            testID={`citations.list.item.${annotation.index}`}
                         >
                             <View style={styles.citationIcon}>
                                 <CompassIcon
@@ -179,24 +176,20 @@ const CitationsList = ({annotations}: CitationsListProps) => {
                                     style={styles.citationTitle}
                                     numberOfLines={2}
                                 >
-                                    {annotation.title || getUrlDomain(annotation.url ?? '')}
+                                    {annotation.title || getUrlDomain(annotation.url)}
                                 </Text>
-                                {Boolean(annotation.url) && (
-                                    <Text
-                                        style={styles.citationUrl}
-                                        numberOfLines={1}
-                                    >
-                                        {getUrlDomain(annotation.url ?? '')}
-                                    </Text>
-                                )}
+                                <Text
+                                    style={styles.citationUrl}
+                                    numberOfLines={1}
+                                >
+                                    {getUrlDomain(annotation.url)}
+                                </Text>
                             </View>
-                            {Boolean(annotation.url) && (
-                                <CompassIcon
-                                    name='open-in-new'
-                                    size={16}
-                                    color={changeOpacity(theme.centerChannelColor, 0.56)}
-                                />
-                            )}
+                            <CompassIcon
+                                name='open-in-new'
+                                size={16}
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
+                            />
                         </Pressable>
                     ))}
                 </View>

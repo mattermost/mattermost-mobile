@@ -9,6 +9,7 @@ import {appEntry} from './app';
 
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/user');
+jest.mock('@agents/actions/remote/agents');
 
 // The shared mock in test/setup.ts is a singleton, so reassigning its methods in
 // beforeEach is order-sensitive; keep this file-local factory.

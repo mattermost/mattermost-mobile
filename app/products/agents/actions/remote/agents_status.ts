@@ -3,7 +3,6 @@
 
 import {setAgentsConfig} from '@agents/store/agents_config';
 import NetworkManager from '@managers/network_manager';
-import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 export async function checkIsAgentsPluginEnabled(serverUrl: string): Promise<{data?: boolean; error?: unknown}> {
@@ -13,7 +12,7 @@ export async function checkIsAgentsPluginEnabled(serverUrl: string): Promise<{da
         setAgentsConfig(serverUrl, {pluginEnabled: response.available});
         return {data: response.available};
     } catch (error) {
-        logDebug('[checkIsAgentsPluginEnabled] Failed to check agents status', getFullErrorMessage(error));
+        logDebug('checkIsAgentsPluginEnabled', 'Failed to check agents status', error);
         return {error};
     }
 }

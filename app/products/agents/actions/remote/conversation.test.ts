@@ -8,7 +8,6 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
 import {
-    cancelConversationFetch,
     clearConversationCacheForServer,
     ensureConversation,
     fetchConversation,
@@ -206,39 +205,6 @@ describe('refetchConversation onSettled', () => {
         await refetchConversation(serverUrl, conversationId, onSettled);
         expect(onSettled).not.toHaveBeenCalled();
 
-        await refetchConversation(serverUrl, conversationId);
-        expect(onSettled).toHaveBeenCalledTimes(1);
-    });
-});
-
-describe('cancelConversationFetch', () => {
-    it('should discard the inflight result and keep the cached conversation', async () => {
-        mockClient.getConversation.mockResolvedValueOnce(makeConversation(conversationId));
-        await ensureConversation(serverUrl, conversationId);
-
-        let resolveLate: (value: ConversationResponse) => void = () => undefined;
-        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
-            resolveLate = resolve;
-        }));
-        const late = refetchConversation(serverUrl, conversationId);
-
-        cancelConversationFetch(serverUrl, conversationId);
-        expect(conversationStore.getState(serverUrl, conversationId).loading).toBe(false);
-
-        resolveLate({...makeConversation(conversationId), title: 'Late'});
-        await late;
-        expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Chat');
-    });
-
-    it('should keep settle callbacks queued until a later fetch succeeds', async () => {
-        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>(() => undefined));
-        const onSettled = jest.fn();
-        refetchConversation(serverUrl, conversationId, onSettled);
-
-        cancelConversationFetch(serverUrl, conversationId);
-        expect(onSettled).not.toHaveBeenCalled();
-
-        mockClient.getConversation.mockResolvedValueOnce(makeConversation(conversationId));
         await refetchConversation(serverUrl, conversationId);
         expect(onSettled).toHaveBeenCalledTimes(1);
     });
