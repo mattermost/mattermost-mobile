@@ -115,3 +115,83 @@ describe('AppsFormField manual time entry', () => {
         expect(queryByTestId('AppFormElement.dt.manual_time.input')).toBeNull();
     });
 });
+
+// The BOOL field is rendered as an inline label + Switch row (not the shared
+// BoolSetting) so it reads as a compact form control instead of an empty toggle bar.
+describe('AppsFormField bool toggle', () => {
+    let database: Database;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    function getBoolProps(field: Partial<AppField> = {}, value: AppFormValue = false) {
+        return {
+            ...getProps(),
+            field: {name: 'agree', type: AppFieldTypes.BOOL, label: 'I agree', ...field} as AppField,
+            name: 'agree',
+            value,
+        };
+    }
+
+    it('renders the field label and a switch reflecting the current value', () => {
+        const {getByText, getByTestId} = renderWithEverything(
+            <AppsFormField {...getBoolProps({}, true)}/>,
+            {database, serverUrl},
+        );
+
+        expect(getByText('I agree')).toBeTruthy();
+
+        // testID encodes the current value, so an on switch exposes `.toggled.true.`.
+        expect(getByTestId('AppFormElement.agree.toggled.true.button')).toBeTruthy();
+    });
+
+    it('emits onChange with the toggled boolean when switched on', () => {
+        const props = getBoolProps({}, false);
+        const {getByTestId} = renderWithEverything(
+            <AppsFormField {...props}/>,
+            {database, serverUrl},
+        );
+
+        fireEvent(getByTestId('AppFormElement.agree.toggled.false.button'), 'valueChange', true);
+
+        expect(props.onChange).toHaveBeenCalledWith('agree', true);
+    });
+
+    it('shows a required asterisk only when the field is required', () => {
+        const {queryByText, rerender} = renderWithEverything(
+            <AppsFormField {...getBoolProps({is_required: false})}/>,
+            {database, serverUrl},
+        );
+
+        expect(queryByText('*', {exact: false})).toBeNull();
+
+        rerender(<AppsFormField {...getBoolProps({is_required: true})}/>);
+
+        expect(queryByText('*', {exact: false})).toBeTruthy();
+    });
+
+    it('renders the description as help text and the errorText when present', () => {
+        const {getByText} = renderWithEverything(
+            <AppsFormField {...{...getBoolProps({description: 'Accept the terms'}), errorText: 'This is required'}}/>,
+            {database, serverUrl},
+        );
+
+        expect(getByText('Accept the terms')).toBeTruthy();
+        expect(getByText('This is required')).toBeTruthy();
+    });
+
+    it('disables the switch when the field is readonly', () => {
+        const {getByTestId} = renderWithEverything(
+            <AppsFormField {...getBoolProps({readonly: true}, false)}/>,
+            {database, serverUrl},
+        );
+
+        expect(getByTestId('AppFormElement.agree.toggled.false.button').props.disabled).toBe(true);
+    });
+});
