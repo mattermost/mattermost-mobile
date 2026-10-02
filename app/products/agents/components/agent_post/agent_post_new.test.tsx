@@ -5,10 +5,12 @@ import {act} from '@testing-library/react-native';
 import React from 'react';
 
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
+import {handleAgentPostUpdate} from '@agents/actions/websocket';
 import {CONTROL_SIGNALS} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
-import {BlockType, ToolCallStatusString, type ConversationResponse} from '@agents/types';
+import {BlockType, ToolCallStatusString, type ConversationResponse, type PostUpdateWebsocketMessage, type Turn} from '@agents/types';
 import {Screens} from '@constants';
+import DatabaseManager from '@database/manager';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -44,6 +46,9 @@ jest.mock('@managers/network_manager', () => ({
     },
 }));
 jest.mock('@actions/remote/session');
+jest.mock('@queries/servers/post', () => ({
+    getPostById: jest.fn(async () => ({props: {conversation_id: 'conv1'}})),
+}));
 jest.mock('@utils/errors', () => ({
     getFullErrorMessage: jest.fn((err) => (err instanceof Error ? err.message : String(err))),
 }));
@@ -86,6 +91,12 @@ function makeConversation(overrides: Partial<ConversationResponse> = {}): Conver
     };
 }
 
+// Route events through the real websocket entry point: it owns the
+// stream-end conversation refetch.
+function sendPostUpdate(data: PostUpdateWebsocketMessage) {
+    handleAgentPostUpdate('https://test.mattermost.com', {data} as WebSocketMessage<PostUpdateWebsocketMessage>);
+}
+
 async function flush(): Promise<void> {
     await Promise.resolve();
     await Promise.resolve();
@@ -93,6 +104,7 @@ async function flush(): Promise<void> {
 }
 
 beforeEach(() => {
+    jest.spyOn(DatabaseManager, 'getServerDatabaseAndOperator').mockReturnValue({database: {}} as ReturnType<typeof DatabaseManager.getServerDatabaseAndOperator>);
     streamingStore.removeServer('https://test.mattermost.com');
     clearConversationCacheForServer('https://test.mattermost.com');
     mockFetchConversation.mockReset();
@@ -115,7 +127,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
 
         // Simulate the plugin's websocket events in order.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
             await flush();
         });
 
@@ -123,7 +135,7 @@ describe('AgentPostNew — streaming text (Bug #1)', () => {
         expect(getByText('Generating response...')).toBeTruthy();
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'Hello from the bot'});
+            sendPostUpdate({post_id: POST_ID, next: 'Hello from the bot'});
             await flush();
         });
 
@@ -251,11 +263,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Kick off a stream, receive tool calls over the wire, then end.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
+            sendPostUpdate({post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
+            sendPostUpdate({
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -275,7 +287,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
         // Now end the stream. Effect 3 invalidates, the re-fetch resolves with
         // the finalized turns, Effect 1 re-populates from the conversation.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
+            sendPostUpdate({post_id: POST_ID, control: 'end'});
             await flush();
         });
 
@@ -382,11 +394,11 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream start + tool_call event (status 0 === Pending).
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'start'});
+            sendPostUpdate({post_id: POST_ID, control: 'start'});
             await flush();
         });
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {
+            sendPostUpdate({
                 post_id: POST_ID,
                 control: 'tool_call',
                 tool_call: JSON.stringify([{
@@ -405,7 +417,7 @@ describe('AgentPostNew — old conversation tool calls (Bug #2)', () => {
 
         // Stream ends awaiting approval.
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: 'end'});
+            sendPostUpdate({post_id: POST_ID, control: 'end'});
             await flush();
         });
 
@@ -594,6 +606,96 @@ describe('AgentPostNew — regenerate gating (C9 no_regen)', () => {
     });
 });
 
+describe('AgentPostNew — stale cached conversation after a missed stream end', () => {
+    it('should render the post message and refetch when the cached conversation lacks the response turns', async () => {
+        const userTurn = {id: 't0', post_id: null, role: 'user' as const, sequence: 1, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'question'}]};
+        let resolveRefetch: (value: {data: ConversationResponse}) => void = () => {};
+        mockFetchConversation.
+            mockResolvedValueOnce({data: makeConversation({turns: [userTurn]})}).
+            mockReturnValueOnce(new Promise((resolve) => {
+                resolveRefetch = resolve;
+            }));
+
+        const {findByText, getByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Summary text'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await act(async () => {
+            await flush();
+        });
+
+        expect(getByText('Summary text')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+
+        await act(async () => {
+            resolveRefetch({
+                data: makeConversation({
+                    turns: [
+                        userTurn,
+                        {id: 't1', post_id: POST_ID, role: 'assistant', sequence: 2, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text: 'Persisted summary'}]},
+                    ],
+                }),
+            });
+            await flush();
+        });
+
+        expect(await findByText('Persisted summary')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+    });
+
+    it('should render the post message when the conversation cannot be loaded', async () => {
+        mockFetchConversation.mockResolvedValueOnce({error: 'network'});
+
+        const {findByText, getByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Summary text'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+
+        expect(await findByText('Summary text')).toBeTruthy();
+        expect(getByText('Failed to load conversation data')).toBeTruthy();
+    });
+
+    it('should keep the streamed answer when the post-stream refetch fails', async () => {
+        mockFetchConversation.
+            mockResolvedValueOnce({data: makeConversation()}).
+            mockResolvedValueOnce({error: 'network'});
+
+        const {findByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: ''})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await act(async () => {
+            await flush();
+        });
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'Streamed answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+
+        expect(await findByText('Streamed answer')).toBeTruthy();
+        expect(mockFetchConversation).toHaveBeenCalledTimes(2);
+        expect(streamingStore.getStreamingState('https://test.mattermost.com', POST_ID)).toBeDefined();
+    });
+});
+
 describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () => {
     it('should clear live buffers and show the generating placeholder on a continue resume', async () => {
         mockFetchConversation.mockResolvedValue({data: makeConversation()});
@@ -609,14 +711,14 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         );
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'first round text'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'first round text'});
             await flush();
         });
         expect(getByText('first round text')).toBeTruthy();
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.CONTINUE});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.CONTINUE});
             await flush();
         });
 
@@ -638,8 +740,8 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         );
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, control: CONTROL_SIGNALS.START});
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'partial answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'partial answer'});
             await flush();
         });
         expect(getByText('partial answer')).toBeTruthy();
@@ -650,7 +752,7 @@ describe('AgentPostNew — streaming control (C5 continue, C6 stop guard)', () =
         });
 
         await act(async () => {
-            streamingStore.handleWebSocketMessage('https://test.mattermost.com', {post_id: POST_ID, next: 'late text'});
+            sendPostUpdate({post_id: POST_ID, next: 'late text'});
             await flush();
         });
 
@@ -697,5 +799,52 @@ describe('AgentPostNew — combined Sources aggregation', () => {
         // Both url-less citations survive; a strict dedup-by-url would have
         // collapsed them into a single 'Sources (1)'.
         expect(await findByText('Sources (2)')).toBeTruthy();
+    });
+});
+
+describe('AgentPostNew — stream settle handover', () => {
+    function deferred<T>() {
+        let resolve!: (value: T) => void;
+        const promise = new Promise<T>((res) => {
+            resolve = res;
+        });
+        return {promise, resolve};
+    }
+
+    const textTurn = (id: string, sequence: number, text: string): Turn => ({
+        id, post_id: POST_ID, role: 'assistant', sequence, tokens_in: 0, tokens_out: 0, content: [{type: BlockType.Text, text}],
+    });
+
+    it('should keep the streamed answer under the persisted prefix until the post-stream refetch lands', async () => {
+        const settled = deferred<{data: ConversationResponse}>();
+        mockFetchConversation.mockResolvedValueOnce({data: makeConversation({turns: [textTurn('t1', 1, 'Earlier round')]})});
+        mockFetchConversation.mockReturnValueOnce(settled.promise);
+
+        const {findByText, getByText, getAllByText} = renderWithIntlAndTheme(
+            <AgentPostNew
+                post={makePost({message: 'Earlier round'})}
+                conversationId={CONV_ID}
+                currentUserId={USER_ID}
+                location={Screens.CHANNEL}
+                isDM={true}
+            />,
+        );
+        await findByText('Earlier round');
+
+        await act(async () => {
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.START});
+            sendPostUpdate({post_id: POST_ID, next: 'Fresh answer'});
+            sendPostUpdate({post_id: POST_ID, control: CONTROL_SIGNALS.END});
+            await flush();
+        });
+        expect(getByText('Earlier round')).toBeTruthy();
+        expect(getByText('Fresh answer')).toBeTruthy();
+
+        await act(async () => {
+            settled.resolve({data: makeConversation({turns: [textTurn('t1', 1, 'Earlier round'), textTurn('t2', 2, 'Fresh answer')]})});
+            await flush();
+        });
+        expect(getAllByText('Fresh answer')).toHaveLength(1);
+        expect(streamingStore.getStreamingState('https://test.mattermost.com', POST_ID)).toBeUndefined();
     });
 });

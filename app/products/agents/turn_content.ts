@@ -37,15 +37,25 @@ export function statusStringToEnum(status: string | undefined): ToolCallStatus {
 // The anchor is the highest-sequence assistant turn matching post_id, so
 // tool-round turns sit before it. Walk backwards from the anchor until a user
 // turn or a foreign post's anchor.
-export function collectResponseTurns(conversation: ConversationResponse, postId: string): Turn[] {
-    const sorted = [...conversation.turns].sort((a, b) => a.sequence - b.sequence);
-    let anchorIdx = -1;
+function findAnchorIndex(sorted: Turn[], postId: string): number {
     for (let i = sorted.length - 1; i >= 0; i--) {
         if (sorted[i].post_id === postId && sorted[i].role === 'assistant') {
-            anchorIdx = i;
-            break;
+            return i;
         }
     }
+    return -1;
+}
+
+/** Sequence of the post's current response anchor turn, or -1 if it has none. */
+export function getResponseAnchorSequence(conversation: ConversationResponse, postId: string): number {
+    const sorted = [...conversation.turns].sort((a, b) => a.sequence - b.sequence);
+    const anchorIdx = findAnchorIndex(sorted, postId);
+    return anchorIdx === -1 ? -1 : sorted[anchorIdx].sequence;
+}
+
+export function collectResponseTurns(conversation: ConversationResponse, postId: string): Turn[] {
+    const sorted = [...conversation.turns].sort((a, b) => a.sequence - b.sequence);
+    const anchorIdx = findAnchorIndex(sorted, postId);
     if (anchorIdx === -1) {
         return [];
     }
@@ -91,7 +101,9 @@ function toolUseBlockToToolCall(block: ContentBlock, resultMap: Map<string, Cont
         arguments: block.input ?? undefined,
         result: resultBlock?.content ?? undefined,
         status: statusStringToEnum(block.status),
+        user_interaction: block.user_interaction ?? undefined,
         would_auto_execute: block.would_auto_execute,
+        decided: resultBlock?.decided_at != null,
     };
 }
 
