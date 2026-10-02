@@ -129,9 +129,16 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
         case Launch.DeepLink:
             if (props.extra && props.extra.type !== DeepLink.Invalid) {
                 const extra = props.extra as DeepLinkWithData;
-                const existingServer = DatabaseManager.searchUrl(extra.data!.serverUrl);
-                serverUrl = existingServer;
-                props.serverUrl = serverUrl || extra.data?.serverUrl;
+                const deepLinkServerUrl = extra.data?.serverUrl;
+                const existingServer = deepLinkServerUrl ? DatabaseManager.searchUrl(deepLinkServerUrl) : undefined;
+                const savedServer = !existingServer && deepLinkServerUrl && extra.type === DeepLink.Server ?
+                    (await getAllServers()).find((server) => (
+                        server.lastActiveAt === 0 &&
+                        removeProtocol(server.url) === removeProtocol(deepLinkServerUrl)
+                    )) :
+                    undefined;
+                serverUrl = existingServer || savedServer?.url;
+                props.serverUrl = serverUrl || deepLinkServerUrl;
                 if (extra.type === DeepLink.MagicLink && extra.data && 'token' in extra.data) {
                     const result = await handleDeepLink(extra);
                     if (result.error) {
@@ -143,7 +150,9 @@ const determineRoute = async (props: LaunchProps): Promise<ExpoRouterLaunchResul
                 } else if (!serverUrl && extra.type !== DeepLink.Server) {
                     props.launchError = true;
                 } else if (extra.type === DeepLink.Server) {
-                    if (removeProtocol(serverUrl) === extra.data?.serverUrl) {
+                    if (savedServer) {
+                        props.displayName = savedServer.displayName;
+                    } else if (removeProtocol(serverUrl) === extra.data?.serverUrl) {
                         props.extra = undefined;
                         props.launchType = Launch.Normal;
                     } else {
