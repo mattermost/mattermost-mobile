@@ -11,6 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {HOME_PADDING} from '@constants/view';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -19,6 +20,7 @@ import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
+import {showSnackBar} from '@utils/snack_bar';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -39,6 +41,10 @@ type Props = {
     displayName?: string;
     hasMoreThanOneTeam: boolean;
     iconPad?: boolean;
+    ephemeralModeEnabled: boolean;
+    ephemeralModePurgeHours: number;
+    ephemeralModeCleanupDays: number;
+    isZeroPersistenceMode: boolean;
     pushProxyStatus: string;
 }
 
@@ -73,13 +79,33 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         height: PLUS_BUTTON_SIZE,
         width: PLUS_BUTTON_SIZE,
         borderRadius: PLUS_BUTTON_SIZE / 2,
-        marginTop: PLUS_BUTTON_SIZE / 4,
         justifyContent: 'center',
         alignItems: 'center',
     },
     plusIcon: {
         color: changeOpacity(theme.sidebarText, 0.8),
         fontSize: 18,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        flexShrink: 0,
+        gap: 8,
+        marginTop: PLUS_BUTTON_SIZE / 4,
+    },
+    ephemeralModeButton: {
+        backgroundColor: changeOpacity(theme.sidebarTextActiveBorder, 0.16),
+        height: PLUS_BUTTON_SIZE,
+        width: PLUS_BUTTON_SIZE,
+        borderRadius: PLUS_BUTTON_SIZE / 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    ephemeralModePressed: {
+        opacity: 0.72,
+    },
+    ephemeralModeIcon: {
+        color: theme.sidebarTextActiveBorder,
+        fontSize: 16,
     },
     pushAlert: {
         marginLeft: 5,
@@ -105,6 +131,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     firstBox: {
         width: '85%', // ratio derived from the design
+        flexShrink: 1,
     },
 }));
 
@@ -120,6 +147,10 @@ const ChannelListHeader = ({
     displayName,
     hasMoreThanOneTeam,
     iconPad,
+    ephemeralModeEnabled,
+    ephemeralModePurgeHours,
+    ephemeralModeCleanupDays,
+    isZeroPersistenceMode,
     pushProxyStatus,
 }: Props) => {
     const theme = useTheme();
@@ -201,6 +232,21 @@ const ChannelListHeader = ({
         return [styles.teamPressable, pressed && hasTeamMenuItems && styles.teamPressed];
     }, [hasTeamMenuItems, styles.teamPressable, styles.teamPressed]);
 
+    const ephemeralModePressableStyle = useCallback(({pressed}: PressableStateCallbackType): StyleProp<ViewStyle> => {
+        return [styles.ephemeralModeButton, pressed && styles.ephemeralModePressed];
+    }, [styles.ephemeralModeButton, styles.ephemeralModePressed]);
+
+    const onEphemeralModePress = useCallback(() => {
+        if (isZeroPersistenceMode) {
+            showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+            return;
+        }
+        showSnackBar({
+            barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED,
+            descriptionValues: {hours: ephemeralModePurgeHours, days: ephemeralModeCleanupDays},
+        });
+    }, [isZeroPersistenceMode, ephemeralModePurgeHours, ephemeralModeCleanupDays]);
+
     let header;
     if (displayName) {
         header = (
@@ -258,18 +304,32 @@ const ChannelListHeader = ({
                         <LoadingUnreads/>
                     </View>
                 </View>
-                <TouchableWithFeedback
-                    hitSlop={hitSlop}
-                    onPress={onPress}
-                    style={styles.plusButton}
-                    testID='channel_list_header.plus.button'
-                    type='opacity'
-                >
-                    <CompassIcon
-                        style={styles.plusIcon}
-                        name={'plus'}
-                    />
-                </TouchableWithFeedback>
+                <View style={styles.headerActions}>
+                    {ephemeralModeEnabled && (
+                        <Pressable
+                            onPress={onEphemeralModePress}
+                            style={ephemeralModePressableStyle}
+                            testID='channel_list_header.ephemeral_mode'
+                        >
+                            <CompassIcon
+                                style={styles.ephemeralModeIcon}
+                                name='shield-lock-outline'
+                            />
+                        </Pressable>
+                    )}
+                    <TouchableWithFeedback
+                        hitSlop={hitSlop}
+                        onPress={onPress}
+                        style={styles.plusButton}
+                        testID='channel_list_header.plus.button'
+                        type='opacity'
+                    >
+                        <CompassIcon
+                            style={styles.plusIcon}
+                            name={'plus'}
+                        />
+                    </TouchableWithFeedback>
+                </View>
             </View>
         );
     } else {
