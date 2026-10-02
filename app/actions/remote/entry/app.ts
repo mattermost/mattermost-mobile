@@ -3,7 +3,6 @@
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {refetchCurrentUser} from '@actions/remote/user';
-import {fetchAgents} from '@agents/actions/remote/agents';
 import DatabaseManager from '@database/manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
@@ -44,9 +43,6 @@ export async function appEntry(serverUrl: string, since = 0) {
         WebsocketManager.openAll('Cold Start');
 
         verifyPushProxy(serverUrl);
-
-        // Fetch agents to determine if AI features are available
-        fetchAgents(serverUrl);
 
         return {};
     } catch (error) {

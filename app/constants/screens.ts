@@ -218,6 +218,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     USER_PROFILE,
     AGENTS_SCREENS.AGENTS_REWRITE_OPTIONS,
     AGENTS_SCREENS.AGENTS_SELECTOR,
+    AGENTS_SCREENS.AGENTS_CUSTOM_PROMPTS,
 ]);
 
 // Screens that have been migrated to Expo Router

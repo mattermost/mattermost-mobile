@@ -23,8 +23,9 @@ export async function submitToolResult(
         await client.submitToolResult(postId, acceptedToolIds);
         return {};
     } catch (error) {
-        logError('[submitToolResult]', error);
+        const errorMessage = getFullErrorMessage(error);
+        logError('[submitToolResult]', errorMessage);
         forceLogoutIfNecessary(serverUrl, error);
-        return {error: getFullErrorMessage(error)};
+        return {error: errorMessage};
     }
 }

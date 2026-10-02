@@ -5,10 +5,12 @@ export const AGENT_CHAT = 'agent_chat';
 export const AGENT_THREADS_LIST = 'agent_threads_list';
 export const AGENTS_SELECTOR = 'agents_selector';
 export const AGENTS_REWRITE_OPTIONS = 'agents_rewrite_options';
+export const AGENTS_CUSTOM_PROMPTS = 'agents_custom_prompts';
 
 export default {
     AGENT_CHAT,
     AGENT_THREADS_LIST,
     AGENTS_SELECTOR,
     AGENTS_REWRITE_OPTIONS,
+    AGENTS_CUSTOM_PROMPTS,
 } as const;

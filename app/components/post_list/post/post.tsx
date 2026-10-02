@@ -9,7 +9,6 @@ import {removePost} from '@actions/local/post';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import AgentMentionReminderPost from '@agents/components/agent_mention_reminder_post';
-import AgentPost from '@agents/components/agent_post';
 import {isAgentMentionReminderPost, isAgentPost} from '@agents/utils';
 import CallsCustomMessage from '@calls/components/calls_custom_message';
 import {isCallsCustomMessage} from '@calls/utils';
@@ -399,21 +398,15 @@ const Post = ({
         body = (
             <AgentMentionReminderPost post={post}/>
         );
-    } else if (isAgentPostType && !hasBeenDeleted) {
-        body = (
-            <AgentPost
-                post={post}
-                currentUserId={currentUser?.id}
-                location={location}
-            />
-        );
     } else {
         body = (
             <Body
                 appsEnabled={appsEnabled}
                 mmBlocksEnabled={mmBlocksEnabled}
+                currentUserId={currentUser?.id}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
+                isAgentPost={isAgentPostType}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
                 isCRTEnabled={isCRTEnabled}

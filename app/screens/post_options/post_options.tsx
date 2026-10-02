@@ -18,6 +18,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
+import AskAgentsOption from './options/ask_agents_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
@@ -32,6 +33,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type PostOptionsProps = {
     canAddReaction: boolean;
+    canAskAgents: boolean;
     canDelete: boolean;
     canEdit: boolean;
     canMarkAsUnread: boolean;
@@ -51,7 +53,7 @@ type PostOptionsProps = {
     currentUser?: UserModel;
 };
 const PostOptions = ({
-    canAddReaction, canDelete, canEdit,
+    canAddReaction, canAskAgents, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply, canViewTranslation,
     combinedPost, isSaved,
     sourceScreen, post, thread, bindings, serverUrl,
@@ -75,7 +77,7 @@ const PostOptions = ({
     const snapPoints = useMemo(() => {
         const items: Array<string | number> = [1];
         const optionsCount = [
-            canCopyPermalink, canCopyText, canDelete, canEdit,
+            canAskAgents, canCopyPermalink, canCopyText, canDelete, canEdit,
             canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation,
         ].reduce((acc, v) => {
             return v ? acc + 1 : acc;
@@ -92,7 +94,7 @@ const PostOptions = ({
         }
 
         return items;
-    }, [canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
+    }, [canAskAgents, canCopyPermalink, canCopyText, canDelete, canEdit, canMarkAsUnread, canPin, canReply, canSavePost, shouldRenderFollow, canViewTranslation, shouldShowBindings, canAddReaction, shouldShowBORReadReceipts, bottom]);
 
     const renderContent = () => {
         return (
@@ -133,6 +135,7 @@ const PostOptions = ({
                     postMessage={post.messageSource || post.message}
                     sourceScreen={sourceScreen}
                 />}
+                {canAskAgents && <AskAgentsOption post={post}/>}
                 {canPin &&
                 <PinChannelOption
                     isPostPinned={post.isPinned}

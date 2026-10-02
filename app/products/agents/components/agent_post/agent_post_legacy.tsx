@@ -1,22 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
 
-import {regenerateResponse, stopGeneration} from '@agents/actions/remote/generation_controls';
-import {fetchToolCallPrivate, fetchToolResultPrivate} from '@agents/actions/remote/tool_private';
+import {useGenerationControls} from '@agents/hooks/use_generation_controls';
+import {useAgentsConfig} from '@agents/store/agents_config';
 import {useStreamingState} from '@agents/store/streaming_store';
-import {ToolApprovalStage, type Annotation, type ToolCall} from '@agents/types';
-import {getToolApprovalStage, isPostRequester, isToolCallRedacted, mergeToolCalls} from '@agents/utils';
-import FormattedText from '@components/formatted_text';
+import {stripOpenAICitations} from '@agents/turn_content';
+import {type Annotation, type ToolCall} from '@agents/types';
+import {getToolApprovalStage, isPostRequester, isToolCallRedacted, isUnsafeLinksPost} from '@agents/utils';
 import Markdown from '@components/markdown';
-import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {safeParseJSON} from '@utils/helpers';
-import {showSnackBar} from '@utils/snack_bar';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import CitationsList from '../citations_list';
@@ -25,6 +23,7 @@ import ReasoningDisplay from '../reasoning_display';
 import ToolApprovalSet from '../tool_approval_set';
 
 import StreamingIndicator from './streaming_indicator';
+import WorkingIndicator from './working_indicator';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -43,17 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
         },
-        precontentContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
-        },
-        precontentText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontStyle: 'italic',
-            marginRight: 8,
-            ...typography('Body', 100),
-        },
     };
 });
 
@@ -65,15 +53,18 @@ export interface AgentPostLegacyProps {
 }
 
 /**
- * Legacy agent post renderer for servers running mattermost-plugin-agents
- * without conversation entities. Sources tool calls, reasoning, annotations,
- * and redaction state from post props, and fetches private tool data via the
- * legacy /tool_call_private and /tool_result_private endpoints.
+ * Agent post renderer for posts without a conversation entity (history from
+ * before the plugin's conversation model). Sources tool calls, reasoning,
+ * annotations, and redaction state from post props. Redacted tool payloads
+ * stay hidden: the private-data endpoints were removed in plugin 2.0.
  */
 const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    const {allowUnsafeLinks} = useAgentsConfig(serverUrl);
+    const unsafeLinks = isUnsafeLinksPost(post, allowUnsafeLinks);
 
     // Extract persisted reasoning from post props
     const persistedReasoning = useMemo(() => {
@@ -107,7 +98,11 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const streamingState = useStreamingState(serverUrl, post.id);
 
     // Determine the message to display (use ?? not || to preserve empty string during streaming)
-    const displayMessage = streamingState?.message ?? post.message ?? '';
+    const rawMessage = streamingState?.message ?? post.message ?? '';
+
+    // Strip OpenAI-style "(source: https://…)" inline clutter from agent text
+    // for both the streaming and the persisted message.
+    const displayMessage = useMemo(() => stripOpenAICitations(rawMessage), [rawMessage]);
     const isGenerating = streamingState?.generating ?? false;
     const isPrecontent = streamingState?.precontent ?? false;
 
@@ -140,10 +135,6 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
         return currentUserId ? isPostRequester(post, currentUserId) : false;
     }, [post, currentUserId]);
 
-    // Channel tool calling state
-    const [privateToolCalls, setPrivateToolCalls] = useState<ToolCall[] | null>(null);
-    const [privateToolResults, setPrivateToolResults] = useState<ToolCall[] | null>(null);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps -- post.props is the reactive value that drives redaction state
     const isRedacted = useMemo(() => isToolCallRedacted(post), [post.props]);
 
@@ -155,74 +146,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
 
     const canApprove = isRequester;
     const canExpand = isRequester;
-    const showArguments = isDM || (isRequester && (!isRedacted || privateToolCalls !== null));
-    const showResults = isDM || (isRequester && (!isRedacted || privateToolResults !== null));
-
-    const mergedToolCalls = useMemo(() => {
-        if (approvalStage === ToolApprovalStage.Result && privateToolResults) {
-            return mergeToolCalls(toolCalls, privateToolResults);
-        }
-        if (privateToolCalls) {
-            return mergeToolCalls(toolCalls, privateToolCalls);
-        }
-        return toolCalls;
-    }, [toolCalls, privateToolCalls, privateToolResults, approvalStage]);
-
-    // Fetch private tool call data when in Phase 1
-    useEffect(() => {
-        let cancelled = false;
-        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Call && toolCalls.length > 0 && !privateToolCalls) {
-            fetchToolCallPrivate(serverUrl, post.id).then(({data, error}) => {
-                if (cancelled) {
-                    return;
-                }
-                if (data) {
-                    setPrivateToolCalls(data);
-                }
-                if (error) {
-                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
-                }
-            });
-        }
-        return () => {
-            cancelled = true;
-        };
-    }, [isRedacted, isRequester, approvalStage, toolCalls, privateToolCalls, serverUrl, post.id]);
-
-    // Fetch private tool results when in Phase 2
-    useEffect(() => {
-        let cancelled = false;
-        if (isRedacted && isRequester && approvalStage === ToolApprovalStage.Result && !privateToolResults) {
-            fetchToolResultPrivate(serverUrl, post.id).then(({data, error}) => {
-                if (cancelled) {
-                    return;
-                }
-                if (data) {
-                    setPrivateToolResults(data);
-                }
-                if (error) {
-                    showSnackBar({barType: SNACK_BAR_TYPE.AGENT_FETCH_PRIVATE_ERROR});
-                }
-            });
-        }
-        return () => {
-            cancelled = true;
-        };
-    }, [isRedacted, isRequester, approvalStage, privateToolResults, serverUrl, post.id]);
-
-    // Clear private data when streaming tool calls actually change so a
-    // re-render with the same reference doesn't wipe persisted state.
-    const prevStreamingToolCallsRef = useRef(streamingState?.toolCalls);
-    useEffect(() => {
-        const currentToolCalls = streamingState?.toolCalls;
-        const prevToolCalls = prevStreamingToolCallsRef.current;
-        prevStreamingToolCallsRef.current = currentToolCalls;
-
-        if (currentToolCalls !== prevToolCalls && (currentToolCalls || prevToolCalls)) {
-            setPrivateToolCalls(null);
-            setPrivateToolResults(null);
-        }
-    }, [streamingState?.toolCalls]);
+    const showToolPayloads = isDM || (isRequester && !isRedacted);
 
     // Determine if generation is in progress (generating or reasoning)
     const isGenerationInProgress = isGenerating || isReasoningLoading;
@@ -232,23 +156,13 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
     const noRegen = noRegenProp === true || noRegenProp === 'true';
     const showStopButton = isGenerationInProgress && isRequester;
     const hasContent = displayMessage !== '' || reasoningSummary !== '';
+
+    // The plugin creates the response post empty (and without a
+    // conversation_id yet) before setup, so an empty post is still working.
+    const showPlaceholder = isPrecontent || (!hasContent && toolCalls.length === 0);
     const showRegenerateButton = !isGenerationInProgress && isRequester && hasContent && isDM && !noRegen;
 
-    // Handler for stop button
-    const handleStop = useCallback(async () => {
-        const {error} = await stopGeneration(serverUrl, post.id);
-        if (error) {
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_STOP_ERROR});
-        }
-    }, [serverUrl, post.id]);
-
-    // Handler for regenerate button
-    const handleRegenerate = useCallback(async () => {
-        const {error} = await regenerateResponse(serverUrl, post.id);
-        if (error) {
-            showSnackBar({barType: SNACK_BAR_TYPE.AGENT_REGENERATE_ERROR});
-        }
-    }, [serverUrl, post.id]);
+    const {stop: handleStop, regenerate: handleRegenerate} = useGenerationControls(post.id);
 
     return (
         <View style={styles.container}>
@@ -258,15 +172,8 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                     isReasoningLoading={isReasoningLoading}
                 />
             )}
-            {isPrecontent ? (
-                <View style={styles.precontentContainer}>
-                    <FormattedText
-                        id='agents.generating'
-                        defaultMessage='Generating response...'
-                        style={styles.precontentText}
-                    />
-                    <StreamingIndicator/>
-                </View>
+            {showPlaceholder ? (
+                <WorkingIndicator progressPhase={streamingState?.progressPhase}/>
             ) : (
                 <View style={styles.messageContainer}>
                     {displayMessage ? (
@@ -275,22 +182,24 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                             value={displayMessage}
                             theme={theme}
                             location={location}
+                            isUnsafeLinksPost={unsafeLinks}
                         />
                     ) : null}
-                    {isGenerating && !isPrecontent && (
+                    {isGenerating && !isPrecontent && !isReasoningLoading && (
                         <StreamingIndicator/>
                     )}
                 </View>
             )}
-            {mergedToolCalls.length > 0 && (
+            {toolCalls.length > 0 && (
                 <ToolApprovalSet
                     postId={post.id}
-                    toolCalls={mergedToolCalls}
+                    toolCalls={toolCalls}
                     approvalStage={approvalStage}
                     canApprove={canApprove}
                     canExpand={canExpand}
-                    showArguments={showArguments}
-                    showResults={showResults}
+                    showArguments={showToolPayloads}
+                    showResults={showToolPayloads}
+                    unsafeLinks={unsafeLinks}
                 />
             )}
             {annotations.length > 0 && (
