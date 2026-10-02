@@ -10,6 +10,7 @@ import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {settleStreamedPost} from '@agents/actions/websocket';
 import {AGENT_POST_TYPES} from '@agents/constants';
 import streamingStore from '@agents/store/streaming_store';
 import {Events, Screens} from '@constants';
@@ -41,6 +42,7 @@ jest.mock('@actions/remote/channel');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/thread');
 jest.mock('@actions/remote/user');
+jest.mock('@agents/actions/websocket', () => ({settleStreamedPost: jest.fn()}));
 jest.mock('@utils/helpers');
 jest.mock('@utils/post', () => ({
     ...jest.requireActual('@utils/post'),
@@ -412,6 +414,29 @@ describe('WebSocket Post Actions', () => {
             await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
 
             expect(removePostSpy).not.toHaveBeenCalled();
+        });
+
+        it('should settle a conversation-backed agent post whose stream ended before the edit was stored', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            streamingStore.startStreaming(serverUrl, agentPost.id);
+            streamingStore.endStreaming(serverUrl, agentPost.id);
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(settleStreamedPost).toHaveBeenCalledWith(serverUrl, agentPost.id);
+            streamingStore.removeServer(serverUrl);
+        });
+
+        it('should not settle a conversation-backed agent post that is still streaming', async () => {
+            const agentPost = {...editedPost, type: AGENT_POST_TYPES.LLMBOT, props: {conversation_id: 'conv1'}};
+            streamingStore.startStreaming(serverUrl, agentPost.id);
+            mockedGetPostById.mockResolvedValue(postModels[0]);
+
+            await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
+
+            expect(settleStreamedPost).not.toHaveBeenCalled();
+            streamingStore.removeServer(serverUrl);
         });
 
         it('should clear streaming state for legacy agent posts without a conversation', async () => {
