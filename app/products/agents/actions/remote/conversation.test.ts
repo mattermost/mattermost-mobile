@@ -260,4 +260,22 @@ describe('clearConversationCacheForServer', () => {
         expect(conversationStore.getState(serverUrl, 'c1').conversation).toBeUndefined();
         expect(conversationStore.getState(otherServerUrl, 'c1').conversation?.title).toBe('B');
     });
+
+    it('should leave an in-flight fetch alone on a server whose URL extends the cleared one', async () => {
+        const portServerUrl = `${serverUrl}:8065`;
+        let resolveFetch: (value: ConversationResponse) => void = () => undefined;
+        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
+            resolveFetch = resolve;
+        }));
+        const pending = ensureConversation(portServerUrl, 'c1');
+
+        clearConversationCacheForServer(serverUrl);
+        resolveFetch({...makeConversation('c1'), title: 'Port'});
+        await pending;
+
+        const state = conversationStore.getState(portServerUrl, 'c1');
+        expect(state.conversation?.title).toBe('Port');
+        expect(state.loading).toBe(false);
+        clearConversationCacheForServer(portServerUrl);
+    });
 });

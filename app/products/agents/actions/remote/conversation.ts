@@ -29,7 +29,10 @@ function drainSettleCallbacks(key: string) {
     }
 }
 
-const inflightKey = (serverUrl: string, conversationId: string) => `${serverUrl}:${conversationId}`;
+// Server URLs contain ':' (and one can prefix another, e.g. a host with and
+// without a port), so the separator must be a character URLs can't hold.
+const KEY_SEPARATOR = '\n';
+const inflightKey = (serverUrl: string, conversationId: string) => `${serverUrl}${KEY_SEPARATOR}${conversationId}`;
 
 // Backend may serialise turn.content as the JSON literal `null`; coerce to []
 // so downstream code can iterate without a guard.
@@ -158,13 +161,14 @@ export function cancelConversationFetch(serverUrl: string, conversationId: strin
 
 /** Drop every cached conversation belonging to a single server (per-server logout). */
 export function clearConversationCacheForServer(serverUrl: string): void {
+    const prefix = `${serverUrl}${KEY_SEPARATOR}`;
     for (const key of [...inflight.keys()]) {
-        if (key.startsWith(`${serverUrl}:`)) {
+        if (key.startsWith(prefix)) {
             inflight.delete(key);
         }
     }
     for (const key of [...settleCallbacks.keys()]) {
-        if (key.startsWith(`${serverUrl}:`)) {
+        if (key.startsWith(prefix)) {
             settleCallbacks.delete(key);
         }
     }
