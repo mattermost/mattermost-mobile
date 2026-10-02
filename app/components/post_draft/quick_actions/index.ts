@@ -34,6 +34,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
         distinctUntilChanged(),
     );
+
     // Denied by policy hides the control rather than dimming it, so the policy folds into the same
     // flag that decides whether to render it at all. Unlike upload, it is withheld until the server
     // answers: most users do not have the permission, so showing it first would flicker.

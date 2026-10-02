@@ -271,7 +271,6 @@ describe('create, update & delete posts', () => {
     });
 
     it('createPost - should revalidate the channel decisions when the server refuses a burn-on-read post', async () => {
-        // The stored decision allowed a burn-on-read post the server refused, so it is out of date.
         const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
         mockClient.createPost.mockImplementationOnce(jest.fn(() => {
             // eslint-disable-next-line no-throw-literal
