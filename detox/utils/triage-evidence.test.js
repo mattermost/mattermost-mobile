@@ -91,6 +91,23 @@ describe('triage-evidence', () => {
         assert.equal(summarize([]), '');
     });
 
+    it('should count a page served instead of JSON and a call the client gave up on', () => {
+        // detox-ios on run 36975435128: MM-T6205_1's setup calls hit both while it ran.
+        const title = 'MM-T6205_1 - should not render the banner on the channel screen';
+        const log = [
+            `07:34:56.929 detox[26384] i Classification Banner: ${title}`,
+            '07:35:10.403 detox[26384] i [provision] [client] "cloud/inaccessible" HTML from server — retry 1/3 in 3000ms for https://site-2.test.mattermost.cloud/api/v4/users/6',
+            '07:36:08.451 detox[26384] i [provision] [client] request timeout — retry 1 for get https://site-2.test.mattermost.cloud/api/v4/properties/groups/access_control/channel',
+            '07:36:20.000 detox[26384] i [provision] [client] GET /api/v4/channels ok',
+            `07:38:11.567 detox[26384] i Classification Banner: ${title} [FAIL]`,
+        ].join('\n');
+        const errors = serverErrors(log, title);
+        assert.deepEqual(errors.map((e) => e.message), [
+            '[provision] [client] "cloud/inaccessible" HTML from server — retry N/N in Nms for <url>',
+            '[provision] [client] request timeout — retry N for get <url>',
+        ]);
+    });
+
     it('should count the test\'s failed server calls, grouped without their URLs', () => {
         const errors = serverErrors(CF_LOG, CF_TITLE);
         assert.deepEqual(errors.map((e) => e.count), [2, 1]);

@@ -29,7 +29,9 @@ const BUSY_RE = /The app is busy with the following tasks:/;
 const TIME_RE = /^(\d{2}:\d{2}:\d{2})\.\d{3}\s/;
 
 // The test's own server calls failing: a timeout spent here is the server's, not the app's.
-const SERVER_ERROR_RE = /No response from server|Network error|is not healthy|_cf_chl_opt|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|status(?: code)? 5\d\d/;
+// "HTML from server" is the API answering with a page instead of JSON (a Cloudflare
+// challenge, "cloud/inaccessible"); "request timeout" is a call the client gave up on.
+const SERVER_ERROR_RE = /No response from server|Network error|is not healthy|HTML from server|request timeout|ECONNRESET|ECONNREFUSED|ETIMEDOUT|socket hang up|status(?: code)? 5\d\d/;
 const DETOX_PREFIX_RE = /^\d{2}:\d{2}:\d{2}\.\d{3}\s+detox\[\d+\]\s+\S+\s+/;
 const ERROR_MAX = 200;
 
