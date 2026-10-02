@@ -78,6 +78,7 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <View style={styles.container}>
                 {Boolean(seekSeconds) && (
                     <Pressable
+                        testID='gallery.video.rewind.button'
                         style={styles.button}
                         onPress={handleRewind}
                     >
@@ -90,6 +91,7 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 )}
 
                 <Pressable
+                    testID={paused ? 'gallery.video.play.button' : 'gallery.video.pause.button'}
                     onPress={paused ? handlePlay : handlePause}
                 >
                     {paused ? (
@@ -101,6 +103,7 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
                 {Boolean(seekSeconds) && (
                     <Pressable
+                        testID='gallery.video.forward.button'
                         style={styles.button}
                         onPress={handleForward}
                     >
