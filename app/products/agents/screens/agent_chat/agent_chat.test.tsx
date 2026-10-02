@@ -132,8 +132,8 @@ jest.mock('./agent_chat_content', () => {
     const ActualContent = jest.requireActual('./agent_chat_content').default;
     return {
         __esModule: true,
-        default: (props: {onPromptPosted: (postId: string) => void}) => (
-            <View>
+        default: (props: {channelId: string | null; onPromptPosted: (postId: string) => void}) => (
+            <View testID={`mock.agent_chat_content.channel.${props.channelId ?? 'none'}`}>
                 <ActualContent {...props}/>
                 <Pressable
                     testID='mock.start_conversation'
@@ -274,12 +274,10 @@ describe('AgentChat', () => {
         await act(async () => {});
     });
 
-    it('should subscribe to AGENT_NEW_CHAT while mounted so the threads list can reset the conversation', async () => {
-        // The reset itself is just setRootId(null); what can regress silently
-        // is the listener lifecycle, so pin registration and cleanup.
+    it('should start a new conversation on AGENT_NEW_CHAT and stop listening once unmounted', async () => {
         const baseline = DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT);
 
-        const {getByTestId, unmount} = renderWithEverything(
+        const {getByTestId, queryByTestId, unmount} = renderWithEverything(
             <AgentChat
                 bots={[mockBot]}
                 selectedAgentId=''
@@ -290,8 +288,13 @@ describe('AgentChat', () => {
         await waitFor(() => {
             expect(getByTestId('agent_chat.post_draft')).toBeTruthy();
         });
+        fireEvent.press(getByTestId('mock.start_conversation'));
+        expect(getByTestId('mock.agent_chat_post_list')).toBeTruthy();
 
-        expect(DeviceEventEmitter.listenerCount(Events.AGENT_NEW_CHAT)).toBe(baseline + 1);
+        act(() => {
+            DeviceEventEmitter.emit(Events.AGENT_NEW_CHAT);
+        });
+        expect(queryByTestId('mock.agent_chat_post_list')).toBeNull();
 
         await act(async () => {});
         unmount();
@@ -351,5 +354,42 @@ describe('AgentChat', () => {
         expect(queryByTestId('mock.agent_chat_post_list')).toBeNull();
 
         await act(async () => {});
+    });
+
+    it('should ignore a DM lookup for the previous agent that resolves after switching', async () => {
+        const currentChannelId = TestHelper.basicChannel!.id;
+        let resolveStale: (value: {data: {id: string}}) => void = () => undefined;
+        (createDirectChannel as jest.Mock).mockImplementation((_url: string, botId: string) => {
+            if (botId === mockBot.id) {
+                return new Promise((resolve) => {
+                    resolveStale = resolve;
+                });
+            }
+            return Promise.resolve({data: {id: currentChannelId}});
+        });
+
+        const {getByTestId, queryByTestId, rerender} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot.id}
+            />,
+            {database},
+        );
+        rerender(
+            <AgentChat
+                bots={[mockBot, mockBot2]}
+                selectedAgentId={mockBot2.id}
+            />,
+        );
+        await waitFor(() => {
+            expect(getByTestId(`mock.agent_chat_content.channel.${currentChannelId}`)).toBeTruthy();
+        });
+
+        await act(async () => {
+            resolveStale({data: {id: 'stale-dm'}});
+        });
+
+        expect(getByTestId(`mock.agent_chat_content.channel.${currentChannelId}`)).toBeTruthy();
+        expect(queryByTestId('mock.agent_chat_content.channel.stale-dm')).toBeNull();
     });
 });

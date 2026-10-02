@@ -26,9 +26,14 @@ describe('AgentsHandler', () => {
     });
 
     describe('handleAIBots', () => {
-        it('should return empty array when bots is undefined', async () => {
+        it('should leave stored bots alone when bots is undefined', async () => {
+            await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1'})], prepareRecordsOnly: false});
+
             const result = await operator.handleAIBots({prepareRecordsOnly: false});
+
             expect(result).toEqual([]);
+            const records = await operator.database.collections.get<AiBotModel>(AI_BOT).query().fetch();
+            expect(records).toHaveLength(1);
         });
 
         it('should delete every stored bot when the server returns an empty list', async () => {
@@ -108,12 +113,48 @@ describe('AgentsHandler', () => {
             expect(records[1].id).toBe('bot1');
             expect(records[1].isDefault).toBe(false);
         });
+
+        it('should move the default flag when the server picks another default bot', async () => {
+            const alpha = TestHelper.fakeLLMBot({id: 'bot1', displayName: 'Alpha'});
+            const zulu = TestHelper.fakeLLMBot({id: 'bot2', displayName: 'Zulu'});
+            await operator.handleAIBots({bots: [{...alpha, isDefault: true}, zulu], prepareRecordsOnly: false});
+
+            // Only the flag changes; the wire omits it for the old default.
+            await operator.handleAIBots({bots: [alpha, {...zulu, isDefault: true}], prepareRecordsOnly: false});
+
+            const records = await queryAIBots(operator.database).fetch();
+            expect(records.map((r) => [r.id, r.isDefault])).toEqual([['bot2', true], ['bot1', false]]);
+        });
+
+        it('should clear stored access lists when they arrive as null, then stop rewriting the bot', async () => {
+            await operator.handleAIBots({bots: [TestHelper.fakeLLMBot({id: 'bot1', channelIDs: ['c1'], userIDs: ['u1']})], prepareRecordsOnly: false});
+            const cleared = TestHelper.fakeLLMBot({id: 'bot1', channelIDs: null, userIDs: null});
+
+            await operator.handleAIBots({bots: [cleared], prepareRecordsOnly: false});
+
+            const record = await operator.database.collections.get<AiBotModel>(AI_BOT).find('bot1');
+            expect(record.channelIds).toEqual([]);
+            expect(record.userIds).toEqual([]);
+            expect(await operator.handleAIBots({bots: [cleared], prepareRecordsOnly: false})).toHaveLength(0);
+        });
     });
 
     describe('handleAIThreads', () => {
-        it('should return empty array when threads is undefined', async () => {
+        it('should leave stored threads alone when threads is undefined', async () => {
+            await operator.handleAIThreads({threads: [TestHelper.fakeAiThread({id: 'thread1'})], prepareRecordsOnly: false});
+
             const result = await operator.handleAIThreads({prepareRecordsOnly: false});
+
             expect(result).toEqual([]);
+            const records = await operator.database.collections.get<AiThreadModel>(AI_THREAD).query().fetch();
+            expect(records).toHaveLength(1);
+        });
+
+        it('should not rewrite an unchanged thread on resync', async () => {
+            const thread = TestHelper.fakeAiThread({id: 'thread1'});
+            await operator.handleAIThreads({threads: [thread], prepareRecordsOnly: false});
+
+            expect(await operator.handleAIThreads({threads: [thread], prepareRecordsOnly: false})).toHaveLength(0);
         });
 
         it('should delete every stored thread when the server returns an empty list', async () => {

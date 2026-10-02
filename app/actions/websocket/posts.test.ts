@@ -414,6 +414,7 @@ describe('WebSocket Post Actions', () => {
             await handlePostEdited(serverUrl, {data: {post: JSON.stringify(agentPost)}} as WebSocketMessage);
 
             expect(removePostSpy).not.toHaveBeenCalled();
+            expect(settleStreamedPost).not.toHaveBeenCalled();
         });
 
         it('should settle a conversation-backed agent post whose stream ended before the edit was stored', async () => {

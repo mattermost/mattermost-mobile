@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {SKU_SHORT_NAME} from '@constants/license';
 import DatabaseManager from '@database/manager';
 
 import {observeIsAgentsAnalysisLicensed} from './license';
@@ -55,6 +56,18 @@ describe('observeIsAgentsAnalysisLicensed', () => {
         expect(subscribe()).toHaveBeenCalledWith(true);
     });
 
+    it.each([
+        SKU_SHORT_NAME.E10,
+        SKU_SHORT_NAME.E20,
+        SKU_SHORT_NAME.Enterprise,
+        SKU_SHORT_NAME.Entry,
+        SKU_SHORT_NAME.EnterpriseAdvanced,
+    ])('should emit true for the %s SKU from plugin 2.8.0 without the LDAP fallback', async (sku) => {
+        await setPluginVersion('2.8.0');
+        await setLicense({SkuShortName: sku, LDAP: 'false'});
+        expect(subscribe()).toHaveBeenCalledWith(true);
+    });
+
     it('should emit false for a starter or unlicensed server', async () => {
         await setLicense({IsLicensed: 'false', SkuShortName: 'starter', LDAP: 'false'});
         expect(subscribe()).toHaveBeenCalledWith(false);
@@ -85,6 +98,11 @@ describe('observeIsAgentsAnalysisLicensed', () => {
 
         it('should emit false for a Professional SKU', async () => {
             await setLicense({SkuShortName: 'professional', LDAP: 'true'});
+            expect(subscribe()).toHaveBeenCalledWith(false);
+        });
+
+        it('should emit false for a legacy E20 SKU, which the pre-tier-chart check did not accept', async () => {
+            await setLicense({SkuShortName: SKU_SHORT_NAME.E20, LDAP: 'true'});
             expect(subscribe()).toHaveBeenCalledWith(false);
         });
 
