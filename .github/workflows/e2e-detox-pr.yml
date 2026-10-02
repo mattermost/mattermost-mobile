@@ -1177,7 +1177,7 @@ jobs:
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@ff2cdebaba5c7dba3192ef4dd79ee0318bde2725 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@7f03c8beb01a8774368a9d96f638e508ddc34865 # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
@@ -1188,7 +1188,6 @@ jobs:
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
           answers-cache: e2e-triage-answers.json
-          post-pr-comment: "false"
       - name: Save triage answers
         if: always() && hashFiles('e2e-triage-answers.json') != ''
         continue-on-error: true
