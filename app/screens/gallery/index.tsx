@@ -80,7 +80,9 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Ga
         };
     }, [onClose]);
 
-    useAndroidHardwareBackHandler(Screens.GALLERY, close);
+    // Close through the lightbox animation like the header's close button does: it restores the
+    // thumbnail's opacity, which stays at 0 if the screen is popped directly.
+    useAndroidHardwareBackHandler(Screens.GALLERY, onClose);
 
     return (
         <View style={containerStyle}>
