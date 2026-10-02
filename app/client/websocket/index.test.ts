@@ -173,12 +173,17 @@ describe('WebSocketClient', () => {
     });
 
     it('should handle WebSocket close event - tls handshake error', async () => {
+        const closeCallback = jest.fn();
+        client.setCloseCallback(closeCallback);
+
         await client.initialize();
         const message = {code: 1015, reason: 'tls handshake error'};
 
         mockConn.onClose.mock.calls[0][0]({message});
 
         expect(logDebug).toHaveBeenCalledWith('websocket did not connect', 'wss://example.com/api/v4/websocket', message.reason);
+        expect(closeCallback).toHaveBeenCalledWith(1);
+        expect(client.hasFailedToConnect()).toBe(true);
     });
 
     it('should handle WebSocket error event', async () => {
@@ -310,6 +315,17 @@ describe('WebSocketClient', () => {
         await client.initialize();
 
         expect(client.isConnected()).toBe(true);
+    });
+
+    it('reports a failed connection after a close and clears it once reconnected', async () => {
+        await client.initialize();
+        expect(client.hasFailedToConnect()).toBe(false);
+
+        mockConn.close();
+        expect(client.hasFailedToConnect()).toBe(true);
+
+        await advanceTimers(6000);
+        expect(client.hasFailedToConnect()).toBe(false);
     });
 
     it('should send ping messages on interval and handle pong responses', async () => {
