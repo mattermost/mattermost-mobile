@@ -12,6 +12,7 @@ import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {openChannelIfNeeded} from '@actions/remote/preference';
 import {fetchThread} from '@actions/remote/thread';
 import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {settleStreamedPost} from '@agents/actions/websocket';
 import streamingStore from '@agents/store/streaming_store';
 import {isAgentPost} from '@agents/utils';
 import {ActionType, Events, Screens} from '@constants';
@@ -282,8 +283,16 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
     await operator.batchRecords(models, 'handlePostEdited');
 
+    // Conversation-backed agent posts are edited before the stream's `end`;
+    // their streaming state is dropped once the post-stream refetch lands.
+    // Websocket handlers aren't awaited, so `end` may already have been
+    // handled before this post was stored; settle a finished stream again.
     if (isAgentPost(post)) {
-        streamingStore.removePost(serverUrl, post.id);
+        if (!post.props?.conversation_id) {
+            streamingStore.removePost(serverUrl, post.id);
+        } else if (streamingStore.getStreamingState(serverUrl, post.id) && !streamingStore.isStreaming(serverUrl, post.id)) {
+            settleStreamedPost(serverUrl, post.id);
+        }
     }
 }
 
