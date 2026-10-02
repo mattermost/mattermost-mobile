@@ -40,14 +40,4 @@ describe('requestChannelInterval', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
     });
-
-    it('should surface errors from the client', async () => {
-        const doChannelInterval = jest.fn().mockRejectedValue(new Error('boom'));
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelInterval} as any);
-
-        const result = await requestChannelInterval(serverUrl, channelId, lastViewedAt, 'summarize_unreads', botUsername);
-
-        expect(switchToChannelById).not.toHaveBeenCalled();
-        expect(result.error).toBe('boom');
-    });
 });

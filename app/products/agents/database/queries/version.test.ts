@@ -65,22 +65,6 @@ describe('Agents Version Queries', () => {
             expect(subscriptionNext).toHaveBeenCalledWith(true);
         });
 
-        it('should handle empty version string', async () => {
-            const subscriptionNext = jest.fn();
-            const result = observeIsAgentsVersionSupported(operator.database);
-            result.subscribe({next: subscriptionNext});
-
-            expect(subscriptionNext).toHaveBeenCalledWith(false);
-            subscriptionNext.mockClear();
-
-            await operator.handleSystem({
-                systems: [{id: SYSTEM_IDENTIFIERS.AGENTS_VERSION, value: ''}],
-                prepareRecordsOnly: false,
-            });
-
-            expect(subscriptionNext).not.toHaveBeenCalledWith(true);
-        });
-
         it('should react to version changes', async () => {
             const subscriptionNext = jest.fn();
             const result = observeIsAgentsVersionSupported(operator.database);

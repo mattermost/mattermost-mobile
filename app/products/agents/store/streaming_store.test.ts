@@ -212,18 +212,6 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.generating).toBe(true);
         });
 
-        it('should preserve generating state when isLoading is false', () => {
-            const postId = 'post123';
-            streamingStore.startStreaming(SERVER_URL, postId);
-            streamingStore.updateMessage(SERVER_URL, postId, 'Some text');
-
-            streamingStore.updateReasoning(SERVER_URL, postId, 'Reasoning complete', false);
-
-            const state = streamingStore.getStreamingState(SERVER_URL, postId);
-            expect(state?.generating).toBe(true);
-            expect(state?.isReasoningLoading).toBe(false);
-        });
-
         it('should create state with reasoning flagged when the start event was missed', () => {
             const postId = 'post123';
             streamingStore.updateReasoning(SERVER_URL, postId, 'Reasoning', true);

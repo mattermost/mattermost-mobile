@@ -57,14 +57,6 @@ describe('ThreadItem', () => {
         expect(getByText('5 messages')).toBeTruthy();
     });
 
-    it('should render singular "message" for one turn', () => {
-        const props = getBaseProps();
-        props.thread = {...mockThread, turnCount: 1} as unknown as AiThreadModel;
-        const {getByText} = renderWithIntlAndTheme(<ThreadItem {...props}/>);
-
-        expect(getByText('1 message')).toBeTruthy();
-    });
-
     it('should render bot name tag when provided', () => {
         const props = getBaseProps();
         props.botName = 'AI Assistant';

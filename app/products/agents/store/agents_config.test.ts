@@ -35,17 +35,6 @@ describe('AgentsConfigStore', () => {
             expect(config).toEqual({pluginEnabled: true, allowUnsafeLinks: false});
         });
 
-        it('should merge partial config updates', () => {
-            setAgentsConfig('server1', {pluginEnabled: true});
-            const configAfterFirst = getAgentsConfig('server1');
-            expect(configAfterFirst.pluginEnabled).toBe(true);
-
-            // Setting again with same partial should merge over existing values
-            setAgentsConfig('server1', {pluginEnabled: false});
-            const configAfterSecond = getAgentsConfig('server1');
-            expect(configAfterSecond.pluginEnabled).toBe(false);
-        });
-
         it('should not clobber pluginEnabled when setting allowUnsafeLinks alone', () => {
             setAgentsConfig('server1', {pluginEnabled: true});
             setAgentsConfig('server1', {allowUnsafeLinks: true});

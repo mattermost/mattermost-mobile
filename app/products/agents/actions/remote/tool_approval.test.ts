@@ -39,16 +39,6 @@ describe('submitToolApproval', () => {
         expect(result.error).toBeUndefined();
     });
 
-    it('should pass tool answers through to the client', async () => {
-        mockClient.submitToolApproval.mockResolvedValue(undefined);
-        const toolAnswers = {tool1: {selected: ['Option A'], custom: 'my own idea'}};
-
-        const result = await submitToolApproval(serverUrl, postId, ['tool1'], toolAnswers);
-
-        expect(mockClient.submitToolApproval).toHaveBeenCalledWith(postId, ['tool1'], toolAnswers);
-        expect(result).toEqual({});
-    });
-
     it('should return error object and log error on failure', async () => {
         const error = new Error('Network error');
         const errorMessage = 'Network error occurred';

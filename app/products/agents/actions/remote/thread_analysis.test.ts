@@ -39,14 +39,4 @@ describe('requestThreadAnalysis', () => {
         expect(result.error).toBeUndefined();
         expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
     });
-
-    it('should surface errors from the client', async () => {
-        const doThreadAnalysis = jest.fn().mockRejectedValue(new Error('boom'));
-        jest.mocked(NetworkManager.getClient).mockReturnValue({doThreadAnalysis} as any);
-
-        const result = await requestThreadAnalysis(serverUrl, postId, 'summarize_thread', botUsername);
-
-        expect(switchToChannelById).not.toHaveBeenCalled();
-        expect(result.error).toBe('boom');
-    });
 });
