@@ -63,7 +63,9 @@ CategoryNames.forEach((name: string) => {
 });
 
 export default function EmojiSectionList({customEmojis, customEmojisEnabled, file, imageUrl, onEmojiPress, recentEmojis}: Props) {
-    const [customEmojiPage, setCustomEmojiPage] = useState(() => Math.ceil(customEmojis.length / EMOJIS_PER_PAGE));
+    // Always page from the start: customEmojis also holds emojis stored from posts, reactions and
+    // search results, so its length says nothing about which server pages were already fetched.
+    const [customEmojiPage, setCustomEmojiPage] = useState(0);
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
     const scrollingToIndex = useRef(false);
