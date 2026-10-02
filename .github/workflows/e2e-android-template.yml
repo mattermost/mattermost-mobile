@@ -467,9 +467,16 @@ jobs:
           # containing a glob character would silently become a different argument
           # list (or vanish). Matches the iOS template's read -ra handling.
           read -ra specs <<< "$MATRIX_SPECS"
-          # The output is also kept for the triage evidence step below.
-          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}" 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
-          exit "${PIPESTATUS[0]}"
+          # The output is also kept for the triage evidence step below. Not a pipe
+          # into tee: the shard script leaves the emulator, adb and Metro running,
+          # they inherit the pipe, and tee would wait on them until the job times
+          # out. Write to the file and stream it until the script exits.
+          log="$RUNNER_TEMP/detox-run.log"
+          : > "$log"
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}" > "$log" 2>&1 &
+          shard=$!
+          tail -n +1 -f --pid="$shard" "$log"
+          wait "$shard"
         continue-on-error: true # We want to run all the tests
 
       # For the E2E triage judge: for each failed test, Detox's failure screenshot,
