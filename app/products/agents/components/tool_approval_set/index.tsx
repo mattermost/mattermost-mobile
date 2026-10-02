@@ -260,20 +260,13 @@ const ToolApprovalSet = ({postId, conversationId, toolCalls, approvalStage, canA
     }, [serverUrl, postId, conversationId, approvalStage, setToolDecisions]);
 
     // Record decisions and submit the batch once nothing actionable remains
-    // undecided. Decisions for tools that are no longer actionable are dropped
-    // so they can't reach the submitted list.
+    // undecided.
     const applyDecisions = useCallback(async (decisions: ToolDecision) => {
         if (submitInFlightRef.current) {
             return;
         }
 
-        const merged = {...toolDecisionsRef.current, ...decisions};
-        const updatedDecisions: ToolDecision = {};
-        for (const tool of actionableTools) {
-            if (tool.id in merged) {
-                updatedDecisions[tool.id] = merged[tool.id];
-            }
-        }
+        const updatedDecisions = {...toolDecisionsRef.current, ...decisions};
         setToolDecisions(updatedDecisions);
 
         if (actionableTools.every((tool) => tool.id in updatedDecisions)) {

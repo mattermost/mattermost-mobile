@@ -6,6 +6,7 @@ import React from 'react';
 
 import {refetchConversation} from '@agents/actions/remote/conversation';
 import {submitToolApproval} from '@agents/actions/remote/tool_approval';
+import {submitToolResult} from '@agents/actions/remote/tool_result';
 import conversationStore from '@agents/store/conversation_store';
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
 import {fireEvent, renderWithIntlAndTheme} from '@test/intl-test-helper';
@@ -230,6 +231,56 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
 
         expect(submitToolApproval).toHaveBeenCalledTimes(1);
         expect(submitToolApproval).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['a'], undefined);
+    });
+
+    it('should submit share and keep-private decisions through the tool result endpoint', async () => {
+        const shared = makeTool({id: 'r1', status: ToolCallStatus.Success});
+        const kept = makeTool({id: 'r2', status: ToolCallStatus.Success});
+        const {getByTestId} = renderWithIntlAndTheme(
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={[shared, kept]}
+                approvalStage={ToolApprovalStage.Result}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+                unsafeLinks={false}
+            />,
+        );
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.r1.share'));
+            fireEvent.press(getByTestId('agents.tool_card.r2.keep_private'));
+        });
+
+        expect(submitToolResult).toHaveBeenCalledTimes(1);
+        expect(submitToolResult).toHaveBeenCalledWith('https://test.mattermost.com', 'p1', ['r1']);
+        expect(submitToolApproval).not.toHaveBeenCalled();
+    });
+
+    it('should offer the share decision after an accepted call reaches the result stage', async () => {
+        const renderSet = (toolCalls: ToolCall[], approvalStage: ToolApprovalStage) => (
+            <ToolApprovalSet
+                postId='p1'
+                toolCalls={toolCalls}
+                approvalStage={approvalStage}
+                canApprove={true}
+                canExpand={true}
+                showArguments={true}
+                showResults={true}
+                unsafeLinks={false}
+            />
+        );
+        const pending = makeTool({id: 'a', status: ToolCallStatus.Pending, result: undefined});
+        const {getByTestId, rerender} = renderWithIntlAndTheme(renderSet([pending], ToolApprovalStage.Call));
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.a.approve'));
+        });
+        rerender(renderSet([{...pending, status: ToolCallStatus.Success, result: 'output'}], ToolApprovalStage.Result));
+
+        expect(getByTestId('agents.tool_card.a.share')).toBeTruthy();
     });
 
     it('should refetch the conversation after submitting so a channel accept reaches the share step', async () => {
@@ -777,6 +828,52 @@ describe('ToolApprovalSet — question cards (AskUserQuestion)', () => {
         expect(submitToolApproval).not.toHaveBeenCalled();
         expect(getByTestId('agents.question_card.q1.status.answered')).toBeTruthy();
         expect(queryByTestId('agents.question_card.q1.status.submitting')).toBeNull();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_card.tool_b.approve'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith(
+            'https://test.mattermost.com', 'p1', ['q1', 'tool_b'], {q1: {selected: ['Option A']}},
+        );
+    });
+
+    it('should leave questions out of Accept all and submit once they are answered', async () => {
+        const a = makeTool({id: 'a', status: ToolCallStatus.Pending, result: undefined});
+        const b = makeTool({id: 'b', status: ToolCallStatus.Pending, result: undefined});
+        const {getByTestId} = renderSet([a, b, makeQuestionTool()]);
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.tool_approval_set.accept_all'));
+        });
+        expect(submitToolApproval).not.toHaveBeenCalled();
+
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.question_card.q1.option.1'));
+        });
+
+        expect(submitToolApproval).toHaveBeenCalledWith(
+            'https://test.mattermost.com', 'p1', ['a', 'b', 'q1'], {q1: {selected: ['Option B']}},
+        );
+    });
+
+    it('should trim free-form text and not submit when it is blank', async () => {
+        const {getByTestId} = renderSet([makeQuestionTool()]);
+        fireEvent.press(getByTestId('agents.question_card.q1.free_form'));
+
+        fireEvent.changeText(getByTestId('agents.question_card.q1.free_form.input'), '   ');
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.question_card.q1.submit'));
+        });
+        expect(submitToolApproval).not.toHaveBeenCalled();
+
+        fireEvent.changeText(getByTestId('agents.question_card.q1.free_form.input'), '  my idea  ');
+        await act(async () => {
+            fireEvent.press(getByTestId('agents.question_card.q1.submit'));
+        });
+        expect(submitToolApproval).toHaveBeenCalledWith(
+            'https://test.mattermost.com', 'p1', ['q1'], {q1: {selected: [], custom: 'my idea'}},
+        );
     });
 
     it('should render the recorded answer as a non-interactive Answered state', () => {
