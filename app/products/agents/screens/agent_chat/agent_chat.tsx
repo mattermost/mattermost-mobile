@@ -103,8 +103,9 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         setChannelId(null);
     }, [selectedBotId]);
 
-    // Await the bot refresh useSavedAgentSelection starts (fetchAIBots shares
-    // the in-flight request) to drive the loading and error states.
+    // Await the bot refresh useSavedAgentSelection starts (fetchAIBots calls
+    // made before a queued request starts share it) to drive the loading and
+    // error states.
     useDidMount(() => {
         const refreshBots = async () => {
             // If we have cached data, don't show loading spinner
@@ -148,6 +149,9 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
 
     // Get or create DM channel when bot is selected
     useEffect(() => {
+        // A late result for a previously selected agent must not replace the
+        // current agent's channel, or the draft would post to the wrong DM.
+        let cancelled = false;
         const getChannel = async () => {
             if (!selectedBotId) {
                 setChannelId(null);
@@ -158,6 +162,10 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                 serverUrl,
                 selectedBotId,
             );
+
+            if (cancelled) {
+                return;
+            }
 
             if (channelError || !data) {
                 setError(intl.formatMessage({
@@ -171,6 +179,9 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
         };
 
         getChannel();
+        return () => {
+            cancelled = true;
+        };
     }, [selectedBotId, serverUrl, intl]);
 
     const exit = useCallback(() => {
