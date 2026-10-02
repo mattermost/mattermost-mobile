@@ -35,14 +35,13 @@ beforeEach(() => {
 });
 
 describe('fetchAIThreads', () => {
-    it('should normalise plugin >= 2.0 threads so id is the root post id', async () => {
+    it('should key threads by root post and map turn_count', async () => {
         mockClient.getAIThreads.mockResolvedValue([
             {
                 id: 'conv-abc',
-                message: '',
                 title: 'A chat',
                 channel_id: 'dm-1',
-                reply_count: 3,
+                turn_count: 5,
                 update_at: 100,
                 root_post_id: 'post-xyz',
                 bot_id: 'bot-1',
@@ -52,16 +51,14 @@ describe('fetchAIThreads', () => {
         const result = await fetchAIThreads(serverUrl);
 
         expect(result.error).toBeUndefined();
+
         expect(mockOperator.handleAIThreads).toHaveBeenCalledWith({
             threads: [{
                 id: 'post-xyz',
-                message: '',
                 title: 'A chat',
                 channel_id: 'dm-1',
-                reply_count: 3,
+                turn_count: 5,
                 update_at: 100,
-                root_post_id: 'post-xyz',
-                bot_id: 'bot-1',
             }],
             prepareRecordsOnly: false,
         });
@@ -69,21 +66,21 @@ describe('fetchAIThreads', () => {
         expect(result.threads?.[0].id).toBe('post-xyz');
     });
 
-    it('should preserve plugin < 2.0 shape where id is already the root post id', async () => {
+    it('should default a missing turn_count to 0', async () => {
         mockClient.getAIThreads.mockResolvedValue([
-            {id: 'post-legacy', channel_id: 'dm-1', title: 'Legacy', reply_count: 1, update_at: 50},
+            {id: 'conv-abc', title: 'A chat', channel_id: 'dm-1', update_at: 100, root_post_id: 'post-xyz'},
         ]);
 
         const result = await fetchAIThreads(serverUrl);
 
         expect(result.error).toBeUndefined();
         expect(result.threads).toHaveLength(1);
-        expect(result.threads?.[0].id).toBe('post-legacy');
-        expect(result.threads?.[0].root_post_id).toBeUndefined();
+        expect(result.threads?.[0].turn_count).toBe(0);
     });
 
-    it('should drop threadless plugin >= 2.0 conversations that have no root post yet', async () => {
+    it('should drop threadless conversations that have no root post yet', async () => {
         mockClient.getAIThreads.mockResolvedValue([
+            {id: 'conv-missing-post', channel_id: 'dm-3'},
             {id: 'conv-with-post', root_post_id: 'post-1', channel_id: 'dm-1'},
             {id: 'conv-without-post', root_post_id: null, channel_id: null},
             {id: 'conv-with-empty-post', root_post_id: '', channel_id: 'dm-2'},
@@ -126,7 +123,7 @@ describe('fetchAIThreads', () => {
 
         const result = await fetchAIThreads(serverUrl);
 
-        expect(logError).toHaveBeenCalledWith('[fetchAIThreads] Failed to fetch AI threads', error);
+        expect(logError).toHaveBeenCalledWith('[fetchAIThreads] Failed to fetch AI threads', errorMessage);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

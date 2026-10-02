@@ -1035,7 +1035,6 @@ class TestHelperSingleton {
             channelIDs: [],
             userAccessLevel: UserAccessLevel.All,
             userIDs: [],
-            teamIDs: [],
             ...overwrite,
         };
     };
@@ -1043,10 +1042,9 @@ class TestHelperSingleton {
     fakeAiThread = (overwrite?: Partial<AIThread>): AIThread => {
         return {
             id: this.generateId(),
-            message: this.generateId(),
             title: this.generateId(),
             channel_id: this.generateId(),
-            reply_count: 0,
+            turn_count: 0,
             update_at: Date.now(),
             ...overwrite,
         };

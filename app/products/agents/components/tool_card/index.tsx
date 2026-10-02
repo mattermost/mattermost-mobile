@@ -6,6 +6,7 @@ import {Platform, Pressable, Text, View} from 'react-native';
 import Animated, {FadeIn, FadeOut, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {ToolApprovalStage, ToolCallStatus, type ToolCall} from '@agents/types';
+import {stripWirePrefix} from '@agents/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -35,6 +36,10 @@ interface ToolCardProps {
     canExpand?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
+
+    // Tool arguments/results are agent-generated, so they follow the
+    // unsafe-links setting of the agent post that carries them.
+    unsafeLinks: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -65,6 +70,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         markdownText: {
             color: changeOpacity(theme.centerChannelColor, 0.75),
             ...typography('Body', 50),
+        },
+        noParametersText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75),
         },
         responseLabel: {
             flexDirection: 'row',
@@ -199,9 +208,11 @@ const ToolCard = ({
     canExpand = true,
     showArguments = true,
     showResults = true,
+    unsafeLinks,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
     const chevronRotation = useSharedValue(isCollapsed ? 0 : 90);
 
     useEffect(() => {
@@ -232,15 +243,34 @@ const ToolCard = ({
         (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute)
     );
 
+    // An MCP-declared title wins. Otherwise prettify the bare name: the
+    // server-provided mcp_bare_name (`||` because it is redacted to an empty
+    // string for non-requesters), else the wire name with its `<ns>__` prefix
+    // stripped — title-casing the raw wire name would render the namespace
+    // (webapp toolDisplayName parity).
     const displayName = useMemo(() => {
-        return tool.name.
+        if (tool.title) {
+            return tool.title;
+        }
+        const baseName = tool.mcp_bare_name || stripWirePrefix(tool.name);
+        return baseName.
             replace(/_/g, ' ').
             replace(/\b\w/g, (char) => char.toUpperCase());
-    }, [tool.name]);
+    }, [tool.title, tool.mcp_bare_name, tool.name]);
+
+    // Null arguments were redacted for this viewer — render no arguments
+    // section at all. An empty object gets a "No parameters required" line
+    // instead of a `{}` code block.
+    const isEmptyArguments = tool.arguments != null &&
+        typeof tool.arguments === 'object' &&
+        !Array.isArray(tool.arguments) &&
+        Object.keys(tool.arguments).length === 0;
 
     const argumentsMarkdown = useMemo(() => {
-        const value = tool.arguments ?? {};
-        return `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``;
+        if (tool.arguments == null) {
+            return '';
+        }
+        return `\`\`\`json\n${JSON.stringify(tool.arguments, null, 2)}\n\`\`\``;
     }, [tool.arguments]);
 
     // Render result as code block - try to detect if it's JSON
@@ -333,6 +363,8 @@ const ToolCard = ({
             <Pressable
                 onPress={canExpand ? handleToggle : undefined}
                 style={({pressed}) => [styles.header, canExpand && pressed && {opacity: 0.72}]}
+                accessibilityRole={canExpand ? 'button' : undefined}
+                accessibilityState={canExpand ? {expanded: !isCollapsed} : undefined}
                 testID={`${testIdPrefix}.header`}
             >
                 {canExpand ? (
@@ -376,7 +408,20 @@ const ToolCard = ({
                     entering={FadeIn.duration(200)}
                     exiting={Platform.select({ios: FadeOut.duration(200)})}
                 >
-                    {showArguments && (
+                    {showArguments && isEmptyArguments && (
+                        <View
+                            style={styles.argumentsContainer}
+                            testID={`${testIdPrefix}.arguments.empty`}
+                        >
+                            <FormattedText
+                                id='agents.tool_call.no_parameters_required'
+                                defaultMessage='No parameters required'
+                                style={styles.noParametersText}
+                            />
+                        </View>
+                    )}
+
+                    {showArguments && !isEmptyArguments && argumentsMarkdown !== '' && (
                         <View
                             style={styles.argumentsContainer}
                             testID={`${testIdPrefix}.arguments`}
@@ -386,6 +431,7 @@ const ToolCard = ({
                                 value={argumentsMarkdown}
                                 theme={theme}
                                 location={Screens.CHANNEL}
+                                isUnsafeLinksPost={unsafeLinks}
                             />
                         </View>
                     )}
@@ -422,6 +468,7 @@ const ToolCard = ({
                                     value={resultMarkdown}
                                     theme={theme}
                                     location={Screens.CHANNEL}
+                                    isUnsafeLinksPost={unsafeLinks}
                                 />
                             </View>
                             {isResultPhase && showDecisionButtons && !hasLocalDecision && (

@@ -9,6 +9,9 @@ const {AI_BOT} = AGENTS_TABLES;
 
 export default tableSchema({
     name: AI_BOT,
+
+    // team_ids was only sent by plugins before 2.0; migrated installs keep
+    // the orphaned sqlite column, which WatermelonDB ignores.
     columns: [
         {name: 'display_name', type: 'string'},
         {name: 'username', type: 'string'},
@@ -18,6 +21,6 @@ export default tableSchema({
         {name: 'channel_ids', type: 'string'}, // JSON string array
         {name: 'user_access_level', type: 'number'},
         {name: 'user_ids', type: 'string'}, // JSON string array
-        {name: 'team_ids', type: 'string'}, // JSON string array
+        {name: 'is_default', type: 'boolean'},
     ],
 });

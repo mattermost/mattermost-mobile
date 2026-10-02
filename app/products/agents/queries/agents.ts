@@ -1,17 +1,61 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {map} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import {rewriteStore} from '@agents/store';
+import {observeAIBots} from '@agents/database/queries/bot';
+import {observeIsAgentsVersionSupported} from '@agents/database/queries/version';
+import {observeIsAgentsAnalysisLicensed} from '@agents/queries/license';
+import {observeAgentsConfig} from '@agents/store/agents_config';
+import {filterAgentsForChannel} from '@agents/utils';
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 
 import type {Database} from '@nozbe/watermelondb';
 
-export const observeIsAgentsEnabled = (serverUrl: string) => {
-    return rewriteStore.observeAgents(serverUrl).pipe(
-        map((agents) => agents.length > 0),
+/**
+ * Observe whether a supported Agents plugin is running and at least one agent
+ * is usable (in `channelId` when given). The bot table outlives a disabled
+ * plugin, so the version check is what hides entry points in that case.
+ */
+export const observeHasAvailableAgents = (database: Database, channelId?: string) => {
+    return combineLatest([
+        observeIsAgentsVersionSupported(database),
+        observeAIBots(database),
+    ]).pipe(
+        map(([supported, bots]) => supported && (channelId ? filterAgentsForChannel(bots, channelId) : bots).length > 0),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Observe whether the channel/thread analysis entry points apply in
+ * `channelId`: an agent is usable there and the server is licensed for the
+ * plugin's analyze endpoints.
+ */
+export const observeCanAnalyzeChannel = (database: Database, channelId: string) => {
+    return combineLatest([
+        observeHasAvailableAgents(database, channelId),
+        observeIsAgentsAnalysisLicensed(database),
+    ]).pipe(
+        map(([hasAgents, licensed]) => hasAgents && licensed),
+        distinctUntilChanged(),
+    );
+};
+
+/**
+ * Observe whether the composer AI rewrite is usable. Rewrite is served by the
+ * core server's AI bridge, so it also needs `/api/v4/agents/status` to report
+ * the bridge as available (older servers lack the endpoint entirely).
+ */
+export const observeIsAIRewriteAvailable = (database: Database, serverUrl: string) => {
+    return combineLatest([
+        observeHasAvailableAgents(database),
+        observeAgentsConfig(serverUrl),
+    ]).pipe(
+        map(([hasAgents, config]) => hasAgents && config.pluginEnabled),
+        distinctUntilChanged(),
     );
 };
 
@@ -23,3 +67,11 @@ export const observeSelectedAgentId = (database: Database) => {
         observeWithColumns(['value']).
         pipe(map((prefs) => prefs[0]?.value ?? ''));
 };
+
+/**
+ * Props for an agent picker: every stored agent plus the saved selection.
+ */
+export const observeAgentSelectionProps = (database: Database) => ({
+    bots: observeAIBots(database),
+    selectedAgentId: observeSelectedAgentId(database),
+});
