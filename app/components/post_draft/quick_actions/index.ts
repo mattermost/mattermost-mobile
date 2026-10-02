@@ -34,6 +34,9 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
         distinctUntilChanged(),
     );
+
+    // Denied by policy hides the control rather than dimming it, so the policy folds into the same
+    // flag that decides whether to render it at all.
     const isBoREnabled = combineLatest([
         observeIsBoREnabled(database),
         observeCreateBurnOnReadPermission(database, serverUrl, channelId),
