@@ -75,6 +75,30 @@ describe('ClientAgents', () => {
             );
         });
 
+        it('should include tool_answers in the body when answers are provided', async () => {
+            const toolAnswers = {
+                'tool-1': {selected: ['Option A'], custom: 'my own idea'},
+                'tool-2': {selected: ['Option B']},
+            };
+            await client.submitToolApproval('post-789', ['tool-1', 'tool-2'], toolAnswers);
+            expect(mockDoFetch).toHaveBeenCalledWith(
+                '/plugins/mattermost-ai/post/post-789/tool_call',
+                {
+                    method: 'post',
+                    body: {
+                        accepted_tool_ids: ['tool-1', 'tool-2'],
+                        tool_answers: toolAnswers,
+                    },
+                },
+            );
+        });
+
+        it('should omit the tool_answers key when no answers are provided', async () => {
+            await client.submitToolApproval('post-789', ['tool-1']);
+            const body = mockDoFetch.mock.calls[0][1].body;
+            expect('tool_answers' in body).toBe(false);
+        });
+
         it('should make correct API call with empty tool IDs', async () => {
             await client.submitToolApproval('post-789', []);
             expect(mockDoFetch).toHaveBeenCalledWith(

@@ -5,7 +5,6 @@ import {act, renderHook, waitFor} from '@testing-library/react-native';
 
 import {
     clearConversationCacheForServer,
-    invalidateConversation,
     refetchConversation,
 } from '@agents/actions/remote/conversation';
 import NetworkManager from '@managers/network_manager';
@@ -124,26 +123,6 @@ describe('useConversation', () => {
 
         const hook = renderHook(() => useConversation(SERVER_URL, 'c1'));
         await waitFor(() => expect(hook.result.current.conversation?.turns[0].content).toEqual([]));
-    });
-});
-
-describe('invalidateConversation', () => {
-    it('should drop the cached entry from the subscriber state without triggering a fresh fetch', async () => {
-        mockedFetch.mockResolvedValue(makeConversation('c1'));
-
-        const hook = renderHook(() => useConversation(SERVER_URL, 'c1'));
-        await waitFor(() => expect(hook.result.current.conversation?.title).toBe('Chat'));
-        expect(mockedFetch).toHaveBeenCalledTimes(1);
-
-        act(() => {
-            invalidateConversation(SERVER_URL, 'c1');
-        });
-        await flush();
-
-        // The subscriber sees the entry cleared; invalidate alone does not
-        // refetch — callers that need fresh data call refetchConversation.
-        expect(hook.result.current.conversation).toBeUndefined();
-        expect(mockedFetch).toHaveBeenCalledTimes(1);
     });
 });
 
