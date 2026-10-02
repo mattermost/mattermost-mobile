@@ -744,14 +744,15 @@ jobs:
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
 
-      # For the E2E triage judge: tests that hit the Jest timeout say nothing in
-      # their error, so record the screenshot e2e/timeout_evidence.js took and the
-      # requests Detox reported the app was still waiting on.
+      # For the E2E triage judge: for each failed test, the screenshot at the
+      # failure (e2e/timeout_evidence.js's on a timeout, Detox's otherwise), the
+      # requests Detox reported the app was still waiting on, and the test's own
+      # server calls that failed.
       - name: Collect triage evidence for timed-out tests
         if: always()
         continue-on-error: true
         working-directory: detox
-        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --artifacts artifacts --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
 
       - name: Upload triage evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''

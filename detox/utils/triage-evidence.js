@@ -3,15 +3,16 @@
 /* eslint-disable no-console -- CI utility script */
 
 /**
- * Evidence for the E2E triage judge on tests that hit the Jest timeout. Their
- * error text is only "Exceeded timeout", so this collects what the run saw at
- * the time: the simulator screenshot e2e/timeout_evidence.js took, the tasks
- * Detox reported the app was still busy with, and the test's own calls to
- * the test server that failed. Output follows the e2e-triage action's
- * evidence-dir format.
+ * Evidence for the E2E triage judge on every failed test: what the run saw at
+ * the time of the failure. A screenshot (the simulator screenshot
+ * e2e/timeout_evidence.js takes when a test times out, otherwise the failure
+ * screenshot Detox keeps), the tasks Detox reported the app was still busy with,
+ * and the test's own calls to the test server that failed. Output follows the
+ * e2e-triage action's evidence-dir format; screenshots are copied into the
+ * evidence directory, the only place the action reads images from.
  *
  * Usage: node utils/triage-evidence.js --results artifacts/jest-results.json \
- *   --log <detox run output> --dir artifacts/triage-evidence --out <file.json>
+ *   --log <detox run output> --dir artifacts/triage-evidence --artifacts artifacts --out <file.json>
  */
 
 const fs = require('fs');
@@ -35,25 +36,65 @@ const ERROR_MAX = 200;
 // Always present while the app works at all, so they say nothing about where it is stuck.
 const ROUTINE_TASK_RE = /work items pending on the dispatch queue|Run loop "Main Run Loop" is awake/;
 const NOTES_MAX = 1500;
+
+// A run with more failures than this is a broken environment, which triage
+// reports as such without asking the judge; evidence for it would go unread.
+const MAX_TESTS = 20;
+
+// Detox's own failure screenshots, best first.
+const DETOX_SHOTS = ['testFnFailure.png', 'testDone.png'];
 const TASK_MAX = 240;
 
 /**
- * Failed tests whose failure is the Jest timeout.
+ * Tests whose final attempt failed. A test that failed and passed on retry is
+ * flaky, not failed, and needs no evidence.
  *
  * @param {object} results Jest --json output
- * @returns {{file: string, title: string, fullName: string}[]}
+ * @returns {{file: string, title: string, fullName: string, timedOut: boolean}[]}
  */
-function timedOutTests(results) {
+function failedTests(results) {
     const out = [];
     for (const suite of results?.testResults || []) {
         const file = specKey(suite.testFilePath || suite.name);
         for (const t of suite.assertionResults || []) {
-            if (t.status === 'failed' && (t.failureMessages || []).some((m) => TIMEOUT_RE.test(m))) {
-                out.push({file, title: t.title, fullName: t.fullName || [...(t.ancestorTitles || []), t.title].join(' ')});
+            if (t.status === 'failed') {
+                out.push({
+                    file,
+                    title: t.title,
+                    fullName: t.fullName || [...(t.ancestorTitles || []), t.title].join(' '),
+                    timedOut: (t.failureMessages || []).some((m) => TIMEOUT_RE.test(m)),
+                });
             }
         }
     }
     return out;
+}
+
+/**
+ * The failure screenshot Detox kept for this test: artifacts/<run>/<full name>/,
+ * newest run first, because a retried shard leaves one run folder per attempt.
+ *
+ * @param {string} artifactsDir
+ * @param {string} folder sanitized full name
+ * @returns {string|null}
+ */
+function detoxScreenshot(artifactsDir, folder) {
+    if (!artifactsDir || !fs.existsSync(artifactsDir)) {
+        return null;
+    }
+    const runs = fs.readdirSync(artifactsDir, {withFileTypes: true}).
+        filter((d) => d.isDirectory()).
+        map((d) => path.join(artifactsDir, d.name, folder)).
+        filter((dir) => fs.existsSync(dir)).
+        sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    for (const dir of runs) {
+        for (const name of DETOX_SHOTS) {
+            if (fs.existsSync(path.join(dir, name))) {
+                return path.join(dir, name);
+            }
+        }
+    }
+    return null;
 }
 
 /**
@@ -147,14 +188,23 @@ function summarize(reports, errors = []) {
 }
 
 /**
- * @param {{results: object, logText: string, evidenceDir: string}} input
+ * @param {{results: object, logText: string, evidenceDir: string, artifactsDir?: string}} input
  * @returns {object[]} entries in the e2e-triage evidence-dir format
  */
-function buildEvidence({results, logText, evidenceDir}) {
+function buildEvidence({results, logText, evidenceDir, artifactsDir}) {
     const entries = [];
-    for (const t of timedOutTests(results)) {
-        const shot = path.join(sanitize(t.fullName), 'timeout.png');
-        const images = fs.existsSync(path.join(evidenceDir, shot)) ? [shot] : [];
+    for (const t of failedTests(results).slice(0, MAX_TESTS)) {
+        const folder = sanitize(t.fullName);
+        let shot = path.join(folder, 'timeout.png');
+        if (!t.timedOut || !fs.existsSync(path.join(evidenceDir, shot))) {
+            const detox = detoxScreenshot(artifactsDir, folder);
+            shot = detox ? path.join(folder, 'failure.png') : null;
+            if (detox) {
+                fs.mkdirSync(path.join(evidenceDir, folder), {recursive: true});
+                fs.copyFileSync(detox, path.join(evidenceDir, shot));
+            }
+        }
+        const images = shot ? [shot] : [];
         const notes = summarize(busyReports(logText, t.title), serverErrors(logText, t.title));
         if (images.length || notes) {
             entries.push({file: t.file, title: t.title, full_title: t.fullName, notes, images});
@@ -166,7 +216,7 @@ function buildEvidence({results, logText, evidenceDir}) {
 function main() {
     const args = parseArgs(process.argv);
     if (!args.results || !args.dir || !args.out) {
-        console.error('usage: triage-evidence.js --results <jest.json> --log <detox output> --dir <evidence dir> --out <file.json>');
+        console.error('usage: triage-evidence.js --results <jest.json> --log <detox output> --dir <evidence dir> [--artifacts <detox artifacts dir>] --out <file.json>');
         process.exit(2);
     }
     if (!fs.existsSync(args.results)) {
@@ -175,18 +225,18 @@ function main() {
     }
     const results = JSON.parse(fs.readFileSync(args.results, 'utf8'));
     const logText = args.log && fs.existsSync(args.log) ? fs.readFileSync(args.log, 'utf8') : '';
-    const entries = buildEvidence({results, logText, evidenceDir: args.dir});
+    const entries = buildEvidence({results, logText, evidenceDir: args.dir, artifactsDir: args.artifacts || path.dirname(args.dir)});
     if (!entries.length) {
-        console.log('No timed-out tests with evidence.');
+        console.log('No failed tests with evidence.');
         return;
     }
     fs.mkdirSync(path.dirname(args.out), {recursive: true});
     fs.writeFileSync(args.out, JSON.stringify(entries, null, 2));
-    console.log(`Wrote triage evidence for ${entries.length} timed-out test(s) to ${args.out}`);
+    console.log(`Wrote triage evidence for ${entries.length} failed test(s) to ${args.out}`);
 }
 
 if (require.main === module) {
     main();
 }
 
-module.exports = {timedOutTests, busyReports, serverErrors, summarize, buildEvidence};
+module.exports = {failedTests, busyReports, serverErrors, summarize, buildEvidence};

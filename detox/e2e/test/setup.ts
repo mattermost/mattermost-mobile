@@ -194,6 +194,14 @@ async function grantAndroidNotificationPermission(): Promise<void> {
     }
 }
 
+// iOS has no shard-level retry (Android re-runs failed spec files in a second
+// attempt), so on CI a failing iOS test is retried once in place. Jest keeps the
+// first attempt's error in the report's retryReasons, and Test System IO stores it
+// as a failed attempt: a test that passes on retry is reported flaky, not clean.
+if (process.env.CI && process.env.IOS === 'true') {
+    jest.retryTimes(Number(process.env.DETOX_TEST_RETRIES ?? 1), {logErrorsBeforeRetry: true});
+}
+
 // ─── Global beforeAll ────────────────────────────────────────────────────────
 // Runs before each test file.
 // Responsibilities: launch app with clean state, admin login, plugin cleanup.

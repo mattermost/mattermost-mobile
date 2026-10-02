@@ -467,8 +467,27 @@ jobs:
           # containing a glob character would silently become a different argument
           # list (or vanish). Matches the iOS template's read -ra handling.
           read -ra specs <<< "$MATRIX_SPECS"
-          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}"
+          # The output is also kept for the triage evidence step below.
+          detox/scripts/run_android_ci_shard.sh "$SDK_VERSION" "$AVD_NAME" "${specs[@]}" 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
+          exit "${PIPESTATUS[0]}"
         continue-on-error: true # We want to run all the tests
+
+      # For the E2E triage judge: for each failed test, Detox's failure screenshot,
+      # the requests Detox reported the app was still waiting on, and the test's
+      # own server calls that failed.
+      - name: Collect triage evidence for failed tests
+        if: always()
+        continue-on-error: true
+        working-directory: detox
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --artifacts artifacts --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/triage-evidence/
 
       # Second attempt for the same reason as the iOS template: losing this upload to a
       # transient ETIMEDOUT reports the shard as having produced no results at all.

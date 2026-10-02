@@ -133,6 +133,37 @@ function suiteCases(suite) {
  * @param {string[]} inputPaths
  * @returns {object}
  */
+/**
+ * The later attempt of a suite, with each test's earlier failures carried into
+ * Jest's retryReasons. Replacing attempt 1 outright reported a test that failed
+ * and then passed as passed: the failure vanished from Test System IO, and its
+ * history never showed the test as flaky.
+ *
+ * @param {object} later
+ * @param {object} earlier
+ * @returns {object}
+ */
+function withEarlierFailures(later, earlier) {
+    const failedBefore = new Map();
+    for (const c of suiteCases(earlier)) {
+        if (c?.status === 'failed') {
+            const reasons = [...(c.retryReasons || []), (c.failureMessages || []).join('\n') || 'failed'];
+            failedBefore.set(c.fullName || c.title, reasons);
+        }
+    }
+    if (failedBefore.size === 0) {
+        return later;
+    }
+    const field = Array.isArray(later?.assertionResults) ? 'assertionResults' : 'testResults';
+    return {
+        ...later,
+        [field]: suiteCases(later).map((c) => {
+            const reasons = failedBefore.get(c?.fullName || c?.title);
+            return reasons ? {...c, retryReasons: [...reasons, ...(c.retryReasons || [])]} : c;
+        }),
+    };
+}
+
 function mergeJestResultsPreferLater(inputPaths) {
     const byKey = new Map();
     for (const inputPath of inputPaths) {
@@ -155,7 +186,7 @@ function mergeJestResultsPreferLater(inputPaths) {
             if (previous && suiteCases(suite).length === 0 && suiteCases(previous).length > 0) {
                 continue;
             }
-            byKey.set(key, suite);
+            byKey.set(key, previous ? withEarlierFailures(suite, previous) : suite);
         }
     }
 

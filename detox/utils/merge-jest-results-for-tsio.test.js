@@ -89,6 +89,18 @@ describe('merge-jest-results-for-tsio', () => {
         });
     });
 
+    it('should keep a retried test\'s earlier failures for TSIO, and nothing for an untried one', () => {
+        const converted = toTsioDetoxSuite({
+            name: '/repo/detox/e2e/test/threads/reply_to_thread.e2e.ts',
+            assertionResults: [
+                {fullName: 'Threads MM-T4809_1', title: 'MM-T4809_1', status: 'passed', failureMessages: [], retryReasons: ['Test Failed: No elements found']},
+                {fullName: 'Threads MM-T4809_2', title: 'MM-T4809_2', status: 'passed', failureMessages: [], retryReasons: []},
+            ],
+        }, {repoRoot: '/repo'});
+        assert.deepEqual(converted.testResults[0].retryReasons, ['Test Failed: No elements found']);
+        assert.equal('retryReasons' in converted.testResults[1], false);
+    });
+
     it('should pass through suites already in TSIO Detox shape', () => {
         const converted = toTsioDetoxSuite({
             testFilePath: 'e2e/detox/test/foo.e2e.ts',
