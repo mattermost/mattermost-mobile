@@ -707,13 +707,44 @@ jobs:
           set +e
           # `--` separates Detox args from Jest args; --json --outputFile emits
           # Jest's native JSON report (consumed by the TSIO detox parser) into
-          # the existing detox/artifacts/ upload.
+          # the existing detox/artifacts/ upload. The output is also kept for the
+          # triage evidence step: on a Jest timeout it is the only record of what
+          # the app was still waiting on.
           if [ "$DETOX_CONFIG" = "ios.ipad.debug" ]; then
-            npm run e2e:ios-ipad-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            TEST_SCRIPT=e2e:ios-ipad-test
           else
-            npm run e2e:ios-test -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json
+            TEST_SCRIPT=e2e:ios-test
           fi
-          DETOX_EXIT_CODE=$?
+          npm run "$TEST_SCRIPT" -- "${SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json 2>&1 | tee "$RUNNER_TEMP/detox-run.log"
+          DETOX_EXIT_CODE=${PIPESTATUS[0]}
+          # Re-run each failed spec file once, as Android's shard script does.
+          # jest.retryTimes retries a failed test but never a failed beforeAll, so
+          # a file whose setup failed gets no second chance without this. The
+          # attempts are merged so a spec that passes now is recorded as flaky,
+          # its first failure kept as a retry, not as a failure. More than
+          # MAX_RETRY_SPECS failed files is usually an environment-wide problem a
+          # re-run won't fix, so those are left for triage.
+          if [ "$DETOX_EXIT_CODE" -ne 0 ] && [ -f artifacts/jest-results.json ]; then
+            RETRY_SPECS=()
+            while IFS= read -r spec; do
+              [ -n "$spec" ] && RETRY_SPECS+=("$spec")
+            done < <(node utils/failed-jest-specs.js --results artifacts/jest-results.json --shard-specs "${SPECS[*]}")
+            if [ "${#RETRY_SPECS[@]}" -gt 0 ] && [ "${#RETRY_SPECS[@]}" -le "$MAX_RETRY_SPECS" ]; then
+              echo "Re-running ${#RETRY_SPECS[@]} failed spec file(s) once: ${RETRY_SPECS[*]}"
+              mv artifacts/jest-results.json artifacts/jest-results-attempt1.json
+              npm run "$TEST_SCRIPT" -- "${RETRY_SPECS[@]}" -- --json --outputFile=artifacts/jest-results.json 2>&1 | tee -a "$RUNNER_TEMP/detox-run.log"
+              DETOX_EXIT_CODE=${PIPESTATUS[0]}
+              if [ -f artifacts/jest-results.json ]; then
+                node utils/failed-jest-specs.js --attempt1 artifacts/jest-results-attempt1.json --attempt2 artifacts/jest-results.json --output artifacts/jest-results.json
+              else
+                echo "⚠️ The re-run left no jest-results.json — keeping the first attempt's results"
+                mv artifacts/jest-results-attempt1.json artifacts/jest-results.json
+                DETOX_EXIT_CODE=1
+              fi
+            elif [ "${#RETRY_SPECS[@]}" -gt "$MAX_RETRY_SPECS" ]; then
+              echo "${#RETRY_SPECS[@]} spec files failed (more than $MAX_RETRY_SPECS); not re-running them"
+            fi
+          fi
           if [ ! -f artifacts/jest-results.json ]; then
             if [ -f artifacts/jest-stare/ios-data.json ]; then
               echo "⚠️ Detox left no jest-results.json — promoting jest-stare/ios-data.json"
@@ -731,6 +762,7 @@ jobs:
         env:
           DETOX_CONFIG: ${{ inputs.detox_config }}
           MATRIX_SPECS: ${{ matrix.specs }}
+          MAX_RETRY_SPECS: "5"
           DETOX_DISABLE_HIERARCHY_DUMP: "YES"
           DETOX_DISABLE_SCREENSHOT_TRACKING: "YES"
           DETOX_LOGLEVEL: "info"
@@ -740,6 +772,24 @@ jobs:
           SITE_1_URL: ${{ env.SITE_1_URL }}
           SITE_2_URL: ${{ env.SITE_2_URL }}
           SITE_3_URL: ${{ env.SITE_3_URL }}
+
+      # For the E2E triage judge: for each failed test, the screenshot at the
+      # failure (e2e/timeout_evidence.js's on a timeout, Detox's otherwise), the
+      # requests Detox reported the app was still waiting on, and the test's own
+      # server calls that failed.
+      - name: Collect triage evidence for timed-out tests
+        if: always()
+        continue-on-error: true
+        working-directory: detox
+        run: node utils/triage-evidence.js --results artifacts/jest-results.json --log "$RUNNER_TEMP/detox-run.log" --dir artifacts/triage-evidence --artifacts artifacts --out "artifacts/triage-evidence/evidence-${{ matrix.runId }}.json"
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('detox/artifacts/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ needs.generate-specs.outputs.workflow_hash }}-${{ matrix.runId }}
+          path: detox/artifacts/triage-evidence/
 
       - name: Cleanup Simulator State
         if: always()
@@ -994,6 +1044,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE != 'report-only' }}
           SPECS_RESULT: ${{ needs.generate-specs.result }}
           E2E_RESULT: ${{ needs.e2e-ios.result }}
           JOB_STATUS: ${{ job.status }}
@@ -1020,6 +1073,7 @@ jobs:
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
             --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"

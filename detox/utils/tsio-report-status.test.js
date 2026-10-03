@@ -11,9 +11,30 @@ const {
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
+    triageAnnouncement,
 } = require('./tsio-report-status');
 
 describe('tsio-report-status', () => {
+    describe('triageAnnouncement', () => {
+        const red = {announce: true, state: 'failure', overrideApplied: false, failed: 7, context: 'e2e-test/detox-ios', runUrl: 'https://github.com/o/r/actions/runs/1'};
+
+        it('marks the PR as waiting for triage on one check shared by every lane', () => {
+            assert.deepEqual(triageAnnouncement(red), {
+                state: 'pending',
+                context: 'e2e-test/triage',
+                description: 'E2E failures found · triage starts when every lane has finished',
+                target_url: 'https://github.com/o/r/actions/runs/1',
+            });
+        });
+
+        it('announces nothing when triage is off for the run, the lane is not red with test failures, or it was overridden', () => {
+            assert.equal(triageAnnouncement({...red, announce: false}), null);
+            assert.equal(triageAnnouncement({...red, state: 'success'}), null);
+            assert.equal(triageAnnouncement({...red, failed: 0}), null, 'a red lane with no failed tests is an infrastructure problem triage does not take');
+            assert.equal(triageAnnouncement({...red, overrideApplied: true}), null);
+        });
+    });
+
     describe('overrideCommitStatus', () => {
         it('reports a failure as success so E2E/Override does not block the merge', () => {
             assert.deepEqual(

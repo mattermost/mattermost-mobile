@@ -34,7 +34,7 @@ module.exports = {
     ],
     globalSetup: './global_setup.js',
     globalTeardown: 'detox/runners/jest/globalTeardown',
-    testEnvironment: 'detox/runners/jest/testEnvironment',
+    testEnvironment: './environment.js',
     verbose: true,
     moduleNameMapper: {
         '^@support/(.*)': '<rootDir>/support/$1',

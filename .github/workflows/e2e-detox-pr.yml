@@ -282,6 +282,7 @@ jobs:
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
+      job-keys-json: ${{ steps.id.outputs.job-keys-json }}
     steps:
       - name: Sparse checkout TSIO job-config helper
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -358,6 +359,7 @@ jobs:
           ')
           echo "job-configs=$JOB_CONFIGS" >> "$GITHUB_OUTPUT"
           echo "job-keys=$(echo "$JOB_CONFIGS" | jq -r 'keys | join(",")')" >> "$GITHUB_OUTPUT"
+          echo "job-keys-json=$(echo "$JOB_CONFIGS" | jq -c 'keys')" >> "$GITHUB_OUTPUT"
 
   update-initial-tsio-status:
     name: Set pending per-job TSIO commit statuses
@@ -1098,3 +1100,103 @@ jobs:
             --job-configs="$JOB_CONFIGS" \
             --upstream-succeeded="$UPSTREAM" \
             --poll-attempts=6 || true
+
+  # Is this red E2E run the PR's fault? For each platform the step asks Test
+  # System IO for the past executions of exactly the tests that failed, applies
+  # history rules (broken on trunk, flaky on trunk, recurring on other PRs,
+  # owned by the PR's own diff), and escalates only what the rules cannot settle
+  # to a second judge that must cite evidence a reviewer can open.
+  #
+  # report-only posts the sticky PR comment and nothing else; the per-job TSIO
+  # statuses above stay exactly as they are. enforce makes the verdict the
+  # commit status for that platform's context.
+  #
+  # It runs on main as well as on PRs, where the question changes from "is this
+  # the PR's fault" to "is main noisy or actually broken". Only intermittency
+  # clears a failure there: a test that failed in the previous main run too is a
+  # streak, not a flake, and stays red however often it has flaked before. A main
+  # run has no PR to comment on, so the story lands in the job summary and, under
+  # enforce, in the commit status.
+  tsio-triage:
+    name: Triage E2E failures (${{ matrix.job-key }})
+    runs-on: ubuntu-24.04
+    # Only a red run is worth triaging: a verdict can turn a red run green and
+    # never the other way round, so on a run where every platform passed there is
+    # nothing for it to change. The platform jobs resolve their own commit
+    # statuses via tsio-report-status.js, so skipping this leaves nothing pending.
+    #
+    # The gate is per run rather than per platform: this job is a matrix over job
+    # keys and the key cannot be matched to its platform job here. A platform that
+    # passed therefore still gets a triage run when a sibling failed, finds no
+    # failures in its own lane, and posts nothing.
+    if: >-
+      always() &&
+      (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
+      needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.calculate-tsio-identity.result == 'success' &&
+      (needs.run-detox-ios.result == 'failure' ||
+       needs.run-detox-android.result == 'failure' ||
+       needs.run-maestro-ios.result == 'failure' ||
+       needs.run-maestro-android.result == 'failure')
+    needs:
+      - resolve-e2e-policy
+      - calculate-tsio-identity
+      - run-detox-ios
+      - run-detox-android
+      - run-maestro-ios
+      - run-maestro-android
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      matrix:
+        job-key: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-keys-json) }}
+    steps:
+      # Each lane uploads what it saw at every failed test: Detox the screenshot and
+      # the app's busy report, Maestro the failure screenshot, the step it stopped
+      # at and the app's own errors. The judge reads them as producer evidence.
+      - name: Download triage evidence
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: triage-evidence-${{ matrix.job-key }}-*
+          path: triage-evidence
+      # Answers from an earlier attempt at the same commit, so a re-run does not
+      # pay for the same question twice. Restore and save are separate steps:
+      # the cache action saves only when the job succeeds, and a red run is the
+      # one most likely to be re-run.
+      - name: Restore triage answers
+        if: always()
+        continue-on-error: true
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: e2e-triage-answers.json
+          key: e2e-triage-answers-${{ matrix.job-key }}-${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity.commit_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: e2e-triage-answers-${{ matrix.job-key }}-${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity.commit_sha }}-
+      # A triage failure must never change the outcome of the E2E run itself.
+      - name: e2e/triage
+        continue-on-error: true
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@fc4a5cd2867bff5a4eec98fc93f57ac1d03e2004 # actions/e2e-triage
+        with:
+          composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
+          status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
+          # One triage check for the whole PR, summarising every lane; a red lane
+          # posts it as pending as soon as it finishes (detox/utils/tsio-report-status.js).
+          triage-status-context: e2e-test/triage
+          triage-lanes: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
+          lane: ${{ matrix.job-key }}
+          evidence-dir: triage-evidence
+          test-root: .
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          mode: ${{ vars.E2E_TRIAGE_MODE || 'enforce' }}
+          answers-cache: e2e-triage-answers.json
+      - name: Save triage answers
+        if: always() && hashFiles('e2e-triage-answers.json') != ''
+        continue-on-error: true
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: e2e-triage-answers.json
+          key: e2e-triage-answers-${{ matrix.job-key }}-${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity.commit_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
