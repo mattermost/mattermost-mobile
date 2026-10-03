@@ -1177,10 +1177,14 @@ jobs:
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@65ea0eee0e21e38d87989774db650bf39b729b41 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@39c6c2d2cab50e3fcf23e68bd8247337b4a12878 # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}
+          # One triage check for the whole PR, summarising every lane; a red lane
+          # posts it as pending as soon as it finishes (detox/utils/tsio-report-status.js).
+          triage-status-context: e2e-test/triage
+          triage-lanes: e2e-test/detox-ios,e2e-test/detox-ipad,e2e-test/detox-android,e2e-test/maestro-ios,e2e-test/maestro-android
           lane: ${{ matrix.job-key }}
           evidence-dir: triage-evidence
           test-root: .

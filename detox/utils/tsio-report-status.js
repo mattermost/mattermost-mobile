@@ -179,24 +179,28 @@ function overrideCommitStatus(state, description) {
     };
 }
 
+// The PR-wide triage check. Every lane's triage job writes it too (the
+// e2e-triage action's triage-status-context), with the verdict for all lanes.
+const TRIAGE_CHECK_CONTEXT = 'e2e-test/triage';
+
 /**
- * The pending check that tells a PR its red lane is waiting for E2E triage.
+ * The pending check that tells a PR its red lanes are waiting for E2E triage.
  * Triage (the e2e-triage action in mattermost-test-automation-toolkit) runs
  * only once every lane has finished, which can be an hour after this one, and
- * then writes the same context with its verdict. Null when there is nothing to
+ * then writes the same check with its verdict. Null when there is nothing to
  * announce: triage is off for this run, the lane isn't red with test failures,
  * or E2E/Override already turned it green.
  *
  * @returns {{state: string, context: string, description: string, target_url: string} | null}
  */
-function triageAnnouncement({announce, state, overrideApplied, failed, context, runUrl}) {
+function triageAnnouncement({announce, state, overrideApplied, failed, runUrl}) {
     if (!announce || state !== 'failure' || overrideApplied || !(failed > 0)) {
         return null;
     }
     return {
         state: 'pending',
-        context: `${context}/triage`,
-        description: `${failed} failed · triage starts when every lane has finished`,
+        context: TRIAGE_CHECK_CONTEXT,
+        description: 'E2E failures found · triage starts when every lane has finished',
         target_url: runUrl,
     };
 }

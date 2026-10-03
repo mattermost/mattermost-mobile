@@ -18,11 +18,11 @@ describe('tsio-report-status', () => {
     describe('triageAnnouncement', () => {
         const red = {announce: true, state: 'failure', overrideApplied: false, failed: 7, context: 'e2e-test/detox-ios', runUrl: 'https://github.com/o/r/actions/runs/1'};
 
-        it('marks a red lane as waiting for triage, beside the required check', () => {
+        it('marks the PR as waiting for triage on one check shared by every lane', () => {
             assert.deepEqual(triageAnnouncement(red), {
                 state: 'pending',
-                context: 'e2e-test/detox-ios/triage',
-                description: '7 failed · triage starts when every lane has finished',
+                context: 'e2e-test/triage',
+                description: 'E2E failures found · triage starts when every lane has finished',
                 target_url: 'https://github.com/o/r/actions/runs/1',
             });
         });
