@@ -11,6 +11,7 @@ import {
     isRedactionEnforced,
     type RedactionReason,
 } from '@actions/local/redaction';
+import {reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
@@ -246,6 +247,7 @@ export const scheduleRedactionInvalidation = async (
 // The payload carries nothing, so every cached channel has to be treated as affected.
 export const handlePermissionPolicyUpdatedEvent = (serverUrl: string) => {
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+    reconcileChannelAccess(serverUrl);
 };
 
 // Scoped to the one channel, so a single policy edit does not invalidate every cached channel.
@@ -257,6 +259,7 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
     }
 
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelPolicy, channelId);
+    reconcileChannelAccess(serverUrl);
 };
 
 /**
