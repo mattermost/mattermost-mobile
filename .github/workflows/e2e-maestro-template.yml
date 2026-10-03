@@ -585,7 +585,20 @@ jobs:
         run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/sim-device.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
 
       - name: Upload triage evidence
+        id: upload-evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
+      # The artifact service times out now and then ("Failed to CreateArtifact:
+      # ETIMEDOUT") and upload-artifact does not retry, which leaves triage with
+      # no evidence for this lane.
+      - name: Upload triage evidence (retry)
+        if: always() && steps.upload-evidence.outcome == 'failure'
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1305,7 +1318,20 @@ jobs:
         run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/android-logcat.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
 
       - name: Upload triage evidence
+        id: upload-evidence
         if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
+      # The artifact service times out now and then ("Failed to CreateArtifact:
+      # ETIMEDOUT") and upload-artifact does not retry, which leaves triage with
+      # no evidence for this lane.
+      - name: Upload triage evidence (retry)
+        if: always() && steps.upload-evidence.outcome == 'failure'
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
