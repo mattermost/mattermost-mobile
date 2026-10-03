@@ -577,6 +577,22 @@ jobs:
             }
           "
 
+      # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
+      # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      - name: Collect triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/sim-device.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
         env:
@@ -969,7 +985,8 @@ jobs:
         run: |
           mkdir -p build
           adb logcat -c || true
-          adb logcat -v threadtime > build/android-logcat.log 2> build/android-logcat.err &
+          # Full UTC dates, so triage evidence can match app errors to the flow that failed.
+          adb logcat -v threadtime -v year -v UTC > build/android-logcat.log 2> build/android-logcat.err &
           echo $! > build/android-logcat.pid
           echo "==> logcat capture started (pid $(cat build/android-logcat.pid))"
 
@@ -1279,6 +1296,22 @@ jobs:
               ['FAILURES=1','PASSES=0','TOTAL=0','ERRORS=1','SKIPPED=0','PERCENTAGE=0','NO_REPORT=true'].forEach(l => fs.appendFileSync(process.env.GITHUB_OUTPUT, l + '\n'));
             }
           "
+
+      # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
+      # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      - name: Collect triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/android-logcat.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
+
+      - name: Upload triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
 
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
