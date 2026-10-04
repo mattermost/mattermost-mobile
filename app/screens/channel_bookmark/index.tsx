@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {navigateBack} from '@screens/navigation';
+import {limitBookmarkDisplayName} from '@utils/channel_bookmark';
 import {getFullErrorMessage} from '@utils/errors';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -142,7 +143,7 @@ const ChannelBookmarkScreen = ({
                 channel_id: channelId,
                 link_url: url,
                 image_url: imageUrl,
-                display_name: title,
+                display_name: limitBookmarkDisplayName(title),
                 type: 'link',
             };
             return b;
@@ -155,7 +156,7 @@ const ChannelBookmarkScreen = ({
                 ...(prev || emptyBookmark),
                 owner_id: ownerId,
                 channel_id: channelId,
-                display_name: f.name,
+                display_name: limitBookmarkDisplayName(f.name),
                 type: 'file',
                 file_id: f.id,
             };
@@ -168,7 +169,7 @@ const ChannelBookmarkScreen = ({
         if (bookmark) {
             setBookmark((prev) => ({
                 ...(prev!),
-                display_name: displayName,
+                display_name: limitBookmarkDisplayName(displayName),
             }));
         }
 
