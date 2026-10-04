@@ -192,7 +192,7 @@ jest.mock('@livekit/react-native', () => ({
     registerGlobals: jest.fn(),
 }));
 
-// Enum values mirror livekit-client's own string enums; Room and LocalAudioTrack are left as
+// Enum values mirror livekit-client's own enums; Room and LocalAudioTrack are left as
 // bare mocks so individual tests can drive them via mockImplementation.
 jest.mock('livekit-client', () => ({
     Room: jest.fn(),
@@ -223,6 +223,15 @@ jest.mock('livekit-client', () => ({
         ParticipantAttributesChanged: 'participantAttributesChanged',
         DataReceived: 'dataReceived',
         ConnectionQualityChanged: 'connectionQualityChanged',
+        ParticipantConnected: 'participantConnected',
+        ParticipantDisconnected: 'participantDisconnected',
+        RoomMetadataChanged: 'roomMetadataChanged',
+    },
+    DisconnectReason: {
+        CLIENT_INITIATED: 1,
+        SERVER_SHUTDOWN: 3,
+        PARTICIPANT_REMOVED: 4,
+        ROOM_DELETED: 5,
     },
 }));
 

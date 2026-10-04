@@ -6,6 +6,7 @@ import {mediaDevices, type MediaStream} from '@livekit/react-native-webrtc';
 import {
     AudioPresets,
     ConnectionQuality,
+    DisconnectReason,
     LocalAudioTrack,
     Room,
     RoomEvent,
@@ -16,30 +17,50 @@ import {
     type RemoteTrackPublication,
     type TrackPublication,
 } from 'livekit-client';
-import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
+import {Platform} from 'react-native';
 
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {peerConnectTimeout} from '@calls/connection/constants';
 import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/session/foreground_service';
-import {setCallQualityAlert, setRaisedHand, setUserMuted, setUserVoiceOn, userReacted} from '@calls/state';
+import {createCallAndAddToIds} from '@calls/convert_call';
+import {hostRemovedErr} from '@calls/errors';
+import {
+    getCurrentCall,
+    setCallForChannel,
+    setCallQualityAlert,
+    setCaptioningState,
+    setHost,
+    setRaisedHand,
+    setRecordingState,
+    setUserMuted,
+    setUserVoiceOn,
+    userJoinedCall,
+    userLeftCall,
+    userReacted,
+} from '@calls/state';
 import {type CallsConnection} from '@calls/types/calls';
-import {WebsocketEvents} from '@constants';
-import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
 import {getFullErrorMessage} from '@utils/errors';
+import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
-
-import {WebSocketClient, wsReconnectionTimeoutErr} from '../websocket_client';
 
 import {CALL_ATTRIBUTES, CALL_MESSAGE_TOPICS} from './constants';
 import {parseIdentity} from './identity';
 
-import type {EmojiData} from '@mattermost/calls/lib/types';
+import type {CallJobState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 type ReactionPayload = {
     emojiData: EmojiData;
     timestamp: number;
+}
+
+// Mirrors callRoomMetadata in the calls plugin (server/livekit_state.go).
+type RoomMetadata = {
+    host_id?: string;
+    recording?: CallJobState;
+    live_captions?: CallJobState;
 }
 
 const isBot = (participant: Participant) => participant.attributes?.[CALL_ATTRIBUTES.BOT] === 'true';
@@ -63,7 +84,6 @@ export async function newLiveKitConnection(
     let isClosed = false;
     let isRoomConnected = false;
     let micPublishInProgress = false;
-    let onCallEnd: EmitterSubscription | null = null;
     let onPeerConnected: ((sessionId: string) => void) | null = null;
     let activeSessions = new Set<string>();
 
@@ -73,7 +93,6 @@ export async function newLiveKitConnection(
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
-    const credentials = await getServerCredentials(serverUrl);
 
     const audioRoute = createAudioRouteManager();
 
@@ -92,17 +111,28 @@ export async function newLiveKitConnection(
         dynacast: false,
     });
 
-    const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
-
     await startAudioSession();
 
+    let session;
     try {
-        await ws.initialize();
+        session = await client.createLiveKitSession(channelID, title, rootId);
     } catch (err) {
         await stopAudioSession();
 
         // Rethrows the error, to be caught by the caller.
         throw err;
+    }
+
+    const {session_id: mySessionID, token, url, call_state: callState} = session;
+
+    const seededUserIDs = new Set<string>();
+    setCallForChannel(serverUrl, channelID, createCallAndAddToIds(channelID, callState, seededUserIDs));
+    fetchMissingProfilesByIds(serverUrl, Array.from(seededUserIDs));
+    if (callState.recording) {
+        setRecordingState(serverUrl, channelID, callState.recording);
+    }
+    if (callState.live_captions) {
+        setCaptioningState(serverUrl, channelID, callState.live_captions);
     }
 
     const micPublication = () => room.localParticipant.getTrackPublication(Track.Source.Microphone);
@@ -152,14 +182,6 @@ export async function newLiveKitConnection(
         }
         isClosed = true;
 
-        ws.send('leave');
-        ws.close();
-
-        if (onCallEnd) {
-            onCallEnd.remove();
-            onCallEnd = null;
-        }
-
         room.disconnect();
         stopAudioSession();
         audioRoute.stop();
@@ -172,12 +194,6 @@ export async function newLiveKitConnection(
             closeCb(err);
         }
     };
-
-    onCallEnd = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}: { channelId: string }) => {
-        if (channelId === channelID) {
-            disconnect();
-        }
-    });
 
     const raiseHand = () => {
         room.localParticipant.setAttributes({[CALL_ATTRIBUTES.RAISED_HAND]: String(Date.now())});
@@ -210,16 +226,37 @@ export async function newLiveKitConnection(
     // Mute and raised hand only reach us as change events, so a call already in progress
     // needs its current state read off the participants present at connect time.
     const seedParticipantState = (participant: Participant) => {
-        if (isBot(participant)) {
-            return;
-        }
-
         const {sessionID} = parseIdentity(participant.identity);
         setUserMuted(serverUrl, channelID, sessionID, isMicMuted(participant));
 
         const raisedHand = raisedHandAt(participant);
         if (raisedHand > 0) {
             setRaisedHand(serverUrl, channelID, sessionID, raisedHand);
+        }
+    };
+
+    const joinParticipant = (participant: Participant) => {
+        const {userID, sessionID} = parseIdentity(participant.identity);
+        userJoinedCall(serverUrl, channelID, userID, sessionID);
+        return userID;
+    };
+
+    const applyRoomMetadata = (raw?: string) => {
+        if (!raw) {
+            return;
+        }
+
+        const metadata = safeParseJSON(raw) as RoomMetadata;
+
+        // setHost re-raises the host alert, so it only runs on an actual change.
+        if (metadata.host_id && metadata.host_id !== getCurrentCall()?.hostId) {
+            setHost(serverUrl, channelID, metadata.host_id);
+        }
+        if (metadata.recording) {
+            setRecordingState(serverUrl, channelID, metadata.recording);
+        }
+        if (metadata.live_captions) {
+            setCaptioningState(serverUrl, channelID, metadata.live_captions);
         }
     };
 
@@ -235,21 +272,67 @@ export async function newLiveKitConnection(
     room.on(RoomEvent.Connected, () => {
         isRoomConnected = true;
 
-        seedParticipantState(room.localParticipant);
-        room.remoteParticipants.forEach(seedParticipantState);
+        const participants = [room.localParticipant, ...room.remoteParticipants.values()].filter((p) => !isBot(p));
+
+        // The join response includes sessions LiveKit never confirmed, and the room won't report those leaving.
+        // Dropped before we join, or an unconnected callee would mark a DM call answered.
+        const roomSessionIDs = new Set(participants.map((participant) => parseIdentity(participant.identity).sessionID));
+        for (const {session_id: sessionID} of callState.sessions) {
+            if (!roomSessionIDs.has(sessionID)) {
+                userLeftCall(serverUrl, channelID, sessionID);
+            }
+        }
+
+        const userIDs = participants.map((participant) => {
+            const userID = joinParticipant(participant);
+            seedParticipantState(participant);
+            return userID;
+        });
+        fetchMissingProfilesByIds(serverUrl, userIDs);
+
+        applyRoomMetadata(room.metadata);
 
         if (onPeerConnected) {
-            onPeerConnected(ws.sessionID);
+            onPeerConnected(mySessionID);
             onPeerConnected = null;
         }
     });
 
-    room.on(RoomEvent.Disconnected, () => {
-        logDebug('calls: livekit room disconnected');
-        if (!isClosed) {
-            disconnect();
+    room.on(RoomEvent.Disconnected, (reason?: DisconnectReason) => {
+        logDebug('calls: livekit room disconnected, reason:', reason);
+        if (isClosed) {
+            return;
+        }
+
+        switch (reason) {
+            case DisconnectReason.ROOM_DELETED:
+                disconnect();
+                break;
+            case DisconnectReason.PARTICIPANT_REMOVED:
+                disconnect(hostRemovedErr);
+                break;
+            default:
+                disconnect(new Error(`livekit disconnected: ${reason}`));
         }
     });
+
+    room.on(RoomEvent.ParticipantConnected, (participant: RemoteParticipant) => {
+        if (isBot(participant)) {
+            return;
+        }
+
+        fetchMissingProfilesByIds(serverUrl, [joinParticipant(participant)]);
+    });
+
+    room.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
+        if (isBot(participant)) {
+            return;
+        }
+
+        userLeftCall(serverUrl, channelID, parseIdentity(participant.identity).sessionID);
+    });
+
+    room.on(RoomEvent.RoomMetadataChanged, applyRoomMetadata);
 
     room.on(RoomEvent.TrackMuted, (publication: TrackPublication, participant: Participant) => {
         setMutedFromPublication(publication, participant, true);
@@ -337,55 +420,7 @@ export async function newLiveKitConnection(
         setCallQualityAlert(quality === ConnectionQuality.Poor || quality === ConnectionQuality.Lost);
     });
 
-    ws.on('error', (err: Error) => {
-        logDebug('calls: ws error', err);
-        if (err === wsReconnectionTimeoutErr) {
-            disconnect();
-        }
-    });
-
-    ws.on('close', (event: WebSocketCloseEvent) => {
-        logDebug('calls: ws close, code:', event?.code, 'reason:', event?.reason, 'message:', event?.message);
-    });
-
-    ws.on('open', (originalConnID: string, prevConnID: string, isReconnect: boolean) => {
-        if (isReconnect) {
-            logDebug('calls: ws reconnect, sending reconnect msg');
-            ws.send('reconnect', {
-                channelID,
-                originalConnID,
-                prevConnID,
-            });
-        } else {
-            logDebug('calls: ws open, sending join msg');
-            ws.send('join', {
-                channelID,
-                title,
-                threadID: rootId,
-            });
-        }
-    });
-
-    // The join ack is the point the server has registered this session, which the token is
-    // minted against.
-    ws.on('join', async () => {
-        logDebug('calls: join ack received, connecting to livekit room');
-
-        if (Platform.OS === 'android') {
-            // To allow us to use microphone in the background
-            foregroundServiceStart(intl);
-        }
-
-        let token;
-        let url;
-        try {
-            ({token, url} = await client.getLiveKitToken(channelID, ws.sessionID));
-        } catch (err) {
-            logError('calls: failed to fetch livekit token:', getFullErrorMessage(err));
-            disconnect(new Error('failed to fetch livekit token'));
-            return;
-        }
-
+    const connectRoom = async () => {
         try {
             await room.prepareConnection(url, token);
         } catch (err) {
@@ -405,12 +440,19 @@ export async function newLiveKitConnection(
         if (hasMicPermission) {
             initializeVoiceTrack();
         }
-    });
+    };
+
+    if (Platform.OS === 'android') {
+        // To allow us to use microphone in the background
+        foregroundServiceStart(intl);
+    }
+
+    connectRoom();
 
     const waitForPeerConnection = () => {
         return new Promise<string>((resolve, reject) => {
             if (isRoomConnected) {
-                resolve(ws.sessionID);
+                resolve(mySessionID);
                 return;
             }
 

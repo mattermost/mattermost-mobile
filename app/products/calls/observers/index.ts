@@ -117,7 +117,7 @@ export const observeCurrentSessionsDict = () => {
         switchMap(([db, call]) => (db && call ? queryUsersById(db, userIds(Object.values(call.sessions))).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
 
             // We now have a UserModel[] one for each userId, but we need the session dictionary with user models
-            // eslint-disable-next-line max-nested-callbacks
+
             switchMap((ps: UserModel[]) => of$(fillUserModels(call?.sessions || {}, ps))),
         )),
     ) as Observable<Dictionary<CallSession>>;

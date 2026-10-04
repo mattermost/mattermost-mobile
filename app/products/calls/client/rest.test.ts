@@ -181,12 +181,12 @@ describe('ClientCalls', () => {
         });
     });
 
-    describe('getLiveKitToken', () => {
-        it('makes correct API call', async () => {
-            await client.getLiveKitToken('channel-id', 'session-id');
+    describe('createLiveKitSession', () => {
+        it('should post the channel, title and thread', async () => {
+            await client.createLiveKitSession('channel-id', 'title', 'thread-id');
             expect(mockDoFetch).toHaveBeenCalledWith(
-                '/plugins/com.plugins.calls/livekit-token?channel_id=channel-id&session_id=session-id',
-                {method: 'get'},
+                '/plugins/com.plugins.calls/livekit-token',
+                {method: 'post', body: {channel_id: 'channel-id', title: 'title', thread_id: 'thread-id'}},
             );
         });
     });

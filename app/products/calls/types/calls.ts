@@ -5,6 +5,7 @@ import {
     TranscribeAPI,
     type CallJobState,
     type CallPostProps,
+    type CallState,
     type CallsConfig,
     type EmojiData,
     type UserReactionData,
@@ -142,6 +143,7 @@ export type CurrentCall = Call & {
     serverUrl: string;
     myUserId: string;
     mySessionId: string;
+    transport: CallsTransport;
     screenShareURL: string;
     audioDeviceInfo: AudioRoute;
     voiceOn: Dictionary<boolean>;
@@ -161,6 +163,7 @@ export const DefaultCurrentCall: CurrentCall = {
     serverUrl: '',
     myUserId: '',
     mySessionId: '',
+    transport: CallsTransport.Rtcd,
     screenShareURL: '',
     audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
@@ -185,11 +188,13 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 export {AudioDevice};
 export type {AudioDeviceType, AudioRoute};
 
-// Response from the plugin's livekit-token endpoint: the room URL to connect to
-// and the JWT granting access to it, both scoped to one session.
-export type LiveKitTokenResponse = {
+// Response from the plugin's livekit-token endpoint: the server-minted session, the room URL
+// and the JWT granting access to it, and the call as it stood when the session was created.
+export type LiveKitSessionResponse = {
+    session_id: string;
     token: string;
     url: string;
+    call_state: CallState;
 }
 
 export type CallsConnection = {

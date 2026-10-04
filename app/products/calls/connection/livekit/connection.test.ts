@@ -1,23 +1,48 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {LocalAudioTrack, Room, RoomEvent} from 'livekit-client';
+import {DisconnectReason, LocalAudioTrack, Room, RoomEvent} from 'livekit-client';
 import {Platform} from 'react-native';
 
-import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
-import {setCallQualityAlert, setRaisedHand, setUserMuted, setUserVoiceOn, userReacted} from '@calls/state';
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
+import {createAudioRouteManager, stopAudioSession} from '@calls/connection/session/audio';
+import {hostRemovedErr} from '@calls/errors';
+import {
+    getCurrentCall,
+    setCallForChannel,
+    setCallQualityAlert,
+    setCaptioningState,
+    setHost,
+    setRaisedHand,
+    setRecordingState,
+    setUserMuted,
+    setUserVoiceOn,
+    userJoinedCall,
+    userLeftCall,
+    userReacted,
+} from '@calls/state';
+import {DefaultCurrentCall} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
-import {WebSocketClient} from '../websocket_client';
-
 import {newLiveKitConnection} from './connection';
 
-jest.mock('../websocket_client');
+import type {CallState} from '@mattermost/calls/lib/types';
+
+jest.mock('@actions/remote/user', () => ({
+    fetchMissingProfilesByIds: jest.fn(),
+}));
 jest.mock('@calls/state', () => ({
+    getCurrentCall: jest.fn(),
+    setCallForChannel: jest.fn(),
     setCallQualityAlert: jest.fn(),
+    setCaptioningState: jest.fn(),
+    setHost: jest.fn(),
     setRaisedHand: jest.fn(),
+    setRecordingState: jest.fn(),
     setUserMuted: jest.fn(),
     setUserVoiceOn: jest.fn(),
+    userJoinedCall: jest.fn(),
+    userLeftCall: jest.fn(),
     userReacted: jest.fn(),
 }));
 jest.mock('@calls/connection/session/foreground_service', () => ({
@@ -39,6 +64,24 @@ const mockAudioRouteManager = {
 const SERVER_URL = 'http://localhost:8065';
 const CHANNEL_ID = 'channelID';
 const SESSION_ID = 'mysession';
+const LIVEKIT_URL = 'wss://livekit.example.com';
+const LIVEKIT_TOKEN = 'jwt-token';
+
+const recording = {type: 'recording', init_at: 100, start_at: 200, end_at: 0};
+const liveCaptions = {type: 'captions', init_at: 100, start_at: 200, end_at: 0};
+
+const callState: CallState = {
+    id: 'call-id',
+    start_at: 100,
+    sessions: [{session_id: 'sessionA', user_id: 'userA', unmuted: true, raised_hand: 0}],
+    thread_id: 'thread-id',
+    post_id: 'post-id',
+    screen_sharing_session_id: '',
+    owner_id: 'userA',
+    host_id: 'userA',
+    recording,
+    live_captions: liveCaptions,
+};
 
 // Builds a participant the way LiveKit exposes one: identity carries userID___sessionID,
 // mute state lives on the microphone publication, raised hand on attributes.
@@ -53,8 +96,7 @@ const participant = (userID: string, sessionID: string, opts: {muted?: boolean; 
 
 describe('newLiveKitConnection', () => {
     const mockClient = {
-        getWebSocketUrl: jest.fn(() => 'ws://localhost:8065'),
-        getLiveKitToken: jest.fn(() => Promise.resolve({token: 'jwt-token', url: 'wss://livekit.example.com'})),
+        createLiveKitSession: jest.fn(),
     };
 
     const mockIntl = {formatMessage: jest.fn((m) => m.defaultMessage)} as unknown as import('react-intl').IntlShape;
@@ -63,11 +105,11 @@ describe('newLiveKitConnection', () => {
     let mockRoom: any;
     let micPublication: {isMuted: boolean; mute: jest.Mock; unmute: jest.Mock} | undefined;
 
-    const connect = async (remoteParticipants: any[] = []) => {
+    const connect = async (remoteParticipants: any[] = [], closeCb: (err?: Error) => void = () => {}) => {
         mockRoom.remoteParticipants = new Map(remoteParticipants.map((p) => [p.identity, p]));
 
         const connection = await newLiveKitConnection(
-            SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl,
+            SERVER_URL, CHANNEL_ID, closeCb, () => {}, false, mockIntl, 'title', 'root-id',
         );
         await connection.waitForPeerConnection();
         return connection;
@@ -83,6 +125,14 @@ describe('newLiveKitConnection', () => {
         jest.clearAllMocks();
         enableFakeTimers();
 
+        mockClient.createLiveKitSession.mockResolvedValue({
+            session_id: SESSION_ID,
+            token: LIVEKIT_TOKEN,
+            url: LIVEKIT_URL,
+            call_state: callState,
+        });
+        jest.mocked(getCurrentCall).mockReturnValue({...DefaultCurrentCall, channelId: CHANNEL_ID});
+
         roomHandlers = {};
         micPublication = undefined;
         mockRoom = {
@@ -97,6 +147,7 @@ describe('newLiveKitConnection', () => {
                 return Promise.resolve();
             }),
             disconnect: jest.fn(() => Promise.resolve()),
+            metadata: undefined,
             remoteParticipants: new Map(),
             localParticipant: {
                 identity: `myuser___${SESSION_ID}`,
@@ -112,32 +163,162 @@ describe('newLiveKitConnection', () => {
         };
         (Room as unknown as jest.Mock).mockImplementation(() => mockRoom);
         (LocalAudioTrack as unknown as jest.Mock).mockImplementation(() => ({source: undefined}));
-
-        // @ts-ignore
-        WebSocketClient.mockImplementation(() => ({
-            initialize: jest.fn(),
-            on: (event: string, handler: any) => {
-                if (event === 'join') {
-                    handler();
-                }
-            },
-            send: jest.fn(),
-            close: jest.fn(),
-            sessionID: SESSION_ID,
-        }));
     });
 
     afterEach(() => {
         disableFakeTimers();
     });
 
-    it('fetches a token for the websocket session and connects the room with it', async () => {
+    it('should post the channel, title and thread and connect the room with the returned url and token', async () => {
         await connect();
 
-        expect(mockClient.getLiveKitToken).toHaveBeenCalledWith(CHANNEL_ID, SESSION_ID);
-        expect(mockRoom.connect).toHaveBeenCalledWith('wss://livekit.example.com', 'jwt-token');
-        expect(startAudioSession).toHaveBeenCalled();
-        expect(mockAudioRouteManager.start).toHaveBeenCalled();
+        expect(mockClient.createLiveKitSession).toHaveBeenCalledWith(CHANNEL_ID, 'title', 'root-id');
+        expect(mockRoom.connect).toHaveBeenCalledWith(LIVEKIT_URL, LIVEKIT_TOKEN);
+    });
+
+    it('should resolve waitForPeerConnection with the session id from the join response', async () => {
+        mockClient.createLiveKitSession.mockResolvedValue({session_id: 'minted-session', token: LIVEKIT_TOKEN, url: LIVEKIT_URL, call_state: callState});
+
+        const connection = await newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl);
+
+        await expect(connection.waitForPeerConnection()).resolves.toBe('minted-session');
+    });
+
+    it('should stop the audio session and reject when the join request fails', async () => {
+        const joinError = new Error('join failed');
+        mockClient.createLiveKitSession.mockRejectedValue(joinError);
+
+        await expect(newLiveKitConnection(SERVER_URL, CHANNEL_ID, () => {}, () => {}, false, mockIntl)).rejects.toBe(joinError);
+        expect(stopAudioSession).toHaveBeenCalled();
+    });
+
+    it('should seed the channel call and its sessions from the join response', async () => {
+        await connect([participant('userA', 'sessionA')]);
+
+        expect(setCallForChannel).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, expect.objectContaining({
+            id: 'call-id',
+            hostId: 'userA',
+            sessions: {sessionA: {userId: 'userA', sessionId: 'sessionA', muted: false, raisedHand: 0}},
+        }));
+        expect(fetchMissingProfilesByIds).toHaveBeenCalledWith(SERVER_URL, ['userA']);
+        expect(setRecordingState).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, recording);
+        expect(setCaptioningState).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, liveCaptions);
+    });
+
+    it('should drop sessions from the join response that are not in the room once connected', async () => {
+        mockClient.createLiveKitSession.mockResolvedValue({
+            session_id: SESSION_ID,
+            token: LIVEKIT_TOKEN,
+            url: LIVEKIT_URL,
+            call_state: {
+                ...callState,
+                sessions: [
+                    {session_id: SESSION_ID, user_id: 'myuser', unmuted: false, raised_hand: 0},
+                    {session_id: 'sessionA', user_id: 'userA', unmuted: true, raised_hand: 0},
+                    {session_id: 'pendingSession', user_id: 'userB', unmuted: false, raised_hand: 0},
+                ],
+            },
+        });
+
+        await connect([participant('userA', 'sessionA')]);
+
+        expect(jest.mocked(userLeftCall).mock.calls).toEqual([
+            [SERVER_URL, CHANNEL_ID, 'pendingSession'],
+        ]);
+    });
+
+    it('should drop stale join response sessions before adding our own, so an unconnected callee does not mark the call answered', async () => {
+        mockClient.createLiveKitSession.mockResolvedValue({
+            session_id: SESSION_ID,
+            token: LIVEKIT_TOKEN,
+            url: LIVEKIT_URL,
+            call_state: {...callState, sessions: [{session_id: 'pendingSession', user_id: 'userB', unmuted: false, raised_hand: 0}]},
+        });
+
+        await connect();
+
+        const [leftOrder] = jest.mocked(userLeftCall).mock.invocationCallOrder;
+        const [joinedOrder] = jest.mocked(userJoinedCall).mock.invocationCallOrder;
+        expect(leftOrder).toBeLessThan(joinedOrder);
+    });
+
+    it('should populate the roster from participants present at connect and those joining later, excluding bots', async () => {
+        await connect([
+            participant('userA', 'sessionA'),
+            participant('botuser', 'botsession', {bot: true}),
+        ]);
+
+        roomHandlers[RoomEvent.ParticipantConnected](participant('userC', 'sessionC'));
+        roomHandlers[RoomEvent.ParticipantConnected](participant('botuser', 'botsession2', {bot: true}));
+
+        expect(jest.mocked(userJoinedCall).mock.calls).toEqual([
+            [SERVER_URL, CHANNEL_ID, 'myuser', SESSION_ID],
+            [SERVER_URL, CHANNEL_ID, 'userA', 'sessionA'],
+            [SERVER_URL, CHANNEL_ID, 'userC', 'sessionC'],
+        ]);
+        expect(jest.mocked(fetchMissingProfilesByIds).mock.calls).toEqual([
+            [SERVER_URL, ['userA']],
+            [SERVER_URL, ['myuser', 'userA']],
+            [SERVER_URL, ['userC']],
+        ]);
+        expect(setUserMuted).not.toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'botsession', expect.anything());
+    });
+
+    it('should remove the session of a participant leaving the room', async () => {
+        await connect();
+
+        roomHandlers[RoomEvent.ParticipantDisconnected](participant('userA', 'sessionA'));
+
+        expect(userLeftCall).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'sessionA');
+    });
+
+    it('should set host, recording and captions state from room metadata on connect and on change', async () => {
+        mockRoom.metadata = JSON.stringify({host_id: 'hostA', recording});
+        await connect();
+
+        expect(setHost).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'hostA');
+        expect(setRecordingState).toHaveBeenLastCalledWith(SERVER_URL, CHANNEL_ID, recording);
+
+        roomHandlers[RoomEvent.RoomMetadataChanged](JSON.stringify({host_id: 'hostB', live_captions: liveCaptions}));
+
+        expect(setHost).toHaveBeenLastCalledWith(SERVER_URL, CHANNEL_ID, 'hostB');
+        expect(setCaptioningState).toHaveBeenLastCalledWith(SERVER_URL, CHANNEL_ID, liveCaptions);
+    });
+
+    it('should not re-set an unchanged host from room metadata', async () => {
+        jest.mocked(getCurrentCall).mockReturnValue({...DefaultCurrentCall, channelId: CHANNEL_ID, hostId: 'hostA'});
+        await connect();
+
+        roomHandlers[RoomEvent.RoomMetadataChanged](JSON.stringify({host_id: 'hostA'}));
+
+        expect(setHost).not.toHaveBeenCalled();
+    });
+
+    it('should close the call without an error when the room is deleted', async () => {
+        const closeCb = jest.fn();
+        await connect([], closeCb);
+
+        roomHandlers[RoomEvent.Disconnected](DisconnectReason.ROOM_DELETED);
+
+        expect(closeCb).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should close the call with hostRemovedErr when removed from the room', async () => {
+        const closeCb = jest.fn();
+        await connect([], closeCb);
+
+        roomHandlers[RoomEvent.Disconnected](DisconnectReason.PARTICIPANT_REMOVED);
+
+        expect(closeCb).toHaveBeenCalledWith(hostRemovedErr);
+    });
+
+    it('should close the call with an error on any other disconnect reason', async () => {
+        const closeCb = jest.fn();
+        await connect([], closeCb);
+
+        roomHandlers[RoomEvent.Disconnected](DisconnectReason.SERVER_SHUTDOWN);
+
+        expect(closeCb).toHaveBeenCalledWith(expect.any(Error));
     });
 
     it('publishes the microphone muted so the user joins muted', async () => {
@@ -169,12 +350,6 @@ describe('newLiveKitConnection', () => {
         await connect([participant('userA', 'sessionA')]);
 
         expect(setUserMuted).toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'sessionA', true);
-    });
-
-    it('excludes the recording bot when seeding', async () => {
-        await connect([participant('botuser', 'botsession', {muted: true, bot: true})]);
-
-        expect(setUserMuted).not.toHaveBeenCalledWith(SERVER_URL, CHANNEL_ID, 'botsession', expect.anything());
     });
 
     it('turns voice off for a session that drops out of the active speaker set', async () => {
