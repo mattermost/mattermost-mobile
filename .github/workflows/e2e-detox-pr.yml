@@ -1129,8 +1129,10 @@ jobs:
     # keys and the key cannot be matched to its platform job here. A platform that
     # passed therefore still gets a triage run when a sibling failed, finds no
     # failures in its own lane, and posts nothing.
+    # Not on a cancelled run: its unfinished specs count as failures and its server
+    # can be torn down mid-step, so there is nothing about the change to judge.
     if: >-
-      always() &&
+      !cancelled() &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER') &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
@@ -1178,7 +1180,7 @@ jobs:
       # A triage failure must never change the outcome of the E2E run itself.
       - name: e2e/triage
         continue-on-error: true
-        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@fc4a5cd2867bff5a4eec98fc93f57ac1d03e2004 # actions/e2e-triage
+        uses: mattermost/mattermost-test-automation-toolkit/actions/e2e-triage@29626249416395c5c074eff1e9ee9fcaf5285dcc # actions/e2e-triage
         with:
           composite-identity: ${{ toJSON(fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].composite_identity) }}
           status-context: ${{ fromJSON(needs.calculate-tsio-identity.outputs.job-configs)[matrix.job-key].status_context }}

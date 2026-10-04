@@ -1056,12 +1056,14 @@ jobs:
         run: |
           set +e
           UPSTREAM="true"
+          CANCELLED="false"
           # This job runs with always(), so job.status stays success when an upstream
           # job is cancelled — read the needs results to detect that.
           if [ "$SPECS_RESULT" = "cancelled" ] ||
              [ "$E2E_RESULT" = "cancelled" ] ||
              [ "$JOB_STATUS" = "cancelled" ]; then
             UPSTREAM="false"
+            CANCELLED="true"
           fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/detox-ios"')
@@ -1072,6 +1074,7 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
             --e2e-override="$E2E_OVERRIDE" \
             --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24

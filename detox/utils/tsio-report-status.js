@@ -75,9 +75,21 @@ function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl
     return `${displayReportUrl}?gid=${reportId}`;
 }
 
-function decideStatus(detail, upstreamSucceeded) {
+function decideStatus(detail, upstreamSucceeded, cancelled = false) {
     const stats = detail.test_stats || {};
     const bothTerminal = TERMINAL_STATUSES.includes(detail.status);
+
+    // Specs a cancelled run never finished are counted as failed, and its server can
+    // be torn down under the steps that still run: none of that says anything about
+    // the change. Report the cancel, not failures.
+    if (cancelled) {
+        return {
+            state: 'error',
+            description: `E2E run cancelled before it finished (${stats.passed || 0} passed by then) · re-run E2E`.slice(0, 140),
+            both_terminal: bothTerminal,
+            timed_out: false,
+        };
+    }
     if (bothTerminal) {
         const clean = (stats.failed || 0) === 0 && detail.status === 'completed' && upstreamSucceeded;
         const passed = stats.passed || 0;
@@ -193,7 +205,17 @@ const TRIAGE_CHECK_CONTEXT = 'e2e-test/triage';
  *
  * @returns {{state: string, context: string, description: string, target_url: string} | null}
  */
-function triageAnnouncement({announce, state, overrideApplied, failed, runUrl}) {
+function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, cancelled = false}) {
+    // A cancelled run is not triaged (e2e-detox-pr.yml skips tsio-triage), so the
+    // check says so instead of waiting for a verdict that will never come.
+    if (announce && cancelled) {
+        return {
+            state: 'error',
+            context: TRIAGE_CHECK_CONTEXT,
+            description: 'E2E run cancelled before triage · re-run E2E',
+            target_url: runUrl,
+        };
+    }
     if (!announce || state !== 'failure' || overrideApplied || !(failed > 0)) {
         return null;
     }
@@ -226,6 +248,7 @@ async function reportTsioStatus(options) {
         totalReportsExpected,
         commitStatusContext,
         upstreamJobsSucceeded = true,
+        cancelled = false,
         githubToken,
         e2eOverride = false,
         failOnTestFailures = true,
@@ -325,7 +348,7 @@ async function reportTsioStatus(options) {
     result.test_stats = detail.test_stats || {};
 
     const {state, description, both_terminal: bothTerminal, timed_out: timedOut} =
-        decideStatus(detail, upstreamJobsSucceeded);
+        decideStatus(detail, upstreamJobsSucceeded, cancelled);
     result.timed_out = timedOut;
     result.state = state;
 
@@ -344,6 +367,7 @@ async function reportTsioStatus(options) {
         failed: result.test_stats.failed || 0,
         context: commitStatusContext,
         runUrl,
+        cancelled,
     });
     if (announcement) {
         // Best effort: the required status above is what gates the PR.
@@ -544,6 +568,7 @@ async function main() {
             totalReportsExpected,
             commitStatusContext: context,
             upstreamJobsSucceeded: upstreamSucceeded,
+            cancelled: args.cancelled === 'true',
             githubToken: args['github-token'] || process.env.GITHUB_TOKEN,
             e2eOverride: args['e2e-override'] === 'true',
             failOnTestFailures,
