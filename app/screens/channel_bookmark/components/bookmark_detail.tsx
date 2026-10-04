@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {navigateToScreen} from '@screens/navigation';
 import CallbackStore from '@store/callback_store';
+import {BOOKMARK_DISPLAY_NAME_MAX_LENGTH} from '@utils/channel_bookmark';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -119,6 +120,7 @@ const BookmarkDetail = ({disabled, emoji, file, imageUrl, setBookmarkDisplayName
                 </Button>
                 <TextInput
                     editable={!disabled}
+                    maxLength={BOOKMARK_DISPLAY_NAME_MAX_LENGTH}
                     onChangeText={setBookmarkDisplayName}
                     testID='channel_bookmark.add.title.input'
                     value={title}
