@@ -22,7 +22,8 @@ export async function loopInAgent(
         await client.doLoopInAgent(postId, botUsername);
         return {};
     } catch (error) {
-        logError('[loopInAgent]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[loopInAgent]', errorMessage);
+        return {error: errorMessage};
     }
 }

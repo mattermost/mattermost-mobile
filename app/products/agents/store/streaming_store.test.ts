@@ -187,27 +187,29 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.showReasoning).toBe(true);
         });
 
-        it('should set generating to false when isLoading is true', () => {
+        it('should keep generating true while reasoning loads', () => {
             const postId = 'post123';
             streamingStore.startStreaming(SERVER_URL, postId);
 
             streamingStore.updateReasoning(SERVER_URL, postId, 'Analyzing...', true);
 
             const state = streamingStore.getStreamingState(SERVER_URL, postId);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
             expect(state?.precontent).toBe(false);
         });
 
-        it('should preserve generating state when isLoading is false', () => {
+        it('should stay generating after the reasoning summary ends and tool calls follow', () => {
             const postId = 'post123';
             streamingStore.startStreaming(SERVER_URL, postId);
-            streamingStore.updateMessage(SERVER_URL, postId, 'Some text');
-
-            streamingStore.updateReasoning(SERVER_URL, postId, 'Reasoning complete', false);
+            streamingStore.updateReasoning(SERVER_URL, postId, 'Plan', true);
+            streamingStore.updateReasoning(SERVER_URL, postId, 'Plan', false);
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'a', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
 
             const state = streamingStore.getStreamingState(SERVER_URL, postId);
-            expect(state?.generating).toBe(true);
             expect(state?.isReasoningLoading).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should create state with reasoning flagged when the start event was missed', () => {
@@ -254,14 +256,14 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.toolCalls).toEqual([]);
         });
 
-        it('should create minimal state if post is not streaming', () => {
+        it('should create a generating state if start was missed', () => {
             const postId = 'post123';
             streamingStore.updateToolCalls(SERVER_URL, postId, '[]');
 
             const state = streamingStore.getStreamingState(SERVER_URL, postId);
             expect(state).toBeDefined();
             expect(state?.toolCalls).toEqual([]);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should merge additional tool rounds by id instead of replacing', () => {
@@ -301,6 +303,40 @@ describe('StreamingStoreSingleton', () => {
             // The early tool is preserved so the UI shows the approval card.
             expect(state?.toolCalls.map((t) => t.id)).toEqual(['a']);
             expect(state?.generating).toBe(true);
+        });
+
+        it('should carry tool metadata (would_auto_execute, mcp_bare_name, server_origin) through parse and merge', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {
+                    id: 'a',
+                    name: 'mattermost__read_post',
+                    description: '',
+                    arguments: {},
+                    status: ToolCallStatus.Pending,
+                    would_auto_execute: true,
+                    mcp_bare_name: 'read_post',
+                    server_origin: 'https://mcp.example.com',
+                },
+                {id: 'b', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Pending},
+            ]));
+
+            // A later status-only update for 'b' must not drop 'a' or its metadata.
+            streamingStore.updateToolCalls(SERVER_URL, postId, JSON.stringify([
+                {id: 'b', name: 'search', description: '', arguments: {}, status: ToolCallStatus.Accepted},
+            ]));
+
+            const state = streamingStore.getStreamingState(SERVER_URL, postId);
+            expect(state?.toolCalls).toHaveLength(2);
+            expect(state?.toolCalls[0]).toMatchObject({
+                id: 'a',
+                would_auto_execute: true,
+                mcp_bare_name: 'read_post',
+                server_origin: 'https://mcp.example.com',
+            });
+            expect(state?.toolCalls[1].status).toBe(ToolCallStatus.Accepted);
         });
 
         it('should update existing tools in place when a later event changes their status', () => {
@@ -429,6 +465,15 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.annotations).toEqual([]);
         });
 
+        it('should ignore a payload that is valid JSON but not a list', () => {
+            const postId = 'post123';
+            streamingStore.startStreaming(SERVER_URL, postId);
+
+            streamingStore.updateAnnotations(SERVER_URL, postId, 'null');
+
+            expect(streamingStore.getStreamingState(SERVER_URL, postId)?.annotations).toEqual([]);
+        });
+
         it('should create state with annotations when the start event was missed', () => {
             const postId = 'post123';
             const annotations: Annotation[] = [
@@ -511,7 +556,7 @@ describe('StreamingStoreSingleton', () => {
             expect(state?.reasoning).toBe('Thinking step 1...');
             expect(state?.isReasoningLoading).toBe(true);
             expect(state?.showReasoning).toBe(true);
-            expect(state?.generating).toBe(false);
+            expect(state?.generating).toBe(true);
         });
 
         it('should handle REASONING_SUMMARY_DONE with reasoning text', () => {
@@ -629,6 +674,73 @@ describe('StreamingStoreSingleton', () => {
 
             // Nothing should be created
             expect(streamingStore.getStreamingState(SERVER_URL, '')).toBeUndefined();
+        });
+    });
+
+    describe('server_tool control signal', () => {
+        const webSearch = (status: string) => JSON.stringify([{id: 'srv1', tool: 'web_search', status, query: 'q'}]);
+
+        it('should replace the current round activity with each cumulative snapshot', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('in_progress')});
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('success')});
+
+            const state = streamingStore.getStreamingState(SERVER_URL, 'post1');
+            expect(state?.serverTools).toHaveLength(1);
+            expect(state?.serverTools[0].status).toBe('success');
+            expect(state?.precontent).toBe(false);
+        });
+
+        it('should snapshot the activity with its round when the tool round resolves', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: webSearch('success')});
+            streamingStore.handleWebSocketMessage(SERVER_URL, {
+                post_id: 'post1',
+                control: CONTROL_SIGNALS.TOOL_CALL,
+                tool_call: JSON.stringify([{id: 'tc1', name: 'tool', description: '', arguments: {}, status: ToolCallStatus.Success}]),
+            });
+
+            const state = streamingStore.getStreamingState(SERVER_URL, 'post1');
+            expect(state?.rounds).toHaveLength(1);
+            expect(state?.rounds[0].serverTools.map((t) => t.id)).toEqual(['srv1']);
+            expect(state?.serverTools).toEqual([]);
+        });
+
+        it('should ignore a payload that is not an array', () => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.SERVER_TOOL, server_tool: '{"id":"x"}'});
+
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')).toBeUndefined();
+        });
+    });
+
+    describe('progress control signal', () => {
+        const sendProgress = (phase: string, seq: number) => {
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.PROGRESS, progress_phase: phase, progress_seq: seq});
+        };
+
+        it('should track setup phases in order and keep the phase through start', () => {
+            sendProgress('checking_mcp', 1);
+            sendProgress('preparing_request', 3);
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('preparing_request');
+
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', control: CONTROL_SIGNALS.START});
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('preparing_request');
+        });
+
+        it('should ignore stale, mismatched and unknown phases', () => {
+            sendProgress('loading_conversation', 2);
+            sendProgress('checking_mcp', 1);
+            sendProgress('connecting_provider', 3);
+            sendProgress('unknown_phase', 5);
+
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBe('loading_conversation');
+        });
+
+        it('should clear the phase on content and ignore progress afterwards', () => {
+            sendProgress('checking_mcp', 1);
+            streamingStore.handleWebSocketMessage(SERVER_URL, {post_id: 'post1', next: 'Hello'});
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBeNull();
+
+            sendProgress('connecting_provider', 4);
+            expect(streamingStore.getStreamingState(SERVER_URL, 'post1')?.progressPhase).toBeNull();
         });
     });
 

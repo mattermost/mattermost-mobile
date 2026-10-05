@@ -50,7 +50,7 @@ describe('stopGeneration', () => {
 
         const result = await stopGeneration(serverUrl, postId);
 
-        expect(logError).toHaveBeenCalledWith('[stopGeneration]', error);
+        expect(logError).toHaveBeenCalledWith('[stopGeneration]', errorMessage);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });
@@ -76,7 +76,7 @@ describe('regenerateResponse', () => {
 
         const result = await regenerateResponse(serverUrl, postId);
 
-        expect(logError).toHaveBeenCalledWith('[regenerateResponse]', error);
+        expect(logError).toHaveBeenCalledWith('[regenerateResponse]', errorMessage);
         expect(getFullErrorMessage).toHaveBeenCalledWith(error);
         expect(result).toEqual({error: errorMessage});
     });

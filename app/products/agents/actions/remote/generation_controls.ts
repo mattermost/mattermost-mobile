@@ -20,8 +20,9 @@ export async function stopGeneration(
         await client.stopGeneration(postId);
         return {};
     } catch (error) {
-        logError('[stopGeneration]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[stopGeneration]', errorMessage);
+        return {error: errorMessage};
     }
 }
 
@@ -40,7 +41,8 @@ export async function regenerateResponse(
         await client.regenerateResponse(postId);
         return {};
     } catch (error) {
-        logError('[regenerateResponse]', error);
-        return {error: getFullErrorMessage(error)};
+        const errorMessage = getFullErrorMessage(error);
+        logError('[regenerateResponse]', errorMessage);
+        return {error: errorMessage};
     }
 }

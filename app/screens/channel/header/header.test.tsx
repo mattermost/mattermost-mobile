@@ -65,6 +65,7 @@ describe('ChannelHeader', () => {
             isPlaybooksEnabled: true,
             isChannelAutotranslated: false,
             channelAttributes: [],
+            canAskAgents: false,
         };
     }
 

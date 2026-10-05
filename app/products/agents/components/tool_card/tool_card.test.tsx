@@ -43,6 +43,7 @@ describe('ToolCard', () => {
         onApprove: jest.fn(),
         onReject: jest.fn(),
         approvalStage: ToolApprovalStage.Call,
+        unsafeLinks: false,
     });
 
     describe('tool name display', () => {
@@ -68,6 +69,42 @@ describe('ToolCard', () => {
             const {getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(getByText('Get User Profile Data')).toBeTruthy();
+        });
+
+        it('should prefer mcp_bare_name over the namespaced wire name for MCP tools', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'mattermost__read_post', mcp_bare_name: 'read_post'});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Read Post')).toBeTruthy();
+            expect(queryByText('Mattermost  Read Post')).toBeNull();
+        });
+
+        it('should show the MCP-declared title verbatim when the tool provides one', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'github__list_prs', mcp_bare_name: 'list_prs', title: 'List pull requests'});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('List pull requests')).toBeTruthy();
+            expect(queryByText('List Prs')).toBeNull();
+        });
+
+        it('should strip the MCP namespace prefix from the wire name when mcp_bare_name is absent', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'mattermost__get_me'});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Get Me')).toBeTruthy();
+            expect(queryByText('Mattermost  Get Me')).toBeNull();
+        });
+
+        it('should strip the MCP namespace prefix when mcp_bare_name is redacted to an empty string', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({name: 'mattermost__read_post', mcp_bare_name: ''});
+            const {getByText, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByText('Read Post')).toBeTruthy();
+            expect(queryByText('Mattermost  Read Post')).toBeNull();
         });
     });
 
@@ -175,15 +212,6 @@ describe('ToolCard', () => {
             expect(getByText('Rejected')).toBeTruthy();
         });
 
-        it('should offer only Reject for a pending call that cannot be accepted from the card', () => {
-            const props = {...getBaseProps(), onApprove: undefined};
-            props.tool = createMockTool({status: ToolCallStatus.Pending});
-            const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
-
-            expect(getByTestId('agents.tool_card.tool-123.reject')).toBeTruthy();
-            expect(queryByTestId('agents.tool_card.tool-123.approve')).toBeNull();
-        });
-
         it('should show processing text when pending and processing', () => {
             const props = getBaseProps();
             props.tool = createMockTool({status: ToolCallStatus.Pending});
@@ -254,30 +282,24 @@ describe('ToolCard', () => {
     });
 
     describe('arguments rendering', () => {
-        it('should fall back to an empty object when arguments is undefined so "undefined" never leaks into the code block', () => {
+        it('should render a "No parameters required" line instead of a {} code block for empty arguments', () => {
             const props = getBaseProps();
-            props.tool = createMockTool({arguments: undefined as unknown as ToolCall['arguments']});
+            props.tool = createMockTool({arguments: {}});
             props.isCollapsed = false;
-            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+            const {getByText, queryAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            const markdowns = getAllByTestId('mock-markdown');
-            expect(markdowns).toHaveLength(1);
-            const argumentsText = markdowns[0].props.children;
-            expect(argumentsText).toContain('{}');
-            expect(argumentsText).not.toContain('undefined');
+            expect(getByText('No parameters required')).toBeTruthy();
+            expect(queryAllByTestId('mock-markdown')).toHaveLength(0);
         });
 
-        it('should fall back to an empty object when arguments is null (server redacted for non-requester)', () => {
+        it('should render no arguments section when arguments is null (server redacted for non-requester)', () => {
             const props = getBaseProps();
             props.tool = createMockTool({arguments: null as unknown as ToolCall['arguments']});
             props.isCollapsed = false;
-            const {getAllByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+            const {queryAllByTestId, queryByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
-            const markdowns = getAllByTestId('mock-markdown');
-            expect(markdowns).toHaveLength(1);
-            const argumentsText = markdowns[0].props.children;
-            expect(argumentsText).toContain('{}');
-            expect(argumentsText).not.toContain('null');
+            expect(queryAllByTestId('mock-markdown')).toHaveLength(0);
+            expect(queryByText('No parameters required')).toBeNull();
         });
     });
 

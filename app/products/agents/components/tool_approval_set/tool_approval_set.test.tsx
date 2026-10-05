@@ -66,6 +66,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -95,6 +96,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -119,6 +121,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -142,6 +145,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -167,6 +171,7 @@ describe('ToolApprovalSet — tool card expansion (Bug #3)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -191,6 +196,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -214,6 +220,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -238,6 +245,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -261,6 +269,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />
         );
         const pending = makeTool({id: 'a', status: ToolCallStatus.Pending, result: undefined});
@@ -285,6 +294,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -308,6 +318,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -330,6 +341,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -350,6 +362,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -376,6 +389,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -405,6 +419,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -429,6 +444,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -457,6 +473,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />
         );
 
@@ -499,6 +516,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -535,6 +553,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -562,6 +581,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />
         );
 
@@ -597,6 +617,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -621,6 +642,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -639,6 +661,7 @@ describe('ToolApprovalSet — batch decisions (B10) and canApprove gating (C1)',
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
 
@@ -675,6 +698,7 @@ describe('ToolApprovalSet — question cards (AskUserQuestion)', () => {
                 canExpand={true}
                 showArguments={true}
                 showResults={true}
+                unsafeLinks={false}
             />,
         );
     }

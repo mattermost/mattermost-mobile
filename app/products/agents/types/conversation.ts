@@ -10,6 +10,7 @@ export const BlockType = {
     File: 'file',
     Image: 'image',
     Annotations: 'annotations',
+    ServerToolUse: 'server_tool_use',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
@@ -26,6 +27,38 @@ export const ToolCallStatusString = {
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type ToolCallStatusString = typeof ToolCallStatusString[keyof typeof ToolCallStatusString];
+
+export const ServerToolStatus = {
+    InProgress: 'in_progress',
+    Success: 'success',
+    Error: 'error',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export type ServerToolStatus = typeof ServerToolStatus[keyof typeof ServerToolStatus];
+
+export const ServerToolName = {
+    WebSearch: 'web_search',
+    WebFetch: 'web_fetch',
+    CodeInterpreter: 'code_interpreter',
+} as const;
+
+/**
+ * A provider-executed tool invocation (e.g. web search or sandbox code run).
+ * Informational only: there is no approval flow. Mirrors llm.ServerToolUse.
+ */
+export interface ServerToolUse {
+    id: string;
+    tool: string;
+    status: ServerToolStatus;
+    query?: string;
+    url?: string;
+    title?: string;
+    sub_tool?: string;
+    command?: string;
+    output?: string;
+    error_code?: string;
+}
 
 export interface Citation {
     type: string;
@@ -51,8 +84,11 @@ export interface ContentBlock {
 
     id?: string;
     name?: string;
+    title?: string;
+    description?: string;
     server_origin?: string;
     input?: Record<string, unknown> | null;
+    mcp_bare_name?: string;
     status?: ToolCallStatusString;
     shared?: boolean;
 
@@ -61,6 +97,8 @@ export interface ContentBlock {
     user_interaction?: string;
 
     // Marks a pending tool_use block that passed the auto-execution policy.
+    // The client must not show approval controls for it; the server re-checks
+    // the policy before executing it on resume.
     would_auto_execute?: boolean;
 
     tool_use_id?: string;
@@ -74,6 +112,8 @@ export interface ContentBlock {
     file_id?: string;
 
     web_search_context?: WebSearchContext;
+
+    server_tool?: ServerToolUse;
 }
 
 export type TurnRole = 'user' | 'assistant' | 'tool_result';

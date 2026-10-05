@@ -1,0 +1,43 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import DatabaseManager from '@database/manager';
+import NetworkManager from '@managers/network_manager';
+import {getMyChannel} from '@queries/servers/channel';
+
+import {requestChannelInterval} from './channel_interval';
+
+jest.mock('@actions/remote/channel');
+jest.mock('@managers/network_manager');
+jest.mock('@database/manager', () => ({
+    getServerDatabaseAndOperator: jest.fn(),
+}));
+jest.mock('@queries/servers/channel');
+
+describe('requestChannelInterval', () => {
+    const serverUrl = 'https://server.example.com';
+    const channelId = 'channel-id';
+    const lastViewedAt = 1723000000000;
+    const botUsername = 'ai-bot';
+
+    beforeEach(() => {
+        jest.resetAllMocks();
+        jest.mocked(switchToChannelById).mockResolvedValue({});
+        jest.mocked(DatabaseManager.getServerDatabaseAndOperator).mockReturnValue({database: {}} as any);
+    });
+
+    it('should request the interval and switch to the returned bot DM on success', async () => {
+        const doChannelInterval = jest.fn().mockResolvedValue({postid: 'dm-post-id', channelid: 'dm-id'});
+        jest.mocked(NetworkManager.getClient).mockReturnValue({doChannelInterval} as any);
+        jest.mocked(getMyChannel).mockResolvedValue({id: 'dm-id'} as any);
+
+        const result = await requestChannelInterval(serverUrl, channelId, lastViewedAt, 'summarize_unreads', botUsername);
+
+        expect(doChannelInterval).toHaveBeenCalledWith(channelId, lastViewedAt, 'summarize_unreads', botUsername);
+        expect(fetchMyChannel).not.toHaveBeenCalled();
+        expect(switchToChannelById).toHaveBeenCalledWith(serverUrl, 'dm-id');
+        expect(result.error).toBeUndefined();
+        expect(result.data).toEqual({postid: 'dm-post-id', channelid: 'dm-id'});
+    });
+});

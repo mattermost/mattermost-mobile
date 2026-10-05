@@ -3,8 +3,6 @@
 
 import {BehaviorSubject} from 'rxjs';
 
-import type {Agent} from '@agents/types';
-
 /**
  * Rewrite processing state
  */
@@ -17,49 +15,7 @@ export interface RewriteState {
  * Store for managing rewrite-related ephemeral state
  */
 class RewriteStore {
-    private agentsSubjects: Map<string, BehaviorSubject<Agent[]>> = new Map();
     private rewriteState = new BehaviorSubject<RewriteState>({isProcessing: false, serverUrl: ''});
-
-    /**
-     * Get or create a BehaviorSubject for agents per server
-     */
-    private getAgentsSubject(serverUrl: string): BehaviorSubject<Agent[]> {
-        let subject = this.agentsSubjects.get(serverUrl);
-        if (!subject) {
-            subject = new BehaviorSubject<Agent[]>([]);
-            this.agentsSubjects.set(serverUrl, subject);
-        }
-        return subject;
-    }
-
-    // =========================================================================
-    // Agents Management
-    // =========================================================================
-
-    /**
-     * Observe agents for a server (reactive)
-     */
-    observeAgents(serverUrl: string) {
-        return this.getAgentsSubject(serverUrl).asObservable();
-    }
-
-    /**
-     * Set agents for a server
-     */
-    setAgents(serverUrl: string, agents: Agent[]) {
-        this.getAgentsSubject(serverUrl).next(agents);
-    }
-
-    /**
-     * Get current agents for a server (synchronous)
-     */
-    getAgents(serverUrl: string): Agent[] {
-        return this.getAgentsSubject(serverUrl).getValue();
-    }
-
-    // =========================================================================
-    // Rewrite Processing State
-    // =========================================================================
 
     /**
      * Observe rewrite processing state (reactive)

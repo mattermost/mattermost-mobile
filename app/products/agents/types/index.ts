@@ -1,6 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {ProgressPhase} from '@agents/constants';
+import type {ServerToolUse} from '@agents/types/conversation';
+
 /**
  * Tool call status values
  */
@@ -57,6 +60,17 @@ export interface ToolCall {
     result?: string;
     status: ToolCallStatus;
 
+    // MCP-declared display name; preferred over the prettified tool name.
+    title?: string;
+
+    // Identifies the MCP server the tool came from (omitempty on the server;
+    // present only for MCP tools).
+    server_origin?: string;
+
+    // Bare tool name without the MCP server namespace prefix; preferred for
+    // display when present. Redacted (empty) for non-requesters.
+    mcp_bare_name?: string;
+
     // Non-empty for tools answered by the user instead of executed by the
     // server (e.g. AskUserQuestion).
     user_interaction?: string;
@@ -73,14 +87,15 @@ export interface ToolCall {
 }
 
 /**
- * Citation/annotation data structure
+ * Citation/annotation data structure. `url`/`title` are optional because
+ * web-search annotations persisted by the plugin may omit them.
  */
 export interface Annotation {
     type: string;
     start_index: number;
     end_index: number;
-    url: string;
-    title: string;
+    url?: string;
+    title?: string;
     cited_text?: string;
     index: number;
 }
@@ -103,6 +118,9 @@ export interface Round {
     toolCalls: ToolCall[];
     reasoning: Reasoning;
     annotations: Annotation[];
+
+    // Provider-executed activity; renders between reasoning and text.
+    serverTools: ServerToolUse[];
 }
 
 /**
@@ -111,10 +129,13 @@ export interface Round {
 export interface PostUpdateWebsocketMessage {
     post_id: string;
     next?: string; // Full accumulated message text
-    control?: string; // Control signals: 'start', 'end', 'cancel', 'continue', 'reasoning_summary', 'reasoning_summary_done', 'tool_call', 'annotations'
+    control?: string; // One of CONTROL_SIGNALS
     tool_call?: string; // JSON-encoded tool calls
     reasoning?: string; // Reasoning summary text
     annotations?: string; // JSON-encoded citations
+    server_tool?: string; // JSON-encoded cumulative ServerToolUse[] for the current round
+    progress_phase?: string;
+    progress_seq?: number;
 }
 
 /**
@@ -130,35 +151,30 @@ export interface StreamingState {
     showReasoning: boolean; // True if reasoning should be displayed
     toolCalls: ToolCall[]; // Tool calls pending approval or processed (current round)
     annotations: Annotation[]; // Citations/annotations for the post (current round)
+    serverTools: ServerToolUse[]; // Provider-executed activity (current round)
     rounds: Round[]; // Completed rounds snapshotted as each tool round resolves
     stopped: boolean; // True after the user taps Stop; suppresses late `next` events
     continueSeq: number; // Bumped on a tool-approval `continue` resume to trigger a refetch
+    progressPhase: ProgressPhase | null; // Latest pre-stream setup phase; cleared once content arrives
 }
 
 // Normalised mobile shape: `id` is always the root post id (see fetchAIThreads).
 export interface AIThread {
     id: string;
-    message: string;
     title: string;
     channel_id: string;
-    reply_count: number;
+    turn_count: number;
     update_at: number;
-
-    // Raw plugin >= 2.0 fields, surfaced for callers that need them.
-    root_post_id?: string | null;
-    bot_id?: string;
 }
 
-// Wire-format AI thread before normalisation. plugin < 2.0 omits root_post_id.
+// Wire-format AI thread before normalisation.
 export type RawAIThread = {
     id: string;
-    message?: string;
     title?: string;
     channel_id?: string | null;
-    reply_count?: number;
+    turn_count?: number;
     update_at?: number;
     root_post_id?: string | null;
-    bot_id?: string;
 };
 
 /**
@@ -195,14 +211,27 @@ export interface LLMBot {
     lastIconUpdate: number;
     dmChannelID: string;
     channelAccessLevel: ChannelAccessLevel;
-    channelIDs: string[];
-    userAccessLevel: UserAccessLevel;
-    userIDs: string[];
-    teamIDs: string[];
 
-    // System-wide default bot flag. Absent on older servers.
-    is_default?: boolean;
+    // Go marshals empty lists as null.
+    channelIDs: string[] | null;
+    userAccessLevel: UserAccessLevel;
+    userIDs: string[] | null;
+
+    // System-wide default bot flag. Sent as camelCase `isDefault` with
+    // omitempty by the plugin, so it is absent when false.
+    isDefault?: boolean;
 }
+
+/**
+ * Minimal serialisable agent identity used by agent selector flows. AiBot
+ * records satisfy this shape structurally; map to plain objects when agent
+ * data must cross navigation params.
+ */
+export type SelectableAgent = {
+    id: string;
+    displayName: string;
+    username: string;
+};
 
 /**
  * AI Bots response from the server
@@ -215,15 +244,16 @@ export interface AIBotsResponse {
 
 export {
     BlockType,
+    ServerToolName,
+    ServerToolStatus,
     ToolCallStatusString,
     type Citation,
     type ContentBlock,
+    type ServerToolUse,
     type ConversationResponse,
     type Turn,
     type TurnRole,
     type WebSearchContext,
 } from './conversation';
-
-export type {Agent} from './api';
 
 export type RewriteAction = 'shorten' | 'elaborate' | 'improve_writing' | 'fix_spelling' | 'simplify' | 'summarize' | 'custom';

@@ -193,3 +193,65 @@ describe('ephemeral post header', () => {
         expect(Avatar).not.toHaveBeenCalled();
     });
 });
+
+describe('agent post routing', () => {
+    let database: Database;
+
+    function getBaseProps(): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location: Screens.CHANNEL,
+            post: TestHelper.fakePostModel({message: 'regular post'}),
+            isLastPost: false,
+            isChannelAutotranslated: false,
+        };
+    }
+
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeEach(async () => {
+        const client = await NetworkManager.createClient(serverUrl);
+        expect(client).toBeTruthy();
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should route agent posts through Body with the isAgentPost flag', async () => {
+        const props = getBaseProps();
+        props.post = TestHelper.fakePostModel({type: 'custom_llmbot'});
+
+        renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(Body).toHaveBeenCalled();
+        });
+        expect(jest.mocked(Body).mock.calls[0][0]).toEqual(expect.objectContaining({
+            isAgentPost: true,
+            post: props.post,
+        }));
+    });
+
+    it('should route regular posts through Body without the isAgentPost flag', async () => {
+        renderWithEverything(<Post {...getBaseProps()}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(Body).toHaveBeenCalled();
+        });
+        expect(jest.mocked(Body).mock.calls[0][0]).toEqual(expect.objectContaining({
+            isAgentPost: false,
+        }));
+    });
+});

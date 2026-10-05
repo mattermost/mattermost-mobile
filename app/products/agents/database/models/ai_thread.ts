@@ -28,17 +28,14 @@ export default class AiThreadModel extends Model implements AiThreadModelInterfa
         [CHANNEL]: {type: 'belongs_to', key: 'channel_id'},
     };
 
-    /** message : The preview message text */
-    @field('message') message!: string;
-
     /** title : The thread title */
     @field('title') title!: string;
 
     /** channel_id : Foreign key to the DM channel with the bot */
     @field('channel_id') channelId!: string;
 
-    /** reply_count : Number of replies in the thread */
-    @field('reply_count') replyCount!: number;
+    /** turn_count : Number of assistant turns in the conversation */
+    @field('turn_count') turnCount!: number;
 
     /** update_at : Timestamp when the thread was last updated */
     @field('update_at') updateAt!: number;

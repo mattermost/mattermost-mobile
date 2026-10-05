@@ -3,7 +3,7 @@
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 
-import {observeSelectedAgentId} from '@agents/queries/agents';
+import {observeAgentSelectionProps} from '@agents/queries/agents';
 
 import RewriteOptions, {type updateValueFn} from './rewrite_options';
 
@@ -11,8 +11,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 export type {updateValueFn};
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    selectedAgentId: observeSelectedAgentId(database),
-}));
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => observeAgentSelectionProps(database));
 
 export default withDatabase(enhanced(RewriteOptions));

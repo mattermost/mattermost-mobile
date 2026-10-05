@@ -4,8 +4,9 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject, type Observable} from 'rxjs';
 
-import {CONTROL_SIGNALS} from '@agents/constants';
-import {ToolCallStatus, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ToolCall} from '@agents/types';
+import {CONTROL_SIGNALS, PROGRESS_PHASES, type ProgressPhase} from '@agents/constants';
+import {ToolCallStatus, type Annotation, type StreamingState, type PostUpdateWebsocketMessage, type Round, type ServerToolUse, type ToolCall} from '@agents/types';
+import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 
 // A round resolves once every tool in the current round reaches a terminal
@@ -23,10 +24,17 @@ function isResolvedToolCallEvent(toolCalls: ToolCall[]): boolean {
     );
 }
 
+function hasStreamedContent(state: StreamingState): boolean {
+    return state.message !== '' ||
+        state.reasoning !== '' ||
+        state.toolCalls.length > 0 ||
+        state.annotations.length > 0 ||
+        state.serverTools.length > 0 ||
+        state.rounds.length > 0;
+}
+
 // Merge incoming tool calls into the existing list by id: update in place when
 // the id is known (status transitions), append when new, preserving order.
-// Named distinctly from the unrelated `mergeToolCalls` in @agents/utils (which
-// merges public + private redaction data) to avoid conflating the two.
 function mergeToolCallsById(existing: ToolCall[], incoming: ToolCall[]): ToolCall[] {
     const byId = new Map<string, number>();
     const merged = [...existing];
@@ -67,15 +75,7 @@ class StreamingStoreSingleton {
     // would drop pending-approval state. Regenerate paths clear state explicitly.
     startStreaming = (serverUrl: string, postId: string): void => {
         const existing = this.getStreamingState(serverUrl, postId);
-        const hasEarlyContent = Boolean(
-            existing && (
-                existing.toolCalls.length > 0 ||
-                existing.annotations.length > 0 ||
-                existing.rounds.length > 0 ||
-                existing.message !== '' ||
-                existing.reasoning !== ''
-            ),
-        );
+        const hasEarlyContent = existing ? hasStreamedContent(existing) : false;
 
         const state: StreamingState = {
             postId,
@@ -87,9 +87,11 @@ class StreamingStoreSingleton {
             showReasoning: existing?.showReasoning ?? false,
             toolCalls: existing?.toolCalls ?? [],
             annotations: existing?.annotations ?? [],
+            serverTools: existing?.serverTools ?? [],
             rounds: existing?.rounds ?? [],
             stopped: false,
             continueSeq: existing?.continueSeq ?? 0,
+            progressPhase: existing?.progressPhase ?? null,
         };
 
         this.getSubject(serverUrl, postId).next(state);
@@ -108,9 +110,11 @@ class StreamingStoreSingleton {
             showReasoning: false,
             toolCalls: [],
             annotations: [],
+            serverTools: [],
             rounds: [],
             stopped: false,
             continueSeq: 0,
+            progressPhase: null,
         };
     };
 
@@ -129,9 +133,11 @@ class StreamingStoreSingleton {
             showReasoning: false,
             toolCalls: [],
             annotations: [],
+            serverTools: [],
             rounds: [],
             stopped: false,
             continueSeq: (existing?.continueSeq ?? 0) + 1,
+            progressPhase: null,
         });
     };
 
@@ -161,6 +167,7 @@ class StreamingStoreSingleton {
             message,
             precontent: false,
             generating: true,
+            progressPhase: null,
         });
     };
 
@@ -178,23 +185,23 @@ class StreamingStoreSingleton {
             precontent: false,
             isReasoningLoading: false,
             stopped: false,
+            progressPhase: null,
         });
     };
 
+    // Every content event marks the stream as generating (webapp parity); the
+    // renderer hides the cursor while reasoning is loading.
     updateReasoning = (serverUrl: string, postId: string, reasoning: string, isLoading: boolean): void => {
         const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
-
-        // While reasoning, generating is false to suppress the blinking cursor.
-        const generating = isLoading ? false : state.generating;
-        const precontent = isLoading ? false : state.precontent;
 
         this.getSubject(serverUrl, postId).next({
             ...state,
             reasoning,
             isReasoningLoading: isLoading,
             showReasoning: true,
-            generating,
-            precontent,
+            generating: true,
+            precontent: false,
+            progressPhase: null,
         });
     };
 
@@ -205,59 +212,104 @@ class StreamingStoreSingleton {
     updateToolCalls = (serverUrl: string, postId: string, toolCallsJson: string): void => {
         const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
 
-        try {
-            const parsedToolCalls = JSON.parse(toolCallsJson) as ToolCall[];
-            const merged = mergeToolCallsById(state.toolCalls, parsedToolCalls);
+        const parsedToolCalls = safeParseJSON(toolCallsJson);
+        if (!Array.isArray(parsedToolCalls)) {
+            logWarning('[StreamingStoreSingleton.updateToolCalls] payload is not an array', {serverUrl, postId, length: toolCallsJson.length});
+            return;
+        }
 
-            if (isResolvedToolCallEvent(merged)) {
-                const round: Round = {
-                    id: `live-${state.rounds.length}`,
-                    text: state.message,
-                    toolCalls: merged,
-                    reasoning: {summary: state.reasoning, signature: ''},
-                    annotations: state.annotations,
-                };
-                this.getSubject(serverUrl, postId).next({
-                    ...state,
-                    rounds: [...state.rounds, round],
-                    message: '',
-                    reasoning: '',
-                    isReasoningLoading: false,
-                    showReasoning: false,
-                    toolCalls: [],
-                    annotations: [],
-                    precontent: false,
-                });
-                return;
-            }
-
+        const merged = mergeToolCallsById(state.toolCalls, parsedToolCalls as ToolCall[]);
+        if (isResolvedToolCallEvent(merged)) {
+            const round: Round = {
+                id: `live-${state.rounds.length}`,
+                text: state.message,
+                toolCalls: merged,
+                reasoning: {summary: state.reasoning, signature: ''},
+                annotations: state.annotations,
+                serverTools: state.serverTools,
+            };
             this.getSubject(serverUrl, postId).next({
                 ...state,
-                toolCalls: merged,
+                rounds: [...state.rounds, round],
+                message: '',
+                reasoning: '',
+                isReasoningLoading: false,
+                showReasoning: false,
+                toolCalls: [],
+                annotations: [],
+                serverTools: [],
+                generating: true,
                 precontent: false,
+                progressPhase: null,
             });
-        } catch (error) {
-            logWarning('[StreamingStoreSingleton.updateToolCalls]', error, {serverUrl, postId, toolCallsJson});
+            return;
         }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            toolCalls: merged,
+            generating: true,
+            precontent: false,
+            progressPhase: null,
+        });
     };
 
     updateAnnotations = (serverUrl: string, postId: string, annotationsJson: string): void => {
         const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
 
-        try {
-            const annotations = JSON.parse(annotationsJson);
-            this.getSubject(serverUrl, postId).next({
-                ...state,
-                annotations,
-                precontent: false,
-            });
-        } catch (error) {
-            logWarning('[StreamingStoreSingleton.updateAnnotations]', error, {serverUrl, postId, annotationsJson});
+        const annotations = safeParseJSON(annotationsJson);
+        if (!Array.isArray(annotations)) {
+            logWarning('[StreamingStoreSingleton.updateAnnotations] payload is not an array', {serverUrl, postId, length: annotationsJson.length});
+            return;
         }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            annotations: annotations as Annotation[],
+            generating: true,
+            precontent: false,
+            progressPhase: null,
+        });
+    };
+
+    // Each event carries the cumulative activity for the current round, so it
+    // replaces the previous list rather than merging into it.
+    updateServerTools = (serverUrl: string, postId: string, serverToolsJson: string): void => {
+        const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
+        const serverTools = safeParseJSON(serverToolsJson);
+        if (!Array.isArray(serverTools)) {
+            logWarning('[StreamingStoreSingleton.updateServerTools] payload is not an array', {serverUrl, postId});
+            return;
+        }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            serverTools: serverTools as ServerToolUse[],
+            generating: true,
+            precontent: false,
+            progressPhase: null,
+        });
+    };
+
+    // Pre-stream setup progress. Phases only move forward and stop mattering
+    // once the response produces content (webapp llmbot_post parity).
+    updateProgress = (serverUrl: string, postId: string, phase: string | undefined, sequence: number | undefined): void => {
+        const state = this.getStreamingState(serverUrl, postId) ?? this.makeDefaultState(postId);
+        const phaseSequence = PROGRESS_PHASES.indexOf(phase as ProgressPhase) + 1;
+        const currentSequence = state.progressPhase ? PROGRESS_PHASES.indexOf(state.progressPhase) + 1 : 0;
+        if (phaseSequence === 0 || sequence !== phaseSequence || phaseSequence <= currentSequence || hasStreamedContent(state)) {
+            logDebug('[StreamingStoreSingleton.updateProgress] ignoring progress event', {postId, phase, sequence});
+            return;
+        }
+
+        this.getSubject(serverUrl, postId).next({
+            ...state,
+            progressPhase: PROGRESS_PHASES[phaseSequence - 1],
+        });
     };
 
     handleWebSocketMessage = (serverUrl: string, data: PostUpdateWebsocketMessage): void => {
-        const {post_id, next, control, reasoning, tool_call, annotations} = data;
+        const {post_id, next, control, reasoning, tool_call, annotations, server_tool} = data;
 
         if (!post_id) {
             return;
@@ -284,6 +336,11 @@ class StreamingStoreSingleton {
         // signals handled above clears the stopped flag.
         if (this.getStreamingState(serverUrl, post_id)?.stopped) {
             logDebug('[StreamingStoreSingleton.handleWebSocketMessage] ignoring event while stopped', {serverUrl, postId: post_id, control});
+            return;
+        }
+
+        if (control === CONTROL_SIGNALS.PROGRESS) {
+            this.updateProgress(serverUrl, post_id, data.progress_phase, data.progress_seq);
             return;
         }
 
@@ -321,6 +378,11 @@ class StreamingStoreSingleton {
         // Handle annotation events
         if (control === CONTROL_SIGNALS.ANNOTATIONS && annotations) {
             this.updateAnnotations(serverUrl, post_id, annotations);
+            return;
+        }
+
+        if (control === CONTROL_SIGNALS.SERVER_TOOL && server_tool) {
+            this.updateServerTools(serverUrl, post_id, server_tool);
             return;
         }
 

@@ -39,8 +39,8 @@ declare class AiBotModel extends Model {
     /** Array of user IDs the bot has access to */
     userIds: string[];
 
-    /** Array of team IDs the bot belongs to */
-    teamIds: string[];
+    /** Whether this bot is the system-wide default */
+    isDefault: boolean;
 }
 
 export default AiBotModel;

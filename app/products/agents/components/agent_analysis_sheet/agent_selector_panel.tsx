@@ -7,7 +7,7 @@ import {type ListRenderItemInfo, Pressable, View} from 'react-native';
 
 import {buildAbsoluteUrl} from '@actions/remote/file';
 import {buildProfileImageUrl} from '@actions/remote/user';
-import {type Agent} from '@agents/client/rest';
+import {type SelectableAgent} from '@agents/types';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -18,9 +18,9 @@ import {typography} from '@utils/typography';
 import AgentItem from './agent_item';
 
 type Props = {
-    agents: Agent[];
+    agents: SelectableAgent[];
     currentAgentUsername: string;
-    onSelectAgent: (agent: Agent) => void;
+    onSelectAgent: (agent: SelectableAgent) => void;
     onBack: () => void;
 };
 
@@ -77,9 +77,9 @@ const AgentSelectorPanel = ({
         return urls;
     }, [agents, serverUrl]);
 
-    const keyExtractor = useCallback((agent: Agent) => agent.id || agent.username, []);
+    const keyExtractor = useCallback((agent: SelectableAgent) => agent.id || agent.username, []);
 
-    const renderItem = useCallback(({item: agent}: ListRenderItemInfo<Agent>) => {
+    const renderItem = useCallback(({item: agent}: ListRenderItemInfo<SelectableAgent>) => {
         const profileImageUrl = agent.id ? agentImageUrls[agent.id] : undefined;
         return (
             <AgentItem
