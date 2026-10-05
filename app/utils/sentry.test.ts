@@ -118,6 +118,22 @@ describe('initializeSentry function', () => {
 
         expect(result).toEqual(event);
     });
+
+    it('should not enable tracing for production builds', () => {
+        jest.isolateModules(() => {
+            jest.doMock('@utils/general', () => ({isBetaApp: false}));
+            const IsolatedSentry = require('@sentry/react-native');
+            const {initializeSentry: initializeProductionSentry} = require('./sentry');
+
+            Config.SentryEnabled = true;
+            initializeProductionSentry();
+
+            const options = jest.mocked(IsolatedSentry.init).mock.calls[0][0];
+            expect(options.environment).toBe('production');
+            expect(options).not.toHaveProperty('tracesSampleRate');
+            expect(options.sampleRate).toBe(0.2);
+        });
+    });
 });
 
 describe('captureException function', () => {

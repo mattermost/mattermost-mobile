@@ -38,7 +38,7 @@ export function initializeSentry() {
 
     const mmConfig = {
         environment: isBetaApp ? 'beta' : 'production',
-        tracesSampleRate: isBetaApp ? 1.0 : 0.2,
+        ...(isBetaApp ? {tracesSampleRate: 1.0} : {}),
         sampleRate: isBetaApp ? 1.0 : 0.2,
         attachStacktrace: Boolean(isBetaApp), // For Beta, stack traces are automatically attached to all messages logged
     };
