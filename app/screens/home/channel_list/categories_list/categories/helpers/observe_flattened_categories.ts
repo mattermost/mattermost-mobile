@@ -21,6 +21,7 @@ import {
     getUnreadIds,
     sortChannels,
 } from '@utils/categories';
+import {shareLatest} from '@utils/observable';
 
 import {flattenCategories, type CategoryData, type FlattenedItem} from './flatten_categories';
 
@@ -55,17 +56,51 @@ const observeCategoryChannels = (category: CategoryModel, myChannels: Observable
     );
 };
 
+// Inputs that are identical for every category, created once and shared across all category pipelines
+type SharedCategoryInputs = {
+    currentChannelId: Observable<string>;
+    lastUnreadId: Observable<string | undefined>;
+    manuallyClosedPrefs: Observable<PreferenceModel[]>;
+    autoclosePrefs: Observable<PreferenceModel[]>;
+};
+
+const observeSharedCategoryInputs = (database: Database, isTablet: boolean): SharedCategoryInputs => {
+    const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
+    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database).pipe(shareLatest()) : of$(undefined);
+
+    const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']);
+    const hiddenGmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']);
+    const manuallyClosedPrefs = hiddenDmPrefs.pipe(
+        switchMap((dms) => combineLatest([of$(dms), hiddenGmPrefs])),
+        map(([dms, gms]) => dms.concat(gms)),
+        shareLatest(),
+    );
+
+    const approxViewTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, undefined).
+        observeWithColumns(['value']);
+    const openTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, undefined).
+        observeWithColumns(['value']);
+    const autoclosePrefs = approxViewTimePrefs.pipe(
+        switchMap((viewTimes) => combineLatest([of$(viewTimes), openTimePrefs])),
+        map(([viewTimes, openTimes]) => viewTimes.concat(openTimes)),
+        shareLatest(),
+    );
+
+    return {currentChannelId, lastUnreadId, manuallyClosedPrefs, autoclosePrefs};
+};
+
 const observeCategoryData = (
     category: CategoryModel,
     database: Database,
     currentUserId: string,
     locale: string,
-    isTablet: boolean,
+    shared: SharedCategoryInputs,
 ): Observable<CategoryData> => {
     const categoryMyChannels = category.myChannels.observeWithColumns(['last_post_at', 'is_unread']);
     const channelsWithMyChannel = observeCategoryChannels(category, categoryMyChannels);
-    const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
-    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
+    const {currentChannelId, lastUnreadId, manuallyClosedPrefs, autoclosePrefs} = shared;
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
@@ -79,24 +114,6 @@ const observeCategoryData = (
 
     const notifyPropsPerChannel = categoryMyChannels.pipe(
         switchMap((mc) => observeNotifyPropsByChannels(database, mc)),
-    );
-
-    const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']);
-    const hiddenGmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']);
-    const manuallyClosedPrefs = hiddenDmPrefs.pipe(
-        switchMap((dms) => combineLatest([of$(dms), hiddenGmPrefs])),
-        map(([dms, gms]) => dms.concat(gms)),
-    );
-
-    const approxViewTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, undefined).
-        observeWithColumns(['value']);
-    const openTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, undefined).
-        observeWithColumns(['value']);
-    const autoclosePrefs = approxViewTimePrefs.pipe(
-        switchMap((viewTimes) => combineLatest([of$(viewTimes), openTimePrefs])),
-        map(([viewTimes, openTimes]) => viewTimes.concat(openTimes)),
     );
 
     // Observe category changes (especially collapsed state and sorting)
@@ -246,7 +263,7 @@ const observeFlattenedCategoriesNormal = (
     database: Database,
     currentUserId: string,
     locale: string,
-    isTablet: boolean,
+    shared: SharedCategoryInputs,
 ): Observable<FlattenedCategoriesData> => {
     if (categories.length === 0) {
         return of$({items: [], unreadChannelIds: new Set<string>()});
@@ -259,7 +276,7 @@ const observeFlattenedCategoriesNormal = (
         );
 
     const categoryDataObservables = categories.map((category) =>
-        observeCategoryData(category, database, currentUserId, locale, isTablet),
+        observeCategoryData(category, database, currentUserId, locale, shared),
     );
 
     return combineLatest([combineLatest(categoryDataObservables), unreadsOnTop]).pipe(
@@ -327,8 +344,9 @@ export const observeFlattenedCategories = (
 
     // Observe categories for the current team
     const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']);
+    const shared = observeSharedCategoryInputs(database, isTablet);
 
     return categories.pipe(
-        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
+        switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, shared)),
     );
 };

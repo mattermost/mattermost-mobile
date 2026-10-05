@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
-import {switchMap, combineLatestWith, map} from 'rxjs/operators';
+import {combineLatest} from 'rxjs';
+import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
 
 import {DEFAULT_LOCALE} from '@i18n';
 import {observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
@@ -22,18 +23,24 @@ const enhanced = withObservables(['isTablet'], ({database, isTablet}: Props) => 
     const currentUser = observeCurrentUser(database);
     const onlyUnreads = observeOnlyUnreads(database);
 
-    const categoriesData = currentUser.pipe(
-        combineLatestWith(onlyUnreads, currentTeamId),
+    // Only id and locale feed the sidebar; other user writes (status, avatar) must not rebuild it
+    const userInfo = currentUser.pipe(
+        map((user) => ({id: user?.id || '', locale: user?.locale || DEFAULT_LOCALE})),
+        distinctUntilChanged((a, b) => a.id === b.id && a.locale === b.locale),
+    );
+
+    const categoriesData = combineLatest([userInfo, onlyUnreads, currentTeamId]).pipe(
         switchMap(([user, isOnlyUnreads, teamId]) => {
             return observeFlattenedCategories(
                 database,
-                user?.id || '',
-                user?.locale || DEFAULT_LOCALE,
+                user.id,
+                user.locale,
                 isTablet,
                 isOnlyUnreads,
                 teamId,
             );
         }),
+        shareReplay({bufferSize: 1, refCount: true}),
     );
 
     const flattenedItems = categoriesData.pipe(map((data) => data.items));

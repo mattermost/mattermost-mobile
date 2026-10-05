@@ -8,7 +8,7 @@ import {nativeApplicationVersion, nativeBuildVersion} from 'expo-application';
 import {modelName} from 'expo-device';
 import {Platform} from 'react-native';
 import {of as of$, Observable, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {Preferences, License} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -16,6 +16,7 @@ import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {getFullErrorMessage} from '@utils/errors';
 import {isMinimumLicenseTier, isMinimumServerVersion, type LicenseTierSku} from '@utils/helpers';
 import {logError} from '@utils/log';
+import {cachePerDatabase} from '@utils/observable';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ConfigModel from '@typings/database/models/servers/config';
@@ -46,11 +47,15 @@ export const querySystemValue = (database: Database, key: string) => {
     return database.get<SystemModel>(SYSTEM).query(Q.where('id', (key)), Q.take(1));
 };
 
-export const observeCurrentChannelId = (database: Database): Observable<string> => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID).observe().pipe(
+const observeSharedSystemString = cachePerDatabase((database: Database, key: string): Observable<string> => {
+    return querySystemValue(database, key).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-        switchMap((model) => of$(model.value)),
+        map((model) => model.value),
     );
+});
+
+export const observeCurrentChannelId = (database: Database): Observable<string> => {
+    return observeSharedSystemString(database, SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID);
 };
 
 export const getCurrentTeamId = async (serverDatabase: Database): Promise<string> => {
@@ -63,10 +68,7 @@ export const getCurrentTeamId = async (serverDatabase: Database): Promise<string
 };
 
 export const observeCurrentTeamId = (database: Database): Observable<string> => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID).observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-        switchMap((model) => of$(model.value)),
-    );
+    return observeSharedSystemString(database, SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID);
 };
 
 export const getCurrentUserId = async (serverDatabase: Database): Promise<string> => {
@@ -79,10 +81,7 @@ export const getCurrentUserId = async (serverDatabase: Database): Promise<string
 };
 
 export const observeCurrentUserId = (database: Database): Observable<string> => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.CURRENT_USER_ID).observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-        switchMap((model) => of$(model.value)),
-    );
+    return observeSharedSystemString(database, SYSTEM_IDENTIFIERS.CURRENT_USER_ID);
 };
 
 export const observeGlobalThreadsTab = (database: Database): Observable<string> => {
@@ -263,11 +262,11 @@ export const observeConfig = (database: Database): Observable<ClientConfig | und
     );
 };
 
-export const observeConfigValue = (database: Database, key: keyof ClientConfig) => {
+export const observeConfigValue = cachePerDatabase((database: Database, key: keyof ClientConfig): Observable<string | undefined> => {
     return queryConfigValue(database, key).observeWithColumns(['value']).pipe(
-        switchMap((result) => of$(result.length ? result[0].value : undefined)),
+        map((result) => (result.length ? result[0].value : undefined)),
     );
-};
+});
 
 export const observeMaxFileCount = (database: Database) => {
     return observeConfigValue(database, 'Version').pipe(
