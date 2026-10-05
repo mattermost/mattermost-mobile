@@ -4,55 +4,58 @@
 import {Platform} from 'react-native';
 
 import Config from '@assets/config.json';
-import ClientError from '@client/rest/error';
-import DatabaseManager from '@database/manager';
-import {getConfig} from '@queries/servers/system';
-import {getCurrentUser} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
+import {
+    initializeSentryTracing,
+    registerNavigationContainer as registerSentryNavigationContainer,
+    wrapRootComponent,
+} from '@utils/sentry_tracing';
 
 import {logError, logWarning} from './log';
 
+import type ClientError from '@client/rest/error';
 import type {Database} from '@nozbe/watermelondb';
 import type {Breadcrumb, ErrorEvent} from '@sentry/core';
+import type {ComponentType} from 'react';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
-let Sentry: any;
+let Sentry: typeof import('@sentry/react-native') | undefined;
+
+function ensureSentryModule() {
+    if (!Sentry) {
+        Sentry = require('@sentry/react-native');
+    }
+    return Sentry!;
+}
+
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         return;
     }
 
-    if (!Sentry) {
-        Sentry = require('@sentry/react-native');
-    }
-
     const dsn = getDsn();
-
     if (!dsn) {
         logWarning('Sentry is enabled, but not configured on this platform');
         return;
     }
 
-    const mmConfig = {
+    const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
+    const sentryOptions = {...Config.SentryOptions} as Record<string, unknown>;
+    Reflect.deleteProperty(sentryOptions, 'severityLevelFilter');
+
+    const initialized = initializeSentryTracing({
+        dsn,
         environment: isBetaApp ? 'beta' : 'production',
         tracesSampleRate: isBetaApp ? 1.0 : 0.2,
         sampleRate: isBetaApp ? 1.0 : 0.2,
-        attachStacktrace: Boolean(isBetaApp), // For Beta, stack traces are automatically attached to all messages logged
-    };
 
-    const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
-    const sentryOptions = {...Config.SentryOptions};
-    Reflect.deleteProperty(sentryOptions, 'severityLevelFilter');
-
-    Sentry.init({
-        dsn,
-        sendDefaultPii: false,
-        ...mmConfig,
-        ...sentryOptions,
-        enableCaptureFailedRequests: false,
+        // Capture profiles for sampled transactions (relative to tracesSampleRate).
+        profilesSampleRate: isBetaApp ? 1.0 : 0.2,
+        attachStacktrace: Boolean(isBetaApp),
+        sentryOptions,
         beforeSend: (event: ErrorEvent) => {
             if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;
@@ -61,6 +64,10 @@ export function initializeSentry() {
             return null;
         },
     });
+
+    if (initialized) {
+        ensureSentryModule();
+    }
 }
 
 function getDsn() {
@@ -73,6 +80,14 @@ function getDsn() {
     return '';
 }
 
+export function wrapWithSentry<P extends Record<string, unknown>>(RootComponent: ComponentType<P>) {
+    return wrapRootComponent(RootComponent);
+}
+
+export function registerNavigationContainer(ref: unknown) {
+    registerSentryNavigationContainer(ref);
+}
+
 export function captureException(error: unknown) {
     if (!Config.SentryEnabled) {
         return;
@@ -82,7 +97,7 @@ export function captureException(error: unknown) {
         logWarning('captureException called with missing arguments', error);
         return;
     }
-    Sentry.captureException(error);
+    ensureSentryModule().captureException(error);
 }
 
 export function captureJSException(error: unknown, isFatal: boolean) {
@@ -95,7 +110,9 @@ export function captureJSException(error: unknown, isFatal: boolean) {
         return;
     }
 
-    if (error instanceof ClientError) {
+    // Lazy require to keep early Sentry init off the critical import path.
+    const ClientErrorClass = require('@client/rest/error').default as typeof ClientError;
+    if (error instanceof ClientErrorClass) {
         captureClientErrorAsBreadcrumb(error, isFatal);
     } else {
         captureException(error);
@@ -130,7 +147,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
     }
 
     try {
-        Sentry.addBreadcrumb(breadcrumb);
+        ensureSentryModule().addBreadcrumb(breadcrumb);
     } catch (e) {
         // Do nothing since this is only here to make sure we don't crash when handling an exception
         logWarning('Failed to capture breadcrumb of non-error', e);
@@ -138,6 +155,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
 }
 
 const getUserContext = async (database: Database) => {
+    const {getCurrentUser} = require('@queries/servers/user') as typeof import('@queries/servers/user');
     const currentUser = {
         id: 'currentUserId',
         locale: 'en',
@@ -156,6 +174,7 @@ const getUserContext = async (database: Database) => {
 };
 
 const getExtraContext = async (database: Database) => {
+    const {getConfig} = require('@queries/servers/system') as typeof import('@queries/servers/system');
     const context = {
         config: {},
         currentChannel: {},
@@ -177,6 +196,7 @@ const getExtraContext = async (database: Database) => {
 };
 
 const getBuildTags = async (database: Database) => {
+    const {getConfig} = require('@queries/servers/system') as typeof import('@queries/servers/system');
     const tags = {
         serverBuildHash: '',
         serverBuildNumber: '',
@@ -192,20 +212,23 @@ const getBuildTags = async (database: Database) => {
 };
 
 export const addSentryContext = async (serverUrl: string) => {
-    if (!Config.SentryEnabled || !Sentry) {
+    if (!Config.SentryEnabled) {
         return;
     }
 
     try {
+        const sentry = ensureSentryModule();
+        const databaseManagerModule = require('@database/manager');
+        const DatabaseManager = databaseManagerModule.default ?? databaseManagerModule;
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const userContext = await getUserContext(database);
-        Sentry.setContext('User-Information', userContext);
+        sentry.setContext('User-Information', userContext);
 
         const buildContext = await getBuildTags(database);
-        Sentry.setContext('App-Build Information', buildContext);
+        sentry.setContext('App-Build Information', buildContext);
 
         const extraContext = await getExtraContext(database);
-        Sentry.setContext('Server-Information', extraContext);
+        sentry.setContext('Server-Information', extraContext);
     } catch (e) {
         logError(`addSentryContext for serverUrl ${serverUrl}`, e);
     }

@@ -18,6 +18,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {queryAllActiveServers} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {withSpan} from '@utils/sentry_tracing';
 
 // Controls whether the main initialization (database, etc...) is done, either on app launch
 // or on the Share Extension, for example.
@@ -39,45 +40,50 @@ Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => 
 ));
 
 export async function initialize() {
-    if (!baseAppInitialized) {
-        baseAppInitialized = true;
-        try {
-            await DatabaseManager.initAppDatabase();
+    await withSpan('app.initialize', 'app.init', async () => {
+        if (!baseAppInitialized) {
+            baseAppInitialized = true;
+            try {
+                await withSpan('app.initialize.app_database', 'app.init', () => DatabaseManager.initAppDatabase());
 
-            // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
-            const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
-            serverCredentials = await getAllServerCredentials(activeUrls);
+                // Keystore entries with no matching active DB row are skipped (accepted vs listing every service).
+                const activeUrls = (await queryAllActiveServers()?.fetch() ?? []).map((s) => s.url);
+                serverCredentials = await getAllServerCredentials(activeUrls);
+                const serverUrls = serverCredentials.map((c) => c.serverUrl);
 
-            await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
-            await NetworkManager.init(serverCredentials);
+                await withSpan('app.initialize.database', 'app.init', () => DatabaseManager.initServerDatabases(serverUrls), {
+                    attributes: {'mm.server_count': serverUrls.length},
+                });
+                await withSpan('app.initialize.network', 'app.init', () => NetworkManager.init(serverCredentials));
 
-            flushOrphanedAuditQueues(serverCredentials);
+                flushOrphanedAuditQueues(serverCredentials);
 
-            // EphemeralModeManager init runs before WS init so any pending wipes
-            // complete before WebSocket clients start populating server databases.
-            await EphemeralModeManager.init(serverCredentials);
-            await WebsocketManager.init(serverCredentials);
-        } catch (error) {
-            baseAppInitialized = false;
-            throw error;
+                // EphemeralModeManager init runs before WS init so any pending wipes
+                // complete before WebSocket clients start populating server databases.
+                await withSpan('app.initialize.ephemeral_mode', 'app.init', () => EphemeralModeManager.init(serverCredentials));
+                await withSpan('app.initialize.websocket', 'app.init', () => WebsocketManager.init(serverCredentials));
+            } catch (error) {
+                baseAppInitialized = false;
+                throw error;
+            }
         }
-    }
 
-    NavigationStore.reset();
-    EphemeralStore.setCurrentThreadId('');
-    EphemeralStore.setProcessingNotification('');
+        NavigationStore.reset();
+        EphemeralStore.setCurrentThreadId('');
+        EphemeralStore.setProcessingNotification('');
 
-    await SecurityManager.init();
+        await withSpan('app.initialize.security', 'app.init', () => SecurityManager.init());
 
-    await SessionAttributesManager.syncStaticValues();
+        await SessionAttributesManager.syncStaticValues();
 
-    GlobalEventHandler.init();
-    ManagedApp.init();
-    SessionManager.init();
-    CallsManager.initialize();
-    CallsNative.init();
+        GlobalEventHandler.init();
+        ManagedApp.init();
+        SessionManager.init();
+        CallsManager.initialize();
+        CallsNative.init();
 
-    PushNotifications.init(serverCredentials.length > 0);
+        PushNotifications.init(serverCredentials.length > 0);
+    }, {forceTransaction: true});
 }
 
 export function cleanup() {

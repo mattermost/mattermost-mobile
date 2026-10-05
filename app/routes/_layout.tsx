@@ -26,6 +26,7 @@ import SnackBarContainer from '@screens/snack_bar';
 import WatermarkContainer from '@screens/watermark';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore, useCurrentScreen} from '@store/navigation_store';
+import {registerNavigationContainer} from '@utils/sentry';
 
 import type {NativeStackNavigationOptions} from '@react-navigation/native-stack';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -93,6 +94,10 @@ export default function RootLayout() {
             cleanup();
         };
     });
+
+    useEffect(() => {
+        registerNavigationContainer(navigationRef);
+    }, [navigationRef]);
 
     useEffect(() => {
         if (appReady) {

@@ -9,6 +9,8 @@ env:
   NODE_VERSION: 24.15.0
   TERM: xterm
   INTUNE_ENABLED: 'true'
+  SENTRY_ENABLED: ${{ github.event.pull_request.base.ref == 'stainless-steel' }}
+  SENTRY_ORG: mattermost-mr
 
 jobs:
   test:
@@ -56,6 +58,9 @@ jobs:
           MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
           MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+          SENTRY_AUTH_TOKEN: "${{ env.SENTRY_ENABLED == 'true' && secrets.MM_MOBILE_SENTRY_AUTH_TOKEN || '' }}"
+          SENTRY_DSN_IOS: "${{ env.SENTRY_ENABLED == 'true' && secrets.MM_MOBILE_BETA_SENTRY_DSN_IOS || '' }}"
+          SENTRY_PROJECT_IOS: mattermost-ios-test
         run: bundle exec fastlane ios build --env ios.pr
         working-directory: ./fastlane
 
@@ -103,6 +108,9 @@ jobs:
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+          SENTRY_AUTH_TOKEN: "${{ env.SENTRY_ENABLED == 'true' && secrets.MM_MOBILE_SENTRY_AUTH_TOKEN || '' }}"
+          SENTRY_DSN_ANDROID: "${{ env.SENTRY_ENABLED == 'true' && secrets.MM_MOBILE_BETA_SENTRY_DSN_ANDROID || '' }}"
+          SENTRY_PROJECT_ANDROID: mattermost-android-test
         run: bundle exec fastlane android build --env android.pr
         working-directory: ./fastlane
 

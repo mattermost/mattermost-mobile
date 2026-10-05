@@ -14,6 +14,7 @@ import {handleAgentsEvents} from '@agents/actions/websocket/events';
 import * as calls from '@calls/connection/websocket_event_handlers';
 import {WebsocketEvents} from '@constants';
 import {handlePlaybookEvents} from '@playbooks/actions/websocket/events';
+import {shouldTraceWebsocketEvent, withSpanSync} from '@utils/sentry_tracing';
 
 import * as category from './category';
 import * as channel from './channel';
@@ -41,6 +42,21 @@ import {
 } from './users';
 
 export async function handleWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
+    if (!shouldTraceWebsocketEvent(msg.event)) {
+        dispatchWebSocketEvent(serverUrl, msg);
+        return;
+    }
+
+    withSpanSync(`ws.${msg.event}`, 'ws.handle', () => {
+        dispatchWebSocketEvent(serverUrl, msg);
+    }, {
+        attributes: {
+            'mm.ws.event': msg.event,
+        },
+    });
+}
+
+function dispatchWebSocketEvent(serverUrl: string, msg: WebSocketMessage) {
     switch (msg.event) {
         case WebsocketEvents.POSTED:
         case WebsocketEvents.EPHEMERAL_MESSAGE:
