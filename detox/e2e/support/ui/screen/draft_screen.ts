@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Alert, NavigationHeader} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
-import {expect} from 'detox';
+import {longPressWithScrollRetry, timeouts, wait} from '@support/utils';
+import {expect, waitFor} from 'detox';
 
 class DraftScreen {
     testID = {
@@ -11,8 +11,10 @@ class DraftScreen {
         deleteDraft: 'delete_draft',
         draftMessageContent: 'draft_message',
         draftScreen: 'global_drafts_list',
+        scheduledList: 'global_scheduled_post_list',
         draftTooltipCloseButton: 'draft.tooltip.close.button',
-        draftPost: 'draft_message',
+        draftPost: 'draft_post',
+        draftOptions: 'draft_options.screen',
         draftSendButton: 'send_draft_button',
         draftEmptyTitle: 'drafts.empty.title',
         requestACKIcon: 'drafts.requested_ack.icon',
@@ -31,18 +33,53 @@ class DraftScreen {
     draftMessageContent = element(by.id(this.testID.draftMessageContent));
     deleteDraft = element(by.id(this.testID.deleteDraft));
 
+    dismissTutorialTooltip = async () => {
+        const closeButton = element(by.id(this.testID.draftTooltipCloseButton));
+        try {
+            await waitFor(closeButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        } catch {
+            // Tutorial already watched on this app install — nothing to dismiss.
+            return;
+        }
+        await closeButton.tap();
+        await waitFor(closeButton).not.toExist().withTimeout(timeouts.TEN_SEC);
+    };
+
     draftTooltipCloseButton = {
         tap: async () => {
-            await element(by.id(this.testID.draftTooltipCloseButton)).tap();
+            await this.dismissTutorialTooltip();
         },
     };
 
+    private getListScrollMatcher = async () => {
+        // Prefer scheduled list when on that tab; fall back to drafts list.
+        const scheduled = by.id(this.testID.scheduledList);
+        try {
+            await waitFor(element(scheduled)).toExist().withTimeout(timeouts.ONE_SEC);
+            return scheduled;
+        } catch {
+            return by.id(this.testID.draftScreen);
+        }
+    };
+
+    private getFirstDraftPost = () => {
+        return element(by.id(this.testID.draftPost)).atIndex(0);
+    };
+
     openDraftPostActions = async () => {
-        await this.draftPost.longPress(timeouts.TWO_SEC);
+        await this.dismissTutorialTooltip();
+
+        const scrollMatcher = await this.getListScrollMatcher();
+        await longPressWithScrollRetry(
+            this.getFirstDraftPost(),
+            scrollMatcher,
+            element(by.id(this.testID.draftOptions)),
+        );
     };
 
     swipeDraftPostLeft = async () => {
-        await this.draftPost.swipe('left');
+        await this.dismissTutorialTooltip();
+        await this.getFirstDraftPost().swipe('left');
     };
 
     deleteDraftPost = async (deleteAction: any) => {

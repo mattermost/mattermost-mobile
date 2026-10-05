@@ -4,13 +4,14 @@
 import {FlashList, type FlashListRef, type ListRenderItem, type ViewToken} from '@shopify/flash-list';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {DeviceEventEmitter, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchDirectChannelsInfo, switchToChannelById} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Events, Screens} from '@constants';
-import {HOME_PADDING} from '@constants/view';
+import {BOTTOM_TAB_HEIGHT, HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsInitialSync} from '@hooks/is_initial_sync';
@@ -64,8 +65,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, listHeight}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const insets = useSafeAreaInsets();
     const listRef = useRef<FlashListRef<FlattenedItem> | null>(null);
     const serverUrl = useServerUrl();
+    const listContentStyle = useMemo(() => {
+        if (isTablet) {
+            return undefined;
+        }
+
+        // Custom tab bar overlays the list; without this the last row cannot scroll above it.
+        return {paddingBottom: BOTTOM_TAB_HEIGHT + insets.bottom};
+    }, [isTablet, insets.bottom]);
     const switchingTeam = useTeamSwitch();
     const isInitialSync = useIsInitialSync(serverUrl);
     const [initialLoad, setInitialLoad] = useState(flattenedItems.length === 0);
@@ -234,6 +244,7 @@ const Categories = ({flattenedItems, unreadChannelIds, onlyUnreads, isTablet, li
                     drawDistance={ESTIMATED_ITEM_SIZE * 20}
                     showsHorizontalScrollIndicator={false}
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={listContentStyle}
                     ListEmptyComponent={ListEmptyComponent}
                     onViewableItemsChanged={onViewableItemsChanged}
                     viewabilityConfig={VIEWABILITY_CONFIG}

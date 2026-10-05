@@ -474,11 +474,32 @@ describe('create, update & delete posts', () => {
             posts: [post1],
             prepareRecordsOnly: false,
         });
+        mockGetIsCRTEnabled.mockReturnValueOnce(false);
+        (mockClient.getChannel as jest.Mock).mockReturnValueOnce(channel1);
+        (mockClient.getChannelMember as jest.Mock).mockReturnValueOnce({
+            ...channelMember1,
+            mention_count: 1,
+            urgent_mention_count: 2,
+        });
+        const markChannelAsUnreadSpy = jest.spyOn(LocalChannelActions, 'markChannelAsUnread').
+            mockResolvedValueOnce({member: TestHelper.fakeMyChannelModel()});
 
-        const result = await markPostAsUnread(serverUrl, post1.id);
-        expect(result).toBeDefined();
-        expect(result.error).toBeUndefined();
-        expect(result.post).toBeDefined();
+        try {
+            const result = await markPostAsUnread(serverUrl, post1.id);
+
+            expect(result).toBeDefined();
+            expect(result.error).toBeUndefined();
+            expect(result.post).toBeDefined();
+            expect(markChannelAsUnreadSpy).toHaveBeenCalledWith(serverUrl, {
+                channelId,
+                messageCount: 2,
+                mentionsCount: 1,
+                urgentMentionCount: 2,
+                lastViewed: post1.create_at,
+            });
+        } finally {
+            markChannelAsUnreadSpy.mockRestore();
+        }
     });
 
     it('markPostAsUnread - no current user', async () => {

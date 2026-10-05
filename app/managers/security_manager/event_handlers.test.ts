@@ -27,6 +27,11 @@ import {toMilliseconds} from '@utils/datetime';
 import SecurityManager from './index';
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    AuthenticationOutcome: {
+        Failed: 'E_AUTH_FAILED',
+        Cancelled: 'E_CANCELLED',
+        Indeterminate: 'E_INDETERMINATE',
+    },
     isDeviceSecured: jest.fn(),
     authenticate: jest.fn(),
     openSecuritySettings: jest.fn(),
@@ -64,6 +69,13 @@ describe('SecurityManager - Event Handlers', () => {
         SecurityManager.initialized = false;
         SecurityManager.serverConfig = {};
         SecurityManager.activeServer = undefined;
+        SecurityManager.isCheckingBiometrics = false;
+        SecurityManager.backgroundSince = 0;
+
+        // These resolve only when an alert button is pressed, which would hang.
+        jest.spyOn(alerts, 'showNotSecuredAlert').mockResolvedValue(undefined);
+        jest.spyOn(alerts, 'showBiometricFailureAlert').mockResolvedValue(undefined);
+        jest.spyOn(alerts, 'showAuthenticationInterruptedAlert').mockResolvedValue('dismiss');
     });
 
     describe('onAppStateChange', () => {

@@ -32,12 +32,23 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 21,
+        toVersion: 22,
         steps: [
             addColumns({
                 table: PLAYBOOK_CHECKLIST_ITEM,
                 columns: [
                     {name: 'requirements', type: 'string', isOptional: true},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 21,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'urgent_mention_count', type: 'number'},
                 ],
             }),
         ],

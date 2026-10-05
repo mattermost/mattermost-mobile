@@ -300,7 +300,8 @@ const ChecklistItemBottomSheet = ({
         await setChecklistItemCommand(serverUrl, runId, item.id, checklistNumber, itemNumber, command);
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
-    const openEditCommandModal = useCallback(() => {
+    const openEditCommandModal = useCallback(async () => {
+        await dismissBottomSheet();
         goToEditCommand(runName, item.command, channelId, updateCommand);
     }, [runName, item.command, channelId, updateCommand]);
 
@@ -316,7 +317,10 @@ const ChecklistItemBottomSheet = ({
         };
     }, [assignee, intl, onUserChipPress, teammateNameDisplay]);
 
+    // Dismiss first so the next screen isn't pushed under the transparent sheet (Android
+    // headers then lose status-bar insets and draw under the system bar).
     const openEditDateModal = useCallback(async () => {
+        await dismissBottomSheet();
         goToSelectDate(runName, (date) => {
             setDueDate(serverUrl, runId, item.id, checklistNumber, itemNumber, date);
         }, dueDate);
@@ -336,7 +340,8 @@ const ChecklistItemBottomSheet = ({
         }
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
-    const openUserSelector = useCallback(() => {
+    const openUserSelector = useCallback(async () => {
+        await dismissBottomSheet();
         goToSelectUser(
             runName,
             intl.formatMessage(messages.assignee),
@@ -354,7 +359,8 @@ const ChecklistItemBottomSheet = ({
         }
     }, [checklistNumber, item.id, itemNumber, runId, serverUrl]);
 
-    const openEditItemModal = useCallback(() => {
+    const openEditItemModal = useCallback(async () => {
+        await dismissBottomSheet();
         const itemDescription = ('description' in item && item.description) || undefined;
         goToEditChecklistItem(runName, item.title, itemDescription, handleEditItem);
     }, [runName, item, handleEditItem]);

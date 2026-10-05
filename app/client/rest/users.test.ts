@@ -439,6 +439,15 @@ describe('ClientUsers', () => {
         expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
     });
 
+    test('getSessionAttributesManifest', async () => {
+        const expectedUrl = `${client.getUsersRoute()}/sessions/attributes/manifest`;
+        const expectedOptions = {method: 'get'};
+
+        await client.getSessionAttributesManifest();
+
+        expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+    });
+
     test('checkUserMfa', async () => {
         const loginId = 'testuser';
         const expectedUrl = `${client.getUsersRoute()}/mfa`;

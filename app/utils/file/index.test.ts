@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Directory} from 'expo-file-system';
+import {Directory, File} from 'expo-file-system';
 import Permissions from 'react-native-permissions';
 
 import {getIntlShape} from '@utils/general';
@@ -33,6 +33,8 @@ import {
     pathWithPrefix,
     uploadDisabledWarning,
 } from './index';
+
+import type {Asset} from 'react-native-image-picker';
 
 jest.mock('react-native', () => {
     const RN = jest.requireActual('react-native');
@@ -172,6 +174,11 @@ describe('Image utils', () => {
             expect(isImage({name: 'file.jpg', mimeType: 'image/jpeg'} as unknown as FileInfo)).toBe(true);
             expect(isImage({name: 'file.png', mimeType: 'text/plain'} as unknown as FileInfo)).toBe(false);
             expect(isImage({name: 'file.png', extension: '.png'} as unknown as FileInfo)).toBe(true);
+            expect(isImage({name: 'file.png'} as unknown as FileInfo)).toBe(true);
+        });
+
+        it('should return false for a file with no name and no extension', () => {
+            expect(isImage({mime_type: 'image/jpg', localPath: 'file:///draft.jpg'} as unknown as FileInfo)).toBe(false);
         });
     });
 
@@ -235,6 +242,17 @@ describe('Image utils', () => {
             expect(result).toEqual(expect.any(Array));
             result = await extractFileInfo([{uri: 'file://somefile', size: 12345, fileName: 'file.png', type: 'image/png'}]);
             expect(result).toEqual(expect.any(Array));
+        });
+
+        it('should read the size from the local file when the asset has no file size', async () => {
+            jest.mocked(File).mockImplementationOnce(() => ({info: () => ({exists: true, size: 999})}) as unknown as File);
+
+            const result = await extractFileInfo([{uri: 'file:///tmp/A1B2C3.jpg', fileName: 'A1B2C3.jpg', type: 'image/jpg'}] as unknown as Asset[]);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].name).toBe('A1B2C3.jpg');
+            expect(result[0].size).toBe(999);
+            expect(logError).not.toHaveBeenCalled();
         });
     });
 

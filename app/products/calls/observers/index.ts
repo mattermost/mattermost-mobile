@@ -10,11 +10,12 @@ import {
     observeCurrentCall,
     observeIncomingCalls,
 } from '@calls/state';
-import {fillUserModels, userIds} from '@calls/utils';
+import {fillUserModels, getDMCalleeId, hasOtherUserJoined, userIds} from '@calls/utils';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';
+import {observeChannel} from '@queries/servers/channel';
 import {observeConfigValue, observeLicense} from '@queries/servers/system';
-import {queryUsersById} from '@queries/servers/user';
+import {observeUser, queryUsersById} from '@queries/servers/user';
 import UserModel from '@typings/database/models/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemAdmin} from '@utils/user';
@@ -95,6 +96,19 @@ export const observeCallDatabase = () => {
     );
 };
 
+// Observes the current call's channel from the call's own server database,
+// which is not necessarily the active server's database.
+export const observeCallChannel = () => {
+    return observeCurrentCall().pipe(
+        distinctUntilChanged((a, b) => a?.channelId === b?.channelId && a?.serverUrl === b?.serverUrl),
+        switchMap((call) => {
+            const db = call ? DatabaseManager.serverDatabases[call.serverUrl]?.database : undefined;
+            const id = call?.channelId || '';
+            return db && id ? observeChannel(db, id) : of$(undefined);
+        }),
+    );
+};
+
 export const observeCurrentSessionsDict = () => {
     const currentCall = observeCurrentCall();
     const database = observeCallDatabase();
@@ -109,6 +123,76 @@ export const observeCurrentSessionsDict = () => {
     ) as Observable<Dictionary<CallSession>>;
 };
 
+export const observeDMCallingState = () => {
+    const currentCall = observeCurrentCall();
+    const database = observeCallDatabase();
+    const channel = observeCallChannel();
+
+    // The callee isn't in the call yet, so they come from the DM channel rather than from the sessions.
+    // Empty when this isn't a DM, or is a DM with yourself: there's then no other party to wait for.
+    const dmCalleeId = combineLatest([currentCall, channel]).pipe(
+        switchMap(([call, chan]) => of$(call ? getDMCalleeId(call.myUserId, chan) : '')),
+        distinctUntilChanged(),
+    );
+
+    const dmCallee = combineLatest([database, dmCalleeId]).pipe(
+        switchMap(([db, calleeId]) => (db && calleeId ? observeUser(db, calleeId) : of$(undefined))),
+    );
+
+    const isDMCall = dmCalleeId.pipe(
+        switchMap((calleeId) => of$(Boolean(calleeId))),
+        distinctUntilChanged(),
+    );
+
+    // Being in the call means having a session in it. The connected flag goes up earlier, when the
+    // media connection comes up, and our session only arrives with the server's user_joined event.
+    const iAmInTheCall = currentCall.pipe(
+        switchMap((call) => of$(Boolean(call && call.sessions[call.mySessionId]))),
+        distinctUntilChanged(),
+    );
+
+    const isDMConnecting = combineLatest([currentCall, isDMCall, iAmInTheCall]).pipe(
+        switchMap(([call, isDM, inCall]) => of$(Boolean(
+            call &&
+            isDM &&
+            call.startedByMe &&
+            !inCall,
+        ))),
+        distinctUntilChanged(),
+    );
+
+    // startedByMe covers the window before the server's call_start event arrives, which is what
+    // fills in ownerId; without it the caller drops out of the ring phase for a frame or two.
+    const isDMCalling = combineLatest([currentCall, isDMCall, iAmInTheCall]).pipe(
+        switchMap(([call, isDM, inCall]) => of$(Boolean(
+            call &&
+            isDM &&
+            inCall &&
+            (call.startedByMe || call.ownerId === call.myUserId) &&
+            !call.dmCalleeAnsweredAt &&
+            !hasOtherUserJoined(call.sessions, call.myUserId),
+        ))),
+        distinctUntilChanged(),
+    );
+
+    // A DM call's duration counts from when it was answered; every other call counts from when it started.
+    // The startTime fallback also covers a DM call we never saw answered — joined from a reconnect snapshot, or
+    // relaunched straight into an active call. Without it a 0 would reach the timer.
+    const dmCalleeAnsweredAt = combineLatest([currentCall, isDMCall]).pipe(
+        switchMap(([call, isDM]) => of$((isDM && call?.dmCalleeAnsweredAt) || call?.startTime || 0)),
+        distinctUntilChanged(),
+    );
+
+    return {
+        isDMCall,
+        isDMConnecting,
+        isDMCalling,
+        dmCalleeId,
+        dmCallee,
+        dmCalleeAnsweredAt,
+    };
+};
+
 export const observeCallStateInChannel = (serverUrl: string, database: Database, channelId: Observable<string>) => {
     const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
         switchMap(([id, calls]) => of$(Boolean(calls[id]))),
@@ -119,8 +203,12 @@ export const observeCallStateInChannel = (serverUrl: string, database: Database,
         switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
+
+    // A call being placed counts: useCallsAdjustment already reserves the call bar's height from
+    // the moment there is a current call, so gating the bar itself on being connected leaves a gap
+    // in the channel with no way back into the call and no way to hang it up.
     const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call?.connected))),
+        switchMap((call) => of$(Boolean(call))),
         distinctUntilChanged(),
     );
     const dismissed = combineLatest([channelId, observeCallsState(serverUrl)]).pipe(

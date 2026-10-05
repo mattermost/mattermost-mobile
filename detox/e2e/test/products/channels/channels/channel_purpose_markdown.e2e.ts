@@ -24,11 +24,10 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
-import {by, element, expect, waitFor} from 'detox';
+import {expect} from 'detox';
 
 describe('Channels - Channel Purpose Markdown', () => {
     const serverOneDisplayName = 'Server 1';
-    const channelsCategory = 'channels';
     let testUser: any;
     let purposeChannel: any;
 
@@ -72,12 +71,11 @@ describe('Channels - Channel Purpose Markdown', () => {
     });
 
     it('MM-T1733_1 - should not render markdown in channel purpose on info screen', async () => {
-        // # Scroll sidebar to find purposeChannel (may be off-screen)
-        const purposeChannelDisplayNameEl = ChannelListScreen.getChannelItemDisplayName(channelsCategory, purposeChannel.name);
-        await element(by.id('channel_list.flat_list')).scrollTo('top');
-        await waitFor(purposeChannelDisplayNameEl).toBeVisible().
-            whileElement(by.id('channel_list.flat_list')).scroll(100, 'down');
-        await purposeChannelDisplayNameEl.tap();
+        // # Scroll sidebar to find purposeChannel (may be off-screen). Use the shared helper
+        // rather than a whileElement scroll gated on Detox's default 75% threshold: the last
+        // sidebar row is clipped by the tab bar and can never reach 75%, which is how the same
+        // pattern failed the Channel Bookmarks suite.
+        await ChannelListScreen.tapSidebarPublicChannelDisplayName(purposeChannel.name);
         await ChannelScreen.dismissScheduledPostTooltip();
         await ChannelScreen.toBeVisible();
 

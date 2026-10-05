@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isIos, timeouts, wait, waitForElementToExist} from '@support/utils';
+import {isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist, withSynchronizationDisabled} from '@support/utils';
 import {expect, waitFor} from 'detox';
 
 class ThreadOptionsScreen {
@@ -46,16 +46,42 @@ class ThreadOptionsScreen {
         await wait(timeouts.ONE_SEC);
     };
 
+    // Same gorhom+Reanimated path as PostOptionsScreen.tapSheetRowIos: center taps miss
+    // the Save row on iOS 26, and Detox sync never idles so waitFor cannot see dismiss.
+    private tapSheetRowIos = async (option: Detox.NativeElement) => {
+        await withSynchronizationDisabled(async () => {
+            await waitForElementToExist(this.threadOptionsScreen, timeouts.TEN_SEC);
+            await waitForElementToExist(option, timeouts.TEN_SEC);
+            await option.tap({x: 1, y: 1});
+            try {
+                await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
+            } catch {
+                await option.tap({x: 1, y: 1});
+                await waitForElementToNotExist(this.threadOptionsScreen, timeouts.FIVE_SEC);
+            }
+        });
+    };
+
     tapSaveThread = async () => {
+        if (isIos()) {
+            await this.tapSheetRowIos(this.saveThreadOption);
+            return;
+        }
         await this.toBeVisible();
         await waitFor(this.saveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
         await this.saveThreadOption.tap();
+        await waitFor(this.threadOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
     tapUnsaveThread = async () => {
+        if (isIos()) {
+            await this.tapSheetRowIos(this.unsaveThreadOption);
+            return;
+        }
         await this.toBeVisible();
         await waitFor(this.unsaveThreadOption).toExist().withTimeout(timeouts.FIVE_SEC);
         await this.unsaveThreadOption.tap();
+        await waitFor(this.threadOptionsScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 }
 

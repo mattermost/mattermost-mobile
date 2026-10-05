@@ -8,6 +8,7 @@ import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
 import {deleteCustomProfileAttributesByFieldId} from '@queries/servers/custom_profile';
@@ -25,6 +26,7 @@ import {
     handleCustomProfileAttributesValuesUpdatedEvent,
     handleCustomProfileAttributesFieldUpdatedEvent,
     handleCustomProfileAttributesFieldDeletedEvent,
+    handleSessionAttributesPropertyFieldEvent,
 } from './users';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -35,6 +37,14 @@ jest.mock('@actions/remote/user');
 jest.mock('@database/manager');
 jest.mock('@helpers/api/preference');
 jest.mock('@managers/websocket_manager');
+jest.mock('@managers/session_attributes_manager', () => ({
+    __esModule: true,
+    default: {
+        refreshManifest: jest.fn().mockResolvedValue(undefined),
+        upsertManifestField: jest.fn(),
+        removeManifestField: jest.fn(),
+    },
+}));
 jest.mock('@queries/servers/channel');
 jest.mock('@queries/servers/custom_profile');
 jest.mock('@queries/servers/preference');
@@ -530,6 +540,58 @@ describe('WebSocket Users Actions', () => {
 
             expect(logUtils.logError).toHaveBeenCalled();
             expect(deleteCustomProfileAttributesByFieldId).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleSessionAttributesPropertyFieldEvent', () => {
+        const buildField = (attrs: Record<string, unknown> = {}) => JSON.stringify({
+            name: 'os_version',
+            type: 'text',
+            attrs: {enabled: true, platforms: ['desktop', 'mobile'], ttl_seconds: 60, grace_period_seconds: 30, ...attrs},
+        });
+
+        const buildMessage = (property_field?: string, objectType: string | undefined = 'session') => ({
+            event: 'property_field_updated',
+            data: {object_type: objectType, property_field},
+        }) as WebSocketMessage;
+
+        it('should upsert an enabled mobile field from the websocket payload', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField()));
+
+            expect(SessionAttributesManager.upsertManifestField).toHaveBeenCalledWith(serverUrl, {
+                name: 'os_version',
+                type: 'text',
+                ttl_seconds: 60,
+                grace_period_seconds: 30,
+            });
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
+        });
+
+        it('should remove a disabled field', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({enabled: false})));
+
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+        });
+
+        it('should remove a field not targeted at mobile', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField({platforms: ['desktop']})));
+
+            expect(SessionAttributesManager.removeManifestField).toHaveBeenCalledWith(serverUrl, 'os_version');
+        });
+
+        it('should ignore non-session object types', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(buildField(), 'channel'));
+
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
+        });
+
+        it('should ignore events without a property field payload', () => {
+            handleSessionAttributesPropertyFieldEvent(serverUrl, buildMessage(undefined));
+
+            expect(SessionAttributesManager.upsertManifestField).not.toHaveBeenCalled();
+            expect(SessionAttributesManager.removeManifestField).not.toHaveBeenCalled();
         });
     });
 });

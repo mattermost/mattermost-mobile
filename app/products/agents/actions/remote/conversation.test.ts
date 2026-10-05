@@ -11,7 +11,6 @@ import {
     clearConversationCacheForServer,
     ensureConversation,
     fetchConversation,
-    invalidateConversation,
     refetchConversation,
 } from './conversation';
 
@@ -72,7 +71,7 @@ describe('fetchConversation', () => {
 
         const result = await fetchConversation(serverUrl, conversationId);
 
-        expect(logError).toHaveBeenCalledWith('[fetchConversation] Failed to fetch conversation', error);
+        expect(logError).toHaveBeenCalledWith('[fetchConversation] Failed to fetch conversation', errorMessage);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
         expect(result).toEqual({error: errorMessage});
     });
@@ -147,20 +146,67 @@ describe('refetchConversation', () => {
         expect(mockClient.getConversation).toHaveBeenCalledTimes(2);
         expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Updated');
     });
-});
 
-describe('invalidateConversation', () => {
-    it('should drop the cache entry without triggering a fetch', async () => {
-        mockClient.getConversation.mockResolvedValue(makeConversation(conversationId));
-        await ensureConversation(serverUrl, conversationId);
-        expect(mockClient.getConversation).toHaveBeenCalledTimes(1);
+    it('should discard a superseded refetch result so only the newest fetch writes to the store', async () => {
+        let resolveFirst: (value: ConversationResponse) => void = () => undefined;
+        const firstResponse = new Promise<ConversationResponse>((resolve) => {
+            resolveFirst = resolve;
+        });
+        mockClient.getConversation.
+            mockImplementationOnce(() => firstResponse).
+            mockImplementationOnce(() => Promise.resolve({...makeConversation(conversationId), title: 'Second'}));
 
-        invalidateConversation(serverUrl, conversationId);
+        const firstRefetch = refetchConversation(serverUrl, conversationId);
+        const secondRefetch = refetchConversation(serverUrl, conversationId);
+
+        await secondRefetch;
+        expect(conversationStore.getState(serverUrl, conversationId).conversation?.title).toBe('Second');
+
+        // The stale first fetch resolves AFTER the second one already landed.
+        resolveFirst({...makeConversation(conversationId), title: 'First'});
+        await firstRefetch;
 
         const state = conversationStore.getState(serverUrl, conversationId);
-        expect(state.conversation).toBeUndefined();
+        expect(state.conversation?.title).toBe('Second');
         expect(state.loading).toBe(false);
-        expect(mockClient.getConversation).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('refetchConversation onSettled', () => {
+    it('should run once the result is in the store, even when a later fetch supersedes the one that registered it', async () => {
+        let resolveFirst: (value: ConversationResponse) => void = () => undefined;
+        mockClient.getConversation.
+            mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
+                resolveFirst = resolve;
+            })).
+            mockImplementationOnce(() => Promise.resolve({...makeConversation(conversationId), title: 'Second'}));
+        const titlesSeenOnSettle: Array<string | undefined> = [];
+        const onSettled = jest.fn(() => {
+            titlesSeenOnSettle.push(conversationStore.getState(serverUrl, conversationId).conversation?.title);
+        });
+
+        const firstRefetch = refetchConversation(serverUrl, conversationId, onSettled);
+        await refetchConversation(serverUrl, conversationId);
+
+        expect(onSettled).toHaveBeenCalledTimes(1);
+        expect(titlesSeenOnSettle).toEqual(['Second']);
+
+        resolveFirst(makeConversation(conversationId));
+        await firstRefetch;
+        expect(onSettled).toHaveBeenCalledTimes(1);
+    });
+
+    it('should wait for a later successful fetch when the fetch fails', async () => {
+        mockClient.getConversation.
+            mockRejectedValueOnce(new Error('network')).
+            mockResolvedValueOnce(makeConversation(conversationId));
+        const onSettled = jest.fn();
+
+        await refetchConversation(serverUrl, conversationId, onSettled);
+        expect(onSettled).not.toHaveBeenCalled();
+
+        await refetchConversation(serverUrl, conversationId);
+        expect(onSettled).toHaveBeenCalledTimes(1);
     });
 });
 
@@ -179,5 +225,23 @@ describe('clearConversationCacheForServer', () => {
 
         expect(conversationStore.getState(serverUrl, 'c1').conversation).toBeUndefined();
         expect(conversationStore.getState(otherServerUrl, 'c1').conversation?.title).toBe('B');
+    });
+
+    it('should leave an in-flight fetch alone on a server whose URL extends the cleared one', async () => {
+        const portServerUrl = `${serverUrl}:8065`;
+        let resolveFetch: (value: ConversationResponse) => void = () => undefined;
+        mockClient.getConversation.mockImplementationOnce(() => new Promise<ConversationResponse>((resolve) => {
+            resolveFetch = resolve;
+        }));
+        const pending = ensureConversation(portServerUrl, 'c1');
+
+        clearConversationCacheForServer(serverUrl);
+        resolveFetch({...makeConversation('c1'), title: 'Port'});
+        await pending;
+
+        const state = conversationStore.getState(portServerUrl, 'c1');
+        expect(state.conversation?.title).toBe('Port');
+        expect(state.loading).toBe(false);
+        clearConversationCacheForServer(portServerUrl);
     });
 });

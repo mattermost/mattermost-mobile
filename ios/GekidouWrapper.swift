@@ -9,9 +9,16 @@
 import Foundation
 import Gekidou
 import TurboLogIOSNative
+import react_native_network_client_session_attributes
 
 @objc class GekidouWrapper: NSObject {
   @objc public static let `default` = GekidouWrapper()
+
+  @objc func registerSessionAttributesOutboundHeader() {
+    SessionAttributesOutboundHeader.setHandler { serverUrl in
+      SessionAttributes.getOutboundHeader(serverUrl)
+    }
+  }
 
   @objc func configureTurboLogForGekidou() {
     GekidouLogger.shared.setLogHandler { level, message in

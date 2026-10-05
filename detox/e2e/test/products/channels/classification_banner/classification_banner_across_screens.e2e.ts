@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {acquireClassificationLock, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
+import {acquireClassificationLock, assertClassificationLockOwnership, createClassificationLockOwner, releaseClassificationLock} from '@support/classification_lock';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Post, Properties, Setup, System} from '@support/server_api';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
@@ -28,10 +28,13 @@ import {
 import {isAndroid, timeouts, wait} from '@support/utils';
 import {by, device, element, expect, waitFor} from 'detox';
 
-// Lock wait is up to 20m; leave headroom for enable/setup after acquire.
+import {logError} from '../../../../../provision/log';
+
+// Per-test budget. The lock wait lives in the beforeAll hook's own timeout below, not
+// here: up to 45m of queuing behind the other two classification suites (they share one
+// server), plus headroom for enable/setup after acquire.
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
-// Skip Android: CI run 30447839548 — suite flaking on Detox Android (MM-T6209_1 … MM-T6213_1).
 (isAndroid() ? describe.skip : describe)('Classification Banner - Visibility Across Screens', () => {
     const serverOneDisplayName = 'Server 1';
     let lockOwner = '';
@@ -61,6 +64,21 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
         await wait(timeouts.TWO_SEC);
+
+        // The hook gets its own budget so the lock wait does not have to fit inside the
+        // per-test timeout above. See DEFAULT_TIMEOUT_MS in classification_lock_core.
+    }, timeouts.ONE_MIN * 50);
+
+    beforeEach(async () => {
+        await assertClassificationLockOwnership(siteOneUrl, lockOwner);
+        const {config: clientConfig} = await System.apiGetClientConfigOld(siteOneUrl);
+        if (clientConfig?.FeatureFlagClassificationMarkings !== 'true') {
+            logError(
+                '[beforeEach] FeatureFlagClassificationMarkings flipped off mid-suite ' +
+                `(client=${String(clientConfig?.FeatureFlagClassificationMarkings)}) — re-enabling`,
+            );
+            await enableClassificationMarkings(siteOneUrl);
+        }
     });
 
     afterAll(async () => {
@@ -69,20 +87,11 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
         }
 
         try {
-            // Each step runs even if an earlier one fails, so a cleanup error cannot leave
-            // the feature flag enabled or the session logged in for later suites.
             try {
+                await assertClassificationLockOwnership(siteOneUrl, lockOwner);
                 await Properties.apiCleanupClassification(siteOneUrl);
             } finally {
-                try {
-                    await System.apiPatchConfig(siteOneUrl, {
-                        FeatureFlags: {
-                            ClassificationMarkings: false,
-                        },
-                    });
-                } finally {
-                    await HomeScreen.logout();
-                }
+                await HomeScreen.logout();
             }
         } finally {
             await releaseClassificationLock(siteOneUrl, lockOwner);

@@ -5,7 +5,6 @@ import React, {useCallback} from 'react';
 import {View} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 
-import {isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
 import {EmojiIndicesByAlias, Emojis} from '@utils/emoji';
@@ -102,7 +101,7 @@ const CustomEmojiPicker: React.FC = () => {
     }, [updateValue, updateCursorPosition, getCursorPosition, setCursorPosition]);
 
     return (
-        <View style={isEdgeToEdge && styles.container}>
+        <View style={styles.container}>
             <Animated.View style={[styles.animatedContainer, animatedStyle]}>
                 <EmojiPicker
                     onEmojiPress={handleEmojiPress}

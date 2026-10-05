@@ -54,7 +54,7 @@ export function useNavigationHeader(options: {
  * The app header sizes itself from the safe area insets.
  * Any `headerRight` the screen registers is forwarded to it.
  */
-export function useAppNavigationHeader(title: string, hasSearch = false, heightOffset = 0, isLargeTitle = false) {
+export function useAppNavigationHeader(title: string, hasSearch = false, heightOffset = 0, isLargeTitle = false, titleTestID = 'navigation.header.title') {
     const navigation = useNavigation();
     const theme = useTheme();
     const defaultHeight = useDefaultHeaderHeight();
@@ -77,11 +77,12 @@ export function useAppNavigationHeader(title: string, hasSearch = false, heightO
                         showBackButton={canGoBack}
                         theme={theme}
                         title={title}
+                        titleTestID={titleTestID}
                     />
                 );
             },
         });
-    }, [navigation, defaultHeight, hasSearch, heightOffset, isLargeTitle, theme, title]);
+    }, [navigation, defaultHeight, hasSearch, heightOffset, isLargeTitle, theme, title, titleTestID]);
 }
 
 /**

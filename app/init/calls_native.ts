@@ -27,6 +27,7 @@ import {
 } from '@calls/native_call';
 import {
     getCurrentCall,
+    getCallsState,
     setMicPermissionsGranted,
 } from '@calls/state';
 import {Device} from '@constants';
@@ -107,6 +108,7 @@ class CallsNativeSingleton {
             channelId,
             postId,
             threadId,
+            callId: getCallsState(server.url).calls[channelId]?.id ?? '',
         });
 
         // Open WS to the call's server so user_dismissed_notification /

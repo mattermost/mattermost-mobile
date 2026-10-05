@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import RNUtils from '@mattermost/rnutils';
+
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -160,7 +162,13 @@ export async function restDeferredAppEntryActions(
             teamQueue = [...myOtherSortedTeams];
         }
 
-        processTeams();
+        // Guards against RUNNINGBOARD 0xdead10cc; released once processTeams (fire-and-forget) settles.
+        const activityToken = await RNUtils.beginDatabaseActivity(serverUrl, 'restDeferredAppEntryActions');
+        processTeams().finally(() => {
+            if (activityToken) {
+                RNUtils.endDatabaseActivity(activityToken);
+            }
+        });
     });
 }
 

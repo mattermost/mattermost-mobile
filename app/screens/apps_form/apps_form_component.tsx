@@ -467,6 +467,7 @@ function AppsFormComponent({
                 keyboardShouldPersistTaps='handled'
                 contentContainerStyle={style.scrollView}
                 mode='layout'
+                testID='interactive_dialog.scroll_view'
             >
                 {error && (
                     <View style={style.errorContainer} >

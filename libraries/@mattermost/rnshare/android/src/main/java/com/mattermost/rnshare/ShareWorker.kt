@@ -2,7 +2,6 @@ package com.mattermost.rnshare
 
 import android.content.Context
 import android.content.pm.ServiceInfo
-import android.os.Build
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -35,6 +34,9 @@ import java.util.Objects
 class ShareWorker(private val context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters) {
     companion object {
         private const val HEADER_X_MATTERMOST_PREAUTH_SECRET = "X-Mattermost-Preauth-Secret"
+        private const val HEADER_SESSION_ATTRIBUTES = "X-MM-Session-Attributes"
+
+        var getSessionAttributesHeader: ((String) -> String?)? = null
     }
     private val jsonType: MediaType? = "application/json; charset=utf-8".toMediaTypeOrNull()
     private val okHttpClient: OkHttpClient
@@ -138,6 +140,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 .url("$serverUrl/api/v4/posts")
                 .post(body)
 
+        getSessionAttributesHeader?.invoke(serverUrl)?.let { header ->
+            requestBuilder.header(HEADER_SESSION_ATTRIBUTES, header)
+        }
+
         if (preauthSecret != null) {
             requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
         }
@@ -173,6 +179,10 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                     .header("Authorization", "BEARER $token")
                     .url("$serverUrl/api/v4/files")
                     .post(body)
+
+            getSessionAttributesHeader?.invoke(serverUrl)?.let { header ->
+                requestBuilder.header(HEADER_SESSION_ATTRIBUTES, header)
+            }
 
             if (preauthSecret != null) {
                 requestBuilder.header(HEADER_X_MATTERMOST_PREAUTH_SECRET, preauthSecret)
@@ -218,11 +228,6 @@ class ShareWorker(private val context: Context, workerParameters: WorkerParamete
                 .setSmallIcon(applicationContext.resources.getIdentifier("ic_notification", "mipmap", applicationContext.packageName))
                 .setOngoing(true)
                 .build()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ForegroundInfo(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-        } else {
-            ForegroundInfo(1, notification)
-        }
-
+        return ForegroundInfo(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
     }
 }

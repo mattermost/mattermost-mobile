@@ -16,8 +16,6 @@ import {sortSessions} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
-import {isEdgeToEdge} from '@constants/device';
-import {NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -86,8 +84,7 @@ export const ParticipantsList = ({
     const sessions = sortSessions(intl.locale, teammateNameDisplay, sessionsDict);
     const snapPoint1 = bottomSheetSnapPoint(Math.min(sessions.length, MIN_ROWS), ROW_HEIGHT) + HEADER_HEIGHT;
     const snapPoint2 = height * 0.8;
-    const snapBottom = isEdgeToEdge ? bottom : NOT_EDGE_TO_EDGE_BOTTOM_SHEET_MARGIN;
-    const snapPoints = [1, Math.min(snapPoint1, snapPoint2) + snapBottom];
+    const snapPoints = [1, Math.min(snapPoint1, snapPoint2) + bottom];
     if (sessions.length > MIN_ROWS && snapPoint1 < snapPoint2) {
         snapPoints.push(snapPoint2);
     }

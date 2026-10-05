@@ -32,6 +32,14 @@ const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 
             style={StyleSheet.absoluteFill}
             onPress={onDismiss}
             onLayout={onLayout}
+
+            // Detox cannot tap the scrim without this: the overlay's Modal
+            // ('tutorial_highlight') is not the view that wins the hit-test at the
+            // scrim's pixels -- this Svg is -- so a tap aimed at the Modal fails its
+            // hittability precondition ("View is not hittable at its visible point").
+            // Labelling the real responder lets the test drive the same onPress a user's
+            // tap goes through. Test affordance only: no behaviour change.
+            testID='tutorial_highlight.scrim'
         >
             <G>
                 <Defs>

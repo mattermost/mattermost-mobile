@@ -269,12 +269,14 @@ class WebsocketManagerSingleton {
 
         const wentBackground = this.previousActiveState && !currentIsActive;
         const switchedNetworks = currentIsConnected && currentNetType !== this.netType && this.netType !== 'none';
+        const previousNetType = this.netType;
 
         this.previousActiveState = currentIsActive;
         this.netConnected = currentIsConnected;
         this.netType = currentNetType;
 
         if (!currentIsConnected) {
+            logDebug('WebSocketManager: closing all connections, network disconnected', 'netType', currentNetType);
             this.closeAll();
             return;
         }
@@ -283,6 +285,7 @@ class WebsocketManagerSingleton {
             // Close all connections when we switch from (for example) vpn to wifi
             // to ensure we are using the right network and doesn't get stuck on
             // retries.
+            logDebug('WebSocketManager: closing all connections, network switched', 'from', previousNetType, 'to', currentNetType);
             this.closeAll();
         }
 

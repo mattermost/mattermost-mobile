@@ -320,6 +320,9 @@ jest.doMock('react-native', () => {
             getWindowDimensions: jest.fn().mockReturnValue({width: 426, height: 952}),
 
             deleteDatabaseDirectory: jest.fn(),
+
+            beginDatabaseActivity: jest.fn().mockResolvedValue('token-1'),
+            endDatabaseActivity: jest.fn(),
         },
         APIClient: {
             getConstants: () => ({
@@ -586,18 +589,21 @@ jest.mock('react-native-share', () => ({
 }));
 
 jest.mock('@mattermost/react-native-emm', () => ({
+    AuthenticationOutcome: {
+        Failed: 'E_AUTH_FAILED',
+        Cancelled: 'E_CANCELLED',
+        Indeterminate: 'E_INDETERMINATE',
+    },
     addListener: jest.fn(),
-    authenticate: async () => {
-        return true;
-    },
+    applyBlurEffect: jest.fn(),
+    authenticate: jest.fn(async () => true),
+    enableBlurScreen: jest.fn(),
+    exitApp: jest.fn(),
     getManagedConfig: <T>() => ({} as T),
-    isDeviceSecured: async () => {
-        return true;
-    },
-    openSecuritySettings: () => jest.fn(),
-    setAppGroupId: () => {
-        return '';
-    },
+    isDeviceSecured: jest.fn(async () => true),
+    openSecuritySettings: jest.fn(),
+    removeBlurEffect: jest.fn(),
+    setAppGroupId: jest.fn(() => ''),
     useManagedConfig: () => ({}),
 }));
 

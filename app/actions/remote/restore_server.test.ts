@@ -104,7 +104,7 @@ describe('restoreServerAfterDatabaseWipe', () => {
         expect(setActiveServerDatabaseSpy).toHaveBeenCalledWith(serverUrl);
         expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverUrl, '');
         expect(determineRouteFromLaunchProps).toHaveBeenCalledWith({launchType: Launch.Normal, serverUrl, coldStart: true});
-        expect(router.replace).toHaveBeenCalledWith({pathname: '/(authenticated)/(home)', params: {launchType: Launch.Normal, serverUrl, coldStart: true}});
+        expect(router.replace).toHaveBeenCalledWith({pathname: '/(authenticated)/(home)', params: {launchType: `"${Launch.Normal}"`, serverUrl: `"${serverUrl}"`, coldStart: 'true'}});
         expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
         expect(result).toEqual({});
     });

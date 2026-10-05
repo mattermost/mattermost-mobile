@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-import Emm from '@mattermost/react-native-emm';
+import Emm, {AuthenticationOutcome} from '@mattermost/react-native-emm';
 import {isRootedExperimentalAsync} from 'expo-device';
 import {AppState, DeviceEventEmitter, type AppStateStatus, type EventSubscription} from 'react-native';
 
@@ -31,6 +31,7 @@ import {getConfig, getConfigValue, getSecurityConfig} from '@queries/servers/sys
 import {getCurrentUser} from '@queries/servers/user';
 import {
     messages,
+    showAuthenticationInterruptedAlert,
     showAuthenticationRequiredAlert,
     showBiometricFailureAlert,
     showBiometricFailureAlertForOrganization,
@@ -43,9 +44,12 @@ import {
     showMAMEnrollmentRequiredAlert,
     showNotSecuredAlert,
 } from '@utils/alerts';
-import {toMilliseconds} from '@utils/datetime';
+import {getFullErrorMessage} from '@utils/errors';
 import {isMainActivity} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
+import {handleAppStateResume} from '@utils/security/app_state';
+import {getAuthenticationOutcome, probeDeviceSecured} from '@utils/security/authentication';
+import {AuthenticationSource, PROMPT_AUTH_AFTER} from '@utils/security/constants';
 
 type SecurityManagerServerConfig = {
     Biometrics?: boolean;
@@ -58,6 +62,8 @@ type SecurityManagerServerConfig = {
 };
 
 type SecurityManagerServersCollection = Record<string, SecurityManagerServerConfig>;
+
+type AuthenticationAttemptOutcome = 'success' | 'notSecured' | 'failed' | 'interrupted';
 
 class SecurityManagerSingleton {
     activeServer?: string;
@@ -185,32 +191,28 @@ class SecurityManagerSingleton {
      * Handles app state changes to prompt authentication when resuming from background.
      */
     onAppStateChange = async (appState: AppStateStatus) => {
-        if (this.isAuthenticationHandledByEmm()) {
-            return;
-        }
+        const server = this.activeServer ?? '';
+        const config = this.getServerConfig(server);
 
-        const isActive = appState === 'active';
-        const isBackground = appState === 'background';
-
-        if (isActive && this.previousAppState === 'background') {
-            if (this.activeServer && !this.serverConfig[this.activeServer].intunePolicy?.isPINRequired) {
-                const config = this.getServerConfig(this.activeServer);
-                if (config && config.Biometrics && isMainActivity()) {
-                    const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= toMilliseconds({minutes: 5});
-                    if (authExpired) {
-                        const isJailbroken = await this.isDeviceJailbroken(this.activeServer);
-                        if (!isJailbroken) {
-                            await this.authenticateWithBiometrics(this.activeServer);
-                        }
-                    }
-                    this.backgroundSince = 0;
+        await handleAppStateResume(appState, this, {
+            isEnabled: () => {
+                if (this.isAuthenticationHandledByEmm() || !config) {
+                    return false;
                 }
-            }
-        } else if (isBackground) {
-            this.backgroundSince = Date.now();
-        }
 
-        this.previousAppState = appState;
+                // Intune owns the prompt when it requires a PIN.
+                if (config.intunePolicy?.isPINRequired) {
+                    return false;
+                }
+
+                return Boolean(config.Biometrics) && isMainActivity();
+            },
+            isGateOpen: () => this.isCheckingBiometrics,
+            shouldBlock: () => this.isDeviceJailbroken(server),
+            authenticate: () => this.authenticateWithBiometrics(server),
+            promptWhenNotExpired: false,
+            source: AuthenticationSource.SecurityManager,
+        });
     };
 
     /**
@@ -742,7 +744,7 @@ class SecurityManagerSingleton {
         if (config?.Biometrics) {
             const lastAccessed = config?.lastAccessed ?? 0;
             const timeSinceLastAccessed = Date.now() - lastAccessed;
-            if (timeSinceLastAccessed > toMilliseconds({minutes: 5}) || config.authenticated === false) {
+            if (timeSinceLastAccessed >= PROMPT_AUTH_AFTER || config.authenticated === false) {
                 return this.authenticateWithBiometrics(server);
             }
         }
@@ -750,79 +752,138 @@ class SecurityManagerSingleton {
         return true;
     };
 
+    private shouldBlurOnAuthenticate = (server: string) => {
+        return server === this.activeServer && this.isScreenCapturePrevented(server);
+    };
+
+    /**
+     * Runs one attempt at both gates: is the device secured, then authenticate.
+     */
+    private runAuthenticationAttempt = async (
+        server: string,
+        config: SecurityManagerServerConfig | undefined,
+        siteName: string | undefined,
+        locale: string,
+    ): Promise<AuthenticationAttemptOutcome> => {
+        const secured = await probeDeviceSecured(AuthenticationSource.SecurityManager);
+        if (secured === 'notSecured' && config) {
+            config.authenticated = false;
+        }
+        if (secured !== 'secured') {
+            return secured;
+        }
+
+        const translations = getTranslations(locale);
+
+        try {
+            await Emm.authenticate({
+                reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
+                fallback: true,
+                supressEnterPassword: false,
+                blurOnAuthenticate: this.shouldBlurOnAuthenticate(server),
+            });
+
+            if (config) {
+                config.authenticated = true;
+            }
+
+            return 'success';
+        } catch (error) {
+            const outcome = getAuthenticationOutcome(error);
+
+            // Anything other than success leaves the user unauthenticated, so later entry
+            // points must re-prompt even inside the lastAccessed window.
+            if (config) {
+                config.authenticated = false;
+            }
+
+            logDebug('SecurityManager: Authentication attempt did not succeed', {outcome, reason: getFullErrorMessage(error)});
+
+            return outcome === AuthenticationOutcome.Failed ? 'failed' : 'interrupted';
+        }
+    };
+
+    private runDeferredEnrollmentCheck = async (server: string) => {
+        if (!this.needsEnrollmentCheck) {
+            return;
+        }
+
+        this.needsEnrollmentCheck = false;
+        logDebug('SecurityManager: Triggering deferred enrollment check');
+        const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(server);
+
+        if (enrollmentOk && !this.isEnrolling) {
+            await IntuneManager.setCurrentIdentity(server);
+            this.setScreenCapturePolicy(server);
+        }
+    };
+
     /**
      * Handles biometric authentication.
      */
     authenticateWithBiometrics = async (server: string, siteName?: string) => {
-        // Prevent concurrent biometric checks
         if (this.isCheckingBiometrics) {
             logDebug('SecurityManager: Biometric check already in progress, skipping');
             return true;
         }
 
+        if (this.isAuthenticationHandledByEmm()) {
+            return true;
+        }
+
+        const config = this.getServerConfig(server);
+        if (!config && !siteName) {
+            return true;
+        }
+
+        // Check Intune MAM policy first - if MAM requires PIN, skip server config
+        if (config?.intunePolicy?.isPINRequired === true) {
+            return true;
+        }
+
         this.isCheckingBiometrics = true;
 
+        const locale = DEFAULT_LOCALE;
+
         try {
-            if (this.isAuthenticationHandledByEmm()) {
-                return true;
-            }
+            // Unbounded: every iteration needs a Retry tap, and the only alternative on a
+            // final attempt would be logging out a user who never failed to authenticate.
+            /* eslint-disable no-await-in-loop */
+            for (;;) {
+                const outcome = await this.runAuthenticationAttempt(server, config, siteName, locale);
 
-            const config = this.getServerConfig(server);
-            if (!config && !siteName) {
-                return true;
-            }
-
-            // Check Intune MAM policy first - if MAM requires PIN, skip server config
-            if (config?.intunePolicy?.isPINRequired === true) {
-                return true;
-            }
-
-            const locale = DEFAULT_LOCALE;
-            const translations = getTranslations(locale);
-
-            const isSecured = await Emm.isDeviceSecured();
-            if (!isSecured) {
-                await showNotSecuredAlert(server, siteName, locale);
-                return false;
-            }
-            const shouldBlurOnAuthenticate = server === this.activeServer && this.isScreenCapturePrevented(server);
-            try {
-                const auth = await Emm.authenticate({
-                    reason: translations[messages.securedBy.id].replace('{vendor}', siteName || config?.siteName || 'Mattermost'),
-                    fallback: true,
-                    supressEnterPassword: true,
-                    blurOnAuthenticate: shouldBlurOnAuthenticate,
-                });
-
-                if (config) {
-                    config.authenticated = auth;
+                if (outcome === 'success') {
+                    this.backgroundSince = 0;
+                    this.isCheckingBiometrics = false;
+                    await this.runDeferredEnrollmentCheck(server);
+                    return true;
                 }
 
-                if (!auth) {
-                    throw new Error('Authorization cancelled');
+                // Alerts resolve only on a button press, so the gate stays open while one
+                // is on screen.
+                if (outcome === 'notSecured') {
+                    await showNotSecuredAlert(server, siteName, locale);
+                    this.isCheckingBiometrics = false;
+                    return false;
                 }
-            } catch (err) {
-                logError('Failed to authenticate with biometrics', err);
-                showBiometricFailureAlert(server, shouldBlurOnAuthenticate, siteName, locale);
-                return false;
-            }
 
-            // After successful authentication, check if enrollment was deferred
-            if (this.needsEnrollmentCheck) {
-                this.needsEnrollmentCheck = false;
-                logDebug('SecurityManager: Triggering deferred enrollment check');
-                const enrollmentOk = await this.ensureMAMEnrollmentForActiveServer(server);
+                if (outcome === 'failed') {
+                    await showBiometricFailureAlert(server, this.shouldBlurOnAuthenticate(server), siteName, locale);
+                    this.isCheckingBiometrics = false;
+                    return false;
+                }
 
-                // Apply screen capture policy if enrollment succeeded
-                if (enrollmentOk && !this.isEnrolling) {
-                    await IntuneManager.setCurrentIdentity(server);
-                    this.setScreenCapturePolicy(server);
+                const choice = await showAuthenticationInterruptedAlert(server, siteName || config?.siteName, locale);
+                if (choice !== 'retry') {
+                    this.isCheckingBiometrics = false;
+                    return false;
                 }
             }
-
-            return true;
-        } finally {
+        } catch (error) {
+            // Never leave the gate latched, or every future prompt is blocked.
             this.isCheckingBiometrics = false;
+            logError('SecurityManager.authenticateWithBiometrics', getFullErrorMessage(error));
+            return false;
         }
     };
 

@@ -85,6 +85,8 @@ export const SYSTEM_IDENTIFIERS = {
     PLAYBOOKS_TASK_REQUIREMENTS_ENABLED: 'playbooks_task_requirements_enabled',
     AGENTS_VERSION: 'agents_version',
     LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
+    ACCESS_CONTROL_GROUP_ID: 'accessControlGroupId',
+    LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
 };
 
 export const GLOBAL_IDENTIFIERS = {
@@ -100,6 +102,7 @@ export const GLOBAL_IDENTIFIERS = {
     PUSH_DISABLED_ACK: 'pushDisabledAck',
     CACHE_MIGRATION: 'cacheMigration',
     PUSH_SIGNING_KEY: 'pushSigningKey',
+    EPHEMERAL_MODE_AUDIT_QUEUE: 'ephemeralModeAuditQueue',
 };
 
 export enum OperationType {
