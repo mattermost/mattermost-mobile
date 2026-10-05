@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ReplaySubject, timer, type MonoTypeOperatorFunction, type Observable} from 'rxjs';
-import {distinctUntilChanged, share} from 'rxjs/operators';
+import {share} from 'rxjs/operators';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -19,13 +19,15 @@ export const shareLatest = <T>(): MonoTypeOperatorFunction<T> => share<T>({
 });
 
 /**
- * Returns one shared, deduplicated observable per database and key instead of
- * building a new query pipeline for every caller.
+ * Returns one shared observable per database and key instead of building a new
+ * query pipeline for every caller. Factories emitting primitives should apply
+ * distinctUntilChanged themselves; model observables must not, since WatermelonDB
+ * re-emits the same record instance when it is updated.
  */
 export const cachePerDatabase = <T, K extends string = string>(factory: (database: Database, key: K) => Observable<T>) => {
     const cache = new WeakMap<Database, Map<K, Observable<T>>>();
 
-    return (database: Database, key: K): Observable<T> => {
+    return (database: Database, key = '' as K): Observable<T> => {
         let byKey = cache.get(database);
         if (!byKey) {
             byKey = new Map();
@@ -34,7 +36,7 @@ export const cachePerDatabase = <T, K extends string = string>(factory: (databas
 
         let observable = byKey.get(key);
         if (!observable) {
-            observable = factory(database, key).pipe(distinctUntilChanged(), shareLatest());
+            observable = factory(database, key).pipe(shareLatest());
             byKey.set(key, observable);
         }
         return observable;

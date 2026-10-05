@@ -3,6 +3,8 @@
 
 /* eslint-disable max-lines */
 
+import {waitFor} from '@testing-library/react-native';
+
 import {processReceivedThreads} from '@actions/local/thread';
 import {ActionType, Config, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -1036,6 +1038,30 @@ describe('Team Queries', () => {
                 });
             });
         }, 1500);
+
+        it('should share one observable that still emits record updates', async () => {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleTeam({teams: [createTestTeam(teamId)], prepareRecordsOnly: false});
+
+            expect(observeCurrentTeam(database)).toBe(observeCurrentTeam(database));
+
+            const displayNames: Array<string | undefined> = [];
+            const subscription = observeCurrentTeam(database).subscribe((team) => displayNames.push(team?.displayName));
+            await waitFor(() => expect(displayNames).toHaveLength(1));
+
+            const team = await getTeamById(database, teamId);
+            await database.write(async () => {
+                await team!.update((t) => {
+                    t.displayName = 'Renamed';
+                });
+            });
+
+            await waitFor(() => expect(displayNames[displayNames.length - 1]).toBe('Renamed'));
+            subscription.unsubscribe();
+        });
     });
 
     describe('observeIsTeamUnread', () => {
