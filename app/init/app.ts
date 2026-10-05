@@ -83,7 +83,7 @@ export async function initialize() {
         CallsNative.init();
 
         PushNotifications.init(serverCredentials.length > 0);
-    }, {onlyIfParent: false});
+    }, {forceTransaction: true});
 }
 
 export function cleanup() {

@@ -4,15 +4,12 @@
 import Config from '@assets/config.json';
 
 const mockStartSpan = jest.fn((_options: unknown, callback: () => unknown) => callback());
-const mockStartSpanManual = jest.fn((options: unknown, callback: (span: {end: jest.Mock; setAttribute: jest.Mock}) => void) => {
-    const span = {
-        end: jest.fn(),
-        setAttribute: jest.fn(),
-        options,
-    };
-    callback(span);
-    return span;
-});
+const mockStartInactiveSpan = jest.fn((options: unknown) => ({
+    end: jest.fn(),
+    setAttribute: jest.fn(),
+    options,
+}));
+const mockGetActiveSpan = jest.fn();
 const mockInit = jest.fn();
 const mockWrap = jest.fn((component: unknown) => component);
 const mockRegisterNavigationContainer = jest.fn();
@@ -26,7 +23,8 @@ jest.mock('@sentry/react-native', () => ({
     init: mockInit,
     wrap: mockWrap,
     startSpan: mockStartSpan,
-    startSpanManual: mockStartSpanManual,
+    startInactiveSpan: mockStartInactiveSpan,
+    getActiveSpan: mockGetActiveSpan,
     reactNavigationIntegration: mockReactNavigationIntegration,
     hermesProfilingIntegration: mockHermesProfilingIntegration,
 }));
@@ -81,14 +79,18 @@ describe('sentry_tracing', () => {
 
         const handle = tracing.startManualTransaction('key', 'name', 'op');
         handle.end();
-        expect(mockStartSpanManual).not.toHaveBeenCalled();
+        expect(mockStartInactiveSpan).not.toHaveBeenCalled();
     });
 
     it('should end manual transactions by key', () => {
         tracing.testExports.setInitializedForTesting(true);
 
         const handle = tracing.startManualTransaction('mobile_channel_switch', 'mobile_channel_switch', 'ui.action');
-        expect(mockStartSpanManual).toHaveBeenCalled();
+        expect(mockStartInactiveSpan).toHaveBeenCalledWith(expect.objectContaining({
+            name: 'mobile_channel_switch',
+            op: 'ui.action',
+            forceTransaction: true,
+        }));
         expect(tracing.testExports.activeManualSpans.has('mobile_channel_switch')).toBe(true);
 
         handle.end();
@@ -114,6 +116,55 @@ describe('sentry_tracing', () => {
                 onlyIfParent: true,
                 attributes: {'mm.db.record_count': 3},
             }),
+            expect.any(Function),
+        );
+    });
+
+    it('should attach child spans to the open manual transaction when no span is active', async () => {
+        tracing.testExports.setInitializedForTesting(true);
+        const handle = tracing.startManualTransaction('mobile_channel_switch', 'mobile_channel_switch', 'ui.action');
+        const transaction = tracing.testExports.activeManualSpans.get('mobile_channel_switch');
+
+        await tracing.withSpan('GET /api/v4/channels', 'http.client', async () => undefined);
+
+        expect(mockStartSpan).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                parentSpan: transaction,
+                onlyIfParent: true,
+                attributes: {'mm.attribution': 'fallback'},
+            }),
+            expect.any(Function),
+        );
+
+        handle.end();
+        await tracing.withSpan('GET /api/v4/channels', 'http.client', async () => undefined);
+
+        expect(mockStartSpan).toHaveBeenLastCalledWith(
+            expect.objectContaining({parentSpan: undefined, onlyIfParent: true, attributes: {}}),
+            expect.any(Function),
+        );
+    });
+
+    it('should prefer the active span over an open manual transaction', async () => {
+        tracing.testExports.setInitializedForTesting(true);
+        tracing.startManualTransaction('mobile_channel_switch', 'mobile_channel_switch', 'ui.action');
+        mockGetActiveSpan.mockReturnValueOnce({});
+
+        tracing.withSpanSync('ws.posted', 'ws.handle', () => undefined);
+
+        expect(mockStartSpan).toHaveBeenCalledWith(
+            expect.objectContaining({parentSpan: undefined, attributes: {}}),
+            expect.any(Function),
+        );
+    });
+
+    it('should start a transaction when forceTransaction is set', async () => {
+        tracing.testExports.setInitializedForTesting(true);
+
+        await tracing.withSpan('app.initialize', 'app.init', async () => undefined, {forceTransaction: true});
+
+        expect(mockStartSpan).toHaveBeenCalledWith(
+            {name: 'app.initialize', op: 'app.init', forceTransaction: true, attributes: {}},
             expect.any(Function),
         );
     });

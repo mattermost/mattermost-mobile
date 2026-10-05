@@ -139,25 +139,14 @@ export function startManualTransaction(
         activeManualSpans.delete(key);
     }
 
-    const sentry = ensureSentryModule();
-    let spanRef: Span | undefined;
-
-    sentry.startSpanManual(
-        {
-            name,
-            op,
-            forceTransaction: true,
-            attributes: sanitizeAttributes(attributes),
-        },
-        (span) => {
-            spanRef = span;
-            activeManualSpans.set(key, span);
-        },
-    );
-
-    if (!spanRef) {
-        return NOOP_HANDLE;
-    }
+    // Inactive so the transaction outlives this call; withSpan() attaches children to it explicitly.
+    const transaction = ensureSentryModule().startInactiveSpan({
+        name,
+        op,
+        forceTransaction: true,
+        attributes: sanitizeAttributes(attributes),
+    });
+    activeManualSpans.set(key, transaction);
 
     return {
         end: () => {
@@ -196,14 +185,47 @@ type ChildSpanOptions = {
     attributes?: SpanAttributes;
 
     /**
-     * When true (default), skip creating a span unless a parent transaction/span is active.
-     * Keeps HTTP/DB/WS spans attached to UX transactions instead of flooding Sentry.
+     * When true (default), skip creating a span unless a parent transaction/span is active
+     * or a manual transaction is open. Keeps HTTP/DB/WS spans attached to UX transactions
+     * instead of flooding Sentry.
      */
     onlyIfParent?: boolean;
+
+    /**
+     * Start this span as its own transaction, for top-level flows like app initialization.
+     */
+    forceTransaction?: boolean;
 };
 
+function getOpenManualTransaction() {
+    return Array.from(activeManualSpans.values()).pop();
+}
+
+function buildSpanOptions(name: string, op: string, options?: ChildSpanOptions) {
+    const attributes = sanitizeAttributes(options?.attributes);
+
+    if (options?.forceTransaction) {
+        return {name, op, forceTransaction: true, attributes};
+    }
+
+    // React Native has no async context, so work that runs after a manual transaction
+    // starts (e.g. HTTP during a channel switch) is attributed to the most recent open one.
+    const fallbackParent = ensureSentryModule().getActiveSpan() ? undefined : getOpenManualTransaction();
+    if (fallbackParent) {
+        attributes['mm.attribution'] = 'fallback';
+    }
+
+    return {
+        name,
+        op,
+        parentSpan: fallbackParent,
+        onlyIfParent: options?.onlyIfParent ?? true,
+        attributes,
+    };
+}
+
 /**
- * Run work inside a child span. By default only records when a parent span is active.
+ * Run work inside a child span. By default only records when a parent span is active or a manual transaction is open.
  */
 export async function withSpan<T>(
     name: string,
@@ -215,16 +237,7 @@ export async function withSpan<T>(
         return callback();
     }
 
-    const sentry = ensureSentryModule();
-    return sentry.startSpan(
-        {
-            name,
-            op,
-            onlyIfParent: options?.onlyIfParent ?? true,
-            attributes: sanitizeAttributes(options?.attributes),
-        },
-        () => callback(),
-    );
+    return ensureSentryModule().startSpan(buildSpanOptions(name, op, options), () => callback());
 }
 
 /**
@@ -240,16 +253,7 @@ export function withSpanSync<T>(
         return callback();
     }
 
-    const sentry = ensureSentryModule();
-    return sentry.startSpan(
-        {
-            name,
-            op,
-            onlyIfParent: options?.onlyIfParent ?? true,
-            attributes: sanitizeAttributes(options?.attributes),
-        },
-        () => callback(),
-    );
+    return ensureSentryModule().startSpan(buildSpanOptions(name, op, options), () => callback());
 }
 
 export function shouldTraceWebsocketEvent(event: string | undefined) {
