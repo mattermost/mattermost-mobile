@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {waitFor} from '@testing-library/react-native';
 import {Platform} from 'react-native';
-import {firstValueFrom} from 'rxjs';
+import {firstValueFrom, type Subscription} from 'rxjs';
 
 import {License, Preferences} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import {
@@ -27,6 +28,7 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type SystemModel from '@typings/database/models/servers/system';
 
 jest.mock('expo-application', () => {
     return {
@@ -749,5 +751,56 @@ describe('system observe functions', () => {
 
     it('observeOnlyUnreads emits false when not set', async () => {
         expect(await firstValueFrom(observeOnlyUnreads(database))).toBe(false);
+    });
+});
+
+describe('shared system observables', () => {
+    const serverUrl = 'shared.system.test.com';
+    const otherServerUrl = 'other.shared.system.test.com';
+    let database: Database;
+    let operator: ServerDataOperator;
+    let subscription: Subscription | undefined;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl, otherServerUrl]);
+        ({database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl));
+    });
+
+    afterEach(async () => {
+        subscription?.unsubscribe();
+        subscription = undefined;
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+        await DatabaseManager.destroyServerDatabase(otherServerUrl);
+    });
+
+    const setCurrentUserValue = async (value: string) => {
+        const record = await database.get<SystemModel>(MM_TABLES.SERVER.SYSTEM).find(SYSTEM_IDENTIFIERS.CURRENT_USER_ID);
+        await database.write(async () => {
+            await record.update((r) => {
+                r.value = value;
+            });
+        });
+    };
+
+    it('should return the same observable for the same database and key', () => {
+        const otherDatabase = DatabaseManager.getServerDatabaseAndOperator(otherServerUrl).database;
+
+        expect(observeCurrentUserId(database)).toBe(observeCurrentUserId(database));
+        expect(observeConfigValue(database, 'Version')).toBe(observeConfigValue(database, 'Version'));
+        expect(observeConfigValue(database, 'Version')).not.toBe(observeConfigValue(database, 'BuildNumber'));
+        expect(observeCurrentUserId(database)).not.toBe(observeCurrentUserId(otherDatabase));
+    });
+
+    it('should only emit when the system value changes', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: 'user1'}], prepareRecordsOnly: false});
+
+        const values: string[] = [];
+        subscription = observeCurrentUserId(database).subscribe((v) => values.push(v));
+        await waitFor(() => expect(values).toEqual(['user1']));
+
+        await setCurrentUserValue('user1');
+        await setCurrentUserValue('user2');
+
+        await waitFor(() => expect(values).toEqual(['user1', 'user2']));
     });
 });

@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {of as of$, combineLatest, ReplaySubject, timer, type Observable} from 'rxjs';
-import {switchMap, map, distinctUntilChanged, share} from 'rxjs/operators';
+import {of as of$, combineLatest, type Observable} from 'rxjs';
+import {switchMap, map, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {DMS_CATEGORY, MANAGED_LOCAL_CATEGORY_PREFIX, UNREADS_CATEGORY} from '@constants/categories';
@@ -21,6 +21,7 @@ import {
     getUnreadIds,
     sortChannels,
 } from '@utils/categories';
+import {shareLatest} from '@utils/observable';
 
 import {flattenCategories, type CategoryData, type FlattenedItem} from './flatten_categories';
 
@@ -63,35 +64,29 @@ type SharedCategoryInputs = {
     autoclosePrefs: Observable<PreferenceModel[]>;
 };
 
-// Reset is deferred a tick so the subscription survives the categories switchMap swapping inner pipelines
-const shareLatest = <T>(source: Observable<T>) => source.pipe(share({
-    connector: () => new ReplaySubject<T>(1),
-    resetOnError: true,
-    resetOnComplete: true,
-    resetOnRefCountZero: () => timer(0),
-}));
-
 const observeSharedCategoryInputs = (database: Database, isTablet: boolean): SharedCategoryInputs => {
-    const currentChannelId = isTablet ? shareLatest(observeCurrentChannelId(database)) : of$('');
-    const lastUnreadId = isTablet ? shareLatest(observeLastUnreadChannelId(database)) : of$(undefined);
+    const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
+    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database).pipe(shareLatest()) : of$(undefined);
 
     const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']);
     const hiddenGmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']);
-    const manuallyClosedPrefs = shareLatest(hiddenDmPrefs.pipe(
+    const manuallyClosedPrefs = hiddenDmPrefs.pipe(
         switchMap((dms) => combineLatest([of$(dms), hiddenGmPrefs])),
         map(([dms, gms]) => dms.concat(gms)),
-    ));
+        shareLatest(),
+    );
 
     const approxViewTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, undefined).
         observeWithColumns(['value']);
     const openTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, undefined).
         observeWithColumns(['value']);
-    const autoclosePrefs = shareLatest(approxViewTimePrefs.pipe(
+    const autoclosePrefs = approxViewTimePrefs.pipe(
         switchMap((viewTimes) => combineLatest([of$(viewTimes), openTimePrefs])),
         map(([viewTimes, openTimes]) => viewTimes.concat(openTimes)),
-    ));
+        shareLatest(),
+    );
 
     return {currentChannelId, lastUnreadId, manuallyClosedPrefs, autoclosePrefs};
 };
