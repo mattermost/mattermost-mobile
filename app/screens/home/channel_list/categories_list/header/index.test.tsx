@@ -2,11 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {defer} from 'rxjs';
 
 import {Permissions} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
+import {getCurrentUser} from '@queries/servers/user';
 import {act, renderWithEverything, waitFor} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -15,7 +17,8 @@ import ChannelListHeader from './header';
 import ChannelListHeaderIndex from './index';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
-import type {Database} from '@nozbe/watermelondb';
+import type {Database, Query} from '@nozbe/watermelondb';
+import type RoleModel from '@typings/database/models/servers/role';
 
 jest.mock('./header');
 jest.mocked(ChannelListHeader).mockImplementation((props) => {
@@ -543,6 +546,69 @@ describe('ChannelListHeader Index', () => {
             const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database});
             const component = getByTestId('channel-list-header');
             expect(component.props.canInvitePeople).toBe(false);
+        });
+    });
+    describe('team permission queries', () => {
+        const countRoleQuerySubscriptions = () => {
+            const counter = {subscriptions: 0};
+            const collection = database.get<RoleModel>(MM_TABLES.SERVER.ROLE);
+            const query = collection.query.bind(collection);
+            jest.spyOn(collection, 'query').mockImplementation((...clauses) => {
+                const result: Query<RoleModel> = query(...clauses);
+                const observeWithColumns = result.observeWithColumns.bind(result);
+                result.observeWithColumns = (columns) => defer(() => {
+                    counter.subscriptions++;
+                    return observeWithColumns(columns);
+                });
+                return result;
+            });
+            return counter;
+        };
+
+        beforeEach(async () => {
+            await operator.handleTeam({teams: [TestHelper.fakeTeam({id: currentTeamId})], prepareRecordsOnly: false});
+            await operator.handleUsers({users: [TestHelper.fakeUser({id: currentUserId, roles: 'system_user'})], prepareRecordsOnly: false});
+            await operator.handleSystem({
+                systems: [
+                    {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId},
+                    {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: currentUserId},
+                ],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleMyTeam({myTeams: [{id: currentTeamId, roles: 'team_user'}], prepareRecordsOnly: false});
+            await operator.handleRole({
+                roles: [
+                    {id: 'system_user', name: 'system_user', permissions: [Permissions.JOIN_PUBLIC_CHANNELS]},
+                    {id: 'team_user', name: 'team_user', permissions: []},
+                ],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        it('should share one roles query across all team permissions', async () => {
+            const counter = countRoleQuerySubscriptions();
+
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database});
+
+            await waitFor(() => expect(getByTestId('channel-list-header').props.canJoinChannels).toBe(true));
+            expect(counter.subscriptions).toBe(1);
+        });
+
+        it('should not re-query roles when an unrelated current user field changes', async () => {
+            const counter = countRoleQuerySubscriptions();
+            const {getByTestId} = renderWithEverything(<ChannelListHeaderIndex/>, {database});
+            await waitFor(() => expect(getByTestId('channel-list-header').props.canJoinChannels).toBe(true));
+
+            const user = await getCurrentUser(database);
+            await act(async () => {
+                await database.write(async () => {
+                    await user!.update((u) => {
+                        u.status = 'dnd';
+                    });
+                });
+            });
+
+            expect(counter.subscriptions).toBe(1);
         });
     });
 });

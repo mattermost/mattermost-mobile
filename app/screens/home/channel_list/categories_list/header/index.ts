@@ -7,12 +7,14 @@ import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observePermissionForTeam} from '@queries/servers/role';
+import {observeRolesForTeam} from '@queries/servers/role';
 import {observeConfig, observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {isZeroPersistenceConfig, parseNonNegativeConfigNumber} from '@utils/config';
+import {shareLatest} from '@utils/observable';
+import {hasPermission} from '@utils/role';
 
 import ChannelListHeader from './header';
 
@@ -27,41 +29,35 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
 
     const currentUser = observeCurrentUser(database);
 
-    const canJoinChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
+    const userRoles = currentUser.pipe(map((u) => u?.roles), distinctUntilChanged());
+    const teamId = team.pipe(map((t) => t?.id), distinctUntilChanged());
+    const teamRoles = combineLatest([teamId, userRoles]).pipe(
+        switchMap(([tId, roles]) => observeRolesForTeam(database, tId, roles)),
+        shareLatest(),
     );
 
-    const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)),
-    );
-
-    const canCreatePrivateChannels = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)),
-    );
-
-    const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(
-        switchMap(([open, priv]) => of$(open || priv)),
+    const observeTeamPermission = (permission: string, defaultValue: boolean) => teamRoles.pipe(
+        map((roles) => (roles ? hasPermission(roles, permission) : defaultValue)),
         distinctUntilChanged(),
     );
 
-    const canAddUserToTeam = combineLatest([currentUser, team]).pipe(
-        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
+    const canJoinChannels = observeTeamPermission(Permissions.JOIN_PUBLIC_CHANNELS, true);
+
+    const canCreateChannels = combineLatest([
+        observeTeamPermission(Permissions.CREATE_PUBLIC_CHANNEL, true),
+        observeTeamPermission(Permissions.CREATE_PRIVATE_CHANNEL, false),
+    ]).pipe(
+        map(([open, priv]) => open || priv),
+        distinctUntilChanged(),
     );
 
     const guestAccountsEnabled = observeConfigBooleanValue(database, 'EnableGuestAccounts');
-
-    const canInviteGuests = combineLatest([guestAccountsEnabled, currentUser, team]).pipe(
-        switchMap(([enabled, u, t]) => {
-            if (!enabled) {
-                return of$(false);
-            }
-            return observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false);
-        }),
-        distinctUntilChanged(),
+    const canInviteGuests = combineLatest([guestAccountsEnabled, observeTeamPermission(Permissions.INVITE_GUEST, false)]).pipe(
+        map(([enabled, canInvite]) => enabled && canInvite),
     );
 
-    const canInvitePeople = combineLatest([canAddUserToTeam, canInviteGuests]).pipe(
-        switchMap(([add, invite]) => of$(add || invite)),
+    const canInvitePeople = combineLatest([observeTeamPermission(Permissions.ADD_USER_TO_TEAM, false), canInviteGuests]).pipe(
+        map(([add, invite]) => add || invite),
         distinctUntilChanged(),
     );
 
@@ -74,10 +70,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         canJoinChannels,
         canInvitePeople,
         canJoinOtherTeams: EphemeralStore.observeCanJoinOtherTeams(serverUrl),
-        currentTeamId: team.pipe(
-            switchMap((t) => of$(t?.id ?? '')),
-            distinctUntilChanged(),
-        ),
+        currentTeamId: teamId.pipe(map((id) => id ?? '')),
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
             distinctUntilChanged(),

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$, combineLatest} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {of as of$, combineLatest, type Observable} from 'rxjs';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDefaultChannel, isDMorGM} from '@utils/channel';
@@ -11,7 +11,7 @@ import {hasPermission} from '@utils/role';
 
 import {observeChannel, observeMyChannelRoles} from './channel';
 import {observeConfigBooleanValue} from './system';
-import {observeMyTeam, observeMyTeamRoles} from './team';
+import {observeMyTeamRoles} from './team';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -61,23 +61,29 @@ export function observePermissionForChannel(database: Database, channel: Channel
     );
 }
 
-export function observePermissionForTeam(database: Database, team: TeamModel | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
-    if (!team || !user) {
-        return of$(defaultValue);
+/**
+ * Observes the role records granted to a user in a team, or undefined when the team or user is unknown.
+ * Callers checking several permissions should share this and derive each permission with hasPermission.
+ */
+export function observeRolesForTeam(database: Database, teamId: string | undefined, userRoles: string | undefined): Observable<RoleModel[] | undefined> {
+    if (!teamId || userRoles === undefined) {
+        return of$(undefined);
     }
 
-    return observeMyTeam(database, team.id).pipe(
-        switchMap((myTeam) => {
-            const rolesArray = [...user.roles.split(' ')];
-
-            if (myTeam) {
-                rolesArray.push(...myTeam.roles.split(' '));
+    return observeMyTeamRoles(database, teamId).pipe(
+        switchMap((myTeamRoles) => {
+            const rolesArray = userRoles.split(' ');
+            if (myTeamRoles) {
+                rolesArray.push(...myTeamRoles.split(' '));
             }
-
-            return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
-                switchMap((roles) => of$(hasPermission(roles, permission))),
-            );
+            return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']);
         }),
+    );
+}
+
+export function observePermissionForTeam(database: Database, team: TeamModel | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
+    return observeRolesForTeam(database, team?.id, user?.roles).pipe(
+        map((roles) => (roles ? hasPermission(roles, permission) : defaultValue)),
         distinctUntilChanged(),
     );
 }
