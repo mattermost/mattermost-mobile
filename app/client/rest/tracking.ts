@@ -8,6 +8,7 @@ import {CollectNetworkMetrics} from '@assets/config.json';
 import {Events} from '@constants';
 import {setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
 import {isErrorWithStatusCode} from '@utils/errors';
@@ -386,12 +387,15 @@ export default class ClientTracking {
         }
 
         const performanceRequestId = NetworkPerformanceManager.startRequestTracking(this.apiClient.baseUrl, url);
+        const postureRequestId = NetworkPostureManager.beginRequest(this.apiClient.baseUrl);
+        const requestStartedAt = Date.now();
 
         let response: ClientResponse;
         try {
             response = await request!(url, this.buildRequestOptions(options));
         } catch (error) {
             NetworkPerformanceManager.cancelRequestTracking(this.apiClient.baseUrl, performanceRequestId);
+            NetworkPostureManager.recordSample(this.apiClient.baseUrl, Date.now() - requestStartedAt, true);
             const response_error = error as ClientError;
             const status_code = isErrorWithStatusCode(error) ? error.status_code : undefined;
             logDebug('doFetchWithTracking: request failed', 'method', method, 'status_code', status_code, 'url', cleanUrlForLogging(this.apiClient.baseUrl, url));
@@ -407,10 +411,12 @@ export default class ClientTracking {
                 status_code,
             });
         } finally {
+            NetworkPostureManager.endRequest(this.apiClient.baseUrl, postureRequestId);
             if (groupLabel && CollectNetworkMetrics) {
                 this.decrementRequestCount(groupLabel);
             }
         }
+        NetworkPostureManager.recordSample(this.apiClient.baseUrl, Date.now() - requestStartedAt, false);
         const headers: ClientHeaders = response.headers || {};
         if (groupLabel && CollectNetworkMetrics) {
             this.trackRequest(groupLabel, url, response.metrics);
@@ -435,6 +441,12 @@ export default class ClientTracking {
 
         if (response.ok) {
             return returnDataOnly ? (response.data || {}) : response;
+        }
+
+        // The server's rate limiter replies in plain text; any 429 with an AppError id is something else.
+        if (response.code === 429 && !response.data?.id) {
+            const retryAfterSeconds = parseInt(headers[ClientConstants.HEADER_RETRY_AFTER] || headers[ClientConstants.HEADER_RETRY_AFTER.toLowerCase()], 10);
+            NetworkPostureManager.noteRateLimited(this.apiClient.baseUrl, Number.isNaN(retryAfterSeconds) ? undefined : retryAfterSeconds * 1000);
         }
 
         throw new ClientError(this.apiClient.baseUrl, {

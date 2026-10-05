@@ -8,6 +8,7 @@ import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
@@ -988,9 +989,22 @@ describe('get posts', () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
         await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
 
+        NetworkPostureManager.recordSample(serverUrl, 50, false);
+
         await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1, {...channel1, id: 'channelid2', total_msg_count: 10}], [{...channelMember1, msg_count: 5}, {...channelMember1, channel_id: 'channelid2', msg_count: 10}], 'testid');
 
         expect(spyOnProcessChannelPostsByTeam).toHaveBeenCalledWith(serverUrl, ['channelid1'], false, undefined, undefined);
+        NetworkPostureManager.removeServer(serverUrl);
+    });
+
+    it('fetchPostsForUnreadChannels - skipped when the network posture disallows prefetch', async () => {
+        const spyOnProcessChannelPostsByTeam = jest.spyOn(PostAuxilaryFunctions, 'processChannelPostsByTeam');
+        NetworkPostureManager.recordSample(serverUrl, 50, true);
+
+        await fetchPostsForUnreadChannels(serverUrl, [{id: teamId}] as Team[], [channel1], [{...channelMember1, msg_count: 5}], 'testid');
+
+        expect(spyOnProcessChannelPostsByTeam).not.toHaveBeenCalled();
+        NetworkPostureManager.removeServer(serverUrl);
     });
 
     it('fetchPosts - handle database not found', async () => {

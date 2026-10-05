@@ -17,6 +17,7 @@ import {getAllServerCredentials} from '@init/credentials';
 import {determineRouteFromLaunchProps} from '@init/launch';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import IntuneManager from '@managers/intune_manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import SecurityManager from '@managers/security_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {queryGlobalValue} from '@queries/app/global';
@@ -142,6 +143,7 @@ export class SessionManagerSingleton {
             await this.recordSessionWipeOutcome(serverUrl, auditEventId, result);
             SecurityManager.removeServer(serverUrl);
             EphemeralModeManager.removeServer(serverUrl);
+            NetworkPostureManager.removeServer(serverUrl);
             SessionAttributesManager.removeServer(serverUrl);
 
             if (activeServerUrl === serverUrl) {
@@ -201,6 +203,7 @@ export class SessionManagerSingleton {
             await terminateSession(serverUrl, false);
             SecurityManager.removeServer(serverUrl);
             EphemeralModeManager.removeServer(serverUrl);
+            NetworkPostureManager.removeServer(serverUrl);
             SessionAttributesManager.removeServer(serverUrl);
             await IntuneManager.unenrollServer(serverUrl, true);
 
