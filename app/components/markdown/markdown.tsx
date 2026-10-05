@@ -722,7 +722,8 @@ const Markdown = ({
         const startTime = performance.now();
         let ast;
         try {
-            ast = parser.parse(value.toString());
+            const markdownValue = value.toString().replace(/\uFFFC/g, '');
+            ast = parser.parse(markdownValue);
 
             ast = combineTextNodes(ast);
             ast = addListItemIndices(ast);
