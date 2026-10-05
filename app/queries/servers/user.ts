@@ -9,6 +9,7 @@ import {General} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {sanitizeLikeString} from '@helpers/database';
+import {cachePerDatabase} from '@utils/observable';
 
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
@@ -43,10 +44,14 @@ export const getCurrentUser = async (database: Database) => {
     return undefined;
 };
 
-export const observeCurrentUser = (database: Database) => {
+const observeSharedCurrentUser = cachePerDatabase((database: Database) => {
     return observeCurrentUserId(database).pipe(
         switchMap((id) => observeUser(database, id)),
     );
+});
+
+export const observeCurrentUser = (database: Database) => {
+    return observeSharedCurrentUser(database);
 };
 
 export const observeCurrentUserRoles = (database: Database) => {

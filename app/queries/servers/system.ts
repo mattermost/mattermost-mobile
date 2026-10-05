@@ -51,6 +51,7 @@ const observeSharedSystemString = cachePerDatabase((database: Database, key: str
     return querySystemValue(database, key).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
         map((model) => model.value),
+        distinctUntilChanged(),
     );
 });
 
@@ -256,17 +257,26 @@ export const getIsDataRetentionEnabled = async (database: Database) => {
     return dataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
 };
 
-export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
+const observeSharedConfig = cachePerDatabase((database: Database): Observable<ClientConfig | undefined> => {
     return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
-        switchMap((result) => of$(fromModelToClientConfig<ClientConfig>(result))),
-    );
-};
-
-export const observeConfigValue = cachePerDatabase((database: Database, key: keyof ClientConfig): Observable<string | undefined> => {
-    return queryConfigValue(database, key).observeWithColumns(['value']).pipe(
-        map((result) => (result.length ? result[0].value : undefined)),
+        map((result) => fromModelToClientConfig<ClientConfig>(result)),
     );
 });
+
+export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
+    return observeSharedConfig(database);
+};
+
+const observeSharedConfigValue = cachePerDatabase((database: Database, key: keyof ClientConfig): Observable<string | undefined> => {
+    return queryConfigValue(database, key).observeWithColumns(['value']).pipe(
+        map((result) => (result.length ? result[0].value : undefined)),
+        distinctUntilChanged(),
+    );
+});
+
+export const observeConfigValue = (database: Database, key: keyof ClientConfig): Observable<string | undefined> => {
+    return observeSharedConfigValue(database, key);
+};
 
 export const observeMaxFileCount = (database: Database) => {
     return observeConfigValue(database, 'Version').pipe(
@@ -313,11 +323,15 @@ export const observeCanViewArchivedChannels = (database: Database) => {
     );
 };
 
-export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
+const observeSharedLicense = cachePerDatabase((database: Database): Observable<ClientLicense | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LICENSE).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
-        switchMap((model) => of$(model.value)),
+        map((model) => model.value),
     );
+});
+
+export const observeLicense = (database: Database): Observable<ClientLicense | undefined> => {
+    return observeSharedLicense(database);
 };
 
 export const getLicense = async (serverDatabase: Database): Promise<ClientLicense | undefined> => {

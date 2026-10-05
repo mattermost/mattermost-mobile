@@ -9,6 +9,7 @@ import {Database as DatabaseConstants, Preferences, Screens} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
+import {cachePerDatabase} from '@utils/observable';
 
 import {prepareDeleteCategory} from './categories';
 import {prepareDeleteChannel, getDefaultChannelForTeam, observeMyChannelMentionCount, observeMyChannelUnreads} from './channel';
@@ -408,10 +409,14 @@ export const getAvailableTeamIds = async (database: Database, excludeTeamId: str
     return availableTeamIds.filter((id) => id !== excludeTeamId);
 };
 
-export const observeCurrentTeam = (database: Database) => {
+const observeSharedCurrentTeam = cachePerDatabase((database: Database) => {
     return observeCurrentTeamId(database).pipe(
         switchMap((id) => observeTeam(database, id)),
     );
+});
+
+export const observeCurrentTeam = (database: Database) => {
+    return observeSharedCurrentTeam(database);
 };
 
 export function observeMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {

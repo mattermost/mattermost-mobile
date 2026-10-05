@@ -4,7 +4,7 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {observeChannelsWithCalls} from '@calls/state';
 import {General} from '@constants';
@@ -13,6 +13,7 @@ import {observeIsMutedSetting, observeMyChannel, queryChannelMembers} from '@que
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
+import {shareLatest} from '@utils/observable';
 
 import ChannelItem from './channel_item';
 
@@ -36,7 +37,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
     shouldHighlightState = false,
 }: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
-    const myChannel = observeMyChannel(database, channel.id);
+    const myChannel = observeMyChannel(database, channel.id).pipe(shareLatest());
 
     const hasDraft = shouldHighlightState ? queryDraft(database, channel.id).observeWithColumns(['message', 'files', 'metadata']).pipe(
         switchMap((drafts) => {
@@ -58,7 +59,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
 
     const isActive = shouldHighlightActive ?
         observeCurrentChannelId(database).pipe(
-            switchMap((id) => of$(id ? id === channel.id : false)),
+            map((id) => (id ? id === channel.id : false)),
             distinctUntilChanged(),
         ) : of$(false);
 
@@ -75,7 +76,7 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
     const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
     const teamDisplayName = (teamId && showTeamName) ?
         observeTeam(database, teamId).pipe(
-            switchMap((team) => of$(team?.displayName || '')),
+            map((team) => team?.displayName || ''),
             distinctUntilChanged(),
         ) : of$('');
 
@@ -85,24 +86,24 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
 
     const isUnread = shouldHighlightState ?
         myChannel.pipe(
-            switchMap((mc) => of$(mc?.isUnread)),
+            map((mc) => mc?.isUnread),
             distinctUntilChanged(),
         ) : of$(false);
 
     const mentionsCount = shouldHighlightState ?
         myChannel.pipe(
-            switchMap((mc) => of$(mc?.mentionsCount)),
+            map((mc) => mc?.mentionsCount),
             distinctUntilChanged(),
         ) : of$(0);
 
     const urgentMentionCount = shouldHighlightState ?
         myChannel.pipe(
-            switchMap((mc) => of$(mc?.urgentMentionCount)),
+            map((mc) => mc?.urgentMentionCount),
             distinctUntilChanged(),
         ) : of$(0);
 
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
-        switchMap((calls) => of$(Boolean(calls[channel.id]))),
+        map((calls) => Boolean(calls[channel.id])),
         distinctUntilChanged(),
     );
 
