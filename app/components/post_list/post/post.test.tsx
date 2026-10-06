@@ -3,6 +3,8 @@
 
 import React, {type ComponentProps} from 'react';
 
+import AgentPost from '@agents/components/agent_post';
+import {AGENT_POST_TYPES} from '@agents/constants';
 import UnrevealedBurnOnReadPost from '@components/post_list/post/burn_on_read/unrevealed';
 import SystemHeader from '@components/system_header';
 import {Screens} from '@constants';
@@ -22,6 +24,7 @@ import type {Database} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
 jest.mock('@managers/performance_metrics_manager');
+jest.mock('@agents/components/agent_post', () => jest.fn(() => null));
 jest.mock('@components/post_list/post/burn_on_read/unrevealed');
 jest.mock('@components/system_header', () => jest.fn());
 jest.mock('./avatar', () => jest.fn());
@@ -191,5 +194,65 @@ describe('ephemeral post header', () => {
         });
         expect(Header).not.toHaveBeenCalled();
         expect(Avatar).not.toHaveBeenCalled();
+    });
+});
+
+describe('agent post reply bar', () => {
+    let database: Database;
+
+    function getBaseProps(): ComponentProps<typeof Post> {
+        return {
+            appsEnabled: false,
+            mmBlocksEnabled: false,
+            canDelete: false,
+            customEmojiNames: [],
+            filesInfo: [],
+            hasReactions: false,
+            hasReplies: false,
+            highlightReplyBar: false,
+            isEphemeral: false,
+            isPostAddChannelMember: false,
+            commentCount: 0,
+            location: Screens.CHANNEL,
+            post: TestHelper.fakePostModel({
+                type: AGENT_POST_TYPES.LLMBOT,
+                rootId: 'root-post-id',
+            }),
+            isLastPost: false,
+            isChannelAutotranslated: false,
+        };
+    }
+
+    const serverUrl = 'http://www.someserverurl.com';
+
+    beforeEach(async () => {
+        const client = await NetworkManager.createClient(serverUrl);
+        expect(client).toBeTruthy();
+        database = (await TestHelper.setupServerDatabase(serverUrl)).database;
+        jest.clearAllMocks();
+    });
+
+    afterEach(async () => {
+        await TestHelper.tearDown();
+        NetworkManager.invalidateClient(serverUrl);
+    });
+
+    it('should render the reply bar for an agent reply in the channel', async () => {
+        const {getByTestId} = renderWithEverything(<Post {...getBaseProps()}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(AgentPost).toHaveBeenCalled();
+        });
+        expect(Body).not.toHaveBeenCalled();
+        expect(getByTestId('post.reply_bar')).toBeTruthy();
+    });
+
+    it('should not render the reply bar for an agent reply in the thread screen', async () => {
+        const props = getBaseProps();
+        props.location = Screens.THREAD;
+        const {queryByTestId} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(AgentPost).toHaveBeenCalled();
+        });
+        expect(queryByTestId('post.reply_bar')).toBeNull();
     });
 });

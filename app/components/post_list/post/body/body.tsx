@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, View} from 'react-native';
 
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
@@ -13,7 +13,9 @@ import {Screens} from '@constants';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed, hasInteractivePostContent} from '@utils/post';
-import {blendColors, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+
+import ReplyBar from '../reply_bar';
 
 import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
@@ -63,19 +65,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         messageContainer: {width: '100%'},
-        replyBar: {
-            backgroundColor: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.1),
-            marginLeft: 1,
-            marginRight: 7,
-            width: 3,
-            flexBasis: 3,
-        },
-        replyBarFirst: {paddingTop: 10},
-        replyBarLast: {paddingBottom: 10},
-        replyMention: {
-            backgroundColor: theme.mentionHighlightBg,
-            opacity: 1,
-        },
         message: {
             color: theme.centerChannelColor,
             fontSize: 15,
@@ -129,28 +118,6 @@ const Body = ({
         hasInteractivePostContent(post, mmBlocksEnabled) ||
         (!mmBlocksEnabled && nAttachments),
     );
-
-    const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
-        if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
-            return undefined;
-        }
-
-        const barStyle: StyleProp<ViewStyle> = [style.replyBar];
-
-        if (isFirstReply) {
-            barStyle.push(style.replyBarFirst);
-        }
-
-        if (isLastReply) {
-            barStyle.push(style.replyBarLast);
-        }
-
-        if (highlightReplyBar) {
-            barStyle.push(style.replyMention);
-        }
-
-        return barStyle;
-    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_MESSAGES) {
@@ -266,7 +233,14 @@ const Body = ({
                 style={style.messageContainerWithReplyBar}
                 onLayout={onLayout}
             >
-                <View style={replyBarStyle}/>
+                <ReplyBar
+                    highlight={highlightReplyBar}
+                    isCRTEnabled={isCRTEnabled}
+                    isFirstReply={isFirstReply}
+                    isLastReply={isLastReply}
+                    isReplyPost={isReplyPost}
+                    location={location}
+                />
                 {body}
                 {isFailed &&
                 <Failed

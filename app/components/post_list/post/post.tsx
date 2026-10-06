@@ -38,6 +38,7 @@ import Body from './body';
 import Footer from './footer';
 import Header from './header';
 import PreHeader from './pre_header';
+import ReplyBar from './reply_bar';
 import ShimmerAnimation from './shimmer_animation';
 import SystemMessage from './system_message';
 import UnreadDot from './unread_dot';
@@ -123,6 +124,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
+        customBodyContainer: {
+            flexDirection: 'row',
+            width: '100%',
+        },
+        customBody: {flex: 1},
     };
 });
 
@@ -395,17 +401,31 @@ const Post = ({
         body = (
             <UnrevealedBurnOnReadPost post={post}/>
         );
-    } else if (isAgentMentionReminderPostType && !hasBeenDeleted) {
+    } else if ((isAgentMentionReminderPostType || isAgentPostType) && !hasBeenDeleted) {
+        // Agent posts replace the regular Body, so they need to render the
+        // reply bar themselves to show thread replies when CRT is disabled.
         body = (
-            <AgentMentionReminderPost post={post}/>
-        );
-    } else if (isAgentPostType && !hasBeenDeleted) {
-        body = (
-            <AgentPost
-                post={post}
-                currentUserId={currentUser?.id}
-                location={location}
-            />
+            <View style={styles.customBodyContainer}>
+                <ReplyBar
+                    highlight={highlightReplyBar}
+                    isCRTEnabled={isCRTEnabled}
+                    isFirstReply={isFirstReply}
+                    isLastReply={isLastReply}
+                    isReplyPost={Boolean(post.rootId) && location !== Screens.THREAD}
+                    location={location}
+                />
+                <View style={styles.customBody}>
+                    {isAgentMentionReminderPostType ? (
+                        <AgentMentionReminderPost post={post}/>
+                    ) : (
+                        <AgentPost
+                            post={post}
+                            currentUserId={currentUser?.id}
+                            location={location}
+                        />
+                    )}
+                </View>
+            </View>
         );
     } else {
         body = (
