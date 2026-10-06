@@ -63,7 +63,7 @@ export class SessionAttributesManagerSingleton {
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!database) {
-                this.disableServer(serverUrl);
+                this.removeServer(serverUrl);
                 return;
             }
 
@@ -72,7 +72,7 @@ export class SessionAttributesManagerSingleton {
             const enabled = sessionAttributesEnabled &&
                 isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             if (!enabled) {
-                this.disableServer(serverUrl);
+                this.removeServer(serverUrl);
                 return;
             }
 
@@ -98,12 +98,13 @@ export class SessionAttributesManagerSingleton {
             }
         } catch (error) {
             logDebug('[SessionAttributesManager.refreshManifest]', getFullErrorMessage(error));
-            this.disableServer(serverUrl);
+            this.removeServer(serverUrl);
         }
     };
 
     removeServer = (serverUrl: string) => {
-        this.disableServer(serverUrl);
+        this.enabledServers.delete(serverUrl);
+        removeSessionAttributesServer(serverUrl);
     };
 
     /**
@@ -122,11 +123,6 @@ export class SessionAttributesManagerSingleton {
 
     removeManifestField = (serverUrl: string, name: string) => {
         removeSessionAttributesField(serverUrl, name);
-    };
-
-    private disableServer = (serverUrl: string) => {
-        this.enabledServers.delete(serverUrl);
-        removeSessionAttributesServer(serverUrl);
     };
 
     /**
