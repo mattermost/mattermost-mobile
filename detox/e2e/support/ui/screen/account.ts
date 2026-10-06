@@ -12,6 +12,8 @@ import {expect, waitFor} from 'detox';
 
 import {logInfo} from '../../../../provision/log';
 
+const TAP_VISIBLE_PCT = 75;
+
 class AccountScreen {
     testID = {
         userInfoPrefix: 'account.user_info.',
@@ -223,7 +225,8 @@ class AccountScreen {
     // Clear the custom status from the account row and wait for the row to show its unset
     // state.
     clearCustomStatus = async () => {
-        await waitFor(this.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        // tap() requires 75% visible; Android toBeVisible() defaults to 50%, so gate on the tap's threshold.
+        await waitFor(this.customStatusClearButton).toBeVisible(TAP_VISIBLE_PCT).withTimeout(timeouts.TEN_SEC);
         await this.customStatusClearButton.tap();
 
         try {

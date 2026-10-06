@@ -155,6 +155,35 @@ describe('ToolCard', () => {
             expect(queryByText('Reject')).toBeNull();
         });
 
+        it('should show an Accepted status line for a locally approved tool in a multi-tool batch', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Pending});
+            props.localDecision = true;
+            const {getByTestId, getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.status.local_decision')).toBeTruthy();
+            expect(getByText('Accepted')).toBeTruthy();
+        });
+
+        it('should show a Rejected status line for a locally rejected tool in a multi-tool batch', () => {
+            const props = getBaseProps();
+            props.tool = createMockTool({status: ToolCallStatus.Pending});
+            props.localDecision = false;
+            const {getByTestId, getByText} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.status.local_decision')).toBeTruthy();
+            expect(getByText('Rejected')).toBeTruthy();
+        });
+
+        it('should offer only Reject for a pending call that cannot be accepted from the card', () => {
+            const props = {...getBaseProps(), onApprove: undefined};
+            props.tool = createMockTool({status: ToolCallStatus.Pending});
+            const {getByTestId, queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
+
+            expect(getByTestId('agents.tool_card.tool-123.reject')).toBeTruthy();
+            expect(queryByTestId('agents.tool_card.tool-123.approve')).toBeNull();
+        });
+
         it('should show processing text when pending and processing', () => {
             const props = getBaseProps();
             props.tool = createMockTool({status: ToolCallStatus.Pending});
@@ -355,8 +384,8 @@ describe('ToolCard', () => {
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();
         });
 
-        it('should hide the warning callout when the viewer cannot approve (C1)', () => {
-            const props = {...getResultPhaseProps(), canApprove: false};
+        it('should hide the warning callout when the result needs no share decision', () => {
+            const props = {...getResultPhaseProps(), onApprove: undefined, onReject: undefined};
             const {queryByTestId} = renderWithIntlAndTheme(<ToolCard {...props}/>);
 
             expect(queryByTestId('agents.tool_card.tool-123.warning')).toBeNull();

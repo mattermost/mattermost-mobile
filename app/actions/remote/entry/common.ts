@@ -7,6 +7,7 @@ import {RESULTS, checkNotifications} from 'react-native-permissions';
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
 import {fetchChannelById, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
+import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, type MyUserRequest} from '@actions/remote/user';
@@ -183,10 +184,17 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
 
         await handleAutotranslationChanges(serverUrl, meData, chData);
 
+        const rolesRequest = fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData?.user, false, false, groupLabel);
+
         const modelPromises = await prepareEntryModels({operator, teamData: initialTeamData, chData, prefData, meData, isCRTEnabled});
         const models = (await Promise.all(modelPromises)).flat();
-        logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
 
+        const {error: rolesError} = await rolesRequest;
+        if (rolesError) {
+            logDebug('entryRest: failed to fetch roles', groupLabel, getFullErrorMessage(rolesError));
+        }
+
+        logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
         return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
     } catch (error) {
         logError('entryRest', groupLabel, error);

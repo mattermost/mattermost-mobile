@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {flushOrphanedAuditQueues} from '@actions/remote/ephemeral_mode';
 import {CallsManager} from '@calls/calls_manager';
 import DatabaseManager from '@database/manager';
 import CallsNative from '@init/calls_native';
@@ -49,6 +50,8 @@ export async function initialize() {
 
             await DatabaseManager.initServerDatabases(serverCredentials.map((c) => c.serverUrl));
             await NetworkManager.init(serverCredentials);
+
+            flushOrphanedAuditQueues(serverCredentials);
 
             // EphemeralModeManager init runs before WS init so any pending wipes
             // complete before WebSocket clients start populating server databases.
