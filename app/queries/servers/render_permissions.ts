@@ -5,33 +5,49 @@ import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import RenderPermissionsStore from '@store/render_permissions_store';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
+
+import {observeConfigValue} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
 
 /**
+ * Whether render-time decisions apply: ABAC is enforced and the server has the decisions API. Below
+ * that version no decision can ever be fetched, so actions render as they would without ABAC.
+ */
+const observeRenderPermissionsEnforced = (database: Database): Observable<boolean> => {
+    return combineLatest([
+        observeRedactionEnforced(database),
+        observeConfigValue(database, 'Version'),
+    ]).pipe(
+        map(([enforced, version]) => enforced && isMinimumServerVersion(version, ...RENDER_PERMISSIONS_VERSION)),
+        distinctUntilChanged(),
+    );
+};
+
+/**
  * Whether the current user may perform an action in a channel, as decided by ABAC permission
- * policies. Emits `defaultAllowed` until a decision is stored; it never fetches one itself
- * (see useFetchRenderPermissions).
+ * policies. Emits `allowWhenUnenforced` while ABAC is not enforced or the server predates the decisions
+ * API, and `allowWhenNotEvaluated` until a decision is stored; it never fetches one itself (see
+ * useFetchRenderPermissions).
  */
 export const observeRenderPermission = (
     database: Database,
     serverUrl: string,
     channelId: string | undefined,
     action: RenderPermissionActionName,
-    defaultAllowed: boolean,
+    allowWhenUnenforced: boolean,
+    allowWhenNotEvaluated = allowWhenUnenforced,
 ): Observable<boolean> => {
-    if (!channelId) {
-        return of$(defaultAllowed);
-    }
-
     return combineLatest([
-        observeRedactionEnforced(database),
-        RenderPermissionsStore.observeEntry(serverUrl, channelId),
+        observeRenderPermissionsEnforced(database),
+        channelId ? RenderPermissionsStore.observeEntry(serverUrl, channelId) : of$(undefined),
     ]).pipe(
-        map(([enforced, entry]) => resolveRenderPermission(enforced, entry, action, defaultAllowed)),
+        map(([enforced, entry]) => resolveRenderPermission(enforced, entry, action, allowWhenUnenforced, allowWhenNotEvaluated)),
         distinctUntilChanged(),
     );
 };
@@ -43,7 +59,7 @@ export const observeRenderPermission = (
  */
 export const observeShouldFetchRenderPermissions = (database: Database, serverUrl: string, channelId: string): Observable<boolean> => {
     return combineLatest([
-        observeRedactionEnforced(database),
+        observeRenderPermissionsEnforced(database),
         observeRequiredRedactionEpoch(database, channelId),
         RenderPermissionsStore.observeEntry(serverUrl, channelId),
     ]).pipe(

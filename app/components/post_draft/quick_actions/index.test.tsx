@@ -48,6 +48,7 @@ describe('QuickActions upload permission', () => {
         database = server.database;
         await server.operator.handleConfigs({
             configs: [
+                {id: 'Version', value: '12.0.0'},
                 {id: 'FeatureFlagPermissionPolicies', value: 'true'},
                 {id: 'EnableAttributeBasedAccessControl', value: 'true'},
             ],
