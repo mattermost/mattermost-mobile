@@ -374,19 +374,34 @@ describe('attribute view convergence retry', () => {
         expect((await getRedactionEpochState(operator.database)).counter).toBe(afterFirst + 1);
     });
 
-    it('should skip the retry when a newer invalidation already forced a re-evaluation', async () => {
+    it('should still run the retry when a global invalidation lands inside the retry window', async () => {
         invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
         await flushCoalescer();
-        const afterFirst = (await getRedactionEpochState(operator.database)).counter;
 
+        // Evaluated against the same stale attribute view, so it cannot stand in for the retry.
         handlePermissionPolicyUpdatedEvent(serverUrl);
         await flushCoalescer();
-        const afterSecond = (await getRedactionEpochState(operator.database)).counter;
+        const beforeRetry = (await getRedactionEpochState(operator.database)).global;
 
         await flushAttributeViewRetry();
 
-        expect(afterSecond).toBe(afterFirst + 1);
-        expect((await getRedactionEpochState(operator.database)).counter).toBe(afterSecond);
+        expect((await getRedactionEpochState(operator.database)).global).toBe(beforeRetry + 1);
+    });
+
+    it('should still run the retry when a channel invalidation lands inside the retry window', async () => {
+        await seedMyChannel(operator, channelId);
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+
+        invalidateRedactionForChannelMembership(serverUrl, channelId);
+        await flushCoalescer();
+        const before = await getRedactionEpochState(operator.database);
+
+        await flushAttributeViewRetry();
+
+        const after = await getRedactionEpochState(operator.database);
+        expect(after.counter).toBe(before.counter + 1);
+        expect(after.global).toBe(after.counter);
     });
 });
 
