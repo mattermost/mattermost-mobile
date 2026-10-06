@@ -33,9 +33,7 @@ function AiGeneratedIndicator({post}: Props) {
 
     const userId = ensureString(post.props?.ai_generated_by);
     const username = ensureString(post.props?.ai_generated_by_username);
-    const accessibilityLabel = userId === post.userId ?
-        intl.formatMessage(messages.self) :
-        intl.formatMessage(messages.byUser, {username});
+    const accessibilityLabel = userId === post.userId ?intl.formatMessage(messages.self) :intl.formatMessage(messages.byUser, {username});
 
     return (
         <View

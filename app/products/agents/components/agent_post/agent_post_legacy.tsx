@@ -60,6 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 export interface AgentPostLegacyProps {
     post: PostModel;
     currentUserId?: string;
+    isReplyPost: boolean;
     location: AvailableScreens;
     isDM: boolean;
 }
@@ -70,7 +71,7 @@ export interface AgentPostLegacyProps {
  * and redaction state from post props, and fetches private tool data via the
  * legacy /tool_call_private and /tool_result_private endpoints.
  */
-const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyProps) => {
+const AgentPostLegacy = ({post, currentUserId, isReplyPost, location, isDM}: AgentPostLegacyProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -275,6 +276,7 @@ const AgentPostLegacy = ({post, currentUserId, location, isDM}: AgentPostLegacyP
                             value={displayMessage}
                             theme={theme}
                             location={location}
+                            isReplyPost={isReplyPost}
                         />
                     ) : null}
                     {isGenerating && !isPrecontent && (

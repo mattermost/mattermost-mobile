@@ -197,7 +197,7 @@ describe('ephemeral post header', () => {
     });
 });
 
-describe('agent post reply bar', () => {
+describe('reply bar', () => {
     let database: Database;
 
     function getBaseProps(): ComponentProps<typeof Post> {
@@ -237,18 +237,53 @@ describe('agent post reply bar', () => {
         NetworkManager.invalidateClient(serverUrl);
     });
 
-    it('should render the reply bar for an agent reply in the channel', async () => {
+    it('should render the reply bar for an agent reply in the channel and tell the agent post it is a reply', async () => {
         const {getByTestId} = renderWithEverything(<Post {...getBaseProps()}/>, {database, serverUrl});
         await waitFor(() => {
-            expect(AgentPost).toHaveBeenCalled();
+            expect(AgentPost).toHaveBeenCalledWith(expect.objectContaining({isReplyPost: true}), undefined);
         });
         expect(Body).not.toHaveBeenCalled();
         expect(getByTestId('post.reply_bar')).toBeTruthy();
     });
 
-    it('should not render the reply bar for an agent reply in the thread screen', async () => {
+    it('should render the reply bar for an agent mention reminder reply in the channel', async () => {
+        const props = getBaseProps();
+        props.post = TestHelper.fakePostModel({
+            type: AGENT_POST_TYPES.AGENT_MENTION_REMINDER,
+            rootId: 'root-post-id',
+            props: {bot_username: 'agent', target_post_id: 'target-post-id'},
+        });
+        const {getByTestId} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('agents.agent_mention_reminder_post')).toBeTruthy();
+        });
+        expect(getByTestId('post.reply_bar')).toBeTruthy();
+    });
+
+    it('should not render the reply bar for a root post', async () => {
+        const props = getBaseProps();
+        props.post = TestHelper.fakePostModel({type: AGENT_POST_TYPES.LLMBOT, rootId: ''});
+        const {queryByTestId} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(AgentPost).toHaveBeenCalledWith(expect.objectContaining({isReplyPost: false}), undefined);
+        });
+        expect(queryByTestId('post.reply_bar')).toBeNull();
+    });
+
+    it('should not render the reply bar for a reply in the thread screen', async () => {
         const props = getBaseProps();
         props.location = Screens.THREAD;
+        const {queryByTestId} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(AgentPost).toHaveBeenCalledWith(expect.objectContaining({isReplyPost: false}), undefined);
+        });
+        expect(queryByTestId('post.reply_bar')).toBeNull();
+    });
+
+    it('should not render the reply bar in a permalink when CRT is enabled', async () => {
+        const props = getBaseProps();
+        props.location = Screens.PERMALINK;
+        props.isCRTEnabled = true;
         const {queryByTestId} = renderWithEverything(<Post {...props}/>, {database, serverUrl});
         await waitFor(() => {
             expect(AgentPost).toHaveBeenCalled();

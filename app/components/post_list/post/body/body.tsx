@@ -15,8 +15,6 @@ import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed, hasInteractivePostContent} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import ReplyBar from '../reply_bar';
-
 import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
 import Content from './content';
@@ -34,15 +32,11 @@ type BodyProps = {
     filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
-    highlightReplyBar: boolean;
-    isCRTEnabled?: boolean;
-    isEphemeral: boolean;
-    isFirstReply?: boolean;
     isJumboEmoji: boolean;
-    isLastReply?: boolean;
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
+    isReplyPost: boolean;
     location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
@@ -70,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             fontSize: 15,
             lineHeight: 20,
         },
-        messageContainerWithReplyBar: {
+        bodyContainer: {
             flexDirection: 'row',
             width: '100%',
         },
@@ -83,15 +77,11 @@ const Body = ({
     filesInfo,
     hasReactions,
     highlight,
-    highlightReplyBar,
-    isCRTEnabled,
-    isEphemeral,
-    isFirstReply,
     isJumboEmoji,
-    isLastReply,
     isPendingOrFailed,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isReplyPost,
     location,
     post,
     searchPatterns,
@@ -111,7 +101,6 @@ const Body = ({
     const nBindings = Array.isArray(post.props?.app_bindings) ? post.props?.app_bindings.length : 0;
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
-    const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
     const hasContent = Boolean(
         post.metadata?.embeds?.length ||
         (appsEnabled && nBindings) ||
@@ -230,17 +219,9 @@ const Body = ({
             theme={theme}
         >
             <View
-                style={style.messageContainerWithReplyBar}
+                style={style.bodyContainer}
                 onLayout={onLayout}
             >
-                <ReplyBar
-                    highlight={highlightReplyBar}
-                    isCRTEnabled={isCRTEnabled}
-                    isFirstReply={isFirstReply}
-                    isLastReply={isLastReply}
-                    isReplyPost={isReplyPost}
-                    location={location}
-                />
                 {body}
                 {isFailed &&
                 <Failed

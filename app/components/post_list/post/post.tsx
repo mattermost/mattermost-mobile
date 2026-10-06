@@ -124,11 +124,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'column',
         },
         rightColumnPadding: {paddingBottom: 3},
-        customBodyContainer: {
+        bodyContainer: {
             flexDirection: 'row',
             width: '100%',
         },
-        customBody: {flex: 1},
+        body: {flex: 1},
     };
 });
 
@@ -191,6 +191,7 @@ const Post = ({
     const hasBeenDeleted = (post.deleteAt !== 0);
     const isWebHook = isFromWebhook(post);
     const showEphemeralAuthor = isEphemeral && Boolean(post.userId);
+    const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
     const [layoutWidth, setLayoutWidth] = useState(0);
     const shimmerAnimationProps = useShimmerAnimation(post, isChannelAutotranslated, intl.locale, layoutWidth, theme);
     const hasSameRoot = useMemo(() => {
@@ -376,8 +377,13 @@ const Post = ({
         }
     }
 
+    // Every non-system body (regular, calls, burn-on-read, agents) shares the
+    // reply bar so thread replies stay linked in the channel when CRT is off.
+    const isSystemMessageBody = isSystemPost && !isEphemeral && !isAutoResponder;
+    const showReplyBar = !isSystemMessageBody && isReplyPost && !(isCRTEnabled && location === Screens.PERMALINK);
+
     let body;
-    if (isSystemPost && !isEphemeral && !isAutoResponder) {
+    if (isSystemMessageBody) {
         body = (
             <SystemMessage
                 location={location}
@@ -401,31 +407,18 @@ const Post = ({
         body = (
             <UnrevealedBurnOnReadPost post={post}/>
         );
-    } else if ((isAgentMentionReminderPostType || isAgentPostType) && !hasBeenDeleted) {
-        // Agent posts replace the regular Body, so they need to render the
-        // reply bar themselves to show thread replies when CRT is disabled.
+    } else if (isAgentMentionReminderPostType && !hasBeenDeleted) {
         body = (
-            <View style={styles.customBodyContainer}>
-                <ReplyBar
-                    highlight={highlightReplyBar}
-                    isCRTEnabled={isCRTEnabled}
-                    isFirstReply={isFirstReply}
-                    isLastReply={isLastReply}
-                    isReplyPost={Boolean(post.rootId) && location !== Screens.THREAD}
-                    location={location}
-                />
-                <View style={styles.customBody}>
-                    {isAgentMentionReminderPostType ? (
-                        <AgentMentionReminderPost post={post}/>
-                    ) : (
-                        <AgentPost
-                            post={post}
-                            currentUserId={currentUser?.id}
-                            location={location}
-                        />
-                    )}
-                </View>
-            </View>
+            <AgentMentionReminderPost post={post}/>
+        );
+    } else if (isAgentPostType && !hasBeenDeleted) {
+        body = (
+            <AgentPost
+                post={post}
+                currentUserId={currentUser?.id}
+                isReplyPost={isReplyPost}
+                location={location}
+            />
         );
     } else {
         body = (
@@ -435,15 +428,11 @@ const Post = ({
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
-                highlightReplyBar={highlightReplyBar}
-                isCRTEnabled={isCRTEnabled}
-                isEphemeral={isEphemeral}
-                isFirstReply={isFirstReply}
                 isJumboEmoji={isJumboEmoji}
-                isLastReply={isLastReply}
                 isPendingOrFailed={isPendingOrFailed}
                 isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
+                isReplyPost={isReplyPost}
                 location={location}
                 post={post}
                 searchPatterns={searchPatterns}
@@ -499,7 +488,18 @@ const Post = ({
                         {postAvatar}
                         <View style={rightColumnStyle}>
                             {header}
-                            {body}
+                            <View style={styles.bodyContainer}>
+                                {showReplyBar && (
+                                    <ReplyBar
+                                        highlight={highlightReplyBar}
+                                        isFirstReply={isFirstReply}
+                                        isLastReply={isLastReply}
+                                    />
+                                )}
+                                <View style={styles.body}>
+                                    {body}
+                                </View>
+                            </View>
                             {footer}
                         </View>
                         {unreadDot}
