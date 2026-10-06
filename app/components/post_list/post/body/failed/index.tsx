@@ -71,6 +71,7 @@ const Failed = ({post, theme}: FailedProps) => {
         <TouchableOpacity
             onPress={onPress}
             style={styles.retry}
+            testID='post.failed.button'
         >
             <CompassIcon
                 name='information-outline'

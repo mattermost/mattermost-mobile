@@ -65,8 +65,6 @@ describe('Channels - Channel Bookmarks Search', () => {
         testTeam = team;
         testUser = user;
 
-        // FeatureFlags.ChannelBookmarks set in setup.ts (see channel_bookmarks.e2e.ts for rationale).
-
         // Unique search titles — generated once so they stay unique per run.
         fileSearchTitle = `FileSearch-${Date.now()}`;
         deleteSearchTitle = `DeleteSearch-${Date.now()}`;
@@ -115,7 +113,7 @@ describe('Channels - Channel Bookmarks Search', () => {
     });
 
     afterAll(async () => {
-        // Do not unset FeatureFlags.ChannelBookmarks — would clobber other shards.
+        // Never add a teardown that disables bookmarks — shards share a server.
         await HomeScreen.logout();
     });
 

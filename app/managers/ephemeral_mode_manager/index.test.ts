@@ -1,30 +1,43 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, type AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus, DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
+import {attachAuditEventErrorReason, enqueueAuditEvent} from '@actions/local/ephemeral_mode/audit_queue';
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer, getServerDisplayName} from '@queries/app/servers';
+import {getOfflineSince} from '@queries/servers/system';
 import {navigateToScreen} from '@screens/navigation';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteFileCache} from '@utils/file';
+import {logError} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import EphemeralModeManager from './index';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
+jest.mock('@actions/local/ephemeral_mode/audit_queue', () => ({
+    enqueueAuditEvent: jest.fn().mockResolvedValue('audit-evt-1'),
+    attachAuditEventErrorReason: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock('@actions/local/ephemeral_mode/wipe', () => ({
     wipeServerDatabaseWithRetry: jest.fn().mockResolvedValue({success: true}),
     wipeServerFiles: jest.fn().mockReturnValue({success: true}),
 }));
 jest.mock('@utils/file', () => ({
     deleteFileCache: jest.fn().mockReturnValue(true),
+}));
+jest.mock('@utils/snack_bar', () => ({
+    showSnackBar: jest.fn(),
 }));
 jest.mock('@init/push_notifications', () => ({
     __esModule: true,
@@ -44,6 +57,13 @@ jest.mock('@queries/app/servers', () => {
     return {
         getServer: jest.fn(actual.getServer),
         getServerDisplayName: jest.fn(),
+    };
+});
+jest.mock('@queries/servers/system', () => {
+    const actual = jest.requireActual('@queries/servers/system');
+    return {
+        ...actual,
+        getOfflineSince: jest.fn(actual.getOfflineSince),
     };
 });
 jest.mock('@screens/navigation', () => ({
@@ -90,6 +110,9 @@ describe('EphemeralModeManager', () => {
         // trip the wipe pipeline (which would tear down the server's offline subject).
         const purgeHours = opts.purgeHours ?? 24 * 365;
         configs.push({id: 'MobileEphemeralModeOfflinePersistenceTimerHours', value: String(purgeHours)});
+        if (opts.cleanupDays !== undefined) {
+            configs.push({id: 'MobileEphemeralModeAutoCacheCleanupDays', value: String(opts.cleanupDays)});
+        }
         if (configs.length) {
             await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: false});
         }
@@ -160,6 +183,7 @@ describe('EphemeralModeManager', () => {
         appStateRemoveSpies = [];
 
         await DatabaseManager.init([serverA, serverB]);
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
 
         (WebsocketManager.observeWebsocketState as jest.Mock) = jest.fn((url: string) => {
             if (!wsStates[url]) {
@@ -219,6 +243,52 @@ describe('EphemeralModeManager', () => {
         await advanceTimers(0);
 
         expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+    });
+
+    describe('app start notification', () => {
+        beforeEach(() => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverA);
+        });
+
+        it('shows the persistent zero persistence snackbar on init when the server is in zero persistence mode', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+        });
+
+        it('shows the ephemeral mode enabled snackbar with the offline and cache retention values on init when ephemeral mode is enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 5, cleanupDays: 7});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ENABLED,
+                descriptionValues: {hours: 5, days: 7},
+            });
+        });
+
+        it('does not show any ephemeral mode snackbar on init when ephemeral mode is disabled and the server is not in zero persistence mode', async () => {
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+
+        it('does not show the ephemeral mode enabled snackbar when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 5, cleanupDays: 7});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
     });
 
     it('disconnecting with a zero threshold flags the server offline immediately', async () => {
@@ -495,6 +565,37 @@ describe('EphemeralModeManager', () => {
         expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
     });
 
+    describe('disconnected notification', () => {
+        it('shows the disconnected snackbar when the affected server is active', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+
+            expect(showSnackBar).toHaveBeenCalledWith({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISCONNECTED});
+        });
+
+        it('does not show the disconnected snackbar when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+    });
+
     describe('purge timer', () => {
         const ONE_HOUR_MS = 3600_000;
 
@@ -535,6 +636,87 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
         });
 
+        it('shows countdown warnings at 30, 10, and 1 minutes before the wipe fires', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            jest.mocked(showSnackBar).mockClear();
+
+            await advanceTimers(30 * 60_000);
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                messageValues: {minutes: 30},
+            });
+
+            await advanceTimers(20 * 60_000);
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                messageValues: {minutes: 10},
+            });
+
+            await advanceTimers(9 * 60_000);
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                messageValues: {minutes: 1},
+            });
+            expect(showSnackBar).toHaveBeenCalledTimes(3);
+
+            await advanceTimers(60_000);
+            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
+        });
+
+        it('resuming after the app was asleep past earlier checkpoints fires a single warning with the actual remaining time', async () => {
+            const start = 1_700_000_000_000;
+            jest.setSystemTime(start);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            jest.mocked(showSnackBar).mockClear();
+
+            // Simulate the process being suspended for 55 of the 60 minutes (past the 30 and
+            // 10 minute checkpoints) by jumping the system clock without advancing fake timers.
+            setAppState('background');
+            jest.setSystemTime(start + 10_000 + (55 * 60_000));
+            setAppState('active');
+            await advanceTimers(0);
+
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_WIPE_WARNING,
+                messageValues: {minutes: 5},
+            });
+            expect(showSnackBar).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not show wipe warnings when a different server is active', async () => {
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            jest.mocked(showSnackBar).mockClear();
+
+            await advanceTimers(30 * 60_000);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+
         it('firing the purge is synchronous when the threshold is zero', async () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 0});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
@@ -569,6 +751,25 @@ describe('EphemeralModeManager', () => {
 
             await advanceTimers(ONE_HOUR_MS);
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
+        });
+
+        it('reconnecting after going offline emits the ephemeral mode reconnected event', async () => {
+            const emitSpy = jest.spyOn(DeviceEventEmitter, 'emit');
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            emitSpy.mockClear();
+
+            setWs(serverA, 'connected');
+            await advanceTimers(0);
+
+            expect(emitSpy).toHaveBeenCalledWith(Events.EPHEMERAL_MODE_RECONNECTED);
         });
 
         it('backward clock jump while offline preserves the remaining time', async () => {
@@ -622,6 +823,43 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
         });
 
+        it('should not wipe when disabled while a re-evaluation is mid-flight', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+
+            let resolveOfflineSince!: (value: number | undefined) => void;
+            jest.mocked(getOfflineSince).mockImplementationOnce(() => new Promise((resolve) => {
+                resolveOfflineSince = resolve;
+            }));
+
+            await updateConfig(serverA, {purgeHours: 2});
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            // The disable is queued behind the mid-flight evaluation, not applied until it resolves.
+            await updateConfig(serverA, {enabled: false});
+            await advanceTimers(0);
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(true);
+
+            resolveOfflineSince(Date.now() - 1000);
+            await advanceTimers(0);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.isOffline(serverA)).toBe(false);
+
+            await advanceTimers(2 * ONE_HOUR_MS);
+
+            expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
+        });
+
         it('a foreground after the wipe does not re-fire it', async () => {
             await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
             wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
@@ -640,6 +878,53 @@ describe('EphemeralModeManager', () => {
             await advanceTimers(0);
 
             expect(wipeServerDatabaseWithRetry).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('offline timer change notification', () => {
+        it('shows the ephemeral mode settings updated snackbar with the updated values when the purge threshold changes while enabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1, cleanupDays: 7});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {purgeHours: 5});
+            await advanceTimers(0);
+
+            expect(showSnackBar).toHaveBeenCalledWith({
+                barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_SETTINGS_UPDATED,
+                descriptionValues: {hours: 5, days: 7},
+            });
+        });
+
+        it('does not show a snackbar when the purge threshold changes while ephemeral mode is disabled', async () => {
+            await seedConfigAndRow(serverA, {enabled: false, timeoutSec: 10, purgeHours: 1});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {purgeHours: 5});
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
+        });
+
+        it('does not show the settings updated snackbar when the purge threshold changes for a non-active server', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1, cleanupDays: 7});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverB);
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {purgeHours: 5});
+            await advanceTimers(0);
+
+            expect(showSnackBar).not.toHaveBeenCalled();
         });
     });
 
@@ -748,6 +1033,127 @@ describe('EphemeralModeManager', () => {
 
             expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
         });
+
+        it('defers a config change disabling ephemeral mode until the in-flight wipe finishes', async () => {
+            let resolveDisplayName!: (value: string) => void;
+            jest.mocked(getServerDisplayName).mockReturnValueOnce(new Promise<string>((res) => {
+                resolveDisplayName = res;
+            }));
+
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10, purgeHours: 1});
+            wsStates[serverA] = new BehaviorSubject<WebsocketConnectedState>('connected');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            setWs(serverA, 'not_connected');
+            await advanceTimers(0);
+            await advanceTimers(10_000);
+            await advanceTimers(ONE_HOUR_MS);
+
+            // runWipe is stuck awaiting getServerDisplayName, before pauseSubscriptions runs.
+            expect(updatePersistenceFlagSpy).not.toHaveBeenCalledWith(serverA, 'wiped');
+            jest.mocked(showSnackBar).mockClear();
+
+            await updateConfig(serverA, {enabled: false});
+            await advanceTimers(0);
+
+            // The queued disable must not interleave with the in-flight wipe.
+            expect(showSnackBar).not.toHaveBeenCalledWith(expect.objectContaining({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_DISABLED}));
+            expect(updatePersistenceFlagSpy).not.toHaveBeenCalledWith(serverA, 'wiped');
+
+            resolveDisplayName(displayName);
+            await advanceTimers(0);
+
+            // The wipe still completes once committed to, and the server ends up untracked.
+            expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverA, 'wiped');
+            expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(false);
+        });
+
+        describe('offline-purge audit event', () => {
+            it('enqueues one offlinePurge event with the full expected shape', async () => {
+                await triggerWipeForServerA();
+
+                expect(enqueueAuditEvent).toHaveBeenCalledWith(serverA, {
+                    kind: EphemeralModeAuditEventKind.OfflinePurge,
+                    occurredAt: expect.any(Number),
+                    offlineTimeMinutes: 60,
+                });
+            });
+
+            it('enqueues the event before wipeServerDatabaseWithRetry runs, while the server database is still intact', async () => {
+                await triggerWipeForServerA();
+
+                const enqueueOrder = jest.mocked(enqueueAuditEvent).mock.invocationCallOrder[0];
+                const wipeOrder = jest.mocked(wipeServerDatabaseWithRetry).mock.invocationCallOrder[0];
+                expect(enqueueOrder).toBeLessThan(wipeOrder);
+            });
+
+            it('lets the wipe complete when enqueueAuditEvent rejects', async () => {
+                jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+
+                await triggerWipeForServerA();
+
+                expect(wipeServerDatabaseWithRetry).toHaveBeenCalledWith(serverA);
+                expect(updatePersistenceFlagSpy).toHaveBeenCalledWith(serverA, 'wiped');
+            });
+        });
+
+        describe('offline-purge audit event failure reason', () => {
+            it('logs and attaches an unexpected-error reason when the wipe artifacts fail after retries', async () => {
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+                await triggerWipeForServerA();
+
+                expect(logError).toHaveBeenCalledWith('EphemeralModeManager.runWipe', 'wipe artifacts failed after retries');
+                expect(attachAuditEventErrorReason).toHaveBeenCalledWith(serverA, 'audit-evt-1', 'unexpected error during wipe');
+            });
+
+            it('never calls attachAuditEventErrorReason when the wipe succeeds', async () => {
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+            });
+
+            it('lets addServer run when attachAuditEventErrorReason rejects', async () => {
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+                jest.mocked(attachAuditEventErrorReason).mockRejectedValueOnce(new Error('write failed'));
+
+                await triggerWipeForServerA();
+
+                expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
+            });
+
+            it('never calls attachAuditEventErrorReason when the initial enqueueAuditEvent also rejected', async () => {
+                jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+                jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).not.toHaveBeenCalled();
+            });
+
+            it('attaches an unexpected-error reason when an unhandled exception interrupts the wipe after the audit event is created', async () => {
+                updatePersistenceFlagSpy.mockImplementationOnce(() => {
+                    throw new Error('disk full');
+                });
+
+                await triggerWipeForServerA();
+
+                expect(attachAuditEventErrorReason).toHaveBeenCalledWith(serverA, 'audit-evt-1', 'unexpected error during wipe');
+            });
+
+            it('restores tracking for the server when an unhandled exception interrupts the wipe after subscriptions were paused', async () => {
+                jest.mocked(wipeServerFiles).mockImplementationOnce(() => {
+                    throw new Error('fs error');
+                });
+
+                await triggerWipeForServerA();
+
+                expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledTimes(2);
+            });
+        });
     });
 
     describe('init wipe-resumption', () => {
@@ -775,6 +1181,51 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerDatabaseWithRetry).not.toHaveBeenCalled();
             expect(wipeServerFiles).not.toHaveBeenCalled();
         });
+
+        it('logs when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(logError).toHaveBeenCalledWith(
+                'EphemeralModeManager.init: resumed wipe failed after retries, server re-added with stale data',
+                serverA,
+            );
+        });
+
+        it('enqueues an offlinePurge audit event with an error reason when a resumed wipe fails again', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).toHaveBeenCalledWith(serverA, {
+                kind: EphemeralModeAuditEventKind.OfflinePurge,
+                occurredAt: expect.any(Number),
+                offlineTimeMinutes: 0,
+                errorReason: 'resumed wipe failed after retries, server re-added with stale data',
+            });
+        });
+
+        it('does not enqueue an audit event when a resumed wipe succeeds', async () => {
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(enqueueAuditEvent).not.toHaveBeenCalled();
+        });
+
+        it('still re-adds the server when enqueueing the resumed-wipe-failure audit event rejects', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+            jest.mocked(getServer).mockResolvedValue({url: serverA, persistenceFlag: 'wiped'} as ServersModel);
+            jest.mocked(wipeServerDatabaseWithRetry).mockResolvedValueOnce({success: false});
+            jest.mocked(enqueueAuditEvent).mockRejectedValueOnce(new Error('write failed'));
+
+            await EphemeralModeManager.init([credsA]);
+
+            expect(WebsocketManager.observeWebsocketState).toHaveBeenCalledWith(serverA);
+        });
     });
 
     describe('zero persistence mode guard', () => {
@@ -785,7 +1236,7 @@ describe('EphemeralModeManager', () => {
             await EphemeralModeManager.init([credsA]);
             await advanceTimers(0);
 
-            // Enabling MEM would normally activate OPM, but ZPM guard must prevent it
+            // Enabling ephemeral mode would normally activate OPM, but ZPM guard must prevent it
             await updateConfig(serverA, {enabled: true});
             await advanceTimers(0);
 
@@ -844,7 +1295,7 @@ describe('EphemeralModeManager', () => {
             expect(wipeServerFiles).not.toHaveBeenCalled();
         });
 
-        it('installs the AppState listener for a ZPM server even when no MEM-active server exists', async () => {
+        it('installs the AppState listener for a ZPM server even when no server has ephemeral mode active', async () => {
             await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
 
             await EphemeralModeManager.init([credsA]);
@@ -863,6 +1314,30 @@ describe('EphemeralModeManager', () => {
             EphemeralModeManager.removeServer(serverA);
 
             expect(appStateRemoveSpies[0]).toHaveBeenCalled();
+        });
+    });
+
+    describe('isEphemeralModeEnabled', () => {
+        it('returns false for a server never passed to init', () => {
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(false);
+        });
+
+        it('returns true for a tracked mem server', async () => {
+            await seedConfigAndRow(serverA, {enabled: true, timeoutSec: 10});
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(true);
+        });
+
+        it('returns true for a tracked zpm server', async () => {
+            await DatabaseManager.updatePersistenceFlag(serverA, 'zero-persistence');
+
+            await EphemeralModeManager.init([credsA]);
+            await advanceTimers(0);
+
+            expect(EphemeralModeManager.isEphemeralModeEnabled(serverA)).toBe(true);
         });
     });
 });

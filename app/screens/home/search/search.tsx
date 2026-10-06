@@ -118,6 +118,7 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
+    const searchRequestRef = useRef<number>(0);
     const searchRef = useRef<SearchRef>(null);
     const processedSearchTermRef = useRef<string>('');
 
@@ -171,6 +172,9 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const resetToInitial = useCallback(() => {
+        // Invalidate any search still in flight so its completion cannot re-open the
+        // results view over the cleared input.
+        searchRequestRef.current += 1;
         setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
@@ -220,6 +224,8 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
         hideHeader(true);
         handleLoading(true);
         setLastSearchedValue(term);
+        searchRequestRef.current += 1;
+        const requestId = searchRequestRef.current;
 
         const persistHistory = newSearchTeamId === ALL_TEAMS_ID
             ? undefined
@@ -229,6 +235,15 @@ const SearchScreen = ({teamId, teams, crossTeamSearchEnabled}: Props) => {
             searchFiles(serverUrl, newSearchTeamId, searchParams),
             persistHistory,
         ]);
+
+        if (requestId !== searchRequestRef.current) {
+            // The input was cleared or cancelled, or a newer search started, while this one
+            // was in flight. Applying these results would put the results view back over an
+            // empty input and hide the recent searches list.
+            setLoading(false);
+            setResultsLoading(false);
+            return;
+        }
 
         setFileInfos(files?.length ? files : emptyFileResults);
         if (postResults.order) {

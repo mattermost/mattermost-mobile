@@ -192,7 +192,7 @@ describe('Messaging - Markdown Table', () => {
         if (isIos()) {
             await waitFor(expectedElement).toBeVisible().whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(150, 'down');
             await expect(element(by.text('Header VS last'))).not.toBeVisible();
-            await expect(expectedElement).toBeVisible(50);
+            await waitFor(expectedElement).toBeVisible(50).whileElement(by.id(TableScreen.testID.tableScrollView)).scroll(50, 'down');
         } else {
             await expect(expectedElement).toExist();
         }

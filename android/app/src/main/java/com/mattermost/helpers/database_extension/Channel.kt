@@ -123,31 +123,65 @@ fun insertChannelInfo(db: WMDatabase, channel: JSONObject) {
     }
 }
 
+fun hasMyChannelUrgentMentionCountColumn(db: WMDatabase): Boolean {
+    return try {
+        db.rawQuery(
+                "SELECT COUNT(*) FROM pragma_table_info('MyChannel') WHERE name = 'urgent_mention_count'"
+        ).use { cursor ->
+            if (cursor.count <= 0) {
+                return false
+            }
+            cursor.moveToFirst()
+            cursor.getInt(0) > 0
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
+}
+
 fun insertMyChannel(db: WMDatabase, myChanel: JSONObject): Boolean {
     return try {
         val id = try { myChanel.getString("id") } catch (e: JSONException) { return false }
         val roles = try { myChanel.getString("roles") } catch (e: JSONException) { "" }
         val msgCount = try { myChanel.getInt("message_count") } catch (e: JSONException) { 0 }
         val mentionsCount = try { myChanel.getInt("mentions_count") } catch (e: JSONException) { 0 }
+        val urgentMentionCount = try { myChanel.getInt("urgent_mention_count") } catch (e: JSONException) { 0 }
         val isUnread = try { myChanel.getBoolean("is_unread") } catch (e: JSONException) { false }
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
         val viewedAt = 0
         val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
         val manuallyUnread = false
+        val hasUrgentColumn = hasMyChannelUrgentMentionCountColumn(db)
 
-        db.execute(
-                """
+        if (hasUrgentColumn) {
+            db.execute(
+                    """
+                    INSERT INTO MyChannel
+                    (id, roles, message_count, mentions_count, urgent_mention_count, is_unread, manually_unread,
+                    last_post_at, last_viewed_at, viewed_at, last_fetched_at, _changed, _status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
+                    """,
+                    arrayOf(
+                            id, roles, msgCount, mentionsCount, urgentMentionCount, isUnread, manuallyUnread,
+                            lastPostAt, lastViewedAt, viewedAt, lastFetchedAt
+                    )
+            )
+        } else {
+            db.execute(
+                    """
                     INSERT INTO MyChannel
                     (id, roles, message_count, mentions_count, is_unread, manually_unread,
                     last_post_at, last_viewed_at, viewed_at, last_fetched_at, _changed, _status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created') 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                     """,
-                arrayOf(
-                        id, roles, msgCount, mentionsCount, isUnread, manuallyUnread,
-                        lastPostAt, lastViewedAt, viewedAt, lastFetchedAt
-                )
-        )
+                    arrayOf(
+                            id, roles, msgCount, mentionsCount, isUnread, manuallyUnread,
+                            lastPostAt, lastViewedAt, viewedAt, lastFetchedAt
+                    )
+            )
+        }
 
         true
     } catch (e: Exception) {
@@ -198,22 +232,37 @@ fun updateMyChannel(db: WMDatabase, myChanel: JSONObject) {
         val id = try { myChanel.getString("id") } catch (e: JSONException) { return }
         val msgCount = try { myChanel.getInt("message_count") } catch (e: JSONException) { 0 }
         val mentionsCount = try { myChanel.getInt("mentions_count") } catch (e: JSONException) { 0 }
+        val urgentMentionCount = try { myChanel.getInt("urgent_mention_count") } catch (e: JSONException) { 0 }
         val isUnread = try { myChanel.getBoolean("is_unread") } catch (e: JSONException) { false }
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
         val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
 
-        db.execute(
-                """
-                    UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?, 
-                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated' 
+        if (hasMyChannelUrgentMentionCountColumn(db)) {
+            db.execute(
+                    """
+                    UPDATE MyChannel SET message_count=?, mentions_count=?, urgent_mention_count=?, is_unread=?,
+                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated'
                     WHERE id=?
                     """,
-                arrayOf(
-                        msgCount, mentionsCount, isUnread,
-                        lastPostAt, lastViewedAt, lastFetchedAt, id
-                )
-        )
+                    arrayOf(
+                            msgCount, mentionsCount, urgentMentionCount, isUnread,
+                            lastPostAt, lastViewedAt, lastFetchedAt, id
+                    )
+            )
+        } else {
+            db.execute(
+                    """
+                    UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?,
+                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated'
+                    WHERE id=?
+                    """,
+                    arrayOf(
+                            msgCount, mentionsCount, isUnread,
+                            lastPostAt, lastViewedAt, lastFetchedAt, id
+                    )
+            )
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }

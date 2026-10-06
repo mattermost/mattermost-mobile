@@ -39,17 +39,73 @@ describe('ChannelHeader Index', () => {
         DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    describe('playbooks functionality', () => {
-        function getBaseProps(): ComponentProps<typeof ChannelHeader> {
-            return {
-                channelId,
-                callsEnabledInChannel: false,
-                groupCallsAllowed: false,
-                shouldRenderBookmarks: false,
-                shouldRenderChannelBanner: false,
-                isTabletView: false,
-            };
+    function getBaseProps(): ComponentProps<typeof ChannelHeader> {
+        return {
+            channelId,
+            callsEnabledInChannel: false,
+            groupCallsAllowed: false,
+            shouldRenderBookmarks: false,
+            shouldRenderChannelBanner: false,
+            isTabletView: false,
+        };
+    }
+
+    describe('canCallDMUser', () => {
+        const currentUserId = 'current-user-id';
+        const teammateId = 'teammate-id';
+
+        async function setupDM(teammate: UserProfile) {
+            await operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: currentUserId}],
+                prepareRecordsOnly: false,
+            });
+
+            await operator.handleUsers({users: [teammate], prepareRecordsOnly: false});
+
+            await operator.handleChannel({
+                channels: [TestHelper.fakeChannel({
+                    id: channelId,
+                    type: 'D',
+                    name: `${currentUserId}__${teammate.id}`,
+                })],
+                prepareRecordsOnly: false,
+            });
         }
+
+        it('should allow calling a regular teammate', async () => {
+            await setupDM(TestHelper.fakeUser({id: teammateId}));
+
+            const {getByTestId} = renderWithEverything(<ChannelHeader {...getBaseProps()}/>, {database});
+
+            expect(getByTestId('channel-header').props.canCallDMUser).toBe(true);
+        });
+
+        it('should not allow calling a bot', async () => {
+            await setupDM(TestHelper.fakeUser({id: teammateId, is_bot: true}));
+
+            const {getByTestId} = renderWithEverything(<ChannelHeader {...getBaseProps()}/>, {database});
+
+            expect(getByTestId('channel-header').props.canCallDMUser).toBe(false);
+        });
+
+        it('should not allow calling a deactivated user', async () => {
+            await setupDM(TestHelper.fakeUser({id: teammateId, delete_at: 123}));
+
+            const {getByTestId} = renderWithEverything(<ChannelHeader {...getBaseProps()}/>, {database});
+
+            expect(getByTestId('channel-header').props.canCallDMUser).toBe(false);
+        });
+
+        it('should not allow calling yourself', async () => {
+            await setupDM(TestHelper.fakeUser({id: currentUserId}));
+
+            const {getByTestId} = renderWithEverything(<ChannelHeader {...getBaseProps()}/>, {database});
+
+            expect(getByTestId('channel-header').props.canCallDMUser).toBe(false);
+        });
+    });
+
+    describe('playbooks functionality', () => {
 
         it('should render correctly without data', async () => {
             const props = getBaseProps();

@@ -10,6 +10,7 @@
 import {
     Post,
     Setup,
+    System,
 } from '@support/server_api';
 import {
     serverOneUrl,
@@ -23,17 +24,21 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {buildMessageOfLength} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Character Limit', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
-    const maxPostSize = 16383;
+    let maxPostSize: number;
     let testChannel: any;
 
     beforeAll(async () => {
         const {channel, user} = await Setup.apiInit(siteOneUrl);
         testChannel = channel;
+
+        // The server computes this; it rose from 16383 to 262144 on server main.
+        maxPostSize = await System.apiGetMaxPostSize(siteOneUrl);
 
         // # Log in to server
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
@@ -51,8 +56,8 @@ describe('Messaging - Message Character Limit', () => {
     });
 
     it('MM-T107 - should show warning and disable send when message exceeds character limit', async () => {
-        // # Open a channel and type a message exceeding the 16383 character limit
-        const overLimitMessage = '1234567890'.repeat(1638) + '1234';
+        // # Open a channel and type a message one rune over the server's limit
+        const overLimitMessage = buildMessageOfLength(maxPostSize + 1);
         const {post: lastPostBefore} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postInput.tap();

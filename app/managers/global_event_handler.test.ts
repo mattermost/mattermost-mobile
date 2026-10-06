@@ -23,7 +23,7 @@ jest.mock('@queries/servers/channel', () => ({queryTeamDefaultChannel: jest.fn()
 jest.mock('@queries/servers/system', () => ({getCommonSystemValues: jest.fn()}));
 jest.mock('@queries/servers/team', () => ({getTeamChannelHistory: jest.fn()}));
 jest.mock('@database/manager', () => ({getServerDatabaseAndOperator: jest.fn()}));
-jest.mock('@utils/error_handling', () => ({default: {initializeErrorHandling: jest.fn()}}), {virtual: true});
+jest.mock('@utils/error_handling', () => ({default: {initializeErrorHandling: jest.fn()}}));
 
 describe('GlobalEventHandler', () => {
     beforeEach(() => {

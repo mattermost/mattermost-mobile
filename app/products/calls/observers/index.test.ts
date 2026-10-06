@@ -386,6 +386,20 @@ describe('Calls Observers', () => {
             expect(state.dmCalleeAnsweredAt).toBe(5000);
         });
 
+        it('should not be calling once the callee is in the call, even before the answer is stamped', async () => {
+            // Only user_joined stamps dmCalleeAnsweredAt, so a session list that arrives by any
+            // other route, such as call_start carrying one, is the only sign they are already here.
+            const state = await getState({
+                ...dmCall,
+                sessions: {
+                    ...dmCall.sessions,
+                    session2: {sessionId: 'session2', userId: 'user2'},
+                },
+            });
+
+            expect(state.isDMCalling).toBe(false);
+        });
+
         it('should not go back to calling after the callee answers and then leaves', async () => {
             // Their session is gone again, but the call was answered, so the ring phase is over.
             const state = await getState({...dmCall, dmCalleeAnsweredAt: 5000});

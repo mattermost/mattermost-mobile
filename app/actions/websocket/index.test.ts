@@ -10,6 +10,7 @@ import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actio
 import {markChannelAsRead} from '@actions/remote/channel';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -33,6 +34,7 @@ jest.mock('@actions/local/channel');
 jest.mock('@actions/local/ephemeral_mode/cleanup');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/ephemeral_mode');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/entry/deferred');
 jest.mock('@actions/remote/post');
@@ -175,6 +177,7 @@ describe('WebSocket Index Actions', () => {
             expect(openAllUnreadChannels).toHaveBeenCalled();
             expect(dataRetentionCleanup).toHaveBeenCalled();
             expect(expiredBoRPostCleanup).toHaveBeenCalled();
+            expect(flushAuditQueue).toHaveBeenCalledWith(serverUrl);
             expect(AppsManager.refreshAppBindings).toHaveBeenCalled();
             expect(handlePlaybookReconnect).toHaveBeenCalledWith(serverUrl);
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);

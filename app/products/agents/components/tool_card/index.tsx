@@ -27,16 +27,14 @@ interface ToolCardProps {
     tool: ToolCall;
     isCollapsed: boolean;
     isProcessing: boolean;
-    localDecision?: boolean | null; // true = approved, false = rejected, null/undefined = undecided
+    localDecision?: boolean; // true = approved, false = rejected, undefined = undecided
     onToggleCollapse: (toolId: string) => void;
     onApprove?: (toolId: string) => void;
     onReject?: (toolId: string) => void;
     approvalStage: ToolApprovalStage;
     canExpand?: boolean;
-    canApprove?: boolean;
     showArguments?: boolean;
     showResults?: boolean;
-    isAutoApproved?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -128,9 +126,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             minHeight: 32,
         },
-        buttonDisabled: {
-            opacity: 0.5,
-        },
         buttonText: {
             color: theme.buttonBg,
             ...typography('Body', 75, 'SemiBold'),
@@ -202,10 +197,8 @@ const ToolCard = ({
     onReject,
     approvalStage,
     canExpand = true,
-    canApprove = true,
     showArguments = true,
     showResults = true,
-    isAutoApproved = false,
 }: ToolCardProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -220,14 +213,24 @@ const ToolCard = ({
     // Accepted is the in-flight state between approval and the result landing;
     // show the same processing spinner as Pending.
     const isAccepted = tool.status === ToolCallStatus.Accepted;
-    const hasLocalDecision = localDecision !== undefined && localDecision !== null;
-    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved || isAutoApproved;
+    const hasLocalDecision = localDecision !== undefined;
+    const isAutoApprovedStatus = tool.status === ToolCallStatus.AutoApproved;
 
     // Treat auto-approved as success so the result affordances render.
     const isSuccess = tool.status === ToolCallStatus.Success || isAutoApprovedStatus;
     const isError = tool.status === ToolCallStatus.Error;
     const isRejected = tool.status === ToolCallStatus.Rejected;
     const isResultPhase = approvalStage === ToolApprovalStage.Result;
+
+    // A pending call flagged would_auto_execute is executed server-side, so it
+    // must never offer an approval decision — only the result-stage
+    // share/keep-private controls stay available.
+    // onApprove is withheld for calls that can't be accepted from this card
+    // (questions the app can't render), leaving only Reject in the call stage.
+    const showDecisionButtons = Boolean(onReject) && (
+        (isResultPhase && Boolean(onApprove)) ||
+        (approvalStage === ToolApprovalStage.Call && isPending && !tool.would_auto_execute)
+    );
 
     const displayName = useMemo(() => {
         return tool.name.
@@ -421,7 +424,7 @@ const ToolCard = ({
                                     location={Screens.CHANNEL}
                                 />
                             </View>
-                            {isResultPhase && canApprove && (
+                            {isResultPhase && showDecisionButtons && !hasLocalDecision && (
                                 <View
                                     style={styles.warningCallout}
                                     testID={`${testIdPrefix}.warning`}
@@ -468,6 +471,43 @@ const ToolCard = ({
                 </Animated.View>
             )}
 
+            {/* A decided card in a multi-tool batch keeps reflecting the
+                user's choice while the remaining tools await decisions. */}
+            {hasLocalDecision && (
+                <View
+                    style={styles.statusContainer}
+                    testID={`${testIdPrefix}.status.local_decision`}
+                >
+                    {localDecision ? (
+                        <>
+                            <CompassIcon
+                                name='check-circle'
+                                size={12}
+                                color={theme.onlineIndicator}
+                            />
+                            <FormattedText
+                                id='agents.tool_call.status.accepted'
+                                defaultMessage='Accepted'
+                                style={styles.statusText}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <CompassIcon
+                                name='close-circle-outline'
+                                size={12}
+                                color={theme.dndIndicator}
+                            />
+                            <FormattedText
+                                id='agents.tool_call.status.rejected'
+                                defaultMessage='Rejected'
+                                style={styles.statusText}
+                            />
+                        </>
+                    )}
+                </View>
+            )}
+
             {isPending && !hasLocalDecision && isProcessing && (
                 <View
                     style={styles.statusContainer}
@@ -485,25 +525,25 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isPending && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isPending && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.buttonContainer}>
-                    <Pressable
-                        onPress={handleApprove}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
-                        hitSlop={BUTTON_HIT_SLOP}
-                        testID={`${testIdPrefix}.approve`}
-                    >
-                        <FormattedText
-                            id='agents.tool_call.approve'
-                            defaultMessage='Accept'
-                            style={styles.buttonText}
-                        />
-                    </Pressable>
+                    {Boolean(onApprove) && (
+                        <Pressable
+                            onPress={handleApprove}
+                            style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
+                            hitSlop={BUTTON_HIT_SLOP}
+                            testID={`${testIdPrefix}.approve`}
+                        >
+                            <FormattedText
+                                id='agents.tool_call.approve'
+                                defaultMessage='Accept'
+                                style={styles.buttonText}
+                            />
+                        </Pressable>
+                    )}
                     <Pressable
                         onPress={handleReject}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.button, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.button, pressed && {opacity: 0.72}]}
                         hitSlop={BUTTON_HIT_SLOP}
                         testID={`${testIdPrefix}.reject`}
                     >
@@ -516,12 +556,11 @@ const ToolCard = ({
                 </View>
             )}
 
-            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && onApprove && onReject && (
+            {isResultPhase && (isSuccess || isError) && !hasLocalDecision && !isProcessing && showDecisionButtons && (
                 <View style={styles.resultButtonContainer}>
                     <Pressable
                         onPress={handleApprove}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.shareButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.shareButton, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.share`}
                     >
                         <CompassIcon
@@ -537,8 +576,7 @@ const ToolCard = ({
                     </Pressable>
                     <Pressable
                         onPress={handleReject}
-                        disabled={isProcessing}
-                        style={({pressed}) => [styles.keepPrivateButton, isProcessing && styles.buttonDisabled, pressed && {opacity: 0.72}]}
+                        style={({pressed}) => [styles.keepPrivateButton, pressed && {opacity: 0.72}]}
                         testID={`${testIdPrefix}.keep_private`}
                     >
                         <CompassIcon

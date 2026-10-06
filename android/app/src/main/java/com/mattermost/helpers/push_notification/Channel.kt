@@ -86,6 +86,16 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
                 myChannelData.getInt("mention_count")
             }
 
+            val urgentMentionCount = try {
+                if (myChannelData.hasKey("urgent_mention_count")) {
+                    myChannelData.getInt("urgent_mention_count")
+                } else {
+                    0
+                }
+            } catch (_: Exception) {
+                0
+            }
+
             val lastPostAt = if (isCRTEnabled) {
                 try {
                     channelData.getDouble("last_root_post_at")
@@ -99,6 +109,7 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
             val messageCount = 0.coerceAtLeast(totalMsg - myMsgCount)
             data.putInt("message_count", messageCount)
             data.putInt("mentions_count", mentionCount)
+            data.putInt("urgent_mention_count", urgentMentionCount)
             data.putBoolean("is_unread", messageCount > 0)
             data.putDouble("last_post_at", lastPostAt)
             return data

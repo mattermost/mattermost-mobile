@@ -71,10 +71,9 @@ appId: ${MAESTRO_APP_ID}
       notVisible:
         id: "channel.post_draft.post.input"
     commands:
-      - extendedWaitUntil:
-          visible:
-            id: "tab_bar.home.tab"
-          timeout: 20000
+      # # Home tab can stay covered by a leave animation or an OS save-password prompt.
+      # The 20s wait here failed in CI when the tab was not yet hittable.
+      - runFlow: ../../subflows/waits/wait_for_home_tab.yml
       - tapOn:
           id: "tab_bar.home.tab"
       - waitForAnimationToEnd:

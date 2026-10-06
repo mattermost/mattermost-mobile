@@ -89,6 +89,7 @@ type ChannelMembership = {
     is_unread?: boolean;
     manually_unread?: boolean;
     autotranslation_disabled?: boolean;
+    urgent_mention_count?: number;
 };
 type ChannelUnread = {
     channel_id: string;

@@ -5,40 +5,50 @@ import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 
 const FLAG_PATCH_ATTEMPTS = 3;
+const FLAG_KEY = 'FeatureFlagClassificationMarkings';
 
 const observedFlagValues = async (baseUrl: string) => {
     const {config: serverConfig} = await System.apiGetConfig(baseUrl);
     const {config: clientConfig} = await System.apiGetClientConfigOld(baseUrl);
     return {
         server: serverConfig?.FeatureFlags?.ClassificationMarkings,
-        client: clientConfig?.FeatureFlagClassificationMarkings,
+        client: clientConfig?.[FLAG_KEY],
     };
 };
 
+// The one definition of "the flag is live": what the app reads. A single read when
+// maxAttempts is 1, otherwise the propagation poll the success path has always used.
+const clientFlagIsTrue = (baseUrl: string, maxAttempts = 30): Promise<boolean> => {
+    return System.waitForClientConfigFlag(baseUrl, FLAG_KEY, 'true', {maxAttempts, pollMs: timeouts.ONE_SEC});
+};
+
 export const enableClassificationMarkings = async (baseUrl: string): Promise<void> => {
+    if (await clientFlagIsTrue(baseUrl, 1)) {
+        return;
+    }
+
     // Idempotent flag patch. CI cloud often drops the TCP response (axios 30s → status 0).
     let lastObserved: {server?: unknown; client?: unknown} = {};
 
     /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
     for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
-        // No transport-retry wrapper here: apiPatchConfig already retries the patch
-        // internally, and this loop re-patches on top of that. Stacking a third layer
-        // is what let a single stalled request consume a whole 300s hook budget.
         const patchResult = await System.apiPatchConfig(baseUrl, {
             FeatureFlags: {
                 ClassificationMarkings: true,
             },
         });
         if (patchResult.error) {
-            throw new Error(`enableClassificationMarkings: failed to patch server config: ${JSON.stringify(patchResult.error)}`);
+            if (await clientFlagIsTrue(baseUrl)) {
+                return;
+            }
+            throw new Error(
+                'enableClassificationMarkings: config PATCH got no usable response ' +
+                `(${JSON.stringify(patchResult.error)}) and ${FLAG_KEY} did not read true afterwards. ` +
+                'The server is not accepting config writes from this shard.',
+            );
         }
 
-        const enabled = await System.waitForClientConfigFlag(
-            baseUrl,
-            'FeatureFlagClassificationMarkings',
-            'true',
-            {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
-        );
+        const enabled = await clientFlagIsTrue(baseUrl);
         if (enabled) {
             return;
         }

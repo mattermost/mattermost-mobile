@@ -122,7 +122,7 @@ describe('Channels - Channel Info', () => {
     it('MM-T4928_2 - should be able to view channel info by tapping intro channel info action', async () => {
         // # Open a channel screen and tap on intro channel info action
         await ChannelScreen.open(channelsCategory, testChannel.name);
-        await ChannelScreen.tapIntroChannelInfoAction();
+        await ChannelScreen.tapIntroChannelInfoAction({category: channelsCategory, channelName: testChannel.name});
 
         // * Verify on channel info screen
         await ChannelInfoScreen.toBeVisible();

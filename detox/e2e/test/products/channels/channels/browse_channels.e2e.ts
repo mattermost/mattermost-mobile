@@ -56,6 +56,11 @@ describe('Channels - Browse Channels', () => {
         // Dismiss any lingering "Removed from channel" or "Archived channel"
         await Alert.dismissChannelRemoveOrArchiveAlert();
 
+        // The scheduled-post tutorial tooltip is shown once per user and outlives the test
+        // that triggered it, and its scrim swallows taps meant for anything underneath. Clear
+        // it here too so one test's leftover cannot fail the next one on an unrelated element.
+        await ChannelScreen.dismissScheduledPostTooltip();
+
         // * Verify on channel list screen
         await ChannelListScreen.toBeVisible();
     });
@@ -170,59 +175,48 @@ describe('Channels - Browse Channels', () => {
     });
 
     it('MM-T4729_5 - should be able to browse an archived channel', async () => {
-        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
-        try {
-            // # Enable archived channel visibility on the server, then refresh the app
-            // so the logged-in client re-reads config before Browse Channels renders the archived dropdown item.
-            await System.apiUpdateConfig(siteOneUrl, {TeamSettings: {ExperimentalViewArchivedChannels: true}});
-
-            // App semantics: missing flag === enabled. Accept 'true' OR absent (not 'false').
-            const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
-                maxAttempts: 10,
-                acceptAbsentAsEnabled: true,
-            });
-            if (!archivedChannelsConfigReady) {
-                throw new Error('ExperimentalViewArchivedChannels did not propagate to the client config (still explicitly false)');
-            }
-
-            // Cold-start relaunch (newInstance: true) so app re-reads config via appEntry→determineAuthenticatedRoute.
-            // User session persists in local DB, so we stay logged in without re-login.
-            await device.launchApp({newInstance: true});
-            await ChannelListScreen.toBeVisible();
-
-            // # Create a channel, add the test user, then archive it
-            const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
-            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
-            await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
-            await wait(timeouts.FOUR_SEC);
-
-            // # Open browse channels screen and switch to archived channels view
-            await BrowseChannelsScreen.open();
-
-            // Bounded wait for observable outcome: the archived filter dropdown must appear, proving config propagated.
-            // If config change didn't land on the client, dropdown won't render; fail with a clear message.
-            await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
-
-            // Keep Detox sync enabled for archived filter tap — disableSynchronization
-            await BrowseChannelsScreen.channelDropdownTextPublic.tap();
-            await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
-            await wait(timeouts.TWO_SEC);
-
-            // Filter by name — product now routes archived browse search through search_archived
-            // (autocomplete omits deleted channels).
-            await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
-            await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).
-                toExist().
-                withTimeout(timeouts.TEN_SEC);
-
-            await BrowseChannelsScreen.close();
-        } finally {
-            const originalArchived = originalConfig?.TeamSettings?.ExperimentalViewArchivedChannels;
-            await System.apiUpdateConfig(siteOneUrl, {
-                TeamSettings: {ExperimentalViewArchivedChannels: originalArchived ?? false},
-            });
+        // Provisioning enables this server-wide, so assert it rather than set-and-restore it on a
+        // server every shard shares. Missing flag means enabled, so accept 'true' or absent.
+        const archivedChannelsConfigReady = await System.waitForClientConfigFlag(siteOneUrl, 'ExperimentalViewArchivedChannels', 'true', {
+            maxAttempts: 10,
+            acceptAbsentAsEnabled: true,
+        });
+        if (!archivedChannelsConfigReady) {
+            throw new Error('ExperimentalViewArchivedChannels is explicitly false on the shared server — re-run Detox provisioning');
         }
+
+        // Cold-start relaunch (newInstance: true) so app re-reads config via appEntry→determineAuthenticatedRoute.
+        // User session persists in local DB, so we stay logged in without re-login.
+        await device.launchApp({newInstance: true});
+        await ChannelListScreen.toBeVisible();
+
+        // # Create a channel, add the test user, then archive it
+        const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
+        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
+        await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
+        await wait(timeouts.FOUR_SEC);
+
+        // # Open browse channels screen and switch to archived channels view
+        await BrowseChannelsScreen.open();
+
+        // Bounded wait for observable outcome: the archived filter dropdown must appear, proving config propagated.
+        // If config change didn't land on the client, dropdown won't render; fail with a clear message.
+        await waitFor(BrowseChannelsScreen.channelDropdownTextPublic).toExist().withTimeout(timeouts.TEN_SEC);
+
+        // Keep Detox sync enabled for archived filter tap — disableSynchronization
+        await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await waitFor(ChannelDropdownMenuScreen.archivedChannelsItem).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
+        await wait(timeouts.TWO_SEC);
+
+        // Filter by name — product now routes archived browse search through search_archived
+        // (autocomplete omits deleted channels).
+        await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
+        await waitFor(BrowseChannelsScreen.getChannelItem(archivedChannel.name)).
+            toExist().
+            withTimeout(timeouts.TEN_SEC);
+
+        await BrowseChannelsScreen.close();
     });
 
     it('MM-T4729_6 - should not be able to browse a joined public channel', async () => {

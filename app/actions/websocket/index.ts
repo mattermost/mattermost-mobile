@@ -7,13 +7,14 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {fetchClassificationBanner} from '@actions/remote/classification';
+import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {
     entry,
     handleEntryAfterLoadNavigation,
     setExtraSessionProps,
 } from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
+import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
@@ -109,7 +110,17 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         checkIsAgentsPluginEnabled(serverUrl);
-        fetchClassificationBanner(serverUrl, true);
+        fetchAccessControlAttributeFields(serverUrl, true);
+
+        // Values may have changed while the socket was down, and the events that
+        // would have reported it are gone. Dropping the per-channel dedupe makes
+        // the next visit to each channel refetch them — but the channel already on
+        // screen is never re-entered, so it is refetched explicitly or it would
+        // keep showing what it had when the connection dropped.
+        EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+        if (currentChannelId) {
+            fetchChannelAttributeValues(serverUrl, currentChannelId);
+        }
 
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
@@ -118,6 +129,8 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         openAllUnreadChannels(serverUrl, groupLabel);
 
         doCleanup(serverUrl);
+
+        flushAuditQueue(serverUrl);
 
         AppsManager.refreshAppBindings(serverUrl, groupLabel);
         return undefined;
