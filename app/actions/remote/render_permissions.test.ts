@@ -127,4 +127,22 @@ describe('fetchRenderPermissions', () => {
 
         expect(RenderPermissionsStore.setEntry).toHaveBeenLastCalledWith(serverUrl, channelId, expect.any(Object), RENDER_PERMISSIONS_TTL_MS);
     });
+
+    it('should store nothing and leave the next call free to ask when the failure is not the request', async () => {
+        await enforcedOnServer('12.0.0');
+        jest.mocked(NetworkManager.getClient).mockImplementationOnce(() => {
+            throw new Error('client not found');
+        });
+
+        const failed = await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(failed.error).toBeDefined();
+        expect(mockClient.searchChannelActionDecisions).not.toHaveBeenCalled();
+        expect(RenderPermissionsStore.setEntry).not.toHaveBeenCalled();
+
+        mockClient.searchChannelActionDecisions.mockResolvedValueOnce(allowed);
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(mockClient.searchChannelActionDecisions).toHaveBeenCalledTimes(1);
+    });
 });

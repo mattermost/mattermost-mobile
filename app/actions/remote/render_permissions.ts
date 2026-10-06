@@ -9,7 +9,7 @@ import {getConfigValue} from '@queries/servers/system';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {logDebug} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -34,7 +34,6 @@ export async function fetchRenderPermissions(serverUrl: string, channelId: strin
         return {};
     }
 
-    let epoch: number | undefined;
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const serverVersion = await getConfigValue(database, 'Version');
@@ -44,14 +43,30 @@ export async function fetchRenderPermissions(serverUrl: string, channelId: strin
         }
 
         // Undefined while ABAC is not enforced.
-        epoch = await captureRedactionEpoch(serverUrl);
+        const epoch = await captureRedactionEpoch(serverUrl);
         if (epoch === undefined) {
             RenderPermissionsStore.finishFetch(serverUrl, channelId, claim);
             return {};
         }
 
         const client = NetworkManager.getClient(serverUrl);
-        const {decisions = {}} = await client.searchChannelActionDecisions(channelId);
+        let response: ActionSearchResponse;
+        try {
+            response = await client.searchChannelActionDecisions(channelId);
+        } catch (error) {
+            // The request itself failed: the server refused it or could not be reached. The previous
+            // decisions are kept, since a failure says nothing new about the policy, and stored under the
+            // current epoch so callers wait before asking again.
+            logDebug('error on fetchRenderPermissions', getFullErrorMessage(error));
+            forceLogoutIfNecessary(serverUrl, error);
+            const isPermanent = isErrorWithStatusCode(error) && PERMANENT_FAILURE_STATUSES.has(error.status_code);
+            const ttlMs = isPermanent ? RENDER_PERMISSIONS_TTL_MS : RenderPermissionsStore.nextRetryDelay(serverUrl, channelId);
+            const previous = RenderPermissionsStore.getEntry(serverUrl, channelId);
+            RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions: previous?.decisions ?? {}}, ttlMs);
+            return {error};
+        }
+
+        const {decisions = {}} = response;
 
         // A reason is only ever set on a fail-closed deny caused by an evaluation error.
         const evaluationFailed = Object.values(decisions).some((decision) => Boolean(decision.reason));
@@ -64,21 +79,10 @@ export async function fetchRenderPermissions(serverUrl: string, channelId: strin
         RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions}, ttlMs);
         return {decisions};
     } catch (error) {
-        logDebug('error on fetchRenderPermissions', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-
-        if (epoch === undefined) {
-            // Failed before a request was made: nothing to record, and nothing to back off from.
-            RenderPermissionsStore.finishFetch(serverUrl, channelId, claim);
-            return {error};
-        }
-
-        // Stored under the current epoch so callers wait before asking again. The previous decisions
-        // are kept: a failure says nothing new about the policy.
-        const isPermanent = isErrorWithStatusCode(error) && PERMANENT_FAILURE_STATUSES.has(error.status_code);
-        const ttlMs = isPermanent ? RENDER_PERMISSIONS_TTL_MS : RenderPermissionsStore.nextRetryDelay(serverUrl, channelId);
-        const previous = RenderPermissionsStore.getEntry(serverUrl, channelId);
-        RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions: previous?.decisions ?? {}}, ttlMs);
+        // Anything other than the request failing (a database read, a missing client, a bug) is not
+        // fixed by retrying on a timer: nothing is stored, and the next trigger asks again.
+        logError('error on fetchRenderPermissions', getFullErrorMessage(error));
+        RenderPermissionsStore.finishFetch(serverUrl, channelId, claim);
         return {error};
     }
 }
