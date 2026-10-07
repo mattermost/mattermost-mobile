@@ -34,28 +34,38 @@ class InteractiveDialogScreen {
         await input.replaceText(value);
     };
 
+    // Dismiss an open keyboard by tapping the scroll view's top-left background
+    // (a label/help area, never an input). A keyboard left open by a previous
+    // field otherwise occludes lower fields and the submit button, and the
+    // keyboard-aware scroll view cannot scroll them above it.
+    dismissKeyboard = async () => {
+        try {
+            await element(by.id(this.testID.interactiveDialogScrollView)).tap({x: 20, y: 20});
+            await wait(timeouts.HALF_SEC);
+        } catch {
+            // No scroll view present, or nothing to dismiss.
+        }
+    };
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
+        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
+
+        // The apps form renders inside a modal with a sticky header and a
+        // keyboard-aware scroll view. A fixed-distance scroll can push the target
+        // under the header or stop short on long forms, so dismiss any open
+        // keyboard first, then scroll until the input is actually visible.
+        await this.dismissKeyboard();
         try {
-            const dialogScrollView = element(by.id(this.testID.interactiveDialogScrollView));
-            if (isPasswordOrTextarea) {
-                try {
-                    await dialogScrollView.tap({x: 20, y: 20});
-                    await wait(500);
-                } catch {
-                    // No keyboard up, or the tap landed on a field — scrolling still helps.
-                }
-                await dialogScrollView.scrollTo('bottom');
-                await wait(500);
-            } else {
-                await dialogScrollView.scroll(100, 'down');
-            }
+            await waitFor(appsFormElement).
+                toBeVisible().
+                whileElement(by.id(this.testID.interactiveDialogScrollView)).
+                scroll(120, 'down');
         } catch (scrollError) {
-            // Could not scroll dialog, continuing without scroll
+            // Short dialog that doesn't scroll, or the field is already visible.
         }
 
-        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
         await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await expect(appsFormElement).toExist();
@@ -101,10 +111,9 @@ class InteractiveDialogScreen {
     };
 
     submit = async () => {
-        try {
-            await element(by.id(this.testID.interactiveDialogScrollView)).scroll(200, 'down');
-        } catch { /* short dialogs may not scroll */ }
-        await waitFor(this.submitButton).toBeVisible(40).withTimeout(timeouts.TEN_SEC);
+        // The submit button lives in the modal header (always visible above the
+        // keyboard), so no scrolling or keyboard dismissal is needed to reach it.
+        await waitFor(this.submitButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await this.submitButton.tap();
         await wait(timeouts.ONE_SEC);
     };
