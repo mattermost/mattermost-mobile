@@ -158,8 +158,8 @@ describe('channel access', () => {
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 
-        it('should make no request on servers older than 12.1.0', async () => {
-            await enableFeature('advanced', '12.0.0');
+        it('should make no request on servers older than the channel read access version', async () => {
+            await enableFeature('advanced', '11.9.0');
 
             await reconcileChannelAccess(serverUrl);
 

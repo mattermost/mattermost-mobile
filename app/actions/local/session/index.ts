@@ -5,8 +5,8 @@ import NetInfo from '@react-native-community/netinfo';
 import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
-import {clearChannelAccessState} from '@actions/remote/channel_access';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
+import {clearChannelAccessState} from '@actions/remote/channel_access';
 import {clearRedactionInvalidations} from '@actions/websocket/access_control';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import loopInStore from '@agents/store/loop_in_store';
