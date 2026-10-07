@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import {type IntlShape} from 'react-intl';
+import {defineMessages, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';
@@ -11,6 +11,13 @@ import {DEFAULT_LOCALE} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {navigateToRoot} from '@screens/navigation';
 import {getIntlShape} from '@utils/general';
+
+const messages = defineMessages({
+    noChannelAccess: {
+        id: 'notification.no_channel_access',
+        defaultMessage: 'You do not currently have access to the channel this message belongs to.',
+    },
+});
 
 export const convertToNotificationData = (notification: Notification, tapped = true): NotificationWithData => {
     if (!notification.payload) {
@@ -63,10 +70,7 @@ export const notificationError = (intl: IntlShape, type: NotificationErrorType) 
             });
             break;
         case 'ChannelAccess':
-            message = intl.formatMessage({
-                id: 'notification.no_channel_access',
-                defaultMessage: 'You do not currently have access to the channel this message belongs to.',
-            });
+            message = intl.formatMessage(messages.noChannelAccess);
             break;
         case 'Team':
             message = intl.formatMessage({
