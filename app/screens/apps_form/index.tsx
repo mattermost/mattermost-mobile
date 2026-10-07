@@ -205,6 +205,7 @@ function AppsFormScreen({form, context}: AppFormScreenProps) {
             performLookupCall={performLookupCall}
             refreshOnSelect={refreshOnSelect}
             submit={submit}
+            channelId={context?.channel_id}
         />
     );
 }

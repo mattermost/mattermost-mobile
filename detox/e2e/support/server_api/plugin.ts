@@ -357,6 +357,64 @@ export const apiEnsurePluginInstalled = async (baseUrl: string, pluginId: string
     return finalStatus;
 };
 
+/**
+ * Submit the demo plugin file-upload interactive dialog (populates plugin KV for re-open hydration).
+ * @param {string} baseUrl - the base server URL
+ * @param {Object} params - dialog submit payload
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiSubmitDemoPluginFileUploadDialog = async (
+    baseUrl: string,
+    {
+        userId,
+        channelId,
+        teamId,
+        submission,
+        fileIds = [],
+    }: {
+        userId: string;
+        channelId: string;
+        teamId: string;
+        submission: Record<string, string>;
+        fileIds?: string[];
+    },
+): Promise<any> => {
+    try {
+        const response = await client.post(
+            `${baseUrl}/plugins/${DemoPlugin.id}/dialog/file-upload`,
+            {
+                user_id: userId,
+                channel_id: channelId,
+                team_id: teamId,
+                submission,
+                file_ids: fileIds,
+                cancelled: false,
+                state: 'somestate',
+            },
+        );
+
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
+ * Clear the demo plugin's persisted file-upload KV entry for a user.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} userId - the user ID whose KV entry to clear
+ * @return {Object} returns {status} on success or {error, status} on error
+ */
+export const apiClearDemoPluginFileUploadKV = async (baseUrl: string, userId: string): Promise<any> => {
+    try {
+        const kvKey = encodeURIComponent(`file_upload_${userId}`);
+        const response = await client.delete(`${baseUrl}/api/v4/plugins/${encodeURIComponent(DemoPlugin.id)}/kv/${kvKey}`);
+        return {status: response.status};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 export const Plugin = {
     apiDisableNonPrepackagedPlugins,
     apiDisablePluginById,
@@ -370,6 +428,8 @@ export const Plugin = {
     apiRemovePluginById,
     apiUploadPlugin,
     apiUploadAndEnablePlugin,
+    apiSubmitDemoPluginFileUploadDialog,
+    apiClearDemoPluginFileUploadKV,
 };
 
 export default Plugin;
