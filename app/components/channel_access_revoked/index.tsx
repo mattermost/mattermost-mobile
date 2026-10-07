@@ -20,8 +20,13 @@ type Props = {
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
 const TITLE_HEIGHT = 30 + 12; // typography 600 line height
-const MARGINS = 12 + 24 + 10; // (after title + after text + after content)
-const CHROME_HEIGHT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS;
+const TEXT_MARGIN_TOP = 12;
+const TEXT_MARGIN_BOTTOM = 24;
+const BOTTOM_MARGIN = 10; // between the button and the bottom safe area
+const MARGINS = TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + BOTTOM_MARGIN;
+
+// Everything in the sheet except the description text.
+const FIXED_CONTENT_HEIGHT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS;
 const MIN_TEXT_CONTAINER_HEIGHT = 80;
 const MAX_TEXT_CONTAINER_HEIGHT = 320;
 
@@ -29,7 +34,7 @@ const MAX_TEXT_CONTAINER_HEIGHT = 320;
 // name and the translation both change how many lines the description wraps to.
 export const snapPointFor = (description: string) => {
     const length = description.length / 100;
-    return CHROME_HEIGHT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
+    return FIXED_CONTENT_HEIGHT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 };
 
 export const description = (intl: IntlShape, displayName: string) => intl.formatMessage({
@@ -48,8 +53,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         body: {
             color: theme.centerChannelColor,
-            marginTop: 12,
-            marginBottom: 24,
+            marginTop: TEXT_MARGIN_TOP,
+            marginBottom: TEXT_MARGIN_BOTTOM,
             ...typography('Body', 200, 'Regular'),
         },
     };
@@ -65,7 +70,7 @@ const ChannelAccessRevoked = ({text}: Props) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
 
-    const containerStyle = useMemo(() => [style.container, {marginBottom: insets.bottom + 10}], [style, insets.bottom]);
+    const containerStyle = useMemo(() => [style.container, {marginBottom: insets.bottom + BOTTOM_MARGIN}], [style, insets.bottom]);
 
     return (
         <View style={containerStyle}>
