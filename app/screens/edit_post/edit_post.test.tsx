@@ -115,6 +115,7 @@ describe('Edit Post', () => {
         maxFileSize: TEST_CONFIG.maxFileSize,
         canUploadFiles: true,
         canUploadFilesByPolicy: true,
+        writeDenied: false,
     };
 
     const setupPickerMock = (file: Partial<ExtractedFileInfo>) => {

@@ -158,8 +158,8 @@ describe('channel access', () => {
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
         });
 
-        it('should make no request on servers older than 12.1.0', async () => {
-            await enableFeature('advanced', '12.0.0');
+        it('should make no request on servers older than the channel read access version', async () => {
+            await enableFeature('advanced', '11.9.0');
 
             await reconcileChannelAccess(serverUrl);
 
@@ -215,14 +215,19 @@ describe('channel access', () => {
             expect(await storedChannelIds()).toEqual(['channel1', 'channel2']);
         });
 
-        it('should change nothing when the memberships response is empty', async () => {
+        it('should purge every team channel when the memberships response is empty', async () => {
             await enableFeature();
-            await seed([channel('channel1')]);
+            await seed([
+                channel('channel1'),
+                channel('channel2'),
+                channel('dmchannel', {type: 'D', team_id: ''}),
+                channel('archived', {delete_at: 123}),
+            ]);
             mockClient.getMyChannelMembers.mockResolvedValueOnce([]);
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(await storedChannelIds()).toEqual(['channel1']);
+            expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
         });
 
         it('should change nothing when the memberships request fails', async () => {

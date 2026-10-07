@@ -10,6 +10,7 @@ import {ActionType, DeepLink, Events, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -655,6 +656,20 @@ describe('app/actions/remote/channel', () => {
             expect(result).not.toHaveProperty('error');
         });
 
+        it('archiveChannel - should expire the channel decisions when a management policy denies it', async () => {
+            const denial = Object.assign(new Error('denied'), {server_error_id: ServerErrors.CHANNEL_MANAGEMENT_ACCESS_DENIED, status_code: 403});
+            const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+            mockClient.deleteChannel.mockImplementationOnce(() => {
+                throw denial;
+            });
+
+            const {error} = await archiveChannel(serverUrl, channelId);
+            expect(error).toBe(denial);
+            expect(expireEntry).toHaveBeenCalledTimes(1);
+            expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+            expireEntry.mockRestore();
+        });
+
         it('unarchiveChannel - base case', async () => {
             const result = await unarchiveChannel(serverUrl, channelId);
             expect(result).toBeDefined();
@@ -713,6 +728,19 @@ describe('app/actions/remote/channel', () => {
             await operator.handleChannel({channels: [{id: channelId, display_name: 'Channel 1', team_id: teamId, type: 'O'} as Channel], prepareRecordsOnly: false});
 
             const result = await handleChannelAccessDenied(serverUrl, channelId);
+            expect(result).toEqual({});
+            const channels = await operator.database.get('Channel').query().fetch();
+            expect(channels).toHaveLength(1);
+        });
+
+        it.each(['D', 'G'])('should leave a %s channel alone', async (type) => {
+            // DMs and GMs are outside the channel-access policies, so a read denial naming
+            // one is not believed: purging it would lose a conversation the server still serves.
+            await operator.handleChannel({channels: [{id: channelId, display_name: 'Direct', team_id: '', type} as Channel], prepareRecordsOnly: false});
+            await operator.handleMyChannel({channels: [{id: channelId, team_id: '', type} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
+
+            const result = await handleChannelAccessDenied(serverUrl, channelId);
+
             expect(result).toEqual({});
             const channels = await operator.database.get('Channel').query().fetch();
             expect(channels).toHaveLength(1);

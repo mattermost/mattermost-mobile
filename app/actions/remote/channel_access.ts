@@ -106,11 +106,7 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
     checked.set(teamId, Date.now());
     lastTeamCheck.set(serverUrl, checked);
 
-    // Purging on an empty response could hide channels the policy still allows.
-    if (!memberships.length) {
-        return [];
-    }
-
+    // An empty response is what a session denied every channel in the team gets back, so all of them are purged.
     const memberOf = new Set(memberships.map((m) => m.channel_id));
     const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !memberOf.has(id));
 

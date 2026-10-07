@@ -4,9 +4,11 @@
 import {addRecentReaction} from '@actions/local/reactions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/post';
 import {queryReaction} from '@queries/servers/reaction';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import RenderPermissionsStore from '@store/render_permissions_store';
+import {getChannelPolicyDenial} from '@utils/channel_policy';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -15,6 +17,21 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
+
+/**
+ * A policy refusal means the reaction controls were rendered from a stale decision, so the post's
+ * channel decisions are marked due for revalidation. The error may precede resolving the database.
+ */
+const expireDecisionsOnPolicyDenial = async (serverUrl: string, postId: string, error: unknown) => {
+    if (!getChannelPolicyDenial(error)) {
+        return;
+    }
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    const post = database ? await getPostById(database, postId) : undefined;
+    if (post) {
+        RenderPermissionsStore.expireEntry(serverUrl, post.channelId);
+    }
+};
 
 export async function getIsReactionAlreadyAddedToPost(serverUrl: string, postId: string, emojiName: string) {
     try {
@@ -86,6 +103,7 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
         };
     } catch (error) {
         logDebug('error on addReaction', getFullErrorMessage(error));
+        await expireDecisionsOnPolicyDenial(serverUrl, postId, error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -112,6 +130,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
         return {reaction};
     } catch (error) {
         logDebug('error on removeReaction', getFullErrorMessage(error));
+        await expireDecisionsOnPolicyDenial(serverUrl, postId, error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

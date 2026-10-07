@@ -1,14 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {firstValueFrom} from 'rxjs';
+
 import {RedactionInvalidationReason, invalidateChannelRedaction} from '@actions/local/redaction';
 import {fetchRenderPermissions} from '@actions/remote/render_permissions';
+import {License} from '@constants';
 import {RenderPermissionAction} from '@constants/access_control';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 
-import {observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
+import {observeChannelActionDenied, observeRenderPermission, observeShouldFetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -109,5 +113,35 @@ describe('render permission observables', () => {
         expect(searchChannelActionDecisions).toHaveBeenCalledTimes(2);
         expect(RenderPermissionsStore.getEntry(serverUrl, channelId)?.decisions).toEqual(denied);
         subscription.unsubscribe();
+    });
+
+    describe('observeChannelActionDenied', () => {
+        const write = RenderPermissionAction.ChannelWriteAccess;
+
+        const setLicenseSku = (sku: string) => operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: sku}}],
+            prepareRecordsOnly: false,
+        });
+
+        it('should be denied by an evaluated deny on Enterprise Advanced', async () => {
+            await setLicenseSku(License.SKU_SHORT_NAME.EnterpriseAdvanced);
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[write]: {allowed: false, evaluated: true}}}, RENDER_PERMISSIONS_TTL_MS);
+
+            expect(await firstValueFrom(observeChannelActionDenied(operator.database, serverUrl, channelId, write))).toBe(true);
+        });
+
+        it('should not be denied below Enterprise Advanced, where the server does not enforce channel access', async () => {
+            await setLicenseSku(License.SKU_SHORT_NAME.Enterprise);
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[write]: {allowed: false, evaluated: true}}}, RENDER_PERMISSIONS_TTL_MS);
+
+            expect(await firstValueFrom(observeChannelActionDenied(operator.database, serverUrl, channelId, write))).toBe(false);
+        });
+
+        it('should be denied by a fail-closed deny on Enterprise Advanced', async () => {
+            await setLicenseSku(License.SKU_SHORT_NAME.EnterpriseAdvanced);
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions: {[write]: {allowed: false, evaluated: true, reason: 'restricted_by_policy'}}}, RENDER_PERMISSIONS_TTL_MS);
+
+            expect(await firstValueFrom(observeChannelActionDenied(operator.database, serverUrl, channelId, write))).toBe(true);
+        });
     });
 });
