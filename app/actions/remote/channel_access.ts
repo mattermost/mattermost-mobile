@@ -90,13 +90,14 @@ async function prepareRestoredChannels(serverUrl: string, database: Database, ch
     return [...(channelModels ?? []), ...(categoryModels ?? [])];
 }
 
-// The server leaves a denied channel out of the team's memberships and keeps it in on regaining
-// access, and a membership is what a restored channel needs, so only regained bodies are fetched.
+// The server leaves denied and archived channels out of the team's channel list, so the list alone
+// tells which stored channels were denied and which were regained. Memberships are only fetched to
+// restore the regained ones.
 async function checkTeam(serverUrl: string, database: Database, teamId: string): Promise<Model[]> {
     const client = NetworkManager.getClient(serverUrl);
-    let memberships: ChannelMembership[];
+    let channels: Channel[];
     try {
-        memberships = await client.getMyChannelMembers(teamId);
+        channels = await client.getMyChannels(teamId);
     } catch (error) {
         logFailure(serverUrl, 'checkTeam', error);
         return [];
@@ -107,12 +108,12 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
     lastTeamCheck.set(serverUrl, checked);
 
     // Purging on an empty response could hide channels the policy still allows.
-    if (!memberships.length) {
+    if (!channels.length) {
         return [];
     }
 
-    const memberOf = new Set(memberships.map((m) => m.channel_id));
-    const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !memberOf.has(id));
+    const listed = new Set(channels.map((c) => c.id));
+    const deniedIds = (await queryMyChannelsByTeam(database, teamId).fetchIds()).filter((id) => !listed.has(id));
 
     const models: Model[] = [];
     if (deniedIds.length) {
@@ -134,10 +135,14 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
     }
 
     const storedIds = new Set(await queryAllMyChannel(database).fetchIds());
-    const regainedIds = memberships.map((m) => m.channel_id).filter((id) => !storedIds.has(id));
-    const regained = (await fetchInBatches(regainedIds, (id) => client.getChannel(id), 'regained channels')).filter(isRestorable);
+    const regained = channels.filter((c) => !storedIds.has(c.id) && isRestorable(c));
     if (regained.length) {
-        models.push(...await prepareRestoredChannels(serverUrl, database, regained, memberships));
+        try {
+            const memberships = await client.getMyChannelMembers(teamId);
+            models.push(...await prepareRestoredChannels(serverUrl, database, regained, memberships));
+        } catch (error) {
+            logFailure(serverUrl, 'checkTeam memberships', error);
+        }
     }
 
     return models;
@@ -170,8 +175,8 @@ async function runChecks(serverUrl: string, {teamIds, channelIds}: PendingChecks
             return;
         }
 
-        // Older servers still list denied channels in the memberships; the view call and the render
-        // decision are what catch a denial there.
+        // Older servers still list denied channels; the view call and the render decision are what
+        // catch a denial there.
         if (teamIds.size && isMinimumServerVersion(await getConfigValue(database, 'Version'), ...CHANNEL_READ_ACCESS_VERSION)) {
             const models: Model[] = [];
             for (const teamId of teamIds) {

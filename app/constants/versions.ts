@@ -8,7 +8,7 @@ export const PROPERTY_FIELDS_SEARCH_VERSION = [11, 10, 0];
 // First release with POST /access_control/decisions/actions/search (render-time ABAC decisions).
 export const RENDER_PERMISSIONS_VERSION = [12, 0, 0];
 
-// First release whose team channel memberships leave out the channels a read-access policy denies.
+// First release whose team channel list leaves out the channels a read-access policy denies.
 // TODO: Update this once PR is merged
 export const CHANNEL_READ_ACCESS_VERSION = [12, 0, 0];
 
