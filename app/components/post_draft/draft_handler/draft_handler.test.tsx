@@ -17,10 +17,6 @@ jest.mock('@actions/local/draft', () => ({
     removeDraft: jest.fn(),
 }));
 
-jest.mock('@hooks/render_permissions', () => ({
-    useFetchRenderPermissions: jest.fn(),
-}));
-
 jest.mock('@managers/draft_upload_manager', () => ({
     prepareUpload: jest.fn(),
     registerErrorHandler: jest.fn(),

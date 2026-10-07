@@ -14,6 +14,7 @@ import {preventDoubleTap} from '@utils/tap';
 type Props = {
     canConvert: boolean;
     channelId: string;
+    disabled?: boolean;
     displayName: string;
 }
 
@@ -76,7 +77,7 @@ const convertToPrivate = preventDoubleTap(async (serverUrl: string, channelId: s
     }
 });
 
-const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
+const ConvertPrivate = ({canConvert, channelId, disabled, displayName}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
@@ -104,6 +105,7 @@ const ConvertPrivate = ({canConvert, channelId, displayName}: Props) => {
     return (
         <OptionItem
             action={onConfirmConvertToPrivate}
+            disabled={disabled}
             label={intl.formatMessage({id: 'channel_info.convert_private', defaultMessage: 'Convert to private channel'})}
             icon='lock-outline'
             type='default'

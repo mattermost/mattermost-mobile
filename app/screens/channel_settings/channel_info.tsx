@@ -12,9 +12,10 @@ import {navigateToChannelInfoScreen} from '@screens/navigation';
 
 type Props = {
     channelId: string;
+    disabled?: boolean;
 }
 
-const ChannelInfoOption = ({channelId}: Props) => {
+const ChannelInfoOption = ({channelId, disabled}: Props) => {
     const {formatMessage} = useIntl();
     const title = formatMessage({id: 'screens.channel_info', defaultMessage: 'Channel info'});
 
@@ -25,6 +26,7 @@ const ChannelInfoOption = ({channelId}: Props) => {
     return (
         <OptionItem
             action={goToChannelInfo}
+            disabled={disabled}
             label={title}
             icon='information-outline'
             type={Platform.select({ios: 'arrow', default: 'default'})}

@@ -13,7 +13,7 @@ import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
 import {observeChannelBookmarksEnabled} from '@queries/servers/features';
-import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannel, observePermissionForTeam} from '@queries/servers/role';
+import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannelRBACOnly, observePermissionForTeam} from '@queries/servers/role';
 import {
     observeConfigValue,
     observeCurrentChannelId,
@@ -122,9 +122,11 @@ const observeHasChannelSettingsActions = (
         }),
     );
 
+    // The settings actions are checked on the roles alone, so Channel Settings stays reachable under a
+    // management policy denial and lists them there for reference, disabled.
     const canManageSettings = currentUser.pipe(
         combineLatestWith(channelId),
-        switchMap(([u, cId]) => (u ? observeCanManageChannelSettings(database, cId, u) : of$(false))),
+        switchMap(([u, cId]) => (u ? observeCanManageChannelSettings(database, cId, u, true) : of$(false))),
         distinctUntilChanged(),
     );
 
@@ -138,7 +140,7 @@ const observeHasChannelSettingsActions = (
     );
 
     const canManageChannelAutotranslations = combineLatest([channelId, currentUser]).pipe(
-        switchMap(([cId, u]) => (u ? observeCanManageChannelAutotranslations(database, cId, u) : of$(false))),
+        switchMap(([cId, u]) => (u ? observeCanManageChannelAutotranslations(database, cId, u, true) : of$(false))),
         distinctUntilChanged(),
     );
 
@@ -161,7 +163,7 @@ const observeHasChannelSettingsActions = (
             if (ch.type !== General.OPEN_CHANNEL) {
                 return of$(false);
             }
-            return observePermissionForChannel(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
+            return observePermissionForChannelRBACOnly(database, ch, u, Permissions.CONVERT_PUBLIC_CHANNEL_TO_PRIVATE, false);
         }),
     );
 
@@ -176,10 +178,10 @@ const observeHasChannelSettingsActions = (
             }
 
             if (chType === General.OPEN_CHANNEL) {
-                return observePermissionForChannel(database, ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
+                return observePermissionForChannelRBACOnly(database, ch, u, Permissions.DELETE_PUBLIC_CHANNEL, true);
             }
 
-            return observePermissionForChannel(database, ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
+            return observePermissionForChannelRBACOnly(database, ch, u, Permissions.DELETE_PRIVATE_CHANNEL, true);
         }),
     );
 

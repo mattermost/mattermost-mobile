@@ -194,11 +194,67 @@ describe('Entry Queries', () => {
                 serverUrl,
                 operator,
                 chData,
+                channelsFetchComplete: true,
             });
 
             expect(promises.length).toBeGreaterThan(0);
             const results = await Promise.all(promises);
             expect(results[0].length).toBeGreaterThan(0);
+        });
+
+        it('should delete every stored channel when a successful fetch returns none', async () => {
+            // What a session denied read access to every channel gets back. The
+            // server suppresses rather than revoking membership, so dropping the
+            // local records is the only thing that hides them.
+            await operator.handleChannel({
+                channels: [{
+                    id: 'channel1',
+                    name: 'channel1',
+                    team_id: 'team1',
+                }] as Channel[],
+                prepareRecordsOnly: false,
+            });
+
+            const chData: MyChannelsRequest = {
+                channels: [],
+                memberships: [],
+            };
+
+            const promises = await prepareEntryModelsForDeletion({
+                serverUrl,
+                operator,
+                chData,
+                channelsFetchComplete: true,
+            });
+
+            expect(promises.length).toBeGreaterThan(0);
+            const results = await Promise.all(promises);
+            expect(results[0].length).toBeGreaterThan(0);
+        });
+
+        it('should not delete any channel when the fetch was incomplete', async () => {
+            await operator.handleChannel({
+                channels: [{
+                    id: 'channel1',
+                    name: 'channel1',
+                    team_id: 'team1',
+                }] as Channel[],
+                prepareRecordsOnly: false,
+            });
+
+            const chData: MyChannelsRequest = {
+                channels: [],
+                memberships: [],
+            };
+
+            const promises = await prepareEntryModelsForDeletion({
+                serverUrl,
+                operator,
+                chData,
+                channelsFetchComplete: false,
+            });
+
+            expect(promises).toHaveLength(0);
         });
     });
 

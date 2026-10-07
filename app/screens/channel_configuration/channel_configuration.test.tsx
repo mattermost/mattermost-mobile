@@ -4,6 +4,7 @@
 import React, {type ComponentProps} from 'react';
 import {View} from 'react-native';
 
+import ReadOnlyNotice from '@screens/channel_settings/read_only_notice';
 import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import ChannelAutotranslation from './channel_autotranslation';
@@ -31,6 +32,13 @@ jest.mock('./share_with_connected_workspaces', () => ({
 jest.mocked(ShareWithConnectedWorkspaces).mockImplementation(
     (props: ComponentProps<typeof ShareWithConnectedWorkspaces>) => React.createElement(View, {testID: 'channel_configuration.share_workspaces', ...props}),
 );
+jest.mock('@screens/channel_settings/read_only_notice', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(ReadOnlyNotice).mockImplementation(
+    (props: ComponentProps<typeof ReadOnlyNotice>) => React.createElement(View, props),
+);
 
 describe('ChannelConfiguration', () => {
     const baseProps = {
@@ -39,6 +47,7 @@ describe('ChannelConfiguration', () => {
         channelId: 'channel1',
         displayName: 'Test Channel',
         isChannelShared: false,
+        isReadOnly: false,
     };
 
     it('renders screen and scroll view with testIDs', () => {
@@ -87,5 +96,25 @@ describe('ChannelConfiguration', () => {
         );
         expect(queryByTestId('channel_configuration.autotranslation')).toBeNull();
         expect(queryByTestId('channel_configuration.share_workspaces')).toBeNull();
+    });
+
+    it('should show the read-only notice and disable both options only while read-only', () => {
+        const props = {...baseProps, canManageAutotranslations: true, canManageSharedChannel: true, isReadOnly: true};
+        const {getByTestId, queryByTestId, rerender} = renderWithIntlAndTheme(
+            <ChannelConfiguration {...props}/>,
+        );
+        expect(getByTestId('channel_configuration.read_only_notice')).toBeTruthy();
+        expect(getByTestId('channel_configuration.autotranslation')).toHaveProp('disabled', true);
+        expect(getByTestId('channel_configuration.share_workspaces')).toHaveProp('disabled', true);
+
+        rerender(
+            <ChannelConfiguration
+                {...props}
+                isReadOnly={false}
+            />,
+        );
+        expect(queryByTestId('channel_configuration.read_only_notice')).toBeNull();
+        expect(getByTestId('channel_configuration.autotranslation')).toHaveProp('disabled', false);
+        expect(getByTestId('channel_configuration.share_workspaces')).toHaveProp('disabled', false);
     });
 });
