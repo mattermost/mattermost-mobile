@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
-import {checkChannelAccess, checkTeamChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
+import {checkChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
 import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -26,6 +26,7 @@ jest.mock('./render_permissions', () => ({
 }));
 
 const mockClient = {
+    getMyChannels: jest.fn(),
     getMyChannelMembers: jest.fn(),
     getChannel: jest.fn(),
     getMyChannelMember: jest.fn(),
@@ -139,7 +140,7 @@ describe('channel access', () => {
             const {error} = await reconcileChannelAccess('foo');
 
             expect(error).toBeDefined();
-            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannels).not.toHaveBeenCalled();
         });
 
         it('should make no request while the feature is disabled', async () => {
@@ -147,7 +148,7 @@ describe('channel access', () => {
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannels).not.toHaveBeenCalled();
         });
 
         it('should make no request below an Enterprise Advanced license', async () => {
@@ -155,7 +156,7 @@ describe('channel access', () => {
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannels).not.toHaveBeenCalled();
         });
 
         it('should make no request on servers older than the channel read access version', async () => {
@@ -163,25 +164,25 @@ describe('channel access', () => {
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannels).not.toHaveBeenCalled();
         });
 
-        it('should purge a current-team channel missing from the memberships, fetching nothing else', async () => {
+        it('should purge a current-team channel missing from the channel list, fetching nothing else', async () => {
             await enableFeature();
             await seed([channel('channel1'), channel('channel2')]);
-            mockClient.getMyChannelMembers.mockResolvedValueOnce([membership('channel1')]);
+            mockClient.getMyChannels.mockResolvedValueOnce([channel('channel1')]);
 
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['channel1']);
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(1);
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledWith(teamId);
-            expect(mockClient.getChannel).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannels).toHaveBeenCalledTimes(1);
+            expect(mockClient.getMyChannels).toHaveBeenCalledWith(teamId);
+            expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();
             expect(mockFetchCategories).not.toHaveBeenCalled();
             expect(mockDenied).not.toHaveBeenCalled();
         });
 
-        it('should keep DMs, GMs, archived channels and other teams\' channels absent from the memberships', async () => {
+        it('should keep DMs, GMs, archived channels and other teams\' channels absent from the channel list', async () => {
             await enableFeature();
             await seed([
                 channel('channel1'),
@@ -190,7 +191,7 @@ describe('channel access', () => {
                 channel('archived', {delete_at: 123}),
                 channel('otherteam', {team_id: 'teamid2'}),
             ]);
-            mockClient.getMyChannelMembers.mockResolvedValueOnce([membership('channel1')]);
+            mockClient.getMyChannels.mockResolvedValueOnce([channel('channel1')]);
 
             await reconcileChannelAccess(serverUrl);
 
@@ -204,7 +205,7 @@ describe('channel access', () => {
                 systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: 'channel2'}],
                 prepareRecordsOnly: false,
             });
-            mockClient.getMyChannelMembers.mockResolvedValueOnce([membership('channel1')]);
+            mockClient.getMyChannels.mockResolvedValueOnce([channel('channel1')]);
 
             await reconcileChannelAccess(serverUrl);
 
@@ -215,7 +216,7 @@ describe('channel access', () => {
             expect(await storedChannelIds()).toEqual(['channel1', 'channel2']);
         });
 
-        it('should purge every team channel when the memberships response is empty', async () => {
+        it('should purge every team channel when the channel list response is empty', async () => {
             await enableFeature();
             await seed([
                 channel('channel1'),
@@ -223,71 +224,56 @@ describe('channel access', () => {
                 channel('dmchannel', {type: 'D', team_id: ''}),
                 channel('archived', {delete_at: 123}),
             ]);
-            mockClient.getMyChannelMembers.mockResolvedValueOnce([]);
+            mockClient.getMyChannels.mockResolvedValueOnce([]);
 
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['archived', 'dmchannel']);
         });
 
-        it('should change nothing when the memberships request fails', async () => {
+        it('should change nothing when the channel list request fails', async () => {
             await enableFeature();
             await seed([channel('channel1')]);
-            mockClient.getMyChannelMembers.mockRejectedValueOnce(new Error('network'));
+            mockClient.getMyChannels.mockRejectedValueOnce(new Error('network'));
 
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['channel1']);
         });
 
-        it('should restore regained channels ten at a time, reusing their memberships and fetching the team categories once', async () => {
+        it('should restore regained channels with one memberships request, ignoring archived memberships', async () => {
             await enableFeature();
             await seed([channel('channel1')]);
-            const regainedIds = Array.from({length: 12}, (_, i) => `regained${i}`);
-            mockClient.getMyChannelMembers.mockResolvedValueOnce([membership('channel1'), ...regainedIds.map(membership)]);
-            let inFlight = 0;
-            let maxInFlight = 0;
-            mockClient.getChannel.mockImplementation(async (id: string) => {
-                inFlight++;
-                maxInFlight = Math.max(maxInFlight, inFlight);
-                await new Promise((resolve) => setTimeout(resolve, 1));
-                inFlight--;
-                return channel(id);
-            });
-            mockFetchCategories.mockResolvedValueOnce({categories: [category(['channel1', ...regainedIds])]});
+            mockClient.getMyChannels.mockResolvedValueOnce(['channel1', 'regained1', 'regained2'].map((id) => channel(id)));
+            mockClient.getMyChannelMembers.mockResolvedValueOnce(['channel1', 'regained1', 'regained2', 'archived'].map(membership));
+            mockFetchCategories.mockResolvedValueOnce({categories: [category(['channel1', 'regained1', 'regained2'])]});
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(mockClient.getChannel).toHaveBeenCalledTimes(12);
-            expect(maxInFlight).toBe(10);
-            expect(mockClient.getMyChannelMember).not.toHaveBeenCalled();
+            expect(mockClient.getChannel).not.toHaveBeenCalled();
+            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(1);
+            expect(mockClient.getMyChannelMembers).toHaveBeenCalledWith(teamId);
             expect(mockFetchCategories).toHaveBeenCalledTimes(1);
             expect(mockFetchCategories).toHaveBeenCalledWith(serverUrl, teamId, false, true);
-            expect(await storedChannelIds()).toEqual(['channel1', ...regainedIds].sort());
+            expect(await storedChannelIds()).toEqual(['channel1', 'regained1', 'regained2']);
         });
 
-        it('should skip regained channels that fail to load or turn out archived', async () => {
+        it('should still purge denied channels when the memberships request for a restore fails', async () => {
             await enableFeature();
-            await seed([channel('channel1')]);
-            mockClient.getMyChannelMembers.mockResolvedValueOnce(['channel1', 'restored', 'failed', 'archived'].map(membership));
-            mockClient.getChannel.mockImplementation(async (id: string) => {
-                if (id === 'failed') {
-                    throw new Error('network');
-                }
-                return channel(id, id === 'archived' ? {delete_at: 1} : {});
-            });
-            mockFetchCategories.mockResolvedValueOnce({categories: [category(['channel1', 'restored'])]});
+            await seed([channel('channel1'), channel('channel2')]);
+            mockClient.getMyChannels.mockResolvedValueOnce([channel('channel1'), channel('regained')]);
+            mockClient.getMyChannelMembers.mockRejectedValueOnce(new Error('network'));
 
             await reconcileChannelAccess(serverUrl);
 
-            expect(mockClient.getChannel).toHaveBeenCalledTimes(3);
-            expect(await storedChannelIds()).toEqual(['channel1', 'restored']);
+            expect(mockFetchCategories).not.toHaveBeenCalled();
+            expect(await storedChannelIds()).toEqual(['channel1']);
         });
 
         it('should coalesce a burst of policy events into one trailing run', async () => {
             await enableFeature();
             await seed([channel('channel1')]);
-            mockClient.getMyChannelMembers.mockResolvedValue([membership('channel1')]);
+            mockClient.getMyChannels.mockResolvedValue([channel('channel1')]);
 
             await Promise.all([
                 reconcileChannelAccess(serverUrl),
@@ -297,7 +283,7 @@ describe('channel access', () => {
                 reconcileChannelAccess(serverUrl),
             ]);
 
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(2);
+            expect(mockClient.getMyChannels).toHaveBeenCalledTimes(2);
         });
     });
 
@@ -335,31 +321,6 @@ describe('channel access', () => {
 
             expect(mockFetchCategories).not.toHaveBeenCalled();
             expect(await storedChannelIds()).toEqual(['channel1']);
-        });
-    });
-
-    describe('checkTeamChannelAccess', () => {
-        it('should check a team at most once every five minutes unless a permission policy changes', async () => {
-            await enableFeature();
-            await seed([channel('channel1')]);
-            mockClient.getMyChannelMembers.mockResolvedValue([membership('channel1')]);
-            const now = Date.now();
-            const dateNow = jest.spyOn(Date, 'now').mockReturnValue(now);
-
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(1);
-
-            // Checks the current team and makes every team's last check stale.
-            await reconcileChannelAccess(serverUrl);
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(3);
-
-            dateNow.mockReturnValue(now + (5 * 60 * 1000));
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannelMembers).toHaveBeenCalledTimes(4);
-
-            dateNow.mockRestore();
         });
     });
 });

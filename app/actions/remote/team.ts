@@ -24,7 +24,6 @@ import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
-import {checkTeamChannelAccess} from './channel_access';
 import {fetchGroupsForTeamIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {fetchRolesIfNeeded} from './role';
@@ -436,8 +435,6 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     if (currentTeamId === teamId) {
         return {};
     }
-
-    checkTeamChannelAccess(serverUrl, teamId);
 
     let channelId = '';
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, true);

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {useIntl, type IntlShape} from 'react-intl';
+import {defineMessages, useIntl, type IntlShape} from 'react-intl';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -13,6 +13,21 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+const messages = defineMessages({
+    title: {
+        id: 'channel_access_revoked.title',
+        defaultMessage: 'Channel unavailable',
+    },
+    description: {
+        id: 'channel_access_revoked.description',
+        defaultMessage: 'You no longer have access to {displayName}. It will reappear here if access is restored.',
+    },
+    okay: {
+        id: 'channel_access_revoked.okay',
+        defaultMessage: 'Okay',
+    },
+});
 
 type Props = {
     text: string;
@@ -37,10 +52,7 @@ export const snapPointFor = (description: string) => {
     return FIXED_CONTENT_HEIGHT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
 };
 
-export const description = (intl: IntlShape, displayName: string) => intl.formatMessage({
-    id: 'channel_access_revoked.description',
-    defaultMessage: 'You no longer have access to {displayName}. It will reappear here if access is restored.',
-}, {displayName});
+export const description = (intl: IntlShape, displayName: string) => intl.formatMessage(messages.description, {displayName});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -75,15 +87,14 @@ const ChannelAccessRevoked = ({text}: Props) => {
     return (
         <View style={containerStyle}>
             <FormattedText
-                id='channel_access_revoked.title'
-                defaultMessage='Channel unavailable'
+                {...messages.title}
                 style={style.title}
             />
             <Text style={style.body}>
                 {text}
             </Text>
             <Button
-                text={intl.formatMessage({id: 'channel_access_revoked.okay', defaultMessage: 'Okay'})}
+                text={intl.formatMessage(messages.okay)}
                 onPress={close}
                 size='lg'
                 theme={theme}
