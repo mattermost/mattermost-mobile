@@ -9,7 +9,7 @@ import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, s
 import {switchToGlobalDrafts} from '@actions/local/draft';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {DeepLink, Events, General, Preferences, Screens} from '@constants';
+import {DeepLink, Events, General, Preferences, Screens, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -26,7 +26,7 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
-import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {getFullErrorMessage, getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
@@ -61,6 +61,8 @@ export type ChannelMembersRequest = {
     members?: ChannelMembership[];
     error?: unknown;
 }
+
+const channelAccessDenialsInFlight = new Set<string>();
 
 export async function removeMemberFromChannel(serverUrl: string, channelId: string, userId: string) {
     try {
@@ -755,6 +757,9 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
         return {};
     } catch (error) {
         logDebug('error on markChannelAsRead', getFullErrorMessage(error));
+        if (getServerError(error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
+            await handleChannelAccessDenied(serverUrl, channelId);
+        }
         return {error};
     }
 }
@@ -1465,10 +1470,14 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         }
 
         const currentServer = await getActiveServer();
+        let displayName: string | undefined;
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
             if (channel) {
-                DeviceEventEmitter.emit(event, channel.displayName);
+                // Storing display name here to display the inaccessible channel bottom sheet
+                // after navigation to the root as this navigation closes the bottom sheet first so we
+                // navigate to root first, then later open the bottom sheet.
+                displayName = channel.displayName;
                 await navigateToRoot();
             }
         }
@@ -1495,10 +1504,44 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         } else {
             await setCurrentChannelId(operator, '');
         }
+
+        if (displayName != null) {
+            DeviceEventEmitter.emit(event, displayName);
+        }
         return {};
     } catch (error) {
         logDebug('cannot kick user from channel', error);
         return {error};
+    }
+};
+
+export const handleChannelAccessDenied = async (serverUrl: string, channelId: string) => {
+    const key = `${serverUrl}|${channelId}`;
+    if (channelAccessDenialsInFlight.has(key)) {
+        logDebug('handleChannelAccessDenied: denial already being handled', channelId);
+        return {};
+    }
+
+    channelAccessDenialsInFlight.add(key);
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const myChannel = await getMyChannel(database, channelId);
+        if (!myChannel) {
+            logDebug('handleChannelAccessDenied: no membership for channel', channelId);
+            return {};
+        }
+
+        if (channelId === await getCurrentChannelId(database)) {
+            await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ACCESS_REVOKED);
+        }
+        await removeCurrentUserFromChannel(serverUrl, channelId);
+        return {};
+    } catch (error) {
+        logDebug('error on handleChannelAccessDenied', getFullErrorMessage(error));
+        return {error};
+    } finally {
+        channelAccessDenialsInFlight.delete(key);
     }
 };
 

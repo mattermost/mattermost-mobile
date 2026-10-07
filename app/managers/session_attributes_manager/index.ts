@@ -47,6 +47,8 @@ const messages = defineMessages({
 });
 
 export class SessionAttributesManagerSingleton {
+    // Servers whose requests carry session attributes, mirroring what the native client was told.
+    private enabledServers = new Set<string>();
     private locationPermissionRequest?: Promise<void>;
 
     syncStaticValues = async (): Promise<void> => {
@@ -60,7 +62,7 @@ export class SessionAttributesManagerSingleton {
 
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!database) {
-                removeSessionAttributesServer(serverUrl);
+                this.disableServer(serverUrl);
                 return;
             }
 
@@ -69,10 +71,11 @@ export class SessionAttributesManagerSingleton {
             const enabled = sessionAttributesEnabled &&
                 isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
             if (!enabled) {
-                removeSessionAttributesServer(serverUrl);
+                this.disableServer(serverUrl);
                 return;
             }
 
+            this.enabledServers.add(serverUrl);
             setSessionAttributesEnabled(serverUrl, true);
 
             const {manifest, error} = await fetchSessionAttributesManifest(serverUrl);
@@ -94,13 +97,19 @@ export class SessionAttributesManagerSingleton {
             }
         } catch (error) {
             logDebug('[SessionAttributesManager.refreshManifest]', getFullErrorMessage(error));
-            removeSessionAttributesServer(serverUrl);
+            this.disableServer(serverUrl);
         }
     };
 
     removeServer = (serverUrl: string) => {
-        removeSessionAttributesServer(serverUrl);
+        this.disableServer(serverUrl);
     };
+
+    /**
+     * Servers that evaluate this device's session attributes, which include its network (SSID,
+     * interface, IP), in ABAC decisions.
+     */
+    getEnabledServers = () => [...this.enabledServers];
 
     upsertManifestField = (serverUrl: string, field: SAField) => {
         upsertSessionAttributesField(serverUrl, field);
@@ -112,6 +121,11 @@ export class SessionAttributesManagerSingleton {
 
     removeManifestField = (serverUrl: string, name: string) => {
         removeSessionAttributesField(serverUrl, name);
+    };
+
+    private disableServer = (serverUrl: string) => {
+        this.enabledServers.delete(serverUrl);
+        removeSessionAttributesServer(serverUrl);
     };
 
     /**

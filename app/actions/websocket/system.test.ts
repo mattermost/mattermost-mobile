@@ -113,6 +113,20 @@ describe('WebSocket System Actions', () => {
             expect(handleSystem).toHaveBeenCalled();
             expect(updateDmGmDisplayName).toHaveBeenCalledWith(serverUrl);
         });
+
+        it('should invalidate file decisions only when the license crosses the ABAC tier', async () => {
+            // Below Enterprise Advanced the ABAC engine refuses to evaluate and every decision denies.
+            const advanced = {IsLicensed: 'true', SkuShortName: 'advanced'} as ClientLicense;
+            const professional = {IsLicensed: 'true', SkuShortName: 'professional'} as ClientLicense;
+
+            jest.mocked(getLicense).mockResolvedValue(advanced);
+            await handleLicenseChangedEvent(serverUrl, {data: {license: {...advanced, Users: '100'}}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).not.toHaveBeenCalled();
+
+            await handleLicenseChangedEvent(serverUrl, {data: {license: professional}} as WebSocketMessage);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledTimes(1);
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.LicenseChanged);
+        });
     });
 
     describe('handleConfigChangedEvent', () => {
@@ -202,6 +216,9 @@ describe('WebSocket System Actions', () => {
             await handleConfigChangedEvent(serverUrl, msg);
 
             expect(SessionAttributesManager.refreshManifest).toHaveBeenCalledWith(serverUrl);
+
+            // The session attributes sent with each request are part of the ABAC subject.
+            expect(invalidateRedactionForCurrentUser).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.SessionAttributes);
         });
 
         it('should stop sending session attributes when feature flag is disabled', async () => {

@@ -4,8 +4,10 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
@@ -26,6 +28,11 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@actions/remote/post', () => ({
     refetchPostsForRedaction: jest.fn(() => Promise.resolve({})),
     fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
+}));
+
+jest.mock('@actions/remote/channel_access', () => ({
+    checkChannelAccess: jest.fn(),
+    reconcileChannelAccess: jest.fn(),
 }));
 
 const serverUrl = 'access-control.test.com';
@@ -137,6 +144,17 @@ describe('redaction invalidation triggers', () => {
         expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBeGreaterThan(1);
     });
 
+    it('should check the current team on a permission policy change and only the named channel on a channel policy change', async () => {
+        handlePermissionPolicyUpdatedEvent(serverUrl);
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        await flushCoalescer();
+
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
+        expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(checkChannelAccess).toHaveBeenCalledTimes(1);
+        expect(checkChannelAccess).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
     it('should collapse the duplicate events one CPA write emits into a single generation', async () => {
         // A CPA API write emits both custom_profile_attributes_values_updated and the generic
         // property_values_updated; without coalescing that is two epochs and two refetches.
@@ -222,6 +240,64 @@ describe('redaction invalidation triggers', () => {
         await flushCoalescer();
 
         expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+    });
+
+    describe('channel attributes', () => {
+        const accessControlGroupId = 'accesscontrolgroupid';
+        const channelValuesEvent = (groupId: string) => ({
+            data: {
+                object_type: 'channel',
+                target_id: channelId,
+                values: JSON.stringify([{id: 'valueid1', field_id: 'fieldid1', target_id: channelId, group_id: groupId}]),
+            },
+        } as unknown as WebSocketMessage);
+
+        beforeEach(async () => {
+            await seedMyChannel(operator, channelId);
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.ACCESS_CONTROL_GROUP_ID, value: accessControlGroupId}], prepareRecordsOnly: false});
+        });
+
+        it('should raise only that channel when its access control attribute values change', async () => {
+            // Channel attribute values are the resource side of the channel's policies.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, channelValuesEvent(accessControlGroupId));
+            await flushCoalescer();
+
+            const state = await getRedactionEpochState(operator.database);
+            expect(state.global).toBe(1);
+            expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        });
+
+        it('should ignore channel values written by another property group', async () => {
+            // Managed channel categories keep per-channel values in the same tables.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, channelValuesEvent('managedcategoriesgroupid'));
+            await flushCoalescer();
+
+            expect((await getRedactionEpochState(operator.database)).counter).toBe(1);
+        });
+
+        it('should raise only that channel when every value on it is cleared', async () => {
+            // A clear of every value on a target names no group, so it cannot be told apart from an
+            // access control write.
+            await handleRedactionForPropertyValuesUpdated(serverUrl, {
+                data: {object_type: 'channel', target_id: channelId, values: '[]'},
+            } as unknown as WebSocketMessage);
+            await flushCoalescer();
+
+            const state = await getRedactionEpochState(operator.database);
+            expect(state.global).toBe(1);
+            expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBe(2);
+        });
+
+        it('should raise the global epoch when an access control channel attribute field is edited', async () => {
+            // The payload does not say which channels hold a value for the field.
+            await handleRedactionForPropertyFieldChanged(serverUrl, {
+                event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+                data: {object_type: 'channel', property_field: JSON.stringify({id: 'fieldid2', object_type: 'channel', group_id: accessControlGroupId})},
+            } as unknown as WebSocketMessage);
+            await flushCoalescer();
+
+            expect((await getRedactionEpochState(operator.database)).global).toBe(2);
+        });
     });
 
     it('should close any open viewer, which cannot observe the database', async () => {
