@@ -249,25 +249,20 @@ class ServerScreen {
         await this.enterPreauthSecret(preauthSecret);
 
         // Connect
-        if (isAndroid()) {
-            await this.tapConnectButton();
+        await this.tapConnectButton();
 
-            // Dismiss "Notifications cannot be received from this server" dialog if it appears.
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('Okay')).tap();
-            } catch {
-                // Dialog did not appear — proceed normally
-            }
+        if (isAndroid()) {
+            // Same routine connectToServer uses. A single dismissal attempt is not enough:
+            // the push-proxy alert can animate in after the probe window, and a tap that
+            // misses leaves it covering the login form.
+            await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
+            return;
         }
-        if (isIos()) {
-            await this.tapConnectButton();
-            await this.dismissIosNotificationsAlert();
-        }
+
+        await this.dismissIosNotificationsAlert();
 
         // Wait for the login form to appear after server connection with preauth.
-        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
-        await waitFor(this.usernameInput).toExist().withTimeout(timeout);
+        await waitFor(this.usernameInput).toExist().withTimeout(timeouts.HALF_MIN);
     };
 }
 

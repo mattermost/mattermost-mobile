@@ -79,6 +79,9 @@ class EphemeralStoreSingleton {
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
 
+    // Add-server candidate secret before a session exists (not safe in Expo Router params).
+    private pendingPreauthSecrets: {[serverUrl: string]: string | undefined} = {};
+
     addRunningTranslation = (postId: string) => {
         this.runningTranslations.add(postId);
     };
@@ -554,6 +557,18 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    setPendingPreauthSecret = (serverUrl: string, secret: string) => {
+        this.pendingPreauthSecrets[serverUrl] = secret;
+    };
+
+    getPendingPreauthSecret = (serverUrl: string) => {
+        return this.pendingPreauthSecrets[serverUrl];
+    };
+
+    clearPendingPreauthSecret = (serverUrl: string) => {
+        delete this.pendingPreauthSecrets[serverUrl];
     };
 }
 
