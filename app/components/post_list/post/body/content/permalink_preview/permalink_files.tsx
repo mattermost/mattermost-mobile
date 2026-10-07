@@ -6,6 +6,9 @@ import {DeviceEventEmitter, View, type LayoutChangeEvent, StyleSheet} from 'reac
 
 import Files from '@components/files';
 import {Events} from '@constants';
+import useDidMount from '@hooks/did_mount';
+import EphemeralStore from '@store/ephemeral_store';
+import {emitPostInViewport} from '@utils/post_list/viewport';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -38,8 +41,9 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
 
         const parentKey = `${parentLocation}-${parentPostId}`;
         if (viewableItemsMap[parentKey]) {
-            const viewableItems = {[`${location}-${post.id}`]: true};
-            DeviceEventEmitter.emit(Events.ITEM_IN_VIEWPORT, viewableItems);
+            // Via the helper so the embedded post also lands in the viewport cache; a bare emit
+            // leaves anything that mounts later unable to seed itself.
+            emitPostInViewport(location, post.id);
         }
     }, [parentLocation, parentPostId, location, post.id]);
 
@@ -51,6 +55,20 @@ const PermalinkFiles = (props: PermalinkFilesProps) => {
         const subscription = DeviceEventEmitter.addListener(Events.ITEM_IN_VIEWPORT, listener);
         return () => subscription.remove();
     }, [listener, parentLocation, parentPostId]);
+
+    // ITEM_IN_VIEWPORT is fire-and-forget, and this subtree mounts only once its linked post is
+    // hydrated, so the emit for the parent post has usually already happened. Seed from the last
+    // known viewable items instead of waiting for the next scroll.
+    useDidMount(() => {
+        if (!parentLocation || !parentPostId) {
+            return;
+        }
+
+        const parentKey = `${parentLocation}-${parentPostId}`;
+        if (EphemeralStore.isItemInViewPort(parentKey)) {
+            listener({[parentKey]: true});
+        }
+    });
 
     const onLayout = useCallback((event: LayoutChangeEvent) => {
         setLayoutWidth(event.nativeEvent.layout.width);

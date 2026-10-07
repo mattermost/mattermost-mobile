@@ -5,6 +5,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement, updatePostTranslation} from '@actions/local/post';
+import {captureRedactionEpoch} from '@actions/local/redaction';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {getCurrentUserLocale} from '@actions/local/user';
 import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
@@ -29,6 +30,7 @@ import {logDebug, logWarning} from '@utils/log';
 import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
 
 import type {Model} from '@nozbe/watermelondb';
+import type {PostWithRedactionEpoch} from '@typings/database/database';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 function preparedMyChannelHack(myChannel: MyChannelModel) {
@@ -36,6 +38,24 @@ function preparedMyChannelHack(myChannel: MyChannelModel) {
         myChannel._preparedState = null;
     }
 }
+
+const UNSANITIZED_BROADCAST_POST_TYPES = new Set<string>([PostTypes.BURN_ON_READ, PostTypes.EPHEMERAL, PostTypes.EPHEMERAL_ADD_TO_CHANNEL]);
+
+/**
+ * `posted` and `post_edited` payloads are redacted per recipient by the server's `abac_files`
+ * broadcast hook, so they can be stamped as verified. Burn-on-read is outside that hook and at least
+ * one ephemeral emitter bypasses it; returning undefined leaves those at their stored epoch.
+ *
+ * Call it as soon as the payload is parsed: it vouches for the decision the server made when it
+ * broadcast, and an invalidation flushed while the handler awaits the network would otherwise be
+ * stamped onto that older decision.
+ */
+const captureEpochForBroadcastPost = async (serverUrl: string, post: Post) => {
+    if (UNSANITIZED_BROADCAST_POST_TYPES.has(post.type)) {
+        return undefined;
+    }
+    return captureRedactionEpoch(serverUrl);
+};
 
 export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessage) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -51,6 +71,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     } catch {
         return;
     }
+    let redactionVerifiedEpoch = await captureEpochForBroadcastPost(serverUrl, post);
     const currentUserId = await getCurrentUserId(database);
 
     const existing = await getPostById(database, post.pending_post_id) || await getPostById(database, post.id);
@@ -194,6 +215,9 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         } else {
             post = editedPost;
         }
+
+        // The stored payload is the edit, so the epoch is the one captured when the edit arrived.
+        redactionVerifiedEpoch = (editedPost as PostWithRedactionEpoch).redaction_verified_epoch;
     }
 
     const postModels = await operator.handlePosts({
@@ -201,6 +225,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch,
     });
 
     models.push(...postModels);
@@ -221,6 +246,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     } catch {
         return;
     }
+    const redactionVerifiedEpoch = await captureEpochForBroadcastPost(serverUrl, post);
 
     const permalinkModels: Model[] = [];
     try {
@@ -234,7 +260,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 
     const oldPost = await getPostById(database, post.id);
     if (!oldPost) {
-        EphemeralStore.addEditingPost(serverUrl, post);
+        EphemeralStore.addEditingPost(serverUrl, {...post, redaction_verified_epoch: redactionVerifiedEpoch} as PostWithRedactionEpoch);
 
         // If we have permalink updates but no post to process, batch just the permalinks
         if (permalinkModels.length) {
@@ -278,6 +304,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
+        redactionVerifiedEpoch,
     });
     models.push(...postModels);
 

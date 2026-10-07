@@ -58,6 +58,8 @@ type PostProps = {
     currentUser?: UserModel;
     customEmojiNames: string[];
     filesInfo: FileInfo[];
+    isRedactionVerified: boolean;
+    redactionRequiredEpoch: number;
     hasReplies: boolean;
     highlight?: boolean;
     highlightPinnedOrSaved?: boolean;
@@ -135,6 +137,8 @@ const Post = ({
     currentUser,
     customEmojiNames,
     filesInfo,
+    isRedactionVerified,
+    redactionRequiredEpoch,
     hasReplies,
     highlight,
     highlightPinnedOrSaved = true,
@@ -414,6 +418,8 @@ const Post = ({
                 mmBlocksEnabled={mmBlocksEnabled}
                 filesInfo={filesInfo}
                 hasReactions={hasReactions}
+                isRedactionVerified={isRedactionVerified}
+                redactionRequiredEpoch={redactionRequiredEpoch}
                 highlight={Boolean(highlightedStyle)}
                 highlightReplyBar={highlightReplyBar}
                 isCRTEnabled={isCRTEnabled}

@@ -6,6 +6,7 @@ import {Platform} from 'react-native';
 
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
+import {clearRedactionInvalidations} from '@actions/websocket/access_control';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import loopInStore from '@agents/store/loop_in_store';
 import streamingStore from '@agents/store/streaming_store';
@@ -15,6 +16,7 @@ import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import RedactionRevalidationManager from '@managers/redaction_revalidation_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpiredSession} from '@queries/servers/system';
@@ -156,9 +158,15 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
         await WebsocketManager.invalidateClient(serverUrl);
     });
 
+    clearRedactionInvalidations(serverUrl);
+    RedactionRevalidationManager.removeServer(serverUrl);
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);
     EphemeralStore.clearClassificationCache(serverUrl);
     EphemeralStore.clearChannelAttributeValuesSynced(serverUrl);
+
+    // Post ids are not namespaced by server, so leaving the last viewable items behind would
+    // let a stale entry read as "on screen" for whatever list mounts next.
+    EphemeralStore.clearViewableItems();
 
     // Drop ephemeral agents caches for this server only; other connected
     // servers must keep their cached conversations and in-flight streams.

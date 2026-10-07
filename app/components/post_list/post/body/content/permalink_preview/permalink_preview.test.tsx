@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {View} from 'react-native';
 
 import {showPermalink} from '@actions/remote/permalink';
+import {fetchLinkedPost} from '@actions/remote/post';
 import Markdown from '@components/markdown';
+import UnverifiedFilesPlaceholder from '@components/post_list/post/body/unverified_files_placeholder';
 import TranslateIcon from '@components/post_list/post/header/translate_icon';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -18,6 +20,10 @@ import PermalinkPreview from './permalink_preview';
 import type {MarkdownProps} from '@components/markdown/markdown';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@actions/remote/post', () => ({
+    fetchLinkedPost: jest.fn(() => Promise.resolve({})),
+}));
 
 jest.mock('@actions/remote/permalink', () => ({
     showPermalink: jest.fn(),
@@ -37,6 +43,14 @@ jest.mock('@components/post_list/post/header/translate_icon', () => ({
 }));
 jest.mocked(TranslateIcon).mockImplementation(() =>
     React.createElement(View, {testID: 'translate-icon'}, null),
+);
+
+jest.mock('@components/post_list/post/body/unverified_files_placeholder', () => ({
+    __esModule: true,
+    default: jest.fn(),
+}));
+jest.mocked(UnverifiedFilesPlaceholder).mockImplementation(() =>
+    React.createElement(View, {testID: 'unverified-files-placeholder'}, null),
 );
 
 describe('components/post_list/post/body/content/permalink_preview/PermalinkPreview', () => {
@@ -123,6 +137,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             createAt: 1234567890000,
             editAt: 0,
         }),
+        hasLinkedPostFiles: false,
         isMilitaryTime: false,
         teammateNameDisplay: 'username',
         location: Screens.CHANNEL,
@@ -130,6 +145,8 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         parentLocation: Screens.CHANNEL,
         parentPostId: 'parent-post-123',
         autotranslationsEnabled: false,
+        embedRequiredEpoch: 1,
+        isEmbedRedactionVerified: true,
     };
 
     it('should render permalink preview correctly', () => {
@@ -369,6 +386,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const propsWithFiles = {
                 ...baseProps,
+                hasLinkedPostFiles: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({
@@ -417,6 +435,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
 
             const propsWithMultipleFiles = {
                 ...baseProps,
+                hasLinkedPostFiles: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({
@@ -509,11 +528,126 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
         });
     });
 
+    it('should not render PermalinkFiles when the embed carries no files even if the linked post has stored ones', () => {
+        // The embed is recalculated per user on every fetch; stored file records left over from
+        // an earlier fetch must not put an empty file container on screen.
+        const props = {
+            ...baseProps,
+            hasLinkedPostFiles: true,
+            embedData: {
+                ...baseProps.embedData,
+                post: TestHelper.fakePost({
+                    id: 'post-123',
+                    user_id: 'user-123',
+                    message: 'Post without files',
+                    metadata: {},
+                }),
+            },
+        };
+
+        const {queryByTestId} = renderPermalinkPreview(props);
+
+        expect(queryByTestId('permalink-files-container')).toBeNull();
+    });
+
+    describe('redacted files', () => {
+        const embedWith = (metadata: PostMetadata) => ({
+            ...baseProps.embedData,
+            post: TestHelper.fakePost({id: 'post-123', user_id: 'user-123', message: 'msg', metadata}),
+        });
+
+        // Which source wins (embed, embed files, stored linked post) is covered in utils/post.
+        it('should render the placeholder when the embed reports redacted files', () => {
+            const {getByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                embedData: embedWith({redacted_file_count: 2} as PostMetadata),
+            });
+
+            expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
+        });
+
+        // Lets the first fetch settle, so the remount sees the attempt it left behind.
+        const mountAndSettle = async (props: Parameters<typeof PermalinkPreview>[0]) => {
+            renderPermalinkPreview(props).unmount();
+            await act(async () => {});
+        };
+
+        it('should not re-fetch a linked post the server refused on every remount', async () => {
+            // The embed can point at a post the fetch never populates; list windowing remounts constantly.
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 404}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'missing-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview(props);
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(1);
+            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'missing-post');
+        });
+
+        it('should re-fetch a refused linked post once the redaction epoch moves', async () => {
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 403}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'refused-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview({...props, embedRequiredEpoch: props.embedRequiredEpoch + 1});
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
+        });
+
+        it('should re-fetch a linked post on a later mount after a transient failure', async () => {
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 500}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'flaky-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview(props);
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
+        });
+
+        it('should re-fetch the linked post when the embed lists files the database is missing', () => {
+            renderPermalinkPreview({
+                ...baseProps,
+                hasLinkedPostFiles: false,
+                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
+            });
+
+            expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'post-123');
+        });
+
+        it('should not re-fetch the linked post when the database already has its files', () => {
+            renderPermalinkPreview({
+                ...baseProps,
+                hasLinkedPostFiles: true,
+                embedData: embedWith({files: [TestHelper.fakeFileInfo({id: 'file-123'})]} as PostMetadata),
+            });
+
+            expect(fetchLinkedPost).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('embed redaction verification', () => {
+        it('should show only the unverified placeholder while the embed decision is behind', async () => {
+            // A host post whose only attachments come through the embed has nothing else to queue a
+            // re-check, so the preview itself has to show the pending state.
+            const {queryByTestId, getByTestId} = renderPermalinkPreview({
+                ...baseProps,
+                isEmbedRedactionVerified: false,
+                hasLinkedPostFiles: true,
+                embedData: {
+                    ...baseProps.embedData,
+                    post: TestHelper.fakePost({id: 'post-123', user_id: 'user-123', metadata: {files: [TestHelper.fakeFileInfo({id: 'file-123'})]}}),
+                },
+            });
+
+            expect(queryByTestId('permalink-files-container')).toBeNull();
+            expect(queryByTestId('redacted-files-placeholder')).toBeNull();
+            expect(getByTestId('unverified-files-placeholder')).toBeTruthy();
+        });
+    });
+
     describe('autotranslationsEnabled', () => {
         it('should not render TranslateIcon when autotranslationsEnabled is false', () => {
             const {queryByTestId} = renderPermalinkPreview({
                 ...baseProps,
                 autotranslationsEnabled: false,
+                isEmbedRedactionVerified: true,
             });
 
             expect(queryByTestId('translate-icon')).toBeNull();
@@ -608,6 +742,7 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             const props = {
                 ...baseProps,
                 autotranslationsEnabled: false,
+                isEmbedRedactionVerified: true,
                 embedData: {
                     ...baseProps.embedData,
                     post: TestHelper.fakePost({

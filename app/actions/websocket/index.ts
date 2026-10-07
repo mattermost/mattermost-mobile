@@ -5,6 +5,7 @@ import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
+import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
@@ -18,6 +19,7 @@ import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {openAllUnreadChannels} from '@actions/remote/preference';
 import {autoUpdateTimezone} from '@actions/remote/user';
+import {invalidateRedactionOnResync} from '@actions/websocket/access_control';
 import {checkIsAgentsPluginEnabled} from '@agents/actions/remote/agents_status';
 import {handleAgentsReconnect} from '@agents/actions/websocket/reconnect';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -96,6 +98,12 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+        // Every path here may have lost websocket events, so any ABAC change they carried is gone.
+        // Awaited so the epoch is raised before the fetch below captures it, and placed after
+        // entry() commits its config models so the predicate reads the server's current state.
+        await invalidateRedactionOnResync(serverUrl);
+
         await fetchPostDataIfNeeded(serverUrl, groupLabel);
 
         const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
@@ -165,6 +173,10 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentChannelId = await getCurrentChannelId(database);
         const isCRTEnabled = await getIsCRTEnabled(database);
+
+        // Neither a since-fetch nor a fromCreateAt thread fetch can re-deliver a post whose only
+        // change was its redaction state, so with policies active the visible surfaces need a page.
+        const abacEnforced = await isRedactionEnforced(database);
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
@@ -176,20 +188,18 @@ async function fetchPostDataIfNeeded(serverUrl: string, groupLabel?: RequestGrou
             const rootId = EphemeralStore.getCurrentThreadId();
             if (rootId) {
                 const lastPost = await getLastPostInThread(database, rootId);
-                if (lastPost) {
-                    if (lastPost) {
-                        const options: FetchPaginatedThreadOptions = {};
-                        options.fromCreateAt = lastPost.createAt;
-                        options.fromPost = lastPost.id;
-                        options.direction = 'down';
-                        await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
-                    }
+                const options: FetchPaginatedThreadOptions = {};
+                if (lastPost && !abacEnforced) {
+                    options.fromCreateAt = lastPost.createAt;
+                    options.fromPost = lastPost.id;
+                    options.direction = 'down';
                 }
+                await fetchPostThread(serverUrl, rootId, options, false, groupLabel);
             }
         }
 
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
-            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel);
+            await fetchPostsForChannel(serverUrl, currentChannelId, false, false, groupLabel, abacEnforced);
             markChannelAsRead(serverUrl, currentChannelId, false, groupLabel);
             if (!EphemeralStore.wasNotificationTapped()) {
                 markChannelAsViewed(serverUrl, currentChannelId, true);

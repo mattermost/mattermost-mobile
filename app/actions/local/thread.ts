@@ -205,6 +205,8 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
             threadsToHandle.push({...threads[i], lastFetchedAt: post?.create_at ?? 0});
         }
 
+        // Deliberately unstamped: thread payloads (REST and thread_updated alike) carry the root post
+        // without metadata, so they say nothing about its attachments and must not vouch for them.
         const postModels = await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
             order: [],

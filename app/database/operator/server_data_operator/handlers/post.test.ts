@@ -11,6 +11,8 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 import * as ScheduledPostQueries from '@queries/servers/scheduled_post';
+import TestHelper from '@test/test_helper';
+import {deleteDownloadedFiles} from '@utils/file';
 import {logWarning} from '@utils/log';
 
 import {shouldUpdateScheduledPostRecord} from '../comparators/scheduled_post';
@@ -26,6 +28,10 @@ Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
 });
 
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
 jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logWarning: jest.fn(),
@@ -1235,5 +1241,358 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
         expect(after.length).toBe(1);
         expect(after[0].earliest).toBe(1000);
         expect(after[0].latest).toBe(1000);
+    });
+    describe('=> HandlePosts: ABAC redaction drift', () => {
+        // ABAC access changes never bump update_at, so the default "is it newer?" comparator
+        // would skip the write and leave the placeholder showing the wrong state.
+        const postId = 'abac-post-id';
+        const basePost = (metadata: PostMetadata): Post => TestHelper.fakePost({
+            id: postId,
+            channel_id: 'channel-id',
+            create_at: 1000,
+            update_at: 1000,
+            message: 'message',
+            metadata,
+        });
+
+        const write = async (post: Post) => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [post],
+                prepareRecordsOnly: false,
+            });
+        };
+
+        it('should persist a redaction change that did not move update_at', async () => {
+            await write(basePost({redacted_file_count: 0}));
+            await write(basePost({redacted_file_count: 2}));
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].metadata?.redacted_file_count).toBe(2);
+        });
+
+        it('should still ignore an older post when the redaction state is unchanged', async () => {
+            // Guards against the redaction checks short-circuiting to "always update", which
+            // would let a stale payload overwrite newer content.
+            await write({...basePost({redacted_file_count: 1}), update_at: 2000, message: 'newest'});
+            await write({...basePost({redacted_file_count: 1}), update_at: 1000, message: 'stale'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('newest');
+        });
+
+        it('should not let an older post with a different redaction state roll back a newer edit', async () => {
+            await write({...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited'});
+            await write({...basePost({redacted_file_count: 2}), update_at: 1000, message: 'stale'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited');
+            expect(rows[0].metadata?.redacted_file_count).toBe(0);
+        });
+
+        it('should store the epoch a sanitized response was dispatched under', async () => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 0})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 7,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(7);
+        });
+
+        it('should leave the stored epoch untouched when a response carries none', async () => {
+            // Local mutations and unsanitized payloads must not promote a post to a newer decision.
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 0})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 7,
+            });
+            await write({...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited locally'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited locally');
+            expect(rows[0].redactionVerifiedEpoch).toBe(7);
+        });
+
+        it('should remove the downloaded bytes when a denial is confirmed', async () => {
+            // Destroying the FileModel rows only hides the attachments in the UI; the blobs would
+            // stay readable on disk, which is the one thing the mobile app can still control.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid1']};
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [withFiles],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleFiles({
+                files: [{id: 'fileid1', post_id: postId, name: 'secret.png', extension: 'png', localPath: '/tmp/secret.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
+                prepareRecordsOnly: false,
+            });
+
+            // prepareRecordsOnly, as every fetch path calls it: the eviction must not depend on the
+            // handler committing the batch itself.
+            const models = await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1} as PostMetadata)],
+                prepareRecordsOnly: true,
+            });
+            expect(deleteDownloadedFiles).toHaveBeenCalled();
+            await operator.batchRecords(models, 'test');
+
+            expect(deleteDownloadedFiles).toHaveBeenCalledWith(databaseName, [expect.objectContaining({id: 'fileid1'})]);
+        });
+
+        it('should not touch cached bytes when files simply were not part of a payload', async () => {
+            // Thread and search payloads arrive without file_ids all the time; that is not a denial.
+            const withFiles = {...basePost({} as PostMetadata), file_ids: ['fileid2']};
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [withFiles],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleFiles({
+                files: [{id: 'fileid2', post_id: postId, name: 'ok.png', extension: 'png', localPath: '/tmp/ok.png', mime_type: 'image/png', size: 1, width: 1, height: 1} as unknown as FileInfo],
+                prepareRecordsOnly: false,
+            });
+            jest.mocked(deleteDownloadedFiles).mockClear();
+
+            await write(basePost({} as PostMetadata));
+
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+        });
+
+        it('should discard a whole response from a superseded generation', async () => {
+            // The G1 response arrives after G2 was stored. Clamping only the epoch would leave a row
+            // labelled G2 while carrying G1's attachment metadata, so the payload is dropped entirely.
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 3}), message: 'denied at G2'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), update_at: 5000, message: 'allowed at G1'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('denied at G2');
+            expect(rows[0].metadata?.redacted_file_count).toBe(3);
+            expect(rows[0].redactionVerifiedEpoch).toBe(2);
+        });
+
+        it('should not restore files from a superseded allow over a newer denial', async () => {
+            const file = {id: 'stale-file', post_id: postId, name: 'secret.png', extension: 'png', mime_type: 'image/png', size: 1, width: 1, height: 1} as FileInfo;
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({files: [file]}), file_ids: [file.id]}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(0);
+        });
+
+        it('should not destroy files a newer allow stored when a superseded denial arrives', async () => {
+            const file = {id: 'kept-file', post_id: postId, name: 'ok.png', extension: 'png', mime_type: 'image/png', size: 1, width: 1, height: 1} as FileInfo;
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({files: [file]}), file_ids: [file.id]}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            expect(files).toHaveLength(1);
+            expect(deleteDownloadedFiles).not.toHaveBeenCalled();
+        });
+
+        it('should store a newer epoch for a post whose access did not change', async () => {
+            // Nothing but the epoch differs, so without an explicit clause the write is skipped and
+            // the post stays unverified after every invalidation.
+            const post = basePost({redacted_file_count: 0});
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...post}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...post}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(2);
+        });
+
+        it('should not let a newer epoch roll back a newer edit', async () => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [{...basePost({redacted_file_count: 0}), message: 'original'}],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited');
+            expect(rows[0].redactionVerifiedEpoch).toBe(1);
+        });
+
+        it('should not keep a verified epoch when a write without one changes the redaction state', async () => {
+            // backgroundNotification stores natively-fetched posts with no epoch. If that payload was
+            // fetched while access was allowed and lands after a denial stamped at G2, the post must
+            // not end up rendering files under the G2 stamp.
+            const file = {id: 'notif-file', post_id: postId, name: 'secret.png', extension: 'png', mime_type: 'image/png', size: 1, width: 1, height: 1} as FileInfo;
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            await write({...basePost({files: [file]}), file_ids: [file.id]});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            const files = await database.get(MM_TABLES.SERVER.FILE).query(Q.where('post_id', postId)).fetch();
+            const rendersFilesAsVerified = files.length > 0 && (rows[0].metadata?.redacted_file_count ?? 0) === 0 && rows[0].redactionVerifiedEpoch >= 2;
+            expect({
+                epoch: rows[0].redactionVerifiedEpoch,
+                redactedFileCount: rows[0].metadata?.redacted_file_count ?? 0,
+                fileRows: files.length,
+                rendersFilesAsVerified,
+            }).toEqual(expect.objectContaining({rendersFilesAsVerified: false}));
+        });
+
+        it('should not look up stored epochs for an unstamped write with nothing redaction-related in it', async () => {
+            // Every write while ABAC is off is unstamped; a plain text post must not cost an extra query.
+            await write({...basePost({}), message: 'first'});
+            const posts = database.get<PostModel>(MM_TABLES.SERVER.POST);
+            const query = jest.spyOn(posts, 'query');
+
+            await write({...basePost({}), update_at: 2000, message: 'edited'});
+
+            const epochLookups = query.mock.calls.filter((args) => JSON.stringify(args).includes('redaction_verified_epoch'));
+            expect(epochLookups).toHaveLength(0);
+            query.mockRestore();
+        });
+
+        it('should keep a denied root verified when a thread payload carries it without metadata', async () => {
+            // Thread payloads are unstamped and omit the root's metadata; that says nothing about its
+            // attachments, so it must neither rewrite the denial nor send the root back to unverified.
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [basePost({redacted_file_count: 1})],
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 2,
+            });
+            const {metadata, ...withoutMetadata} = basePost({});
+            expect(metadata).toBeDefined();
+            await write(withoutMetadata as Post);
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(2);
+            expect(rows[0].metadata?.redacted_file_count).toBe(1);
+        });
+    });
+});
+
+describe('*** Operator: shouldUpdateForRedaction tests ***', () => {
+    const {shouldUpdateForRedaction} = exportedForTest;
+
+    const permalinkEmbed = (postId: string, redactedFileCount: number): PostEmbed => ({
+        type: 'permalink',
+        url: '',
+        data: {
+            post_id: postId,
+            post: {metadata: {redacted_file_count: redactedFileCount}},
+        },
+    });
+
+    const existing = (metadata: PostMetadata) => ({metadata} as PostModel);
+    const incoming = (metadata: PostMetadata) => ({metadata} as Post);
+
+    it('should return true when the post redacted file count changed', () => {
+        expect(shouldUpdateForRedaction(existing({redacted_file_count: 0} as PostMetadata), incoming({redacted_file_count: 2} as PostMetadata))).toBe(true);
+    });
+
+    it('should return false when nothing about the redaction state changed', () => {
+        const metadata = {redacted_file_count: 1, embeds: [permalinkEmbed('linked-post-id', 2)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(metadata), incoming(metadata))).toBe(false);
+    });
+
+    it('should return true when a permalink embed redaction changed', () => {
+        const before = {embeds: [permalinkEmbed('linked-post-id', 0)]} as PostMetadata;
+        const after = {embeds: [permalinkEmbed('linked-post-id', 3)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(true);
+    });
+
+    it('should compare permalink embeds by linked post id rather than by position', () => {
+        // The server does not guarantee embed order, so a reorder must not read as a change,
+        // and a change must still be caught when the embeds moved.
+        const before = {embeds: [permalinkEmbed('post-a', 1), permalinkEmbed('post-b', 0)]} as PostMetadata;
+        const reordered = {embeds: [permalinkEmbed('post-b', 0), permalinkEmbed('post-a', 1)]} as PostMetadata;
+        const reorderedAndChanged = {embeds: [permalinkEmbed('post-b', 0), permalinkEmbed('post-a', 4)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(reordered))).toBe(false);
+        expect(shouldUpdateForRedaction(existing(before), incoming(reorderedAndChanged))).toBe(true);
+    });
+
+    it('should ignore embeds that are not permalinks', () => {
+        const before = {embeds: [permalinkEmbed('post-a', 1)]} as PostMetadata;
+        const after = {embeds: [permalinkEmbed('post-a', 1), {type: 'opengraph', url: 'https://example.com', data: {}}]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(false);
+    });
+
+    it('should return true for a permalink embed the stored post did not have', () => {
+        const before = {embeds: []} as unknown as PostMetadata;
+        const after = {embeds: [permalinkEmbed('post-a', 0)]} as PostMetadata;
+
+        expect(shouldUpdateForRedaction(existing(before), incoming(after))).toBe(true);
     });
 });

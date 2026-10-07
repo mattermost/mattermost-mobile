@@ -32,7 +32,13 @@ export const queryFilesForPost = (database: Database, postId: string) => {
     );
 };
 
-export const observeFilesForPost = (database: Database, postId: string) => {
+export const queryFilesForPosts = (database: Database, postIds: string[]) => {
+    return database.get<FileModel>(FILE).query(
+        Q.where('post_id', Q.oneOf(postIds)),
+    );
+};
+
+export const observeFilesForPost =(database: Database, postId: string) => {
     return queryFilesForPost(database, postId).observe();
 };
 

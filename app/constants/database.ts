@@ -86,6 +86,7 @@ export const SYSTEM_IDENTIFIERS = {
     LAST_BOR_POST_CLEANUP_RUN: 'lastBoRPostCleanupRun',
     ACCESS_CONTROL_GROUP_ID: 'accessControlGroupId',
     LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
+    REDACTION_EPOCH: 'redactionEpoch',
 };
 
 export const GLOBAL_IDENTIFIERS = {

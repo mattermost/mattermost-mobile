@@ -89,6 +89,11 @@ export default class PostModel extends Model implements PostModelInterface {
     /** previous_post_id : Id of the previous post.  If this value is empty, this implies that it is not in the db and we will request it from server */
     @field('previous_post_id') previousPostId!: string;
 
+    /** redaction_verified_epoch : Local-only. The redaction epoch this post's attachment metadata was
+     * last confirmed under. Never sent to the server. Attachments render only while this is at least
+     * the epoch currently required for the post's channel; see @actions/local/redaction. */
+    @field('redaction_verified_epoch') redactionVerifiedEpoch!: number;
+
     /** root_id : Used in threads. All posts under a thread will have this id in common */
     @field('root_id') rootId!: string;
 

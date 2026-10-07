@@ -9,9 +9,10 @@ import {Alert, Linking, Platform} from 'react-native';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
+import {getFullErrorMessage} from '@utils/errors';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
-import {logError} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 
@@ -162,6 +163,39 @@ export function deleteFileCacheByDir(dir: string) {
     deleteFilesInDir(cacheDir);
 
     return true;
+}
+
+/**
+ * Per-file eviction, for when the server confirms a denial: the FileModel rows are destroyed, but the
+ * downloaded bytes would stay readable on disk. Each file is looked for both where its row says it
+ * was saved and where downloads land by default, because opening a document never records its path.
+ * Failures are swallowed: a file that cannot be removed must not stop the denial being recorded.
+ */
+export function deleteDownloadedFiles(serverUrl: string | undefined, files: FileModel[]) {
+    for (const f of files) {
+        const paths = new Set<string>();
+        if (f.localPath) {
+            try {
+                paths.add(decodeURIComponent(f.localPath));
+            } catch {
+                paths.add(f.localPath);
+            }
+        }
+        if (serverUrl) {
+            paths.add(getLocalFilePathFromFile(serverUrl, f));
+        }
+
+        for (const path of paths) {
+            try {
+                const file = new File(pathWithPrefix('file://', path));
+                if (file.exists) {
+                    file.delete();
+                }
+            } catch (error) {
+                logDebug('deleteDownloadedFiles: could not remove a cached file', getFullErrorMessage(error));
+            }
+        }
+    }
 }
 
 function deleteFilesInDir(directory: string) {

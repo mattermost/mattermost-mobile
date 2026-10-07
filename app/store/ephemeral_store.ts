@@ -95,6 +95,12 @@ class EphemeralStoreSingleton {
     // Maps file ID to rejection reason
     private rejectedFiles = new Map<string, string>();
 
+    // Last viewable-items map emitted by each post list, keyed by location. ITEM_IN_VIEWPORT is
+    // fire-and-forget, so a subtree that mounts after the emit has no other way to learn it is on
+    // screen. Kept per location because several lists can be mounted at once (a thread over a
+    // channel) and a single shared map would let one list erase another's entries.
+    private viewableItems: {[location: string]: Record<string, boolean>} = {};
+
     setProcessingNotification = (v: string) => {
         this.processingNotification = v;
     };
@@ -554,6 +560,25 @@ class EphemeralStoreSingleton {
 
     clearRejectedFiles = () => {
         this.rejectedFiles.clear();
+    };
+
+    // Ephemeral control for the items currently in a post list viewport
+    setViewableItems = (location: string, items: Record<string, boolean>) => {
+        this.viewableItems[location] = items;
+    };
+
+    // Merges rather than replaces: a permalink preview emits only for itself, and replacing the
+    // location's map would erase every sibling preview.
+    addViewableItem = (location: string, key: string) => {
+        this.viewableItems[location] = {...this.viewableItems[location], [key]: true};
+    };
+
+    isItemInViewPort = (key: string) => {
+        return Object.values(this.viewableItems).some((items) => Boolean(items[key]));
+    };
+
+    clearViewableItems = () => {
+        this.viewableItems = {};
     };
 }
 

@@ -3,9 +3,11 @@
 
 import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
+import {invalidateRedactionGlobally, RedactionInvalidationReason} from '@actions/local/redaction';
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
+import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
 import {License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -61,6 +63,19 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             if (currentTeamId) {
                 await fetchCategories(serverUrl, currentTeamId, true);
             }
+        }
+
+        // Either transition invalidates everything cached. Turning ABAC on must not trust decisions
+        // made before it was enforced. Turning it off leaves cached denials whose file rows are gone
+        // and that no since-fetch re-delivers; raising the epoch lets them be re-checked. The trigger
+        // path is gated on enforcement, so the off transition raises the epoch directly. Both read
+        // the config stored above.
+        const abacWasEnforced = prevConfig?.FeatureFlagPermissionPolicies === 'true' && prevConfig?.EnableAttributeBasedAccessControl === 'true';
+        const abacIsEnforced = config?.FeatureFlagPermissionPolicies === 'true' && config?.EnableAttributeBasedAccessControl === 'true';
+        if (abacIsEnforced && !abacWasEnforced) {
+            invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.ConfigChanged);
+        } else if (abacWasEnforced && !abacIsEnforced) {
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.ConfigChanged);
         }
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating

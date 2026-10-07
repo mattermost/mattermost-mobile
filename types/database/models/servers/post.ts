@@ -59,6 +59,9 @@ declare class PostModel extends Model {
     /** previous_post_id : Id of the previous post.  If this value is empty, this implies that it is not in the db and we will request it from server */
     previousPostId: string;
 
+    /** redaction_verified_epoch : Local-only. The redaction epoch this post's attachment metadata was last confirmed under. */
+    redactionVerifiedEpoch: number;
+
     root: Query<PostModel>;
 
     /** root_id : Used in threads. All posts under a thread will have this id in common */

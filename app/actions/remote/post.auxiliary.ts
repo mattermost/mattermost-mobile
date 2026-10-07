@@ -44,7 +44,9 @@ export async function processChannelPostsByTeam(
 
         for (const [i, result] of chunkResults.entries()) {
             if (result.status === 'fulfilled') {
-                const {posts, order, previousPostId, authors, actionType} = result.value;
+                const {posts, order, previousPostId, authors, actionType, redactionVerifiedEpoch} = result.value;
+
+                // Each channel carries its own epoch; the combined batch below cannot hold one for all.
                 if (posts?.length) {
                     const channelId = channelIdsChunk[i];
                     allPosts.push(...posts);
@@ -64,6 +66,7 @@ export async function processChannelPostsByTeam(
                             previousPostId || '',
                             authors || [],
                             isCRTEnabled,
+                            redactionVerifiedEpoch,
                         ),
                     );
                 }

@@ -181,7 +181,7 @@ class DatabaseManagerSingleton {
                 });
 
                 const database = new Database({adapter, modelClasses});
-                const operator = new ServerDataOperator(database);
+                const operator = new ServerDataOperator(database, serverUrl);
                 const serverDatabase = {database, operator};
 
                 this.serverDatabases[serverUrl] = serverDatabase;
