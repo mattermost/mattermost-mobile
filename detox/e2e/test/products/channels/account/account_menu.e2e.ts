@@ -144,9 +144,7 @@ describe('Account - Account Menu', () => {
         await AccountScreen.waitForCustomStatus({emoji: statusEmoji, duration: statusDuration, text: statusText});
 
         // # Clear custom status
-        await waitFor(AccountScreen.customStatusClearButton).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        await AccountScreen.customStatusClearButton.tap();
-        await wait(timeouts.ONE_SEC);
+        await AccountScreen.clearCustomStatus();
     });
 
     it('MM-T4988_3 - should be able to go to custom status screen', async () => {

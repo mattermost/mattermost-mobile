@@ -157,6 +157,7 @@ describe('Channels - Find Channels', () => {
         // # Archive a channel, open find channels screen, and search for the archived channel
         const {channel: archivedChannel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, archivedChannel.id);
+        await ChannelListScreen.waitForChannelItem('channels', archivedChannel.name);
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await wait(timeouts.TEN_SEC); // Adding a short wait to ensure channel is archived before searching
         await FindChannelsScreen.open();

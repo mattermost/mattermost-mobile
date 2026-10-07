@@ -1282,6 +1282,15 @@ describe('*** Operator: deleted post must not create an empty PostsInChannel int
             expect(rows[0].message).toBe('newest');
         });
 
+        it('should not let an older post with a different redaction state roll back a newer edit', async () => {
+            await write({...basePost({redacted_file_count: 0}), update_at: 2000, message: 'edited'});
+            await write({...basePost({redacted_file_count: 2}), update_at: 1000, message: 'stale'});
+
+            const rows = await database.get<PostModel>(MM_TABLES.SERVER.POST).query(Q.where('id', postId)).fetch();
+            expect(rows[0].message).toBe('edited');
+            expect(rows[0].metadata?.redacted_file_count).toBe(0);
+        });
+
         it('should store the epoch a sanitized response was dispatched under', async () => {
             await operator.handlePosts({
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,

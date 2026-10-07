@@ -77,4 +77,3 @@ export const reconcilePersistenceFlag = async (serverUrl: string, config: Client
         return false;
     }
 };
-

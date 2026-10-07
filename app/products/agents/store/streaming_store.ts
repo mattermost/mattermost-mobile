@@ -164,7 +164,8 @@ class StreamingStoreSingleton {
         });
     };
 
-    // Preserves message; POST_EDITED clears via removePost.
+    // Preserves the streamed content; the post-stream conversation refetch
+    // (or POST_EDITED for legacy posts) clears it via removePost.
     endStreaming = (serverUrl: string, postId: string): void => {
         const state = this.getStreamingState(serverUrl, postId);
         if (!state) {
@@ -338,13 +339,19 @@ class StreamingStoreSingleton {
         return this.getSubject(serverUrl, postId).asObservable();
     };
 
+    // Posts that currently hold streaming state on this server.
+    getPostIds = (serverUrl: string): string[] => {
+        const subjects = this.streamingSubjects[serverUrl] ?? {};
+        return Object.keys(subjects).filter((postId) => subjects[postId].value !== undefined);
+    };
+
     isStreaming = (serverUrl: string, postId: string): boolean => {
         const state = this.getStreamingState(serverUrl, postId);
         return state?.generating ?? false;
     };
 
-    // Called from POST_EDITED so the component switches from streaming state
-    // to the persisted database row. Subject is kept for potential reuse.
+    // Switches the renderer from streaming state to the persisted data once it
+    // is available. Subject is kept for potential reuse.
     removePost = (serverUrl: string, postId: string): void => {
         const subject = this.streamingSubjects[serverUrl]?.[postId];
         if (!subject) {

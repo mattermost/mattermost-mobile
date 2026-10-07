@@ -5,7 +5,6 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {
     RedactionInvalidationReason,
-    getRedactionEpochState,
     invalidateChannelsRedaction,
     invalidateRedactionGlobally,
     isRedactionEnforced,
@@ -126,7 +125,7 @@ const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string
     }
 };
 
-const scheduleAttributeViewRetry = (serverUrl: string, epoch: number) => {
+const scheduleAttributeViewRetry = (serverUrl: string) => {
     const existing = attributeViewRetries.get(serverUrl);
     if (existing) {
         clearTimeout(existing);
@@ -138,12 +137,6 @@ const scheduleAttributeViewRetry = (serverUrl: string, epoch: number) => {
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!(await isRedactionEnforced(database))) {
-                return;
-            }
-
-            // A newer invalidation already forced a fresh evaluation.
-            if ((await getRedactionEpochState(database)).counter > epoch) {
-                logDebug('scheduleAttributeViewRetry: superseded, skipping');
                 return;
             }
 
@@ -188,7 +181,7 @@ const flushInvalidation = async (serverUrl: string, pending: PendingInvalidation
     await refreshVisibleSurfaces(serverUrl, channelIds);
 
     if (pending.needsAttributeViewRetry && cleanupToken(serverUrl) === token) {
-        scheduleAttributeViewRetry(serverUrl, epoch);
+        scheduleAttributeViewRetry(serverUrl);
     }
 };
 

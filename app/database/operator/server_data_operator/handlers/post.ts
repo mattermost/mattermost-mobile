@@ -539,7 +539,8 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
                     return true;
                 }
 
-                if (shouldUpdateForRedaction(e, n)) {
+                // ABAC decisions never move update_at; an older payload must not roll back an edit.
+                if (n.update_at >= e.updateAt && shouldUpdateForRedaction(e, n)) {
                     return true;
                 }
 

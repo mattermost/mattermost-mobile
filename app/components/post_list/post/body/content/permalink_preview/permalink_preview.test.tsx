@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fireEvent, waitFor} from '@testing-library/react-native';
+import {act, fireEvent, waitFor} from '@testing-library/react-native';
 import React from 'react';
 import {View} from 'react-native';
 
@@ -566,15 +566,39 @@ describe('components/post_list/post/body/content/permalink_preview/PermalinkPrev
             expect(getByTestId('redacted-files-placeholder')).toBeTruthy();
         });
 
-        it('should fetch a linked post that is not in the database yet once, not on every remount', async () => {
-            // The embed can point at a post the fetch never populates; list windowing remounts constantly.
-            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'missing-post'}};
+        // Lets the first fetch settle, so the remount sees the attempt it left behind.
+        const mountAndSettle = async (props: Parameters<typeof PermalinkPreview>[0]) => {
             renderPermalinkPreview(props).unmount();
-            await waitFor(() => expect(fetchLinkedPost).toHaveBeenCalledTimes(1));
+            await act(async () => {});
+        };
+
+        it('should not re-fetch a linked post the server refused on every remount', async () => {
+            // The embed can point at a post the fetch never populates; list windowing remounts constantly.
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 404}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'missing-post'}};
+            await mountAndSettle(props);
             renderPermalinkPreview(props);
 
             expect(fetchLinkedPost).toHaveBeenCalledTimes(1);
             expect(fetchLinkedPost).toHaveBeenCalledWith(serverUrl, 'missing-post');
+        });
+
+        it('should re-fetch a refused linked post once the redaction epoch moves', async () => {
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 403}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'refused-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview({...props, embedRequiredEpoch: props.embedRequiredEpoch + 1});
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
+        });
+
+        it('should re-fetch a linked post on a later mount after a transient failure', async () => {
+            jest.mocked(fetchLinkedPost).mockResolvedValueOnce({error: {status_code: 500}});
+            const props = {...baseProps, post: undefined, embedData: {...baseProps.embedData, post_id: 'flaky-post'}};
+            await mountAndSettle(props);
+            renderPermalinkPreview(props);
+
+            expect(fetchLinkedPost).toHaveBeenCalledTimes(2);
         });
 
         it('should re-fetch the linked post when the embed lists files the database is missing', () => {

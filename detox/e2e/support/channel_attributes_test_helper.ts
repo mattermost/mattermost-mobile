@@ -4,6 +4,8 @@
 import System from '@support/server_api/system';
 import {timeouts} from '@support/utils';
 
+import {logWarn} from '../../provision/log';
+
 const FLAG_PATCH_ATTEMPTS = 3;
 
 const observedFlagValues = async (baseUrl: string) => {
@@ -16,32 +18,49 @@ const observedFlagValues = async (baseUrl: string) => {
 };
 
 /**
- * Attempt to disable the ChannelAttributes feature flag on the server.
- *
- * Returns true if the flag was successfully set to false, false if the server
- * controls the flag via an environment variable and it cannot be overridden.
- * Never throws — callers that require the flag to be off should check the return
- * value and skip or fail with a clear message.
+ * Disable the ChannelAttributes flag. Returns false if no attempt was confirmed; never throws.
  */
 export const disableChannelAttributes = async (baseUrl: string): Promise<boolean> => {
-    const patchResult = await System.apiPatchConfig(baseUrl, {
-        FeatureFlags: {
-            ChannelAttributes: false,
-        },
-    });
-    if (patchResult.error) {
-        return false;
-    }
+    let lastObserved: {server?: unknown; client?: unknown} = {};
 
-    // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
-    // another shard changed since the GET, on a server ~10 shards share. When the patch does
-    // not move the flag the server owns it, which is what `false` here already means.
-    return System.waitForClientConfigFlag(
-        baseUrl,
-        'FeatureFlagChannelAttributes',
-        'false',
-        {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
-    );
+    // Re-patch between polls like enableChannelAttributes; a single write can be dropped.
+    /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
+    for (let attempt = 1; attempt <= FLAG_PATCH_ATTEMPTS; attempt++) {
+        const patchResult = await System.apiPatchConfig(baseUrl, {
+            FeatureFlags: {
+                ChannelAttributes: false,
+            },
+        });
+
+        // No full-config fallback: a GET-modify-PUT of the whole config reverts every setting
+        // another shard changed since the GET, on a server ~10 shards share.
+        if (!patchResult.error) {
+            const disabled = await System.waitForClientConfigFlag(
+                baseUrl,
+                'FeatureFlagChannelAttributes',
+                'false',
+                {maxAttempts: 30, pollMs: timeouts.ONE_SEC},
+            );
+            if (disabled) {
+                return true;
+            }
+        }
+
+        lastObserved = await observedFlagValues(baseUrl);
+
+        // Say whether the patch was rejected or never propagated.
+        const cause = patchResult.error ?
+            `patch rejected: ${JSON.stringify(patchResult.error).slice(0, 200)}` :
+            'patch accepted but the client config did not report false in time';
+
+        logWarn(
+            `[disableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ${cause}; ` +
+            `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
+        );
+    }
+    /* eslint-enable no-await-in-loop */
+
+    return false;
 };
 
 /**
@@ -76,8 +95,7 @@ export const enableChannelAttributes = async (baseUrl: string): Promise<void> =>
 
         lastObserved = await observedFlagValues(baseUrl);
 
-        // eslint-disable-next-line no-console
-        console.warn(
+        logWarn(
             `[enableChannelAttributes] attempt ${attempt}/${FLAG_PATCH_ATTEMPTS} ` +
             `server=${String(lastObserved.server)} client=${String(lastObserved.client)}`,
         );
