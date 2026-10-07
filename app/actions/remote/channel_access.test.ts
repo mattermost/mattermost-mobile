@@ -7,7 +7,7 @@ import NetworkManager from '@managers/network_manager';
 
 import {fetchCategories} from './category';
 import {handleChannelAccessDenied} from './channel';
-import {checkChannelAccess, checkTeamChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
+import {checkChannelAccess, clearChannelAccessState, reconcileChannelAccess} from './channel_access';
 import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -316,31 +316,6 @@ describe('channel access', () => {
 
             expect(mockFetchCategories).not.toHaveBeenCalled();
             expect(await storedChannelIds()).toEqual(['channel1']);
-        });
-    });
-
-    describe('checkTeamChannelAccess', () => {
-        it('should check a team at most once every five minutes unless a permission policy changes', async () => {
-            await enableFeature();
-            await seed([channel('channel1')]);
-            mockClient.getMyChannels.mockResolvedValue([channel('channel1')]);
-            const now = Date.now();
-            const dateNow = jest.spyOn(Date, 'now').mockReturnValue(now);
-
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannels).toHaveBeenCalledTimes(1);
-
-            // Checks the current team and makes every team's last check stale.
-            await reconcileChannelAccess(serverUrl);
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannels).toHaveBeenCalledTimes(3);
-
-            dateNow.mockReturnValue(now + (5 * 60 * 1000));
-            await checkTeamChannelAccess(serverUrl, 'teamid2');
-            expect(mockClient.getMyChannels).toHaveBeenCalledTimes(4);
-
-            dateNow.mockRestore();
         });
     });
 });

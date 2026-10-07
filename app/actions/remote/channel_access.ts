@@ -26,7 +26,6 @@ import {forceLogoutIfNecessary} from './session';
 import type {Database, Model} from '@nozbe/watermelondb';
 
 const BATCH_SIZE = 10;
-const TEAM_CHECK_THROTTLE_MS = 5 * 60 * 1000;
 
 type PendingChecks = {
     teamIds: Set<string>;
@@ -37,7 +36,6 @@ type PendingChecks = {
 // events costs at most two passes and two passes never restore the same channel concurrently.
 const pending = new Map<string, PendingChecks>();
 const running = new Set<string>();
-const lastTeamCheck = new Map<string, Map<string, number>>();
 
 const isChannelReadAccessEnforced = async (database: Database) => {
     const [enforced, license] = await Promise.all([isRedactionEnforced(database), getLicense(database)]);
@@ -102,10 +100,6 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
         logFailure(serverUrl, 'checkTeam', error);
         return [];
     }
-
-    const checked = lastTeamCheck.get(serverUrl) ?? new Map<string, number>();
-    checked.set(teamId, Date.now());
-    lastTeamCheck.set(serverUrl, checked);
 
     // Purging on an empty response could hide channels the policy still allows.
     if (!channels.length) {
@@ -233,7 +227,6 @@ function schedule(serverUrl: string, {teamId, channelId}: {teamId?: string; chan
 export async function reconcileChannelAccess(serverUrl: string): Promise<{error?: unknown}> {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        lastTeamCheck.delete(serverUrl);
         const teamId = await getCurrentTeamId(database);
         if (teamId) {
             await schedule(serverUrl, {teamId});
@@ -249,16 +242,6 @@ export function checkChannelAccess(serverUrl: string, channelId: string) {
     return schedule(serverUrl, {channelId});
 }
 
-export function checkTeamChannelAccess(serverUrl: string, teamId: string) {
-    const checkedAt = lastTeamCheck.get(serverUrl)?.get(teamId);
-    if (checkedAt && Date.now() - checkedAt < TEAM_CHECK_THROTTLE_MS) {
-        logDebug('checkTeamChannelAccess: checked recently, skipping', teamId);
-        return Promise.resolve();
-    }
-    return schedule(serverUrl, {teamId});
-}
-
 export function clearChannelAccessState(serverUrl: string) {
     pending.delete(serverUrl);
-    lastTeamCheck.delete(serverUrl);
 }
