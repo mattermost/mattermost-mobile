@@ -59,6 +59,9 @@ declare class PlaybookChecklistItemModel extends Model {
     // JSON string representing the task actions
     taskActions: TaskAction[];
 
+    // Required fields to fill when checking off the task
+    requirements: TaskRequirement[];
+
     // The condition action for the checklist item
     conditionAction: ConditionAction;
 
