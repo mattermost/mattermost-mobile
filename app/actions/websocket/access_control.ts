@@ -11,7 +11,7 @@ import {
     isRedactionEnforced,
     type RedactionReason,
 } from '@actions/local/redaction';
-import {reconcileChannelAccess} from '@actions/remote/channel_access';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
@@ -259,7 +259,7 @@ export const handleChannelAccessControlUpdatedEvent = (serverUrl: string, msg: W
     }
 
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.ChannelPolicy, channelId);
-    reconcileChannelAccess(serverUrl);
+    checkChannelAccess(serverUrl, channelId);
 };
 
 /**

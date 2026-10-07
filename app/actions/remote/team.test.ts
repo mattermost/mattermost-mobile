@@ -10,6 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import EphemeralStore from '@store/ephemeral_store';
 
+import {checkTeamChannelAccess} from './channel_access';
 import {fetchScheduledPosts} from './scheduled_post';
 import {
     addCurrentUserToTeam,
@@ -35,6 +36,10 @@ import {
 
 jest.mock('./scheduled_post', () => ({
     fetchScheduledPosts: jest.fn(),
+}));
+
+jest.mock('./channel_access', () => ({
+    checkTeamChannelAccess: jest.fn(),
 }));
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -480,6 +485,7 @@ describe('teams', () => {
         expect(result).toBeDefined();
         expect(result?.error).toBeUndefined();
         expect(fetchScheduledPosts).toHaveBeenCalledWith(serverUrl, teamId, false);
+        expect(checkTeamChannelAccess).toHaveBeenCalledWith(serverUrl, teamId);
     });
 
     it('handleKickFromTeam - base case', async () => {

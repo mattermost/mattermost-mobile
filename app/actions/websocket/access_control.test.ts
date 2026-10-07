@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
-import {reconcileChannelAccess} from '@actions/remote/channel_access';
+import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -31,6 +31,7 @@ jest.mock('@actions/remote/post', () => ({
 }));
 
 jest.mock('@actions/remote/channel_access', () => ({
+    checkChannelAccess: jest.fn(),
     reconcileChannelAccess: jest.fn(),
 }));
 
@@ -143,13 +144,15 @@ describe('redaction invalidation triggers', () => {
         expect(await getRequiredRedactionEpoch(operator.database, channelId)).toBeGreaterThan(1);
     });
 
-    it('should reconcile channel access on permission and channel policy changes', async () => {
+    it('should check the current team on a permission policy change and only the named channel on a channel policy change', async () => {
         handlePermissionPolicyUpdatedEvent(serverUrl);
         handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
         await flushCoalescer();
 
-        expect(reconcileChannelAccess).toHaveBeenCalledTimes(2);
+        expect(reconcileChannelAccess).toHaveBeenCalledTimes(1);
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
+        expect(checkChannelAccess).toHaveBeenCalledTimes(1);
+        expect(checkChannelAccess).toHaveBeenCalledWith(serverUrl, channelId);
     });
 
     it('should collapse the duplicate events one CPA write emits into a single generation', async () => {

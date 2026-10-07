@@ -62,6 +62,8 @@ export type ChannelMembersRequest = {
     error?: unknown;
 }
 
+const channelAccessDenialsInFlight = new Set<string>();
+
 export async function removeMemberFromChannel(serverUrl: string, channelId: string, userId: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -1472,6 +1474,9 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
             if (channel) {
+                // Storing display name here to display the inaccessible channel bottom sheet
+                // after navigation to the root as this navigation closes the bottom sheet first so we
+                // navigate to root first, then later open the bottom sheet.
                 displayName = channel.displayName;
                 await navigateToRoot();
             }
@@ -1509,9 +1514,6 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         return {error};
     }
 };
-
-// The view call, the render decision and the reconcile can all report the same denial at once.
-const channelAccessDenialsInFlight = new Set<string>();
 
 export const handleChannelAccessDenied = async (serverUrl: string, channelId: string) => {
     const key = `${serverUrl}|${channelId}`;

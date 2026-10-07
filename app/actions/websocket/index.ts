@@ -8,7 +8,6 @@ import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
 import {
     entry,
@@ -133,10 +132,6 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         await deferredAppEntryActions(serverUrl, lastFullSync, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, meData, initialTeamId, undefined, groupLabel);
 
         await setLastFullSync(operator, now);
-
-        // Access can change while disconnected, and the entry sync only adds what is
-        // visible; nothing in it drops a channel the policy stopped allowing.
-        reconcileChannelAccess(serverUrl);
 
         openAllUnreadChannels(serverUrl, groupLabel);
 
