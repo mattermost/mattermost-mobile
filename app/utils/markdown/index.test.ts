@@ -69,6 +69,7 @@ describe('Utility functions', () => {
         it('should return correct language name or alias', () => {
             expect(getHighlightLanguageFromNameOrAlias('javascript')).toBe('javascript');
             expect(getHighlightLanguageFromNameOrAlias('js')).toBe('javascript');
+            expect(getHighlightLanguageFromNameOrAlias('golang')).toBe('go');
             expect(getHighlightLanguageFromNameOrAlias('unknown')).toBe('');
         });
     });
@@ -76,6 +77,7 @@ describe('Utility functions', () => {
     describe('getHighlightLanguageName', () => {
         it('should return correct language name', () => {
             expect(getHighlightLanguageName('javascript')).toBe('JavaScript');
+            expect(getHighlightLanguageName('golang')).toBe('Go');
             expect(getHighlightLanguageName('unknown')).toBe('');
         });
     });
