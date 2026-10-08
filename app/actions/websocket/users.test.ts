@@ -8,6 +8,7 @@ import {setCurrentUserStatus} from '@actions/local/user';
 import {fetchMe, fetchUsersByIds} from '@actions/remote/user';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
@@ -274,9 +275,23 @@ describe('WebSocket Users Actions', () => {
                 sendUserTypingEvent: jest.fn(),
             };
             jest.mocked(WebsocketManager.getClient).mockReturnValue(mockClient as any);
+            NetworkPostureManager.recordSample(serverUrl, 50, false);
 
             await userTyping(serverUrl, 'channel-id', 'root-id');
             expect(mockClient.sendUserTypingEvent).toHaveBeenCalledWith('channel-id', 'root-id');
+            NetworkPostureManager.removeServer(serverUrl);
+        });
+
+        it('should not send typing event when the network posture disallows it', async () => {
+            const mockClient = {
+                sendUserTypingEvent: jest.fn(),
+            };
+            jest.mocked(WebsocketManager.getClient).mockReturnValue(mockClient as any);
+            NetworkPostureManager.recordSample(serverUrl, 50, true);
+
+            await userTyping(serverUrl, 'channel-id', 'root-id');
+            expect(mockClient.sendUserTypingEvent).not.toHaveBeenCalled();
+            NetworkPostureManager.removeServer(serverUrl);
         });
 
         it('should handle missing client', async () => {

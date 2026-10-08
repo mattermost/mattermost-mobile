@@ -14,6 +14,7 @@ import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
 import {getNeededAtMentionedUsernames} from '@helpers/api/user';
 import NetworkManager from '@managers/network_manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {getFilesByIds, queryFilesForPost} from '@queries/servers/file';
@@ -302,7 +303,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
             postAction = fetchPostsSince(serverUrl, channelId, since, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_SINCE;
         } else {
-            postAction = fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, true, groupLabel);
+            postAction = fetchPosts(serverUrl, channelId, 0, NetworkPostureManager.getGates(serverUrl).postsPageSize, true, groupLabel);
             actionType = ActionType.POSTS.RECEIVED_IN_CHANNEL;
         }
 
@@ -339,7 +340,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
                     logWarning('fetchPostsForChannel: newest interval has no posts left, refetching', channelId);
                     await database.write(() => intervals[0].destroyPermanently());
 
-                    const page = await fetchPosts(serverUrl, channelId, 0, General.POST_CHUNK_SIZE, false, groupLabel);
+                    const page = await fetchPosts(serverUrl, channelId, 0, NetworkPostureManager.getGates(serverUrl).postsPageSize, false, groupLabel);
                     return {...page, actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, channelId};
                 }
             }
@@ -390,6 +391,11 @@ export const fetchPostsForUnreadChannels = async (
     serverUrl: string, teams: Team[], channels: Channel[], memberships: ChannelMembership[],
     excludeChannelId?: string, isCRTEnabled?: boolean, groupLabel?: RequestGroupLabel,
 ): Promise<void> => {
+    if (!NetworkPostureManager.getGates(serverUrl).prefetchChannels) {
+        logDebug('fetchPostsForUnreadChannels: skipped by network posture');
+        return;
+    }
+
     const teamIndexMap = new Map<string, number>();
     teams.forEach((team, index) => teamIndexMap.set(team.id, index));
 
@@ -454,7 +460,7 @@ export const fetchPostsForUnreadChannels = async (
     }
 };
 
-export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
+export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = NetworkPostureManager.getGates(serverUrl).postsPageSize, fetchOnly = false, groupLabel?: RequestGroupLabel): Promise<PostsRequest> {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
@@ -503,7 +509,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
     }
 }
 
-export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) {
+export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = NetworkPostureManager.getGates(serverUrl).postsPageSize, fetchOnly = false) {
     try {
         if (!fetchOnly) {
             EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);

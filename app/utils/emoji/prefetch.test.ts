@@ -4,6 +4,7 @@
 import {Image as ExpoImage} from 'expo-image';
 import {Platform} from 'react-native';
 
+import NetworkPostureManager from '@managers/network_posture_manager';
 import {logDebug} from '@utils/log';
 import {urlSafeBase64Encode} from '@utils/security';
 
@@ -34,10 +35,12 @@ describe('prefetchCustomEmojiImages', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        NetworkPostureManager.removeServer(mockClient.apiClient.baseUrl);
     });
 
     it('should prefetch custom emoji images on iOS', () => {
         Platform.OS = 'ios';
+        NetworkPostureManager.recordSample(mockClient.apiClient.baseUrl, 50, false);
 
         prefetchCustomEmojiImages(mockClient, emojis);
         const cachePath = urlSafeBase64Encode(mockClient.apiClient.baseUrl);
@@ -53,5 +56,13 @@ describe('prefetchCustomEmojiImages', () => {
 
         expect(logDebug).toHaveBeenCalledWith('Prefetching 2 custom emoji images');
         expect(ExpoImage.prefetch).toHaveBeenCalledWith(expectedResults, {cachePolicy: 'disk'});
+    });
+
+    it('should not prefetch when the network posture disallows auto-loading images', () => {
+        NetworkPostureManager.recordSample(mockClient.apiClient.baseUrl, 50, true);
+
+        prefetchCustomEmojiImages(mockClient, emojis);
+
+        expect(ExpoImage.prefetch).not.toHaveBeenCalled();
     });
 });

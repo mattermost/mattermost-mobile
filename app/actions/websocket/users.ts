@@ -10,6 +10,7 @@ import {General, Events, Preferences} from '@constants';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE, SESSION_ATTRIBUTES_PLATFORM_MOBILE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryChannelsByTypes, queryUserChannelsByTypes} from '@queries/servers/channel';
@@ -122,6 +123,9 @@ export async function handleUserTypingEvent(serverUrl: string, msg: WebSocketMes
 }
 
 export const userTyping = async (serverUrl: string, channelId: string, rootId?: string) => {
+    if (!NetworkPostureManager.getGates(serverUrl).emitTyping) {
+        return;
+    }
     const client = WebsocketManager.getClient(serverUrl);
     client?.sendUserTypingEvent(channelId, rootId);
 };

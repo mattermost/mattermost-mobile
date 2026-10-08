@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import * as ClientConstants from '@client/rest/constants';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
+import NetworkPostureManager from '@managers/network_posture_manager';
 import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
@@ -36,6 +37,7 @@ export default class WebSocketClient {
 
     private pingInterval: NodeJS.Timeout | undefined;
     private waitingForPong: boolean = false;
+    private pingSentAt = 0;
     private pendingCloseResolver?: () => void;
 
     // The first time we connect to a server (on init or login)
@@ -228,6 +230,7 @@ export default class WebSocketClient {
                     }
 
                     // We are not calling this.close() because we need to auto-restart.
+                    NetworkPostureManager.recordSample(this.serverUrl, Date.now() - this.pingSentAt, true);
                     this.responseSequence = 1;
                     clearInterval(this.pingInterval);
                     this.conn?.close();
@@ -319,6 +322,7 @@ export default class WebSocketClient {
                 }
                 if (msg.data?.text === WebsocketEvents.PONG) {
                     this.waitingForPong = false;
+                    NetworkPostureManager.recordSample(this.serverUrl, Date.now() - this.pingSentAt, false);
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -442,6 +446,7 @@ export default class WebSocketClient {
         };
 
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
+            this.pingSentAt = Date.now();
             this.conn.send(JSON.stringify(msg));
         }
     }
