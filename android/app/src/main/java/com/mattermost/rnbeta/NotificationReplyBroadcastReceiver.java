@@ -118,23 +118,42 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     }
 
     protected void onReplyFailed(int notificationId) {
-        recreateNotification(notificationId, "Message failed to send.");
+        recreateNotification(notificationId, "Message failed to send.", false);
     }
 
     protected void onReplySuccess(int notificationId, final CharSequence message) {
-        recreateNotification(notificationId, message);
+        NotificationConversationStore.INSTANCE.appendMessage(
+                mContext,
+                bundle,
+                new NotificationConversationStore.ConversationMessage(
+                        null,
+                        "me",
+                        "Me",
+                        message.toString(),
+                        System.currentTimeMillis()
+                )
+        );
+        recreateNotification(notificationId, message, true);
     }
 
-    private void recreateNotification(int notificationId, final CharSequence message) {
+    private void recreateNotification(int notificationId, final CharSequence message, boolean fromUser) {
         final PushNotificationProps notificationProps = new PushNotificationProps(bundle);
         final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, notificationProps);
         NotificationCompat.Builder builder = CustomPushNotificationHelper.createNotificationBuilder(mContext, pendingIntent, bundle, false);
-        Notification notification =  builder.build();
-        NotificationCompat.MessagingStyle messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);
-        assert messagingStyle != null;
-        messagingStyle.addMessage(message, System.currentTimeMillis(), (Person)null);
-        notification = builder.setStyle(messagingStyle).build();
-        notificationManager.notify(notificationId, notification);
+
+        // History already includes successful replies. Failure text is ephemeral only.
+        if (!fromUser) {
+            Notification notification = builder.build();
+            NotificationCompat.MessagingStyle messagingStyle =
+                    NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);
+            if (messagingStyle != null) {
+                Person user = new Person.Builder().setKey("me").setName("Me").build();
+                messagingStyle.addMessage(message, System.currentTimeMillis(), user);
+                builder.setStyle(messagingStyle);
+            }
+        }
+
+        notificationManager.notify(notificationId, builder.build());
     }
 
     private CharSequence getReplyMessage(Intent intent) {
