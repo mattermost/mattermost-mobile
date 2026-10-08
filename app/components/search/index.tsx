@@ -215,7 +215,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
             onFocus={onFocus}
             onBlur={onBlur}
             placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
+            placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, 0.72)}
             platform={Platform.select({android: 'android', default: 'ios'})}
 
             // @ts-expect-error legacy ref
