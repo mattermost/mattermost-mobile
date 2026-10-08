@@ -32,11 +32,17 @@ describe('native-intent', () => {
     });
 
     describe('redirectSystemPath', () => {
-        it('should return the path unchanged when the url is not handled, regardless of initial', async () => {
+        it('should return the path unchanged when a runtime url is not handled', async () => {
             const path = 'mailto:someone@example.com';
 
             expect(await redirectSystemPath({path, initial: false})).toBe(path);
-            expect(await redirectSystemPath({path, initial: true})).toBe(path);
+            expect(parseAndHandleDeepLink).not.toHaveBeenCalled();
+        });
+
+        it('should route an initial non-SSO url through the app root without handling it', async () => {
+            const path = 'https://community.mattermost.com/team/channels/town-square';
+
+            expect(await redirectSystemPath({path, initial: true})).toBe('/');
             expect(parseAndHandleDeepLink).not.toHaveBeenCalled();
         });
 
@@ -47,25 +53,23 @@ describe('native-intent', () => {
             expect(await redirectSystemPath({path, initial: true})).toBeNull();
         });
 
-        it('should return null and not alert when the deep link is handled successfully, regardless of initial', async () => {
+        it('should return null and not alert when a runtime deep link is handled successfully', async () => {
             const path = 'https://community.mattermost.com/team/channels/town-square';
 
             expect(await redirectSystemPath({path, initial: false})).toBeNull();
-            expect(await redirectSystemPath({path, initial: true})).toBeNull();
 
             expect(parseAndHandleDeepLink).toHaveBeenCalledWith(path, undefined, undefined, true);
             expect(alertInvalidDeepLink).not.toHaveBeenCalled();
         });
 
-        it('should return the path and alert when the deep link handling errors, regardless of initial', async () => {
+        it('should return the path and alert when runtime deep link handling errors', async () => {
             (parseAndHandleDeepLink as jest.Mock).mockResolvedValue({error: true});
 
             const path = 'https://community.mattermost.com/team/channels/town-square';
 
             expect(await redirectSystemPath({path, initial: false})).toBe(path);
-            expect(await redirectSystemPath({path, initial: true})).toBe(path);
 
-            expect(alertInvalidDeepLink).toHaveBeenCalledTimes(2);
+            expect(alertInvalidDeepLink).toHaveBeenCalledTimes(1);
         });
     });
 
