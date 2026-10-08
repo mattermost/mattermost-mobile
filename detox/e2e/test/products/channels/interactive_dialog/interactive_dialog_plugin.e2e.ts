@@ -3,13 +3,13 @@
 
 /* eslint-disable no-await-in-loop, no-empty */
 
-import {execSync} from 'child_process';
-
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
+
+import {execSync} from 'child_process';
 
 import {
     Command,
@@ -1050,26 +1050,45 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     // rendering path via the scroll-wheel which is already exercised by MM-T2530C/MM-T2530G.
 
     itNotIos('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
-        await ensureDialogClosed();
-        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
-        await ensureDialogOpen();
+        // This regression is only detectable when the device runs at a UTC+ offset.
+        // The CI Android emulator is configured for a positive-offset timezone (Asia/Kolkata,
+        // UTC+5:30); local machines with UTC or negative offsets may not catch the regression.
+        const serial = device.id;
+        const origTz = execSync(`adb -s ${serial} shell getprop persist.sys.timezone`).toString().trim();
+        const testTz = 'Asia/Kolkata'; // UTC+5:30 — guaranteed positive offset
+        if (origTz !== testTz) {
+            execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${testTz}`, {stdio: 'ignore'});
+            execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            await wait(timeouts.ONE_SEC);
+        }
 
-        // # Open the event_date calendar picker and pick 20 June 2026
-        await element(by.id('AppFormElement.event_date.select.button')).tap();
-        await wait(timeouts.ONE_SEC);
-        tapPickerCellByLabel('20 June 2026');
-        await wait(timeouts.HALF_SEC);
-        await element(by.text('OK')).tap();
-        await wait(timeouts.ONE_SEC);
+        try {
+            await ensureDialogClosed();
+            await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+            await ensureDialogOpen();
 
-        // * The field renders the picked day, not the day before.
-        // Before the fix, storing a date-with-timezone value and rendering it outside its own
-        // timezone dropped the display to the previous calendar day.
-        await expect(element(by.text('Jun 20, 2026'))).toExist();
-        await expect(element(by.text('Jun 19, 2026'))).not.toExist();
+            // # Open the event_date calendar picker and pick 20 June 2026
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+            await wait(timeouts.ONE_SEC);
+            tapPickerCellByLabel('20 June 2026');
+            await wait(timeouts.HALF_SEC);
+            await element(by.text('OK')).tap();
+            await wait(timeouts.ONE_SEC);
 
-        await InteractiveDialogScreen.cancel();
-        await ensureDialogClosed();
+            // * The field renders the picked day, not the day before.
+            // Before the fix, storing a date-with-timezone value and rendering it outside its own
+            // timezone dropped the display to the previous calendar day.
+            await expect(element(by.text('Jun 20, 2026'))).toExist();
+            await expect(element(by.text('Jun 19, 2026'))).not.toExist();
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        } finally {
+            if (origTz !== testTz) {
+                execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
+                execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            }
+        }
     });
 
     itNotIos('MM-T5900_3 should honor a 10-minute interval instead of snapping to 30 (Plugin)', async () => {
@@ -1108,11 +1127,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // * The submitted interval_time value has :20 in the minutes position.
         // Before the fix, Android ignored the 10-minute minuteInterval prop and the picker
-        // snapped minute 20 to :30 (the forced fallback). The ISO timestamp encodes the
-        // selected minute as the two digits between the second and third colons (HH:mm:ss).
+        // snapped minute 20 to :30 (the forced fallback). Parse interval_time by name so the
+        // assertion targets the right field even when meeting_time appears first in the message.
         await wait(1000);
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
-        const isoMatch = post.message.match(/\d{4}-\d{2}-\d{2}T\d{2}:(\d{2}):\d{2}/);
+        const fieldMatch = post.message.match(/interval_time:[ \t]*(\S+)/);
+        if (!fieldMatch) {
+            throw new Error(`interval_time field not found in submission message: ${post.message}`);
+        }
+        const isoMatch = fieldMatch[1].match(/T\d{2}:(\d{2}):/);
         const minutes = isoMatch ? Number(isoMatch[1]) : -1;
         if (minutes !== 20) {
             throw new Error(`Expected minute 20 to be preserved (10-minute interval), but submitted value had minute ${minutes}. Full message: ${post.message}`);
