@@ -3,6 +3,8 @@
 
 /* eslint-disable no-await-in-loop, no-empty */
 
+import {execSync} from 'child_process';
+
 // *******************************************************************
 // - [#] indicates a test step (e.g. # Go to a screen)
 // - [*] indicates an assertion (e.g. * Check the title)
@@ -221,6 +223,32 @@ async function dismissErrorAlert() {
         await wait(300);
     } catch {}
 }
+
+/**
+ * Taps a cell inside a stock Android picker by its accessibility label.
+ *
+ * Calendar day cells and clock minute markers are drawn on a Canvas and only exposed as virtual
+ * accessibility nodes, so Espresso (and therefore by.label()) cannot match them. uiautomator can
+ * see them; this helper resolves the node's bounds from the accessibility tree and taps its centre.
+ * Bounds are read at runtime rather than hardcoded so the helper survives different screen densities.
+ */
+const tapPickerCellByLabel = (label: string) => {
+    const serial = device.id;
+    execSync(`adb -s ${serial} shell uiautomator dump /sdcard/detox-picker.xml`, {stdio: 'ignore'});
+    const xml = execSync(`adb -s ${serial} shell cat /sdcard/detox-picker.xml`).toString();
+
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = xml.match(new RegExp(`content-desc="${escapedLabel}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
+    if (!match) {
+        throw new Error(`No picker cell with accessibility label "${label}"`);
+    }
+
+    const left = Number(match[1]);
+    const top = Number(match[2]);
+    const right = Number(match[3]);
+    const bottom = Number(match[4]);
+    execSync(`adb -s ${serial} shell input tap ${Math.round((left + right) / 2)} ${Math.round((top + bottom) / 2)}`);
+};
 
 const itNotIos = isIos() ? it.skip : it;
 
@@ -1014,6 +1042,80 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
         if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
+    });
+
+    // Regression tests for Android datetime fixes (MM-10092, MM-10094).
+    // Skipped on iOS: tapPickerCellByLabel uses adb; iOS pickers expose the same testable
+    // rendering path via the scroll-wheel which is already exercised by MM-T2530C/MM-T2530G.
+
+    itNotIos('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
+        await ensureDialogClosed();
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Open the event_date calendar picker and pick 20 June 2026
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(timeouts.ONE_SEC);
+        tapPickerCellByLabel('20 June 2026');
+        await wait(timeouts.HALF_SEC);
+        await element(by.text('OK')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // * The field renders the picked day, not the day before.
+        // Before the fix, storing a date-with-timezone value and rendering it outside its own
+        // timezone dropped the display to the previous calendar day.
+        await expect(element(by.text('Jun 20, 2026'))).toExist();
+        await expect(element(by.text('Jun 19, 2026'))).not.toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    itNotIos('MM-T5900_3 should honor a 10-minute interval instead of snapping to 30 (Plugin)', async () => {
+        await ensureDialogClosed();
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field so the dialog can be submitted
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Open the interval_time time picker
+        await element(by.id('AppFormElement.interval_time.time.button')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // # Switch the clock dial from hours to minutes, then pick minute 20
+        await element(by.text('00')).tap();
+        await wait(timeouts.HALF_SEC);
+        tapPickerCellByLabel('20');
+        await wait(timeouts.HALF_SEC);
+        await element(by.text('OK')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // # Submit the dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+        await ensureDialogClosed();
+
+        // * The submitted interval_time value has :20 in the minutes position.
+        // Before the fix, Android ignored the 10-minute minuteInterval prop and the picker
+        // snapped minute 20 to :30 (the forced fallback). The ISO timestamp encodes the
+        // selected minute as the two digits between the second and third colons (HH:mm:ss).
+        await wait(1000);
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const isoMatch = post.message.match(/\d{4}-\d{2}-\d{2}T\d{2}:(\d{2}):\d{2}/);
+        const minutes = isoMatch ? Number(isoMatch[1]) : -1;
+        if (minutes !== 20) {
+            throw new Error(`Expected minute 20 to be preserved (10-minute interval), but submitted value had minute ${minutes}. Full message: ${post.message}`);
         }
     });
 });

@@ -5,6 +5,7 @@ import {getTimeZone} from 'react-native-localize';
 
 import {logDebug} from '@utils/log';
 
+/** Returns the raw IANA timezone string reported by the device OS. */
 export function getDeviceTimezone() {
     return getTimeZone();
 }

@@ -49,7 +49,6 @@ server.post('/dialog_submit', onDialogSubmit);
 server.post('/boolean_dialog_request', onBooleanDialogRequest);
 server.post('/simple_dialog_error_request', onSimpleDialogErrorRequest);
 server.post('/select_fields_dialog_request', onSelectFieldsDialogRequest);
-server.post('/datetime_dialog_request', onDatetimeDialogRequest);
 server.post('/multiselect_dynamic_dialog_request', onMultiselectDynamicDialogRequest);
 server.post('/dynamic_options', getDynamicOptions);
 server.post('/dynamic_multiselect_options', getDynamicMultiselectOptions);
@@ -182,6 +181,7 @@ function postMessageMenus(req, res) {
     return res.json(responseData);
 }
 
+/** Posts an interactive dialog open request to the Mattermost API. Fire-and-forget — never rethrows. */
 async function openDialog(dialog) {
     const baseUrl = getBaseUrl();
     try {
@@ -384,69 +384,6 @@ function onSelectFieldsDialogRequest(req, res) {
 
     res.setHeader('Content-Type', 'application/json');
     return res.json({text: 'Select fields dialog triggered via slash command!'});
-}
-
-function onDatetimeDialogRequest(req, res) {
-    const {body} = req;
-    if (body.trigger_id) {
-        const webhookBaseUrl = getWebhookBaseUrl();
-
-        // Date + datetime elements for timezone and minute-interval coverage.
-        // time_interval 10 exercises a non-default interval on both platforms.
-        const dialog = {
-            trigger_id: body.trigger_id,
-            url: `${webhookBaseUrl}/dialog_submit`,
-            dialog: {
-                callback_id: 'datetimecallbackid',
-                title: 'Datetime Dialog Test',
-                icon_url: 'http://www.mattermost.org/wp-content/uploads/2016/04/icon.png',
-                submit_label: 'Submit Test',
-                notify_on_cancel: true,
-                state: 'somestate',
-                elements: [
-                    {
-                        display_name: 'Date Field',
-                        name: 'date_field',
-                        type: 'date',
-                        help_text: 'Pick a date',
-                        optional: true,
-
-                        // Fixed defaults keep assertions independent of the device clock.
-                        default: '2026-06-15',
-                    },
-                    {
-                        display_name: 'Datetime Field',
-                        name: 'datetime_field',
-                        type: 'datetime',
-                        help_text: 'Pick a date and time',
-                        optional: true,
-                        default: '2026-06-15T09:00:00Z',
-                        datetime_config: {
-                            time_interval: 10,
-                        },
-                    },
-                    {
-                        display_name: 'Date Field In Location Timezone',
-                        name: 'date_field_tz',
-                        type: 'date',
-                        help_text: 'Pick a date rendered in a fixed location timezone',
-                        optional: true,
-                        default: '2026-06-15',
-                        datetime_config: {
-
-                            // UTC+14 — ahead of any plausible device timezone, so the rendered
-                            // date differs from the device-local one for the same instant.
-                            location_timezone: 'Pacific/Kiritimati',
-                        },
-                    },
-                ],
-            },
-        };
-        openDialog(dialog);
-    }
-
-    res.setHeader('Content-Type', 'application/json');
-    return res.json({text: 'Datetime dialog triggered via slash command!'});
 }
 
 function onDialogSubmit(req, res) {

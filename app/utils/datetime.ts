@@ -9,6 +9,7 @@ export type ValidMinuteInterval = 1 | 2 | 3 | 4 | 5 | 6 | 10 | 12 | 15 | 20 | 30
 
 const VALID_INTERVALS = new Set<ValidMinuteInterval>([1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]);
 
+/** Clamps a requested minute interval to the nearest supported value, or 30 if unsupported. */
 export function toValidMinuteInterval(interval?: number): ValidMinuteInterval {
     if (interval && VALID_INTERVALS.has(interval as ValidMinuteInterval)) {
         return interval as ValidMinuteInterval;
