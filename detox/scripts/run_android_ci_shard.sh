@@ -63,6 +63,18 @@ emulator_healthy() {
     adb shell pm list packages 2>/dev/null | grep -q 'com.mattermost.rnbeta' || return 1
 }
 
+# Every test in attempt 1 failed and none passed: the app never came up on this
+# emulator. CI 37082736971 machine-11 logged "Detox can't seem to connect to the
+# test app" on every launch while adb, boot and the installed package all looked
+# fine, and reusing that emulator failed the retry the same way. Cold-boot instead.
+attempt1_never_reached_app() {
+    [[ -f "${ATTEMPT1_RESULTS}" ]] || return 1
+    node -e '
+        const r = require(process.argv[1]);
+        process.exit((r.numFailedTests ?? 0) > 0 && (r.numPassedTests ?? 0) === 0 ? 0 : 1);
+    ' "${ATTEMPT1_RESULTS}" 2>/dev/null
+}
+
 kill_emulator() {
     adb -s emulator-5554 emu kill 2>/dev/null || true
     pkill -9 -f qemu-system 2>/dev/null || true
@@ -131,7 +143,7 @@ while (( attempt <= MAX_ATTEMPTS )); do
             mv "${RESULTS}" "${ATTEMPT1_RESULTS}"
         fi
 
-        if emulator_healthy; then
+        if emulator_healthy && ! attempt1_never_reached_app; then
             echo "==> Emulator healthy — resetting app and retrying failed specs only"
             run_detox_attempt true "${retry_specs[@]}"
             rc=$?
@@ -142,7 +154,7 @@ while (( attempt <= MAX_ATTEMPTS )); do
                 rc=$?
             fi
         else
-            echo "==> Emulator unhealthy — cold boot, then retrying failed specs only"
+            echo "==> Emulator unhealthy, or no test passed in attempt 1 — cold boot, then retrying failed specs only"
             kill_emulator
             run_detox_attempt false "${retry_specs[@]}"
             rc=$?

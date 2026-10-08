@@ -401,7 +401,7 @@ jobs:
           # asserts against a toggle the server never turned off. Same treatment
           # ReportAProblemType already gets below.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          bash detox/maestro/scripts/apply_client_config_value.sh \
+          CONFIG_DIAGNOSIS_FILE="$RUNNER_TEMP/config-diagnosis.txt" bash detox/maestro/scripts/apply_client_config_value.sh \
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             AllowDownloadLogs false || {
               rc=$?
@@ -417,7 +417,7 @@ jobs:
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T67856_4.xml \
                 detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
-                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force"
+                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force: $(cat "$RUNNER_TEMP/config-diagnosis.txt" 2>/dev/null)"
               exit 1
             }
 
@@ -461,7 +461,7 @@ jobs:
           # restored 'default' 58 ms before this step patched, the app observed 'default',
           # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          bash detox/maestro/scripts/apply_client_config_value.sh \
+          CONFIG_DIAGNOSIS_FILE="$RUNNER_TEMP/config-diagnosis.txt" bash detox/maestro/scripts/apply_client_config_value.sh \
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
             ReportAProblemType link || {
               rc=$?
@@ -479,7 +479,7 @@ jobs:
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_1.xml \
                 detox/maestro/flows/account/report_problem_link_mode.yml \
-                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force: $(cat "$RUNNER_TEMP/config-diagnosis.txt" 2>/dev/null)"
               exit 1
             }
 
@@ -577,6 +577,35 @@ jobs:
             }
           "
 
+      # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
+      # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      - name: Collect triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/sim-device.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
+
+      - name: Upload triage evidence
+        id: upload-evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
+      # The artifact service times out now and then ("Failed to CreateArtifact:
+      # ETIMEDOUT") and upload-artifact does not retry, which leaves triage with
+      # no evidence for this lane.
+      - name: Upload triage evidence (retry)
+        if: always() && steps.upload-evidence.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
         env:
@@ -632,13 +661,17 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE != 'report-only' }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"
-          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
+          CANCELLED="false"
+          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; CANCELLED="true"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-ios"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
@@ -648,7 +681,9 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
             --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
@@ -965,7 +1000,8 @@ jobs:
         run: |
           mkdir -p build
           adb logcat -c || true
-          adb logcat -v threadtime > build/android-logcat.log 2> build/android-logcat.err &
+          # Full UTC dates, so triage evidence can match app errors to the flow that failed.
+          adb logcat -v threadtime -v year -v UTC > build/android-logcat.log 2> build/android-logcat.err &
           echo $! > build/android-logcat.pid
           echo "==> logcat capture started (pid $(cat build/android-logcat.pid))"
 
@@ -1025,7 +1061,7 @@ jobs:
           # asserts against a toggle the server never turned off. Same treatment
           # ReportAProblemType already gets below.
           echo "==> Patching SupportSettings.AllowDownloadLogs=false on ${SITE_1_URL}"
-          bash detox/maestro/scripts/apply_client_config_value.sh \
+          CONFIG_DIAGNOSIS_FILE="$RUNNER_TEMP/config-diagnosis.txt" bash detox/maestro/scripts/apply_client_config_value.sh \
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":false}}' \
             AllowDownloadLogs false || {
               rc=$?
@@ -1041,7 +1077,7 @@ jobs:
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T67856_4.xml \
                 detox/maestro/flows/account/attach_logs_disabled_when_download_logs_off.yml \
-                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force"
+                "AllowDownloadLogs=false never reached the client config; the flow's pre-condition was not in force: $(cat "$RUNNER_TEMP/config-diagnosis.txt" 2>/dev/null)"
               exit 1
             }
 
@@ -1109,7 +1145,7 @@ jobs:
           # restored 'default' 58 ms before this step patched, the app observed 'default',
           # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=email on ${SITE_1_URL}"
-          bash detox/maestro/scripts/apply_client_config_value.sh \
+          CONFIG_DIAGNOSIS_FILE="$RUNNER_TEMP/config-diagnosis.txt" bash detox/maestro/scripts/apply_client_config_value.sh \
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"email","ReportAProblemMail":"e2e-report-a-problem@example.com"}}' \
             ReportAProblemType email || {
               rc=$?
@@ -1127,7 +1163,7 @@ jobs:
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_2.xml \
                 detox/maestro/flows/account/report_problem_mail_mode.yml \
-                "ReportAProblemType=email never reached the client config; the flow's pre-condition was not in force"
+                "ReportAProblemType=email never reached the client config; the flow's pre-condition was not in force: $(cat "$RUNNER_TEMP/config-diagnosis.txt" 2>/dev/null)"
               exit 1
             }
 
@@ -1171,7 +1207,7 @@ jobs:
           # restored 'default' 58 ms before this step patched, the app observed 'default',
           # and handleReport() emailed instead of opening the browser.
           echo "==> Patching SupportSettings.ReportAProblemType=link on ${SITE_1_URL}"
-          bash detox/maestro/scripts/apply_client_config_value.sh \
+          CONFIG_DIAGNOSIS_FILE="$RUNNER_TEMP/config-diagnosis.txt" bash detox/maestro/scripts/apply_client_config_value.sh \
             "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"ReportAProblemType":"link","ReportAProblemLink":"https://mattermost.com/pl/report_a_problem_licensed"}}' \
             ReportAProblemType link || {
               rc=$?
@@ -1189,7 +1225,7 @@ jobs:
               bash detox/maestro/scripts/write_maestro_failure_stub.sh \
                 build/maestro-report-T3261_1.xml \
                 detox/maestro/flows/account/report_problem_link_mode.yml \
-                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force"
+                "ReportAProblemType=link never reached the client config; the flow's pre-condition was not in force: $(cat "$RUNNER_TEMP/config-diagnosis.txt" 2>/dev/null)"
               exit 1
             }
 
@@ -1276,6 +1312,35 @@ jobs:
             }
           "
 
+      # Evidence for the triage job in e2e-detox-pr.yml: each failed flow's failure
+      # screenshot, the step it stopped at and the errors the app logged meanwhile.
+      - name: Collect triage evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/maestro-report.xml') != ''
+        continue-on-error: true
+        run: node detox/utils/maestro-triage-evidence.js --report build/maestro-report.xml --build build --device-log build/android-logcat.log --dir build/triage-evidence --out build/triage-evidence/evidence.json
+
+      - name: Upload triage evidence
+        id: upload-evidence
+        if: always() && inputs.tsio-shard-name != '' && hashFiles('build/triage-evidence/*.json') != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
+      # The artifact service times out now and then ("Failed to CreateArtifact:
+      # ETIMEDOUT") and upload-artifact does not retry, which leaves triage with
+      # no evidence for this lane.
+      - name: Upload triage evidence (retry)
+        if: always() && steps.upload-evidence.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: triage-evidence-${{ inputs.tsio-shard-name }}-${{ github.run_id }}
+          path: build/triage-evidence/
+          overwrite: true
+
       - name: Write TSIO failure stub when Maestro report is missing
         if: always() && inputs.tsio-config != '' && vars.TSIO_UPLOAD_ENABLED != 'false' && hashFiles('build/maestro-report.xml') == ''
         env:
@@ -1331,13 +1396,17 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TSIO_CONFIG: ${{ steps.tsio-cfg.outputs.config }}
           E2E_OVERRIDE: ${{ steps.e2e-override.outputs.override }}
+          # The runs e2e-detox-pr.yml triages (its tsio-triage job), so a red lane
+          # says triage is coming instead of looking final.
+          ANNOUNCE_TRIAGE: ${{ (inputs.run-type == 'PR' || inputs.run-type == 'MAIN' || inputs.run-type == 'MASTER') && vars.E2E_TRIAGE_MODE != 'report-only' }}
           MATTERMOST_E2E_WEBHOOK_URL: ${{ secrets.MM_MOBILE_E2E_WEBHOOK_URL }}
           MATTERMOST_MASTER_HEALTH_WEBHOOK_URL: ${{ secrets.MM_E2E_MASTER_HEALTH_WEBHOOK_URL }}
           MATTERMOST_CMT_WEBHOOK_URL: ${{ secrets.MM_E2E_RELEASE_WEBHOOK_URL }}
         run: |
           set +e
           UPSTREAM="true"
-          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; fi
+          CANCELLED="false"
+          if [ "${{ job.status }}" = "cancelled" ]; then UPSTREAM="false"; CANCELLED="true"; fi
           IDENTITY=$(echo "$TSIO_CONFIG" | jq -c '.composite_identity')
           CONTEXT=$(echo "$TSIO_CONFIG" | jq -r '.status_context // "e2e-test/maestro-android"')
           TOTAL=$(echo "$TSIO_CONFIG" | jq -r '.total_reports_expected // 1')
@@ -1347,7 +1416,9 @@ jobs:
             --github-token="$GITHUB_TOKEN" \
             --context="$CONTEXT" \
             --upstream-succeeded="$UPSTREAM" \
+            --cancelled="$CANCELLED" \
             --e2e-override="$E2E_OVERRIDE" \
+            --announce-triage="$ANNOUNCE_TRIAGE" \
             --poll-attempts=24
           RC=$?
           echo "tsio-report-status exit=$RC upstream_succeeded=$UPSTREAM context=$CONTEXT"
