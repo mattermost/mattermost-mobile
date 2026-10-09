@@ -200,9 +200,7 @@ export type LiveKitSessionResponse = {
 export type CallsConnection = {
     disconnect: (err?: Error) => void;
     mute: () => void;
-
-    // Returns false when there was no voice track to enable, so the unmute never left the device.
-    unmute: () => boolean;
+    unmute: () => void;
     waitForPeerConnection: () => Promise<string>;
     raiseHand: () => void;
     unraiseHand: () => void;

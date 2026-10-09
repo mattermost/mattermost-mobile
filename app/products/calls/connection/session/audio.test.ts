@@ -105,6 +105,21 @@ describe('createAudioRouteManager', () => {
         expect(setPreferredAudioRoute).toHaveBeenCalledWith('EARPIECE');
     });
 
+    it('should not apply the initial route when stopped before it is read', async () => {
+        let resolveRoute: (route: AudioRoute) => void = () => {};
+        (CallsNative.getAudioRoute as jest.Mock).mockReturnValueOnce(new Promise((resolve) => {
+            resolveRoute = resolve;
+        }));
+        const manager = createAudioRouteManager();
+
+        const started = manager.start();
+        manager.stop();
+        resolveRoute({selectedAudioDevice: 'EARPIECE', availableAudioDeviceList: ['EARPIECE', 'BLUETOOTH']});
+        await started;
+
+        expect(setPreferredAudioRoute).not.toHaveBeenCalled();
+    });
+
     it('should remove the route listener on stop', async () => {
         const remove = jest.fn();
         (CallsNative.onAudioRouteChanged as jest.Mock).mockReturnValueOnce({remove});

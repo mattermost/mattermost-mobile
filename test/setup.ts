@@ -217,6 +217,7 @@ jest.mock('livekit-client', () => ({
         Disconnected: 'disconnected',
         TrackMuted: 'trackMuted',
         TrackUnmuted: 'trackUnmuted',
+        LocalTrackPublished: 'localTrackPublished',
         TrackSubscribed: 'trackSubscribed',
         TrackUnsubscribed: 'trackUnsubscribed',
         ActiveSpeakersChanged: 'activeSpeakersChanged',

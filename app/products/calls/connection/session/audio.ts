@@ -40,35 +40,36 @@ export function createAudioRouteManager() {
     };
 
     const start = async () => {
-        // Listen for audio route changes on both platforms via calls-native.
         audioRouteEvent?.remove();
-        audioRouteEvent = CallsNative.onAudioRouteChanged((route) => {
+
+        // Kept local so the post-await check can tell if stop() or a newer start() replaced it.
+        const subscription = CallsNative.onAudioRouteChanged((route) => {
             setAudioDeviceInfo(route);
             logDebug('calls: AudioRouteChanged, info:', route);
 
             const available = route.availableAudioDeviceList;
 
-            // If the user's pinned device disappeared (e.g. BT headset ran out
-            // of battery), clear their intent so auto-routing resumes.
+            // A pinned device that disappears (e.g. a dead BT headset) hands control back to auto-routing.
             const selectedRouteDisconnected = Boolean(userSelectedRoute && !available.includes(userSelectedRoute));
             if (selectedRouteDisconnected) {
                 userSelectedRoute = null;
             }
 
-            // Re-route when a new device appears OR when the pinned device just
-            // disconnected — in both cases the current route may no longer follow
-            // the intended priority policy.
             const isNewDevice = (d: AudioDeviceType) => !previousAvailableDevices.includes(d);
             const newDeviceAppeared = available.some(isNewDevice);
             previousAvailableDevices = available;
 
+            // A lost pin or a new device can leave the current route off the priority order.
             if (!userSelectedRoute && (selectedRouteDisconnected || newDeviceAppeared)) {
                 setPreferredAudioRoute(getAutoRoute(available));
             }
         });
+        audioRouteEvent = subscription;
 
-        // Set initial audio route based on current hardware state.
         const initialRoute = await CallsNative.getAudioRoute();
+        if (audioRouteEvent !== subscription) {
+            return;
+        }
         setAudioDeviceInfo(initialRoute);
         previousAvailableDevices = initialRoute.availableAudioDeviceList;
         setPreferredAudioRoute(getAutoRoute(initialRoute.availableAudioDeviceList));

@@ -25,7 +25,6 @@ import {
 } from '@calls/native_call';
 import {
     cancelOutgoingCall,
-    clearStartUnmuted,
     getCallsConfig,
     getCallsState,
     getChannelsWithCalls,
@@ -374,14 +373,8 @@ export const unmuteMyself = () => {
         return;
     }
 
-    const unmuted = connection.unmute();
+    connection.unmute();
     mirrorMuteToNativeCall(false);
-
-    if (!unmuted) {
-        // Nothing left the device, so the server will never tell us we're live. Stop saying we are.
-        logDebug('calls: unmuteMyself had no voice track to unmute');
-        clearStartUnmuted();
-    }
 };
 
 export const initializeVoiceTrack = () => {

@@ -93,7 +93,7 @@ jest.mock('@calls/connection', () => ({
     newCallConnection: jest.fn((serverURL, channelId, onClose) => Promise.resolve({
         disconnect: jest.fn((err?: Error) => onClose(err)),
         mute: jest.fn(),
-        unmute: jest.fn(() => true),
+        unmute: jest.fn(),
         waitForPeerConnection: jest.fn(() => Promise.resolve('session-id')),
         initializeVoiceTrack: jest.fn(),
         sendReaction: jest.fn(),

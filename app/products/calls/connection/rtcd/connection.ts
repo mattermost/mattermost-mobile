@@ -10,7 +10,7 @@ import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-nati
 import {peerConnectTimeout} from '@calls/connection/constants';
 import {createAudioRouteManager, startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
 import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/session/foreground_service';
-import {processMeanOpinionScore} from '@calls/state';
+import {clearStartUnmuted, processMeanOpinionScore} from '@calls/state';
 import {type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
@@ -179,11 +179,10 @@ export async function newRtcdConnection(
         }
     };
 
-    // Reports whether the unmute actually went out: callers show us as live off the back of it, and
-    // there is no voice track to enable if getUserMedia lost its race with the peer connection.
     const unmute = () => {
         if (!peer || !voiceTrack) {
-            return false;
+            clearStartUnmuted();
+            return;
         }
 
         // NOTE: we purposely clear the monitor's stats cache upon unmuting
@@ -203,15 +202,14 @@ export async function newRtcdConnection(
             }
         } catch (e) {
             logError('calls: from RTCPeer, error on unmute:', e);
-            return false;
+            clearStartUnmuted();
+            return;
         }
 
         voiceTrack.enabled = true;
         if (ws) {
             ws.send('unmute');
         }
-
-        return true;
     };
 
     const raiseHand = () => {

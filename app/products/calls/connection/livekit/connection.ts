@@ -26,6 +26,7 @@ import {foregroundServiceStart, foregroundServiceStop} from '@calls/connection/s
 import {createCallAndAddToIds} from '@calls/convert_call';
 import {hostRemovedErr} from '@calls/errors';
 import {
+    clearStartUnmuted,
     getCurrentCall,
     setCallForChannel,
     setCallQualityAlert,
@@ -84,6 +85,9 @@ export async function newLiveKitConnection(
     let isClosed = false;
     let isRoomConnected = false;
     let micPublishInProgress = false;
+    let micTrack: LocalAudioTrack | null = null;
+    let micMuted = true;
+    let micTrackPromise: Promise<void> | null = null;
     let onPeerConnected: ((sessionId: string) => void) | null = null;
     let activeSessions = new Set<string>();
 
@@ -125,8 +129,11 @@ export async function newLiveKitConnection(
 
     const {session_id: mySessionID, token, url, call_state: callState} = session;
 
+    // Ours joins with the room, once mySessionId is set; until then the call view shows a placeholder for us.
+    const otherSessions = callState.sessions.filter(({session_id: sessionID}) => sessionID !== mySessionID);
+
     const seededUserIDs = new Set<string>();
-    setCallForChannel(serverUrl, channelID, createCallAndAddToIds(channelID, callState, seededUserIDs));
+    setCallForChannel(serverUrl, channelID, createCallAndAddToIds(channelID, {...callState, sessions: otherSessions}, seededUserIDs));
     fetchMissingProfilesByIds(serverUrl, Array.from(seededUserIDs));
     if (callState.recording) {
         setRecordingState(serverUrl, channelID, callState.recording);
@@ -137,44 +144,60 @@ export async function newLiveKitConnection(
 
     const micPublication = () => room.localParticipant.getTrackPublication(Track.Source.Microphone);
 
-    const mute = () => {
-        micPublication()?.mute();
+    const prepareMicTrack = () => {
+        micTrackPromise ??= (async () => {
+            try {
+                const stream = await mediaDevices.getUserMedia({video: false, audio: true}) as MediaStream;
+                const track = new LocalAudioTrack(stream.getTracks()[0] as never, undefined, false);
+                track.source = Track.Source.Microphone;
+
+                if (isClosed) {
+                    track.stop();
+                    return;
+                }
+
+                if (micMuted) {
+                    await track.mute();
+                }
+                micTrack = track;
+            } catch (err) {
+                logError('calls: unable to prepare microphone track:', getFullErrorMessage(err));
+                micTrackPromise = null;
+                clearStartUnmuted();
+            }
+        })();
+        return micTrackPromise;
     };
 
-    // Reports whether the mute actually went out: callers show us as live off the back of it, and
-    // there is no publication to unmute if the mic lost its race with the room connection.
-    const unmute = () => {
-        const pub = micPublication();
-        if (!pub) {
-            return false;
-        }
+    const mute = () => {
+        micMuted = true;
+        micTrack?.mute();
+    };
 
-        pub.unmute();
-        return true;
+    const unmute = () => {
+        micMuted = false;
+        micTrack?.unmute();
     };
 
     const initializeVoiceTrack = async () => {
-        if (micPublishInProgress || micPublication()) {
+        await prepareMicTrack();
+        if (!micTrack || isClosed || !isRoomConnected || micPublishInProgress || micPublication()) {
             return;
         }
         micPublishInProgress = true;
 
         try {
-            const stream = await mediaDevices.getUserMedia({video: false, audio: true}) as MediaStream;
-            const audioTrack = stream.getTracks()[0];
-            const localAudioTrack = new LocalAudioTrack(audioTrack as never, undefined, false);
-            localAudioTrack.source = Track.Source.Microphone;
-
-            await room.localParticipant.publishTrack(localAudioTrack);
-
-            // publishTrack always publishes unmuted, so mute to join muted.
-            mute();
+            await room.localParticipant.publishTrack(micTrack);
         } catch (err) {
             logError('calls: unable to publish microphone track:', getFullErrorMessage(err));
         } finally {
             micPublishInProgress = false;
         }
     };
+
+    if (hasMicPermission) {
+        prepareMicTrack();
+    }
 
     const disconnect = (err?: Error) => {
         if (isClosed) {
@@ -183,6 +206,7 @@ export async function newLiveKitConnection(
         isClosed = true;
 
         room.disconnect();
+        micTrack?.stop();
         stopAudioSession();
         audioRoute.stop();
 
@@ -274,14 +298,10 @@ export async function newLiveKitConnection(
 
         const participants = [room.localParticipant, ...room.remoteParticipants.values()].filter((p) => !isBot(p));
 
-        // The join response includes sessions LiveKit never confirmed, and the room won't report those leaving.
-        // Dropped before we join, or an unconnected callee would mark a DM call answered.
+        // Keep only sessions the room confirmed, before we join, so an unconnected DM callee doesn't count as answered.
         const roomSessionIDs = new Set(participants.map((participant) => parseIdentity(participant.identity).sessionID));
-        for (const {session_id: sessionID} of callState.sessions) {
-            if (!roomSessionIDs.has(sessionID)) {
-                userLeftCall(serverUrl, channelID, sessionID);
-            }
-        }
+        const confirmedSessions = otherSessions.filter(({session_id: sessionID}) => roomSessionIDs.has(sessionID));
+        setCallForChannel(serverUrl, channelID, createCallAndAddToIds(channelID, {...callState, sessions: confirmedSessions}));
 
         const userIDs = participants.map((participant) => {
             const userID = joinParticipant(participant);
@@ -340,6 +360,11 @@ export async function newLiveKitConnection(
 
     room.on(RoomEvent.TrackUnmuted, (publication: TrackPublication, participant: Participant) => {
         setMutedFromPublication(publication, participant, false);
+    });
+
+    // The mic is muted or unmuted ahead of its publish, which emits no TrackMuted/TrackUnmuted.
+    room.on(RoomEvent.LocalTrackPublished, (publication: TrackPublication, participant: Participant) => {
+        setMutedFromPublication(publication, participant, publication.isMuted);
     });
 
     room.on(RoomEvent.ParticipantAttributesChanged, (changed: Record<string, string>, participant: Participant) => {
@@ -427,6 +452,10 @@ export async function newLiveKitConnection(
             logWarning('calls: livekit prepareConnection failed, continuing:', getFullErrorMessage(err));
         }
 
+        if (isClosed) {
+            return;
+        }
+
         try {
             await room.connect(url, token);
         } catch (err) {
@@ -435,9 +464,14 @@ export async function newLiveKitConnection(
             return;
         }
 
+        if (isClosed) {
+            room.disconnect();
+            return;
+        }
+
         await audioRoute.start();
 
-        if (hasMicPermission) {
+        if (micTrackPromise) {
             initializeVoiceTrack();
         }
     };

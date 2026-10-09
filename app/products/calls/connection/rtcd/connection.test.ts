@@ -5,6 +5,8 @@ import {zlibSync, strToU8} from 'fflate';
 import {Platform} from 'react-native';
 
 import {startAudioSession, stopAudioSession} from '@calls/connection/session/audio';
+import {getCurrentCall, newCurrentCall} from '@calls/state';
+import {CallsTransport} from '@calls/types/calls';
 import NetworkManager from '@managers/network_manager';
 import {enableFakeTimers, disableFakeTimers} from '@test/timer_helpers';
 
@@ -271,6 +273,28 @@ describe('newRtcdConnection', () => {
         connection.unmute();
         expect(mockReplaceTrack).toHaveBeenCalledWith(expect.any(String), expect.any(Object));
         expect(wsSend).toHaveBeenCalledWith('unmute');
+    });
+
+    it('stops showing the user as live when there is no voice track to unmute', async () => {
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: jest.fn(),
+            send: jest.fn(),
+        }));
+        newCurrentCall('http://localhost:8065', 'channelID', 'myUserId', CallsTransport.Rtcd, {startUnmuted: true});
+
+        const connection = await newRtcdConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+        connection.unmute();
+
+        expect(getCurrentCall()?.startUnmuted).toBe(false);
     });
 
     it('raise/unraise hand', async () => {
