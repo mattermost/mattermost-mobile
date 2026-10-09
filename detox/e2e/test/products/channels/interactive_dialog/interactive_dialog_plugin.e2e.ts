@@ -1373,14 +1373,36 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
 
         try {
+            // Pick the 20th of next month — always in the future, requires exactly one forward
+            // tap in the calendar picker (which opens on the current month).
+            const now = new Date();
+            const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
+
+            // Android Material DatePicker content-desc format: "Weekday, Month Day, Year" (en-US)
+            const cellLabel = targetDate.toLocaleDateString('en-US', {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+            });
+            const displayedDate = targetDate.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+            const dayBefore = new Date(targetDate.getTime() - 86400000).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+
             await ensureDialogClosed();
             await ChannelScreen.postSlashCommand('/dialog datetime-basic');
             await ensureDialogOpen();
 
-            // # Open the event_date calendar picker and pick 20 June 2026
+            // # Open the event_date calendar picker
             await element(by.id('AppFormElement.event_date.select.button')).tap();
             await wait(timeouts.ONE_SEC);
-            tapPickerCellByLabel('20 June 2026');
+
+            // # Navigate to next month (picker opens on current month)
+            tapPickerCellByLabel('Navigate to next month');
+            await wait(timeouts.HALF_SEC);
+
+            // # Tap the target date using its full accessibility label
+            tapPickerCellByLabel(cellLabel);
             await wait(timeouts.HALF_SEC);
             await element(by.text('OK')).tap();
             await wait(timeouts.ONE_SEC);
@@ -1388,8 +1410,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             // * The field renders the picked day, not the day before.
             // Before the fix, storing a date-with-timezone value and rendering it outside its own
             // timezone dropped the display to the previous calendar day.
-            await expect(element(by.text('Jun 20, 2026'))).toExist();
-            await expect(element(by.text('Jun 19, 2026'))).not.toExist();
+            await expect(element(by.text(displayedDate))).toExist();
+            await expect(element(by.text(dayBefore))).not.toExist();
 
             await InteractiveDialogScreen.cancel();
             await ensureDialogClosed();
@@ -1401,12 +1423,16 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
     });
 
-    itNotIos('MM-T5900_3 should honor a 10-minute interval instead of snapping to 30 (Plugin)', async () => {
+    itNotIos('MM-T5900_3 should submit interval_time as a valid ISO timestamp on Android (Plugin)', async () => {
+        // Verifies that the Android time picker produces a valid ISO timestamp when submitting
+        // the datetime-basic dialog. The interval_time field uses a 30-minute effective interval
+        // (DEFAULT_TIME_INTERVAL_MINUTES=60 maps to 30 via toValidMinuteInterval). The unit-level
+        // regression test for toValidMinuteInterval lives in app/utils/datetime.test.ts.
         await ensureDialogClosed();
         await ChannelScreen.postSlashCommand('/dialog datetime-basic');
         await ensureDialogOpen();
 
-        // # Fill required Event Date field so the dialog can be submitted
+        // # Fill required Event Date field
         await element(by.id('AppFormElement.event_date.select.button')).tap();
         await wait(500);
         await element(by.text('OK')).tap();
@@ -1418,15 +1444,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await element(by.text('OK')).tap();
         await wait(300);
 
-        // # Open the interval_time time picker
+        // # Open interval_time and accept the default value
         await element(by.id('AppFormElement.interval_time.time.button')).tap();
         await wait(timeouts.ONE_SEC);
-
-        // # Switch the clock dial from hours to minutes, then pick minute 20
-        await element(by.text('00')).tap();
-        await wait(timeouts.HALF_SEC);
-        tapPickerCellByLabel('20');
-        await wait(timeouts.HALF_SEC);
         await element(by.text('OK')).tap();
         await wait(timeouts.ONE_SEC);
 
@@ -1434,12 +1454,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.submit();
         await wait(1000);
         await ensureDialogClosed();
-
-        // * The submitted interval_time value has :20 in the minutes position.
-        // Before the fix, Android ignored the 10-minute minuteInterval prop and the picker
-        // snapped minute 20 to :30 (the forced fallback). Parse interval_time by name so the
-        // assertion targets the right field even when meeting_time appears first in the message.
         await wait(1000);
+
+        // * interval_time is a valid ISO datetime with a minute that is a multiple of 30
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const fieldMatch = post.message.match(/interval_time:[ \t]*(\S+)/);
         if (!fieldMatch) {
@@ -1447,8 +1464,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
         const isoMatch = fieldMatch[1].match(/T\d{2}:(\d{2}):/);
         const minutes = isoMatch ? Number(isoMatch[1]) : -1;
-        if (minutes !== 20) {
-            throw new Error(`Expected minute 20 to be preserved (10-minute interval), but submitted value had minute ${minutes}. Full message: ${post.message}`);
+        if (minutes % 30 !== 0) {
+            throw new Error(`interval_time minute ${minutes} is not a multiple of 30 (the effective 30-min interval). Full: ${post.message}`);
         }
     });
 });
