@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, View} from 'react-native';
 
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import StatusUpdatePost from '@playbooks/components/status_update_post';
 import {PLAYBOOKS_UPDATE_STATUS_POST_TYPE} from '@playbooks/constants/plugin';
 import {isEdited as postEdited, isPostFailed, hasInteractivePostContent} from '@utils/post';
-import {blendColors, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
@@ -32,15 +32,11 @@ type BodyProps = {
     filesInfo: FileInfo[];
     hasReactions: boolean;
     highlight: boolean;
-    highlightReplyBar: boolean;
-    isCRTEnabled?: boolean;
-    isEphemeral: boolean;
-    isFirstReply?: boolean;
     isJumboEmoji: boolean;
-    isLastReply?: boolean;
     isPendingOrFailed: boolean;
     isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
+    isReplyPost: boolean;
     location: AvailableScreens;
     post: PostModel;
     searchPatterns?: SearchPattern[];
@@ -63,25 +59,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         messageContainer: {width: '100%'},
-        replyBar: {
-            backgroundColor: blendColors(theme.centerChannelBg, theme.centerChannelColor, 0.1),
-            marginLeft: 1,
-            marginRight: 7,
-            width: 3,
-            flexBasis: 3,
-        },
-        replyBarFirst: {paddingTop: 10},
-        replyBarLast: {paddingBottom: 10},
-        replyMention: {
-            backgroundColor: theme.mentionHighlightBg,
-            opacity: 1,
-        },
         message: {
             color: theme.centerChannelColor,
             fontSize: 15,
             lineHeight: 20,
         },
-        messageContainerWithReplyBar: {
+        bodyContainer: {
             flexDirection: 'row',
             width: '100%',
         },
@@ -94,15 +77,11 @@ const Body = ({
     filesInfo,
     hasReactions,
     highlight,
-    highlightReplyBar,
-    isCRTEnabled,
-    isEphemeral,
-    isFirstReply,
     isJumboEmoji,
-    isLastReply,
     isPendingOrFailed,
     isPostAcknowledgementEnabled,
     isPostAddChannelMember,
+    isReplyPost,
     location,
     post,
     searchPatterns,
@@ -122,35 +101,12 @@ const Body = ({
     const nBindings = Array.isArray(post.props?.app_bindings) ? post.props?.app_bindings.length : 0;
     const nAttachments = Array.isArray(post.props?.attachments) ? post.props?.attachments.length : 0;
 
-    const isReplyPost = Boolean(post.rootId && (!isEphemeral || !hasBeenDeleted) && location !== Screens.THREAD);
     const hasContent = Boolean(
         post.metadata?.embeds?.length ||
         (appsEnabled && nBindings) ||
         hasInteractivePostContent(post, mmBlocksEnabled) ||
         (!mmBlocksEnabled && nAttachments),
     );
-
-    const replyBarStyle = useMemo<StyleProp<ViewStyle>|undefined>(() => {
-        if (!isReplyPost || (isCRTEnabled && location === Screens.PERMALINK)) {
-            return undefined;
-        }
-
-        const barStyle: StyleProp<ViewStyle> = [style.replyBar];
-
-        if (isFirstReply) {
-            barStyle.push(style.replyBarFirst);
-        }
-
-        if (isLastReply) {
-            barStyle.push(style.replyBarLast);
-        }
-
-        if (highlightReplyBar) {
-            barStyle.push(style.replyMention);
-        }
-
-        return barStyle;
-    }, [highlightReplyBar, isCRTEnabled, isFirstReply, isLastReply, isReplyPost, location, style]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         if (location === Screens.SAVED_MESSAGES) {
@@ -263,10 +219,9 @@ const Body = ({
             theme={theme}
         >
             <View
-                style={style.messageContainerWithReplyBar}
+                style={style.bodyContainer}
                 onLayout={onLayout}
             >
-                <View style={replyBarStyle}/>
                 {body}
                 {isFailed &&
                 <Failed
