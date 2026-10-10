@@ -18,21 +18,12 @@ import {
 import {
     ChannelListScreen,
     ChannelScreen,
+    GalleryScreen,
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, timeouts, wait, waitForElementToExist, safeEnableSynchronization} from '@support/utils';
 import {expect, waitFor} from 'detox';
-
-// iOS gallery close uses atIndex(0) because RNGH duplicates the testID.
-const dismissGallery = async () => {
-    if (isAndroid()) {
-        await device.pressBack();
-    } else {
-        await element(by.id('gallery.header.close.button')).atIndex(0).tap();
-    }
-    await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
-};
 
 describe('Messaging - File Preview Gallery', () => {
     const serverOneDisplayName = 'Server 1';
@@ -64,15 +55,7 @@ describe('Messaging - File Preview Gallery', () => {
 
     afterEach(async () => {
         // Recover from mid-test failures so the next test starts clean.
-        try {
-            await waitFor(element(by.id('gallery.header.close.button'))).toExist().withTimeout(timeouts.ONE_SEC);
-            if (isAndroid()) {
-                await device.pressBack();
-            } else {
-                await element(by.id('gallery.header.close.button')).atIndex(0).tap();
-            }
-            await waitFor(element(by.id('gallery.header.close.button'))).not.toExist().withTimeout(timeouts.TEN_SEC);
-        } catch { /* gallery not open */ }
+        await GalleryScreen.closeIfOpen();
 
         try {
             await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.ONE_SEC);
@@ -97,14 +80,13 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap the image thumbnail to open the file preview gallery.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open (close button appears when gallery is mounted)
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitForElementToExist(galleryCloseButton, timeouts.HALF_MIN);
+        await waitForElementToExist(element(by.id(GalleryScreen.testID.closeButton)), timeouts.HALF_MIN);
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify gallery is dismissed and channel screen is shown
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -128,14 +110,13 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await GalleryScreen.toBeVisible();
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify file preview is dismissed (channel screen is visible again)
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -159,14 +140,13 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await GalleryScreen.toBeVisible();
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify file preview is dismissed (channel screen is visible again)
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -175,8 +155,9 @@ describe('Messaging - File Preview Gallery', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T3463_1 - should open file preview gallery for a video file attachment', async () => {
-        // # Upload an image file and create a post with it via API (simulating a file attachment)
+    it('MM-T3463_1 - should open file preview gallery for a file attachment', async () => {
+        // # Upload an image file and create a post with it via API. Real video playback
+        // is covered separately in video_playback.e2e.ts.
         const {post, fileId} = await Post.apiCreatePostWithImageAttachment(siteOneUrl, testChannel.id);
 
         // # Open channel screen
@@ -190,14 +171,13 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open (close button is present when gallery is mounted)
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await GalleryScreen.toBeVisible();
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify gallery is dismissed and channel screen is shown
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -221,16 +201,15 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await GalleryScreen.toBeVisible();
 
         // # Tap the copy public link button in the gallery footer.
         // atIndex(0): iOS exposes the same testID on several ancestor views and index 0 receives
         // the touch. Wait for visibility first — the footer mounts after the header.
-        const copyPublicLinkButton = element(by.id('gallery.footer.copy_public_link.button')).atIndex(0);
+        const copyPublicLinkButton = GalleryScreen.copyPublicLinkButton;
         if (isAndroid()) {
             await waitFor(copyPublicLinkButton).toExist().withTimeout(timeouts.TEN_SEC);
         } else {
@@ -254,7 +233,7 @@ describe('Messaging - File Preview Gallery', () => {
         }
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify gallery is dismissed
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
@@ -314,18 +293,17 @@ describe('Messaging - File Preview Gallery', () => {
         await waitFor(fileContainer).toExist().withTimeout(timeouts.TEN_SEC);
 
         // See MM-T3462 above for why we tap `${fileId}-file` (inner) not `-file-container`.
-        await element(by.id(`${fileId}-file`)).tap();
+        await GalleryScreen.getFileAttachment(fileId).tap();
 
         // * Verify file preview gallery is open
-        const galleryCloseButton = element(by.id('gallery.header.close.button'));
-        await waitFor(galleryCloseButton).toExist().withTimeout(timeouts.TEN_SEC);
+        await GalleryScreen.toBeVisible();
 
         // * Verify the share button is present in the gallery footer
-        const shareButton = element(by.id('gallery.footer.share.button'));
+        const shareButton = GalleryScreen.shareButton;
         await waitFor(shareButton).toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Dismiss the gallery and wait for overlay to clear
-        await dismissGallery();
+        await GalleryScreen.close();
 
         // * Verify gallery is dismissed and channel screen is shown
         await waitFor(ChannelScreen.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);

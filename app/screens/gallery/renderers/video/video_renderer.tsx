@@ -249,6 +249,7 @@ const VideoRenderer = ({canDownloadFiles, enableSecureFilePreview, height, index
 
                     //@ts-expect-error legacy ref
                     ref={videoRef}
+                    testID='gallery.video.player'
                     source={source}
                     paused={paused}
                     poster={poster}

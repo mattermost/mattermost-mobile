@@ -136,6 +136,7 @@ const TopControls: React.FC<TopControlsProps> = ({
         <Animated.View style={[styles.container, animatedStyle]}>
             <View style={styles.leftControls}>
                 <Pressable
+                    testID='gallery.video.fullscreen.button'
                     style={styles.button}
                     onPress={toggleFullscreen}
                 >
@@ -147,6 +148,7 @@ const TopControls: React.FC<TopControlsProps> = ({
                 <View style={styles.rightControls}>
                     {hasCaptions && (
                         <Pressable
+                            testID='gallery.video.captions.button'
                             style={styles.button}
                             onPress={toggleCaptions}
                         >
@@ -159,6 +161,7 @@ const TopControls: React.FC<TopControlsProps> = ({
                     )}
 
                     <Pressable
+                        testID='gallery.video.speed.button'
                         style={styles.button}
                         onPress={toggleSpeedMenu}
                         ref={speedButtonRef}

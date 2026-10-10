@@ -447,7 +447,15 @@ jobs:
           xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords AutoSave -bool NO 2>/dev/null || true
           xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.Passwords credentialSaveNotificationsEnabled -bool NO 2>/dev/null || true
           xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.springboard AutoFillPasswords -bool NO 2>/dev/null || true
-          echo "Passwords defaults seeded (keys are best-effort; dialog is also handled programmatically)"
+
+          # This is the key the Settings toggle (Apps > Passwords > AutoFill Passwords and
+          # Passkeys) actually writes, and the only one that suppresses the iOS 18+ modal.
+          # Verified on a freshly erased iOS 26.5 simulator. Unlike the keys above it is not
+          # best-effort, so a failure here should surface rather than be swallowed.
+          echo "Disabling credential save prompt (com.apple.WebUI)..."
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults write com.apple.WebUI AutoFillPasswords -bool NO
+          xcrun simctl spawn "${SIMULATOR_ID}" defaults read com.apple.WebUI AutoFillPasswords
+          echo "Passwords defaults seeded"
 
           # Diagnostic: list running password-related launchd services for CI log visibility.
           # Note: com.apple.PasswordsCredentialProvider does NOT exist on iOS 26.x —

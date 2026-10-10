@@ -113,16 +113,24 @@ class ServerScreen {
         while (Date.now() < deadline) {
             // First: dismiss the alert if it's up (alert window steals Espresso
             // focus, so this matcher resolves against the alert window directly).
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(POLL);
+            let alertUp = false;
+            for (const title of [Alert.notificationsCannotBeReceivedTitle, Alert.notificationsCannotBeReceivedErrorTitle]) {
+                try {
+                    await waitFor(title).toExist().withTimeout(POLL);
+                    alertUp = true;
+                    break;
+                } catch {
+                    // try the other push proxy alert variant
+                }
+            }
+
+            if (alertUp) {
                 try {
                     await okayButton.tap();
                 } catch {
                     // OKAY may have animated out between detection and tap — re-loop.
                 }
                 continue;
-            } catch {
-                // No alert — proceed to check the login form.
             }
 
             // Alert is not up. Try to find usernameInput now.
@@ -252,13 +260,8 @@ class ServerScreen {
         if (isAndroid()) {
             await this.tapConnectButton();
 
-            // Dismiss "Notifications cannot be received from this server" dialog if it appears.
-            try {
-                await waitFor(Alert.notificationsCannotBeReceivedTitle).toExist().withTimeout(timeouts.TEN_SEC);
-                await element(by.text('Okay')).tap();
-            } catch {
-                // Dialog did not appear — proceed normally
-            }
+            // Handles both wordings of the push-proxy alert.
+            await this.waitForAndroidLoginAvailable(timeouts.ONE_MIN);
         }
         if (isIos()) {
             await this.tapConnectButton();
