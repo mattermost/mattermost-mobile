@@ -234,4 +234,39 @@ describe('DateTimeSelector', () => {
 
         expect(getByTestId(`${testID}.manual_time.input`).props.placeholder).toBe('2:30 PM');
     });
+
+    describe('when no timezone is configured', () => {
+        beforeAll(() => {
+            // Stand in for a device at a positive UTC offset. The off-by-one only surfaces
+            // there: at UTC and negative offsets the (incorrect) UTC fallback still lands on
+            // the same calendar day.
+            moment.tz.setDefault('Asia/Yekaterinburg');
+        });
+
+        afterAll(() => {
+            moment.tz.setDefault();
+        });
+
+        it('should report the picked calendar day rather than the UTC one', () => {
+            // 2026-08-24 00:00 in UTC+5
+            const picked = Date.UTC(2026, 7, 23, 19, 0, 0);
+
+            const {getByTestId} = renderWithEverything(
+                <DateTimeSelector
+                    {...baseProps}
+                    timezone=''
+                    dateOnly={true}
+                />,
+                {database},
+            );
+
+            fireEvent(getByTestId('custom_status_clear_after.date_time_picker'), 'change', {
+                nativeEvent: {timestamp: picked},
+            });
+
+            expect(mockHandleChange).toHaveBeenCalledTimes(1);
+            const result = mockHandleChange.mock.calls[0][0] as moment.Moment;
+            expect(result.format('YYYY-MM-DD')).toBe('2026-08-24');
+        });
+    });
 });

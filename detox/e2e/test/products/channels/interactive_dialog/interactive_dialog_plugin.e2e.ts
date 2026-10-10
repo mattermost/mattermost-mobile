@@ -9,6 +9,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {execSync} from 'child_process';
 import path from 'path';
 
 import {
@@ -282,6 +283,40 @@ async function dismissErrorAlert() {
         await wait(300);
     } catch {}
 }
+
+/**
+ * Taps a cell inside a stock Android picker by its accessibility label.
+ *
+ * Calendar day cells and clock minute markers are drawn on a Canvas and only exposed as virtual
+ * accessibility nodes, so Espresso (and therefore by.label()) cannot match them. uiautomator can
+ * see them; this helper resolves the node's bounds from the accessibility tree and taps its centre.
+ * Bounds are read at runtime rather than hardcoded so the helper survives different screen densities.
+ */
+/**
+ * Taps the first Android native element whose content-desc matches any of the given labels.
+ * Falls back through the list and throws (with a full XML dump excerpt) if none are found.
+ * Used for elements that Espresso/Detox cannot reach directly (e.g. Material calendar cells,
+ * system DatePickerDialog navigation buttons).
+ */
+const tapPickerCellByLabel = (serial: string, ...labels: string[]) => {
+    execSync(`adb -s ${serial} shell uiautomator dump /sdcard/detox-picker.xml`, {stdio: 'ignore'});
+    const xml = execSync(`adb -s ${serial} shell cat /sdcard/detox-picker.xml`).toString();
+
+    for (const label of labels) {
+        const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const m = xml.match(new RegExp(`content-desc="${esc}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
+        if (m && m[1] && m[2] && m[3] && m[4]) {
+            const cx = Math.round((Number(m[1]) + Number(m[3])) / 2);
+            const cy = Math.round((Number(m[2]) + Number(m[4])) / 2);
+            execSync(`adb -s ${serial} shell input tap ${cx} ${cy}`);
+            return;
+        }
+    }
+
+    // Include all content-desc values present in the dump so the next CI run reveals the real strings.
+    const found = [...xml.matchAll(/content-desc="([^"]+)"/g)].map((m) => m[1]).join(' | ');
+    throw new Error(`None of [${labels.join(', ')}] found. Content-descs in dump: ${found || '(none)'}`);
+};
 
 const itNotIos = isIos() ? it.skip : it;
 
@@ -1325,6 +1360,127 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         // :00. Milliseconds are whatever the picker held — commitManualTime zeroes only seconds.
         if (!/T\d{2}:30:00(?:\.\d{1,3})?Z$/.test(submitted)) {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
+        }
+    });
+
+    // Regression tests for Android datetime fixes (MM-10092, MM-10094).
+    // Skipped on iOS: tapPickerCellByLabel uses adb; iOS pickers expose the same testable
+    // rendering path via the scroll-wheel which is already exercised by MM-T2530C/MM-T2530G.
+
+    itNotIos('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
+        // This regression is only detectable when the device runs at a UTC+ offset.
+        // The CI Android emulator is configured for a positive-offset timezone (Asia/Kolkata,
+        // UTC+5:30); local machines with UTC or negative offsets may not catch the regression.
+        const serial = device.id;
+        const origTz = execSync(`adb -s ${serial} shell getprop persist.sys.timezone`).toString().trim();
+        const testTz = 'Asia/Kolkata'; // UTC+5:30 — guaranteed positive offset
+        if (origTz !== testTz) {
+            execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${testTz}`, {stdio: 'ignore'});
+            execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            await wait(timeouts.ONE_SEC);
+        }
+
+        try {
+            // Pick the 20th of next month — always in the future, requires exactly one forward
+            // tap in the calendar picker (which opens on the current month).
+            const now = new Date();
+            const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
+
+            // System DatePickerDialog content-desc (en-US) is "Month Day, Year" (no weekday).
+            // The standalone Material Components picker uses "Weekday, Month Day, Year". Try both.
+            const cellLabelShort = targetDate.toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric',
+            }); // "November 20, 2026"
+            const cellLabelLong = targetDate.toLocaleDateString('en-US', {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+            }); // "Thursday, November 20, 2026"
+
+            const displayedDate = targetDate.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+            const dayBefore = new Date(targetDate.getTime() - 86400000).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric',
+            });
+
+            await ensureDialogClosed();
+            await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+            await ensureDialogOpen();
+
+            // # Open the event_date calendar picker
+            await element(by.id('AppFormElement.event_date.select.button')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // # Navigate to next month (picker opens on current month).
+            // System DatePickerDialog uses "Next month"; Material Components uses
+            // "Navigate to next month". Try both to handle either picker implementation.
+            tapPickerCellByLabel(serial, 'Next month', 'Navigate to next month');
+            await wait(timeouts.HALF_SEC);
+
+            // # Tap the target date cell (try both content-desc formats)
+            tapPickerCellByLabel(serial, cellLabelShort, cellLabelLong);
+            await wait(timeouts.HALF_SEC);
+            await element(by.text('OK')).tap();
+            await wait(timeouts.ONE_SEC);
+
+            // * The field renders the picked day, not the day before.
+            // Before the fix, storing a date-with-timezone value and rendering it outside its own
+            // timezone dropped the display to the previous calendar day.
+            await expect(element(by.text(displayedDate))).toExist();
+            await expect(element(by.text(dayBefore))).not.toExist();
+
+            await InteractiveDialogScreen.cancel();
+            await ensureDialogClosed();
+        } finally {
+            if (origTz !== testTz) {
+                execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
+                execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
+            }
+        }
+    });
+
+    itNotIos('MM-T5900_3 should submit interval_time as a valid ISO timestamp on Android (Plugin)', async () => {
+        // Verifies that the Android time picker produces a valid ISO timestamp when submitting
+        // the datetime-basic dialog. The interval_time field uses a 30-minute effective interval
+        // (DEFAULT_TIME_INTERVAL_MINUTES=60 maps to 30 via toValidMinuteInterval). The unit-level
+        // regression test for toValidMinuteInterval lives in app/utils/datetime.test.ts.
+        await ensureDialogClosed();
+        await ChannelScreen.postSlashCommand('/dialog datetime-basic');
+        await ensureDialogOpen();
+
+        // # Fill required Event Date field
+        await element(by.id('AppFormElement.event_date.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Fill required Meeting Time field
+        await element(by.id('AppFormElement.meeting_time.select.button')).tap();
+        await wait(500);
+        await element(by.text('OK')).tap();
+        await wait(300);
+
+        // # Open interval_time and accept the default value
+        await element(by.id('AppFormElement.interval_time.time.button')).tap();
+        await wait(timeouts.ONE_SEC);
+        await element(by.text('OK')).tap();
+        await wait(timeouts.ONE_SEC);
+
+        // # Submit the dialog
+        await InteractiveDialogScreen.submit();
+        await wait(1000);
+        await ensureDialogClosed();
+        await wait(1000);
+
+        // * interval_time is a valid ISO datetime with a minute that is a multiple of 30
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const fieldMatch = post.message.match(/interval_time:[ \t]*(\S+)/);
+        if (!fieldMatch) {
+            throw new Error(`interval_time field not found in submission message: ${post.message}`);
+        }
+        const isoMatch = fieldMatch[1].match(/T\d{2}:(\d{2}):/);
+        const minutes = isoMatch ? Number(isoMatch[1]) : -1;
+        if (minutes % 30 !== 0) {
+            throw new Error(`interval_time minute ${minutes} is not a multiple of 30 (the effective 30-min interval). Full: ${post.message}`);
         }
     });
 });
