@@ -292,22 +292,30 @@ async function dismissErrorAlert() {
  * see them; this helper resolves the node's bounds from the accessibility tree and taps its centre.
  * Bounds are read at runtime rather than hardcoded so the helper survives different screen densities.
  */
-const tapPickerCellByLabel = (label: string) => {
-    const serial = device.id;
+/**
+ * Taps the first Android native element whose content-desc matches any of the given labels.
+ * Falls back through the list and throws (with a full XML dump excerpt) if none are found.
+ * Used for elements that Espresso/Detox cannot reach directly (e.g. Material calendar cells,
+ * system DatePickerDialog navigation buttons).
+ */
+const tapPickerCellByLabel = (serial: string, ...labels: string[]) => {
     execSync(`adb -s ${serial} shell uiautomator dump /sdcard/detox-picker.xml`, {stdio: 'ignore'});
     const xml = execSync(`adb -s ${serial} shell cat /sdcard/detox-picker.xml`).toString();
 
-    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const match = xml.match(new RegExp(`content-desc="${escapedLabel}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
-    if (!match) {
-        throw new Error(`No picker cell with accessibility label "${label}"`);
+    for (const label of labels) {
+        const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const m = xml.match(new RegExp(`content-desc="${esc}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
+        if (m && m[1] && m[2] && m[3] && m[4]) {
+            const cx = Math.round((Number(m[1]) + Number(m[3])) / 2);
+            const cy = Math.round((Number(m[2]) + Number(m[4])) / 2);
+            execSync(`adb -s ${serial} shell input tap ${cx} ${cy}`);
+            return;
+        }
     }
 
-    const left = Number(match[1]);
-    const top = Number(match[2]);
-    const right = Number(match[3]);
-    const bottom = Number(match[4]);
-    execSync(`adb -s ${serial} shell input tap ${Math.round((left + right) / 2)} ${Math.round((top + bottom) / 2)}`);
+    // Include all content-desc values present in the dump so the next CI run reveals the real strings.
+    const found = [...xml.matchAll(/content-desc="([^"]+)"/g)].map((m) => m[1]).join(' | ');
+    throw new Error(`None of [${labels.join(', ')}] found. Content-descs in dump: ${found || '(none)'}`);
 };
 
 const itNotIos = isIos() ? it.skip : it;
@@ -1378,10 +1386,15 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             const now = new Date();
             const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
 
-            // Android Material DatePicker content-desc format: "Weekday, Month Day, Year" (en-US)
-            const cellLabel = targetDate.toLocaleDateString('en-US', {
+            // System DatePickerDialog content-desc (en-US) is "Month Day, Year" (no weekday).
+            // The standalone Material Components picker uses "Weekday, Month Day, Year". Try both.
+            const cellLabelShort = targetDate.toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric',
+            }); // "November 20, 2026"
+            const cellLabelLong = targetDate.toLocaleDateString('en-US', {
                 weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-            });
+            }); // "Thursday, November 20, 2026"
+
             const displayedDate = targetDate.toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
             });
@@ -1397,12 +1410,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await element(by.id('AppFormElement.event_date.select.button')).tap();
             await wait(timeouts.ONE_SEC);
 
-            // # Navigate to next month (picker opens on current month)
-            tapPickerCellByLabel('Navigate to next month');
+            // # Navigate to next month (picker opens on current month).
+            // System DatePickerDialog uses "Next month"; Material Components uses
+            // "Navigate to next month". Try both to handle either picker implementation.
+            tapPickerCellByLabel(serial, 'Next month', 'Navigate to next month');
             await wait(timeouts.HALF_SEC);
 
-            // # Tap the target date using its full accessibility label
-            tapPickerCellByLabel(cellLabel);
+            // # Tap the target date cell (try both content-desc formats)
+            tapPickerCellByLabel(serial, cellLabelShort, cellLabelLong);
             await wait(timeouts.HALF_SEC);
             await element(by.text('OK')).tap();
             await wait(timeouts.ONE_SEC);
