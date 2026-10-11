@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Q, type Database} from '@nozbe/watermelondb';
+import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeLastViewedChannelIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
@@ -14,24 +15,28 @@ import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer} from '@queries/app/global';
-import {prepareDeleteChannel, queryChannelsByTypes} from '@queries/servers/channel';
+import {prepareDeleteChannel, queryChannelsById, queryChannelsByTypes} from '@queries/servers/channel';
 import {DM_GM_ACCESS_ALLOWED, getDmGmAccess, getDmGmAccessRecord, type DmGmAccess} from '@queries/servers/dm_gm_access';
 import {queryFilesForPosts} from '@queries/servers/file';
 import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
-import {getCommonSystemValues, getConfigValue, getCurrentChannelId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs} from '@queries/servers/system';
-import {queryTeamChannelHistories} from '@queries/servers/team';
+import {getCommonSystemValues, getConfigValue, getCurrentChannelId, getCurrentTeamId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs} from '@queries/servers/system';
+import {queryMyTeams, queryTeamChannelHistories} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
 import {RENDER_PERMISSIONS_RETRY_MS, RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
+import {isDMorGM} from '@utils/channel';
 import {getDmGmPolicyDenial} from '@utils/channel_policy';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {deleteDownloadedFiles} from '@utils/file';
 import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
-import {handleKickFromChannel} from './channel';
+import {fetchCategories} from './category';
+import {fetchDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel} from './channel';
 import {forceLogoutIfNecessary} from './session';
+import {syncTeamThreads} from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type PostModel from '@typings/database/models/servers/post';
@@ -62,6 +67,7 @@ const DECISION_FIELDS: Array<[keyof DmGmAccess, string]> = [
 ];
 
 const HTTP_BAD_REQUEST = 400;
+const CATEGORIES_BATCH_SIZE = 10;
 const HTTP_SERVER_ERROR = 500;
 
 const retryTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -189,8 +195,56 @@ export async function purgeDirectAndGroupChannels(serverUrl: string) {
     logDebug('purgeDirectAndGroupChannels: hid conversations', channelIds.size);
 }
 
+// Sequential: a background pass over every team must not burst one request per team at once.
+async function refreshOtherTeamsThreads(serverUrl: string, teamIds: string[]) {
+    for (const teamId of teamIds) {
+        // eslint-disable-next-line no-await-in-loop
+        const {error} = await syncTeamThreads(serverUrl, teamId, {refresh: true});
+        if (error) {
+            logDebug('restoreDirectAndGroupChannels: could not refresh the threads of a team', teamId, getFullErrorMessage(error));
+        }
+    }
+}
+
+/**
+ * Regaining Read brings the conversations back. Not reused from the channel access restore, whose
+ * isRestorable leaves D/G out. Entry already restores the channels, members and categories, so after
+ * it only threads are refreshed: without refresh, a sync skips threads older than its last one.
+ */
 export async function restoreDirectAndGroupChannels(serverUrl: string, {entryHandled}: {entryHandled: boolean}) {
-    logDebug('restoreDirectAndGroupChannels: not implemented yet', serverUrl, entryHandled);
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const [currentTeamId, isCRTEnabled, teamIds] = await Promise.all([
+        getCurrentTeamId(database),
+        getIsCRTEnabled(database),
+        queryMyTeams(database).fetchIds(),
+    ]);
+    const otherTeamIds = teamIds.filter((id) => id !== currentTeamId);
+
+    if (!entryHandled && currentTeamId) {
+        const {channels, error} = await fetchMyChannelsForTeam(serverUrl, currentTeamId, false, 0, false, false, isCRTEnabled);
+        if (error) {
+            logDebug('restoreDirectAndGroupChannels: could not fetch the channels', getFullErrorMessage(error));
+        }
+
+        const directChannelIds = channels?.filter(isDMorGM).map((c) => c.id);
+        if (directChannelIds?.length) {
+            await fetchDirectChannelsInfo(serverUrl, await queryChannelsById(database, directChannelIds).fetch());
+        }
+
+        // A category sync while Read was denied pruned the conversations' kept category entries.
+        // fetchCategories logs and returns its own errors, so one team failing leaves the others.
+        for (const batch of chunk(otherTeamIds, CATEGORIES_BATCH_SIZE)) {
+            // eslint-disable-next-line no-await-in-loop
+            await Promise.all(batch.map((teamId) => fetchCategories(serverUrl, teamId, true)));
+        }
+    }
+
+    if (isCRTEnabled) {
+        if (currentTeamId) {
+            await syncTeamThreads(serverUrl, currentTeamId, {refresh: true});
+        }
+        refreshOtherTeamsThreads(serverUrl, otherTeamIds);
+    }
 }
 
 async function runApply(serverUrl: string, {restore}: ApplyOptions) {

@@ -16,6 +16,7 @@ import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer} from '@
 import {DM_GM_ACCESS_ALLOWED, getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
 import {getCommonSystemValues} from '@queries/servers/system';
 import {getTeamChannelHistory} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
@@ -24,9 +25,11 @@ import TestHelper from '@test/test_helper';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 import {deleteDownloadedFiles} from '@utils/file';
 
-import {handleKickFromChannel} from './channel';
-import {applyDmGmAccess, clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError, purgeDirectAndGroupChannels} from './dm_gm_access';
+import {fetchCategories} from './category';
+import {fetchDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel} from './channel';
+import {applyDmGmAccess, clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError, purgeDirectAndGroupChannels, restoreDirectAndGroupChannels} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
+import {syncTeamThreads} from './thread';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -35,7 +38,22 @@ jest.mock('./session', () => ({
 }));
 
 jest.mock('./channel', () => ({
+    fetchDirectChannelsInfo: jest.fn(),
+    fetchMyChannelsForTeam: jest.fn(),
     handleKickFromChannel: jest.fn(),
+}));
+
+jest.mock('./category', () => ({
+    fetchCategories: jest.fn(),
+}));
+
+jest.mock('./thread', () => ({
+    syncTeamThreads: jest.fn(),
+}));
+
+jest.mock('@queries/servers/thread', () => ({
+    ...jest.requireActual('@queries/servers/thread'),
+    getIsCRTEnabled: jest.fn(),
 }));
 
 jest.mock('@screens/navigation', () => ({
@@ -512,5 +530,88 @@ describe('purgeDirectAndGroupChannels', () => {
 
         expect(batchRecords.mock.calls.filter(([, description]) => description === 'purgeDirectAndGroupChannels')).toHaveLength(1);
         expect(await countIn(CHANNEL, 'id', [dmId, gmId])).toBe(0);
+    });
+});
+
+describe('restoreDirectAndGroupChannels', () => {
+    const currentTeamId = 'teamid1';
+    const otherTeamIds = Array.from({length: 11}, (_, i) => `otherteamid${i}`);
+    const dm = TestHelper.fakeChannel({id: 'dmchannelid', name: 'user1__user2', type: General.DM_CHANNEL, team_id: ''});
+    const open = TestHelper.fakeChannel({id: 'openchannelid', type: General.OPEN_CHANNEL, team_id: currentTeamId});
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        await operator.handleMyTeam({
+            myTeams: [currentTeamId, ...otherTeamIds].map((id) => ({id, roles: ''})),
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: currentTeamId}], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [dm], prepareRecordsOnly: false});
+
+        jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+        jest.mocked(fetchMyChannelsForTeam).mockResolvedValue({channels: [dm, open], memberships: [], categories: [], teamId: currentTeamId});
+        jest.mocked(fetchCategories).mockResolvedValue({categories: []});
+        jest.mocked(syncTeamThreads).mockResolvedValue({error: false, models: []});
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should restore the current team channels, the conversations profiles and every other team categories', async () => {
+        await restoreDirectAndGroupChannels(serverUrl, {entryHandled: false});
+
+        expect(fetchMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, currentTeamId, false, 0, false, false, true);
+        expect(fetchDirectChannelsInfo).toHaveBeenCalledWith(serverUrl, [expect.objectContaining({id: dm.id})]);
+        expect(fetchCategories).toHaveBeenCalledTimes(otherTeamIds.length);
+        for (const teamId of otherTeamIds) {
+            expect(fetchCategories).toHaveBeenCalledWith(serverUrl, teamId, true);
+        }
+    });
+
+    it('should refresh the threads of the current team first, then of the others', async () => {
+        await restoreDirectAndGroupChannels(serverUrl, {entryHandled: false});
+        await new Promise(process.nextTick);
+
+        expect(syncTeamThreads).toHaveBeenNthCalledWith(1, serverUrl, currentTeamId, {refresh: true});
+        expect(syncTeamThreads).toHaveBeenCalledTimes(otherTeamIds.length + 1);
+        expect(syncTeamThreads).toHaveBeenCalledWith(serverUrl, otherTeamIds[10], {refresh: true});
+    });
+
+    it('should only refresh the threads after entry restored the rest', async () => {
+        await restoreDirectAndGroupChannels(serverUrl, {entryHandled: true});
+
+        expect(fetchMyChannelsForTeam).not.toHaveBeenCalled();
+        expect(fetchDirectChannelsInfo).not.toHaveBeenCalled();
+        expect(fetchCategories).not.toHaveBeenCalled();
+        expect(syncTeamThreads).toHaveBeenCalledWith(serverUrl, currentTeamId, {refresh: true});
+    });
+
+    it('should not refresh threads without collapsed reply threads', async () => {
+        jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+
+        await restoreDirectAndGroupChannels(serverUrl, {entryHandled: false});
+        await new Promise(process.nextTick);
+
+        expect(fetchMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, currentTeamId, false, 0, false, false, false);
+        expect(syncTeamThreads).not.toHaveBeenCalled();
+    });
+
+    it('should carry on with the other teams when one fails', async () => {
+        jest.mocked(fetchCategories).mockResolvedValueOnce({error: new Error('network down')});
+        jest.mocked(syncTeamThreads).mockResolvedValueOnce({error: false, models: []}).mockResolvedValueOnce({error: new Error('network down')});
+
+        await restoreDirectAndGroupChannels(serverUrl, {entryHandled: false});
+        await new Promise(process.nextTick);
+
+        expect(fetchCategories).toHaveBeenCalledTimes(otherTeamIds.length);
+        expect(syncTeamThreads).toHaveBeenCalledTimes(otherTeamIds.length + 1);
+    });
+
+    it('should run a pending restore through the apply queue while Read is allowed', async () => {
+        await applyDmGmAccess(serverUrl, {restore: 'full'});
+
+        expect(fetchMyChannelsForTeam).toHaveBeenCalled();
     });
 });
