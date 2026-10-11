@@ -330,7 +330,7 @@ describe('handleDmGmPolicyError', () => {
 
 describe('purgeDirectAndGroupChannels', () => {
     const {SERVER: {
-        CATEGORY_CHANNEL, CHANNEL, CHANNEL_BOOKMARK, CHANNEL_INFO, CHANNEL_MEMBERSHIP, DRAFT, FILE, MY_CHANNEL,
+        CHANNEL, CHANNEL_BOOKMARK, CHANNEL_INFO, CHANNEL_MEMBERSHIP, DRAFT, FILE, MY_CHANNEL,
         MY_CHANNEL_SETTINGS, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREADS_IN_TEAM,
     }} = MM_TABLES;
 
@@ -378,10 +378,6 @@ describe('purgeDirectAndGroupChannels', () => {
         // One call per draft: the handler keeps one draft per channel from each call.
         await operator.handleDraft({drafts: [{channel_id: dmId, root_id: '', message: 'channel draft', update_at: 1}], prepareRecordsOnly: false});
         await operator.handleDraft({drafts: [{channel_id: dmId, root_id: rootId, message: 'thread draft', update_at: 1}], prepareRecordsOnly: false});
-        await operator.handleCategoryChannels({
-            categoryChannels: [{id: `${teamId}_${dmId}`, category_id: 'dmcategoryid', channel_id: dmId, sort_order: 0}],
-            prepareRecordsOnly: false,
-        });
         await operator.handleTeamChannelHistory({
             teamChannelHistories: [
                 {id: teamId, channel_ids: [dmId, openId, gmId]},
@@ -420,7 +416,7 @@ describe('purgeDirectAndGroupChannels', () => {
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 
-    it('should delete every stored conversation, keeping its drafts and category entries', async () => {
+    it('should delete every stored conversation, keeping its drafts', async () => {
         const ids = [dmId, gmId];
         expect(await countIn(DRAFT, 'channel_id', [dmId])).toBe(2);
         expect(await countIn(POST, 'channel_id', ids)).toBe(2);
@@ -442,7 +438,6 @@ describe('purgeDirectAndGroupChannels', () => {
         expect(await countIn(CHANNEL_BOOKMARK, 'channel_id', ids)).toBe(0);
 
         expect(await countIn(DRAFT, 'channel_id', [dmId])).toBe(2);
-        expect(await countIn(CATEGORY_CHANNEL, 'channel_id', [dmId])).toBe(1);
 
         expect(await countIn(CHANNEL, 'id', [openId])).toBe(1);
         expect(await countIn(POST, 'channel_id', [openId])).toBe(1);

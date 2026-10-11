@@ -156,16 +156,12 @@ type PrepareDeleteChannelOptions = {
 
     // Kept for a conversation hidden by a DM/GM read policy, so it returns intact when access does.
     keepDrafts?: boolean;
-    keepCategoryChannels?: boolean;
 };
 
-export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelModel, {keepDrafts = false, keepCategoryChannels = false}: PrepareDeleteChannelOptions = {}): Promise<Model[]> => {
+export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelModel, {keepDrafts = false}: PrepareDeleteChannelOptions = {}): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info];
-    if (!keepCategoryChannels) {
-        relations.push(channel.categoryChannel);
-    }
+    const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
     await Promise.all(relations.map(async (relation) => {
         try {
             const model = await relation?.fetch();

@@ -150,9 +150,9 @@ async function clearLastViewedConversation(serverUrl: string, channelIds: Set<st
 }
 
 /**
- * Losing Read hides every conversation locally; nothing is sent to the server. Their drafts and
- * category entries are kept, unseen because those queries join on the channel, so the conversations
- * come back intact with access. Runs only inside the apply queue.
+ * Losing Read hides every conversation locally; nothing is sent to the server. Their drafts are kept,
+ * unseen because draft queries join on the channel, so they come back with access. Runs only inside
+ * the apply queue.
  */
 export async function purgeDirectAndGroupChannels(serverUrl: string) {
     const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -171,7 +171,7 @@ export async function purgeDirectAndGroupChannels(serverUrl: string) {
     await closeConversationScreens(serverUrl, database, channelIds, postIds);
 
     const files = await queryFilesForPosts(database, [...postIds]).fetch();
-    const models = (await Promise.all(channels.map((c) => prepareDeleteChannel(serverUrl, c, {keepDrafts: true, keepCategoryChannels: true})))).flat();
+    const models = (await Promise.all(channels.map((c) => prepareDeleteChannel(serverUrl, c, {keepDrafts: true})))).flat();
 
     const {currentChannelId, lastUnreadChannelId} = await getCommonSystemValues(database);
     const systemValues: PrepareCommonSystemValuesArgs = {};
@@ -231,7 +231,7 @@ export async function restoreDirectAndGroupChannels(serverUrl: string, {entryHan
             await fetchDirectChannelsInfo(serverUrl, await queryChannelsById(database, directChannelIds).fetch());
         }
 
-        // A category sync while Read was denied pruned the conversations' kept category entries.
+        // Category syncs while Read was denied left the conversations out of every team's categories.
         // fetchCategories logs and returns its own errors, so one team failing leaves the others.
         for (const batch of chunk(otherTeamIds, CATEGORIES_BATCH_SIZE)) {
             // eslint-disable-next-line no-await-in-loop
