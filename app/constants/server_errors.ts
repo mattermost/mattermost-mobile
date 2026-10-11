@@ -12,4 +12,7 @@ export default {
     CHANNEL_ACCESS_DENIED: 'api.channel.channel_read_access.abac_denied.app_error',
     CHANNEL_WRITE_ACCESS_DENIED: 'api.channel.channel_write_access.abac_denied.app_error',
     CHANNEL_MANAGEMENT_ACCESS_DENIED: 'api.channel.channel_management_access.abac_denied.app_error',
+    DM_GM_START_DENIED: 'api.channel.dm_gm_start.abac_denied.app_error',
+    DM_GM_READ_ACCESS_DENIED: 'api.channel.dm_gm_read_access.abac_denied.app_error',
+    DM_GM_WRITE_ACCESS_DENIED: 'api.channel.dm_gm_write_access.abac_denied.app_error',
 };

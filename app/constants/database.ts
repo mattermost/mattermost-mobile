@@ -87,6 +87,7 @@ export const SYSTEM_IDENTIFIERS = {
     ACCESS_CONTROL_GROUP_ID: 'accessControlGroupId',
     LAST_AUTO_CACHE_CLEANUP_RUN: 'lastAutoCacheCleanupRun',
     REDACTION_EPOCH: 'redactionEpoch',
+    DM_GM_ACCESS: 'dmGmAccess',
 };
 
 export const GLOBAL_IDENTIFIERS = {

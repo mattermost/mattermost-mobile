@@ -13,3 +13,13 @@ export const RenderPermissionAction = {
 export type RenderPermissionActionName = typeof RenderPermissionAction[keyof typeof RenderPermissionAction];
 
 export const RENDER_PERMISSION_RESOURCE_CHANNEL = 'channel';
+
+// System-wide actions for direct and group messages, decided once per session against the permission
+// resource rather than per conversation. Kept apart from RenderPermissionAction, which is channel-scoped.
+export const DmGmAccessAction = {
+    Start: 'dm_gm_start',
+    Read: 'dm_gm_read_access',
+    Write: 'dm_gm_write_access',
+} as const;
+
+export const RENDER_PERMISSION_RESOURCE_PERMISSION = 'permission';

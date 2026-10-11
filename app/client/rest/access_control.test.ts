@@ -22,4 +22,13 @@ describe('ClientAccessControl', () => {
             {method: 'post', body: {resource: {type: 'channel', id: 'channel-id'}}},
         );
     });
+
+    it('should search the permission resource in discovery mode, passing the group label', async () => {
+        await client.searchPermissionActionDecisions('WebSocket Reconnect');
+
+        expect(client.doFetch).toHaveBeenCalledWith(
+            `${client.urlVersion}/access_control/decisions/actions/search`,
+            {method: 'post', body: {resource: {type: 'permission', id: ''}}, groupLabel: 'WebSocket Reconnect'},
+        );
+    });
 });

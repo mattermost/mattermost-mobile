@@ -4,13 +4,13 @@
 import {combineLatest, of as of$, type Observable} from 'rxjs';
 import {distinctUntilChanged, map, shareReplay, switchMap} from 'rxjs/operators';
 
-import {observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
+import {isRedactionEnforced, observeRedactionEnforced, observeRequiredRedactionEpoch} from '@actions/local/redaction';
 import {License} from '@constants';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import {isMinimumLicenseTier} from '@utils/helpers';
 import {resolveRenderPermission, shouldFetchRenderPermissions} from '@utils/render_permissions';
 
-import {observeLicense} from './system';
+import {getLicense, observeLicense} from './system';
 
 import type {RenderPermissionActionName} from '@constants/access_control';
 import type {Database} from '@nozbe/watermelondb';
@@ -40,10 +40,19 @@ export const observeRenderPermission = (
     );
 };
 
+/**
+ * Whether channel and DM/GM access policies are enforced: ABAC is on and the license is Enterprise
+ * Advanced, the same predicate the server enforces these actions under.
+ */
+export const isChannelAccessEnforced = async (database: Database): Promise<boolean> => {
+    const [enforced, license] = await Promise.all([isRedactionEnforced(database), getLicense(database)]);
+    return enforced && isMinimumLicenseTier(license, License.SKU_SHORT_NAME.EnterpriseAdvanced);
+};
+
 // Shared per database like observeRedactionEnforced: the write check of every post row reads it.
 const channelAccessEnforcedStreams = new WeakMap<Database, Observable<boolean>>();
 
-const observeChannelAccessEnforced = (database: Database): Observable<boolean> => {
+export const observeChannelAccessEnforced = (database: Database): Observable<boolean> => {
     const existing = channelAccessEnforcedStreams.get(database);
     if (existing) {
         return existing;
