@@ -89,10 +89,13 @@ extension Database {
         }
     }
     
-    public func getChannelsWithTeam<T: Codable>(_ serverUrl: String) -> [T] {
+    /// - Parameter excludeDirect: leave out direct and group messages. Filtered in the query, as the
+    ///   limit applies first.
+    public func getChannelsWithTeam<T: Codable>(_ serverUrl: String, excludeDirect: Bool = false) -> [T] {
         do {
             let db = try getDatabaseForServer(serverUrl)
             guard let currentUserId = try? queryCurrentUserId(serverUrl) else {return []}
+            let directFilter = excludeDirect ? "AND c.type NOT IN ('D', 'G')" : ""
 
             let stmtString = """
             SELECT DISTINCT c.*, t.display_name AS team_display_name, \
@@ -104,7 +107,7 @@ extension Database {
             ) cm on cm.channel_id=c.id \
             LEFT JOIN User u ON cm.user_id=u.id \
             LEFT JOIN Team t ON t.id = c.team_id \
-            WHERE c.delete_at = 0 \
+            WHERE c.delete_at = 0 \(directFilter) \
             GROUP BY c.id, my.last_viewed_at \
             ORDER BY my.last_viewed_at DESC \
             LIMIT 20
@@ -160,7 +163,13 @@ extension Database {
         }
     }
     
-    public func searchDirectChannels<T: Codable>(_ serverUrl: String, term: String, matchStart: Bool = true) -> [T] {
+    /// - Parameter excludeDirect: return nothing. The query's unparenthesised OR would let a matching
+    ///   username through a type predicate, so excluded results are not filtered in SQL.
+    public func searchDirectChannels<T: Codable>(_ serverUrl: String, term: String, matchStart: Bool = true, excludeDirect: Bool = false) -> [T] {
+        if excludeDirect {
+            return []
+        }
+
         do {
             guard let currentUserId = try? queryCurrentUserId(serverUrl) else {return []}
             let db = try getDatabaseForServer(serverUrl)
