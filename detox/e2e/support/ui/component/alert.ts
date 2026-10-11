@@ -29,6 +29,8 @@ class Alert {
     };
     markAllAsReadTitle = isAndroid() ? element(by.text('Are you sure you want to mark all threads as read?')) : element(by.label('Are you sure you want to mark all threads as read?')).atIndex(0);
     messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
+    messageNotFoundTitle = isAndroid() ? element(by.text('Message not found')) : element(by.label('Message not found')).atIndex(0);
+    noDmGmAccessMessage = isAndroid() ? element(by.text('You do not currently have access to direct and group messages.')) : element(by.label('You do not currently have access to direct and group messages.')).atIndex(0);
     notificationsCannotBeReceivedTitle = isAndroid() ? element(by.text('Notifications could not be received from this server')) : element(by.label('Notifications could not be received from this server')).atIndex(0);
     removeServerTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to remove ${serverDisplayName}?`;

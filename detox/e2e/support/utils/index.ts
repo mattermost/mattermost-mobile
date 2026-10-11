@@ -11,6 +11,7 @@ export * from './email';
 export * from './detoxhelpers';
 export * from './offline_simulation';
 export * from './managed_config';
+export * from './push_notification';
 
 export const wait = async (ms: number): Promise<any> => {
     return new Promise((resolve) => setTimeout(resolve, ms));

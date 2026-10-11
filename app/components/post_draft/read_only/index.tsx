@@ -83,6 +83,7 @@ const ReadOnlyChannnel = ({testID, writeDenied, dmGmWriteDenied}: ReadOnlyProps)
                     <FormattedText
                         {...message}
                         style={style.text}
+                        testID={testID ? `${testID}.text` : undefined}
                     />
                 </View>
             </SafeAreaView>

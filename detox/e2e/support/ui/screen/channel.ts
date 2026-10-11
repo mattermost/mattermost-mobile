@@ -140,6 +140,7 @@ class ChannelScreen {
     postDraftArchived = PostDraft.getPostDraftArchived(this.testID.channelScreenPrefix);
     postDraftArchivedCloseChannelButton = PostDraft.getPostDraftArchivedCloseChannelButton(this.testID.channelScreenPrefix);
     postDraftReadOnly = PostDraft.getPostDraftReadOnly(this.testID.channelScreenPrefix);
+    postDraftReadOnlyText = PostDraft.getPostDraftReadOnlyText(this.testID.channelScreenPrefix);
     postInput = PostDraft.getPostInput(this.testID.channelScreenPrefix);
     attachmentAction = PostDraft.getAttachmentAction(this.testID.channelScreenPrefix);
     attachmentActionDisabled = PostDraft.getAttachmentActionDisabled(this.testID.channelScreenPrefix);

@@ -6,6 +6,7 @@ class PostDraft {
         postDraftSuffix: 'post_draft',
         postDraftArchivedSuffix: 'post_draft.archived',
         postDraftReadOnlySuffix: 'post_draft.read_only',
+        postDraftReadOnlyTextSuffix: 'post_draft.read_only.text',
         postInputSuffix: 'post_draft.post.input',
         attachmentActionSuffix: 'post_draft.quick_actions.attachment_action',
         attachmentActionDisabledSuffix: 'post_draft.quick_actions.attachment_action.disabled',
@@ -25,6 +26,10 @@ class PostDraft {
 
     getPostDraftReadOnly = (screenPrefix: string) => {
         return element(by.id(`${screenPrefix}${this.testID.postDraftReadOnlySuffix}`));
+    };
+
+    getPostDraftReadOnlyText = (screenPrefix: string) => {
+        return element(by.id(`${screenPrefix}${this.testID.postDraftReadOnlyTextSuffix}`));
     };
 
     getPostInput = (screenPrefix: string) => {

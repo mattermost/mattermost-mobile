@@ -16,40 +16,8 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId, isAndroid, isIos, timeouts, wait} from '@support/utils';
+import {buildTapPayload, getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
-
-type TapTarget = {
-    serverUrl: string;
-    channelId: string;
-    teamId: string;
-    postId: string;
-    senderName: string;
-    message: string;
-};
-
-const buildTapPayload = ({serverUrl, channelId, teamId, postId, senderName, message}: TapTarget) => {
-    // The fields convertToNotificationData reads (app/utils/notification/index.ts) and
-    // openNotification needs: type=message selects handleMessageNotification, server_url is
-    // the registered server key, channel_id/team_id drive switchToChannelById.
-    const fields = {
-        type: 'message',
-        version: '2',
-        server_url: serverUrl,
-        channel_id: channelId,
-        team_id: teamId,
-        post_id: postId,
-        sender_name: senderName,
-        message,
-    };
-
-    return {
-        trigger: {type: 'push'},
-        title: senderName,
-        body: message,
-        payload: isIos() ? fields : {pushNotification: fields},
-    };
-};
 
 describe('Notifications - Open App via Push Notification', () => {
     const serverOneDisplayName = 'Server 1';
