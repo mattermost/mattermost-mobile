@@ -10,6 +10,7 @@ import {NOTIFICATION_TYPE} from '@constants/push_notification';
 import {DEFAULT_LOCALE} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {navigateToRoot} from '@screens/navigation';
+import {dmGmReadDeniedMessage} from '@utils/channel_policy';
 import {getIntlShape} from '@utils/general';
 
 const messages = defineMessages({
@@ -57,7 +58,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
     return notificationData;
 };
 
-export type NotificationErrorType = 'Team' | 'Channel' | 'ChannelAccess' | 'Connection' | 'Post';
+export type NotificationErrorType = 'Team' | 'Channel' | 'ChannelAccess' | 'DmGmAccess' | 'Connection' | 'Post';
 
 export const notificationError = (intl: IntlShape, type: NotificationErrorType) => {
     const title = intl.formatMessage({id: 'notification.message_not_found', defaultMessage: 'Message not found'});
@@ -71,6 +72,9 @@ export const notificationError = (intl: IntlShape, type: NotificationErrorType) 
             break;
         case 'ChannelAccess':
             message = intl.formatMessage(messages.noChannelAccess);
+            break;
+        case 'DmGmAccess':
+            message = intl.formatMessage(dmGmReadDeniedMessage);
             break;
         case 'Team':
             message = intl.formatMessage({

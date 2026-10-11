@@ -12,6 +12,7 @@ import {Device, Events, PushNotification, Screens} from '@constants';
 import {EphemeralModeAuditEventKind} from '@constants/ephemeral_mode';
 import DatabaseManager from '@database/manager';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -81,6 +82,10 @@ jest.mock('@store/navigation_store', () => ({
 jest.mock('@store/in_app_notification_store');
 
 jest.mocked(NavigationStore.getVisibleScreen).mockReturnValue(Screens.CHANNEL);
+
+jest.mock('@queries/servers/dm_gm_access', () => ({
+    getDmGmAccess: jest.fn(),
+}));
 
 jest.mock('@queries/servers/system', () => ({
     getCurrentChannelId: jest.fn(),
@@ -201,10 +206,22 @@ describe('PushNotifications', () => {
             AppState.currentState = 'active';
             mockGetCurrentChannelId.mockResolvedValue('channel1');
             mockGetIsCRTEnabled.mockResolvedValue(false);
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read: true, write: true});
         });
 
         afterEach(() => {
             jest.clearAllMocks();
+        });
+
+        it('should not show a direct or group message while a DM/GM policy denies reading them', async () => {
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read: false, write: true});
+            (NavigationStore.getVisibleScreen as jest.Mock).mockReturnValue(Screens.SETTINGS);
+
+            await pushNotifications.handleInAppNotification('http://test.com', {payload: {channel_id: 'dm1', team_id: ''}} as any);
+            expect(InAppNotificationStore.show).not.toHaveBeenCalled();
+
+            await pushNotifications.handleInAppNotification('http://test.com', {payload: {channel_id: 'channel2', team_id: 'team1'}} as any);
+            expect(InAppNotificationStore.show).toHaveBeenCalledTimes(1);
         });
 
         it('should not show notification for same channel when in channel screen', async () => {

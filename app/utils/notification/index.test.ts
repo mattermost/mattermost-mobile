@@ -110,6 +110,15 @@ describe('Notification Utils', () => {
             expect(navigateToRoot).toHaveBeenCalled();
         });
 
+        it('should display alert and popToRoot for DmGmAccess type', () => {
+            notificationError(intl, 'DmGmAccess');
+            expect(Alert.alert).toHaveBeenCalledWith(
+                'Message not found',
+                'You do not currently have access to direct and group messages.',
+            );
+            expect(navigateToRoot).toHaveBeenCalled();
+        });
+
         it('should display alert and popToRoot for Connection type', () => {
             notificationError(intl, 'Connection');
             expect(Alert.alert).toHaveBeenCalledWith(

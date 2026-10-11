@@ -7,6 +7,7 @@ import {addChannelToDefaultCategory, storeCategories} from '@actions/local/categ
 import {storeMyChannelsForTeam} from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
 import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {handleDmGmPolicyError} from '@actions/remote/dm_gm_access';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
@@ -15,11 +16,13 @@ import {ActionType} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById, prepareMyTeams} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
-import {logWarning} from '@utils/log';
+import {getDmGmPolicyDenial} from '@utils/channel_policy';
+import {logDebug, logWarning} from '@utils/log';
 import {emitNotificationError} from '@utils/notification';
 import {processPostsFetched} from '@utils/post';
 
@@ -62,6 +65,13 @@ export const fetchNotificationData = async (serverUrl: string, notification: Not
         if (!myChannel) {
             // We only fetch the channel that the notification belongs to
             const channelReq = await fetchMyChannel(serverUrl, teamId, channelId);
+            if (getDmGmPolicyDenial(channelReq.error) === 'read') {
+                handleDmGmPolicyError(serverUrl, channelReq.error);
+                if (!skipEvents) {
+                    emitNotificationError('DmGmAccess');
+                }
+                return {error: channelReq.error};
+            }
             if (channelReq.error ||
                 !channelReq.channels?.find((c) => c.id === channelId && c.delete_at === 0) ||
                 !channelReq.memberships?.find((m) => m.channel_id === channelId)) {
@@ -108,6 +118,12 @@ export const backgroundNotification = async (serverUrl: string, notification: No
         }
 
         if (!teamId) {
+            // A conversation hidden by a DM/GM read policy is not stored from a push either.
+            if (!(await getDmGmAccess(database)).read) {
+                logDebug('backgroundNotification: direct or group message hidden by policy');
+                return {models: []};
+            }
+
             // If the notification payload does not have a teamId we assume is a DM/GM
             const currentTeamId = await getCurrentTeamId(database);
             teamId = currentTeamId;
@@ -237,6 +253,11 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         let teamId = notification.payload?.team_id;
 
         if (!teamId) {
+            if (!(await getDmGmAccess(database)).read) {
+                emitNotificationError('DmGmAccess');
+                return {error: 'DmGmAccess'};
+            }
+
             // If the notification payload does not have a teamId we assume is a DM/GM
             teamId = currentTeamId;
         }

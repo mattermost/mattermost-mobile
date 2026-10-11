@@ -29,6 +29,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage} from '@i18n';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
 import {getServerDisplayName} from '@queries/app/servers';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
@@ -146,6 +147,13 @@ class PushNotificationsSingleton {
         }
 
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+
+        // A push without a team is for a direct or group message, which stays hidden while Read is denied.
+        if (database && !payload?.team_id && !(await getDmGmAccess(database)).read) {
+            logDebug('handleInAppNotification: direct or group message hidden by policy');
+            return;
+        }
+
         if (database) {
             const isTabletDevice = isTablet();
             const displayName = await getServerDisplayName(serverUrl);

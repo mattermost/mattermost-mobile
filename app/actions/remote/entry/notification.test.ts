@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType} from '@constants';
+import {ActionType, License} from '@constants';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {NavigationStore} from '@store/navigation_store';
 import {mockApiClient} from '@test/mock_api_client';
@@ -115,6 +117,39 @@ describe('Performance metrics are set correctly', () => {
 
         expect(mockDismissKeyboard).toHaveBeenCalled();
         expect(PerformanceMetricsManager.setLoadTarget).toHaveBeenCalledWith('CHANNEL');
+    });
+
+    it('should not open a conversation while a DM/GM policy denies reading it, but still connect', async () => {
+        const openAll = jest.spyOn(WebsocketManager, 'openAll').mockImplementation(() => Promise.resolve());
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}},
+                {id: SYSTEM_IDENTIFIERS.DM_GM_ACCESS, value: {start: true, read: false, write: true}},
+            ],
+            prepareRecordsOnly: false,
+        });
+
+        await pushNotificationEntry(serverUrl, {
+            channel_id: 'dmchannelid',
+            team_id: '',
+            isCRTEnabled: false,
+            post_id: '',
+            type: '',
+            version: '',
+        });
+
+        expect(mockEmitNotificationError).toHaveBeenCalledWith('DmGmAccess');
+        expect(PerformanceMetricsManager.setLoadTarget).not.toHaveBeenCalled();
+        expect(openAll).toHaveBeenCalled();
+        openAll.mockRestore();
     });
 
     it('thread notification', async () => {

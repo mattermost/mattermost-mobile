@@ -6,12 +6,14 @@
 import {Platform} from 'react-native';
 
 import * as PostActions from '@actions/local/post';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {License, ServerErrors} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import TestHelper from '@test/test_helper';
 
 import * as ChannelActions from './channel';
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {
     fetchNotificationData,
     backgroundNotification,
@@ -70,6 +72,10 @@ const notificationWithData = {
 const throwFunc = (e?: string) => {
     throw Error(e == null ? 'error' : e);
 };
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
+}));
 
 let mockEmitNotificationError: jest.Mock;
 jest.mock('@utils/notification', () => {
@@ -231,6 +237,64 @@ describe('notifications', () => {
         expect(switchToChannelByIdSpy).toHaveBeenCalled();
 
         switchToChannelByIdSpy.mockRestore();
+    });
+});
+
+describe('notifications while a DM/GM policy denies reading conversations', () => {
+    const dmNotification = {payload: {...notificationData, team_id: ''}} as NotificationWithData;
+
+    beforeEach(async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id},
+                {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId},
+                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}},
+                {id: SYSTEM_IDENTIFIERS.DM_GM_ACCESS, value: {start: true, read: false, write: true}},
+            ],
+            prepareRecordsOnly: false,
+        });
+        mockEmitNotificationError.mockClear();
+    });
+
+    it('backgroundNotification should not store a conversation push', async () => {
+        const result = await backgroundNotification(serverUrl, dmNotification);
+
+        expect(result).toEqual({models: []});
+        expect(await operator.database.get(MM_TABLES.SERVER.CHANNEL).query().fetchCount()).toBe(0);
+    });
+
+    it('openNotification should not open a conversation', async () => {
+        const switchToChannelByIdSpy = jest.spyOn(ChannelActions, 'switchToChannelById').mockResolvedValue({});
+
+        const result = await openNotification(serverUrl, dmNotification) as {error?: unknown};
+
+        expect(result.error).toBe('DmGmAccess');
+        expect(mockEmitNotificationError).toHaveBeenCalledWith('DmGmAccess');
+        expect(switchToChannelByIdSpy).not.toHaveBeenCalled();
+        switchToChannelByIdSpy.mockRestore();
+    });
+
+    it('fetchNotificationData should record a DM/GM read refusal and report it', async () => {
+        await operator.handleMyTeam({myTeams: [{id: teamId, roles: ''}], prepareRecordsOnly: false});
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_READ_ACCESS_DENIED, status_code: 403};
+        mockClient.getChannel.mockImplementationOnce(() => {
+            throw denial;
+        });
+
+        const result = await fetchNotificationData(serverUrl, notificationWithData);
+
+        expect(result.error).toBe(denial);
+        expect(mockEmitNotificationError).toHaveBeenCalledWith('DmGmAccess');
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
     });
 });
 

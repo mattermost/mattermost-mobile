@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {handleDmGmPolicyError} from '@actions/remote/dm_gm_access';
 import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -13,12 +14,14 @@ import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getServer} from '@queries/app/servers';
 import {getMyChannel} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
 import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
+import {getDmGmPolicyDenial} from '@utils/channel_policy';
 import {getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {dismissKeyboard} from '@utils/keyboard';
 import {emitNotificationError} from '@utils/notification';
@@ -49,6 +52,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
 
     let teamId = notification.team_id;
+    const isDirectOrGroup = !teamId;
     if (!teamId) {
         // If the notification payload does not have a teamId we assume is a DM/GM
         teamId = currentTeamId;
@@ -98,10 +102,21 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         }
     }
 
+    // The stored decision is checked first: a conversation hidden by a DM/GM read policy is not
+    // opened, but the app still connects.
+    if (isDirectOrGroup && !(await getDmGmAccess(database)).read) {
+        emitNotificationError('DmGmAccess');
+        WebsocketManager.openAll(groupLabel);
+        return {};
+    }
+
     if (!myChannel) {
         const resp = await fetchMyChannel(serverUrl, teamId, channelId, false, groupLabel);
         if (resp.error) {
-            if (getServerError(resp.error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
+            if (getDmGmPolicyDenial(resp.error) === 'read') {
+                handleDmGmPolicyError(serverUrl, resp.error);
+                emitNotificationError('DmGmAccess');
+            } else if (getServerError(resp.error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
                 emitNotificationError('ChannelAccess');
             } else if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
