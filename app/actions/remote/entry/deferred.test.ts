@@ -15,6 +15,7 @@ import {fetchTeamsThreads, updateCanJoinTeams, type MyTeamsRequest} from '@actio
 import {autoUpdateTimezone, updateAllUsersSince, type MyUserRequest} from '@actions/remote/user';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {processEntryModels, processEntryModelsForDeletion} from '@queries/servers/entry';
 
 import {deferredAppEntryActions, restDeferredAppEntryActions, testExports} from './deferred';
@@ -27,6 +28,7 @@ jest.mock('@actions/remote/user');
 jest.mock('@actions/remote/post');
 jest.mock('@actions/remote/groups');
 jest.mock('@queries/servers/entry');
+jest.mock('@queries/servers/dm_gm_access');
 
 describe('actions/remote/entry/deferred', () => {
     const serverUrl = 'https://server.example.com';
@@ -48,6 +50,7 @@ describe('actions/remote/entry/deferred', () => {
 
         // The automock returns undefined, which the real action never does.
         jest.mocked(fetchMyChannelsForTeam).mockResolvedValue({channels: [], memberships: []});
+        jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read: true, write: true});
 
         DatabaseManager.getServerDatabaseAndOperator = jest.fn().mockReturnValue({
             database: {},
@@ -223,18 +226,21 @@ describe('actions/remote/entry/deferred', () => {
             const chData = undefined;
             const meData = undefined;
 
-            await restDeferredAppEntryActions(
-                serverUrl,
-                since,
-                currentUserId,
-                currentUserLocale,
-                preferences,
-                config,
-                license,
-                teamData,
-                chData,
-                meData,
-            );
+            // The team pass reads the DM/GM decisions first, so it settles a tick later.
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    preferences,
+                    config,
+                    license,
+                    teamData,
+                    chData,
+                    meData,
+                );
+            });
 
             expect(updateAllUsersSince).toHaveBeenCalledWith(serverUrl, since, false, undefined);
             expect(updateCanJoinTeams).toHaveBeenCalledWith(serverUrl);
@@ -295,6 +301,39 @@ describe('actions/remote/entry/deferred', () => {
 
             expect(fetchTeamsThreads).toHaveBeenCalled();
             expect(fetchPostsForUnreadChannels).toHaveBeenCalled();
+        });
+
+        it.each([true, false])('should leave conversations out of the other teams\' channels while Read is denied (read: %s)', async (read) => {
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read, write: true});
+            const teamData = {
+                teams: [
+                    {id: 'team1', display_name: 'Team 1'},
+                    {id: 'team2', display_name: 'Team 2'},
+                ],
+                memberships: [
+                    {team_id: 'team1', user_id: 'user1'},
+                    {team_id: 'team2', user_id: 'user1'},
+                ],
+            } as MyTeamsRequest;
+
+            await act(async () => {
+                await restDeferredAppEntryActions(
+                    serverUrl,
+                    since,
+                    currentUserId,
+                    currentUserLocale,
+                    [],
+                    defaultConfig,
+                    license,
+                    teamData,
+                    defaultChData,
+                    defaultMeData,
+                    'team1',
+                    'channel1',
+                );
+            });
+
+            expect(fetchMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, 'team2', false, since, true, !read, false, undefined);
         });
 
         it('should handle direct channels info correctly', async () => {

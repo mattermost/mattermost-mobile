@@ -5,12 +5,13 @@ import {nativeApplicationVersion} from 'expo-application';
 import {RESULTS} from 'react-native-permissions';
 
 import {handleKickFromChannel, fetchMyChannelsForTeam} from '@actions/remote/channel';
+import {fetchDmGmAccess} from '@actions/remote/dm_gm_access';
 import {fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam} from '@actions/remote/team';
 import {fetchMe} from '@actions/remote/user';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -24,6 +25,7 @@ import {logDebug} from '@utils/log';
 import {entry, setExtraSessionProps, verifyPushProxy, entryInitialChannelId, handleEntryAfterLoadNavigation} from './common';
 
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/dm_gm_access');
 jest.mock('@actions/remote/scheduled_post');
 jest.mock('@actions/remote/preference');
 jest.mock('@actions/remote/role');
@@ -171,6 +173,65 @@ describe('actions/remote/entry/common', () => {
             expect(result).toEqual({
                 error: mockError,
             });
+        });
+    });
+
+    describe('entry DM/GM decisions', () => {
+        const readDenied = {start: true, read: false, write: true};
+        const teams = {teams: [{id: 'team1'}], memberships: [{team_id: 'team1', delete_at: 0}]};
+
+        beforeEach(() => {
+            (fetchConfigAndLicense as jest.Mock).mockResolvedValue({error: false, config: {Version: '12.1.0'}, license: {}});
+            (fetchMyPreferences as jest.Mock).mockResolvedValue({preferences: []});
+            (fetchMyTeams as jest.Mock).mockResolvedValue(teams);
+            (fetchMe as jest.Mock).mockResolvedValue({user: {id: 'user1', roles: '', username: 'user1'}});
+            (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue({channels: [], memberships: [], categories: []});
+            (prepareEntryModels as jest.Mock).mockResolvedValue([]);
+            jest.mocked(fetchRoles).mockResolvedValue({roles: []});
+        });
+
+        it('should fetch the decisions only when asked', async () => {
+            await entry(serverUrl, 'team1');
+            expect(fetchDmGmAccess).not.toHaveBeenCalled();
+
+            jest.mocked(fetchDmGmAccess).mockResolvedValue({dmGmAccess: {access: readDenied, seq: 3}});
+            const result = await entry(serverUrl, 'team1', undefined, 0, 'Cold Start', true);
+
+            expect(fetchDmGmAccess).toHaveBeenCalledWith(serverUrl, true, 'Cold Start');
+            expect(result).toEqual(expect.objectContaining({dmGmAccess: {access: readDenied, seq: 3}}));
+        });
+
+        it.each([
+            {read: false, excludeDirect: true},
+            {read: true, excludeDirect: false},
+        ])('should leave conversations out of the channel list only while Read is denied (read: $read)', async ({read, excludeDirect}) => {
+            jest.mocked(fetchDmGmAccess).mockResolvedValue({dmGmAccess: {access: {...readDenied, read}, seq: 3}});
+
+            await entry(serverUrl, 'team1', undefined, 0, 'Cold Start', true);
+
+            expect(fetchMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, 'team1', false, expect.any(Number), true, excludeDirect, false, 'Cold Start');
+        });
+
+        it('should not fail the entry when the decisions cannot be fetched', async () => {
+            jest.mocked(fetchDmGmAccess).mockResolvedValue({error: new Error('network down')});
+
+            const result = await entry(serverUrl, 'team1', undefined, 0, 'Cold Start', true);
+
+            expect(result).not.toHaveProperty('error');
+            expect(result).toEqual(expect.objectContaining({dmGmAccess: undefined}));
+            expect(fetchMyChannelsForTeam).toHaveBeenCalledWith(serverUrl, 'team1', false, expect.any(Number), true, false, false, 'Cold Start');
+        });
+
+        it('should tell whether the channel list includes conversations', async () => {
+            (fetchMyChannelsForTeam as jest.Mock).mockResolvedValue({
+                channels: [{id: 'dm1', type: 'D', name: 'user1__user2'}],
+                memberships: [{channel_id: 'dm1'}],
+                categories: [],
+            });
+
+            const result = await entry(serverUrl, 'team1');
+
+            expect(result).toEqual(expect.objectContaining({hasDirectChannels: true}));
         });
     });
 
@@ -486,6 +547,32 @@ describe('actions/remote/entry/common', () => {
             );
 
             expect(handleKickFromChannel).toHaveBeenCalled();
+        });
+
+        describe('a conversation left out of the list', () => {
+            beforeEach(() => {
+                jest.spyOn(NavigationStore, 'getScreensInStack').mockReturnValue([Screens.CHANNEL]);
+                jest.mocked(getCurrentTeamId).mockResolvedValueOnce('team1');
+                jest.mocked(getCurrentChannelId).mockResolvedValueOnce('dm2');
+                Object.assign(mockCollection, {find: jest.fn().mockResolvedValue({id: 'dm2', type: 'D'})});
+            });
+
+            afterEach(() => {
+                Object.assign(mockCollection, {find: undefined});
+            });
+
+            it('should close it as unavailable, not as removed', async () => {
+                await handleEntryAfterLoadNavigation(serverUrl, teamMembers, channelMembers, 'team1', 'channel1', 'team1', 'channel1', false);
+
+                expect(handleKickFromChannel).toHaveBeenCalledTimes(1);
+                expect(handleKickFromChannel).toHaveBeenCalledWith(serverUrl, 'dm2', Events.DM_GM_ACCESS_REVOKED);
+            });
+
+            it('should leave it to the purge when the decisions deny Read', async () => {
+                await handleEntryAfterLoadNavigation(serverUrl, teamMembers, channelMembers, 'team1', 'channel1', 'team1', 'channel1', false, true);
+
+                expect(handleKickFromChannel).not.toHaveBeenCalled();
+            });
         });
 
         it('should handle error gracefully', async () => {

@@ -14,7 +14,7 @@ import type SystemModel from '@typings/database/models/servers/system';
 
 const {SERVER: {SYSTEM}} = MM_TABLES;
 
-type DmGmAccessUpdate = DmGmAccess | ((previous: DmGmAccess) => DmGmAccess);
+export type DmGmAccessUpdate = DmGmAccess | ((previous: DmGmAccess) => DmGmAccess);
 
 export type StoreDmGmAccessResult = {
 

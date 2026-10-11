@@ -8,6 +8,7 @@ import {markChannelAsViewed} from '@actions/local/channel';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
+import {storeAndApplyDmGmAccess} from '@actions/remote/dm_gm_access';
 import {entry, handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions} from '@actions/remote/entry/deferred';
 import {flushAuditQueue} from '@actions/remote/ephemeral_mode';
@@ -21,6 +22,7 @@ import AppsManager from '@managers/apps_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
+import {getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
 import {getLastPostInThread} from '@queries/servers/post';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, setLastFullSync} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
@@ -35,6 +37,7 @@ jest.mock('@actions/local/channel');
 jest.mock('@actions/local/ephemeral_mode/cleanup');
 jest.mock('@actions/local/systems');
 jest.mock('@actions/remote/channel');
+jest.mock('@actions/remote/dm_gm_access');
 jest.mock('@actions/remote/ephemeral_mode');
 jest.mock('@actions/remote/entry/common');
 jest.mock('@actions/remote/entry/deferred');
@@ -48,6 +51,7 @@ jest.mock('@calls/utils');
 jest.mock('@database/manager');
 jest.mock('@managers/apps_manager');
 jest.mock('@queries/app/servers');
+jest.mock('@queries/servers/dm_gm_access');
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/thread');
@@ -325,6 +329,80 @@ describe('WebSocket Index Actions', () => {
 
                 expect(performVacuum).toHaveBeenCalledWith(serverUrl);
             });
+        });
+    });
+    describe('DM/GM decisions', () => {
+        const entryData = {
+            models: [TestHelper.fakeChannelModel({id: 'model'})],
+            initialTeamId: currentTeamId,
+            initialChannelId: currentChannelId,
+            prefData: {preferences: []},
+            teamData: {memberships: [], teams: []},
+            chData: {memberships: [], channels: []},
+            gmConverted: false,
+        };
+        const readDenied = {start: true, read: false, write: true};
+
+        let batchRecords: jest.Mock;
+
+        beforeEach(() => {
+            batchRecords = jest.fn();
+            DatabaseManager.serverDatabases[serverUrl] = {operator: {database: {}, batchRecords}} as any;
+            jest.mocked(NavigationStore.getScreensInStack).mockReturnValue(['channel']);
+            jest.mocked(getActiveServerUrl).mockResolvedValue(serverUrl);
+            jest.mocked(getCurrentChannelId).mockResolvedValue(currentChannelId);
+            jest.mocked(getCurrentTeamId).mockResolvedValue(currentTeamId);
+            jest.mocked(getIsCRTEnabled).mockResolvedValue(false);
+            jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
+            jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId, locale: 'en'}));
+            jest.mocked(getDmGmAccessRecord).mockResolvedValue({start: true, read: true, write: true});
+        });
+
+        it('should fetch the decisions on a first connect and store them between the entry batch and the post fetches', async () => {
+            jest.mocked(entry).mockResolvedValue({...entryData, dmGmAccess: {access: readDenied, seq: 7}});
+
+            await handleFirstConnect(serverUrl, groupLabel);
+
+            expect(entry).toHaveBeenCalledWith(serverUrl, currentTeamId, currentChannelId, undefined, groupLabel, true);
+            expect(jest.mocked(handleEntryAfterLoadNavigation).mock.calls[0][8]).toBe(true);
+            expect(storeAndApplyDmGmAccess).toHaveBeenCalledWith(serverUrl, readDenied, 7, {fromEntry: true});
+
+            const [batchOrder] = batchRecords.mock.invocationCallOrder;
+            const [storeOrder] = jest.mocked(storeAndApplyDmGmAccess).mock.invocationCallOrder;
+            const [fetchOrder] = jest.mocked(fetchPostsForChannel).mock.invocationCallOrder;
+            expect(batchOrder).toBeLessThan(storeOrder);
+            expect(storeOrder).toBeLessThan(fetchOrder);
+        });
+
+        it('should not fetch the decisions on a reconnect', async () => {
+            jest.mocked(entry).mockResolvedValue(entryData);
+
+            await handleReconnect(serverUrl);
+
+            expect(entry).toHaveBeenCalledWith(serverUrl, currentTeamId, currentChannelId, undefined, 'WebSocket Reconnect', false);
+            expect(jest.mocked(handleEntryAfterLoadNavigation).mock.calls[0][8]).toBe(false);
+            expect(storeAndApplyDmGmAccess).not.toHaveBeenCalled();
+        });
+
+        it('should correct a stale Read denial when a reconnect lists conversations', async () => {
+            jest.mocked(entry).mockResolvedValue({...entryData, hasDirectChannels: true});
+            jest.mocked(getDmGmAccessRecord).mockResolvedValue(readDenied);
+
+            await handleReconnect(serverUrl);
+
+            expect(storeAndApplyDmGmAccess).toHaveBeenCalledTimes(1);
+            const [, update, , options] = jest.mocked(storeAndApplyDmGmAccess).mock.calls[0];
+            const merge = update as (previous: typeof readDenied) => typeof readDenied;
+            expect(merge(readDenied)).toEqual({start: true, read: true, write: true});
+            expect(options).toEqual({fromEntry: true});
+        });
+
+        it('should leave the decisions alone when a reconnect lists conversations and Read is allowed', async () => {
+            jest.mocked(entry).mockResolvedValue({...entryData, hasDirectChannels: true});
+
+            await handleReconnect(serverUrl);
+
+            expect(storeAndApplyDmGmAccess).not.toHaveBeenCalled();
         });
     });
 });

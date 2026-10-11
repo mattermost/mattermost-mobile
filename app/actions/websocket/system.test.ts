@@ -5,7 +5,7 @@ import {updateDmGmDisplayName} from '@actions/local/channel';
 import {reconcilePersistenceFlag} from '@actions/local/ephemeral_mode/wipe';
 import {invalidateRedactionGlobally, RedactionInvalidationReason} from '@actions/local/redaction';
 import {storeConfig} from '@actions/local/systems';
-import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
+import {invalidateRedactionForCurrentUser, scheduleDmGmAccessRefresh} from '@actions/websocket/access_control';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
@@ -156,6 +156,16 @@ describe('WebSocket System Actions', () => {
             jest.mocked(getConfig).mockResolvedValue(enforced);
             await handleConfigChangedEvent(serverUrl, {data: {config: notEnforced}} as WebSocketMessage);
             expect(invalidateRedactionGlobally).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.ConfigChanged);
+        });
+
+        it('should refetch the DM/GM decisions when ABAC is turned off, which the gated trigger path skips', async () => {
+            const enforced = {FeatureFlagPermissionPolicies: 'true', EnableAttributeBasedAccessControl: 'true'} as ClientConfig;
+            const notEnforced = {FeatureFlagPermissionPolicies: 'true', EnableAttributeBasedAccessControl: 'false'} as ClientConfig;
+
+            jest.mocked(getConfig).mockResolvedValue(enforced);
+            await handleConfigChangedEvent(serverUrl, {data: {config: notEnforced}} as WebSocketMessage);
+
+            expect(scheduleDmGmAccessRefresh).toHaveBeenCalledWith(serverUrl, RedactionInvalidationReason.ConfigChanged);
         });
 
         it('should handle config update with no display name change', async () => {

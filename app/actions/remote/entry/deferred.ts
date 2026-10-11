@@ -14,6 +14,7 @@ import {autoUpdateTimezone, updateAllUsersSince, type MyUserRequest} from '@acti
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {processEntryModels, processEntryModelsForDeletion} from '@queries/servers/entry';
 import {isDMorGM} from '@utils/channel';
 import {logError} from '@utils/log';
@@ -88,11 +89,13 @@ export async function restDeferredAppEntryActions(
         let channelsFetchComplete = Boolean(initialTeamId) && !chData?.error && Boolean(chData?.channels && chData?.memberships);
 
         const processTeams = async () => {
+            // Read once: entry stored the decisions before this runs.
+            const excludeDirect = !(await getDmGmAccess(operator.database)).read;
             for (const team of teamQueue) {
                 let data: MyChannelsRequest = {};
                 try {
                     /* eslint-disable-next-line no-await-in-loop */
-                    data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, false, isCRTEnabled, requestLabel);
+                    data = await fetchMyChannelsForTeam(serverUrl, team.id, false, since, true, excludeDirect, isCRTEnabled, requestLabel);
 
                     combineChannelsData(combinedChannelsData, data);
 

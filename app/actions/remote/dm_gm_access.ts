@@ -6,7 +6,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeLastViewedChannelIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
-import {clearDmGmAccessSeq, nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
+import {clearDmGmAccessSeq, nextDmGmAccessSeq, storeDmGmAccess, type DmGmAccessUpdate} from '@actions/local/dm_gm_access';
 import {Events, General, Screens} from '@constants';
 import {DmGmAccessAction} from '@constants/access_control';
 import {MM_TABLES} from '@constants/database';
@@ -298,8 +298,8 @@ export function applyDmGmAccess(serverUrl: string, {restore}: ApplyOptions = {})
  * it restores them. A purge is also re-run while Read stays denied, in case a previous one did not
  * finish. Entry restores the channels itself, so after it only threads are restored.
  */
-export async function storeAndApplyDmGmAccess(serverUrl: string, access: DmGmAccess, seq: number, {fromEntry = false}: StoreAndApplyOptions = {}) {
-    const {stored, error} = await storeDmGmAccess(serverUrl, access, seq);
+export async function storeAndApplyDmGmAccess(serverUrl: string, update: DmGmAccessUpdate, seq: number, {fromEntry = false}: StoreAndApplyOptions = {}) {
+    const {stored, error} = await storeDmGmAccess(serverUrl, update, seq);
     if (!stored) {
         return {error};
     }

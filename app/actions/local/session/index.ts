@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {removePushDisabledInServerAcknowledged, removePushSigningKey} from '@actions/app/global';
 import {pruneAuditQueueOnSessionEnd} from '@actions/local/ephemeral_mode/audit_queue';
 import {clearChannelAccessState} from '@actions/remote/channel_access';
+import {clearDmGmAccessState} from '@actions/remote/dm_gm_access';
 import {clearRedactionInvalidations} from '@actions/websocket/access_control';
 import {clearConversationCacheForServer} from '@agents/actions/remote/conversation';
 import loopInStore from '@agents/store/loop_in_store';
@@ -162,6 +163,7 @@ export const terminateSession = async (serverUrl: string, removeServer: boolean)
 
     clearRedactionInvalidations(serverUrl);
     clearChannelAccessState(serverUrl);
+    clearDmGmAccessState(serverUrl);
     RedactionRevalidationManager.removeServer(serverUrl);
     RenderPermissionsStore.removeServer(serverUrl);
     EphemeralStore.clearManagedCategoryPropertyIds(serverUrl);

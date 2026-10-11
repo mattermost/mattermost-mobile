@@ -6,12 +6,13 @@ import {RESULTS, checkNotifications} from 'react-native-permissions';
 
 import {deletePostsForChannel, deletePostsForChannelsWithAutotranslation} from '@actions/local/channel';
 import {fetchChannelById, fetchMyChannelsForTeam, handleKickFromChannel, type MyChannelsRequest} from '@actions/remote/channel';
+import {fetchDmGmAccess, type FetchDmGmAccessResult} from '@actions/remote/dm_gm_access';
 import {type MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchMyTeams, handleKickFromTeam, type MyTeamsRequest} from '@actions/remote/team';
 import {fetchMe, type MyUserRequest} from '@actions/remote/user';
-import {General, Preferences, Screens} from '@constants';
+import {Events, General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -61,13 +62,23 @@ export type EntryResponse = {
     chData?: MyChannelsRequest;
     meData?: MyUserRequest;
     gmConverted: boolean;
+
+    // The DM/GM decisions, fetched only when asked, for the caller to store after the entry batch.
+    dmGmAccess?: FetchDmGmAccessResult['dmGmAccess'];
+
+    // The channel list includes conversations, which a Read-denied session never gets.
+    hasDirectChannels?: boolean;
 } | {
     error: unknown;
 }
 
-export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel): Promise<EntryResponse> => {
+/**
+ * @param fetchDmGmAccessDecisions - Fetch the DM/GM decisions too. Only on a first connect: entry
+ * runs on every reconnect, and policy and attribute events keep the decisions current in between.
+ */
+export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel, fetchDmGmAccessDecisions = false): Promise<EntryResponse> => {
     const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const result = await entryRest(serverUrl, teamId, channelId, since, groupLabel);
+    const result = await entryRest(serverUrl, teamId, channelId, since, groupLabel, fetchDmGmAccessDecisions);
 
     // Fetch data retention policies
     if (!result.error) {
@@ -80,7 +91,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
     return result;
 };
 
-const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel) => {
+const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0, groupLabel?: RequestGroupLabel, fetchDmGmAccessDecisions = false) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let lastDisconnectedAt = since || await getLastFullSync(database);
@@ -108,12 +119,14 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         }
 
         // let's start fetching in parallel all we can
-        const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>] = [
+        const promises: [Promise<MyTeamsRequest>, Promise<MyUserRequest>, Promise<FetchDmGmAccessResult>] = [
             fetchMyTeams(serverUrl, true, groupLabel),
             fetchMe(serverUrl, true, groupLabel),
+            fetchDmGmAccessDecisions ? fetchDmGmAccess(serverUrl, true, groupLabel) : Promise.resolve({}),
         ];
 
-        const [teamData, meData] = await Promise.all(promises);
+        // A failed decision fetch keeps the stored decisions, so it does not fail the entry.
+        const [teamData, meData, {dmGmAccess}] = await Promise.all(promises);
         const error = confResp.error || prefData.error || teamData.error || meData.error;
         if (error) {
             return {error};
@@ -170,7 +183,8 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
             categories: [],
         };
         if (initialTeamId) {
-            chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, lastDisconnectedAt, true, false, isCRTEnabled, groupLabel);
+            const excludeDirect = Boolean(dmGmAccess && !dmGmAccess.access.read);
+            chData = await fetchMyChannelsForTeam(serverUrl, initialTeamId, false, lastDisconnectedAt, true, excludeDirect, isCRTEnabled, groupLabel);
         }
 
         initialChannelId = await entryInitialChannelId(database, initialChannelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
@@ -195,7 +209,8 @@ const entryRest = async (serverUrl: string, teamId?: string, channelId?: string,
         }
 
         logDebug('Process models on entry', groupLabel, models.length, `${Date.now() - dt}ms`);
-        return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted};
+        const hasDirectChannels = Boolean(chData.channels?.some(isDMorGM));
+        return {models, initialChannelId, initialTeamId, prefData, teamData, chData, meData, gmConverted, dmGmAccess, hasDirectChannels};
     } catch (error) {
         logError('entryRest', groupLabel, error);
         return {error};
@@ -368,6 +383,7 @@ export async function handleEntryAfterLoadNavigation(
     initialTeamId: string,
     initialChannelId: string,
     gmConverted: boolean,
+    skipDmGmKick = false,
 ) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -378,6 +394,18 @@ export async function handleEntryAfterLoadNavigation(
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
         const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = isTablet();
+
+        // Runs before the entry batch commits, so the channel is still stored. A conversation is left
+        // out of the list while a DM/GM read policy hides it, so it is closed as unavailable rather
+        // than as removed, and not at all when the decisions deny Read: the purge after the batch does.
+        const kickFromChannel = async (channelId: string) => {
+            const channel = await getChannelById(database, channelId);
+            if (!channel || !isDMorGM(channel)) {
+                await handleKickFromChannel(serverUrl, channelId);
+            } else if (!skipDmGmKick) {
+                await handleKickFromChannel(serverUrl, channelId, Events.DM_GM_ACCESS_REVOKED);
+            }
+        };
 
         if (!currentTeamIdAfterLoad) {
             // First load or no team
@@ -401,14 +429,14 @@ export async function handleEntryAfterLoadNavigation(
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
                 if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                    await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+                    await kickFromChannel(currentChannelIdAfterLoad);
                 } else {
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
         } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
             if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
-                await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+                await kickFromChannel(currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
             }

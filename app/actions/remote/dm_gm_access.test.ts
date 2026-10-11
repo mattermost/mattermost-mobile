@@ -27,7 +27,7 @@ import {deleteDownloadedFiles} from '@utils/file';
 
 import {fetchCategories} from './category';
 import {fetchDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel} from './channel';
-import {applyDmGmAccess, clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError, purgeDirectAndGroupChannels, restoreDirectAndGroupChannels} from './dm_gm_access';
+import {applyDmGmAccess, clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError, purgeDirectAndGroupChannels, restoreDirectAndGroupChannels, storeAndApplyDmGmAccess, type FetchDmGmAccessResult} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
 import {syncTeamThreads} from './thread';
 
@@ -289,6 +289,64 @@ describe('fetchDmGmAccess', () => {
         await first;
 
         expect(await getDmGmAccessRecord(operator.database)).toEqual(readDenied);
+    });
+});
+
+type DmGmAccessAnswer = NonNullable<FetchDmGmAccessResult['dmGmAccess']>;
+
+describe('storeAndApplyDmGmAccess ordering', () => {
+    const dm = TestHelper.fakeChannel({id: 'dmchannelid', name: 'user1__user2', type: General.DM_CHANNEL, team_id: ''});
+
+    beforeAll(() => {
+        (NetworkManager.getClient as jest.Mock) = jest.fn(() => mockClient);
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        await enforcedOnServer('12.1.0');
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: 'teamid1'}], prepareRecordsOnly: false});
+        jest.mocked(getIsCRTEnabled).mockResolvedValue(true);
+        jest.mocked(syncTeamThreads).mockResolvedValue({error: false, models: []});
+        mockClient.searchPermissionActionDecisions.mockReset();
+    });
+
+    afterEach(async () => {
+        clearDmGmAccessState(serverUrl);
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should drop a cold start answer stored after an event refresh asked later', async () => {
+        mockClient.searchPermissionActionDecisions.mockResolvedValueOnce(response({dm_gm_read_access: deniedDecision}));
+        const {access, seq} = (await fetchDmGmAccess(serverUrl, true)).dmGmAccess as DmGmAccessAnswer;
+
+        mockClient.searchPermissionActionDecisions.mockResolvedValueOnce(response({dm_gm_read_access: allowedDecision}));
+        await fetchDmGmAccess(serverUrl);
+        await storeAndApplyDmGmAccess(serverUrl, access, seq, {fromEntry: true});
+
+        expect(await getDmGmAccessRecord(operator.database)).toEqual(DM_GM_ACCESS_ALLOWED);
+    });
+
+    it('should let an event refresh asked after the cold start one replace it', async () => {
+        mockClient.searchPermissionActionDecisions.mockResolvedValueOnce(response({dm_gm_read_access: allowedDecision}));
+        const {access, seq} = (await fetchDmGmAccess(serverUrl, true)).dmGmAccess as DmGmAccessAnswer;
+        await storeAndApplyDmGmAccess(serverUrl, access, seq, {fromEntry: true});
+
+        mockClient.searchPermissionActionDecisions.mockResolvedValueOnce(response({dm_gm_read_access: deniedDecision}));
+        await fetchDmGmAccess(serverUrl);
+
+        expect(await getDmGmAccessRecord(operator.database)).toEqual(readDenied);
+    });
+
+    it('should purge on losing Read and restore, after entry only the threads, on regaining it', async () => {
+        await operator.handleChannel({channels: [dm], prepareRecordsOnly: false});
+
+        await storeAndApplyDmGmAccess(serverUrl, readDenied, nextDmGmAccessSeq());
+        expect(await operator.database.get(MM_TABLES.SERVER.CHANNEL).query().fetchCount()).toBe(0);
+
+        await storeAndApplyDmGmAccess(serverUrl, DM_GM_ACCESS_ALLOWED, nextDmGmAccessSeq(), {fromEntry: true});
+        expect(fetchMyChannelsForTeam).not.toHaveBeenCalled();
+        expect(syncTeamThreads).toHaveBeenCalledWith(serverUrl, 'teamid1', {refresh: true});
     });
 });
 

@@ -4,11 +4,13 @@
 import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
+import {nextDmGmAccessSeq} from '@actions/local/dm_gm_access';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchAccessControlAttributeFields, fetchChannelAttributeValues} from '@actions/remote/classification';
+import {storeAndApplyDmGmAccess} from '@actions/remote/dm_gm_access';
 import {
     entry,
     handleEntryAfterLoadNavigation,
@@ -30,6 +32,7 @@ import AppsManager from '@managers/apps_manager';
 import SessionAttributesManager from '@managers/session_attributes_manager';
 import {handlePlaybookReconnect} from '@playbooks/actions/websocket/reconnect';
 import {getActiveServerUrl} from '@queries/app/servers';
+import {getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
     getConfig,
@@ -50,14 +53,15 @@ import {logDebug, logInfo} from '@utils/log';
 export async function handleFirstConnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
     setExtraSessionProps(serverUrl, groupLabel);
     autoUpdateTimezone(serverUrl, groupLabel);
-    return doReconnect(serverUrl, groupLabel);
+    return doReconnect(serverUrl, groupLabel, true);
 }
 
 export async function handleReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel = 'WebSocket Reconnect') {
-    return doReconnect(serverUrl, groupLabel);
+    return doReconnect(serverUrl, groupLabel, false);
 }
 
-async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel) {
+// The DM/GM decisions are fetched on the first connect only; events keep them current after it.
+async function doReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel | undefined, isFirstConnect: boolean) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return new Error('cannot find server database');
@@ -83,14 +87,16 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         const currentChannelId = await getCurrentChannelId(database);
 
         setTeamLoading(serverUrl, true);
-        const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel);
+        const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel, isFirstConnect);
         if ('error' in entryData) {
             return entryData.error;
         }
 
-        const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted} = entryData;
+        const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData, gmConverted, dmGmAccess, hasDirectChannels} = entryData;
 
-        await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted);
+        // A conversation the purge below will close is not kicked from here.
+        const skipDmGmKick = dmGmAccess?.access.read === false;
+        await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, gmConverted, skipDmGmKick);
 
         const dt = Date.now();
         if (models?.length) {
@@ -98,6 +104,15 @@ async function doReconnect(serverUrl: string, groupLabel?: BaseRequestGroupLabel
         }
 
         logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+        // After the batch, so a purge removes what entry stored and a restore builds on it; before the
+        // post fetches, so nothing is fetched for a purged conversation.
+        if (dmGmAccess) {
+            await storeAndApplyDmGmAccess(serverUrl, dmGmAccess.access, dmGmAccess.seq, {fromEntry: true});
+        } else if (hasDirectChannels && !(await getDmGmAccessRecord(database)).read) {
+            // A list with conversations in it means Read is allowed now: a one-way correction.
+            await storeAndApplyDmGmAccess(serverUrl, (previous) => ({...previous, read: true}), nextDmGmAccessSeq(), {fromEntry: true});
+        }
 
         // Every path here may have lost websocket events, so any ABAC change they carried is gone.
         // Awaited so the epoch is raised before the fetch below captures it, and placed after

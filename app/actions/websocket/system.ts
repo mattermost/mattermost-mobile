@@ -7,7 +7,7 @@ import {invalidateRedactionGlobally, RedactionInvalidationReason} from '@actions
 import {storeConfig} from '@actions/local/systems';
 import {fetchCategories} from '@actions/remote/category';
 import {applyPersistenceModeChange} from '@actions/remote/refresh';
-import {invalidateRedactionForCurrentUser} from '@actions/websocket/access_control';
+import {invalidateRedactionForCurrentUser, scheduleDmGmAccessRefresh} from '@actions/websocket/access_control';
 import {License} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -86,6 +86,7 @@ export async function handleConfigChangedEvent(serverUrl: string, msg: WebSocket
             invalidateRedactionForCurrentUser(serverUrl, RedactionInvalidationReason.ConfigChanged);
         } else if (abacWasEnforced && !abacIsEnforced) {
             await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.ConfigChanged);
+            scheduleDmGmAccessRefresh(serverUrl, RedactionInvalidationReason.ConfigChanged);
         }
 
         // Run last: a flag transition can wipe and recreate the server DB, invalidating

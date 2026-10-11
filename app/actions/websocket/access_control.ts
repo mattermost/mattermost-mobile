@@ -11,6 +11,7 @@ import {
     type RedactionReason,
 } from '@actions/local/redaction';
 import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
+import {fetchDmGmAccess} from '@actions/remote/dm_gm_access';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
@@ -62,6 +63,67 @@ const cleanupTokens = new Map<string, number>();
 const cleanupToken = (serverUrl: string) => cleanupTokens.get(serverUrl) ?? 0;
 
 const scopeKey = (serverUrl: string, channelId?: string) => `${serverUrl}|${channelId ? 'channels' : 'global'}`;
+
+// A policy change is broadcast to every user, so their refetches are spread out.
+const DM_GM_POLICY_JITTER_MS = 3000;
+
+// The DM/GM decisions are system-wide: channel-scoped changes cannot move them, and a resync is not
+// a reason to ask again (only the first connect fetches them).
+const canMoveDmGmAccess = (reason: RedactionReason) => {
+    switch (reason) {
+        case RedactionInvalidationReason.ChannelPolicy:
+        case RedactionInvalidationReason.ChannelRoles:
+        case RedactionInvalidationReason.ChannelAttributes:
+        case RedactionInvalidationReason.Resync:
+            return false;
+        default:
+            return true;
+    }
+};
+
+const dmGmRefreshTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const dmGmRefreshesInFlight = new Set<string>();
+const dmGmRefreshesQueued = new Set<string>();
+
+// One request in flight per server; triggers arriving meanwhile cost one more, made after it.
+const runDmGmAccessRefresh = async (serverUrl: string, token: number) => {
+    if (dmGmRefreshesInFlight.has(serverUrl)) {
+        dmGmRefreshesQueued.add(serverUrl);
+        return;
+    }
+
+    dmGmRefreshesInFlight.add(serverUrl);
+    try {
+        do {
+            dmGmRefreshesQueued.delete(serverUrl);
+            // eslint-disable-next-line no-await-in-loop
+            await fetchDmGmAccess(serverUrl);
+        } while (dmGmRefreshesQueued.has(serverUrl) && cleanupToken(serverUrl) === token);
+    } finally {
+        dmGmRefreshesInFlight.delete(serverUrl);
+        dmGmRefreshesQueued.delete(serverUrl);
+    }
+};
+
+/**
+ * Refetches the DM/GM decisions after a change that can move them. Coalesced like the redaction
+ * invalidation: the first trigger sets the deadline and later ones are absorbed. Not gated on
+ * enforcement, as the fetch itself resets the decisions to allowed when the policies are off.
+ */
+export const scheduleDmGmAccessRefresh = (serverUrl: string, reason: RedactionReason) => {
+    if (!canMoveDmGmAccess(reason) || dmGmRefreshTimers.has(serverUrl)) {
+        return;
+    }
+
+    const jitter = reason === RedactionInvalidationReason.GlobalPolicy ? Math.floor(Math.random() * DM_GM_POLICY_JITTER_MS) : 0;
+    const token = cleanupToken(serverUrl);
+    dmGmRefreshTimers.set(serverUrl, setTimeout(() => {
+        dmGmRefreshTimers.delete(serverUrl);
+        if (cleanupToken(serverUrl) === token) {
+            runDmGmAccessRefresh(serverUrl, token);
+        }
+    }, COALESCE_WINDOW_MS + jitter));
+};
 
 /**
  * The gallery and PDF viewer hold their items by value, so no database change can reach them; they
@@ -134,6 +196,7 @@ const scheduleAttributeViewRetry = (serverUrl: string) => {
     const delay = ATTRIBUTE_VIEW_RETRY_MS + Math.floor(Math.random() * ATTRIBUTE_VIEW_RETRY_JITTER_MS);
     const timeout = setTimeout(async () => {
         attributeViewRetries.delete(serverUrl);
+        scheduleDmGmAccessRefresh(serverUrl, RedactionInvalidationReason.AttributeViewRetry);
         try {
             const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (!(await isRedactionEnforced(database))) {
@@ -197,6 +260,12 @@ export const scheduleRedactionInvalidation = async (
     needsAttributeViewRetry = false,
 ) => {
     const token = cleanupToken(serverUrl);
+
+    // Before the enforcement check: turning the policies off has to reset the decisions too.
+    if (!channelId) {
+        scheduleDmGmAccessRefresh(serverUrl, reason);
+    }
+
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {
@@ -403,4 +472,11 @@ export const clearRedactionInvalidations = (serverUrl: string) => {
         clearTimeout(retry);
         attributeViewRetries.delete(serverUrl);
     }
+
+    const dmGmRefresh = dmGmRefreshTimers.get(serverUrl);
+    if (dmGmRefresh) {
+        clearTimeout(dmGmRefresh);
+        dmGmRefreshTimers.delete(serverUrl);
+    }
+    dmGmRefreshesQueued.delete(serverUrl);
 };

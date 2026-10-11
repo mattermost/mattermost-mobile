@@ -5,9 +5,12 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {getRedactionEpochState, getRequiredRedactionEpoch} from '@actions/local/redaction';
 import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
+import {fetchDmGmAccess} from '@actions/remote/dm_gm_access';
 import {refetchPostsForRedaction} from '@actions/remote/post';
 import {Events, WebsocketEvents} from '@constants';
+import {CHANNEL_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
+import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
@@ -21,6 +24,7 @@ import {
     invalidateRedactionForChannelMembership,
     invalidateRedactionForCurrentUser,
     invalidateRedactionOnResync,
+    scheduleDmGmAccessRefresh,
 } from './access_control';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -28,6 +32,10 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 jest.mock('@actions/remote/post', () => ({
     refetchPostsForRedaction: jest.fn(() => Promise.resolve({})),
     fetchPostThread: jest.fn(() => Promise.resolve({posts: []})),
+}));
+
+jest.mock('@actions/remote/dm_gm_access', () => ({
+    fetchDmGmAccess: jest.fn(() => Promise.resolve({})),
 }));
 
 jest.mock('@actions/remote/channel_access', () => ({
@@ -493,5 +501,101 @@ describe('EphemeralStore interaction', () => {
         // No pagination options: an incremental thread fetch cannot re-deliver a cached reply whose
         // only change was its redaction state.
         expect(fetchPostThread).toHaveBeenCalledWith(serverUrl, 'rootpostid');
+    });
+});
+
+describe('DM/GM decision refresh', () => {
+    const DM_GM_POLICY_JITTER_MS = 3000;
+
+    it('should refetch once for a burst of subject changes', async () => {
+        invalidateRedactionForCurrentUser(serverUrl, 'user_roles');
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        handleRedactionForPropertyFieldChanged(serverUrl, {
+            event: WebsocketEvents.PROPERTY_FIELD_UPDATED,
+            data: {object_type: SESSION_ATTRIBUTES_OBJECT_TYPE},
+        } as unknown as WebSocketMessage);
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(1);
+        expect(fetchDmGmAccess).toHaveBeenCalledWith(serverUrl);
+    });
+
+    it('should spread a policy change refetch over the jitter, and only that one', async () => {
+        jest.spyOn(Math, 'random').mockReturnValue(0.99);
+
+        handlePermissionPolicyUpdatedEvent(serverUrl);
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+        expect(fetchDmGmAccess).not.toHaveBeenCalled();
+
+        await advanceTimers(DM_GM_POLICY_JITTER_MS);
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(1);
+
+        scheduleDmGmAccessRefresh(serverUrl, 'license_changed');
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(2);
+    });
+
+    it('should ignore channel-scoped changes and resyncs', async () => {
+        await seedMyChannel(operator, channelId);
+
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}, data: {}} as WebSocketMessage);
+        invalidateRedactionForChannelMembership(serverUrl, channelId);
+        await handleRedactionForPropertyValuesUpdated(serverUrl, {data: {object_type: CHANNEL_ATTRIBUTE_OBJECT_TYPE, target_id: channelId}} as unknown as WebSocketMessage);
+        await invalidateRedactionOnResync(serverUrl);
+        await advanceTimers(COALESCE_WINDOW_MS + DM_GM_POLICY_JITTER_MS);
+
+        expect(fetchDmGmAccess).not.toHaveBeenCalled();
+    });
+
+    it('should refetch while policies are not enforced, so turning them off resets the decisions', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        invalidateRedactionForCurrentUser(serverUrl, 'license_changed');
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(1);
+    });
+
+    it('should keep one request in flight and make one more for the triggers it absorbed', async () => {
+        let finishFirst: () => void = () => undefined;
+        jest.mocked(fetchDmGmAccess).mockImplementationOnce(() => new Promise((resolve) => {
+            finishFirst = () => resolve({});
+        }));
+
+        scheduleDmGmAccessRefresh(serverUrl, 'user_roles');
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+        scheduleDmGmAccessRefresh(serverUrl, 'user_attributes');
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+        scheduleDmGmAccessRefresh(serverUrl, 'user_fields');
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(1);
+
+        finishFirst();
+        await advanceTimers(0);
+        await advanceTimers(0);
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(2);
+    });
+
+    it('should refetch again after the attribute view refresh window', async () => {
+        invalidateRedactionForCurrentUser(serverUrl, 'user_attributes', true);
+        await flushCoalescer();
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(1);
+
+        await flushAttributeViewRetry();
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+
+        expect(fetchDmGmAccess).toHaveBeenCalledTimes(2);
+    });
+
+    it('should drop a pending refetch on teardown', async () => {
+        scheduleDmGmAccessRefresh(serverUrl, 'user_roles');
+        clearRedactionInvalidations(serverUrl);
+        await advanceTimers(COALESCE_WINDOW_MS + 50);
+
+        expect(fetchDmGmAccess).not.toHaveBeenCalled();
     });
 });
