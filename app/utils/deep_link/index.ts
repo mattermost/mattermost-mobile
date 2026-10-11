@@ -25,7 +25,7 @@ import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {navigateToRoot, updateParams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
-import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '@utils/draft';
+import {alertErrorWithFallback, directMessageFailedMessage, errorBadChannel, errorUnkownUser} from '@utils/draft';
 import {getIntlShape} from '@utils/general';
 import {logError} from '@utils/log';
 import {escapeRegex} from '@utils/markdown';
@@ -103,7 +103,10 @@ export async function handleDeepLink(deepLink: DeepLinkWithData, intlShape?: Int
                 }
 
                 if (userId) {
-                    makeDirectChannel(existingServerUrl, userId, '', true);
+                    const {error} = await makeDirectChannel(existingServerUrl, userId, '', true);
+                    if (error) {
+                        alertErrorWithFallback(intl, error, directMessageFailedMessage, {displayName: deepLinkData.userName});
+                    }
                 } else {
                     errorUnkownUser(intl);
                 }

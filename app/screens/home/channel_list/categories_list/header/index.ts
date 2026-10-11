@@ -7,6 +7,7 @@ import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {withServerUrl} from '@context/server';
+import {observeCanStartDmGm} from '@queries/servers/dm_gm_access';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeConfig, observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam, queryMyTeams} from '@queries/servers/team';
@@ -73,6 +74,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         canCreateChannels,
         canJoinChannels,
         canInvitePeople,
+        canStartDirectMessage: observeCanStartDmGm(database),
         canJoinOtherTeams: EphemeralStore.observeCanJoinOtherTeams(serverUrl),
         currentTeamId: team.pipe(
             switchMap((t) => of$(t?.id ?? '')),

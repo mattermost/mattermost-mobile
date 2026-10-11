@@ -741,6 +741,25 @@ describe('app/actions/remote/channel', () => {
         });
     });
 
+    describe('DM/GM start refusals', () => {
+        it.each([
+            ['createDirectChannel', 'createDirectChannel', () => createDirectChannel(serverUrl, 'userid2')],
+            ['createGroupChannel', 'createGroupChannel', () => createGroupChannel(serverUrl, ['userid2', 'userid3'])],
+        ] as const)('%s should hand the refusal to the DM/GM handling', async (_name, method, run) => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+            await operator.handleUsers({users: [user], prepareRecordsOnly: false});
+            const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_START_DENIED, status_code: 403};
+            mockClient[method].mockImplementationOnce(() => {
+                throw denial;
+            });
+
+            const result = await run();
+
+            expect(result).toEqual({error: denial});
+            expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
+        });
+    });
+
     describe('handleChannelAccessDenied', () => {
         it('should return an error when the server database is missing', async () => {
             const {error} = await handleChannelAccessDenied('foo', channelId);

@@ -13,6 +13,7 @@ import {navigateToScreen} from '@screens/navigation';
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
+    canStartDirectMessage: boolean;
     close: () => Promise<void>;
 }
 
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
+const QuickOptions = ({canCreateChannels, canJoinChannels, canStartDirectMessage, close}: Props) => {
     const intl = useIntl();
 
     const browseChannels = useCallback(async () => {
@@ -55,25 +56,27 @@ const QuickOptions = ({canCreateChannels, canJoinChannels, close}: Props) => {
         >
             <Animated.View style={styles.wrapper}>
                 {canJoinChannels &&
+                <OptionBox
+                    iconName='globe'
+                    onPress={browseChannels}
+                    text={intl.formatMessage({id: 'find_channels.directory', defaultMessage: 'Directory'})}
+                    testID='find_channels.quick_options.directory.option'
+                />
+                }
+                {canStartDirectMessage &&
                 <>
+                    {canJoinChannels && <View style={styles.separator}/>}
                     <OptionBox
-                        iconName='globe'
-                        onPress={browseChannels}
-                        text={intl.formatMessage({id: 'find_channels.directory', defaultMessage: 'Directory'})}
-                        testID='find_channels.quick_options.directory.option'
+                        iconName='account-outline'
+                        onPress={openDirectMessage}
+                        text={intl.formatMessage({id: 'find_channels.open_dm', defaultMessage: 'Open a DM'})}
+                        testID='find_channels.quick_options.open_dm.option'
                     />
-                    <View style={styles.separator}/>
                 </>
                 }
-                <OptionBox
-                    iconName='account-outline'
-                    onPress={openDirectMessage}
-                    text={intl.formatMessage({id: 'find_channels.open_dm', defaultMessage: 'Open a DM'})}
-                    testID='find_channels.quick_options.open_dm.option'
-                />
                 {canCreateChannels &&
                 <>
-                    <View style={styles.separator}/>
+                    {(canJoinChannels || canStartDirectMessage) && <View style={styles.separator}/>}
                     <OptionBox
                         iconName='plus'
                         onPress={createNewChannel}

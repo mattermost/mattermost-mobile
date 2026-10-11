@@ -27,6 +27,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     canChangeMemberRoles: boolean;
+    canSendMessage: boolean;
     channelId?: string;
     currentUserId: string;
     enablePostIconOverride: boolean;
@@ -67,23 +68,29 @@ const messages = defineMessages({
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 type ShouldShowUserProfileOptionsProps = {
+    canSendMessage: boolean;
     channelContext: boolean;
     isDirectMessageWithUser: boolean;
     manageMode: boolean;
     override: boolean;
+    showOptions: OptionsType;
 };
 
+// Mentioning is always offered with all options; the message option alone needs a DM it may open.
 export function shouldShowUserProfileOptions({
+    canSendMessage,
     channelContext,
     isDirectMessageWithUser,
     manageMode,
     override,
+    showOptions,
 }: ShouldShowUserProfileOptionsProps) {
-    return (!isDirectMessageWithUser || !channelContext) && !override && !manageMode;
+    return (!isDirectMessageWithUser || !channelContext) && !override && !manageMode && (canSendMessage || showOptions === 'all');
 }
 
 const UserProfile = ({
     canChangeMemberRoles,
+    canSendMessage,
     canManageAndRemoveMembers,
     channelId,
     currentUserId,
@@ -129,10 +136,12 @@ const UserProfile = ({
 
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
     const showUserProfileOptions = shouldShowUserProfileOptions({
+        canSendMessage,
         channelContext,
         isDirectMessageWithUser,
         manageMode,
         override,
+        showOptions,
     });
     const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
@@ -216,6 +225,7 @@ const UserProfile = ({
                 />
                 {showUserProfileOptions &&
                     <UserProfileOptions
+                        canSendMessage={canSendMessage}
                         location={location}
                         type={showOptions}
                         username={user.username}

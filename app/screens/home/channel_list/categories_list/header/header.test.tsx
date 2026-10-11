@@ -4,13 +4,16 @@
 import {fireEvent} from '@testing-library/react-native';
 import React, {type ComponentProps} from 'react';
 
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithIntl} from '@test/intl-test-helper';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {showSnackBar} from '@utils/snack_bar';
 
 import Header from './header';
+import {SEPARATOR_HEIGHT} from './plus_menu/separator';
 
 jest.mock('@screens/navigation', () => ({
     bottomSheet: jest.fn(),
@@ -26,6 +29,7 @@ function getBaseProps(overrides: Partial<ComponentProps<typeof Header>> = {}): C
         canCreateChannels: true,
         canJoinChannels: true,
         canInvitePeople: true,
+        canStartDirectMessage: true,
         canJoinOtherTeams: false,
         currentTeamId: 'team-id',
         displayName: 'Test!',
@@ -90,6 +94,38 @@ describe('components/channel_list/header', () => {
         const wrapper = renderWithIntl(<Header {...getBaseProps()}/>);
 
         expect(wrapper.queryByTestId('channel_list_header.ephemeral_mode')).toBeNull();
+    });
+
+    describe('plus menu', () => {
+        it('should size the menu for every item and the separator above inviting people', () => {
+            const wrapper = renderWithIntl(<Header {...getBaseProps()}/>);
+
+            fireEvent.press(wrapper.getByTestId('channel_list_header.plus.button'));
+
+            expect(bottomSheet).toHaveBeenCalledWith(expect.any(Function), [1, bottomSheetSnapPoint(4, ITEM_HEIGHT) + SEPARATOR_HEIGHT]);
+        });
+
+        it('should leave out opening a direct message while starting one is not allowed', () => {
+            const wrapper = renderWithIntl(<Header {...getBaseProps({canStartDirectMessage: false})}/>);
+
+            fireEvent.press(wrapper.getByTestId('channel_list_header.plus.button'));
+
+            expect(bottomSheet).toHaveBeenCalledWith(expect.any(Function), [1, bottomSheetSnapPoint(3, ITEM_HEIGHT) + SEPARATOR_HEIGHT]);
+        });
+
+        it('should not separate inviting people when it is the only item', () => {
+            const wrapper = renderWithIntl(<Header {...getBaseProps({canCreateChannels: false, canJoinChannels: false, canStartDirectMessage: false})}/>);
+
+            fireEvent.press(wrapper.getByTestId('channel_list_header.plus.button'));
+
+            expect(bottomSheet).toHaveBeenCalledWith(expect.any(Function), [1, bottomSheetSnapPoint(1, ITEM_HEIGHT)]);
+        });
+
+        it('should hide the plus button when no item remains', () => {
+            const wrapper = renderWithIntl(<Header {...getBaseProps({canCreateChannels: false, canJoinChannels: false, canStartDirectMessage: false, canInvitePeople: false})}/>);
+
+            expect(wrapper.queryByTestId('channel_list_header.plus.button')).toBeNull();
+        });
     });
 
     describe('team menu affordance', () => {

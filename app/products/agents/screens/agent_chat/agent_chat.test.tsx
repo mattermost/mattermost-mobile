@@ -6,6 +6,7 @@ import React from 'react';
 
 import {createDirectChannel} from '@actions/remote/channel';
 import {saveSelectedAgent} from '@agents/actions/remote/preference';
+import {ServerErrors} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {bottomSheet} from '@screens/navigation';
 import {renderWithEverything} from '@test/intl-test-helper';
@@ -205,6 +206,25 @@ describe('AgentChat', () => {
         expect(queryByTestId('agent_chat.post_draft')).toBeNull();
 
         // Flush any remaining async state updates to prevent act() warnings.
+        await act(async () => {});
+    });
+
+    it('should explain why the conversation cannot start when a DM/GM policy denies starting it', async () => {
+        (createDirectChannel as jest.Mock).mockResolvedValue({error: {server_error_id: ServerErrors.DM_GM_START_DENIED, status_code: 403, message: 'denied'}});
+
+        const {getByText, queryByTestId} = renderWithEverything(
+            <AgentChat
+                bots={[mockBot]}
+                selectedAgentId=''
+            />,
+            {database},
+        );
+
+        await waitFor(() => {
+            expect(getByText("You can't start new direct or group messages.")).toBeTruthy();
+        });
+        expect(queryByTestId('agent_chat.post_draft')).toBeNull();
+
         await act(async () => {});
     });
 

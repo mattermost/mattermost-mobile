@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useDebounce} from '@hooks/utils';
 import {sortChannelsByDisplayName} from '@utils/channel';
+import {directMessageFailedMessage} from '@utils/draft';
 import {displayUsername} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -33,6 +34,7 @@ type RemoteChannels = {
 
 type Props = {
     archivedChannels: ChannelModel[];
+    canStartDirectMessage: boolean;
     close: () => Promise<void>;
     channelsMatch: ChannelModel[];
     channelsMatchStart: ChannelModel[];
@@ -75,7 +77,7 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
 };
 
 const FilteredList = ({
-    archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
+    archivedChannels, canStartDirectMessage, close, channelsMatch, channelsMatchStart, currentTeamId,
     isCRTEnabled, keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
     teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID,
 }: Props) => {
@@ -93,7 +95,7 @@ const FilteredList = ({
             setRemoteChannels({archived: [], startWith: [], matches: []});
         }
         const lowerCasedTerm = (term.startsWith('@') ? term.substring(1) : term).toLowerCase();
-        if ((channelsMatchStart.length + channelsMatch.length) < MAX_RESULTS) {
+        if (canStartDirectMessage && (channelsMatchStart.length + channelsMatch.length) < MAX_RESULTS) {
             if (restrictDirectMessage) {
                 searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
             } else {
@@ -139,7 +141,7 @@ const FilteredList = ({
         }
 
         onLoading(false);
-    }, [archivedChannels, channelsMatch, channelsMatchStart, currentTeamId, locale, onLoading, restrictDirectMessage, serverUrl, teamIds, term, totalLocalResults]), 500);
+    }, [archivedChannels, canStartDirectMessage, channelsMatch, channelsMatchStart, currentTeamId, locale, onLoading, restrictDirectMessage, serverUrl, teamIds, term, totalLocalResults]), 500);
 
     const onJoinChannel = useCallback(async (c: Channel | ChannelModel) => {
         const res = await joinChannelIfNeeded(serverUrl, c.id);
@@ -163,13 +165,7 @@ const FilteredList = ({
         const displayName = displayUsername(u, locale, teammateDisplayNameSetting);
         const {data, error} = await makeDirectChannel(serverUrl, u.id, displayName, false);
         if (error || !data) {
-            Alert.alert(
-                '',
-                formatMessage({
-                    id: 'mobile.direct_message.error',
-                    defaultMessage: "We couldn't open a DM with {displayName}.",
-                }, {displayName}),
-            );
+            Alert.alert('', formatMessage(directMessageFailedMessage, {displayName}));
             return;
         }
 

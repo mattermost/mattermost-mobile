@@ -4,7 +4,7 @@
 import {createIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {General} from '@constants';
+import {General, ServerErrors} from '@constants';
 
 import {
     errorBadChannel,
@@ -60,6 +60,17 @@ describe('draft utils', () => {
 
         alertErrorWithFallback(intl, error, fallback);
         expect(Alert.alert).toHaveBeenCalledWith('', 'Fallback Message', undefined);
+    });
+
+    it.each([
+        [ServerErrors.DM_GM_START_DENIED, "You can't start new direct or group messages."],
+        [ServerErrors.DM_GM_READ_ACCESS_DENIED, 'You do not currently have access to direct and group messages.'],
+    ])('should explain a DM/GM refusal (%s) instead of showing the server text', (serverErrorId, text) => {
+        const error = {message: 'Server text', server_error_id: serverErrorId, status_code: 403};
+        const fallback = {id: 'fallback.id', defaultMessage: 'Fallback Message'};
+
+        alertErrorWithFallback(intl, error, fallback);
+        expect(Alert.alert).toHaveBeenCalledWith('', text, undefined);
     });
 
     it('should alert attachment fail', () => {

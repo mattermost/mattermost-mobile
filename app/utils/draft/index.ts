@@ -8,8 +8,14 @@ import {type SwipeableMethods} from 'react-native-gesture-handler/ReanimatedSwip
 import {parseMarkdownImages, removeDraft, updateDraftMarkdownImageMetadata, updateDraftMessage} from '@actions/local/draft';
 import {General} from '@constants';
 import {CODE_REGEX} from '@constants/autocomplete';
+import {dmGmAccessDenialMessage} from '@utils/channel_policy';
 
 type AlertCallback = (value?: string) => void;
+
+export const directMessageFailedMessage = defineMessage({
+    id: 'mobile.direct_message.error',
+    defaultMessage: 'We couldn\'t open a DM with {displayName}.',
+});
 
 export function errorBadChannel(intl: IntlShape) {
     const message = defineMessage({
@@ -39,7 +45,7 @@ export function permalinkBadTeam(intl: IntlShape) {
 }
 
 export function alertErrorWithFallback(intl: IntlShape, error: any, fallback: MessageDescriptor, values?: Record<string, string>, buttons?: AlertButton[]) {
-    let msg = error?.message;
+    let msg = dmGmAccessDenialMessage(intl, error) ?? error?.message;
     if (!msg || msg === 'Network request failed') {
         msg = intl.formatMessage(fallback, values);
     }

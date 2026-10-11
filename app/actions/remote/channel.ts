@@ -956,6 +956,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
         logDebug('error on createDirectChannel', getFullErrorMessage(error));
         EphemeralStore.creatingDMorGMTeammates = [];
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }
@@ -1084,6 +1085,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
         logDebug('error on createGroupChannel', getFullErrorMessage(error));
         EphemeralStore.creatingDMorGMTeammates = [];
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }

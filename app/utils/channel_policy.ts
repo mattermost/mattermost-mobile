@@ -25,6 +25,11 @@ export const dmGmStartDeniedMessage = defineMessage({
     defaultMessage: 'You can\'t start new direct or group messages.',
 });
 
+export const dmGmReadDeniedMessage = defineMessage({
+    id: 'notification.no_dm_gm_access',
+    defaultMessage: 'You do not currently have access to direct and group messages.',
+});
+
 /**
  * The channel access policy the server refused a request under, if any.
  */
@@ -50,6 +55,21 @@ export function getDmGmPolicyDenial(error: unknown): DmGmPolicyDenial | undefine
             return 'read';
         case ServerErrors.DM_GM_WRITE_ACCESS_DENIED:
             return 'write';
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * The message for opening or starting a conversation a DM/GM policy refused, in place of the server's
+ * own text. Write refusals are covered by writeDenialMessage.
+ */
+export function dmGmAccessDenialMessage(intl: IntlShape, error: unknown): string | undefined {
+    switch (getDmGmPolicyDenial(error)) {
+        case 'start':
+            return intl.formatMessage(dmGmStartDeniedMessage);
+        case 'read':
+            return intl.formatMessage(dmGmReadDeniedMessage);
         default:
             return undefined;
     }

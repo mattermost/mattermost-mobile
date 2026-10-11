@@ -36,6 +36,7 @@ type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
     canInvitePeople: boolean;
+    canStartDirectMessage: boolean;
     canJoinOtherTeams: boolean;
     currentTeamId: string;
     displayName?: string;
@@ -142,6 +143,7 @@ const ChannelListHeader = ({
     canCreateChannels,
     canJoinChannels,
     canInvitePeople,
+    canStartDirectMessage,
     canJoinOtherTeams,
     currentTeamId,
     displayName,
@@ -175,11 +177,12 @@ const ChannelListHeader = ({
                     canCreateChannels={canCreateChannels}
                     canJoinChannels={canJoinChannels}
                     canInvitePeople={canInvitePeople}
+                    canStartDirectMessage={canStartDirectMessage}
                 />
             );
         };
 
-        let items = 1;
+        let items = 0;
         let separators = 0;
 
         if (canCreateChannels) {
@@ -190,13 +193,22 @@ const ChannelListHeader = ({
             items += 1;
         }
 
-        if (canInvitePeople) {
+        if (canStartDirectMessage) {
             items += 1;
-            separators += 1;
+        }
+
+        // Separated from the items above it, when there are any.
+        if (canInvitePeople) {
+            if (items > 0) {
+                separators += 1;
+            }
+            items += 1;
         }
 
         bottomSheet(renderContent, [1, bottomSheetSnapPoint(items, ITEM_HEIGHT) + (separators * SEPARATOR_HEIGHT)]);
-    }, [canCreateChannels, canInvitePeople, canJoinChannels]));
+    }, [canCreateChannels, canInvitePeople, canJoinChannels, canStartDirectMessage]));
+
+    const hasPlusMenuItems = canCreateChannels || canJoinChannels || canStartDirectMessage || canInvitePeople;
 
     const onTeamPress = usePreventDoubleTap(useCallback(() => {
         const rowCount = (canJoinOtherTeams ? 1 : 0) + (hasMoreThanOneTeam ? 1 : 0);
@@ -317,18 +329,20 @@ const ChannelListHeader = ({
                             />
                         </Pressable>
                     )}
-                    <TouchableWithFeedback
-                        hitSlop={hitSlop}
-                        onPress={onPress}
-                        style={styles.plusButton}
-                        testID='channel_list_header.plus.button'
-                        type='opacity'
-                    >
-                        <CompassIcon
-                            style={styles.plusIcon}
-                            name={'plus'}
-                        />
-                    </TouchableWithFeedback>
+                    {hasPlusMenuItems && (
+                        <TouchableWithFeedback
+                            hitSlop={hitSlop}
+                            onPress={onPress}
+                            style={styles.plusButton}
+                            testID='channel_list_header.plus.button'
+                            type='opacity'
+                        >
+                            <CompassIcon
+                                style={styles.plusIcon}
+                                name={'plus'}
+                            />
+                        </TouchableWithFeedback>
+                    )}
                 </View>
             </View>
         );

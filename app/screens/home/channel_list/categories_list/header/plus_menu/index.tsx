@@ -13,9 +13,10 @@ type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
     canInvitePeople: boolean;
+    canStartDirectMessage: boolean;
 }
 
-const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Props) => {
+const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople, canStartDirectMessage}: Props) => {
     const browseChannels = useCallback(async () => {
         await dismissBottomSheet();
         navigateToScreen(Screens.BROWSE_CHANNELS);
@@ -52,13 +53,15 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
                 onPress={createNewChannel}
             />
             }
+            {canStartDirectMessage &&
             <PlusMenuItem
                 pickerAction='openDirectMessage'
                 onPress={openDirectMessage}
             />
+            }
             {canInvitePeople &&
             <>
-                <PlusMenuSeparator/>
+                {(canJoinChannels || canCreateChannels || canStartDirectMessage) && <PlusMenuSeparator/>}
                 <PlusMenuItem
                     pickerAction='invitePeopleToTeam'
                     onPress={invitePeopleToTeam}

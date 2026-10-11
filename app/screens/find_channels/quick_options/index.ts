@@ -6,6 +6,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
+import {observeCanStartDmGm} from '@queries/servers/dm_gm_access';
 import {observePermissionForTeam} from '@queries/servers/role';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
@@ -38,6 +39,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         canCreateChannels,
         canJoinChannels,
+        canStartDirectMessage: observeCanStartDmGm(database),
     };
 });
 

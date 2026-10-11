@@ -31,6 +31,7 @@ import {useDefaultHeaderHeight} from '@hooks/header';
 import {usePreventDoubleTap} from '@hooks/utils';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, navigateBack} from '@screens/navigation';
+import {dmGmStartDeniedMessage, getDmGmPolicyDenial} from '@utils/channel_policy';
 import {getFullErrorMessage} from '@utils/errors';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {logError} from '@utils/log';
@@ -72,6 +73,9 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
     const [selectedBot, setSelectedBot] = useState<AiBotModel | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Apart from the bots error, which is cleared as soon as bots are available.
+    const [channelError, setChannelError] = useState<string | null>(null);
     const [channelId, setChannelId] = useState<string | null>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
@@ -148,19 +152,21 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                 return;
             }
 
-            const {data, error: channelError} = await createDirectChannel(
+            const {data, error: createError} = await createDirectChannel(
                 serverUrl,
                 selectedBot.id,
             );
 
-            if (channelError || !data) {
-                setError(intl.formatMessage({
+            if (createError || !data) {
+                // Retrying cannot help while a DM/GM policy denies starting the conversation.
+                setChannelError(getDmGmPolicyDenial(createError) === 'start' ? intl.formatMessage(dmGmStartDeniedMessage) : intl.formatMessage({
                     id: 'agents.chat.error_creating_channel',
                     defaultMessage: 'Failed to start conversation. Please try again.',
                 }));
                 return;
             }
 
+            setChannelError(null);
             setChannelId(data.id);
         };
 
@@ -263,7 +269,7 @@ const AgentChat = ({bots, selectedAgentId}: Props) => {
                     ) : (
                         <AgentChatContent
                             loading={loading && bots.length === 0}
-                            error={error}
+                            error={error ?? channelError}
                         />
                     ))}
                 >

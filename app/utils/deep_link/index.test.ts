@@ -22,7 +22,7 @@ import TestHelper from '@test/test_helper';
 import {logError} from '@utils/log';
 import {addNewServer} from '@utils/server';
 
-import {alertErrorWithFallback, errorBadChannel, errorUnkownUser} from '../draft';
+import {alertErrorWithFallback, directMessageFailedMessage, errorBadChannel, errorUnkownUser} from '../draft';
 
 import {alertInvalidDeepLink, extractServerUrl, getLaunchPropsFromDeepLink, parseAndHandleDeepLink} from './index';
 
@@ -69,7 +69,7 @@ jest.mock('@utils/server', () => ({
 }));
 
 jest.mock('@actions/remote/channel', () => ({
-    makeDirectChannel: jest.fn(),
+    makeDirectChannel: jest.fn(() => Promise.resolve({})),
     joinIfNeededAndSwitchToChannel: jest.fn(),
 }));
 
@@ -77,6 +77,7 @@ jest.mock('@utils/draft', () => ({
     errorBadChannel: jest.fn(),
     errorUnkownUser: jest.fn(),
     alertErrorWithFallback: jest.fn(),
+    directMessageFailedMessage: {id: 'mobile.direct_message.error', defaultMessage: 'We couldn\'t open a DM with {displayName}.'},
 }));
 
 jest.mock('@utils/log', () => ({
@@ -180,6 +181,18 @@ describe('parseAndHandleDeepLink', () => {
         const result = await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
         expect(makeDirectChannel).toHaveBeenCalledWith('https://existingserver.com', 'user-id', '', true);
         expect(result).toEqual({error: false});
+    });
+
+    it('should alert when the direct message cannot be opened', async () => {
+        jest.mocked(DatabaseManager.searchUrl).mockReturnValueOnce('https://existingserver.com');
+        jest.mocked(getActiveServerUrl).mockResolvedValueOnce('https://existingserver.com');
+        (queryUsersByUsername as jest.Mock).mockReturnValueOnce(TestHelper.fakeQuery([TestHelper.fakeUserModel({id: 'user-id'})]));
+        const error = {server_error_id: 'api.channel.dm_gm_start.abac_denied.app_error', status_code: 403, message: 'denied'};
+        jest.mocked(makeDirectChannel).mockResolvedValueOnce({error});
+
+        await parseAndHandleDeepLink('https://existingserver.com/team/messages/@user-id', intl);
+
+        expect(alertErrorWithFallback).toHaveBeenCalledWith(intl, error, directMessageFailedMessage, {displayName: 'user-id'});
     });
 
     it('should fetch user and create direct message if user not found locally', async () => {

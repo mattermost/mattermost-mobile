@@ -14,6 +14,7 @@ import {
     getDmGmAccess,
     getDmGmAccessRecord,
     observeCanReadDmGm,
+    observeCanSendDirectMessageTo,
     observeCanStartDmGm,
     observeCanWriteDmGm,
     observeDmGmAccess,
@@ -121,6 +122,30 @@ describe('dm_gm_access queries', () => {
 
             await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: true, read: true, write: false});
             expect(await firstValueFrom(observeCanStartDmGm(operator.database))).toBe(true);
+        });
+    });
+
+    describe('observeCanSendDirectMessageTo', () => {
+        beforeEach(async () => {
+            await enforce();
+            await storeSystem(SYSTEM_IDENTIFIERS.CURRENT_USER_ID, currentUserId);
+            await operator.handleChannel({
+                channels: [TestHelper.fakeChannel({id: 'dmchannelid', name: getDirectChannelName(currentUserId, 'otheruserid'), type: General.DM_CHANNEL, team_id: ''})],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        it('should reopen an existing direct message without Start, but start a new one only with it', async () => {
+            await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: false, read: true, write: true});
+
+            expect(await firstValueFrom(observeCanSendDirectMessageTo(operator.database, 'otheruserid'))).toBe(true);
+            expect(await firstValueFrom(observeCanSendDirectMessageTo(operator.database, 'strangerid'))).toBe(false);
+        });
+
+        it('should open none while Read is denied', async () => {
+            await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: true, read: false, write: true});
+
+            expect(await firstValueFrom(observeCanSendDirectMessageTo(operator.database, 'otheruserid'))).toBe(false);
         });
     });
 

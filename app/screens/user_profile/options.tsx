@@ -12,12 +12,14 @@ import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
+import {alertErrorWithFallback, directMessageFailedMessage} from '@utils/draft';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 export type OptionsType = 'all' | 'message';
 
 type Props = {
+    canSendMessage: boolean;
     location?: AvailableScreens;
     type: OptionsType;
     userId: string;
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const UserProfileOptions = ({location, type, userId, username}: Props) => {
+const UserProfileOptions = ({canSendMessage, location, type, userId, username}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -59,22 +61,28 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
 
     const openChannel = useCallback(async () => {
         await dismissBottomSheet();
-        const {data} = await createDirectChannel(serverUrl, userId);
+        const {data, error} = await createDirectChannel(serverUrl, userId);
         if (data) {
             switchToChannelById(serverUrl, data.id);
+        } else if (error) {
+            alertErrorWithFallback(intl, error, directMessageFailedMessage, {displayName: username});
         }
-    }, [userId, serverUrl]);
+    }, [userId, serverUrl, intl, username]);
 
     if (type === 'all') {
         return (
             <View style={styles.container}>
-                <OptionBox
-                    iconName='send'
-                    onPress={openChannel}
-                    testID='user_profile_options.send_message.option'
-                    text={intl.formatMessage({id: 'channel_info.send_a_mesasge', defaultMessage: 'Send a message'})}
-                />
-                <View style={styles.divider}/>
+                {canSendMessage &&
+                <>
+                    <OptionBox
+                        iconName='send'
+                        onPress={openChannel}
+                        testID='user_profile_options.send_message.option'
+                        text={intl.formatMessage({id: 'channel_info.send_a_mesasge', defaultMessage: 'Send a message'})}
+                    />
+                    <View style={styles.divider}/>
+                </>
+                }
                 <OptionBox
                     iconName='at'
                     onPress={mentionUser}

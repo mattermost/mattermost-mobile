@@ -7,6 +7,7 @@ import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
+import {observeCanStartDmGm} from '@queries/servers/dm_gm_access';
 import {observeConfigValue, observeCurrentTeamId} from '@queries/servers/system';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
@@ -51,8 +52,15 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
         switchMap((archived) => retrieveChannels(database, archived)),
     );
 
-    const usersMatchStart = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS, true);
-    const usersMatch = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS);
+    // Every user row would start a direct message: the query's join leaves out only users already in a
+    // stored channel, whether or not a DM with them exists.
+    const canStartDirectMessage = observeCanStartDmGm(database);
+    const usersMatchStart = canStartDirectMessage.pipe(
+        switchMap((canStart) => (canStart ? observeNotDirectChannelsByTerm(database, term, MAX_RESULTS, true) : of$([]))),
+    );
+    const usersMatch = canStartDirectMessage.pipe(
+        switchMap((canStart) => (canStart ? observeNotDirectChannelsByTerm(database, term, MAX_RESULTS) : of$([]))),
+    );
 
     const restrictDirectMessage = observeConfigValue(database, 'RestrictDirectMessage').pipe(
         switchMap((v) => of$(v !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
@@ -62,6 +70,7 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
 
     return {
         archivedChannels,
+        canStartDirectMessage,
         channelsMatch,
         channelsMatchStart,
         currentTeamId: observeCurrentTeamId(database),

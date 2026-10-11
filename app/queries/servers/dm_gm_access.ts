@@ -106,6 +106,17 @@ export const observeCanStartDmGm = (database: Database): Observable<boolean> => 
 };
 
 /**
+ * Whether a direct message with the user may be opened: reopening an existing one needs only Read,
+ * creating one needs Start as well.
+ */
+export const observeCanSendDirectMessageTo = (database: Database, userId: string): Observable<boolean> => {
+    return combineLatest([observeDmGmAccess(database), observeHasDirectChannelWith(database, userId)]).pipe(
+        map(([access, hasDirectChannel]) => access.read && (access.start || hasDirectChannel)),
+        distinctUntilChanged(),
+    );
+};
+
+/**
  * Whether a direct message with the user is stored, which opening it again needs no Start for.
  */
 export const observeHasDirectChannelWith = (database: Database, userId: string): Observable<boolean> => {

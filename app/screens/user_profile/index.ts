@@ -9,6 +9,7 @@ import {General, Permissions, Preferences} from '@constants';
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCustomProfileAttributesByUserId, observeCustomProfileFields} from '@queries/servers/custom_profile';
+import {observeCanSendDirectMessageTo} from '@queries/servers/dm_gm_access';
 import {observeCustomProfileAttributesEnabled} from '@queries/servers/features';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
@@ -95,6 +96,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
 
     return {
         canManageAndRemoveMembers,
+        canSendMessage: observeCanSendDirectMessageTo(database, userId),
         currentUserId,
         enablePostIconOverride,
         enablePostUsernameOverride,
