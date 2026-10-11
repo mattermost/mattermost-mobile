@@ -24,6 +24,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 
 type Props = {
+    canWrite: boolean;
     channel: ChannelModel;
     currentUserId: string;
     isBot: boolean;
@@ -113,6 +114,7 @@ const getGMIntroMessageSpecificPart = (userNotifyProps: Partial<UserNotifyProps>
 };
 
 const DirectChannel = ({
+    canWrite,
     channel,
     currentUserId,
     isBot,
@@ -213,7 +215,7 @@ const DirectChannel = ({
             {message}
             <IntroOptions
                 channelId={channel.id}
-                header={true}
+                header={canWrite}
                 favorite={true}
                 canAddMembers={false}
             />

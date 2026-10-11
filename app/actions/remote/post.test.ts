@@ -291,6 +291,33 @@ describe('create, update & delete posts', () => {
         expect(stored?.props?.failed).toBe(true);
     });
 
+    describe('DM/GM write denials', () => {
+        const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_WRITE_ACCESS_DENIED, status_code: 403};
+        const deny = () => {
+            throw denial;
+        };
+
+        beforeEach(async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [post1.id], posts: [post1], prepareRecordsOnly: false});
+        });
+
+        it.each([
+            ['createPost', () => mockClient.createPost.mockImplementationOnce(deny), () => createPost(serverUrl, {...post1, id: '', pending_post_id: 'pendingid2'})],
+            ['retryFailedPost', () => mockClient.createPost.mockImplementationOnce(deny), async () => retryFailedPost(serverUrl, await getPostById(operator.database, post1.id) as PostModel)],
+            ['deletePost', () => mockClient.deletePost.mockImplementationOnce(deny), () => deletePost(serverUrl, post1)],
+            ['editPost', () => mockClient.patchPost.mockImplementationOnce(deny), () => editPost(serverUrl, post1.id, 'edited', [], [])],
+            ['acknowledgePost', () => mockClient.acknowledgePost.mockImplementationOnce(deny), () => acknowledgePost(serverUrl, post1.id)],
+            ['unacknowledgePost', () => mockClient.unacknowledgePost.mockImplementationOnce(deny), () => unacknowledgePost(serverUrl, post1.id)],
+        ])('%s should hand the refusal to the DM/GM handling', async (_name, refuse, run) => {
+            refuse();
+
+            await run();
+
+            expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
+        });
+    });
+
     it('createPost - root', async () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
 

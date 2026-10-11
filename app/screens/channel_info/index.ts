@@ -12,6 +12,7 @@ import {withServerUrl} from '@context/server';
 import {observeIsPlaybooksEnabled} from '@playbooks/database/queries/version';
 import {observeChannelAutotranslation, observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanAddBookmarks} from '@queries/servers/channel_bookmark';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {observeChannelBookmarksEnabled} from '@queries/servers/features';
 import {observeCanManageChannelAutotranslations, observeCanManageChannelMembers, observeCanManageChannelSettings, observePermissionForChannelRBACOnly, observePermissionForTeam} from '@queries/servers/role';
 import {
@@ -199,8 +200,9 @@ const observeHasChannelSettingsActions = (
         }),
     );
 
-    const convertGMOptionAvailable = combineLatest([isConvertGMFeatureAvailable, type, isGuestUser]).pipe(
-        switchMap(([available, chType, guest]) => of$(available && chType === General.GM_CHANNEL && !guest)),
+    // Converting is a management action, which the DM/GM write decision governs in a conversation.
+    const convertGMOptionAvailable = combineLatest([isConvertGMFeatureAvailable, type, isGuestUser, observeCanWriteDmGm(database)]).pipe(
+        switchMap(([available, chType, guest, canWrite]) => of$(available && chType === General.GM_CHANNEL && !guest && canWrite)),
     );
 
     // Check if any channel_settings action is available

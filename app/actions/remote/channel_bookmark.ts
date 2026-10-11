@@ -10,6 +10,7 @@ import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
 
 export async function fetchChannelBookmarks(serverUrl: string, channelId: string, fetchOnly = false, groupLabel?: RequestGroupLabel) {
@@ -53,6 +54,7 @@ export async function createChannelBookmark(serverUrl: string, channelId: string
         logError('error on createChannelBookmark', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         expireChannelDecisionsOnDenial(serverUrl, channelId, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }
@@ -76,6 +78,7 @@ export async function editChannelBookmark(serverUrl: string, bookmark: ChannelBo
         logError('error on editChannelBookmark', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         expireChannelDecisionsOnDenial(serverUrl, bookmark.channel_id, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }
@@ -100,6 +103,7 @@ export async function deleteChannelBookmark(serverUrl: string, channelId: string
         logError('error on deleteChannelBookmark', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         expireChannelDecisionsOnDenial(serverUrl, channelId, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }

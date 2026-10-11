@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {ActionType} from '@constants';
+import {ActionType, ServerErrors} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getConfigValue, getCurrentTeamId, getLicense} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {createScheduledPost, deleteScheduledPost, fetchScheduledPosts, updateScheduledPost} from './scheduled_post';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -16,6 +17,10 @@ jest.mock('@utils/log', () => ({
     logDebug: jest.fn(),
     logError: jest.fn(),
     logWarning: jest.fn(),
+}));
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
 }));
 
 jest.mock('@actions/remote/session', () => ({
@@ -147,6 +152,17 @@ describe('createScheduledPost', () => {
         expect(result.error).toBe('custom error');
         expect(logError).toHaveBeenCalledWith('error on createScheduledPost', error.message);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
+    });
+
+    it('should hand a DM/GM write refusal to the DM/GM handling', async () => {
+        const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_WRITE_ACCESS_DENIED, status_code: 403};
+        mockClient.createScheduledPost.mockImplementationOnce(jest.fn(() => {
+            throw denial;
+        }));
+
+        await createScheduledPost(serverUrl, scheduledPost);
+
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
     });
 
     it('operator handling error', async () => {

@@ -723,6 +723,24 @@ describe('app/actions/remote/channel', () => {
 
     });
 
+    describe('DM/GM write refusals', () => {
+        it.each([
+            ['patchChannel', 'patchChannel', () => patchChannel(serverUrl, channelId, {header: 'header'})],
+            ['setChannelAutotranslation', 'setChannelAutotranslation', () => setChannelAutotranslation(serverUrl, channelId, true)],
+            ['convertGroupMessageToPrivateChannel', 'convertGroupMessageToPrivateChannel', () => convertGroupMessageToPrivateChannel(serverUrl, channelId, teamId, 'name')],
+        ] as const)('%s should hand the refusal to the DM/GM handling', async (_name, method, run) => {
+            const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_WRITE_ACCESS_DENIED, status_code: 403};
+            mockClient[method].mockImplementationOnce(() => {
+                throw denial;
+            });
+
+            const result = await run();
+
+            expect(result).toEqual(expect.objectContaining({error: denial}));
+            expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
+        });
+    });
+
     describe('handleChannelAccessDenied', () => {
         it('should return an error when the server database is missing', async () => {
             const {error} = await handleChannelAccessDenied('foo', channelId);

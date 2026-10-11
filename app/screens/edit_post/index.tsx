@@ -8,10 +8,13 @@ import {distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 import {RenderPermissionAction} from '@constants/access_control';
 import {DEFAULT_SERVER_MAX_FILE_SIZE, MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {withServerUrl} from '@context/server';
+import {observeChannel} from '@queries/servers/channel';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {observePost} from '@queries/servers/post';
 import {observeChannelActionDenied, observeRenderPermission} from '@queries/servers/render_permissions';
 import {observeCanUploadFiles} from '@queries/servers/security';
 import {observeConfigIntValue, observeMaxFileCount} from '@queries/servers/system';
+import {isDMorGM} from '@utils/channel';
 
 import EditPost from './edit_post';
 
@@ -41,8 +44,15 @@ const enhance = withObservables([], ({database, postId, serverUrl}: EnhancedProp
     const canUploadFilesByPolicy = channelId.pipe(
         switchMap((id) => observeRenderPermission(database, serverUrl, id, RenderPermissionAction.UploadFileAttachment, true)),
     );
+
+    // A conversation is governed by the DM/GM write decision, never by a channel one.
+    const deniedByDmGmPolicy = observeCanWriteDmGm(database).pipe(map((canWrite) => !canWrite));
+    const observeWriteDenied = (id: string) => observeChannel(database, id).pipe(
+        switchMap((c) => (c && isDMorGM(c) ? deniedByDmGmPolicy : observeChannelActionDenied(database, serverUrl, id, RenderPermissionAction.ChannelWriteAccess))),
+    );
     const writeDenied = channelId.pipe(
-        switchMap((id) => (id ? observeChannelActionDenied(database, serverUrl, id, RenderPermissionAction.ChannelWriteAccess) : of$(false))),
+        switchMap((id) => (id ? observeWriteDenied(id) : of$(false))),
+        distinctUntilChanged(),
     );
 
     return {

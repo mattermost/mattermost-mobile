@@ -13,6 +13,7 @@ import {isDefaultChannel, isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
 import {observeChannel, observeMyChannelRoles} from './channel';
+import {observeCanWriteDmGm} from './dm_gm_access';
 import {observeChannelActionDenied} from './render_permissions';
 import {observeConfigBooleanValue} from './system';
 import {observeMyTeam, observeMyTeamRoles} from './team';
@@ -83,13 +84,21 @@ const getChannelAccessAction = (permission: string) => {
 /**
  * The role grant, denied as well by an ABAC write or management policy on the channel when the
  * permission is one of those actions. Mirrors the webapp's haveIChannelPermission. DMs and GMs are
- * exempt from channel access policies.
+ * exempt from channel access policies; for them both actions are governed by the DM/GM write
+ * decision, as the server's management gate evaluates Write for conversations.
  */
 export function observePermissionForChannel(database: Database, channel: ChannelModel | null | undefined, user: UserModel | undefined, permission: string, defaultValue: boolean) {
     const rbacAllowed = observePermissionForChannelRBACOnly(database, channel, user, permission, defaultValue);
     const action = getChannelAccessAction(permission);
-    if (!action || !channel || isDMorGM(channel)) {
+    if (!action || !channel) {
         return rbacAllowed;
+    }
+
+    if (isDMorGM(channel)) {
+        return combineLatest([rbacAllowed, observeCanWriteDmGm(database)]).pipe(
+            map(([allowed, canWrite]) => allowed && canWrite),
+            distinctUntilChanged(),
+        );
     }
 
     const serverUrl = DatabaseManager.getServerUrlForDatabase(database);
@@ -179,7 +188,7 @@ export function observeCanManageChannelAutotranslations(database: Database, chan
             }
 
             if (isDMorGM(c)) {
-                return of$(!isDmGmRestricted);
+                return isDmGmRestricted ? of$(false) : observeCanWriteDmGm(database);
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? Permissions.MANAGE_PUBLIC_CHANNEL_AUTO_TRANSLATION : Permissions.MANAGE_PRIVATE_CHANNEL_AUTO_TRANSLATION;

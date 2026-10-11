@@ -9,6 +9,7 @@ import ReadOnly from './index';
 
 const READ_ONLY_TEXT = 'This channel is read-only.';
 const WRITE_DENIED_TEXT = 'You do not have permission to post in this channel.';
+const DM_GM_WRITE_DENIED_TEXT = 'You do not have permission to send direct or group messages.';
 
 describe('components/post_draft/read_only', () => {
     it('should explain that the channel is read-only', () => {
@@ -22,6 +23,14 @@ describe('components/post_draft/read_only', () => {
         const {getByText, queryByText} = renderWithIntlAndTheme(<ReadOnly writeDenied={true}/>);
 
         expect(getByText(WRITE_DENIED_TEXT)).toBeTruthy();
+        expect(queryByText(READ_ONLY_TEXT)).toBeNull();
+    });
+
+    it('should explain that sending messages is denied when the DM/GM write decision denies', () => {
+        const {getByText, queryByText} = renderWithIntlAndTheme(<ReadOnly dmGmWriteDenied={true}/>);
+
+        expect(getByText(DM_GM_WRITE_DENIED_TEXT)).toBeTruthy();
+        expect(queryByText(WRITE_DENIED_TEXT)).toBeNull();
         expect(queryByText(READ_ONLY_TEXT)).toBeNull();
     });
 });

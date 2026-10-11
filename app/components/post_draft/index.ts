@@ -4,17 +4,19 @@
 import {withDatabase, withObservables} from '@nozbe/watermelondb/react';
 import React from 'react';
 import {combineLatest, of as of$} from 'rxjs';
-import {filter, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, filter, map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {RenderPermissionAction} from '@constants/access_control';
 import {withServerUrl} from '@context/server';
 import {observeChannel, observeIsReadOnlyChannel} from '@queries/servers/channel';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {queryDraft, observeFirstDraft} from '@queries/servers/drafts';
 import {observeChannelActionDenied} from '@queries/servers/render_permissions';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
+import {isDMorGM} from '@utils/channel';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import PostDraft from './post_draft';
@@ -51,8 +53,19 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     );
 
     const canPost = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => (c && u ? observePermissionForChannel(database, c, u, Permissions.CREATE_POST, true) : of$(true))));
-    const writeDenied = channelId.pipe(
-        switchMap((id) => observeChannelActionDenied(database, serverUrl, id, RenderPermissionAction.ChannelWriteAccess)),
+
+    // A conversation is governed by the DM/GM write decision, never by a channel one.
+    const isDmGm = channel.pipe(
+        map((c) => Boolean(c && isDMorGM(c))),
+        distinctUntilChanged(),
+    );
+    const writeDenied = combineLatest([channelId, isDmGm]).pipe(
+        switchMap(([id, dmGm]) => (dmGm ? of$(false) : observeChannelActionDenied(database, serverUrl, id, RenderPermissionAction.ChannelWriteAccess))),
+    );
+    const deniedByDmGmPolicy = observeCanWriteDmGm(database).pipe(map((canWrite) => !canWrite));
+    const dmGmWriteDenied = isDmGm.pipe(
+        switchMap((dmGm) => (dmGm ? deniedByDmGmPolicy : of$(false))),
+        distinctUntilChanged(),
     );
 
     // Filter transient `undefined` emissions so the archived banner doesn't
@@ -87,6 +100,7 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
         channelIsArchived,
         channelIsReadOnly,
         deactivatedChannel,
+        dmGmWriteDenied,
         files,
         message,
         writeDenied,

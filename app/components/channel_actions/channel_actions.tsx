@@ -22,6 +22,7 @@ type Props = {
     callsEnabled: boolean;
     testID?: string;
     canManageMembers: boolean;
+    canSetHeader: boolean;
 }
 
 export const CHANNEL_ACTIONS_OPTIONS_HEIGHT = 62;
@@ -43,6 +44,7 @@ const ChannelActions = ({
     dismissChannelInfo,
     callsEnabled,
     canManageMembers,
+    canSetHeader,
     testID,
 }: Props) => {
     const serverUrl = useServerUrl();
@@ -71,8 +73,8 @@ const ChannelActions = ({
                 showSnackBar={!inModal}
                 testID={testID}
             />
-            <View style={styles.separator}/>
-            {isDMOrGM &&
+            {(!isDMOrGM || canSetHeader) && <View style={styles.separator}/>}
+            {isDMOrGM && canSetHeader &&
                 <SetHeaderBox
                     channelId={channelId}
                     inModal={inModal}

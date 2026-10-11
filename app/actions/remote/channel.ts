@@ -304,6 +304,7 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
         logDebug('error on patchChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         expireChannelDecisionsOnDenial(serverUrl, channelId, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 }
@@ -1332,6 +1333,7 @@ export const setChannelAutotranslation = async (serverUrl: string, channelId: st
         logDebug('error on setChannelAutotranslation', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         expireChannelDecisionsOnDenial(serverUrl, channelId, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 };
@@ -1654,6 +1656,7 @@ export const convertGroupMessageToPrivateChannel = async (serverUrl: string, cha
     } catch (error) {
         logError('error on convertGroupMessageToPrivateChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     } finally {
         EphemeralStore.removeConvertingChannel(channelId);

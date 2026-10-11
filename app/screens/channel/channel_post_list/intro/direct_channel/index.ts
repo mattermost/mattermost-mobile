@@ -7,6 +7,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeChannelMembers, observeNotifyPropsByChannels} from '@queries/servers/channel';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {observeHasGMasDMFeature} from '@queries/servers/features';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
@@ -44,6 +45,7 @@ const enhanced = withObservables([], ({channel, database}: {channel: ChannelMode
     }
 
     return {
+        canWrite: observeCanWriteDmGm(database),
         currentUserId,
         isBot,
         members,

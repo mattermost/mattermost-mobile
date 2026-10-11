@@ -215,12 +215,70 @@ describe('Role Queries', () => {
             expect(canRead).toBe(true);
         });
 
-        it('should not apply a policy in a DM', async () => {
+        describe('in a conversation', () => {
             const dm = TestHelper.fakeChannelModel({id: 'dm1', type: General.DM_CHANNEL, teamId: ''});
-            storeDecisions(dm.id, writeDenied);
+            const gm = TestHelper.fakeChannelModel({id: 'gm1', type: General.GM_CHANNEL, teamId: ''});
+            const storeDmGmWrite = (write: boolean) => operator.handleSystem({
+                systems: [{id: SYSTEM_IDENTIFIERS.DM_GM_ACCESS, value: {start: true, read: true, write}}],
+                prepareRecordsOnly: false,
+            });
 
-            const canPost = await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false));
-            expect(canPost).toBe(true);
+            it('should ignore a channel write decision naming a DM', async () => {
+                storeDecisions(dm.id, writeDenied);
+
+                const canPost = await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false));
+                expect(canPost).toBe(true);
+            });
+
+            it('should deny a write permission in a DM when the DM/GM write decision denies', async () => {
+                await storeDmGmWrite(false);
+
+                const canPost = await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false));
+                expect(canPost).toBe(false);
+            });
+
+            it('should deny a management permission in a GM when the DM/GM write decision denies', async () => {
+                await storeDmGmWrite(false);
+
+                const canManage = await firstValueFrom(observePermissionForChannel(database, gm, user, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES, false));
+                expect(canManage).toBe(false);
+            });
+
+            it('should leave a permission outside the write and management sets alone', async () => {
+                await storeDmGmWrite(false);
+
+                const canRead = await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.READ_CHANNEL, false));
+                expect(canRead).toBe(true);
+            });
+
+            it('should not apply the DM/GM write decision below Enterprise Advanced or when not enforced', async () => {
+                await storeDmGmWrite(false);
+                await setLicenseSku(License.SKU_SHORT_NAME.Enterprise);
+                expect(await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false))).toBe(true);
+
+                await setLicenseSku(License.SKU_SHORT_NAME.EnterpriseAdvanced);
+                await operator.handleConfigs({
+                    configs: [{id: 'EnableAttributeBasedAccessControl', value: 'false'}],
+                    configsToDelete: [],
+                    prepareRecordsOnly: false,
+                });
+                expect(await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false))).toBe(true);
+            });
+
+            it('should only offer conversation auto-translation while the DM/GM write decision allows', async () => {
+                await operator.handleConfigs({
+                    configs: [
+                        {id: 'EnableAutoTranslation', value: 'true'},
+                        {id: 'RestrictDMAndGMAutotranslation', value: 'false'},
+                    ],
+                    configsToDelete: [],
+                    prepareRecordsOnly: false,
+                });
+                await operator.handleChannel({channels: [TestHelper.fakeChannel({id: dm.id, type: General.DM_CHANNEL, team_id: ''})], prepareRecordsOnly: false});
+                await storeDmGmWrite(false);
+
+                expect(await firstValueFrom(observeCanManageChannelAutotranslations(database, dm.id, user, true))).toBe(false);
+            });
         });
 
         it('should not apply a policy below Enterprise Advanced', async () => {

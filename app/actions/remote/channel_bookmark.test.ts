@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
 import {fetchChannelBookmarks, createChannelBookmark, editChannelBookmark, deleteChannelBookmark} from './channel_bookmark';
+import {handleDmGmPolicyError} from './dm_gm_access';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -35,6 +37,10 @@ const mockClient = {
     updateChannelBookmark: jest.fn(() => ({updated: bookmark1})),
     deleteChannelBookmark: jest.fn(() => ({deleted: bookmark1})),
 };
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
+}));
 
 beforeAll(() => {
     // eslint-disable-next-line
@@ -100,6 +106,22 @@ describe('channel bookmarks', () => {
         expect(result.bookmarks).toBeDefined();
         expect(result.bookmarks?.length).toBe(0);
         expect(mockClient.getChannelBookmarksForChannel).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['createChannelBookmark', 'createChannelBookmark', () => createChannelBookmark(serverUrl, channelId, bookmark1)],
+        ['editChannelBookmark', 'updateChannelBookmark', () => editChannelBookmark(serverUrl, bookmark1)],
+        ['deleteChannelBookmark', 'deleteChannelBookmark', () => deleteChannelBookmark(serverUrl, channelId, bookmarkId)],
+    ] as const)('%s should hand a DM/GM write refusal to the DM/GM handling', async (_name, method, run) => {
+        const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_WRITE_ACCESS_DENIED, status_code: 403};
+        mockClient[method].mockImplementationOnce(() => {
+            throw denial;
+        });
+
+        const result = await run();
+
+        expect(result).toEqual({error: denial});
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
     });
 
     it('createChannelBookmark - handle not found database', async () => {

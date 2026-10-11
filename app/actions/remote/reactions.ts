@@ -13,6 +13,7 @@ import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Model} from '@nozbe/watermelondb';
@@ -104,6 +105,7 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
     } catch (error) {
         logDebug('error on addReaction', getFullErrorMessage(error));
         await expireDecisionsOnPolicyDenial(serverUrl, postId, error);
+        handleDmGmPolicyError(serverUrl, error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
@@ -131,6 +133,7 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
     } catch (error) {
         logDebug('error on removeReaction', getFullErrorMessage(error));
         await expireDecisionsOnPolicyDenial(serverUrl, postId, error);
+        handleDmGmPolicyError(serverUrl, error);
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }

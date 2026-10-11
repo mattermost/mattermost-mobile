@@ -12,6 +12,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logError} from '@utils/log';
 import {isScheduledPostModel} from '@utils/scheduled_post';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
 
 import type {CreateResponse} from '@hooks/handle_send_message';
@@ -36,6 +37,7 @@ export async function createScheduledPost(serverUrl: string, schedulePost: Sched
     } catch (error) {
         logError('error on createScheduledPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error: getFullErrorMessage(error)};
     }
 }

@@ -10,6 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {
     getIsReactionAlreadyAddedToPost,
     toggleReaction,
@@ -67,6 +68,10 @@ const mockClient = {
     addReaction: jest.fn((userId: string, postId: string, emoji: string) => ({user_id: userId, post_id: postId, emoji_name: emoji})),
     removeReaction: jest.fn(),
 };
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
+}));
 
 beforeAll(() => {
     // eslint-disable-next-line
@@ -176,6 +181,22 @@ describe('reactions crud', () => {
         const result = await addReaction(serverUrl, post1.id, '+1');
         expect(result.error).toBeDefined();
         expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it.each([
+        ['addReaction', 'addReaction', () => addReaction(serverUrl, post1.id, '+1')],
+        ['removeReaction', 'removeReaction', () => removeReaction(serverUrl, post1.id, '+1')],
+    ] as const)('%s should hand a DM/GM write refusal to the DM/GM handling', async (_name, method, run) => {
+        const denial = {message: 'denied', server_error_id: ServerErrors.DM_GM_WRITE_ACCESS_DENIED, status_code: 403};
+        mockClient[method].mockImplementationOnce(() => {
+            throw denial;
+        });
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await run();
+
+        expect(result.error).toBe(denial);
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
     });
 
     it('removeReaction - handle error', async () => {

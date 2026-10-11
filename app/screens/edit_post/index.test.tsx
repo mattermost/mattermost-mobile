@@ -102,6 +102,46 @@ describe('EditPost', () => {
         });
     });
 
+    it('should pass the DM/GM write decision for a post in a conversation, ignoring channel decisions', async () => {
+        const channelId = 'dm-1';
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}},
+                {id: SYSTEM_IDENTIFIERS.DM_GM_ACCESS, value: {start: true, read: true, write: true}},
+            ],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleChannel({channels: [TestHelper.fakeChannel({id: channelId, type: 'D', team_id: ''})], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: 'POSTS.RECEIVED_NEW',
+            order: [baseProps.postId],
+            posts: [TestHelper.fakePost({id: baseProps.postId, channel_id: channelId})],
+            prepareRecordsOnly: false,
+        });
+        RenderPermissionsStore.setEntry(serverUrl, channelId, {
+            epoch: 1,
+            decisions: {[RenderPermissionAction.ChannelWriteAccess]: {allowed: false, evaluated: true}},
+        }, RENDER_PERMISSIONS_TTL_MS);
+
+        const {getByTestId} = renderWithEverything(<EnhancedEditPost {...baseProps}/>, {database, serverUrl});
+        await waitFor(() => {
+            expect(getByTestId('edit-post').props.writeDenied).toBe(false);
+        });
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.DM_GM_ACCESS, value: {start: true, read: true, write: false}}], prepareRecordsOnly: false});
+        await waitFor(() => {
+            expect(getByTestId('edit-post').props.writeDenied).toBe(true);
+        });
+    });
+
     it('should pass the write decision for the channel of the post being edited', async () => {
         const channelId = 'channel-1';
         await operator.handleConfigs({

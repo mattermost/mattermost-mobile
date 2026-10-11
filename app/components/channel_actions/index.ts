@@ -6,6 +6,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {observeCanManageChannelMembers} from '@queries/servers/role';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -28,6 +29,9 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     return {
         channelType,
         canManageMembers,
+
+        // Only shown in conversations, where setting the header is a DM/GM write.
+        canSetHeader: observeCanWriteDmGm(database),
     };
 });
 

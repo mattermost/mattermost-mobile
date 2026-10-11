@@ -10,6 +10,7 @@ import {observeCallsConfig} from '@calls/state';
 import {General, Permissions} from '@constants';
 import {RenderPermissionAction} from '@constants/access_control';
 import {observeChannel} from '@queries/servers/channel';
+import {observeCanWriteDmGm} from '@queries/servers/dm_gm_access';
 import {observeChannelActionDenied} from '@queries/servers/render_permissions';
 import {observePermissionForChannelRBACOnly, observePermissionForTeam, observeCanManageChannelSettings, observeCanManageChannelAutotranslations, observeCanManageSharedChannel} from '@queries/servers/role';
 import {
@@ -175,8 +176,9 @@ const enhanced = withObservables(['channelId'], ({channelId, serverUrl, database
         switchMap((version) => of$(isMinimumServerVersion(version || '', 9, 1))),
     );
 
-    const convertGMOptionAvailable = combineLatest([isConvertGMFeatureAvailable, type, isGuestUser]).pipe(
-        switchMap(([available, chType, guest]) => of$(available && chType === General.GM_CHANNEL && !guest)),
+    // Converting is a management action, which the DM/GM write decision governs in a conversation.
+    const convertGMOptionAvailable = combineLatest([isConvertGMFeatureAvailable, type, isGuestUser, observeCanWriteDmGm(database)]).pipe(
+        switchMap(([available, chType, guest, canWrite]) => of$(available && chType === General.GM_CHANNEL && !guest && canWrite)),
     );
 
     // Channel autotranslation observable

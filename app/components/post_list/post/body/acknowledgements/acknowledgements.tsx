@@ -24,6 +24,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    canAcknowledge: boolean;
     currentUserId: UserModel['id'];
     currentUserTimezone: UserModel['timezone'];
     hasReactions: boolean;
@@ -70,7 +71,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, location, post, theme}: Props) => {
+const Acknowledgements = ({canAcknowledge, currentUserId, currentUserTimezone, hasReactions, location, post, theme}: Props) => {
     const serverUrl = useServerUrl();
     const {height} = useWindowDimensions();
 
@@ -91,7 +92,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
     }, [acknowledgements, currentUserId]);
 
     const handleOnPress = useCallback(() => {
-        if ((acknowledgedAt && moreThan5minAgo(acknowledgedAt)) || isCurrentAuthor) {
+        if (!canAcknowledge || (acknowledgedAt && moreThan5minAgo(acknowledgedAt)) || isCurrentAuthor) {
             return;
         }
         if (acknowledgedAt) {
@@ -99,7 +100,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
         } else {
             acknowledgePost(serverUrl, post.id);
         }
-    }, [acknowledgedAt, isCurrentAuthor, post.id, serverUrl]);
+    }, [acknowledgedAt, canAcknowledge, isCurrentAuthor, post.id, serverUrl]);
 
     const handleOnLongPress = useCallback(async () => {
         if (!acknowledgements.length) {
@@ -151,6 +152,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
             <TouchableOpacity
                 onPress={handleOnPress}
                 onLongPress={handleOnLongPress}
+                testID={`acknowledgements.${post.id}.button`}
                 style={[style.container, acknowledgedAt ? style.containerActive : undefined]}
             >
                 <CompassIcon

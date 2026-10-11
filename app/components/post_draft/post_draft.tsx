@@ -24,6 +24,7 @@ type Props = {
     channelIsArchived?: boolean;
     channelIsReadOnly: boolean;
     deactivatedChannel: boolean;
+    dmGmWriteDenied: boolean;
     files?: FileInfo[];
     isSearch?: boolean;
     message?: string;
@@ -44,6 +45,7 @@ function PostDraft({
     channelIsArchived,
     channelIsReadOnly,
     deactivatedChannel,
+    dmGmWriteDenied,
     files,
     isSearch,
     message = '',
@@ -101,6 +103,7 @@ function PostDraft({
             <ReadOnly
                 testID={readOnlyTestID}
                 writeDenied={writeDenied}
+                dmGmWriteDenied={dmGmWriteDenied}
             />
         );
     }

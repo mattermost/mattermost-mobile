@@ -157,6 +157,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     } catch (error) {
         logDebug('Error sending a post', getFullErrorMessage(error));
         expireChannelDecisionsOnDenial(serverUrl, newPost.channel_id, error);
+        handleDmGmPolicyError(serverUrl, error);
         const errorPost = {
             ...newPost,
             id: pendingPostId,
@@ -281,6 +282,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     } catch (error) {
         logDebug('error on retryFailedPost', getFullErrorMessage(error));
         expireChannelDecisionsOnDenial(serverUrl, post.channelId, error);
+        handleDmGmPolicyError(serverUrl, error);
         if (isServerError(error) && (
             error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
             error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
@@ -1086,6 +1088,7 @@ export const deletePost = async (serverUrl: string, postToDelete: PostModel | Po
     } catch (error) {
         logDebug('error on deletePost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 };
@@ -1196,6 +1199,7 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
     } catch (error) {
         logDebug('error on editPost', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     }
 };
@@ -1392,6 +1396,7 @@ export async function acknowledgePost(serverUrl: string, postId: string) {
         return addPostAcknowledgement(serverUrl, postId, userId, acknowledgedAt, false);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     } finally {
         EphemeralStore.unsetAcknowledgingPost(postId);
@@ -1409,6 +1414,7 @@ export async function unacknowledgePost(serverUrl: string, postId: string) {
         return removePostAcknowledgement(serverUrl, postId, userId, false);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     } finally {
         EphemeralStore.unsetUnacknowledgingPost(postId);

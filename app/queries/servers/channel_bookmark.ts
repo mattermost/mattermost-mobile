@@ -12,6 +12,7 @@ import {isDMorGM} from '@utils/channel';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import {observeChannel} from './channel';
+import {observeCanWriteDmGm} from './dm_gm_access';
 import {observePermissionForChannel} from './role';
 import {observeConfigValue} from './system';
 import {observeCurrentUser} from './user';
@@ -35,7 +36,7 @@ const observeHasPermissionToBookmarks = (
             }
 
             if (isDMorGM(c)) {
-                return of$(true);
+                return observeCanWriteDmGm(database);
             }
 
             const permission = c.type === General.OPEN_CHANNEL ? public_permission : private_permission;
