@@ -6,7 +6,7 @@ import DatabaseManager from '@database/manager';
 import {DM_GM_ACCESS_ALLOWED, getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
 import {querySystemValue} from '@queries/servers/system';
 
-import {clearDmGmAccessSeq, nextDmGmAccessSeq, storeDmGmAccess} from './dm_gm_access';
+import {clearStoredDmGmAccessState, nextDmGmAccessSeq, storeDmGmAccess} from './dm_gm_access';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
@@ -22,7 +22,7 @@ describe('storeDmGmAccess', () => {
     });
 
     afterEach(async () => {
-        clearDmGmAccessSeq(serverUrl);
+        clearStoredDmGmAccessState(serverUrl);
         await DatabaseManager.destroyServerDatabase(serverUrl);
     });
 

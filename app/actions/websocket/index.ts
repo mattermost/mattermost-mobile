@@ -4,7 +4,7 @@
 import RNUtils from '@mattermost/rnutils';
 
 import {markChannelAsViewed} from '@actions/local/channel';
-import {nextDmGmAccessSeq} from '@actions/local/dm_gm_access';
+import {isDmGmAccessSynced, markDmGmAccessSynced, nextDmGmAccessSeq} from '@actions/local/dm_gm_access';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {isRedactionEnforced} from '@actions/local/redaction';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
@@ -60,7 +60,8 @@ export async function handleReconnect(serverUrl: string, groupLabel: BaseRequest
     return doReconnect(serverUrl, groupLabel, false);
 }
 
-// The DM/GM decisions are fetched on the first connect only; events keep them current after it.
+// The DM/GM decisions are fetched on the first connect, or on a reconnect while no fetch has stored
+// them (the first connect failed); events keep them current after that.
 async function doReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel | undefined, isFirstConnect: boolean) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -87,7 +88,8 @@ async function doReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel 
         const currentChannelId = await getCurrentChannelId(database);
 
         setTeamLoading(serverUrl, true);
-        const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel, isFirstConnect);
+        const fetchDmGmAccessDecisions = isFirstConnect || !isDmGmAccessSynced(serverUrl);
+        const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastFullSync, groupLabel, fetchDmGmAccessDecisions);
         if ('error' in entryData) {
             return entryData.error;
         }
@@ -108,7 +110,10 @@ async function doReconnect(serverUrl: string, groupLabel: BaseRequestGroupLabel 
         // After the batch, so a purge removes what entry stored and a restore builds on it; before the
         // post fetches, so nothing is fetched for a purged conversation.
         if (dmGmAccess) {
-            await storeAndApplyDmGmAccess(serverUrl, dmGmAccess.access, dmGmAccess.seq, {fromEntry: true});
+            const {error: dmGmAccessError} = await storeAndApplyDmGmAccess(serverUrl, dmGmAccess.access, dmGmAccess.seq, {fromEntry: true});
+            if (!dmGmAccessError) {
+                markDmGmAccessSynced(serverUrl);
+            }
         } else if (hasDirectChannels && !(await getDmGmAccessRecord(database)).read) {
             // A list with conversations in it means Read is allowed now: a one-way correction.
             await storeAndApplyDmGmAccess(serverUrl, (previous) => ({...previous, read: true}), nextDmGmAccessSeq(), {fromEntry: true});

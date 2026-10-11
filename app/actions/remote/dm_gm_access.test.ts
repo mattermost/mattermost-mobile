@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {storeLastViewedChannelIdAndServer, storeLastViewedThreadIdAndServer} from '@actions/app/global';
 import {storeMyChannelsForTeam} from '@actions/local/channel';
-import {nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
+import {isDmGmAccessSynced, nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
 import {ActionType, Events, General, License, Screens, ServerErrors} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -272,6 +272,24 @@ describe('fetchDmGmAccess', () => {
 
         expect(result.error).toBe(error);
         expect(forceLogoutIfNecessary).toHaveBeenCalledWith(serverUrl, error);
+    });
+
+    it('should count as synced only once a fetch stored the decisions, until teardown', async () => {
+        await enforcedOnServer('12.1.0');
+        mockClient.searchPermissionActionDecisions.mockResolvedValue(response({dm_gm_read_access: allowedDecision}));
+
+        await fetchDmGmAccess(serverUrl, true);
+        expect(isDmGmAccessSynced(serverUrl)).toBe(false);
+
+        mockClient.searchPermissionActionDecisions.mockRejectedValueOnce({status_code: 403, message: 'forbidden'});
+        await fetchDmGmAccess(serverUrl);
+        expect(isDmGmAccessSynced(serverUrl)).toBe(false);
+
+        await fetchDmGmAccess(serverUrl);
+        expect(isDmGmAccessSynced(serverUrl)).toBe(true);
+
+        clearDmGmAccessState(serverUrl);
+        expect(isDmGmAccessSynced(serverUrl)).toBe(false);
     });
 
     it('should drop an answer that lands after a newer one', async () => {

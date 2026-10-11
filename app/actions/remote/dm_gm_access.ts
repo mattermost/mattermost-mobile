@@ -6,7 +6,7 @@ import {chunk} from 'lodash';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeLastViewedChannelIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
-import {clearDmGmAccessSeq, nextDmGmAccessSeq, storeDmGmAccess, type DmGmAccessUpdate} from '@actions/local/dm_gm_access';
+import {clearStoredDmGmAccessState, markDmGmAccessSynced, nextDmGmAccessSeq, storeDmGmAccess, type DmGmAccessUpdate} from '@actions/local/dm_gm_access';
 import {Events, General, Screens} from '@constants';
 import {DmGmAccessAction} from '@constants/access_control';
 import {MM_TABLES} from '@constants/database';
@@ -366,7 +366,10 @@ export async function fetchDmGmAccess(serverUrl: string, fetchOnly = false, grou
     }
 
     if (!fetchOnly) {
-        await storeAndApplyDmGmAccess(serverUrl, access, seq);
+        const {error} = await storeAndApplyDmGmAccess(serverUrl, access, seq);
+        if (!error) {
+            markDmGmAccessSynced(serverUrl);
+        }
     }
     return {dmGmAccess: {access, seq}};
 }
@@ -415,5 +418,5 @@ export async function handleDmGmPolicyError(serverUrl: string, error: unknown) {
 export function clearDmGmAccessState(serverUrl: string) {
     resetRetry(serverUrl);
     pendingApply.delete(serverUrl);
-    clearDmGmAccessSeq(serverUrl);
+    clearStoredDmGmAccessState(serverUrl);
 }

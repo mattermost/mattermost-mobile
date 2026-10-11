@@ -5,6 +5,7 @@ import RNUtils from '@mattermost/rnutils';
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsViewed} from '@actions/local/channel';
+import {clearStoredDmGmAccessState} from '@actions/local/dm_gm_access';
 import {autoCacheCleanup} from '@actions/local/ephemeral_mode/cleanup';
 import {dataRetentionCleanup, expiredBoRPostCleanup, performVacuum} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
@@ -356,6 +357,11 @@ describe('WebSocket Index Actions', () => {
             jest.mocked(EphemeralStore.getCurrentThreadId).mockReturnValue('');
             jest.mocked(getCurrentUser).mockResolvedValue(TestHelper.fakeUserModel({id: currentUserId, locale: 'en'}));
             jest.mocked(getDmGmAccessRecord).mockResolvedValue({start: true, read: true, write: true});
+            jest.mocked(storeAndApplyDmGmAccess).mockResolvedValue({});
+        });
+
+        afterEach(() => {
+            clearStoredDmGmAccessState(serverUrl);
         });
 
         it('should fetch the decisions on a first connect and store them between the entry batch and the post fetches', async () => {
@@ -374,12 +380,29 @@ describe('WebSocket Index Actions', () => {
             expect(storeOrder).toBeLessThan(fetchOrder);
         });
 
-        it('should not fetch the decisions on a reconnect', async () => {
-            jest.mocked(entry).mockResolvedValue(entryData);
+        it('should fetch the decisions on the reconnect that follows a failed first connect', async () => {
+            // The websocket manager marks the first connection synced even when it failed, so the
+            // retry arrives as a reconnect.
+            jest.mocked(entry).mockResolvedValueOnce({error: new Error('entry failed')});
+            await handleFirstConnect(serverUrl, groupLabel);
 
+            jest.mocked(entry).mockResolvedValueOnce({...entryData, dmGmAccess: {access: readDenied, seq: 8}});
             await handleReconnect(serverUrl);
 
-            expect(entry).toHaveBeenCalledWith(serverUrl, currentTeamId, currentChannelId, undefined, 'WebSocket Reconnect', false);
+            expect(entry).toHaveBeenLastCalledWith(serverUrl, currentTeamId, currentChannelId, undefined, 'WebSocket Reconnect', true);
+            expect(storeAndApplyDmGmAccess).toHaveBeenCalledWith(serverUrl, readDenied, 8, {fromEntry: true});
+        });
+
+        it('should not fetch the decisions on a reconnect once a connect stored them', async () => {
+            jest.mocked(entry).mockResolvedValueOnce({...entryData, dmGmAccess: {access: readDenied, seq: 7}});
+            await handleFirstConnect(serverUrl, groupLabel);
+            jest.mocked(storeAndApplyDmGmAccess).mockClear();
+            jest.mocked(handleEntryAfterLoadNavigation).mockClear();
+
+            jest.mocked(entry).mockResolvedValueOnce(entryData);
+            await handleReconnect(serverUrl);
+
+            expect(entry).toHaveBeenLastCalledWith(serverUrl, currentTeamId, currentChannelId, undefined, 'WebSocket Reconnect', false);
             expect(jest.mocked(handleEntryAfterLoadNavigation).mock.calls[0][8]).toBe(false);
             expect(storeAndApplyDmGmAccess).not.toHaveBeenCalled();
         });

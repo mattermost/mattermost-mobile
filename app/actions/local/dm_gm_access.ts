@@ -34,8 +34,19 @@ export const nextDmGmAccessSeq = () => {
     return seqCounter;
 };
 
-export const clearDmGmAccessSeq = (serverUrl: string) => {
+// Servers whose decisions were fetched and stored this session. A first connect that fails before
+// storing them is retried as a reconnect, which only fetches them while this is unset.
+const syncedServers = new Set<string>();
+
+export const markDmGmAccessSynced = (serverUrl: string) => {
+    syncedServers.add(serverUrl);
+};
+
+export const isDmGmAccessSynced = (serverUrl: string) => syncedServers.has(serverUrl);
+
+export const clearStoredDmGmAccessState = (serverUrl: string) => {
     storedSeqs.delete(serverUrl);
+    syncedServers.delete(serverUrl);
 };
 
 /**
