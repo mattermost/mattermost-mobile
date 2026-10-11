@@ -96,6 +96,16 @@ export const observeCanWriteDmGm = (database: Database): Observable<boolean> => 
 };
 
 /**
+ * Sharing into a conversation needs both reading and writing it.
+ */
+export const observeCanShareToDmGm = (database: Database): Observable<boolean> => {
+    return observeDmGmAccess(database).pipe(
+        map((access) => access.read && access.write),
+        distinctUntilChanged(),
+    );
+};
+
+/**
  * Starting a conversation is only offered when it could also be read once started.
  */
 export const observeCanStartDmGm = (database: Database): Observable<boolean> => {

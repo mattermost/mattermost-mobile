@@ -478,6 +478,37 @@ describe('prepareDeleteChannel with a real database', () => {
     });
 });
 
+describe('queryMyRecentChannels with a real database', () => {
+    const serverUrl = 'queryMyRecentChannels.test.com';
+    let operator: ServerDataOperator;
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        const channels = [
+            TestHelper.fakeChannel({id: 'dm1', type: General.DM_CHANNEL, team_id: ''}),
+            TestHelper.fakeChannel({id: 'gm1', type: General.GM_CHANNEL, team_id: ''}),
+            TestHelper.fakeChannel({id: 'open1', type: General.OPEN_CHANNEL, team_id: 'team1'}),
+        ];
+        const myChannels = [
+            TestHelper.fakeMyChannel({channel_id: 'dm1', last_viewed_at: 3}),
+            TestHelper.fakeMyChannel({channel_id: 'gm1', last_viewed_at: 2}),
+            TestHelper.fakeMyChannel({channel_id: 'open1', last_viewed_at: 1}),
+        ];
+        await operator.handleChannel({channels, prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels, myChannels: myChannels.map((m) => ({...m, id: m.channel_id})), prepareRecordsOnly: false});
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should leave out conversations before the limit applies when asked', async () => {
+        expect(await queryMyRecentChannels(operator.database, 1).fetchIds()).toEqual(['dm1']);
+        expect(await queryMyRecentChannels(operator.database, 1, true).fetchIds()).toEqual(['open1']);
+    });
+});
+
 describe('prepareDeleteBookmarks', () => {
     let bookmark: ChannelBookmarkModel;
 

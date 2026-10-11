@@ -15,6 +15,7 @@ import {
     getDmGmAccessRecord,
     observeCanReadDmGm,
     observeCanSendDirectMessageTo,
+    observeCanShareToDmGm,
     observeCanStartDmGm,
     observeCanWriteDmGm,
     observeDmGmAccess,
@@ -122,6 +123,15 @@ describe('dm_gm_access queries', () => {
 
             await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: true, read: true, write: false});
             expect(await firstValueFrom(observeCanStartDmGm(operator.database))).toBe(true);
+        });
+
+        it('should share into conversations only while both Read and Write are allowed', async () => {
+            await enforce();
+            await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: true, read: true, write: false});
+            expect(await firstValueFrom(observeCanShareToDmGm(operator.database))).toBe(false);
+
+            await storeSystem(SYSTEM_IDENTIFIERS.DM_GM_ACCESS, {start: false, read: true, write: true});
+            expect(await firstValueFrom(observeCanShareToDmGm(operator.database))).toBe(true);
         });
     });
 

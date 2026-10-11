@@ -606,15 +606,24 @@ export function observeMyChannelUnreads(database: Database, teamId: string) {
     );
 }
 
-export function queryMyRecentChannels(database: Database, take: number) {
+/**
+ * @param excludeDirect - Leave out direct and group messages. Filtered in the query, as the limit
+ * applies before any filter on the result could.
+ */
+export function queryMyRecentChannels(database: Database, take: number, excludeDirect = false) {
     const count: Q.Clause[] = [];
 
     if (take > 0) {
         count.push(Q.take(take));
     }
 
+    const channelConditions: Q.Where[] = [Q.where('delete_at', Q.eq(0))];
+    if (excludeDirect) {
+        channelConditions.push(Q.where('type', Q.notIn([General.DM_CHANNEL, General.GM_CHANNEL])));
+    }
+
     return queryAllMyChannel(database).extend(
-        Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+        Q.on(CHANNEL, Q.and(...channelConditions)),
         Q.sortBy('last_viewed_at', Q.desc),
         ...count,
     );
