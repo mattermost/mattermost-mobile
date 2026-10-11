@@ -14,6 +14,7 @@ import {getCurrentCall} from '@calls/state';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, getCurrentChannel, getMyChannel, prepareMyChannelsForTeam} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {setCurrentTeamId, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, canViewArchivedChannels} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -36,6 +37,7 @@ jest.mock('@actions/websocket/access_control');
 jest.mock('@actions/local/channel');
 jest.mock('@actions/local/post');
 jest.mock('@queries/servers/channel');
+jest.mock('@queries/servers/dm_gm_access');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@calls/actions');
@@ -393,6 +395,21 @@ describe('WebSocket Channel Actions', () => {
     });
 
     describe('handleDirectAddedEvent', () => {
+        beforeEach(() => {
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read: true, write: true});
+        });
+
+        it('should ignore a new conversation while direct and group messages are hidden', async () => {
+            msg.data = {teammate_id: userId};
+            (EphemeralStore.creatingDMorGMTeammates as string[]) = [];
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read: false, write: true});
+
+            await handleDirectAddedEvent(serverUrl, msg);
+
+            expect(getChannelById).not.toHaveBeenCalled();
+            expect(fetchMyChannel).not.toHaveBeenCalled();
+        });
+
         it('should handle direct added event', async () => {
             msg.data = {teammate_id: userId};
             (EphemeralStore.creatingDMorGMTeammates as string[]) = [];

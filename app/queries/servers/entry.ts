@@ -4,6 +4,7 @@
 import {handleAutotranslationChanges} from '@actions/remote/entry/common';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {isDMorGM} from '@utils/channel';
 
 import {prepareCategoriesAndCategoriesChannels} from './categories';
 import {prepareAllMyChannels, prepareDeleteChannel, queryAllChannels, queryChannelsById} from './channel';
@@ -82,7 +83,11 @@ export async function prepareEntryModelsForDeletion({serverUrl, operator, teamDa
         if (removeChannelIds?.length) {
             removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
             removeChannels.forEach((c) => {
-                modelPromises.push(prepareDeleteChannel(serverUrl, c));
+                // A conversation is also left out of the list while a DM/GM read policy hides it, so
+                // what it would need to come back intact is kept. Leaving one keeps them too, unseen,
+                // as draft and category queries join on the channel.
+                const keep = isDMorGM(c);
+                modelPromises.push(prepareDeleteChannel(serverUrl, c, {keepDrafts: keep, keepCategoryChannels: keep}));
             });
         }
     }

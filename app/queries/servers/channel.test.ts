@@ -6,7 +6,7 @@
 import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 
-import {General, Permissions} from '@constants';
+import {ActionType, General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
@@ -425,6 +425,56 @@ describe('prepareDeleteChannel', () => {
 
         expect(result).toEqual([{}]);
         expect(channel.prepareDestroyPermanently).toHaveBeenCalled();
+    });
+});
+
+describe('prepareDeleteChannel with a real database', () => {
+    const serverUrl = 'prepareDeleteChannelReal.test.com';
+    const channelId = 'dmchannelid';
+    const rootId = 'rootpostid';
+    let operator: ServerDataOperator;
+
+    const countDrafts = () => operator.database.get(MM_TABLES.SERVER.DRAFT).query(Q.where('channel_id', channelId)).fetchCount();
+
+    const deleteChannel = async (options?: Parameters<typeof prepareDeleteChannel>[2]) => {
+        const channel = await operator.database.get<ChannelModel>(MM_TABLES.SERVER.CHANNEL).find(channelId);
+        await operator.batchRecords(await prepareDeleteChannel(serverUrl, channel, options), 'test');
+    };
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+
+        await operator.handleChannel({channels: [TestHelper.fakeChannel({id: channelId, type: General.DM_CHANNEL, team_id: ''})], prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [rootId],
+            posts: [TestHelper.fakePost({id: rootId, channel_id: channelId})],
+            prepareRecordsOnly: false,
+        });
+
+        // One call per draft: the handler keeps one draft per channel from each call.
+        await operator.handleDraft({drafts: [{channel_id: channelId, root_id: '', message: 'channel draft', update_at: 1}], prepareRecordsOnly: false});
+        await operator.handleDraft({drafts: [{channel_id: channelId, root_id: rootId, message: 'thread draft', update_at: 1}], prepareRecordsOnly: false});
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should delete the channel and thread drafts by default', async () => {
+        expect(await countDrafts()).toBe(2);
+
+        await deleteChannel();
+
+        expect(await countDrafts()).toBe(0);
+    });
+
+    it('should keep the channel and thread drafts when asked to', async () => {
+        await deleteChannel({keepDrafts: true});
+
+        expect(await countDrafts()).toBe(2);
+        expect(await operator.database.get(MM_TABLES.SERVER.POST).query(Q.where('channel_id', channelId)).fetchCount()).toBe(0);
     });
 });
 

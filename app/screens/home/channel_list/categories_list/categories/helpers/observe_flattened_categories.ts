@@ -10,6 +10,7 @@ import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
+import {observeCanReadDmGm} from '@queries/servers/dm_gm_access';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {observeDeactivatedUsers} from '@queries/servers/user';
@@ -328,7 +329,9 @@ export const observeFlattenedCategories = (
     // Observe categories for the current team
     const categories = queryCategoriesByTeamIds(database, [currentTeamId]).observeWithColumns(['sort_order', 'collapsed']);
 
-    return categories.pipe(
+    // While a DM/GM read policy hides the conversations, their category would render as an empty header.
+    return combineLatest([categories, observeCanReadDmGm(database)]).pipe(
+        map(([cats, canReadDmGm]) => (canReadDmGm ? cats : cats.filter((c) => c.type !== DMS_CATEGORY))),
         switchMap((cats) => observeFlattenedCategoriesNormal(sortCategories(cats), database, currentUserId, locale, isTablet)),
     );
 };

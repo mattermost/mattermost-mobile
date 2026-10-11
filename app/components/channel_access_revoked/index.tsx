@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {defineMessages, useIntl, type IntlShape} from 'react-intl';
+import {defineMessages, useIntl, type IntlShape, type MessageDescriptor} from 'react-intl';
 import {Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -29,8 +29,20 @@ const messages = defineMessages({
     },
 });
 
+export const dmGmAccessRevokedMessages = defineMessages({
+    title: {
+        id: 'dm_gm_access_revoked.title',
+        defaultMessage: 'Messages unavailable',
+    },
+    description: {
+        id: 'dm_gm_access_revoked.description',
+        defaultMessage: 'You no longer have access to direct and group messages. They will reappear here if access is restored.',
+    },
+});
+
 type Props = {
     text: string;
+    title?: MessageDescriptor;
 }
 
 const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
@@ -76,7 +88,7 @@ const close = () => {
     dismissBottomSheet();
 };
 
-const ChannelAccessRevoked = ({text}: Props) => {
+const ChannelAccessRevoked = ({text, title = messages.title}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -85,12 +97,19 @@ const ChannelAccessRevoked = ({text}: Props) => {
     const containerStyle = useMemo(() => [style.container, {marginBottom: insets.bottom + BOTTOM_MARGIN}], [style, insets.bottom]);
 
     return (
-        <View style={containerStyle}>
+        <View
+            style={containerStyle}
+            testID='channel_access_revoked'
+        >
             <FormattedText
-                {...messages.title}
+                {...title}
                 style={style.title}
+                testID='channel_access_revoked.title'
             />
-            <Text style={style.body}>
+            <Text
+                style={style.body}
+                testID='channel_access_revoked.description'
+            >
                 {text}
             </Text>
             <Button
@@ -98,6 +117,7 @@ const ChannelAccessRevoked = ({text}: Props) => {
                 onPress={close}
                 size='lg'
                 theme={theme}
+                testID='channel_access_revoked.okay.button'
             />
         </View>
     );

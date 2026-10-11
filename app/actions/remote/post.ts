@@ -33,6 +33,7 @@ import {logDebug, logError, logWarning} from '@utils/log';
 import {isPostPendingOrFailed, isPostRedactionVerified, processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {processChannelPostsByTeam} from './post.auxiliary';
 import {forceLogoutIfNecessary} from './session';
 
@@ -411,6 +412,7 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId, channelId, redactionVerifiedEpoch: data.redactionVerifiedEpoch};
     } catch (error) {
         logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
+        handleDmGmPolicyError(serverUrl, error);
         return {error};
     } finally {
         if (!fetchOnly) {
@@ -843,6 +845,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
     } catch (error) {
         logDebug('error on fetchPostThread', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        handleDmGmPolicyError(serverUrl, error);
         setFetchingThreadState(postId, false);
         return {error};
     }

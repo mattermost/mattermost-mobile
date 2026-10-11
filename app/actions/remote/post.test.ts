@@ -17,6 +17,7 @@ import {getFullErrorMessage} from '@utils/errors';
 import * as LocalChannelActions from '../local/channel';
 import {RedactionInvalidationReason, invalidateRedactionGlobally} from '../local/redaction';
 
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {
     createPost,
     retryFailedPost,
@@ -176,6 +177,10 @@ jest.mock('@actions/remote/channel', () => {
         fetchChannelStats: mockFetchChannelStats,
     };
 });
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
+}));
 
 beforeAll(() => {
     // @ts-ignore
@@ -1228,6 +1233,20 @@ describe('get posts', () => {
         expect(result.error).toBeDefined();
     });
 
+    it('fetchPostsForChannel - should hand a DM/GM read denial to the DM/GM handling', async () => {
+        const denial = {server_error_id: ServerErrors.DM_GM_READ_ACCESS_DENIED, status_code: 403, message: 'denied'};
+        mockClient.getPosts.mockImplementationOnce(() => {
+            throw denial;
+        });
+
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [channel1], myChannels: [channelMember1], prepareRecordsOnly: false});
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+        expect(result.error).toBe(denial);
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
+    });
+
     it('fetchPostsForChannel - should recover a channel whose newest interval lost all its posts', async () => {
         // The only cached post is deleted server-side while the app is closed. On the next
         // open the since-fetch returns the tombstone, handlePosts destroys the post, and the
@@ -1499,6 +1518,17 @@ describe('get posts', () => {
         const result = await fetchPostThread('foo', '');
         expect(result).toBeDefined();
         expect(result.error).toBeTruthy();
+    });
+
+    it('fetchPostThread - should hand a DM/GM read denial to the DM/GM handling', async () => {
+        const denial = {server_error_id: ServerErrors.DM_GM_READ_ACCESS_DENIED, status_code: 403, message: 'denied'};
+        mockClient.getPostThread.mockImplementationOnce(() => {
+            throw denial;
+        });
+
+        const result = await fetchPostThread(serverUrl, post1.id);
+        expect(result.error).toBe(denial);
+        expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
     });
 
     it('fetchPostThread - base case', async () => {

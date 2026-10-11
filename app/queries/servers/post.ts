@@ -26,9 +26,9 @@ const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 const DEFAULT_BURN_ON_READ_DURATION_SECONDS = '600';
 const DEFAULT_BURN_ON_READ_MAXIMUM_TTL_SECONDS = '604800';
 
-export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
+export const prepareDeletePost = async (post: PostModel, keepDrafts = false): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: Array<Query<Model>> = [post.drafts, post.files, post.reactions];
+    const relations: Array<Query<Model>> = keepDrafts ? [post.files, post.reactions] : [post.drafts, post.files, post.reactions];
     for await (const models of relations) {
         try {
             models.forEach((m) => {

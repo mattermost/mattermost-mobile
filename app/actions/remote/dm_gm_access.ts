@@ -1,23 +1,42 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Q, type Database} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
+
+import {removeLastViewedChannelIdAndServer, removeLastViewedThreadIdAndServer} from '@actions/app/global';
 import {clearDmGmAccessSeq, nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
+import {Events, General, Screens} from '@constants';
 import {DmGmAccessAction} from '@constants/access_control';
+import {MM_TABLES} from '@constants/database';
 import {DM_GM_ACCESS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
+import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer} from '@queries/app/global';
+import {prepareDeleteChannel, queryChannelsByTypes} from '@queries/servers/channel';
 import {DM_GM_ACCESS_ALLOWED, getDmGmAccess, getDmGmAccessRecord, type DmGmAccess} from '@queries/servers/dm_gm_access';
+import {queryFilesForPosts} from '@queries/servers/file';
 import {isChannelAccessEnforced} from '@queries/servers/render_permissions';
-import {getConfigValue} from '@queries/servers/system';
+import {getCommonSystemValues, getConfigValue, getCurrentChannelId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs} from '@queries/servers/system';
+import {queryTeamChannelHistories} from '@queries/servers/team';
+import {navigateToRoot} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStore} from '@store/navigation_store';
 import {RENDER_PERMISSIONS_RETRY_MS, RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 import {getDmGmPolicyDenial} from '@utils/channel_policy';
 import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
-import {isMinimumServerVersion} from '@utils/helpers';
+import {deleteDownloadedFiles} from '@utils/file';
+import {isMinimumServerVersion, isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
+import {handleKickFromChannel} from './channel';
 import {forceLogoutIfNecessary} from './session';
 
-import type {Database} from '@nozbe/watermelondb';
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type PostModel from '@typings/database/models/servers/post';
+
+const {SERVER: {POST}} = MM_TABLES;
 
 type ApplyOptions = {
 
@@ -79,9 +98,95 @@ const scheduleRetry = (serverUrl: string) => {
     }, delay));
 };
 
-// Losing Read hides the conversations locally; nothing is sent to the server.
+// Every team's history: removeCurrentUserFromChannel strips a conversation from team '' only, and
+// getNthLastChannelFromTeam does not check membership, so a tablet kick could land on another one.
+async function stripTeamChannelHistories(operator: ServerDataOperator, channelIds: Set<string>) {
+    const histories = await queryTeamChannelHistories(operator.database).fetch();
+    const teamChannelHistories = histories.
+        filter((h) => h.channelIds.some((id) => channelIds.has(id))).
+        map((h) => ({id: h.id, channel_ids: h.channelIds.filter((id) => !channelIds.has(id))}));
+    if (teamChannelHistories.length) {
+        await operator.handleTeamChannelHistory({teamChannelHistories, prepareRecordsOnly: false});
+    }
+}
+
+// Only the active server can have the conversations on screen. A current conversation that is not
+// shown is cleared with the purge batch.
+async function closeConversationScreens(serverUrl: string, database: Database, channelIds: Set<string>, postIds: Set<string>) {
+    if ((await DatabaseManager.getActiveServerUrl()) !== serverUrl) {
+        return;
+    }
+
+    const currentChannelId = await getCurrentChannelId(database);
+    const channelShown = channelIds.has(currentChannelId) && (isTablet() || NavigationStore.isScreenInStack(Screens.CHANNEL));
+    if (channelShown) {
+        // Navigates to the root, which also closes a thread of it, and emits the event once.
+        await handleKickFromChannel(serverUrl, currentChannelId, Events.DM_GM_ACCESS_REVOKED);
+    } else if (postIds.has(EphemeralStore.getCurrentThreadId()) && NavigationStore.isScreenInStack(Screens.THREAD)) {
+        await navigateToRoot();
+        DeviceEventEmitter.emit(Events.DM_GM_ACCESS_REVOKED);
+    }
+
+    // The file viewers hold their items by value, so deleting the rows does not reach them.
+    if (postIds.has(EphemeralStore.getCurrentFileViewerPostId())) {
+        DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
+    }
+}
+
+async function clearLastViewedConversation(serverUrl: string, channelIds: Set<string>, postIds: Set<string>) {
+    const [lastChannel, lastThread] = await Promise.all([getLastViewedChannelIdAndServer(), getLastViewedThreadIdAndServer()]);
+    if (lastChannel?.server_url === serverUrl && channelIds.has(lastChannel.channel_id)) {
+        await removeLastViewedChannelIdAndServer();
+    }
+    if (lastThread?.server_url === serverUrl && postIds.has(lastThread.thread_id)) {
+        await removeLastViewedThreadIdAndServer();
+    }
+}
+
+/**
+ * Losing Read hides every conversation locally; nothing is sent to the server. Their drafts and
+ * category entries are kept, unseen because those queries join on the channel, so the conversations
+ * come back intact with access. Runs only inside the apply queue.
+ */
 export async function purgeDirectAndGroupChannels(serverUrl: string) {
-    logDebug('purgeDirectAndGroupChannels: not implemented yet', serverUrl);
+    const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    const channels = await queryChannelsByTypes(database, [General.DM_CHANNEL, General.GM_CHANNEL]).fetch();
+    if (!channels.length) {
+        logDebug('purgeDirectAndGroupChannels: no conversations stored');
+        return;
+    }
+
+    const channelIds = new Set(channels.map((c) => c.id));
+    const posts = await database.get<PostModel>(POST).query(Q.where('channel_id', Q.oneOf([...channelIds]))).fetch();
+    const postIds = new Set(posts.map((p) => p.id));
+
+    // Committed first, so a tablet kick picks a surviving channel.
+    await stripTeamChannelHistories(operator, channelIds);
+    await closeConversationScreens(serverUrl, database, channelIds, postIds);
+
+    const files = await queryFilesForPosts(database, [...postIds]).fetch();
+    const models = (await Promise.all(channels.map((c) => prepareDeleteChannel(serverUrl, c, {keepDrafts: true, keepCategoryChannels: true})))).flat();
+
+    const {currentChannelId, lastUnreadChannelId} = await getCommonSystemValues(database);
+    const systemValues: PrepareCommonSystemValuesArgs = {};
+    if (channelIds.has(currentChannelId)) {
+        systemValues.currentChannelId = '';
+    }
+    if (channelIds.has(lastUnreadChannelId)) {
+        systemValues.lastUnreadChannelId = '';
+    }
+    if (Object.keys(systemValues).length) {
+        models.push(...await prepareCommonSystemValues(operator, systemValues));
+    }
+
+    await operator.batchRecords(models, 'purgeDirectAndGroupChannels');
+
+    for (const id of channelIds) {
+        PushNotifications.removeChannelNotifications(serverUrl, id);
+    }
+    deleteDownloadedFiles(serverUrl, files);
+    await clearLastViewedConversation(serverUrl, channelIds, postIds);
+    logDebug('purgeDirectAndGroupChannels: hid conversations', channelIds.size);
 }
 
 export async function restoreDirectAndGroupChannels(serverUrl: string, {entryHandled}: {entryHandled: boolean}) {

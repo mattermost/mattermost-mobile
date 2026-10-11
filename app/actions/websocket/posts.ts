@@ -20,11 +20,13 @@ import {ActionType, Events, Screens} from '@constants';
 import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import {NavigationStore} from '@store/navigation_store';
+import {isTypeDMorGM} from '@utils/channel';
 import {hasArrayChanged, isTablet} from '@utils/helpers';
 import {logDebug, logWarning} from '@utils/log';
 import {isFromWebhook, isPostEphemeral, isSystemMessage, restoreEphemeralIdentityFieldsForEdit, shouldIgnorePost} from '@utils/post';
@@ -77,6 +79,11 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     const existing = await getPostById(database, post.pending_post_id) || await getPostById(database, post.id);
 
     if (existing) {
+        return;
+    }
+
+    if (isTypeDMorGM(msg.data.channel_type) && !(await getDmGmAccess(database)).read) {
+        logDebug('handleNewPostEvent: ignored while direct and group messages are hidden', post.channel_id);
         return;
     }
 

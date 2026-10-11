@@ -17,7 +17,7 @@ import {navigateToScreen, navigateToRoot} from '@screens/navigation';
 import {NavigationStore} from '@store/navigation_store';
 import {alertInvalidDeepLink, parseAndHandleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
-import {alertChannelArchived, alertChannelRemove, alertTeamRemove, showChannelAccessRevoked} from '@utils/navigation';
+import {alertChannelArchived, alertChannelRemove, alertTeamRemove, showChannelAccessRevoked, showDmGmAccessRevoked} from '@utils/navigation';
 import {notificationError, type NotificationErrorType} from '@utils/notification';
 
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
@@ -75,6 +75,10 @@ export function useHomeScreenEffects(props: LaunchProps) {
             showChannelAccessRevoked(displayName, intl);
         });
 
+        const dmGmAccessRevokedListener = DeviceEventEmitter.addListener(Events.DM_GM_ACCESS_REVOKED, () => {
+            showDmGmAccessRevoked(intl);
+        });
+
         const crtToggledListener = DeviceEventEmitter.addListener(Events.CRT_TOGGLED, (isSameServer: boolean) => {
             if (isSameServer) {
                 navigateToRoot();
@@ -87,6 +91,7 @@ export function useHomeScreenEffects(props: LaunchProps) {
             leaveChannelListener.remove();
             archivedChannelListener.remove();
             accessRevokedListener.remove();
+            dmGmAccessRevokedListener.remove();
             crtToggledListener.remove();
         };
     }, [intl]);

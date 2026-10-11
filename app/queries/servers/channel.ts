@@ -152,10 +152,20 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
     return prepareChannels(operator, channels, channelInfos, channelMembers, memberships, isCRTEnabled);
 };
 
-export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelModel): Promise<Model[]> => {
+type PrepareDeleteChannelOptions = {
+
+    // Kept for a conversation hidden by a DM/GM read policy, so it returns intact when access does.
+    keepDrafts?: boolean;
+    keepCategoryChannels?: boolean;
+};
+
+export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelModel, {keepDrafts = false, keepCategoryChannels = false}: PrepareDeleteChannelOptions = {}): Promise<Model[]> => {
     const preparedModels: Model[] = [channel.prepareDestroyPermanently()];
 
-    const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info, channel.categoryChannel];
+    const relations: Array<Relation<Model|MyChannelModel> | undefined> = [channel.membership, channel.info];
+    if (!keepCategoryChannels) {
+        relations.push(channel.categoryChannel);
+    }
     await Promise.all(relations.map(async (relation) => {
         try {
             const model = await relation?.fetch();
@@ -175,7 +185,7 @@ export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelMo
 
     const associatedChildren: Array<Query<Model> | undefined> = [
         channel.members,
-        channel.drafts,
+        keepDrafts ? undefined : channel.drafts,
         channel.postsInChannel,
     ];
     await Promise.all(associatedChildren.map(async (children) => {
@@ -186,7 +196,7 @@ export const prepareDeleteChannel = async (serverUrl: string, channel: ChannelMo
     const posts = await channel.posts?.fetch();
     if (posts?.length) {
         for await (const post of posts) {
-            const preparedPost = await prepareDeletePost(post);
+            const preparedPost = await prepareDeletePost(post, keepDrafts);
             preparedModels.push(...preparedPost);
         }
     }

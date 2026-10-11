@@ -19,6 +19,7 @@ import {getCurrentCall} from '@calls/state';
 import {Events, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {deleteChannelMembership, getChannelById, getMyChannel, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {canViewArchivedChannels, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, setCurrentTeamId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -261,6 +262,11 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const {channel_id: channelId} = msg.broadcast;
+        if (!(await getDmGmAccess(database)).read) {
+            logDebug('handleDirectAddedEvent: ignored while direct and group messages are hidden', channelId);
+            return;
+        }
+
         const channel = await getChannelById(database, channelId);
         if (channel) {
             return; // We already have this channel

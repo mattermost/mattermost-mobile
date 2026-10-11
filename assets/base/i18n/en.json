@@ -466,6 +466,8 @@
   "display_settings.timezone": "Timezone",
   "display_settings.tz.auto": "Auto",
   "display_settings.tz.manual": "Manual",
+  "dm_gm_access_revoked.description": "You no longer have access to direct and group messages. They will reappear here if access is restored.",
+  "dm_gm_access_revoked.title": "Messages unavailable",
   "download.error": "Unable to download the file. Try again later",
   "draft.option.header": "Draft actions",
   "draft.options.delete.cancel": "Cancel",

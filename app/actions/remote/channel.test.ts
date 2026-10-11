@@ -65,6 +65,7 @@ import {
     setChannelAutotranslation,
     setMyChannelAutotranslation,
 } from './channel';
+import {handleDmGmPolicyError} from './dm_gm_access';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -97,6 +98,10 @@ jest.mock('@queries/app/servers', () => {
         getActiveServer: mockGetActiveServer,
     };
 });
+
+jest.mock('./dm_gm_access', () => ({
+    handleDmGmPolicyError: jest.fn(),
+}));
 
 jest.mock('@store/navigation_store', () => ({
     NavigationStore: {
@@ -733,8 +738,8 @@ describe('app/actions/remote/channel', () => {
             expect(channels).toHaveLength(1);
         });
 
-        it.each(['D', 'G'])('should leave a %s channel alone', async (type) => {
-            // DMs and GMs are outside the channel-access policies, so a read denial naming
+        it.each(['D', 'G'])('should leave a %s channel alone without a DM/GM read denial', async (type) => {
+            // DMs and GMs are outside the channel-access policies, so a channel read denial naming
             // one is not believed: purging it would lose a conversation the server still serves.
             await operator.handleChannel({channels: [{id: channelId, display_name: 'Direct', team_id: '', type} as Channel], prepareRecordsOnly: false});
             await operator.handleMyChannel({channels: [{id: channelId, team_id: '', type} as Channel], myChannels: [{id: channelId, channel_id: channelId, user_id: user.id, roles: ''} as unknown as ChannelMembership], prepareRecordsOnly: false});
@@ -744,6 +749,16 @@ describe('app/actions/remote/channel', () => {
             expect(result).toEqual({});
             const channels = await operator.database.get('Channel').query().fetch();
             expect(channels).toHaveLength(1);
+            expect(handleDmGmPolicyError).not.toHaveBeenCalled();
+        });
+
+        it('should hand a DM/GM read denial to the DM/GM handling', async () => {
+            const denial = {server_error_id: ServerErrors.DM_GM_READ_ACCESS_DENIED, status_code: 403};
+
+            const result = await handleChannelAccessDenied(serverUrl, channelId, denial);
+
+            expect(result).toEqual({});
+            expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, denial);
         });
 
         it('should purge the channel when it is not the current one', async () => {
@@ -806,6 +821,18 @@ describe('app/actions/remote/channel', () => {
 
             const channels = await operator.database.get('Channel').query().fetch();
             expect(channels).toHaveLength(0);
+        });
+
+        it('should hand a DM/GM read denial of the view call to the DM/GM handling', async () => {
+            const dmGmDenial = Object.assign(new Error('denied'), {server_error_id: ServerErrors.DM_GM_READ_ACCESS_DENIED, status_code: 403});
+            mockClient.viewMyChannel.mockImplementationOnce(() => {
+                throw dmGmDenial;
+            });
+
+            const {error} = await markChannelAsRead(serverUrl, channelId);
+
+            expect(error).toBe(dmGmDenial);
+            expect(handleDmGmPolicyError).toHaveBeenCalledWith(serverUrl, dmGmDenial);
         });
 
         it('should leave the channel alone for an unrelated 403', async () => {

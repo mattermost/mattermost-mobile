@@ -26,7 +26,7 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
-import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
+import {expireChannelDecisionsOnDenial, getDmGmPolicyDenial} from '@utils/channel_policy';
 import {getFullErrorMessage, getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
@@ -36,6 +36,7 @@ import {displayGroupMessageName, displayUsername} from '@utils/user';
 import {addChannelToManagedCategoryIfNeeded, fetchCategories} from './category';
 import {fetchChannelBookmarks} from './channel_bookmark';
 import {fetchChannelAttributeValues} from './classification';
+import {handleDmGmPolicyError} from './dm_gm_access';
 import {fetchGroupsForChannelIfConstrained} from './groups';
 import {fetchPostsForChannel} from './post';
 import {openChannelIfNeeded, savePreference} from './preference';
@@ -762,8 +763,9 @@ export async function markChannelAsRead(serverUrl: string, channelId: string, up
         return {};
     } catch (error) {
         logDebug('error on markChannelAsRead', getFullErrorMessage(error));
-        if (getServerError(error) === ServerErrors.CHANNEL_ACCESS_DENIED) {
-            await handleChannelAccessDenied(serverUrl, channelId);
+        const serverError = getServerError(error);
+        if (serverError === ServerErrors.CHANNEL_ACCESS_DENIED || serverError === ServerErrors.DM_GM_READ_ACCESS_DENIED) {
+            await handleChannelAccessDenied(serverUrl, channelId, error);
         }
         return {error};
     }
@@ -1524,7 +1526,13 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
     }
 };
 
-export const handleChannelAccessDenied = async (serverUrl: string, channelId: string) => {
+export const handleChannelAccessDenied = async (serverUrl: string, channelId: string, denial?: unknown) => {
+    // A DM/GM read refusal hides every conversation at once, not just this one.
+    if (getDmGmPolicyDenial(denial) === 'read') {
+        await handleDmGmPolicyError(serverUrl, denial);
+        return {};
+    }
+
     const key = `${serverUrl}|${channelId}`;
     if (channelAccessDenialsInFlight.has(key)) {
         logDebug('handleChannelAccessDenied: denial already being handled', channelId);
@@ -1542,6 +1550,9 @@ export const handleChannelAccessDenied = async (serverUrl: string, channelId: st
         }
 
         const channel = await myChannel.channel.fetch();
+
+        // The channel policies never apply to conversations, so a channel read denial naming one
+        // (a render decision can) is not believed.
         if (isDMorGM(channel)) {
             logDebug('handleChannelAccessDenied: ignoring denial for a direct or group channel', channelId);
             return {};

@@ -10,6 +10,7 @@ export default keyMirror({
     CHANNEL_SWITCH: null,
     CLOSE_BOTTOM_SHEET: null,
     CLOSE_GALLERY: null,
+    DM_GM_ACCESS_REVOKED: null,
     CONFIG_CHANGED: null,
     LICENSE_CHANGED: null,
     FREEZE_SCREEN: null,

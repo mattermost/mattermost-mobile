@@ -1,22 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
-import {License, ServerErrors} from '@constants';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
-import DatabaseManager from '@database/manager';
-import NetworkManager from '@managers/network_manager';
-import {DM_GM_ACCESS_ALLOWED, getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
-import {RENDER_PERMISSIONS_RETRY_MS} from '@store/render_permissions_store';
-import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {Q} from '@nozbe/watermelondb';
+import {DeviceEventEmitter} from 'react-native';
 
-import {clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError} from './dm_gm_access';
+import {storeLastViewedChannelIdAndServer, storeLastViewedThreadIdAndServer} from '@actions/app/global';
+import {storeMyChannelsForTeam} from '@actions/local/channel';
+import {nextDmGmAccessSeq, storeDmGmAccess} from '@actions/local/dm_gm_access';
+import {ActionType, Events, General, License, Screens, ServerErrors} from '@constants';
+import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import PushNotifications from '@init/push_notifications';
+import NetworkManager from '@managers/network_manager';
+import {getLastViewedChannelIdAndServer, getLastViewedThreadIdAndServer} from '@queries/app/global';
+import {DM_GM_ACCESS_ALLOWED, getDmGmAccessRecord} from '@queries/servers/dm_gm_access';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getTeamChannelHistory} from '@queries/servers/team';
+import {navigateToRoot} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStore} from '@store/navigation_store';
+import {RENDER_PERMISSIONS_RETRY_MS} from '@store/render_permissions_store';
+import TestHelper from '@test/test_helper';
+import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
+import {deleteDownloadedFiles} from '@utils/file';
+
+import {handleKickFromChannel} from './channel';
+import {applyDmGmAccess, clearDmGmAccessState, fetchDmGmAccess, handleDmGmPolicyError, purgeDirectAndGroupChannels} from './dm_gm_access';
 import {forceLogoutIfNecessary} from './session';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('./session', () => ({
     forceLogoutIfNecessary: jest.fn(),
+}));
+
+jest.mock('./channel', () => ({
+    handleKickFromChannel: jest.fn(),
+}));
+
+jest.mock('@screens/navigation', () => ({
+    navigateToRoot: jest.fn(),
+}));
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
 }));
 
 const serverUrl = 'dm-gm-access-remote.test.com';
@@ -279,5 +307,210 @@ describe('handleDmGmPolicyError', () => {
         await handleDmGmPolicyError(serverUrl, new Error('network down'));
 
         expect(await getDmGmAccessRecord(operator.database)).toEqual(DM_GM_ACCESS_ALLOWED);
+    });
+});
+
+describe('purgeDirectAndGroupChannels', () => {
+    const {SERVER: {
+        CATEGORY_CHANNEL, CHANNEL, CHANNEL_BOOKMARK, CHANNEL_INFO, CHANNEL_MEMBERSHIP, DRAFT, FILE, MY_CHANNEL,
+        MY_CHANNEL_SETTINGS, POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, REACTION, THREAD, THREADS_IN_TEAM,
+    }} = MM_TABLES;
+
+    const teamId = 'teamid1';
+    const otherTeamId = 'teamid2';
+    const userId = 'userid1';
+    const dmId = 'dmchannelid';
+    const gmId = 'gmchannelid';
+    const openId = 'openchannelid';
+    const rootId = 'dmrootpostid';
+    const replyId = 'dmreplypostid';
+
+    const countIn = (table: string, column: string, values: string[]) => {
+        return operator.database.get(table).query(Q.where(column, Q.oneOf(values))).fetchCount();
+    };
+
+    const seed = async () => {
+        const channels = [
+            TestHelper.fakeChannel({id: dmId, name: `${userId}__other`, type: General.DM_CHANNEL, team_id: ''}),
+            TestHelper.fakeChannel({id: gmId, name: 'gm', type: General.GM_CHANNEL, team_id: ''}),
+            TestHelper.fakeChannel({id: openId, name: 'open', type: General.OPEN_CHANNEL, team_id: teamId}),
+        ];
+        const memberships = channels.map((c) => TestHelper.fakeChannelMember({channel_id: c.id, user_id: userId}));
+        await storeMyChannelsForTeam(serverUrl, '', channels, memberships, false);
+
+        const root = TestHelper.fakePost({
+            id: rootId,
+            channel_id: dmId,
+            metadata: {
+                files: [TestHelper.fakeFileInfo({id: 'dmfileid', post_id: rootId})],
+                reactions: [{user_id: userId, post_id: rootId, emoji_name: 'smile', create_at: 1}],
+            },
+        });
+        const reply = TestHelper.fakePost({id: replyId, channel_id: dmId, root_id: rootId});
+        const openPost = TestHelper.fakePost({id: 'openpostid', channel_id: openId});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: [replyId, rootId], posts: [root, reply], prepareRecordsOnly: false});
+        await operator.handlePosts({actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL, order: ['openpostid'], posts: [openPost], prepareRecordsOnly: false});
+        await operator.handleThreads({threads: [{...TestHelper.fakeThread({id: rootId, post: root, reply_count: 1}), lastFetchedAt: 0}], teamId, prepareRecordsOnly: false});
+
+        await operator.handleChannelBookmark({
+            bookmarks: [{id: 'bookmarkid', channel_id: dmId, create_at: 1, update_at: 1, delete_at: 0, owner_id: userId, display_name: 'link', link_url: 'http://test.com', sort_order: 0, type: 'link'}],
+            prepareRecordsOnly: false,
+        });
+
+        // One call per draft: the handler keeps one draft per channel from each call.
+        await operator.handleDraft({drafts: [{channel_id: dmId, root_id: '', message: 'channel draft', update_at: 1}], prepareRecordsOnly: false});
+        await operator.handleDraft({drafts: [{channel_id: dmId, root_id: rootId, message: 'thread draft', update_at: 1}], prepareRecordsOnly: false});
+        await operator.handleCategoryChannels({
+            categoryChannels: [{id: `${teamId}_${dmId}`, category_id: 'dmcategoryid', channel_id: dmId, sort_order: 0}],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleTeamChannelHistory({
+            teamChannelHistories: [
+                {id: teamId, channel_ids: [dmId, openId, gmId]},
+                {id: otherTeamId, channel_ids: [gmId]},
+            ],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [
+                {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId},
+                {id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: dmId},
+                {id: SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID, value: gmId},
+            ],
+            prepareRecordsOnly: false,
+        });
+    };
+
+    beforeAll(() => {
+        (NetworkManager.getClient as jest.Mock) = jest.fn(() => mockClient);
+    });
+
+    beforeEach(async () => {
+        await DatabaseManager.init([serverUrl]);
+        operator = DatabaseManager.serverDatabases[serverUrl]!.operator;
+        jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+        jest.spyOn(PushNotifications, 'removeChannelNotifications').mockImplementation(async () => undefined);
+        jest.spyOn(NavigationStore, 'isScreenInStack').mockReturnValue(false);
+        await seed();
+    });
+
+    afterEach(async () => {
+        clearDmGmAccessState(serverUrl);
+        EphemeralStore.setCurrentThreadId('');
+        jest.restoreAllMocks();
+        jest.clearAllMocks();
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('should delete every stored conversation, keeping its drafts and category entries', async () => {
+        const ids = [dmId, gmId];
+        expect(await countIn(DRAFT, 'channel_id', [dmId])).toBe(2);
+        expect(await countIn(POST, 'channel_id', ids)).toBe(2);
+        expect(await countIn(THREAD, 'id', [rootId])).toBe(1);
+        await purgeDirectAndGroupChannels(serverUrl);
+
+        expect(await countIn(CHANNEL, 'id', ids)).toBe(0);
+        expect(await countIn(MY_CHANNEL, 'id', ids)).toBe(0);
+        expect(await countIn(MY_CHANNEL_SETTINGS, 'id', ids)).toBe(0);
+        expect(await countIn(CHANNEL_INFO, 'id', ids)).toBe(0);
+        expect(await countIn(CHANNEL_MEMBERSHIP, 'channel_id', ids)).toBe(0);
+        expect(await countIn(POST, 'channel_id', ids)).toBe(0);
+        expect(await countIn(POSTS_IN_CHANNEL, 'channel_id', ids)).toBe(0);
+        expect(await countIn(POSTS_IN_THREAD, 'root_id', [rootId])).toBe(0);
+        expect(await countIn(FILE, 'post_id', [rootId])).toBe(0);
+        expect(await countIn(REACTION, 'post_id', [rootId])).toBe(0);
+        expect(await countIn(THREAD, 'id', [rootId])).toBe(0);
+        expect(await countIn(THREADS_IN_TEAM, 'thread_id', [rootId])).toBe(0);
+        expect(await countIn(CHANNEL_BOOKMARK, 'channel_id', ids)).toBe(0);
+
+        expect(await countIn(DRAFT, 'channel_id', [dmId])).toBe(2);
+        expect(await countIn(CATEGORY_CHANNEL, 'channel_id', [dmId])).toBe(1);
+
+        expect(await countIn(CHANNEL, 'id', [openId])).toBe(1);
+        expect(await countIn(POST, 'channel_id', [openId])).toBe(1);
+
+        expect(await getTeamChannelHistory(operator.database, teamId)).toEqual([openId]);
+        expect(await getTeamChannelHistory(operator.database, otherTeamId)).toEqual([]);
+        const {currentChannelId, lastUnreadChannelId} = await getCommonSystemValues(operator.database);
+        expect(currentChannelId).toBe('');
+        expect(lastUnreadChannelId).toBe('');
+    });
+
+    it('should clear notifications, downloaded files and the last viewed conversation, without asking the server', async () => {
+        await storeLastViewedChannelIdAndServer(dmId);
+        await storeLastViewedThreadIdAndServer(rootId);
+
+        await purgeDirectAndGroupChannels(serverUrl);
+
+        expect(PushNotifications.removeChannelNotifications).toHaveBeenCalledTimes(2);
+        expect(PushNotifications.removeChannelNotifications).toHaveBeenCalledWith(serverUrl, dmId);
+        expect(PushNotifications.removeChannelNotifications).toHaveBeenCalledWith(serverUrl, gmId);
+        expect(deleteDownloadedFiles).toHaveBeenCalledWith(serverUrl, [expect.objectContaining({id: 'dmfileid'})]);
+        expect(await getLastViewedChannelIdAndServer()).toBeUndefined();
+        expect(await getLastViewedThreadIdAndServer()).toBeUndefined();
+        expect(NetworkManager.getClient).not.toHaveBeenCalled();
+    });
+
+    it('should kick once from a conversation on screen', async () => {
+        jest.mocked(NavigationStore.isScreenInStack).mockImplementation((screen) => screen === Screens.CHANNEL || screen === Screens.THREAD);
+        EphemeralStore.setCurrentThreadId(rootId);
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.DM_GM_ACCESS_REVOKED, listener);
+
+        await purgeDirectAndGroupChannels(serverUrl);
+        subscription.remove();
+
+        expect(handleKickFromChannel).toHaveBeenCalledTimes(1);
+        expect(handleKickFromChannel).toHaveBeenCalledWith(serverUrl, dmId, Events.DM_GM_ACCESS_REVOKED);
+        expect(navigateToRoot).not.toHaveBeenCalled();
+        expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('should close a conversation thread open over another channel', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID, value: openId}], prepareRecordsOnly: false});
+        jest.mocked(NavigationStore.isScreenInStack).mockImplementation((screen) => screen === Screens.THREAD);
+        EphemeralStore.setCurrentThreadId(rootId);
+        const listener = jest.fn();
+        const subscription = DeviceEventEmitter.addListener(Events.DM_GM_ACCESS_REVOKED, listener);
+
+        await purgeDirectAndGroupChannels(serverUrl);
+        subscription.remove();
+
+        expect(handleKickFromChannel).not.toHaveBeenCalled();
+        expect(navigateToRoot).toHaveBeenCalledTimes(1);
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect((await getCommonSystemValues(operator.database)).currentChannelId).toBe(openId);
+    });
+
+    it('should leave the screens of a server that is not active alone', async () => {
+        jest.mocked(DatabaseManager.getActiveServerUrl).mockResolvedValue('other.test.com');
+        jest.mocked(NavigationStore.isScreenInStack).mockReturnValue(true);
+
+        await purgeDirectAndGroupChannels(serverUrl);
+
+        expect(handleKickFromChannel).not.toHaveBeenCalled();
+        expect((await getCommonSystemValues(operator.database)).currentChannelId).toBe('');
+    });
+
+    it('should purge once for concurrent applies', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}],
+            prepareRecordsOnly: false,
+        });
+        await storeDmGmAccess(serverUrl, readDenied, nextDmGmAccessSeq());
+        const batchRecords = jest.spyOn(operator, 'batchRecords');
+
+        await Promise.all([applyDmGmAccess(serverUrl), applyDmGmAccess(serverUrl)]);
+
+        expect(batchRecords.mock.calls.filter(([, description]) => description === 'purgeDirectAndGroupChannels')).toHaveLength(1);
+        expect(await countIn(CHANNEL, 'id', [dmId, gmId])).toBe(0);
     });
 });

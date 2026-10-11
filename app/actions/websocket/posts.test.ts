@@ -19,6 +19,7 @@ import {PostTypes} from '@constants/post';
 import DatabaseManager from '@database/manager';
 import {PostsInChannelModel} from '@database/models/server';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
+import {getDmGmAccess} from '@queries/servers/dm_gm_access';
 import {getPostById, syncPermalinkPreviewsForEditedPost} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
@@ -34,6 +35,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 
 jest.mock('@queries/servers/post');
 jest.mock('@queries/servers/channel');
+jest.mock('@queries/servers/dm_gm_access');
 jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/thread');
 jest.mock('@actions/local/channel');
@@ -111,6 +113,23 @@ describe('WebSocket Post Actions', () => {
         mockedFetchPostAuthors.mockResolvedValue({authors: []});
         mockedGetScreensInStack.mockReturnValue([Screens.CHANNEL]);
         mockedIsTablet.mockReturnValue(false);
+
+        it.each([
+            {read: false, handled: false},
+            {read: true, handled: true},
+        ])('should handle a conversation post only while direct and group messages are readable ($read)', async ({read, handled}) => {
+            jest.mocked(getDmGmAccess).mockResolvedValue({start: true, read, write: true});
+            jest.spyOn(operator, 'batchRecords').mockImplementation(jest.fn());
+            jest.spyOn(operator, 'handlePosts').mockResolvedValue(postModels);
+            mockedGetMyChannel.mockResolvedValue(myChannelModel);
+            mockedGetIsCRTEnabled.mockResolvedValue(false);
+            mockedShouldIgnorePost.mockReturnValue(false);
+
+            await handleNewPostEvent(serverUrl, {...msg, data: {...msg.data, channel_type: 'D'}});
+
+            expect(getDmGmAccess).toHaveBeenCalledTimes(1);
+            expect(mockedGetMyChannel).toHaveBeenCalledTimes(handled ? 1 : 0);
+        });
 
         it('should handle new post event - channel membership present', async () => {
             const userModel = TestHelper.fakeUserModel({id: 'user1', username: 'username1'});

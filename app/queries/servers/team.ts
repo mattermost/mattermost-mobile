@@ -86,6 +86,10 @@ export const getTeamChannelHistory = async (database: Database, teamId: string) 
     }
 };
 
+export const queryTeamChannelHistories = (database: Database) => {
+    return database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query();
+};
+
 export const observeTeamLastChannelId = (database: Database, teamId: string) => {
     return database.get<TeamChannelHistoryModel>(TEAM_CHANNEL_HISTORY).query(Q.where('id', teamId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),

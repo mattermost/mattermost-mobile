@@ -3,6 +3,7 @@
 
 import {CATEGORIES_TO_KEEP} from '@constants/preferences';
 import DatabaseManager from '@database/manager';
+import TestHelper from '@test/test_helper';
 
 import {prepareEntryModels, prepareEntryModelsForDeletion, truncateCrtRelatedTables} from './entry';
 
@@ -12,6 +13,7 @@ import type {MyTeamsRequest} from '@actions/remote/team';
 import type {MyUserRequest} from '@actions/remote/user';
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+import type DraftModel from '@typings/database/models/servers/draft';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 describe('Entry Queries', () => {
@@ -230,6 +232,38 @@ describe('Entry Queries', () => {
             expect(promises.length).toBeGreaterThan(0);
             const results = await Promise.all(promises);
             expect(results[0].length).toBeGreaterThan(0);
+        });
+
+        it('should keep the drafts of a conversation the fetch left out, and delete those of a channel', async () => {
+            // A DM/GM read policy leaves every conversation out of the list; their drafts come back
+            // with access.
+            await operator.handleChannel({
+                channels: [
+                    TestHelper.fakeChannel({id: 'dmchannel', name: 'user1__user2', team_id: '', type: 'D'}),
+                    TestHelper.fakeChannel({id: 'channel1', name: 'channel1', team_id: 'team1', type: 'O'}),
+                ],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleDraft({
+                drafts: [
+                    {channel_id: 'dmchannel', root_id: '', message: 'dm draft', update_at: 1},
+                    {channel_id: 'channel1', root_id: '', message: 'channel draft', update_at: 1},
+                ],
+                prepareRecordsOnly: false,
+            });
+
+            const promises = await prepareEntryModelsForDeletion({
+                serverUrl,
+                operator,
+                chData: {channels: [], memberships: []},
+                channelsFetchComplete: true,
+            });
+            await operator.batchRecords((await Promise.all(promises)).flat(), 'test');
+
+            const drafts = await database.get<DraftModel>('Draft').query().fetch();
+            expect(drafts).toHaveLength(1);
+            expect(drafts[0].channelId).toBe('dmchannel');
+            expect(await database.get('Channel').query().fetchCount()).toBe(0);
         });
 
         it('should not delete any channel when the fetch was incomplete', async () => {
