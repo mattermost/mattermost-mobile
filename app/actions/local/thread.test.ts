@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ActionType} from '@constants';
+import {ActionType, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import Preferences from '@constants/preferences';
 import DatabaseManager from '@database/manager';
 import {getThreadById} from '@queries/servers/thread';
+import {dismissAllRoutesAndPopToScreen, dismissToStackRoot, navigateToRoot, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {NavigationStore} from '@store/navigation_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -52,6 +54,14 @@ jest.mock('@store/navigation_store', () => {
         },
     };
 });
+
+jest.mock('@screens/navigation', () => ({
+    ...jest.requireActual('@screens/navigation'),
+    dismissAllRoutesAndPopToScreen: jest.fn(() => Promise.resolve()),
+    dismissToStackRoot: jest.fn(() => Promise.resolve()),
+    navigateToRoot: jest.fn(() => Promise.resolve()),
+    navigateToScreen: jest.fn(),
+}));
 
 const teamId = 'tId1';
 const team: Team = {
@@ -222,6 +232,35 @@ describe('switchToThread', () => {
 
         const {error} = await switchToThread(serverUrl, post.id, true);
         expect(error).toBeUndefined();
+    });
+
+    it('from notification for the thread already open keeps the thread on screen', async () => {
+        EphemeralStore.setTheme(Preferences.THEMES.denim);
+        await operator.handleUsers({users: [user, user2], prepareRecordsOnly: false});
+        await operator.handleTeam({teams: [team], prepareRecordsOnly: false});
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}, {id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}], prepareRecordsOnly: false});
+        await operator.handleChannel({channels: [{...channel, display_name: 'Town Square'}], prepareRecordsOnly: false});
+        const post = TestHelper.fakePost({channel_id: channelId, user_id: user2.id, id: 'postid', create_at: 1});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post.id],
+            posts: [post],
+            prepareRecordsOnly: false,
+        });
+
+        EphemeralStore.setCurrentThreadId(post.id);
+        jest.mocked(NavigationStore.getScreensInStack).mockReturnValueOnce([Screens.HOME, Screens.CHANNEL, Screens.THREAD]);
+        jest.mocked(dismissAllRoutesAndPopToScreen).mockClear();
+        jest.mocked(dismissToStackRoot).mockClear();
+        jest.mocked(navigateToRoot).mockClear();
+        jest.mocked(navigateToScreen).mockClear();
+
+        const {error} = await switchToThread(serverUrl, post.id, true);
+        expect(error).toBeUndefined();
+        expect(dismissAllRoutesAndPopToScreen).toHaveBeenCalledWith(Screens.THREAD, {rootId: post.id, channelName: 'Town Square'});
+        expect(dismissToStackRoot).not.toHaveBeenCalled();
+        expect(navigateToRoot).not.toHaveBeenCalled();
+        expect(navigateToScreen).not.toHaveBeenCalled();
     });
 });
 
