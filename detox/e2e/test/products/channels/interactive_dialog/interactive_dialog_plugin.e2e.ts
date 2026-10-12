@@ -1407,22 +1407,34 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await element(by.id('AppFormElement.event_date.select.button')).tap();
             await wait(timeouts.ONE_SEC);
 
+            // adb shell input bypasses Detox's synchronization tracker. Disable sync before
+            // adb taps so Detox does not block waiting for an "idle" signal that never fires
+            // (the calendar selection animation is invisible to Detox after a raw adb tap).
+            // Re-enable before the next Detox interaction.
+            await device.disableSynchronization();
+
             // # Navigate to next month (picker opens on current month).
             // System DatePickerDialog uses "Next month"; Material Components uses
             // "Navigate to next month". Try both to handle either picker implementation.
             tapPickerCellByLabel(serial, 'Next month', 'Navigate to next month');
-            await wait(timeouts.HALF_SEC);
+            await wait(timeouts.ONE_SEC); // let the month-change animation settle
 
             // # Tap the target date cell using the confirmed "DD Month YYYY" content-desc format
             tapPickerCellByLabel(serial, cellLabel);
-            await wait(timeouts.HALF_SEC);
+            await wait(timeouts.ONE_SEC); // let the selection animation settle
+
+            // Tap OK with sync still disabled — re-enabling first would let Detox block on the
+            // calendar selection animation (which it cannot observe via adb) and hang.
             await element(by.text('OK')).tap();
-            await wait(timeouts.ONE_SEC);
+            await wait(timeouts.ONE_SEC); // let the picker close fully
+
+            // Picker is now closed; re-enable sync for the form assertions.
+            await safeEnableSynchronization();
 
             // * The field renders the picked day, not the day before.
             // Before the fix, storing a date-with-timezone value and rendering it outside its own
             // timezone dropped the display to the previous calendar day.
-            await expect(element(by.text(displayedDate))).toExist();
+            await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.FIVE_SEC);
             await expect(element(by.text(dayBefore))).not.toExist();
 
             await InteractiveDialogScreen.cancel();
