@@ -30,21 +30,12 @@ class ChannelService: ObservableObject {
     getChannels()
   }
   
-  // Conversations are hidden while a DM/GM policy denies reading or writing them.
-  private var hideConversations: Bool {
-    let access = Gekidou.Database.default.getDmGmAccess(self.serverUrl)
-    return !access.read || !access.write
-  }
-  
   func getCurrentChannel() {
     selected = Gekidou.Database.default.getCurrentChannelWithTeam(self.serverUrl)
-    if hideConversations && (selected?.type == "D" || selected?.type == "G") {
-      selected = nil
-    }
   }
   
   func getChannels() {
-    channels = Gekidou.Database.default.getChannelsWithTeam(self.serverUrl, excludeDirect: hideConversations)
+    channels = Gekidou.Database.default.getChannelsWithTeam(self.serverUrl)
       .filter { channel in
         if let deactivated = channel.deactivated {
           return !deactivated || (deactivated && channel.type != "D")
@@ -60,12 +51,11 @@ class ChannelService: ObservableObject {
   
   func searchChannels(_ term: String) -> [ChannelModel] {
     let joinedChannelsMatchStart: [ChannelModel] = Gekidou.Database.default.searchJoinedChannels(serverUrl, term: term)
-    let excludeDirect = hideConversations
-    let directChannelsMatchStart: [ChannelModel] = Gekidou.Database.default.searchDirectChannels(serverUrl, term: term, excludeDirect: excludeDirect)
+    let directChannelsMatchStart: [ChannelModel] = Gekidou.Database.default.searchDirectChannels(serverUrl, term: term)
     let channelsMatchStart = (joinedChannelsMatchStart + directChannelsMatchStart).sorted { ($0.lastViewedAt ?? 0) > ($1.lastViewedAt ?? 0)}
     
     let joinedChannelsMatch: [ChannelModel] = Gekidou.Database.default.searchJoinedChannels(serverUrl, term: term, matchStart: false)
-    let directChannelsMatch: [ChannelModel] = Gekidou.Database.default.searchDirectChannels(serverUrl, term: term, matchStart: false, excludeDirect: excludeDirect)
+    let directChannelsMatch: [ChannelModel] = Gekidou.Database.default.searchDirectChannels(serverUrl, term: term, matchStart: false)
     let channelsMatch = (joinedChannelsMatch + directChannelsMatch).sorted { ($0.lastViewedAt ?? 0) > ($1.lastViewedAt ?? 0)}
     
     return (channelsMatchStart + channelsMatch)

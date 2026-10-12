@@ -6,7 +6,6 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryMyRecentChannels} from '@queries/servers/channel';
-import {observeCanShareToDmGm} from '@queries/servers/dm_gm_access';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {retrieveChannels} from '@screens/find_channels/utils';
 
@@ -19,11 +18,10 @@ const MAX_CHANNELS = 20;
 const enhanced = withObservables(['database'], ({database}: WithDatabaseArgs) => {
     const teamsCount = queryJoinedTeams(database).observeCount();
 
-    // Conversations are left out while a DM/GM policy denies reading or writing them.
-    const recentChannels = observeCanShareToDmGm(database).pipe(
-        switchMap((canShare) => queryMyRecentChannels(database, MAX_CHANNELS, !canShare).observeWithColumns(['last_viewed_at'])),
-        switchMap((myChannels) => retrieveChannels(database, myChannels, true)),
-    );
+    const recentChannels = queryMyRecentChannels(database, MAX_CHANNELS).
+        observeWithColumns(['last_viewed_at']).pipe(
+            switchMap((myChannels) => retrieveChannels(database, myChannels, true)),
+        );
 
     return {
         recentChannels,

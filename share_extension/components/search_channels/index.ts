@@ -6,7 +6,6 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm} from '@queries/servers/channel';
-import {observeCanShareToDmGm} from '@queries/servers/dm_gm_access';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {retrieveChannels} from '@screens/find_channels/utils';
 
@@ -22,15 +21,8 @@ const enhanced = withObservables(['term', 'database'], ({database, term}: Enhanc
     const teamsCount = queryJoinedTeams(database).observeCount();
     const joinedChannelsMatchStart = observeJoinedChannelsByTerm(database, term, MAX_RESULTS, true);
     const joinedChannelsMatch = observeJoinedChannelsByTerm(database, term, MAX_RESULTS);
-
-    // Conversations are left out while a DM/GM policy denies reading or writing them.
-    const canShareToDmGm = observeCanShareToDmGm(database);
-    const directChannelsMatchStart = canShareToDmGm.pipe(
-        switchMap((canShare) => (canShare ? observeDirectChannelsByTerm(database, term, MAX_RESULTS, true) : of$([]))),
-    );
-    const directChannelsMatch = canShareToDmGm.pipe(
-        switchMap((canShare) => (canShare ? observeDirectChannelsByTerm(database, term, MAX_RESULTS) : of$([]))),
-    );
+    const directChannelsMatchStart = observeDirectChannelsByTerm(database, term, MAX_RESULTS, true);
+    const directChannelsMatch = observeDirectChannelsByTerm(database, term, MAX_RESULTS);
 
     const channelsMatchStart = joinedChannelsMatchStart.pipe(
         combineLatestWith(directChannelsMatchStart),
