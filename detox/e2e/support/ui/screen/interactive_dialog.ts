@@ -228,6 +228,44 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
+    // Collapsible sections. The section, its toggle and its content each carry
+    // a testID derived from the element's name, so a nested section is
+    // addressed exactly like a top-level one.
+    getCollapsibleSection = (elementName: string) => element(by.id(`interactive_dialog.collapsible.${elementName}`));
+
+    getCollapsibleToggle = (elementName: string) => element(by.id(`interactive_dialog.collapsible.${elementName}.toggle`));
+
+    getCollapsibleContent = (elementName: string) => element(by.id(`interactive_dialog.collapsible.${elementName}.content`));
+
+    toggleCollapsibleSection = async (elementName: string) => {
+        const toggle = this.getCollapsibleToggle(elementName);
+        await waitFor(toggle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await toggle.tap();
+        await wait(500);
+    };
+
+    // A collapsed section unmounts its children, so "expanded" is the content
+    // existing at all rather than a style on it.
+    expectCollapsibleExpanded = async (elementName: string, shouldBeExpanded = true) => {
+        const content = this.getCollapsibleContent(elementName);
+        if (shouldBeExpanded) {
+            await waitFor(content).toExist().withTimeout(timeouts.TEN_SEC);
+        } else {
+            await waitFor(content).not.toExist().withTimeout(timeouts.TEN_SEC);
+        }
+    };
+
+    expandCollapsibleSection = async (elementName: string) => {
+        try {
+            await waitFor(this.getCollapsibleContent(elementName)).toExist().withTimeout(timeouts.ONE_SEC);
+            return;
+        } catch {
+            // Collapsed, so open it.
+        }
+        await this.toggleCollapsibleSection(elementName);
+        await this.expectCollapsibleExpanded(elementName);
+    };
+
     toBeVisible = async (shouldBeVisible: boolean = true) => {
         if (shouldBeVisible) {
             await waitFor(this.interactiveDialogScreen).toExist().withTimeout(timeouts.TEN_SEC);

@@ -199,6 +199,16 @@ type AppField = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Collapsible props. A collapsible field is a container: it holds child
+    // fields and never contributes a value of its own.
+    collapsible_config?: AppFieldCollapsibleConfig;
+};
+
+type AppFieldCollapsibleConfig = {
+    fields: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
 };
 
 type DateTimeConfig = {

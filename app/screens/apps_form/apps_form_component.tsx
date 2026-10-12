@@ -21,6 +21,7 @@ import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
+import {flattenAppFields} from '@utils/dialog_conversion';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
@@ -28,6 +29,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import AppsFormField from './apps_form_field';
+import CollapsibleSection from './collapsible_section';
 import DialogIntroductionText from './dialog_introduction_text';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -63,7 +65,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function fieldsAsElements(fields?: AppField[]): DialogElement[] {
-    return fields?.filter((f) => Boolean(f.name)).map((f) => {
+    return flattenAppFields(fields).filter((f) => Boolean(f.name)).map((f) => {
         return {
             name: f.name || '',
             display_name: f.label || '',
@@ -82,7 +84,7 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
             })),
             multiselect: f.multiselect,
         } as DialogElement;
-    }) || [];
+    });
 }
 
 const close = () => {
@@ -115,7 +117,7 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 
 export function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    fields?.forEach((field) => {
+    flattenAppFields(fields).forEach((field) => {
         if (!field.name) {
             return;
         }
@@ -209,7 +211,7 @@ function AppsFormComponent({
     }, [form]);
 
     const submitButtons = useMemo(() => {
-        return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
+        return form.fields && flattenAppFields(form.fields).find((f) => f.name === form.submit_buttons);
     }, [form]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
@@ -247,7 +249,7 @@ function AppsFormComponent({
     }, [intl]);
 
     const onChange = useCallback((name: string, value: AppFormValue) => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields).find((f) => f.name === name);
         if (!field) {
             logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
@@ -390,7 +392,7 @@ function AppsFormComponent({
     }, [elements, form, values, submit, submitting, uploadingFields, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields).find((f) => f.name === name);
         if (!field?.name) {
             return [];
         }
@@ -475,6 +477,50 @@ function AppsFormComponent({
         };
     }, []);
 
+    // Collapsible children render through this helper so they share values and
+    // fieldErrors with the top-level fields. depth tracks the nesting level
+    // (0 = top level) and only drives indentation.
+    const renderField = (field: AppField, depth = 0): React.ReactNode => {
+        if (!field.name) {
+            return null;
+        }
+
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            const childFields = (field.collapsible_config?.fields || []).filter(
+                (f) => f.name && f.name !== form.submit_buttons,
+            );
+
+            return (
+                <CollapsibleSection
+                    key={field.name}
+                    label={field.label || field.name}
+                    expanded={field.collapsible_config?.expanded ?? true}
+                    bordered={field.collapsible_config?.bordered ?? true}
+                    depth={depth}
+                    testID={`interactive_dialog.collapsible.${field.name}`}
+                >
+                    {childFields.map((child) => renderField(child, depth + 1))}
+                </CollapsibleSection>
+            );
+        }
+
+        const value = secureGetFromRecord(values, field.name);
+        return (
+            <AppsFormField
+                field={field}
+                key={field.name}
+                name={field.name}
+                errorText={secureGetFromRecord(errors, field.name)}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
+            />
+        );
+    };
+
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -504,26 +550,7 @@ function AppsFormComponent({
                         value={form.header}
                     />
                 }
-                {visibleFields.map((field) => {
-                    if (!field.name) {
-                        return null;
-                    }
-                    const value = secureGetFromRecord(values, field.name);
-                    return (
-                        <AppsFormField
-                            field={field}
-                            key={field.name}
-                            name={field.name}
-                            errorText={secureGetFromRecord(errors, field.name)}
-                            value={value || ''}
-                            performLookup={performLookup}
-                            onChange={onChange}
-                            setFieldUploading={setFieldUploading}
-                            channelId={channelId}
-                            serverUrl={serverUrl}
-                        />
-                    );
-                })}
+                {visibleFields.map((field) => renderField(field))}
                 <View
                     style={style.buttonsWrapper}
                 >

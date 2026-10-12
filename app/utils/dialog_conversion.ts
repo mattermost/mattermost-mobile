@@ -4,6 +4,8 @@
 // Dialog conversion utilities for Interactive Dialog to AppsForm migration
 // Based on webapp dialog_conversion.ts from PR #31821
 
+import {AppFieldTypes} from '@constants/apps';
+
 import {isAppSelectOption, mapDialogTypeToAppFieldType, DialogElementTypes, DialogTextSubtypes} from './dialog_utils';
 
 export interface ConversionContext {
@@ -16,13 +18,50 @@ export interface ConversionResult {
 }
 
 /**
+ * Flatten a tree of items, expanding collapsible containers into their children.
+ * Shared by flattenDialogElements (DialogElement) and flattenAppFields (AppField)
+ * so the two stay in sync, and mirrors the webapp helper of the same name.
+ */
+export function flattenCollapsible<T>(
+    items: T[],
+    isCollapsible: (item: T) => boolean,
+    getChildren: (item: T) => T[] | undefined,
+): T[] {
+    return items.flatMap((item) => (isCollapsible(item) ? flattenCollapsible(getChildren(item) || [], isCollapsible, getChildren) : [item]));
+}
+
+/**
+ * Flatten elements, expanding collapsible sections into their child elements.
+ * Collapsible containers hold no value, so every path that looks up a value by
+ * field name walks the flattened list instead of the top-level one.
+ */
+export function flattenDialogElements(elements: DialogElement[] = []): DialogElement[] {
+    return flattenCollapsible(
+        elements,
+        (element) => element.type === DialogElementTypes.COLLAPSIBLE,
+        (element) => element.collapsible_config?.elements,
+    );
+}
+
+/**
+ * Flatten AppFields, expanding collapsible sections into their leaf fields.
+ */
+export function flattenAppFields(fields: AppField[] = []): AppField[] {
+    return flattenCollapsible(
+        fields,
+        (field) => field.type === AppFieldTypes.COLLAPSIBLE,
+        (field) => field.collapsible_config?.fields,
+    );
+}
+
+/**
  * Collects file IDs from FILE-type dialog elements in a converted submission.
  * Shared by the single-step (adapter) and multi-step (dialog_router) submit paths
  * so uploaded file IDs aren't dropped on either. FILE values are comma-joined IDs.
  */
 export function collectFileIds(submission: {[key: string]: string}, elements: DialogElement[] = []): string[] {
     const fileIds: string[] = [];
-    elements.forEach((element) => {
+    flattenDialogElements(elements).forEach((element) => {
         if (element.type === 'file' && submission[element.name]) {
             fileIds.push(...String(submission[element.name]).split(',').map((id) => id.trim()).filter(Boolean));
         }
@@ -37,7 +76,7 @@ export function mergeFileFieldValues(
     elements: DialogElement[] = [],
 ): Record<string, string> {
     const merged = {...accumulated};
-    elements.forEach((element) => {
+    flattenDialogElements(elements).forEach((element) => {
         if (element.type === 'file' && Object.prototype.hasOwnProperty.call(submission, element.name)) {
             merged[element.name] = submission[element.name];
         }
@@ -71,10 +110,14 @@ export function convertAppFormValuesToDialogSubmission(
         return {submission, errors};
     }
 
+    // Collapsible containers never hold a value, so resolve every submitted
+    // name against their children as well.
+    const leafElements = flattenDialogElements(elements);
+
     // Convert each form value back to dialog submission format
     valueKeys.forEach((fieldName) => {
         const value = values[fieldName];
-        const element = elements.find((e) => e.name === fieldName);
+        const element = leafElements.find((e) => e.name === fieldName);
 
         if (!element) {
             errors.push(`Field ${fieldName} not found in dialog elements`);
@@ -133,10 +176,34 @@ export function convertAppFormValuesToDialogSubmission(
 }
 
 /**
+ * Convert a list of elements. Separate from the single-element converter so a
+ * collapsible's children go through exactly the same path as the top level.
+ */
+function convertDialogElements(elements?: DialogElement[]): AppField[] {
+    return (elements || []).map(convertDialogElementToAppField);
+}
+
+/**
  * Converts DialogElement to AppField format
  * Used when converting dialog config to AppForm
  */
 export function convertDialogElementToAppField(element: DialogElement): AppField {
+    // A collapsible is a container: convert its children recursively and give
+    // the section itself no value, name lookup or validation of its own.
+    if (element.type === DialogElementTypes.COLLAPSIBLE) {
+        return {
+            name: element.name,
+            type: AppFieldTypes.COLLAPSIBLE,
+            label: element.display_name,
+            position: 0,
+            collapsible_config: {
+                fields: convertDialogElements(element.collapsible_config?.elements),
+                expanded: !element.collapsible_config?.collapsed,
+                bordered: !element.collapsible_config?.borderless,
+            },
+        };
+    }
+
     const appField: AppField = {
         name: element.name,
         type: mapDialogTypeToAppFieldType(element.type, element.data_source),
@@ -198,13 +265,14 @@ export function convertDialogElementToAppField(element: DialogElement): AppField
  * Converts InteractiveDialogConfig to AppForm
  */
 export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm {
-    const convertedFields = config.dialog.elements?.map((element, index) => ({
-        ...convertDialogElementToAppField(element),
+    const convertedFields = convertDialogElements(config.dialog.elements).map((field, index) => ({
+        ...field,
         position: index,
-    })) || [];
+    }));
 
-    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
-    const hasRefreshFields = convertedFields.some((field) => field.refresh === true);
+    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior).
+    // A refresh field nested in a collapsible counts too, so check the flattened list.
+    const hasRefreshFields = flattenAppFields(convertedFields).some((field) => field.refresh === true);
     const sourceUrl = config.dialog.source_url;
 
     const form: AppForm = {

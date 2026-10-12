@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {act, fireEvent} from '@testing-library/react-native';
 import React from 'react';
 
+import {AppFieldTypes} from '@constants/apps';
 import DatabaseManager from '@database/manager';
 import {renderWithEverything} from '@test/intl-test-helper';
 
@@ -19,7 +21,31 @@ jest.mock('@actions/remote/command', () => ({
 }));
 
 jest.mock('./apps_form_field', () => {
-    const MockField = () => null;
+    const React2 = require('react');
+    const {Text, TextInput, View} = require('react-native');
+
+    // Renders just enough to assert which fields reached the form and what
+    // error each one was handed. The input is what lets a test type into a
+    // cell, so anything that tracks a live value can be exercised through the
+    // real form rather than by poking at the reducer.
+    type MockFieldProps = {
+        name: string;
+        errorText?: string;
+        value?: unknown;
+        onChange: (name: string, value: unknown) => void;
+    };
+    const MockField = ({name, errorText, value, onChange}: MockFieldProps) => (
+        React2.createElement(
+            View,
+            null,
+            React2.createElement(Text, {testID: `field.${name}`}, errorText || ''),
+            React2.createElement(TextInput, {
+                testID: `field.${name}.input`,
+                value: typeof value === 'string' ? value : '',
+                onChangeText: (text: string) => onChange(name, text),
+            }),
+        )
+    );
     return {
         __esModule: true,
         default: MockField,
@@ -123,5 +149,95 @@ describe('AppsFormComponent navigation header', () => {
 
         const headerRight = lastHeaderRight();
         expect(headerRight?.().props.text).toBe('Triage');
+    });
+});
+
+describe('AppsFormComponent collapsible fields', () => {
+    let database: Database;
+
+    const collapsible = (name: string, fields: AppField[], expanded = true): AppField => ({
+        name,
+        type: AppFieldTypes.COLLAPSIBLE,
+        label: name === 'row_1' ? 'Row 1' : name,
+        collapsible_config: {fields, expanded, bordered: true},
+    } as AppField);
+
+    beforeEach(async () => {
+        jest.clearAllMocks();
+        await DatabaseManager.init([serverUrl]);
+        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(serverUrl);
+    });
+
+    it('renders the section and its child fields', () => {
+        const form: Partial<AppForm> = {
+            fields: [collapsible('row_1', [
+                {name: 'cell_name', type: AppFieldTypes.TEXT} as AppField,
+                {name: 'cell_tons', type: AppFieldTypes.TEXT} as AppField,
+            ])],
+        };
+
+        const {getByText, getByTestId} = renderWithEverything(
+            <AppsFormComponent {...getProps(form)}/>,
+            {database, serverUrl},
+        );
+
+        expect(getByText('Row 1')).toBeTruthy();
+        expect(getByTestId('field.cell_name')).toBeTruthy();
+        expect(getByTestId('field.cell_tons')).toBeTruthy();
+    });
+
+    it('mounts the child fields only once a collapsed section is opened', () => {
+        const form: Partial<AppForm> = {
+            fields: [collapsible('row_1', [{name: 'cell_name', type: AppFieldTypes.TEXT} as AppField], false)],
+        };
+
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <AppsFormComponent {...getProps(form)}/>,
+            {database, serverUrl},
+        );
+
+        expect(queryByTestId('field.cell_name')).toBeNull();
+
+        fireEvent.press(getByTestId('interactive_dialog.collapsible.row_1.toggle'));
+
+        expect(getByTestId('field.cell_name')).toBeTruthy();
+    });
+
+    it('submits the values of nested fields', async () => {
+        const props = getProps({
+            fields: [collapsible('row_1', [
+                {name: 'cell_name', type: AppFieldTypes.TEXT, value: 'Pallets'} as AppField,
+                {name: 'cell_ready', type: AppFieldTypes.BOOL, value: true} as AppField,
+            ])],
+        });
+
+        renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+        await act(async () => {
+            lastHeaderRight()?.().props.onPress();
+        });
+
+        expect(props.submit).toHaveBeenCalledWith({cell_name: 'Pallets', cell_ready: true});
+    });
+
+    it('validates a required nested field and lands the error on that field', async () => {
+        const props = getProps({
+            fields: [collapsible('row_1', [
+                {name: 'cell_name', type: AppFieldTypes.TEXT, is_required: true} as AppField,
+            ])],
+        });
+
+        const {getByTestId} = renderWithEverything(<AppsFormComponent {...props}/>, {database, serverUrl});
+
+        await act(async () => {
+            lastHeaderRight()?.().props.onPress();
+        });
+
+        expect(props.submit).not.toHaveBeenCalled();
+        expect(getByTestId('field.cell_name').props.children).toBeTruthy();
     });
 });

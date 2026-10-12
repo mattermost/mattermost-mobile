@@ -6,6 +6,8 @@ import {
     convertAppFormValuesToDialogSubmission,
     convertDialogElementToAppField,
     convertDialogToAppForm,
+    flattenAppFields,
+    flattenDialogElements,
     flattenFileFieldValues,
     mergeFileFieldValues,
 } from './dialog_conversion';
@@ -1244,6 +1246,111 @@ describe('dialog_conversion', () => {
                 f1: 'a,b',
                 f2: 'b,c',
             })).toEqual(['a', 'b', 'c']);
+        });
+    });
+
+    describe('collapsible elements', () => {
+        const leaf = (name: string, overrides: Partial<DialogElement> = {}): DialogElement => ({
+            name,
+            type: DialogElementTypes.TEXT,
+            display_name: name,
+            optional: true,
+            default: '',
+            placeholder: '',
+            help_text: '',
+            min_length: 0,
+            max_length: 0,
+            data_source: '',
+            options: [],
+            ...overrides,
+        }) as DialogElement;
+
+        const collapsible = (name: string, elements: DialogElement[], config: Partial<DialogCollapsibleConfig> = {}): DialogElement => ({
+            ...leaf(name),
+            type: DialogElementTypes.COLLAPSIBLE,
+            collapsible_config: {elements, ...config},
+        }) as DialogElement;
+
+        it('converts a collapsible into a container field holding its children', () => {
+            const element = collapsible('row_1', [leaf('cell_name'), leaf('cell_tons', {type: DialogElementTypes.TEXT, subtype: 'number'})]);
+
+            const field = convertDialogElementToAppField(element);
+
+            expect(field.type).toBe('collapsible');
+            expect(field.label).toBe('row_1');
+            expect(field.value).toBeUndefined();
+            expect(field.collapsible_config?.fields.map((f) => f.name)).toEqual(['cell_name', 'cell_tons']);
+            expect(field.collapsible_config?.fields[1].subtype).toBe('number');
+        });
+
+        it('defaults to expanded and bordered, and inverts the dialog flags', () => {
+            const open = convertDialogElementToAppField(collapsible('open', [leaf('a')]));
+            expect(open.collapsible_config?.expanded).toBe(true);
+            expect(open.collapsible_config?.bordered).toBe(true);
+
+            const closed = convertDialogElementToAppField(collapsible('closed', [leaf('b')], {collapsed: true, borderless: true}));
+            expect(closed.collapsible_config?.expanded).toBe(false);
+            expect(closed.collapsible_config?.bordered).toBe(false);
+        });
+
+        it('converts nested collapsibles recursively', () => {
+            const element = collapsible('outer', [collapsible('inner', [leaf('deep')])]);
+
+            const field = convertDialogElementToAppField(element);
+            const inner = field.collapsible_config?.fields[0];
+
+            expect(inner?.type).toBe('collapsible');
+            expect(inner?.collapsible_config?.fields[0].name).toBe('deep');
+        });
+
+        it('flattens elements and fields down to their leaves', () => {
+            const elements = [leaf('top'), collapsible('outer', [leaf('a'), collapsible('inner', [leaf('b')])])];
+
+            expect(flattenDialogElements(elements).map((e) => e.name)).toEqual(['top', 'a', 'b']);
+            expect(flattenAppFields(elements.map(convertDialogElementToAppField)).map((f) => f.name)).toEqual(['top', 'a', 'b']);
+        });
+
+        it('converts values of nested children by their own element type', () => {
+            const elements = [collapsible('row_1', [
+                leaf('cell_name'),
+                leaf('cell_tons', {subtype: 'number'}),
+                leaf('cell_ready', {type: DialogElementTypes.BOOL}),
+            ])];
+
+            const {submission, errors} = convertAppFormValuesToDialogSubmission({
+                cell_name: 'Pallets',
+                cell_tons: '12',
+                cell_ready: true,
+            }, elements);
+
+            expect(errors).toEqual([]);
+            expect(submission).toEqual({cell_name: 'Pallets', cell_tons: 12, cell_ready: true});
+        });
+
+        it('sets the form source when a refresh field is nested in a collapsible', () => {
+            const config = {
+                app_id: 'test',
+                trigger_id: 'trigger',
+                url: 'http://localhost:8065/plugin',
+                dialog: {
+                    callback_id: 'cb',
+                    title: 'Grid',
+                    introduction_text: '',
+                    elements: [collapsible('row_1', [leaf('add_row', {type: DialogElementTypes.BOOL, refresh: true})])],
+                    submit_label: 'Submit',
+                    notify_on_cancel: false,
+                    state: '',
+                },
+            } as InteractiveDialogConfig;
+
+            expect(convertDialogToAppForm(config).source).toBeDefined();
+        });
+
+        it('collects and merges file values from nested file elements', () => {
+            const elements = [collapsible('row_1', [leaf('manifest', {type: DialogElementTypes.FILE})])];
+
+            expect(collectFileIds({manifest: 'file1,file2'}, elements)).toEqual(['file1', 'file2']);
+            expect(mergeFileFieldValues({}, {manifest: 'file1'}, elements)).toEqual({manifest: 'file1'});
         });
     });
 });
