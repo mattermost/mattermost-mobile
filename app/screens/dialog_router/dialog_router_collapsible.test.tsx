@@ -190,6 +190,42 @@ describe('DialogRouter with collapsible sections', () => {
         expect(submission.submission.level2_inner_section).toBeUndefined();
     });
 
+    it('keeps a nested value when a refresh replaces the form', async () => {
+        // A refresh field and an ordinary one, both inside a section: the
+        // refresh rebuilds the form from the server's reply, and the value
+        // typed into the sibling has to survive that rebuild.
+        const refreshConfig = {
+            ...collapsibleDemoConfig,
+            dialog: {
+                ...collapsibleDemoConfig.dialog,
+                elements: [
+                    section('refresh_section', 'Refreshing section', [
+                        text('nested_note', 'Note', {optional: true}),
+                        text('nested_trigger', 'Trigger', {optional: true, refresh: true}),
+                    ]),
+                ],
+            },
+        } as InteractiveDialogConfig;
+
+        submitInteractiveDialog.mockResolvedValue({data: {form: refreshConfig.dialog}});
+
+        const {getByTestId} = renderWithEverything(
+            <DialogRouter
+                config={refreshConfig}
+                channelId='channel-id'
+            />,
+            {database, serverUrl},
+        );
+
+        fireEvent.changeText(getByTestId('AppFormElement.nested_note.input'), 'kept');
+
+        await act(async () => {
+            fireEvent.changeText(getByTestId('AppFormElement.nested_trigger.input'), 'go');
+        });
+
+        expect(getByTestId('AppFormElement.nested_note.input').props.value).toBe('kept');
+    });
+
     it('blocks submission when a required field inside a section is empty', async () => {
         const {getByTestId} = renderDialog();
 

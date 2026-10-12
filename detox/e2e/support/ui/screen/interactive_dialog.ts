@@ -34,6 +34,10 @@ class InteractiveDialogScreen {
         await input.replaceText(value);
     };
 
+    // Text inputs are addressed by element name, so the raw testID stays here
+    // rather than in each test.
+    getTextInput = (elementName: string) => element(by.id(`AppFormElement.${elementName}.input`));
+
     fillTextElement = async (elementName: string, value: string) => {
         const isPasswordOrTextarea = elementName === 'password_field' || elementName === 'textarea_field';
 
@@ -55,7 +59,7 @@ class InteractiveDialogScreen {
             // Could not scroll dialog, continuing without scroll
         }
 
-        const appsFormElement = element(by.id(`AppFormElement.${elementName}.input`));
+        const appsFormElement = this.getTextInput(elementName);
         await waitFor(appsFormElement).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         await expect(appsFormElement).toExist();

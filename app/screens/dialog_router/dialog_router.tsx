@@ -54,6 +54,31 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
     }, {error: error.message});
 }
 
+// Accumulated values are keyed by leaf field name, and a leaf can sit any number
+// of collapsibles deep, so walk the tree rather than only the top level.
+function applyAccumulatedValues(fields: AppField[], accumulated: AppFormValues): AppField[] {
+    return fields.map((field) => {
+        if (field.collapsible_config) {
+            return {
+                ...field,
+                collapsible_config: {
+                    ...field.collapsible_config,
+                    fields: applyAccumulatedValues(field.collapsible_config.fields, accumulated),
+                },
+            };
+        }
+
+        if (field.name && accumulated[field.name] !== undefined && !field.value) {
+            return {
+                ...field,
+                value: accumulated[field.name],
+            };
+        }
+
+        return field;
+    });
+}
+
 export const DialogRouter = React.memo<DialogRouterProps>(({
     config,
     channelId,
@@ -363,15 +388,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // Pre-populate form fields with accumulated values to preserve field refresh state
     const formWithValues = {
         ...appForm,
-        fields: appForm.fields.map((field) => {
-            if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
-                return {
-                    ...field,
-                    value: accumulatedValues[field.name],
-                };
-            }
-            return field;
-        }),
+        fields: applyAccumulatedValues(appForm.fields, accumulatedValues),
     };
 
     return (

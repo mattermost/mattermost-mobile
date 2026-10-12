@@ -1342,12 +1342,12 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // * The section that starts expanded shows its fields
         await InteractiveDialogScreen.expectCollapsibleExpanded('level1_section');
-        await waitForElementToExist(element(by.id('AppFormElement.first_name.input')), timeouts.TEN_SEC);
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('first_name'), timeouts.TEN_SEC);
 
         // * The sections that start collapsed are present but hold nothing
         await expect(InteractiveDialogScreen.getCollapsibleSection('level2_section')).toExist();
         await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
-        await expect(element(by.id('AppFormElement.company.input'))).not.toExist();
+        await expect(InteractiveDialogScreen.getTextInput('company')).not.toExist();
 
         await expect(InteractiveDialogScreen.getCollapsibleSection('level3_section')).toExist();
         await InteractiveDialogScreen.expectCollapsibleExpanded('level3_section', false);
@@ -1366,17 +1366,17 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
 
         // * Its own field and its inner section are now mounted
         await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section');
-        await waitForElementToExist(element(by.id('AppFormElement.company.input')), timeouts.TEN_SEC);
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('company'), timeouts.TEN_SEC);
         await expect(InteractiveDialogScreen.getCollapsibleSection('level2_inner_section')).toExist();
 
         // * The inner section starts expanded, so its fields come with it
-        await waitForElementToExist(element(by.id('AppFormElement.email.input')), timeouts.TEN_SEC);
-        await expect(element(by.id('AppFormElement.phone.input'))).toExist();
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('email'), timeouts.TEN_SEC);
+        await expect(InteractiveDialogScreen.getTextInput('phone')).toExist();
 
         // # Collapsing the outer section takes the inner one with it
         await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
         await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
-        await expect(element(by.id('AppFormElement.email.input'))).not.toExist();
+        await expect(InteractiveDialogScreen.getTextInput('email')).not.toExist();
 
         await InteractiveDialogScreen.cancel();
         await ensureDialogClosed();
@@ -1443,7 +1443,7 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await InteractiveDialogScreen.expandCollapsibleSection('level2_inner_section');
 
         // * The field is back with what was typed in it
-        const emailInput = element(by.id('AppFormElement.email.input'));
+        const emailInput = InteractiveDialogScreen.getTextInput('email');
         await waitForElementToExist(emailInput, timeouts.TEN_SEC);
         await expect(emailInput).toHaveText('ada@example.com');
 
