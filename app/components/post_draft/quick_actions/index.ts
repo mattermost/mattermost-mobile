@@ -35,9 +35,8 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         distinctUntilChanged(),
     );
 
-    // Denied by policy hides the control rather than dimming it, so the policy folds into the same
-    // flag that decides whether to render it at all. Unlike upload, it is withheld until the server
-    // answers: most users do not have the permission, so showing it first would flicker.
+    // Denied by policy hides the control rather than dimming it. Unlike upload, it is withheld until
+    // the server answers: showing it first would flicker.
     const isBoREnabled = combineLatest([
         observeIsBoREnabled(database),
         observeRenderPermission(database, serverUrl, channelId, RenderPermissionAction.CreateBurnOnReadPost, true, false),

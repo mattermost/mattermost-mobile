@@ -195,8 +195,7 @@ describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await ChannelListScreen.toBeVisible();
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
-        // * The control is withheld until a decision lands, so its appearance is itself proof the
-        // allow arrived — unlike the upload tests, there is no pre-decision state to wait past.
+        // * The burn-on-read control appears once the allow decision lands
         await waitFor(ChannelScreen.borAction).
             toExist().
             withTimeout(timeouts.TEN_SEC);
