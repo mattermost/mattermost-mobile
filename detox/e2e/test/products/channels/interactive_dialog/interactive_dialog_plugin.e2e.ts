@@ -1387,19 +1387,29 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         await postSlashCommandDirect('/dialog collapsible');
         await ensureDialogOpen();
 
-        // # Type into the section that is already open
+        // # Type into the section that is already open. last_name is required
+        // in the sample, and a required field left empty fails validation
+        // whether or not its section is open, so fill it too.
         await InteractiveDialogScreen.fillTextElement('first_name', 'Ada');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Lovelace');
 
         // # Open a collapsed section, type into it, and close it again. The
         // fields unmount, which is exactly what this test is about: the value
-        // lives in the form's reducer, not in the mounted input.
+        // lives in the form's reducer, not in the mounted input. email sits in
+        // the inner section that comes up expanded with its parent, and is the
+        // other required field in the sample.
         await InteractiveDialogScreen.expandCollapsibleSection('level2_section');
         await InteractiveDialogScreen.fillTextElement('company', 'Analytical Engines');
+        await InteractiveDialogScreen.fillTextElement('email', 'ada@example.com');
         await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
         await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
 
-        // # Submit the dialog
+        // # Submit the dialog. Assert it really closed before reading the
+        // channel: ensureDialogClosed() force-cancels a dialog that stayed
+        // open, which would turn a blocked submit into a confusing assertion
+        // against an earlier test's post.
         await InteractiveDialogScreen.submit();
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
         await ensureDialogClosed();
 
         // * Both values reach the server, flat and keyed by element name, with
@@ -1417,6 +1427,9 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
         if (readField('company') !== 'Analytical Engines') {
             throw new Error(`Expected company to survive collapsing its section. Full message: ${post.message}`);
+        }
+        if (readField('email') !== 'ada@example.com') {
+            throw new Error(`Expected email to survive collapsing the section two levels above it. Full message: ${post.message}`);
         }
 
         // * The container itself holds no value and must not be submitted
