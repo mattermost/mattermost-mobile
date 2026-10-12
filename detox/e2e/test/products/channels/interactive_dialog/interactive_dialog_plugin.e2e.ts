@@ -1386,14 +1386,11 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             const now = new Date();
             const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
 
-            // System DatePickerDialog content-desc (en-US) is "Month Day, Year" (no weekday).
-            // The standalone Material Components picker uses "Weekday, Month Day, Year". Try both.
-            const cellLabelShort = targetDate.toLocaleDateString('en-US', {
-                month: 'long', day: 'numeric', year: 'numeric',
-            }); // "November 20, 2026"
-            const cellLabelLong = targetDate.toLocaleDateString('en-US', {
-                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-            }); // "Thursday, November 20, 2026"
+            // Android system DatePickerDialog content-desc format (confirmed from uiautomator dump):
+            // "DD Month YYYY" with zero-padded day — e.g. "20 November 2026"
+            const day = String(targetDate.getDate()).padStart(2, '0');
+            const monthName = targetDate.toLocaleDateString('en-US', {month: 'long'});
+            const cellLabel = `${day} ${monthName} ${targetDate.getFullYear()}`;
 
             const displayedDate = targetDate.toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
@@ -1416,8 +1413,8 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             tapPickerCellByLabel(serial, 'Next month', 'Navigate to next month');
             await wait(timeouts.HALF_SEC);
 
-            // # Tap the target date cell (try both content-desc formats)
-            tapPickerCellByLabel(serial, cellLabelShort, cellLabelLong);
+            // # Tap the target date cell using the confirmed "DD Month YYYY" content-desc format
+            tapPickerCellByLabel(serial, cellLabel);
             await wait(timeouts.HALF_SEC);
             await element(by.text('OK')).tap();
             await wait(timeouts.ONE_SEC);
