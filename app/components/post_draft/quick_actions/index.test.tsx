@@ -112,6 +112,10 @@ describe('QuickActions burn-on-read permission', () => {
 
     const setConfigs = (abacEnabled: boolean, borEnabled: boolean) => operator.handleConfigs({
         configs: [
+
+            // Below RENDER_PERMISSIONS_VERSION the decisions API does not exist, so render
+            // permissions count as unenforced however the ABAC settings are configured.
+            {id: 'Version', value: '12.0.0'},
             {id: 'FeatureFlagPermissionPolicies', value: 'true'},
             {id: 'EnableAttributeBasedAccessControl', value: String(abacEnabled)},
             {id: 'EnableBurnOnRead', value: String(borEnabled)},
@@ -145,6 +149,9 @@ describe('QuickActions burn-on-read permission', () => {
 
     it('should offer the control on a server that does not govern the action', async () => {
         await setConfigs(false, true);
+
+        // A deny left over from when the server did enforce policies must not hide the control.
+        setDecision(false);
 
         const {getByTestId} = renderQuickActions();
 
