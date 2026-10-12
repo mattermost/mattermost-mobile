@@ -21,6 +21,7 @@ import useDidUpdate from '@hooks/did_update';
 import {navigateBack} from '@screens/navigation';
 import {filterEmptyOptions} from '@utils/apps';
 import {resolveRelativeDate, parseDateInTimezone} from '@utils/date_utils';
+import {flattenAppFields} from '@utils/dialog_conversion';
 import {mapAppFieldTypeToDialogType, getDataSourceForAppFieldType} from '@utils/dialog_utils';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {logDebug, logWarning} from '@utils/log';
@@ -28,7 +29,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {secureGetFromRecord} from '@utils/types';
 
 import AppsFormField from './apps_form_field';
+import AppsFormGrid from './apps_form_grid';
+import AppsFormRowDetail from './apps_form_row_detail';
+import CollapsibleSection from './collapsible_section';
 import DialogIntroductionText from './dialog_introduction_text';
+import useGridRow from './use_grid_row';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -63,7 +68,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function fieldsAsElements(fields?: AppField[]): DialogElement[] {
-    return fields?.filter((f) => Boolean(f.name)).map((f) => {
+    return flattenAppFields(fields).filter((f) => Boolean(f.name)).map((f) => {
         return {
             name: f.name || '',
             display_name: f.label || '',
@@ -82,7 +87,7 @@ function fieldsAsElements(fields?: AppField[]): DialogElement[] {
             })),
             multiselect: f.multiselect,
         } as DialogElement;
-    }) || [];
+    });
 }
 
 const close = () => {
@@ -115,7 +120,7 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
 
 export function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    fields?.forEach((field) => {
+    flattenAppFields(fields).forEach((field) => {
         if (!field.name) {
             return;
         }
@@ -185,6 +190,7 @@ function AppsFormComponent({
     const [error, setError] = useState('');
     const [errors, setErrors] = useState(emptyErrorsState);
     const [values, dispatchValues] = useReducer(valuesReducer, form.fields, initValues);
+    const {inlineEdit: inlineEditGrid, openRow, setOpenRowName, closeRow, rowTitle} = useGridRow(form.fields, form.submit_buttons, values);
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -209,7 +215,7 @@ function AppsFormComponent({
     }, [form]);
 
     const submitButtons = useMemo(() => {
-        return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
+        return form.fields && flattenAppFields(form.fields).find((f) => f.name === form.submit_buttons);
     }, [form]);
 
     const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
@@ -247,7 +253,7 @@ function AppsFormComponent({
     }, [intl]);
 
     const onChange = useCallback((name: string, value: AppFormValue) => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields).find((f) => f.name === name);
         if (!field) {
             logDebug('AppsFormComponent: Field not found for onChange', {name});
             return;
@@ -390,7 +396,7 @@ function AppsFormComponent({
     }, [elements, form, values, submit, submitting, uploadingFields, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
-        const field = form.fields?.find((f) => f.name === name);
+        const field = flattenAppFields(form.fields).find((f) => f.name === name);
         if (!field?.name) {
             return [];
         }
@@ -452,6 +458,23 @@ function AppsFormComponent({
         // Submit so the user picks an explicit button value. If the field has
         // no options (nothing renders inline), keep the header Submit so the
         // form remains submittable.
+        // Inside a row, the header leaves that row rather than submitting the
+        // dialog. Submitting from a row would send the whole form while the
+        // user is looking at one record of it, and the other rows are not even
+        // on screen to be checked.
+        if (openRow) {
+            navigation.setOptions({
+                headerRight: () => (
+                    <NavigationButton
+                        onPress={closeRow}
+                        disabled={false}
+                        testID='interactive_dialog.row_done.button'
+                        text={intl.formatMessage({id: 'interactive_dialog.grid.done', defaultMessage: 'Done'})}
+                    />
+                ),
+            });
+            return;
+        }
         if (submitButtons?.options?.length) {
             navigation.setOptions({headerRight: undefined});
             return;
@@ -466,7 +489,7 @@ function AppsFormComponent({
                 />
             ),
         });
-    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting, uploadingFields]);
+    }, [form.submit_label, handleSubmit, intl, navigation, submitButtons, submitting, uploadingFields, openRow, closeRow]);
 
     // Cleanup on unmount to prevent memory leaks
     useEffect(() => {
@@ -474,6 +497,100 @@ function AppsFormComponent({
             isMountedRef.current = false;
         };
     }, []);
+
+    // Stripped of label, help text and error, all of which the grid supplies
+    // itself; see AppsFormGrid's renderCell.
+    const renderGridCell = useCallback((field: AppField): React.ReactNode => {
+        if (!field.name) {
+            return null;
+        }
+
+        const cellField: AppField = {...field, label: '', modal_label: '', description: ''};
+        const value = secureGetFromRecord(values, field.name);
+
+        return (
+            <AppsFormField
+                field={cellField}
+                key={field.name}
+                name={field.name}
+                errorText={undefined}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
+            />
+        );
+    }, [values, performLookup, onChange, setFieldUploading, channelId, serverUrl]);
+
+    // Collapsible children render through this helper so they share values and
+    // fieldErrors with the top-level fields. depth tracks the nesting level
+    // (0 = top level) and only drives indentation.
+    const renderField = (field: AppField, depth = 0): React.ReactNode => {
+        if (!field.name) {
+            return null;
+        }
+
+        if (field.type === AppFieldTypes.COLLAPSIBLE) {
+            const childFields = (field.collapsible_config?.fields || []).filter(
+                (f) => f.name && f.name !== form.submit_buttons,
+            );
+
+            // A grid container asks for its child sections to be laid out as
+            // table rows, and that is what they get: the same columns, the same
+            // headers and the same sticky first column as the webapp. Whether
+            // the cells themselves are editable depends on the viewport — see
+            // AppsFormGrid, which explains why a phone fills a row in on its
+            // own screen instead.
+            //
+            // Children that are not rows are leaves, and follow the table
+            // rather than being dropped.
+            if (field.collapsible_config?.layout === 'grid') {
+                return (
+                    <AppsFormGrid
+                        key={field.name}
+                        field={field}
+                        values={values}
+                        errors={errors}
+                        excludeName={form.submit_buttons}
+                        renderCell={renderGridCell}
+                        editable={inlineEditGrid}
+                        onOpenRow={setOpenRowName}
+                    />
+                );
+            }
+
+            return (
+                <CollapsibleSection
+                    key={field.name}
+                    label={field.label || field.name}
+                    expanded={field.collapsible_config?.expanded ?? true}
+                    bordered={field.collapsible_config?.bordered ?? true}
+                    depth={depth}
+                    testID={`interactive_dialog.collapsible.${field.name}`}
+                >
+                    {childFields.map((child) => renderField(child, depth + 1))}
+                </CollapsibleSection>
+            );
+        }
+
+        const value = secureGetFromRecord(values, field.name);
+        return (
+            <AppsFormField
+                field={field}
+                key={field.name}
+                name={field.name}
+                errorText={secureGetFromRecord(errors, field.name)}
+                value={value || ''}
+                performLookup={performLookup}
+                onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
+            />
+        );
+    };
 
     return (
         <SafeAreaView
@@ -499,35 +616,24 @@ function AppsFormComponent({
                         />
                     </View>
                 )}
-                {form.header &&
+                {!openRow && form.header &&
                     <DialogIntroductionText
                         value={form.header}
                     />
                 }
-                {visibleFields.map((field) => {
-                    if (!field.name) {
-                        return null;
-                    }
-                    const value = secureGetFromRecord(values, field.name);
-                    return (
-                        <AppsFormField
-                            field={field}
-                            key={field.name}
-                            name={field.name}
-                            errorText={secureGetFromRecord(errors, field.name)}
-                            value={value || ''}
-                            performLookup={performLookup}
-                            onChange={onChange}
-                            setFieldUploading={setFieldUploading}
-                            channelId={channelId}
-                            serverUrl={serverUrl}
-                        />
-                    );
-                })}
+                {openRow ? (
+                    <AppsFormRowDetail
+                        row={openRow}
+                        title={rowTitle(openRow)}
+                        excludeName={form.submit_buttons}
+                        renderField={renderField}
+                        onBack={closeRow}
+                    />
+                ) : visibleFields.map((field) => renderField(field))}
                 <View
                     style={style.buttonsWrapper}
                 >
-                    {submitButtons?.options?.map((o) => (
+                    {!openRow && submitButtons?.options?.map((o) => (
                         <View
                             key={o.value}
                             style={style.buttonContainer}

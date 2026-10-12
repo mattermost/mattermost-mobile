@@ -9,7 +9,7 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import {convertAppFormValuesToDialogSubmission, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
+import {convertAppFormValuesToDialogSubmission, flattenDialogElements, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
@@ -222,9 +222,10 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [currentConfig]);
 
-    // Helper function to find the dialog element by field name
-    function findDialogElement(elements: any[], fieldName: string) {
-        return elements.find((e) => e.name === fieldName);
+    // Helper function to find the dialog element by field name. A dynamic
+    // select can sit inside a collapsible, so search the flattened elements.
+    function findDialogElement(elements: DialogElement[], fieldName: string) {
+        return flattenDialogElements(elements).find((e) => e.name === fieldName);
     }
 
     // Create performLookupCall for dynamic select fields

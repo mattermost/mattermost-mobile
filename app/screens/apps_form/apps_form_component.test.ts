@@ -260,3 +260,42 @@ describe('initValues', () => {
         });
     });
 });
+
+describe('initValues with collapsible fields', () => {
+    const collapsible = (name: string, fields: AppField[], expanded = true): AppField => ({
+        name,
+        type: AppFieldTypes.COLLAPSIBLE,
+        label: name,
+        collapsible_config: {fields, expanded, bordered: true},
+    } as AppField);
+
+    it('seeds the children of a collapsible and not the container', () => {
+        const values = initValues([
+            collapsible('row_1', [
+                {name: 'cell_name', type: AppFieldTypes.TEXT, value: 'Pallets'} as AppField,
+                {name: 'cell_ready', type: AppFieldTypes.BOOL} as AppField,
+            ]),
+        ]);
+
+        expect(values).toEqual({cell_name: 'Pallets', cell_ready: false});
+        expect(values.row_1).toBeUndefined();
+    });
+
+    it('seeds children of nested collapsibles', () => {
+        const values = initValues([
+            collapsible('outer', [collapsible('inner', [
+                {name: 'deep', type: AppFieldTypes.TEXT} as AppField,
+            ])]),
+        ]);
+
+        expect(values).toEqual({deep: ''});
+    });
+
+    it('seeds children of a collapsed section, so values survive expanding it', () => {
+        const values = initValues([
+            collapsible('row_1', [{name: 'cell_name', type: AppFieldTypes.TEXT, value: 'Pallets'} as AppField], false),
+        ]);
+
+        expect(values.cell_name).toBe('Pallets');
+    });
+});

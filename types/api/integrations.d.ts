@@ -65,7 +65,7 @@ type DialogElement = {
     display_name: string;
     name: string;
     type: InteractiveDialogElementType;
-    subtype?: InteractiveDialogTextSubtype;
+    subtype?: InteractiveDialogTextSubtype | InteractiveDialogCollapsibleSubtype;
     default: string | boolean;
     placeholder: string;
     help_text: string;
@@ -84,6 +84,15 @@ type DialogElement = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Collapsible sections hold child elements and carry no value of their own.
+    collapsible_config?: DialogCollapsibleConfig;
+};
+
+type DialogCollapsibleConfig = {
+    elements: DialogElement[];
+    collapsed?: boolean;
+    borderless?: boolean;
 };
 
 type InteractiveDialogConfig = {
@@ -140,5 +149,9 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'collapsible' | 'action_button'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
+
+// subtype on a collapsible is a layout mode rather than an input type: 'grid'
+// asks for its child sections to be laid out as rows of a table.
+type InteractiveDialogCollapsibleSubtype = 'grid'

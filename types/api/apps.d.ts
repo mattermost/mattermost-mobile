@@ -199,6 +199,23 @@ type AppField = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Collapsible props. A collapsible field is a container: it holds child
+    // fields and never contributes a value of its own.
+    collapsible_config?: AppFieldCollapsibleConfig;
+};
+
+type AppFieldCollapsibleConfig = {
+    fields: AppField[];
+    expanded?: boolean;
+    bordered?: boolean;
+
+    // How the child fields are laid out. 'stacked' (the default) renders them
+    // vertically behind an expandable title. 'grid' renders child collapsibles
+    // as rows of a table, with one column per leaf field. On a viewport too
+    // narrow for a row of inputs, the table shows values and a row is filled
+    // in on its own screen; see apps_form_grid.tsx.
+    layout?: 'stacked' | 'grid';
 };
 
 type DateTimeConfig = {

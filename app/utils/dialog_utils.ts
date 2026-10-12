@@ -31,6 +31,8 @@ export const DialogElementTypes = {
     FILE: 'file' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
+    COLLAPSIBLE: 'collapsible' as const,
+    ACTION_BUTTON: 'action_button' as const,
 } as const;
 
 /**
@@ -74,6 +76,8 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'date';
         case DialogElementTypes.DATETIME:
             return 'datetime';
+        case DialogElementTypes.COLLAPSIBLE:
+            return 'collapsible';
         default:
             return 'text';
     }
@@ -101,6 +105,8 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.DATE;
         case 'datetime':
             return DialogElementTypes.DATETIME;
+        case 'collapsible':
+            return DialogElementTypes.COLLAPSIBLE;
         default:
             return DialogElementTypes.TEXT;
     }
