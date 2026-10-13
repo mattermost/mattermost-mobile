@@ -292,32 +292,6 @@ async function dismissErrorAlert() {
  * see them; this helper resolves the node's bounds from the accessibility tree and taps its centre.
  * Bounds are read at runtime rather than hardcoded so the helper survives different screen densities.
  */
-/**
- * Taps the first Android native element whose content-desc matches any of the given labels.
- * Falls back through the list and throws (with a full XML dump excerpt) if none are found.
- * Used for elements that Espresso/Detox cannot reach directly (e.g. Material calendar cells,
- * system DatePickerDialog navigation buttons).
- */
-const tapPickerCellByLabel = (serial: string, ...labels: string[]) => {
-    execSync(`adb -s ${serial} shell uiautomator dump /sdcard/detox-picker.xml`, {stdio: 'ignore'});
-    const xml = execSync(`adb -s ${serial} shell cat /sdcard/detox-picker.xml`).toString();
-
-    for (const label of labels) {
-        const esc = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const m = xml.match(new RegExp(`content-desc="${esc}"[^>]*?bounds="\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]"`));
-        if (m && m[1] && m[2] && m[3] && m[4]) {
-            const cx = Math.round((Number(m[1]) + Number(m[3])) / 2);
-            const cy = Math.round((Number(m[2]) + Number(m[4])) / 2);
-            execSync(`adb -s ${serial} shell input tap ${cx} ${cy}`);
-            return;
-        }
-    }
-
-    // Include all content-desc values present in the dump so the next CI run reveals the real strings.
-    const found = [...xml.matchAll(/content-desc="([^"]+)"/g)].map((m) => m[1]).join(' | ');
-    throw new Error(`None of [${labels.join(', ')}] found. Content-descs in dump: ${found || '(none)'}`);
-};
-
 const itNotIos = isIos() ? it.skip : it;
 
 const DIALOG_PLUGIN_CONFIG = {
@@ -1364,13 +1338,14 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
     });
 
     // Regression tests for Android datetime fixes (MM-10092, MM-10094).
-    // Skipped on iOS: tapPickerCellByLabel uses adb; iOS pickers expose the same testable
-    // rendering path via the scroll-wheel which is already exercised by MM-T2530C/MM-T2530G.
+    // Skipped on iOS: timezone manipulation uses adb; the same rendering path is already
+    // exercised by MM-T2530C/MM-T2530G on the iOS scroll-wheel picker.
 
     itNotIos('MM-T5900_2 should display the day the user picked, not the day before (Plugin)', async () => {
         // This regression is only detectable when the device runs at a UTC+ offset.
-        // The CI Android emulator is configured for a positive-offset timezone (Asia/Kolkata,
-        // UTC+5:30); local machines with UTC or negative offsets may not catch the regression.
+        // The CI Android emulator uses Asia/Kolkata (UTC+5:30); midnight local time is
+        // 18:30 UTC the previous day. Without the Hermes Intl.DateTimeFormat fix the form
+        // displays the UTC date (day before) instead of the local date.
         const serial = device.id;
         const origTz = execSync(`adb -s ${serial} shell getprop persist.sys.timezone`).toString().trim();
         const testTz = 'Asia/Kolkata'; // UTC+5:30 — guaranteed positive offset
@@ -1381,16 +1356,18 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
 
         try {
-            // Pick the 20th of next month — always in the future, requires exactly one forward
-            // tap in the calendar picker (which opens on the current month).
+            // Pick the 20th of next month. Espresso's DatePickerActions.setDate() operates on
+            // the local calendar date (year/month/day), so the native picker receives November 20.
+            // When the user taps OK the picker returns midnight local time = 18:30 UTC the prior
+            // day. Without the fix, Intl.DateTimeFormat formats this UTC timestamp as November 19.
+            // With the fix it uses the device timezone and correctly shows November 20.
             const now = new Date();
             const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
 
-            // Android system DatePickerDialog content-desc format (confirmed from uiautomator dump):
-            // "DD Month YYYY" with zero-padded day — e.g. "20 November 2026"
+            const year = targetDate.getFullYear();
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
             const day = String(targetDate.getDate()).padStart(2, '0');
-            const monthName = targetDate.toLocaleDateString('en-US', {month: 'long'});
-            const cellLabel = `${day} ${monthName} ${targetDate.getFullYear()}`;
+            const isoDateStr = `${year}-${month}-${day}T00:00:00.000Z`;
 
             const displayedDate = targetDate.toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
@@ -1407,37 +1384,25 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await element(by.id('AppFormElement.event_date.select.button')).tap();
             await wait(timeouts.ONE_SEC);
 
-            // Disable sync before adb taps. Keep it disabled through ALL subsequent operations
-            // (assertions, cancel) and only restore it in the finally block. Re-enabling sync
-            // after adb calendar interactions leaves Espresso's idle detector in a stuck state
-            // that never resolves — on Android, waitFor().withTimeout() does NOT bound the
-            // idle-wait, so any sync'd Detox call hangs indefinitely after adb interactions.
-            await device.disableSynchronization();
-
-            // # Navigate to next month (picker opens on current month).
-            // System DatePickerDialog uses "Next month"; Material Components uses
-            // "Navigate to next month". Try both to handle either picker implementation.
-            tapPickerCellByLabel(serial, 'Next month', 'Navigate to next month');
-            await wait(timeouts.ONE_SEC); // let the month-change animation settle
-
-            // # Tap the target date cell using the confirmed "DD Month YYYY" content-desc format
-            tapPickerCellByLabel(serial, cellLabel);
-            await wait(timeouts.ONE_SEC); // let the selection animation settle
+            // Use setDatePickerDate (Espresso DatePickerActions.setDate) rather than adb taps.
+            // adb interactions leave Espresso's idle detector in a permanently stuck state so
+            // every subsequent synchronised Detox call hangs indefinitely. setDatePickerDate
+            // goes through Espresso's own action pipeline and does not cause this issue.
+            // The DateTimePicker always exposes testID 'custom_status_clear_after.date_time_picker'
+            // regardless of which form field opened it — confirmed in date_time_selector.tsx.
+            await element(by.id('custom_status_clear_after.date_time_picker')).setDatePickerDate(isoDateStr, 'ISO8601');
+            await wait(500);
 
             await element(by.text('OK')).tap();
-            await wait(2 * timeouts.ONE_SEC); // let picker close and form update fully settle
+            await wait(timeouts.ONE_SEC);
 
-            // * Assert with sync STILL DISABLED — waitFor polls without the Espresso idle-wait,
-            // avoiding the stuck-idle hang that occurs after adb calendar interactions.
+            // * The field renders the picked day, not the day before.
             await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(element(by.text(dayBefore))).not.toExist();
 
             await InteractiveDialogScreen.cancel();
-            await wait(timeouts.ONE_SEC); // let dialog close animation settle
+            await ensureDialogClosed();
         } finally {
-            // Re-enable sync only after all dialog interactions are complete and animations
-            // have settled. Using finally ensures sync is always restored even on test failure.
-            await safeEnableSynchronization();
             if (origTz !== testTz) {
                 execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
                 execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
