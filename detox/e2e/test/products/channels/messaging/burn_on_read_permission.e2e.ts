@@ -189,6 +189,17 @@ describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await System.apiPatchConfig(siteOneUrl, originalSettings);
     });
 
+    afterEach(async () => {
+        // A failed assertion skips the in-test cleanup; leave the next test at the login screen.
+        try {
+            await expect(ChannelScreen.channelScreen).toBeVisible();
+            await ChannelScreen.back();
+        } catch {
+            // Not in a channel
+        }
+        await HomeScreen.logout();
+    });
+
     it('MM-70693_1 - should show the burn-on-read control when the policy allows it', async () => {
         // # Log in as the allowed user (Department: Engineering) and open the channel
         await LoginScreen.login(allowedUser);
@@ -199,9 +210,6 @@ describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await waitFor(ChannelScreen.borAction).
             toExist().
             withTimeout(timeouts.TEN_SEC);
-
-        await ChannelScreen.back();
-        await HomeScreen.logout();
     });
 
     it('MM-70693_2 - should withhold the control for a denied user and show it without reopening the channel once their attribute satisfies the policy', async () => {
@@ -212,6 +220,10 @@ describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
         await waitFor(ChannelScreen.attachmentAction).
             toExist().
             withTimeout(timeouts.TEN_SEC);
+
+        // * The control stays hidden once the deny decision lands. It is also hidden while the
+        // decision is pending, so give the request time to return before checking.
+        await wait(timeouts.FIVE_SEC);
         await expect(ChannelScreen.borAction).not.toExist();
 
         // # Change the user's attribute so the policy now grants burn-on-read
@@ -225,8 +237,5 @@ describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
 
         // # Restore the attribute so the suite leaves the user as it found it
         await setDepartment(deniedUser.id, attributeFieldId as string, 'Sales');
-
-        await ChannelScreen.back();
-        await HomeScreen.logout();
     });
 });
