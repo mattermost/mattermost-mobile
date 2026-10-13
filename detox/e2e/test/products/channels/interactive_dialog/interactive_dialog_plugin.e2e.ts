@@ -452,46 +452,59 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         if (setupFailed) {
             return;
         }
-        await dismissErrorAlert();
 
-        // Only clean up the integration selector when it is actually on screen. Both
-        // helpers start with their own waitFor — cancel() 2s, done() 10s — so calling
-        // them unconditionally burned ~12s of pure timeout on every test in this
-        // describe, where the selector is never opened.
+        // Disable Espresso sync for the entire cleanup pass. Some tests (e.g. MM-T5900_2)
+        // leave the CalendarView IdlingResource in a permanently stuck-busy state after a
+        // native DatePickerDialog is opened. On Android, waitFor().withTimeout(N) does NOT
+        // bound the Espresso idle-wait — the timer only starts once Espresso is idle — so
+        // every sync-enabled Detox call would hang indefinitely. Running cleanup with sync
+        // disabled uses polling instead of idle-waiting so the hook always completes.
+        // safeEnableSynchronization() restores sync for the next test.
+        await device.disableSynchronization();
         try {
-            await waitFor(IntegrationSelectorScreen.integrationSelectorScreen).toExist().withTimeout(timeouts.HALF_SEC);
+            await dismissErrorAlert();
+
+            // Only clean up the integration selector when it is actually on screen. Both
+            // helpers start with their own waitFor — cancel() 2s, done() 10s — so calling
+            // them unconditionally burned ~12s of pure timeout on every test in this
+            // describe, where the selector is never opened.
             try {
-                await IntegrationSelectorScreen.cancel();
-            } catch {}
+                await waitFor(IntegrationSelectorScreen.integrationSelectorScreen).toExist().withTimeout(timeouts.HALF_SEC);
+                try {
+                    await IntegrationSelectorScreen.cancel();
+                } catch {}
+                try {
+                    await IntegrationSelectorScreen.done();
+                } catch {}
+            } catch { /* selector not open — nothing to clean up */ }
             try {
-                await IntegrationSelectorScreen.done();
+                await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
+                await InteractiveDialogScreen.cancel();
             } catch {}
-        } catch { /* selector not open — nothing to clean up */ }
-        try {
-            await waitFor(InteractiveDialogScreen.interactiveDialogScreen).toExist().withTimeout(timeouts.HALF_SEC);
-            await InteractiveDialogScreen.cancel();
-        } catch {}
 
-        // postSlashCommandDirect taps the composer, which raises the keyboard and can leave
-        // it up. A raised keyboard obscures the composer, so drop it before requiring it —
-        // otherwise the spec only passes when a preceding test happened to dismiss it.
-        try {
-            await ChannelScreen.dismissKeyboard();
-        } catch {}
-
-        // Android Back from cancel() after the dialog is already closed leaves channel list;
-        // require composer, and re-enter the channel if cleanup drifted.
-        try {
-            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
-        } catch {
-            await ChannelListScreen.toBeVisible();
-            await ChannelScreen.open(channelsCategory, testChannel.name);
+            // postSlashCommandDirect taps the composer, which raises the keyboard and can leave
+            // it up. A raised keyboard obscures the composer, so drop it before requiring it —
+            // otherwise the spec only passes when a preceding test happened to dismiss it.
             try {
                 await ChannelScreen.dismissKeyboard();
             } catch {}
-            await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+            // Android Back from cancel() after the dialog is already closed leaves channel list;
+            // require composer, and re-enter the channel if cleanup drifted.
+            try {
+                await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            } catch {
+                await ChannelListScreen.toBeVisible();
+                await ChannelScreen.open(channelsCategory, testChannel.name);
+                try {
+                    await ChannelScreen.dismissKeyboard();
+                } catch {}
+                await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            }
+            await wait(500);
+        } finally {
+            await safeEnableSynchronization();
         }
-        await wait(500);
     });
 
     it('MM-T4101 should open simple interactive dialog (Plugin)', async () => {
