@@ -11,6 +11,7 @@ export interface ClientFilesMix {
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
     getFilePreviewUrl: (fileId: string, timestamp: number) => string;
     getFilePublicLink: (fileId: string) => Promise<{link: string}>;
+    getFileInfo: (fileId: string) => Promise<FileInfo>;
     uploadAttachment: (
         file: FileInfo | ExtractedFileInfo,
         channelId: string,
@@ -55,6 +56,13 @@ const ClientFiles = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     getFilePublicLink = async (fileId: string) => {
         return this.doFetch(
             `${this.getFileRoute(fileId)}/link`,
+            {method: 'get'},
+        );
+    };
+
+    getFileInfo = async (fileId: string) => {
+        return this.doFetch(
+            `${this.getFileRoute(fileId)}/info`,
             {method: 'get'},
         );
     };

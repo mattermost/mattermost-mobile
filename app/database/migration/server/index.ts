@@ -32,7 +32,7 @@ const {BOARD_VIEW} = BOARDS_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 22,
+        toVersion: 23,
         steps: [
 
             // Existing rows default to 0, below DEFAULT_REDACTION_EPOCH_STATE (used while no epoch
@@ -47,6 +47,17 @@ export default schemaMigrations({migrations: [
                 table: MY_CHANNEL,
                 columns: [
                     {name: 'redaction_required_epoch', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 22,
+        steps: [
+            addColumns({
+                table: PLAYBOOK_CHECKLIST_ITEM,
+                columns: [
+                    {name: 'requirements', type: 'string', isOptional: true},
                 ],
             }),
         ],
