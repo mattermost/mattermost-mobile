@@ -69,6 +69,16 @@ test('getFilePublicLink', async () => {
     expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
 });
 
+test('getFileInfo', async () => {
+    const fileId = 'file_id';
+    const expectedUrl = `${client.getFileRoute(fileId)}/info`;
+    const expectedOptions = {method: 'get'};
+
+    await client.getFileInfo(fileId);
+
+    expect(client.doFetch).toHaveBeenCalledWith(expectedUrl, expectedOptions);
+});
+
 test('uploadAttachment', () => {
     const file = {localPath: '/path/to/file'} as FileInfo;
     const channelId = 'channel_id';
