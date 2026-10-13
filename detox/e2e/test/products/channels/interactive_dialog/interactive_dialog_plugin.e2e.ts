@@ -1407,10 +1407,11 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             await element(by.id('AppFormElement.event_date.select.button')).tap();
             await wait(timeouts.ONE_SEC);
 
-            // adb shell input bypasses Detox's synchronization tracker. Disable sync before
-            // adb taps so Detox does not block waiting for an "idle" signal that never fires
-            // (the calendar selection animation is invisible to Detox after a raw adb tap).
-            // Re-enable before the next Detox interaction.
+            // Disable sync before adb taps. Keep it disabled through ALL subsequent operations
+            // (assertions, cancel) and only restore it in the finally block. Re-enabling sync
+            // after adb calendar interactions leaves Espresso's idle detector in a stuck state
+            // that never resolves — on Android, waitFor().withTimeout() does NOT bound the
+            // idle-wait, so any sync'd Detox call hangs indefinitely after adb interactions.
             await device.disableSynchronization();
 
             // # Navigate to next month (picker opens on current month).
@@ -1423,23 +1424,20 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             tapPickerCellByLabel(serial, cellLabel);
             await wait(timeouts.ONE_SEC); // let the selection animation settle
 
-            // Tap OK with sync still disabled — re-enabling first would let Detox block on the
-            // calendar selection animation (which it cannot observe via adb) and hang.
             await element(by.text('OK')).tap();
-            await wait(timeouts.ONE_SEC); // let the picker close fully
+            await wait(2 * timeouts.ONE_SEC); // let picker close and form update fully settle
 
-            // Picker is now closed; re-enable sync for the form assertions.
-            await safeEnableSynchronization();
-
-            // * The field renders the picked day, not the day before.
-            // Before the fix, storing a date-with-timezone value and rendering it outside its own
-            // timezone dropped the display to the previous calendar day.
-            await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.FIVE_SEC);
+            // * Assert with sync STILL DISABLED — waitFor polls without the Espresso idle-wait,
+            // avoiding the stuck-idle hang that occurs after adb calendar interactions.
+            await waitFor(element(by.text(displayedDate))).toExist().withTimeout(timeouts.TEN_SEC);
             await expect(element(by.text(dayBefore))).not.toExist();
 
             await InteractiveDialogScreen.cancel();
-            await ensureDialogClosed();
+            await wait(timeouts.ONE_SEC); // let dialog close animation settle
         } finally {
+            // Re-enable sync only after all dialog interactions are complete and animations
+            // have settled. Using finally ensures sync is always restored even on test failure.
+            await safeEnableSynchronization();
             if (origTz !== testTz) {
                 execSync(`adb -s ${serial} shell setprop persist.sys.timezone ${origTz}`, {stdio: 'ignore'});
                 execSync(`adb -s ${serial} shell am broadcast -a android.intent.action.TIMEZONE_CHANGED`, {stdio: 'ignore'});
