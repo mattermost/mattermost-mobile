@@ -92,7 +92,8 @@ export const loadConfig = async (serverUrl: string, force = false, groupLabel?: 
     try {
         const client = NetworkManager.getClient(serverUrl);
         const configs = await Promise.all([client.getCallsConfig(groupLabel), client.getVersion(groupLabel)]);
-        const nextConfig = {...configs[0], version: configs[1], last_retrieved_at: now};
+        const version = configs[1].version ? configs[1] : config.version;
+        const nextConfig = {...configs[0], version, last_retrieved_at: now};
         setConfig(serverUrl, nextConfig);
         return {data: nextConfig};
     } catch (error) {
@@ -229,11 +230,16 @@ export const joinCall = async (
         return {error: configError};
     }
 
+    const config = getCallsConfig(serverUrl);
+    if (!config.version.version) {
+        return {error: 'unable to determine calls plugin version'};
+    }
+
     if (connection) {
         connection.disconnect();
         connection = null;
     }
-    const transport = getCallsTransport(getCallsConfig(serverUrl));
+    const transport = getCallsTransport(config);
     newCurrentCall(serverUrl, channelId, userId, transport, opts);
 
     // Register with the system call UI so the user gets lock-screen /

@@ -27,6 +27,7 @@ import {
     useChannelsWithCalls,
     useCurrentCall,
     userJoinedCall,
+    getCallsConfig,
     getCallsState,
     getCurrentCall,
 } from '@calls/state';
@@ -49,7 +50,7 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import TestHelper from '@test/test_helper';
 
-import type {CallJobState} from '@mattermost/calls/lib/types';
+import type {CallJobState, CallsVersionInfo} from '@mattermost/calls/lib/types';
 
 const mockClient = {
     getCalls: jest.fn(() => [
@@ -76,7 +77,7 @@ const mockClient = {
     endCall: jest.fn(),
     getCallsConfig: jest.fn(),
     getCallForChannel: jest.fn(),
-    getVersion: jest.fn(() => ({})),
+    getVersion: jest.fn((): CallsVersionInfo => ({version: '1.0.0'})),
     getPluginsManifests: jest.fn(() => (
         [
             {id: 'playbooks'},
@@ -386,6 +387,20 @@ describe('Actions.Calls', () => {
         expect(newCallConnection).not.toHaveBeenCalled();
     });
 
+    it('should fail the join before creating the current call when the plugin version is unknown', async () => {
+        addFakeCall('server1', 'channel-id');
+        mockClient.getVersion.mockReturnValueOnce({});
+
+        let res: Awaited<ReturnType<typeof CallsActions.joinCall>>;
+        await act(async () => {
+            res = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true, createIntl({locale: 'en', messages: {}}));
+        });
+
+        expect(res!).toStrictEqual({error: 'unable to determine calls plugin version'});
+        expect(getCurrentCall()).toBeNull();
+        expect(newCallConnection).not.toHaveBeenCalled();
+    });
+
     it('should leave immediately for non-hosts without showing an alert', async () => {
         // setup
         addFakeCall('server1', 'channel-id');
@@ -649,6 +664,19 @@ describe('Actions.Calls', () => {
         const errorResult = await CallsActions.loadConfig('server1', true, 'Server Switch');
         expect(errorResult.error).toBe(forceLogoutError);
         expect(forceLogout).toHaveBeenCalledWith('server1', forceLogoutError);
+    });
+
+    it('loadConfig keeps the cached version when the version fetch returns none', async () => {
+        act(() => {
+            setCallsConfig('server1', {...DefaultCallsConfig, version: {version: '2.0.0'}});
+        });
+        mockClient.getVersion.mockReturnValueOnce({});
+
+        await act(async () => {
+            await CallsActions.loadConfig('server1', true);
+        });
+
+        expect(getCallsConfig('server1').version).toStrictEqual({version: '2.0.0'});
     });
 
     it('enableChannelCalls', async () => {
