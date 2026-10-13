@@ -1356,23 +1356,31 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
         }
 
         try {
-            // Pick the 20th of next month. Espresso's DatePickerActions.setDate() operates on
-            // the local calendar date (year/month/day), so the native picker receives November 20.
-            // When the user taps OK the picker returns midnight local time = 18:30 UTC the prior
-            // day. Without the fix, Intl.DateTimeFormat formats this UTC timestamp as November 19.
-            // With the fix it uses the device timezone and correctly shows November 20.
-            const now = new Date();
-            const targetDate = new Date(now.getFullYear(), now.getMonth() + 1, 20);
+            // Pick the 10th of the CURRENT month (as seen by the device in Asia/Kolkata time).
+            // The DatePickerDialog opens on the current month. Navigating to a different month
+            // triggers a CalendarView RecyclerView scroll animation; Espresso's IdlingResource
+            // for that RecyclerView is never unregistered when the dialog closes, leaving the
+            // idle detector permanently stuck and causing afterEach to hang indefinitely.
+            // Picking a date in the ALREADY-DISPLAYED month requires no navigation and no animation.
+            //
+            // Compute the device-local date: CI runner is UTC, device is UTC+5:30 (330 min).
+            const kolkataOffsetMs = 330 * 60_000;
+            const deviceNow = new Date(Date.now() + kolkataOffsetMs);
 
-            const year = targetDate.getFullYear();
-            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const day = String(targetDate.getDate()).padStart(2, '0');
-            const isoDateStr = `${year}-${month}-${day}T00:00:00.000Z`;
+            // getUTC* on the offset date gives the device's local calendar values.
+            const deviceYear = deviceNow.getUTCFullYear();
+            const deviceMonth = deviceNow.getUTCMonth(); // 0-indexed
 
-            const displayedDate = targetDate.toLocaleDateString('en-US', {
+            // Day 10 is always in the current month regardless of today's date.
+            // isoDateStr: midnight UTC on the 10th — Espresso interprets the UTC date
+            // as the local calendar date (year/month/day) when setting DatePickerActions.
+            const isoDateStr = `${deviceYear}-${String(deviceMonth + 1).padStart(2, '0')}-10T00:00:00.000Z`;
+
+            // Expected display strings use the device-local calendar date (day 10 of device month).
+            const displayedDate = new Date(deviceYear, deviceMonth, 10).toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
             });
-            const dayBefore = new Date(targetDate.getTime() - 86400000).toLocaleDateString('en-US', {
+            const dayBefore = new Date(deviceYear, deviceMonth, 9).toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric',
             });
 
