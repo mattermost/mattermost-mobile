@@ -72,6 +72,8 @@ class PdfContext(
 
     fun dpToPx(dp: Int): Float = ViewUtils.dpToPx(context, dp)
 
+    fun getString(resourceId: Int): String = context.getString(resourceId)
+
     fun useDocumentIfInitialized(action: (PdfDocument) -> Unit) {
         if (::document.isInitialized) {
             action(document)
