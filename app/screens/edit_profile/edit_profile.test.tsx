@@ -591,6 +591,85 @@ describe('EditProfile', () => {
             expect(screen.getByTestId('edit_profile.error.text')).toBeTruthy();
             expect(screen.queryByTestId('edit_profile_form.username.input.error')).toBeNull();
         });
+
+        it('should clear username field error when a later save fails on custom attributes', async () => {
+            const {updateMe: mockUpdateMe} = jest.requireMock('@actions/remote/user');
+            mockUpdateMe.mockClear();
+            mockUpdateMe.mockResolvedValueOnce({error: new Error('Username is already taken')});
+            mockUpdateMe.mockResolvedValue({error: undefined});
+
+            mockUpdateCustomProfileAttributes.mockResolvedValue({
+                success: false,
+                error: new Error('Failed to update custom attributes'),
+            });
+
+            const currentUser = {
+                ...mockCurrentUser,
+                authService: '',
+            } as UserModel;
+
+            const {getByTestId} = renderWithIntlAndTheme(
+                <EditProfile
+                    currentUser={currentUser}
+                    isModal={false}
+                    isTablet={true}
+                    lockedFirstName={false}
+                    lockedLastName={false}
+                    lockedNickname={false}
+                    lockedPosition={false}
+                    lockedPicture={false}
+                    enableCustomAttributes={true}
+                    customFields={[]}
+                    customAttributesSet={serverAttributesSet}
+                />,
+            );
+
+            await waitFor(async () => {
+                const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+                expect(customAttributeItems.length).toBeGreaterThan(0);
+            });
+
+            const usernameField = getByTestId('edit_profile_form.username.input');
+            await act(async () => {
+                fireEvent.changeText(usernameField, 'takenname');
+            });
+
+            const saveButton = getByTestId('edit_profile.save.button');
+            await act(async () => {
+                fireEvent.press(saveButton);
+            });
+
+            await waitFor(() => {
+                expect(mockUpdateMe).toHaveBeenCalled();
+                expect(screen.getByTestId('edit_profile_form.username.input.error')).toBeTruthy();
+            });
+            expect(screen.queryByTestId('edit_profile.error.text')).toBeNull();
+
+            // Revert username so updateMe is skipped; change a custom attribute so the next save hits that path.
+            await act(async () => {
+                fireEvent.changeText(usernameField, 'johndoe');
+            });
+
+            const customAttributeItems = await screen.findAllByTestId(new RegExp('^edit_profile_form.customAttributes.attr[0-9]+.input$'));
+            await act(async () => {
+                fireEvent.changeText(customAttributeItems[0], 'modified value that will error');
+            });
+
+            // usePreventDoubleTap ignores presses within 750ms of the previous save.
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 800));
+            });
+
+            await act(async () => {
+                fireEvent.press(getByTestId('edit_profile.save.button'));
+            });
+
+            await waitFor(() => {
+                expect(mockUpdateCustomProfileAttributes).toHaveBeenCalled();
+                expect(screen.getByTestId('edit_profile.error.text')).toBeTruthy();
+            });
+            expect(screen.queryByTestId('edit_profile_form.username.input.error')).toBeNull();
+        });
     });
 
     it('should pass customFields prop to ProfileForm component', async () => {

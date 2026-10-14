@@ -111,6 +111,7 @@ const EditProfile = ({
         }
         setCanSave(false);
         setError(undefined);
+        setUsernameError(undefined);
         setUpdating(true);
         try {
             // Build update object with only changed and unlocked fields
