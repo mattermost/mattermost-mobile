@@ -37,14 +37,7 @@ export async function migrateLegacyPreauthSecret(serverUrls: string[]): Promise<
             return;
         }
 
-        if (!serverUrls.length) {
-            // No server can own the secret yet. Keep it and retry on a later launch rather than
-            // destroying the only copy a user part-way through onboarding has.
-            logDebug('migrateLegacyPreauthSecret: no servers, deferring');
-            return;
-        }
-
-        if (serverUrls.length > 1) {
+        if (serverUrls.length !== 1) {
             logDebug('migrateLegacyPreauthSecret: discarding an unattributable secret', {servers: serverUrls.length});
             await removeLegacyPreauthSecret();
             await markMigrationDone();
@@ -53,7 +46,7 @@ export async function migrateLegacyPreauthSecret(serverUrls: string[]): Promise<
 
         const targetServerUrl = serverUrls[0];
 
-        // A deferred run can be followed by the user entering a new secret, which must win.
+        // A previous run may have stored the secret and failed before clearing the legacy entry or marking done; keep what is stored.
         const existing = await getPreauthSecret(targetServerUrl);
 
         // Only destroy the legacy copy once the new one is confirmed stored, otherwise a failed
