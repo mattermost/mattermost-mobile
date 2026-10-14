@@ -437,7 +437,7 @@ describe('ProfileForm', () => {
         expect(getByTestId('edit_profile_form.customAttributes.unknownField')).toBeTruthy();
     });
 
-    describe('SAML Field Disabling', () => {
+    describe('Read-only Custom Field Disabling', () => {
         it('should disable custom fields when SAML-linked', () => {
             const customFields = [
                 TestHelper.fakeCustomProfileFieldModel({
