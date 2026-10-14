@@ -21,7 +21,7 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {logError} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {isCustomFieldSamlLinked} from '@utils/user';
+import {isCustomFieldReadOnly} from '@utils/user';
 
 import ProfileForm, {CUSTOM_ATTRS_PREFIX} from './components/form';
 import ProfileError from './components/profile_error';
@@ -159,7 +159,7 @@ const EditProfile = ({
                 }
             }
 
-            // Update custom attributes if changed and not SAML-linked
+            // Update custom attributes if changed and user-editable
             if (userInfo.customAttributes && enableCustomAttributes) {
                 // Create a map of custom fields for quick lookup
                 const customFieldsMap = new Map<string, CustomProfileFieldModel>();
@@ -167,7 +167,7 @@ const EditProfile = ({
                     customFieldsMap.set(field.id, field);
                 });
 
-                // Only send custom attributes that have actually changed and are not SAML-linked
+                // Only send custom attributes that have actually changed and are user-editable
                 const changedCustomAttributes: CustomAttributeSet = {};
 
                 Object.keys(userInfo.customAttributes).forEach((key) => {
@@ -176,8 +176,8 @@ const EditProfile = ({
                     const customAttribute = userInfo.customAttributes[key];
                     const customField = customFieldsMap.get(customAttribute?.id);
 
-                    // Only include if value changed and field is not SAML-linked
-                    if (currentValue !== newValue && !isCustomFieldSamlLinked(customField)) {
+                    // Only include if value changed and the user can edit the field
+                    if (currentValue !== newValue && !isCustomFieldReadOnly(customField)) {
                         changedCustomAttributes[key] = userInfo.customAttributes[key];
                     }
                 });

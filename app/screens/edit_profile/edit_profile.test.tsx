@@ -614,7 +614,7 @@ describe('EditProfile', () => {
         });
     });
 
-    describe('SAML Field Handling', () => {
+    describe('Read-only Field Handling', () => {
         const samlLinkedCustomField = TestHelper.fakeCustomProfileFieldModel({
             id: 'saml-field-1',
             attrs: {
@@ -628,6 +628,14 @@ describe('EditProfile', () => {
             attrs: {
                 saml: '',
                 sort_order: 2,
+            },
+        });
+
+        const adminManagedCustomField = TestHelper.fakeCustomProfileFieldModel({
+            id: 'admin-managed-field-1',
+            attrs: {
+                managed: 'admin',
+                sort_order: 3,
             },
         });
 
@@ -646,6 +654,25 @@ describe('EditProfile', () => {
                 type: 'text',
                 sort_order: 2,
             },
+            'admin-managed-field-1': {
+                id: 'admin-managed-field-1',
+                name: 'Clearance',
+                value: 'Eligible',
+                type: 'text',
+                sort_order: 3,
+            },
+        };
+
+        const cachedReadOnlyAttributes = {
+            ...customAttributesWithSaml,
+            'saml-field-1': {
+                ...customAttributesWithSaml['saml-field-1'],
+                value: 'Previous Department',
+            },
+            'admin-managed-field-1': {
+                ...customAttributesWithSaml['admin-managed-field-1'],
+                value: 'Previous Clearance',
+            },
         };
 
         beforeEach(() => {
@@ -656,7 +683,7 @@ describe('EditProfile', () => {
             });
         });
 
-        it('should not submit SAML-linked custom fields during profile update', async () => {
+        it('should submit only user-editable custom fields during profile update', async () => {
             const {getByTestId} = renderWithIntlAndTheme(
                 <EditProfile
                     currentUser={mockCurrentUser}
@@ -668,8 +695,8 @@ describe('EditProfile', () => {
                     lockedPosition={false}
                     lockedPicture={false}
                     enableCustomAttributes={true}
-                    customFields={[samlLinkedCustomField, nonSamlCustomField]}
-                    customAttributesSet={customAttributesWithSaml}
+                    customFields={[samlLinkedCustomField, nonSamlCustomField, adminManagedCustomField]}
+                    customAttributesSet={cachedReadOnlyAttributes}
                 />,
             );
 
@@ -707,10 +734,11 @@ describe('EditProfile', () => {
                 }),
             );
 
-            // Verify SAML field was not included
+            // Verify read-only fields were not included
             const lastCall = mockUpdateCustomProfileAttributes.mock.calls[mockUpdateCustomProfileAttributes.mock.calls.length - 1];
             const submittedAttributes = lastCall[2];
             expect(submittedAttributes).not.toHaveProperty('saml-field-1');
+            expect(submittedAttributes).not.toHaveProperty('admin-managed-field-1');
         });
 
         it('should not submit SAML-locked standard profile fields', async () => {
