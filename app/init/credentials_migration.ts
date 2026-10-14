@@ -8,21 +8,9 @@ import {getFullErrorMessage} from '@utils/errors';
 import {logDebug, logWarning} from '@utils/log';
 
 /**
- * Moves the pre-MM-70605 pre-auth secret into its per-server entry.
- *
- * Every server used to share one keychain entry, so the stored value belongs to whichever server
- * wrote it last, which is not knowable afterwards. Adopt only when a single server exists in the
- * app database (active or inactive); with more than one, discard. Soft-logged-out servers still
- * count — adopting based on the sole *active* host could attach another operator's secret to it.
- * Users must re-enter the secret when a server next requires it.
- *
- * Runs in the Android share extension too, which is harmless: it shares the process, alias space and
- * app database with the main app, and the iOS share and notification extensions are native readers
- * that never execute this. If the JS share bundle is ever enabled on iOS this must be gated to the
- * main app, because the legacy lookup falls back to the running bundle's identifier there and would
- * mark the migration done against an entry it cannot see.
- *
- * @param serverUrls URLs of every server row in the app DB (empty, one, or many).
+ * MM-70605 (https://mattermost.atlassian.net/browse/MM-70605): adopts the legacy shared pre-auth secret
+ * into the per-server entry only when exactly one server row exists (active or inactive); otherwise discards it.
+ * If the JS share bundle ever runs on iOS this must be gated to the main app (legacy lookup falls back to the running bundle identifier).
  */
 export async function migrateLegacyPreauthSecret(serverUrls: string[]): Promise<void> {
     try {
