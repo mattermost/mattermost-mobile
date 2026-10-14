@@ -587,6 +587,9 @@ describe('EditProfile', () => {
                     }),
                 );
             });
+
+            expect(screen.getByTestId('edit_profile.error.text')).toBeTruthy();
+            expect(screen.queryByTestId('edit_profile_form.username.input.error')).toBeNull();
         });
     });
 
