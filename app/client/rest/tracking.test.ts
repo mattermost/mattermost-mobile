@@ -939,6 +939,13 @@ describe('ClientTracking', () => {
             expect(apiClientMock.invalidate).not.toHaveBeenCalled();
         });
 
+        it('should not set the Authorization header when the bearer token is empty', () => {
+            client.setClientCredentials('', 'shared-password');
+
+            expect(client.requestHeaders[ClientConstants.HEADER_AUTH]).toBeUndefined();
+            expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
+        });
+
         it('should not persist anything before there is a session token', async () => {
             client.setClientCredentials('', 'shared-password');
             await new Promise(process.nextTick);

@@ -75,7 +75,9 @@ export default class ClientTracking {
     }
 
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
-        this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
+        if (bearerToken) {
+            this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
+        }
 
         // Undefined means leave the in-memory header alone (token-only refresh must not drop it).
         // Clear the header with setPreauthSecretHeader(''); clear storage with removePreauthSecret.
