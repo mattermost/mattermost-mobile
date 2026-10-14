@@ -333,6 +333,10 @@ export async function newRtcdConnection(
             }
         }
 
+        if (isClosed) {
+            return;
+        }
+
         if (Platform.OS === 'android') {
             // To allow us to use microphone in the background
             foregroundServiceStart(intl);

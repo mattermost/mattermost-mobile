@@ -57,6 +57,7 @@ describe('newRtcdConnection', () => {
             ICEServersConfigs: [{urls: ['stun:stun.example.com']}],
             AllowEnableCalls: true,
             EnableAV1: true,
+            NeedsTURNCredentials: false,
         })),
         getVersion: jest.fn(() => ({
             version: '1.7.0',
@@ -225,6 +226,41 @@ describe('newRtcdConnection', () => {
 
         expect(stopAudioSession).toHaveBeenCalled();
         expect(mockAudioRouteManager.stop).toHaveBeenCalled();
+    });
+
+    it('should not set up the call when disconnected while fetching TURN credentials', async () => {
+        mockClient.getCallsConfig.mockReturnValueOnce({...mockClient.getCallsConfig(), NeedsTURNCredentials: true});
+        let joinHandler: () => Promise<void> = () => Promise.resolve();
+
+        // @ts-ignore
+        WebSocketClient.mockImplementation(() => ({
+            initialize: jest.fn(),
+            on: (event: string, handler: () => Promise<void>) => {
+                if (event === 'join') {
+                    joinHandler = handler;
+                }
+            },
+            send: jest.fn(),
+            close: jest.fn(),
+        }));
+
+        const connection = await newRtcdConnection(
+            'http://localhost:8065',
+            'channelID',
+            () => {},
+            () => {},
+            false,
+            mockIntl,
+        );
+
+        mockClient.genTURNCredentials.mockImplementationOnce(async () => {
+            connection.disconnect();
+            return [];
+        });
+        await joinHandler();
+
+        expect(mockAudioRouteManager.start).not.toHaveBeenCalled();
+        expect(RTCPeer).not.toHaveBeenCalled();
     });
 
     it('mute/unmute', async () => {
