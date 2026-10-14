@@ -10,8 +10,9 @@ import {setPreauthSecret, setServerCredentials} from '@init/credentials';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import PerformanceMetricsManager from '@managers/performance_metrics_manager';
 import {NetworkRequestMetrics} from '@managers/performance_metrics_manager/constant';
-import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithStatusCode, preauthSecretInvalidMessage} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
+import {isPreauthRejection} from '@utils/headers';
 import {logDebug, logInfo, logWarning} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
 import {cleanUrlForLogging} from '@utils/url';
@@ -472,6 +473,7 @@ export default class ClientTracking {
 
         throw new ClientError(this.apiClient.baseUrl, {
             message: response.data?.message as string || `Response with status code ${response.code}`,
+            intl: isPreauthRejection(response.code, headers) ? preauthSecretInvalidMessage : undefined,
             server_error_id: response.data?.id as string,
             status_code: response.code,
             url,

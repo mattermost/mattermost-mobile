@@ -17,7 +17,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {navigateBack} from '@screens/navigation';
-import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage, preauthSecretInvalidMessage} from '@utils/errors';
 import {logWarning} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect} from '@utils/url';
@@ -145,10 +145,7 @@ const EditServer = ({server, theme}: ServerProps) => {
             );
             if (result.error) {
                 if (result.isPreauthError) {
-                    setPreauthSecretError(formatMessage({
-                        id: 'mobile.server.preauth_secret.invalid',
-                        defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
-                    }));
+                    setPreauthSecretError(formatMessage(preauthSecretInvalidMessage));
                     setShowAdvancedOptions(true);
                 } else {
                     setPreauthSecretError(getErrorMessage(result.error, intl));

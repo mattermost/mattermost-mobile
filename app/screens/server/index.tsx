@@ -25,7 +25,7 @@ import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/server
 import Background from '@screens/background';
 import {navigateBack, navigateToScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import {getErrorMessage} from '@utils/errors';
+import {getErrorMessage, preauthSecretInvalidMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {getLoginScreen, loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -343,10 +343,7 @@ const Server = ({
 
         if (result.error) {
             if (result.isPreauthError) {
-                setPreauthSecretError(intl.formatMessage({
-                    id: 'mobile.server.preauth_secret.invalid',
-                    defaultMessage: 'Authentication secret is invalid. Try again or contact your admin.',
-                }));
+                setPreauthSecretError(intl.formatMessage(preauthSecretInvalidMessage));
                 setShowAdvancedOptions(true);
             } else {
                 setUrlError(getErrorMessage(result.error, intl));

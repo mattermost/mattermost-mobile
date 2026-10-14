@@ -8,6 +8,7 @@ import LocalConfig from '@assets/config.json';
 import {Events} from '@constants';
 import NetworkPerformanceManager from '@managers/network_performance_manager';
 import test_helper from '@test/test_helper';
+import {preauthSecretInvalidMessage} from '@utils/errors';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -235,6 +236,20 @@ describe('ClientTracking', () => {
 
         const result = await client.doFetchWithTracking('https://example.com/api', options);
         expect(result).toEqual({success: true});
+    });
+
+    it('should attach the pre-auth secret message to a 403 pre-auth rejection', async () => {
+        apiClientMock.get.mockResolvedValue({
+            ok: false,
+            code: 403,
+            data: {message: 'forbidden'},
+            headers: {[ClientConstants.HEADER_X_REJECT_REASON]: 'pre-auth'},
+        });
+
+        const error = await client.doFetchWithTracking('https://example.com/api', {method: 'GET'}).catch((e) => e);
+
+        expect(error.intl).toBe(preauthSecretInvalidMessage);
+        expect(error.status_code).toBe(403);
     });
 
     it('should handle fetch errors', async () => {
