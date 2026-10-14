@@ -728,3 +728,7 @@ export const convertValueFromServer = (value: string | string[], fieldType: stri
 export const isCustomFieldSamlLinked = (customField?: CustomProfileFieldModel): boolean => {
     return Boolean(customField?.attrs?.saml);
 };
+
+export const isCustomFieldReadOnly = (customField?: CustomProfileFieldModel): boolean => {
+    return isCustomFieldSamlLinked(customField) || customField?.attrs?.managed === 'admin';
+};
