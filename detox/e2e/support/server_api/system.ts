@@ -227,6 +227,36 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
 };
 
 /**
+ * Turn feature flags on without touching the others, and only where needed.
+ *
+ * FeatureFlags fields are plain bools, so the server cannot tell an omitted flag from a
+ * false one: patching {FeatureFlags: {A: true}} sets every other flag to false. (Only servers
+ * with a Split key accept flag writes at all, as the cloud test servers do; elsewhere the
+ * server ignores them.) This reads the current flags and patches them back in full, and
+ * skips the write when every named flag is already on or absent from this server version.
+ * @param {string} baseUrl - the base server URL
+ * @param {string[]} names - the flags to turn on, e.g. ['PermissionPolicies']
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+    const {config, error, status} = await apiGetConfig(baseUrl);
+    if (error) {
+        return {error, status};
+    }
+
+    const current = config.FeatureFlags ?? {};
+    const toEnable = names.filter((name) => name in current && current[name] !== true);
+    if (!toEnable.length) {
+        return {config};
+    }
+
+    const enabled = Object.fromEntries(toEnable.map((name) => [name, true]));
+    return apiPatchConfig(baseUrl, {
+        FeatureFlags: {...current, ...enabled},
+    });
+};
+
+/**
  * Get remote clusters (connected workspaces).
  * See https://api.mattermost.com/#tag/remote_cluster
  * Requires system admin. Use before tests that need "no connected workspaces" (e.g. TC-MOB-03).
@@ -533,6 +563,7 @@ export const System = {
     apiGetConfig,
     apiGetRemoteClusters,
     apiPatchConfig,
+    apiEnableFeatureFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,
