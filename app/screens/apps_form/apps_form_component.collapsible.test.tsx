@@ -201,19 +201,22 @@ const submitViaHeader = async (getByTestId: (id: string) => any) => {
     });
 };
 
+// Shared across every describe below: all tests render AppsFormComponent against a
+// fresh server database and a cleared headerRight mock.
+let database: Database;
+
+beforeEach(async () => {
+    jest.clearAllMocks();
+    mockSetOptions.mockClear();
+    await DatabaseManager.init([serverUrl]);
+    database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
+});
+
+afterEach(async () => {
+    await DatabaseManager.destroyServerDatabase(serverUrl);
+});
+
 describe('AppsFormComponent — recursive collapsible rendering', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
 
     const render = (form: Partial<AppForm>) => renderWithEverything(<FormWithHeader {...getProps(form)}/>, {database, serverUrl});
 
@@ -374,19 +377,6 @@ describe('AppsFormComponent — recursive collapsible rendering', () => {
 });
 
 describe('AppsFormComponent — validation auto-expansion', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     // The submit button now lives in the modal header, rendered by FormWithHeader's
     // HeaderSlot in the same tree. Press it via the render's getByTestId.
     const submitForm = async (getByTestId: (id: string) => any) => {
@@ -625,19 +615,6 @@ describe('AppsFormComponent — validation auto-expansion', () => {
 });
 
 describe('AppsFormComponent — nested onChange and lookup discovery', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('routes onChange to a text field nested inside a collapsible', () => {
         const form = {fields: [section('sec', [text('nested_text')])]};
 
@@ -723,19 +700,6 @@ describe('AppsFormComponent — nested onChange and lookup discovery', () => {
 });
 
 describe('AppsFormComponent — submit_buttons inside collapsible structures', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     const buttonsField = (name: string): AppField => ({
         name,
         type: AppFieldTypes.STATIC_SELECT,
@@ -834,19 +798,6 @@ describe('AppsFormComponent — submit_buttons inside collapsible structures', (
 });
 
 describe('AppsFormComponent — state keyed by name, not label', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     // Two sections that look identical to the user (same label) but have distinct
     // names. State is keyed by field name (React key + expandVersions), so toggling
     // one must not leak into the other — a regression if state ever keys off label.
@@ -882,19 +833,6 @@ describe('AppsFormComponent — state keyed by name, not label', () => {
 });
 
 describe('AppsFormComponent — refresh-driven auto-expansion', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('expands a collapsed section holding a field that a refresh call flags as errored', async () => {
         // Editing a refresh-enabled field can surface a server error on a *different*
         // field living in a still-collapsed section. That section must open so the
@@ -930,19 +868,6 @@ describe('AppsFormComponent — refresh-driven auto-expansion', () => {
 });
 
 describe('AppsFormComponent — submission payload integrity', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('includes every leaf value exactly once and excludes collapsible container names', async () => {
         const submit = okSubmit();
         const form: Partial<AppForm> = {
@@ -977,19 +902,6 @@ describe('AppsFormComponent — submission payload integrity', () => {
 });
 
 describe('AppsFormComponent — refresh value preservation (valuesReducer merge)', () => {
-    let database: Database;
-
-    beforeEach(async () => {
-        jest.clearAllMocks();
-        mockSetOptions.mockClear();
-        await DatabaseManager.init([serverUrl]);
-        database = DatabaseManager.getServerDatabaseAndOperator(serverUrl).database;
-    });
-
-    afterEach(async () => {
-        await DatabaseManager.destroyServerDatabase(serverUrl);
-    });
-
     it('preserves user edits for fields the refreshed form no longer supplies, overwrites re-supplied ones, and initializes new fields', async () => {
         const submit = okSubmit();
         const props = getProps({fields: [text('a'), text('b'), text('r', {refresh: true})]}, {submit});

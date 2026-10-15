@@ -92,12 +92,17 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
     // only mounts once the ancestor expands, by which point its force-expand version is
     // already set. useDidUpdate skips that first run, so without seeding here the section
     // would mount collapsed and hide the invalid field that triggered the expand.
-    const [isExpanded, setIsExpanded] = useState(() => initiallyExpanded || Boolean(forceExpandVersion));
+    //
+    // Gate the seed on hasError: forceExpandVersion stays non-zero for the rest of the
+    // form's life once bumped, so seeding on it alone would re-expand the section on every
+    // remount — even after the user fixed the error and collapsed it. A live version bump
+    // only ever follows a real error, so the runtime useDidUpdate below needs no such gate.
+    const [isExpanded, setIsExpanded] = useState(() => initiallyExpanded || Boolean(forceExpandVersion && hasError));
 
     // Drives the chevron rotation only. The content itself mounts/unmounts at its
     // natural height and the container's height change is animated by LinearTransition —
     // this keeps an initially-expanded section correct without measuring a clipped view.
-    const rotation = useSharedValue(initiallyExpanded || forceExpandVersion ? 1 : 0);
+    const rotation = useSharedValue(initiallyExpanded || (forceExpandVersion && hasError) ? 1 : 0);
 
     // Re-sync when the prop changes (e.g. multistep dialog refreshes).
     useDidUpdate(() => {

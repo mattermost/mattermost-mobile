@@ -140,16 +140,27 @@ describe('CollapsibleSection prop-driven expansion', () => {
         expect(queryByText(CHILD)).toBeTruthy();
     });
 
-    it('mounts expanded when a forceExpandVersion is already present at mount', () => {
+    it('mounts expanded when a forceExpandVersion is present and the section has an error', () => {
         // A nested section under a collapsed ancestor only mounts once the ancestor
         // expands, by which point its force-expand version is already set. useDidUpdate
         // skips the mount, so the initial state must seed from the version to reveal
         // the invalid field that triggered the expand.
         const {queryByText} = renderWithIntlAndTheme(
-            <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1})}/>,
+            <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1, hasError: true})}/>,
         );
 
         expect(queryByText(CHILD)).toBeTruthy();
+    });
+
+    it('mounts collapsed when a forceExpandVersion is present but the error is already resolved', () => {
+        // forceExpandVersion stays non-zero for the rest of the form's life once bumped.
+        // After the user fixes the error and the section remounts (e.g. an ancestor is
+        // re-expanded), a lingering version must NOT re-expand it when there's no error.
+        const {queryByText} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1, hasError: false})}/>,
+        );
+
+        expect(queryByText(CHILD)).toBeNull();
     });
 
     it('force-expands a user-collapsed section when forceExpandVersion increments', () => {
@@ -172,7 +183,7 @@ describe('CollapsibleSection prop-driven expansion', () => {
             <CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 1})}/>,
         );
 
-        // Seeded from the mount-time version, then a further increment keeps it open.
+        // A version increment after mount opens the section (useDidUpdate reacts to the change).
         rerender(<CollapsibleSection {...getProps({initiallyExpanded: false, forceExpandVersion: 2})}/>);
         expect(queryByText(CHILD)).toBeTruthy();
 
