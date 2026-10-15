@@ -222,7 +222,9 @@ public class CustomPushNotificationHelper {
         setNotificationGroup(notification, groupId, createSummary);
         setNotificationBadgeType(notification);
 
-        final boolean isCall = isCallsNotification(bundle);
+        // The group summary shares this bundle, but only the call notification
+        // itself should ring and take over the screen.
+        final boolean isCall = !createSummary && isCallsNotification(bundle);
 
         setNotificationChannel(context, notification, isCall);
         setNotificationDeleteIntent(context, notification, bundle, notificationId);
@@ -289,11 +291,16 @@ public class CustomPushNotificationHelper {
 
     private static Uri getCallRingtoneUri(Context context) {
         String packageName = context.getPackageName();
-        int resId = context.getResources().getIdentifier(CALL_RINGTONE_RES_NAME, "raw", packageName);
-        if (resId == 0) {
+
+        // Resolve by name to confirm the asset is actually bundled; res/raw is
+        // gitignored and populated from assets/sounds by scripts/postinstall.sh.
+        if (context.getResources().getIdentifier(CALL_RINGTONE_RES_NAME, "raw", packageName) == 0) {
             return null;
         }
-        return Uri.parse("android.resource://" + packageName + "/" + resId);
+
+        // Address it by name rather than by numeric ID: the system persists this
+        // URI with the channel, and resource IDs are not stable across builds.
+        return Uri.parse("android.resource://" + packageName + "/raw/" + CALL_RINGTONE_RES_NAME);
     }
 
     public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {

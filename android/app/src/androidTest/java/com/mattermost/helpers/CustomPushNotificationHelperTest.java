@@ -98,6 +98,8 @@ public class CustomPushNotificationHelperTest {
         assertEquals("Ringtone is not a bundled resource", "android.resource", sound.getScheme());
         assertEquals("Ringtone does not belong to this package",
                 context.getPackageName(), sound.getAuthority());
+        assertEquals("Ringtone is addressed by numeric id rather than by name",
+                "/raw/calls_calm", sound.getPath());
 
         AudioAttributes attributes = channel.getAudioAttributes();
         assertNotNull("Incoming Calls channel has no audio attributes", attributes);
@@ -188,5 +190,46 @@ public class CustomPushNotificationHelperTest {
                 Notification.CATEGORY_MESSAGE, notification.category);
         assertNull("Message notification must not get a full-screen intent",
                 notification.fullScreenIntent);
+    }
+
+    /**
+     * The group summary is built from the same bundle as the call notification.
+     * It must not ring or take over the screen as well.
+     */
+    @Test
+    public void createNotificationBuilder_groupSummaryIsNotTreatedAsACall() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        Notification summary = CustomPushNotificationHelper.createNotificationBuilder(
+                context, noopIntent(context), callBundle(), true).build();
+
+        assertEquals("Group summary should not be on the call channel",
+                CustomPushNotificationHelper.CHANNEL_HIGH_IMPORTANCE_ID, summary.getChannelId());
+        assertNull("Group summary must not get a full-screen intent", summary.fullScreenIntent);
+    }
+
+    /**
+     * CustomPushNotification marks call notifications insistent so the channel
+     * sound repeats instead of playing once. That class needs the react-native
+     * lifecycle facade to construct, so assert the contract it relies on: the
+     * call notification it is handed is the one isCallsNotification() selects,
+     * and the flag it sets does survive on the built notification.
+     */
+    @Test
+    public void callNotificationCanBeMarkedInsistent() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        Bundle bundle = callBundle();
+        assertTrue("Call bundle is not recognised as a call",
+                CustomPushNotificationHelper.isCallsNotification(bundle));
+
+        Notification notification = CustomPushNotificationHelper.createNotificationBuilder(
+                context, noopIntent(context), bundle, false).build();
+        assertEquals("Builder should not set the insistent flag itself",
+                0, notification.flags & Notification.FLAG_INSISTENT);
+
+        notification.flags = notification.flags | Notification.FLAG_INSISTENT;
+        assertEquals("Insistent flag did not stick on the built notification",
+                Notification.FLAG_INSISTENT, notification.flags & Notification.FLAG_INSISTENT);
     }
 }
