@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {waitFor} from '@testing-library/react-native';
 import {firstValueFrom} from 'rxjs';
 
 import {setAccessControlGroupId} from '@actions/local/channel_attributes';
@@ -146,6 +147,33 @@ describe('observeResolvedChannelAttributes', () => {
             ['classification', 'Secret'],
             ['program', 'AURORA'],
         ]);
+    });
+
+    it('should re-emit when an option of a multi-valued attribute changes color', async () => {
+        const options = [{id: 'noforn', name: 'NOFORN', color: '#FF0000'}, {id: 'orcon', name: 'ORCON', color: '#00FF00'}];
+        await seedFields([makeField({id: 'cf-1', name: 'dissemination', type: 'multiselect', object_type: 'channel', attrs: {options}})]);
+        await operator.handlePropertyValues({
+            values: [{...makeValue({id: 'cv-1', target_id: channelId, target_type: 'channel', field_id: 'cf-1'}), value: ['noforn', 'orcon']}],
+            prepareRecordsOnly: false,
+        });
+
+        const emissions: string[][] = [];
+        const subscription = observeResolvedChannelAttributes(database, channelId).subscribe((resolved) => {
+            emissions.push(resolved[0].displayValues.map((entry) => entry.color ?? ''));
+        });
+
+        await seedFields([makeField({
+            id: 'cf-1',
+            name: 'dissemination',
+            type: 'multiselect',
+            object_type: 'channel',
+            update_at: 2000,
+            attrs: {options: [options[0], {...options[1], color: '#0000FF'}]},
+        })]);
+        await waitFor(() => expect(emissions).toHaveLength(2));
+        subscription.unsubscribe();
+
+        expect(emissions[1]).toEqual(['#FF0000', '#0000FF']);
     });
 
     it('should not leak another channel value into this channel', async () => {

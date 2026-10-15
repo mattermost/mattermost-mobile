@@ -46,14 +46,6 @@ class ConversationStoreSingleton {
         return this.getSubject(serverUrl, id).asObservable();
     };
 
-    /** Drop a single conversation entry without re-fetching. */
-    evict = (serverUrl: string, id: string): void => {
-        const subject = this.subjects[serverUrl]?.[id];
-        if (subject) {
-            subject.next(INITIAL_CONVERSATION_STATE);
-        }
-    };
-
     /** Drop every conversation belonging to one server. Called on per-server logout. */
     removeServer = (serverUrl: string): void => {
         const inner = this.subjects[serverUrl];

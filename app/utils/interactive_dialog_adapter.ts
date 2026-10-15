@@ -8,7 +8,7 @@ import {AppCallResponseTypes} from '@constants/apps';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
-import {convertAppFormValuesToDialogSubmission, convertDialogToAppForm} from './dialog_conversion';
+import {collectFileIds, convertAppFormValuesToDialogSubmission, convertDialogToAppForm} from './dialog_conversion';
 import {flattenDialogElements} from './dialog_utils';
 
 const submissionMessages = defineMessages({
@@ -79,6 +79,9 @@ export class InteractiveDialogAdapter {
             });
         }
 
+        // Collect file IDs from file-type elements for server-side validation
+        const fileIds = collectFileIds(submission as {[x: string]: string}, elements);
+
         return {
             url: config.url || '',
             callback_id: config.dialog.callback_id || '',
@@ -88,6 +91,7 @@ export class InteractiveDialogAdapter {
             channel_id: '', // Will be populated by mobile action
             team_id: '', // Will be populated by mobile action
             cancelled: false,
+            ...(fileIds.length > 0 && {file_ids: fileIds}),
         };
     }
 

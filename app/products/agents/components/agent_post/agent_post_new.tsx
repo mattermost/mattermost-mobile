@@ -37,6 +37,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 // Sentinel id for the in-progress streaming round; persisted rounds use turn ids.
 const LIVE_ROUND_ID = 'live';
+const POST_MESSAGE_ROUND_ID = 'post-message';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -72,6 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 interface RoundViewProps {
     round: Round;
     postId: string;
+    conversationId: string;
     location: AvailableScreens;
     isDM: boolean;
     approvalStage: ToolApprovalStage;
@@ -87,6 +89,7 @@ interface RoundViewProps {
 const RoundView = ({
     round,
     postId,
+    conversationId,
     location,
     isDM,
     approvalStage,
@@ -128,6 +131,7 @@ const RoundView = ({
             {round.toolCalls.length > 0 && (
                 <ToolApprovalSet
                     postId={postId}
+                    conversationId={conversationId}
                     toolCalls={round.toolCalls}
                     approvalStage={approvalStage}
                     canApprove={canApprove}
@@ -185,42 +189,58 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
         };
     }, [streamingState]);
 
-    // While streaming, stack the persisted prefix (prior rounds, e.g. after a
-    // tool-approval continue) + snapshotted rounds + the live round. Once the
-    // stream settles, the refetched conversation becomes the source of truth;
-    // until it reflects this response, keep streamed rounds visible so content
-    // doesn't blink out during the refetch gap.
+    // Stack the persisted prefix (prior rounds, e.g. after a tool-approval
+    // continue) + snapshotted rounds + the live round for as long as streaming
+    // state exists. The websocket handler drops that state in the same update
+    // that delivers the post-stream refetch, so content never blinks out or
+    // renders twice.
     const {renderedRounds, lastPersistedIdx} = useMemo(() => {
-        const storeRounds = streamingState?.rounds ?? [];
-        if (isGenerationInProgress) {
-            const out = [...persistedRounds, ...storeRounds];
+        const out = [...persistedRounds];
+        if (streamingState) {
+            out.push(...streamingState.rounds);
             if (liveRound) {
                 out.push(liveRound);
             }
-            return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
         }
-        if (persistedRounds.length > 0) {
-            return {renderedRounds: persistedRounds, lastPersistedIdx: persistedRounds.length - 1};
-        }
-        const out = liveRound ? [...storeRounds, liveRound] : [...storeRounds];
-        return {renderedRounds: out, lastPersistedIdx: -1};
-    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds]);
 
-    // Invalidate the cached conversation when a stream finishes so the next
-    // fetch surfaces the finalised turns.
-    const wasGeneratingRef = useRef(isGenerating);
+        // Until the cached conversation holds this response's turns (e.g. the
+        // stream-end event was missed or the refetch failed), render the
+        // persisted post message rather than a blank body. Skipped on a cold
+        // open so nothing flashes before the first fetch lands.
+        const coldOpen = conversationLoading && !conversation;
+        if (out.length === 0 && !isGenerationInProgress && !coldOpen && post.message !== '') {
+            out.push({
+                id: POST_MESSAGE_ROUND_ID,
+                text: post.message,
+                toolCalls: [],
+                reasoning: {summary: '', signature: ''},
+                annotations: [],
+            });
+        }
+        return {renderedRounds: out, lastPersistedIdx: persistedRounds.length - 1};
+    }, [isGenerationInProgress, streamingState, liveRound, persistedRounds, conversationLoading, conversation, post.message]);
+
+    // ensureConversation never refreshes a cached entry, so a cache fetched
+    // before this response's turns were persisted stays stale whenever the
+    // stream-end refetch is missed (websocket down, app backgrounded). Refetch
+    // once per post revision when a finished post has text but no turns.
+    const staleRefetchRevisionRef = useRef<number | undefined>(undefined);
     useEffect(() => {
-        const wasGenerating = wasGeneratingRef.current;
-        wasGeneratingRef.current = isGenerating;
-        if (wasGenerating && !isGenerating) {
-            refetchConversation(serverUrl, conversationId);
+        // While streaming state exists the websocket handler owns the refetch.
+        if (!conversation || conversationLoading || conversationError || streamingState) {
+            return;
         }
-    }, [serverUrl, conversationId, isGenerating]);
+        if (post.message === '' || persistedRounds.length > 0 || staleRefetchRevisionRef.current === post.updateAt) {
+            return;
+        }
+        staleRefetchRevisionRef.current = post.updateAt;
+        refetchConversation(serverUrl, conversationId);
+    }, [conversation, conversationLoading, conversationError, streamingState, post.message, post.updateAt, persistedRounds.length, serverUrl, conversationId]);
 
-    // A tool-approval `continue` resume bumps continueSeq; refetch so the
-    // just-resolved prior round (now persisted server-side) appears above the
-    // resumed live round. Safe to fire alongside the stream-end refetch above —
-    // refetchConversation dedupes in-flight requests.
+    // The stream-end refetch is owned by the websocket handler
+    // (handleAgentPostUpdate). A tool-approval `continue` resume bumps
+    // continueSeq; refetch so the just-resolved prior round (now persisted
+    // server-side) appears above the resumed live round.
     const continueSeq = streamingState?.continueSeq ?? 0;
     const lastContinueSeqRef = useRef(continueSeq);
     useEffect(() => {
@@ -233,15 +253,6 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
             lastContinueSeqRef.current = continueSeq;
         }
     }, [serverUrl, conversationId, continueSeq]);
-
-    // Once a finished stream's refetch has populated the persisted rounds, drop
-    // the streaming store entry so the snapshotted rounds aren't rendered twice
-    // (POST_EDITED also clears it; this guards the refetch-before-POST_EDITED gap).
-    useEffect(() => {
-        if (streamingState && !isGenerationInProgress && persistedRounds.length > 0) {
-            streamingStore.removePost(serverUrl, post.id);
-        }
-    }, [streamingState, isGenerationInProgress, persistedRounds.length, serverUrl, post.id]);
 
     const isRequester = isConversationRequester({post, conversation, currentUserId});
     const canApprove = isRequester;
@@ -315,6 +326,7 @@ const AgentPostNew = ({post, conversationId, currentUserId, location, isDM}: Age
                         key={round.id}
                         round={round}
                         postId={post.id}
+                        conversationId={conversationId}
                         location={location}
                         isDM={isDM}
                         approvalStage={stage}

@@ -40,6 +40,11 @@ const BANNER_MULTI_FIELD_NAME = 'banner_multi';
 const BANNER_SELECT_FIELD_NAME = 'banner_select';
 const BANNER_TEXT_FIELD_NAME = 'banner_text';
 
+// Multiselect field for multi-value chip tests: one attribute whose several
+// values must each render as their own chip, and whose value count alone can
+// exceed MAX_VISIBLE_CHIP_VALUES.
+const MULTI_VALUE_FIELD_NAME = 'multi_value_header';
+
 // All test field names in one place so cleanup calls stay consistent if a new
 // field is ever added to the suite.
 const ALL_TEST_FIELD_NAMES = [
@@ -48,6 +53,7 @@ const ALL_TEST_FIELD_NAMES = [
     BANNER_MULTI_FIELD_NAME,
     BANNER_SELECT_FIELD_NAME,
     BANNER_TEXT_FIELD_NAME,
+    MULTI_VALUE_FIELD_NAME,
 ] as const;
 const SECOND_FIELD_OPTIONS = [
     {id: 'attropt2high00000000000000', name: 'HIGH2', color: '#CC0000', rank: 1}, // 12+14=26
@@ -353,13 +359,14 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             await ChannelScreen.back();
         });
 
-        it('MM-T6305_1 - should show the attribute row in Channel Info when designated for display_label_info', async () => {
+        it('MM-T6305_1 - should show a set attribute in Channel Info even with no display location', async () => {
+            // # Channel Info lists attributes by value, so a field shown nowhere else still appears.
             const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
                 siteOneUrl,
                 {
                     fieldName: TEST_FIELD_NAME,
                     options: TEST_FIELD_OPTIONS,
-                    actions: ['display_label_info'],
+                    actions: [],
                 },
             );
 
@@ -589,6 +596,152 @@ async function assertOnReloadedApp(steps: () => Promise<void>) {
             await waitFor(ChannelAttributeLabels.getChipValue(TEST_FIELD_NAME)).toHaveText('LOW').withTimeout(timeouts.TEN_SEC);
             await waitFor(element(by.text('HIGH'))).not.toBeVisible().withTimeout(timeouts.FOUR_SEC);
 
+            await ChannelScreen.back();
+        });
+
+        it('MM-T6312_1 - should render each value of a multi-valued header attribute as its own chip', async () => {
+            // # Create a multiselect header-designated field with two values set — exactly
+            // # MAX_VISIBLE_CHIP_VALUES, so both render inline with no overflow.
+            const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
+                siteOneUrl,
+                {
+                    fieldName: MULTI_VALUE_FIELD_NAME,
+                    fieldType: 'multiselect',
+                    options: TEST_FIELD_OPTIONS,
+                    actions: ['display_label_header'],
+                },
+            );
+
+            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+                teamId: testTeam.id,
+                prefix: 'channel',
+                propertyValues: [{
+                    field_id: channelFieldId,
+                    value: [requireOption(optionIdsByName, 'HIGH'), requireOption(optionIdsByName, 'MEDIUM')],
+                }],
+            });
+            testChannel = channel;
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+            await device.reloadReactNative();
+
+            await ChannelListScreen.toBeVisible();
+            await openChannel(channel.name);
+
+            // * Each value is its own chip (indexed, since the field has more than one value),
+            // * not a single chip with a joined "HIGH, MEDIUM" string.
+            await waitFor(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 0)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 0)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 1)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 1)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+
+            // * The old joined-string rendering ("HIGH, MEDIUM" as one chip) is not present.
+            await expect(element(by.text('HIGH, MEDIUM'))).not.toExist();
+
+            // * Exactly 2 value chips fit inline (the boundary), so no overflow button.
+            await expect(ChannelAttributeLabels.overflow).not.toBeVisible();
+
+            await ChannelScreen.back();
+        });
+
+        it('MM-T6313_1 - should overflow a single attribute\'s excess values and list all its values in the +N sheet', async () => {
+            // # Create a multiselect header-designated field with three values set — one more
+            // # than MAX_VISIBLE_CHIP_VALUES, so the third value alone must trigger overflow
+            // # even though it is the only designated attribute.
+            const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
+                siteOneUrl,
+                {
+                    fieldName: MULTI_VALUE_FIELD_NAME,
+                    fieldType: 'multiselect',
+                    options: TEST_FIELD_OPTIONS,
+                    actions: ['display_label_header'],
+                },
+            );
+
+            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+                teamId: testTeam.id,
+                prefix: 'channel',
+                propertyValues: [{
+                    field_id: channelFieldId,
+                    value: [
+                        requireOption(optionIdsByName, 'HIGH'),
+                        requireOption(optionIdsByName, 'MEDIUM'),
+                        requireOption(optionIdsByName, 'LOW'),
+                    ],
+                }],
+            });
+            testChannel = channel;
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+            await device.reloadReactNative();
+
+            await ChannelListScreen.toBeVisible();
+            await openChannel(channel.name);
+
+            // * The first two values are visible inline; the third is not rendered inline at all.
+            await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 0)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getChipValue(MULTI_VALUE_FIELD_NAME, 1)).toHaveText('MEDIUM').withTimeout(timeouts.TEN_SEC);
+            await expect(ChannelAttributeLabels.getChip(MULTI_VALUE_FIELD_NAME, 2)).not.toExist();
+
+            // * The overflow button is visible, and opening it lists the whole attribute — all
+            // * three values, each its own chip, not only the one hidden from the header.
+            await waitFor(ChannelAttributeLabels.overflow).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await ChannelAttributeLabels.overflow.tap();
+            await waitFor(ChannelAttributeLabels.overflowSheet).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 0)).toHaveText('HIGH').withTimeout(timeouts.TEN_SEC);
+            await expect(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 1)).toHaveText('MEDIUM');
+            await expect(ChannelAttributeLabels.getSheetChipValue(MULTI_VALUE_FIELD_NAME, 2)).toHaveText('LOW');
+
+            // # Close the sheet first: it covers the header back button.
+            await ChannelAttributeLabels.closeOverflowSheet();
+            await ChannelScreen.back();
+        });
+
+        it('MM-T6314_1 - should render each value of a multi-valued attribute as its own chip in Channel Info', async () => {
+            // # Create a multiselect info-designated field with three values set — Channel Info
+            // # does not paginate, so all three should render as separate chips in one row.
+            const {channelFieldId, optionIdsByName} = await Properties.apiSetupChannelAttributeField(
+                siteOneUrl,
+                {
+                    fieldName: MULTI_VALUE_FIELD_NAME,
+                    fieldType: 'multiselect',
+                    options: TEST_FIELD_OPTIONS,
+                    actions: ['display_label_info'],
+                },
+            );
+
+            const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
+                teamId: testTeam.id,
+                prefix: 'channel',
+                propertyValues: [{
+                    field_id: channelFieldId,
+                    value: [
+                        requireOption(optionIdsByName, 'HIGH'),
+                        requireOption(optionIdsByName, 'MEDIUM'),
+                        requireOption(optionIdsByName, 'LOW'),
+                    ],
+                }],
+            });
+            testChannel = channel;
+            await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+            await device.reloadReactNative();
+
+            await ChannelListScreen.toBeVisible();
+            await openChannel(channel.name);
+
+            await ChannelInfoScreen.open();
+
+            // * All three values are visible as separate, indexed chips in the same row.
+            await waitFor(element(by.id(`channel_info.attributes.${MULTI_VALUE_FIELD_NAME}.chip.0`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.text('HIGH'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.id(`channel_info.attributes.${MULTI_VALUE_FIELD_NAME}.chip.1`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.text('MEDIUM'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.id(`channel_info.attributes.${MULTI_VALUE_FIELD_NAME}.chip.2`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(element(by.text('LOW'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+
+            // * The old joined-string rendering (all three values folded into one chip) is
+            // * not present, in any value order the join could have produced.
+            await expect(element(by.text('HIGH, MEDIUM, LOW'))).not.toExist();
+
+            await ChannelInfoScreen.close();
             await ChannelScreen.back();
         });
     });

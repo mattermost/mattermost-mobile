@@ -28,6 +28,7 @@ export const DialogElementTypes = {
     SELECT: 'select' as const,
     RADIO: 'radio' as const,
     BOOL: 'bool' as const,
+    FILE: 'file' as const,
     DATE: 'date' as const,
     DATETIME: 'datetime' as const,
     COLLAPSIBLE: 'collapsible' as const,
@@ -68,6 +69,8 @@ export function mapDialogTypeToAppFieldType(dialogType: InteractiveDialogElement
             return 'radio';
         case DialogElementTypes.BOOL:
             return 'bool';
+        case DialogElementTypes.FILE:
+            return 'file';
         case DialogElementTypes.DATE:
             return 'date';
         case DialogElementTypes.DATETIME:
@@ -93,6 +96,8 @@ export function mapAppFieldTypeToDialogType(appFieldType: AppFieldType): Interac
             return DialogElementTypes.RADIO;
         case 'bool':
             return DialogElementTypes.BOOL;
+        case 'file':
+            return DialogElementTypes.FILE;
         case 'date':
             return DialogElementTypes.DATE;
         case 'datetime':

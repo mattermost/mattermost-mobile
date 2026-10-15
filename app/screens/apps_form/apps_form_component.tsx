@@ -95,6 +95,7 @@ export type Props = {
     refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
     submit: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
     performLookupCall: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<AppLookupResponse>>;
+    channelId?: string;
 }
 
 type Errors = {[name: string]: string}
@@ -227,6 +228,7 @@ function AppsFormComponent({
     refreshOnSelect,
     submit,
     performLookupCall,
+    channelId = '',
 }: Props) {
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
@@ -236,6 +238,7 @@ function AppsFormComponent({
     // and submit twice. The ref blocks the second call before any await.
     const submittingRef = useRef(false);
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingFields, setUploadingFieldsState] = useState<Set<string>>(new Set());
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [error, setError] = useState('');
@@ -248,6 +251,22 @@ function AppsFormComponent({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const navigation = useNavigation();
+
+    const setFieldUploading = useCallback((fieldName: string, uploading: boolean) => {
+        setUploadingFieldsState((prev) => {
+            const has = prev.has(fieldName);
+            if (uploading === has) {
+                return prev;
+            }
+            const next = new Set(prev);
+            if (uploading) {
+                next.add(fieldName);
+            } else {
+                next.delete(fieldName);
+            }
+            return next;
+        });
+    }, []);
 
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});
@@ -369,7 +388,7 @@ function AppsFormComponent({
     const elements = useMemo(() => fieldsAsElements(flattenAppFields(form.fields || [])), [form.fields]);
 
     const handleSubmit = useCallback(async (button?: string) => {
-        if (submittingRef.current) {
+        if (submittingRef.current || uploadingFields.size > 0) {
             return;
         }
 
@@ -452,7 +471,7 @@ function AppsFormComponent({
                 submittingRef.current = false;
                 setSubmitting(false);
         }
-    }, [elements, form, values, submit, updateErrors, bumpErroredSections, serverUrl, intl]);
+    }, [elements, form, values, submit, uploadingFields, updateErrors, bumpErroredSections, serverUrl, intl]);
 
     // Present the default submit action in the modal header (matching edit_profile /
     // custom_status) so it stays above the keyboard and is always reachable. Forms
@@ -475,7 +494,7 @@ function AppsFormComponent({
                 <View testID='interactive_dialog.submit.button'>
                     <NavigationButton
                         onPress={() => handleSubmit()}
-                        disabled={submitting}
+                        disabled={submitting || uploadingFields.size > 0}
                         iconName='check'
                         iconSize={24}
                         accessibilityLabel={submitLabel}
@@ -483,7 +502,7 @@ function AppsFormComponent({
                 </View>
             ),
         });
-    }, [navigation, hasSubmitButtonsField, submitting, submitLabel, handleSubmit, style]);
+    }, [navigation, hasSubmitButtonsField, submitting, uploadingFields, submitLabel, handleSubmit, style]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = flattenAppFields(form.fields || []).find((f) => f.name === name);
@@ -591,9 +610,12 @@ function AppsFormComponent({
                 value={value || ''}
                 performLookup={performLookup}
                 onChange={onChange}
+                setFieldUploading={setFieldUploading}
+                channelId={channelId}
+                serverUrl={serverUrl}
             />
         );
-    }, [values, errors, expandVersions, performLookup, onChange, form.submit_buttons]);
+    }, [values, errors, expandVersions, performLookup, onChange, setFieldUploading, channelId, serverUrl, form.submit_buttons]);
 
     return (
         <SafeAreaView
@@ -639,6 +661,7 @@ function AppsFormComponent({
                                     theme={theme}
                                     size='lg'
                                     text={o.label || ''}
+                                    disabled={submitting || uploadingFields.size > 0}
                                 />
                             </View>
                         ))}

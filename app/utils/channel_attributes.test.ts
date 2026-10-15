@@ -3,19 +3,25 @@
 
 import {
     canMoveToOption,
+    channelInfoAttributesEqual,
     compareChannelAttributeFields,
     deriveChannelAttributeBanner,
+    flattenChannelAttributesToChips,
     getPropertyFieldChangePolicy,
     getPropertyFieldLabel,
+    groupChannelAttributeChipsByField,
     isPropertyFieldRequired,
     isPropertyValueSet,
     renderBannerTemplate,
+    renderNativeBannerText,
     resolveChannelAttributes,
     selectAttributesForAction,
     selectChannelInfoAttributes,
     stripUnresolvedTokens,
+    type ChannelAttributeChipItem,
     type ChannelAttributeField,
     type ChannelAttributeValue,
+    type ResolvedChannelAttribute,
 } from './channel_attributes';
 
 const CLASSIFICATION_OPTIONS = [
@@ -131,12 +137,14 @@ describe('resolveChannelAttributes', () => {
         expect(resolved.displayValue).toBe('Secret');
         expect(resolved.option?.color).toBe('#FF0000');
         expect(resolved.rawValue).toBe('level-secret');
+        expect(resolved.displayValues).toEqual([{value: 'Secret', color: '#FF0000'}]);
     });
 
     it('should include an unset field with an empty display value', () => {
         const [resolved] = resolveChannelAttributes([classificationField], []);
         expect(resolved.displayValue).toBe('');
         expect(resolved.option).toBeUndefined();
+        expect(resolved.displayValues).toEqual([]);
     });
 
     it('should match values by field id rather than position', () => {
@@ -154,10 +162,14 @@ describe('resolveChannelAttributes', () => {
     });
 
     it('should join a multi-value selection with resolved option names', () => {
-        const caveat = field({id: 'cf-3', name: 'caveat', attrs: {options: [{id: 'a', name: 'NOFORN'}, {id: 'b', name: 'ORCON'}]}});
+        const caveat = field({id: 'cf-3', name: 'caveat', attrs: {options: [{id: 'a', name: 'NOFORN', color: '#FF0000'}, {id: 'b', name: 'ORCON'}]}});
         const value = {fieldId: 'cf-3', value: ['a', 'b']} as unknown as ChannelAttributeValue;
         const [resolved] = resolveChannelAttributes([caveat], [value]);
         expect(resolved.displayValue).toBe('NOFORN, ORCON');
+        expect(resolved.displayValues).toEqual([
+            {value: 'NOFORN', color: '#FF0000'},
+            {value: 'ORCON', color: undefined},
+        ]);
     });
 
     it('should render the raw value when its option no longer exists, rather than dropping the marking', () => {
@@ -165,6 +177,16 @@ describe('resolveChannelAttributes', () => {
         const [resolved] = resolveChannelAttributes([classificationField], [value]);
         expect(resolved.displayValue).toBe('level-gone');
         expect(resolved.option).toBeUndefined();
+        expect(resolved.displayValues).toEqual([{value: 'level-gone'}]);
+        expect(resolved.unresolvedOptionIds).toEqual(['level-gone']);
+    });
+
+    it('should render a non-string raw value as text, with no option resolution attempted', () => {
+        const numeric = field({id: 'cf-4', name: 'count', attrs: {}});
+        const value = {fieldId: 'cf-4', value: 5} as unknown as ChannelAttributeValue;
+        const [resolved] = resolveChannelAttributes([numeric], [value]);
+        expect(resolved.displayValue).toBe('5');
+        expect(resolved.displayValues).toEqual([{value: '5'}]);
     });
 });
 
@@ -186,17 +208,17 @@ describe('selectAttributesForAction', () => {
 
 describe('selectChannelInfoAttributes', () => {
     it('should list a required attribute even when unset, and omit an optional unset one', () => {
-        const requiredUnset = field({id: '1', name: 'a', attrs: {actions: ['display_label_info'], required: true}});
-        const optionalUnset = field({id: '2', name: 'b', attrs: {actions: ['display_label_info']}});
+        const requiredUnset = field({id: '1', name: 'a', attrs: {required: true}});
+        const optionalUnset = field({id: '2', name: 'b', attrs: {}});
 
         const resolved = resolveChannelAttributes([requiredUnset, optionalUnset], []);
-        expect(selectChannelInfoAttributes(resolved, 'display_label_info').map((a) => a.field.id)).toEqual(['1']);
+        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['1']);
     });
 
-    it('should omit an attribute that is not designated for the info surface', () => {
-        const headerOnly = field({id: '1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
-        const resolved = resolveChannelAttributes([headerOnly], [classificationValue as ChannelAttributeValue]);
-        expect(selectChannelInfoAttributes(resolved, 'display_label_info')).toHaveLength(0);
+    it('should list a set attribute whatever its display locations', () => {
+        const noLocation = field({id: 'cf-1', name: 'a', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
+        const resolved = resolveChannelAttributes([noLocation], [classificationValue]);
+        expect(selectChannelInfoAttributes(resolved).map((a) => a.field.id)).toEqual(['cf-1']);
     });
 });
 
@@ -248,18 +270,18 @@ describe('deriveChannelAttributeBanner', () => {
     });
 
     it('should render nothing when the designated attribute has no value on this channel', () => {
-        expect(deriveChannelAttributeBanner([designated], [], undefined, undefined, true).hasBanner).toBe(false);
+        expect(deriveChannelAttributeBanner([designated], [], undefined, true).hasBanner).toBe(false);
     });
 
     it('should select the attribute designated for the banner', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], undefined, true);
         expect(result.hasBanner).toBe(true);
         expect(result.banner).toEqual({enabled: true, text: 'AURORA', background_color: '#112233'});
     });
 
     it('should match the value by field id rather than taking the first value on the channel', () => {
         const values = [classificationValue, designatedValue];
-        const result = deriveChannelAttributeBanner([classificationField, designated], values, undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([classificationField, designated], values, undefined, true);
         expect(result.banner?.text).toBe('AURORA');
     });
 
@@ -275,22 +297,22 @@ describe('deriveChannelAttributeBanner', () => {
     });
 
     it('should prefer a designated attribute over the classification fallback', () => {
-        const result = deriveChannelAttributeBanner([classificationField, designated], [classificationValue, designatedValue], undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([classificationField, designated], [classificationValue, designatedValue], undefined, true);
         expect(result.banner?.text).toBe('AURORA');
     });
 
     it('should use the channel banner text when it is set', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], 'CONTROLLED UNCLASSIFIED', undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: 'CONTROLLED UNCLASSIFIED'}, true);
         expect(result.banner?.text).toBe('CONTROLLED UNCLASSIFIED');
     });
 
     it('should resolve attribute tokens in channel banner text', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], '{{program}} · Team', undefined, true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: '{{program}} · Team'}, true);
         expect(result.banner?.text).toBe('AURORA · Team');
     });
 
     it('should prefer an authored colour for a non-classification banner', () => {
-        const result = deriveChannelAttributeBanner([designated], [designatedValue], 'Text', '#ABCDEF', true);
+        const result = deriveChannelAttributeBanner([designated], [designatedValue], {enabled: true, text: 'Text', background_color: '#ABCDEF'}, true);
         expect(result.banner?.background_color).toBe('#ABCDEF');
     });
 
@@ -301,18 +323,18 @@ describe('deriveChannelAttributeBanner', () => {
             attrs: {options: [{id: 'opt', name: 'LABEL'}], actions: ['display_banner_top']},
         });
         const val = {fieldId: 'cf-20', value: 'opt'} as ChannelAttributeValue;
-        const result = deriveChannelAttributeBanner([noColor], [val], 'Text', '#ABCDEF', true);
+        const result = deriveChannelAttributeBanner([noColor], [val], {enabled: true, text: 'Text', background_color: '#ABCDEF'}, true);
         expect(result.banner?.background_color).toBe('#ABCDEF');
     });
 
     it('should keep the option colour for the classification fallback, whatever banner_info carries', () => {
-        const result = deriveChannelAttributeBanner([classificationField], [classificationValue], 'Text', '#ABCDEF');
+        const result = deriveChannelAttributeBanner([classificationField], [classificationValue], {enabled: true, text: 'Text', background_color: '#ABCDEF'});
         expect(result.banner?.background_color).toBe('#FF0000');
     });
 
     it('should render nothing when the stored option no longer exists', () => {
         const value = {fieldId: 'cf-9', value: 'gone'} as ChannelAttributeValue;
-        expect(deriveChannelAttributeBanner([designated], [value], undefined, undefined, true).hasBanner).toBe(false);
+        expect(deriveChannelAttributeBanner([designated], [value], undefined, true).hasBanner).toBe(false);
     });
 
     it('should compose every banner attribute in sort order', () => {
@@ -323,7 +345,7 @@ describe('deriveChannelAttributeBanner', () => {
         });
         const values = [designatedValue, {fieldId: 'cf-10', value: 'noforn'} as ChannelAttributeValue];
 
-        const result = deriveChannelAttributeBanner([designated, second], values, undefined, undefined, true);
+        const result = deriveChannelAttributeBanner([designated, second], values, undefined, true);
         expect(result.banner?.text).toBe('NOFORN · AURORA');
         expect(result.banner?.background_color).toBe('#DDDDDD');
     });
@@ -352,8 +374,7 @@ describe('deriveChannelAttributeBanner', () => {
         const result = deriveChannelAttributeBanner(
             [programme, configuredClassification],
             values,
-            undefined,
-            '#ABCDEF',
+            {enabled: false, background_color: '#ABCDEF'},
             true,
         );
 
@@ -399,7 +420,6 @@ describe('deriveChannelAttributeBanner', () => {
             [classificationField, multiselect, select, text],
             values,
             undefined,
-            undefined,
             true,
         );
 
@@ -407,6 +427,58 @@ describe('deriveChannelAttributeBanner', () => {
             enabled: true,
             text: 'val1, val2 · sel2 · text req -info-banner',
             background_color: '#DDDDDD',
+        });
+    });
+
+    describe('with an authored channel banner', () => {
+        const classificationDesignated = field({
+            id: 'cf-1',
+            name: 'classification',
+            attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_banner_top']},
+        });
+
+        it('should hide the banner when the channel switched it off, whatever is designated', () => {
+            const bannerInfo = {enabled: false, text: '{{classification}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([classificationDesignated], [classificationValue], bannerInfo, true).hasBanner).toBe(false);
+        });
+
+        it('should keep the banner a required designated attribute mandates, even when switched off', () => {
+            const required = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_banner_top'], required: true}});
+            const bannerInfo = {enabled: false, text: '{{classification}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([required], [classificationValue], bannerInfo, true).banner).toEqual({
+                enabled: true,
+                text: 'Secret',
+                background_color: '#FF0000',
+            });
+        });
+
+        it('should enforce the classification color only while its token is in the text', () => {
+            const withToken = {enabled: true, text: '{{classification}} · {{program}}', background_color: '#ABCDEF'};
+            const withoutToken = {enabled: true, text: 'this is the text {{program}}', background_color: '#ABCDEF'};
+            const fields = [classificationDesignated, designated];
+            const values = [classificationValue, designatedValue];
+
+            expect(deriveChannelAttributeBanner(fields, values, withToken, true).banner?.background_color).toBe('#FF0000');
+            expect(deriveChannelAttributeBanner(fields, values, withoutToken, true).banner).toEqual({
+                enabled: true,
+                text: 'this is the text AURORA',
+                background_color: '#ABCDEF',
+            });
+        });
+
+        it('should show the authored text even when every attribute it references is unset', () => {
+            const bannerInfo = {enabled: true, text: 'this is the text {{program}}', background_color: '#ABCDEF'};
+            expect(deriveChannelAttributeBanner([designated], [], bannerInfo, true).banner).toEqual({
+                enabled: true,
+                text: 'this is the text',
+                background_color: '#ABCDEF',
+            });
+        });
+
+        it('should drop a deleted option from the text rather than show its raw id', () => {
+            const bannerInfo = {enabled: true, text: 'Marking {{program}}', background_color: '#ABCDEF'};
+            const gone = {fieldId: 'cf-9', value: 'gone'} as ChannelAttributeValue;
+            expect(deriveChannelAttributeBanner([designated], [gone], bannerInfo, true).banner?.text).toBe('Marking');
         });
     });
 
@@ -431,5 +503,141 @@ describe('deriveChannelAttributeBanner', () => {
         });
 
         expect(deriveChannelAttributeBanner([configured], [classificationValue]).hasBanner).toBe(true);
+    });
+});
+
+// Builds a ResolvedChannelAttribute directly, bypassing resolveChannelAttributes, since
+// flattenChannelAttributesToChips and groupChannelAttributeChipsByField only care about
+// field identity and displayValues, not how those were resolved.
+function resolvedAttribute(overrides: Partial<ResolvedChannelAttribute> & {field: ChannelAttributeField}): ResolvedChannelAttribute {
+    return {displayValue: '', displayValues: [], ...overrides};
+}
+
+describe('flattenChannelAttributesToChips', () => {
+    const PREFIX = 'test.chip';
+
+    it('should give a single-valued attribute a bare testID with no index suffix', () => {
+        const attribute = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [{value: 'HIGH', color: '#FF0000'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([attribute], PREFIX);
+
+        expect(chips).toEqual([
+            {key: 'f1-0', fieldId: 'f1', label: 'sensitivity', value: 'HIGH', color: '#FF0000', testID: 'test.chip.sensitivity'},
+        ]);
+    });
+
+    it('should give each value of a multi-valued attribute an indexed testID suffix', () => {
+        const attribute = resolvedAttribute({
+            field: field({id: 'f1', name: 'caveat'}),
+            displayValues: [{value: 'NOFORN', color: '#FF0000'}, {value: 'ORCON'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([attribute], PREFIX);
+
+        expect(chips).toEqual([
+            {key: 'f1-0', fieldId: 'f1', label: 'caveat', value: 'NOFORN', color: '#FF0000', testID: 'test.chip.caveat.0'},
+            {key: 'f1-1', fieldId: 'f1', label: 'caveat', value: 'ORCON', color: undefined, testID: 'test.chip.caveat.1'},
+        ]);
+    });
+
+    it('should produce correct keys and testIDs for a mix of single- and multi-valued attributes', () => {
+        const single = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [{value: 'HIGH'}],
+        });
+        const multi = resolvedAttribute({
+            field: field({id: 'f2', name: 'caveat'}),
+            displayValues: [{value: 'NOFORN'}, {value: 'ORCON'}],
+        });
+
+        const chips = flattenChannelAttributesToChips([single, multi], PREFIX);
+
+        expect(chips.map((chip) => [chip.key, chip.testID])).toEqual([
+            ['f1-0', 'test.chip.sensitivity'],
+            ['f2-0', 'test.chip.caveat.0'],
+            ['f2-1', 'test.chip.caveat.1'],
+        ]);
+    });
+
+    it('should emit no chips for an attribute with no display values', () => {
+        const unset = resolvedAttribute({
+            field: field({id: 'f1', name: 'sensitivity'}),
+            displayValues: [],
+        });
+
+        expect(flattenChannelAttributesToChips([unset], PREFIX)).toEqual([]);
+    });
+});
+
+describe('groupChannelAttributeChipsByField', () => {
+    function chip(fieldId: string, index: number, label = fieldId): ChannelAttributeChipItem {
+        return {key: `${fieldId}-${index}`, fieldId, label, value: `${fieldId}-value-${index}`, testID: `test.chip.${fieldId}.${index}`};
+    }
+
+    it('should group every item under one entry when they all belong to the same field', () => {
+        const items = [chip('f1', 0), chip('f1', 1), chip('f1', 2)];
+
+        const groups = groupChannelAttributeChipsByField(items);
+
+        expect(groups).toEqual([
+            {fieldId: 'f1', label: 'f1', items},
+        ]);
+    });
+
+    it('should produce one group per field, in first-seen order', () => {
+        const items = [chip('f2', 0), chip('f1', 0), chip('f3', 0)];
+
+        const groups = groupChannelAttributeChipsByField(items);
+
+        expect(groups.map((group) => group.fieldId)).toEqual(['f2', 'f1', 'f3']);
+        expect(groups).toHaveLength(3);
+        groups.forEach((group) => expect(group.items).toHaveLength(1));
+    });
+
+    it('should merge non-contiguous items from the same field back into that field\'s single group, at its first-seen position', () => {
+        // Intended behavior: grouping is keyed by fieldId regardless of contiguity, so an
+        // interleaved run (f1, f2, f1) still produces one group per field, not a re-opened
+        // second group for the field's later items.
+        const first = chip('f1', 0);
+        const middle = chip('f2', 0);
+        const last = chip('f1', 1);
+
+        const groups = groupChannelAttributeChipsByField([first, middle, last]);
+
+        expect(groups.map((group) => group.fieldId)).toEqual(['f1', 'f2']);
+        expect(groups[0].items).toEqual([first, last]);
+        expect(groups[1].items).toEqual([middle]);
+    });
+
+    it('should return an empty array for empty input', () => {
+        expect(groupChannelAttributeChipsByField([])).toEqual([]);
+    });
+});
+
+describe('renderNativeBannerText', () => {
+    const classification = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS}});
+    const program = field({id: 'cf-2', name: 'program', attrs: {}});
+    const template = 'this is the text {{classification}} · {{program}}';
+
+    it('should resolve set attributes and drop unset ones when channel attributes are enabled', () => {
+        expect(renderNativeBannerText([classification, program], [classificationValue], template, true)).toBe('this is the text Secret');
+    });
+
+    it('should leave the text untouched when channel attributes are disabled', () => {
+        expect(renderNativeBannerText([classification, program], [classificationValue], template, false)).toBe(template);
+    });
+});
+
+describe('channelInfoAttributesEqual', () => {
+    it('should ignore a display action change but not a value change', () => {
+        const headerShown = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: ['display_label_header']}});
+        const headerHidden = field({id: 'cf-1', name: 'classification', attrs: {options: CLASSIFICATION_OPTIONS, actions: []}});
+        const before = resolveChannelAttributes([headerShown], [classificationValue]);
+
+        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerHidden], [classificationValue]))).toBe(true);
+        expect(channelInfoAttributesEqual(before, resolveChannelAttributes([headerShown], []))).toBe(false);
     });
 });
