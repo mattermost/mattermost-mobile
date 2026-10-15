@@ -189,6 +189,15 @@ export const apiUpdateConfig = async (baseUrl: string, newConfig: any): Promise<
     }, {idempotent: true, label: 'apiUpdateConfig'});
 };
 
+const patchConfigOnce = async (baseUrl: string, patch: any): Promise<any> => {
+    try {
+        const response = await client.put(`${baseUrl}/api/v4/config/patch`, patch);
+        return {config: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
 /**
  * Replace server configuration with a complete config object.
  *
@@ -216,14 +225,31 @@ export const apiReplaceConfig = async (baseUrl: string, config: any): Promise<an
  */
 export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise<any> => {
     // Idempotent for the same reason as apiUpdateConfig above.
+    return withTransportRetry(() => patchConfigOnce(baseUrl, patchConfig), {idempotent: true, label: 'apiPatchConfig'});
+};
+
+const getFeatureFlags = (baseUrl: string): Promise<any> => {
     return withTransportRetry(async () => {
-        try {
-            const response = await client.put(`${baseUrl}/api/v4/config/patch`, patchConfig);
-            return {config: response.data};
-        } catch (err) {
-            return getResponseFromError(err);
+        const {config, error, status} = await apiGetConfig(baseUrl);
+        return error ? {error, status} : {flags: config.FeatureFlags ?? {}};
+    }, {idempotent: true, label: 'getFeatureFlags'});
+};
+
+/**
+ * Patch feature flags without resetting flags omitted from the requested changes.
+ * @param {string} baseUrl - the base server URL
+ * @param {Record<string, boolean>} flags - feature flags to update
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiPatchFeatureFlags = async (baseUrl: string, flags: Record<string, boolean>): Promise<any> => {
+    return withTransportRetry(async () => {
+        const {flags: current, error, status} = await getFeatureFlags(baseUrl);
+        if (error) {
+            return {error, status};
         }
-    }, {idempotent: true, label: 'apiPatchConfig'});
+
+        return patchConfigOnce(baseUrl, {FeatureFlags: {...current, ...flags}});
+    }, {idempotent: true, label: 'apiPatchFeatureFlags'});
 };
 
 /**
@@ -533,6 +559,7 @@ export const System = {
     apiGetConfig,
     apiGetRemoteClusters,
     apiPatchConfig,
+    apiPatchFeatureFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,
