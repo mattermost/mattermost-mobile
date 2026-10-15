@@ -369,7 +369,8 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      # Full suite matches the PR/main shard count (template default 28); smoke stays single-shard.
+      parallelism: ${{ matrix.server.latest && '28' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 
   detox-ipad-e2e:
@@ -499,7 +500,8 @@ jobs:
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
       search_path: ${{ matrix.server.latest && 'detox/e2e/test' || 'detox/e2e/test/products/channels/smoke_test' }}
-      parallelism: ${{ matrix.server.latest && '10' || '1' }}
+      # Full suite matches the PR/main shard count (template default 28); smoke stays single-shard.
+      parallelism: ${{ matrix.server.latest && '28' || '1' }}
       artifact_run_id: ${{ github.run_id }}
 
   # Maestro runs only against the latest server version (no smoke-on-older variant).

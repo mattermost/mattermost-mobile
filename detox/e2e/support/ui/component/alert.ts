@@ -73,18 +73,20 @@ class Alert {
     removedFromChannelTitle = isAndroid() ? element(by.text('Removed from channel')) : element(by.label('Removed from channel')).atIndex(0);
     archivedChannelTitle = isAndroid() ? element(by.text('Archived channel')) : element(by.label('Archived channel')).atIndex(0);
 
-    // Dismiss async "Removed from channel" / "Archived channel" alerts if present.
-    dismissChannelRemoveOrArchiveAlert = async () => {
+    dismissChannelRemoveOrArchiveAlert = async (timeout: number = timeouts.FOUR_SEC): Promise<boolean> => {
         try {
-            await waitFor(this.removedFromChannelTitle).toBeVisible().withTimeout(timeouts.FOUR_SEC);
+            await waitFor(this.removedFromChannelTitle).toBeVisible().withTimeout(timeout);
             await this.okButton.tap();
-            return;
+            return true;
         } catch { /* not present */ }
 
         try {
-            await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeouts.ONE_SEC);
+            await waitFor(this.archivedChannelTitle).toBeVisible().withTimeout(timeout);
             await this.okButton.tap();
+            return true;
         } catch { /* not present */ }
+
+        return false;
     };
 
     /**

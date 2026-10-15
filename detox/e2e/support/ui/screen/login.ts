@@ -86,6 +86,57 @@ class LoginScreen {
         await waitFor(this.loginScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
     };
 
+    /**
+     * Login can restore the last channel (tab bar hidden). Waiting only for the
+     * channel list then looks like a 60s hang, and retryWithReload hunts server.screen.
+     */
+    waitUntilOnChannelList = async () => {
+        const timeout = isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN;
+        const started = Date.now();
+        const deadline = started + timeout;
+
+        // Lazy require: ChannelScreen → HomeScreen → LoginScreen.
+        // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+        const {ChannelScreen} = require('@support/ui/screen');
+
+        /* eslint-disable no-await-in-loop -- poll list vs channel until one appears */
+        while (Date.now() < deadline) {
+            try {
+                await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TWO_SEC);
+                return;
+            } catch {
+                // Still on login, loading, or a channel.
+            }
+            try {
+                await waitForElementToExist(ChannelScreen.channelScreen, timeouts.TWO_SEC);
+                if (isAndroid()) {
+                    await device.pressBack();
+                } else {
+                    await ChannelScreen.back();
+                }
+                await waitForElementToExist(ChannelListScreen.channelListScreen, timeouts.TEN_SEC);
+                return;
+            } catch {
+                // Not on a channel either.
+            }
+
+            try {
+                await waitForElementToExist(this.loginScreen, timeouts.ONE_SEC);
+                if (Date.now() - started >= timeouts.TWENTY_SEC) {
+                    throw new Error('LoginScreen.waitUntilOnChannelList: still on login.screen 20s after sign-in');
+                }
+            } catch (error) {
+                if (error instanceof Error && error.message.includes('still on login.screen')) {
+                    throw error;
+                }
+            }
+
+            await wait(timeouts.ONE_SEC);
+        }
+        /* eslint-enable no-await-in-loop */
+        throw new Error('LoginScreen.waitUntilOnChannelList: neither channel list nor channel appeared');
+    };
+
     loginWithRetryIfStuck = async (user: any = {}) => {
         await this.toBeVisible();
         await this.usernameInput.tap({x: 150, y: 10});
@@ -95,7 +146,7 @@ class LoginScreen {
         await this.loginFormInfoText.tap();
         await this.signinButton.tap();
 
-        await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+        await this.waitUntilOnChannelList();
     };
 
     login = async (user: any = {}) => {
@@ -153,7 +204,7 @@ class LoginScreen {
                 await this.signinButton.tap();
 
                 // eslint-disable-next-line no-await-in-loop
-                await waitFor(ChannelListScreen.channelListScreen).toExist().withTimeout(isAndroid() ? timeouts.ONE_MIN : timeouts.HALF_MIN);
+                await this.waitUntilOnChannelList();
 
                 // Admin users may see a "Server upgrade required" dialog when the
                 // server version is older than the minimum supported. There are two

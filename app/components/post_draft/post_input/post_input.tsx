@@ -17,7 +17,6 @@ import {updateDraftMessage} from '@actions/local/draft';
 import {userTyping} from '@actions/websocket/users';
 import {useRewrite} from '@agents/hooks';
 import {Events, Screens} from '@constants';
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -207,11 +206,9 @@ export default function PostInput({
     }, [serverUrl, channelId, rootId, value, setIsFocused]);
 
     const onFocus = useCallback(() => {
-        // On edge-to-edge Android, ignore focus events when emoji search is focused.
+        // On Android, ignore focus events when emoji search is focused.
         // This prevents the emoji picker from closing when the search bar gets focus.
-        // On non-edge-to-edge, we cannot skip: no keyboard events fire, so this is the
-        // only place USER_FOCUS_INPUT is dispatched when tapping post input from search state.
-        if (isAndroidEdgeToEdge && isEmojiSearchFocused) {
+        if (Platform.OS === 'android' && isEmojiSearchFocused) {
             return;
         }
 
@@ -223,13 +220,8 @@ export default function PostInput({
         const isKeyboardClosed = animatedKeyboard.height.value === 0 && animatedKeyboard.state.value === 0;
         const asHardwareKeyboard = Platform.OS === 'ios' && isTablet && isKeyboardClosed;
 
-        // On non-edge-to-edge Android, hasZeroKeyboardHeight is never set (KeyboardProvider disabled),
-        // so we dispatch USER_FOCUS_INPUT whenever the emoji picker is active.
-        // On edge-to-edge, only dispatch when keyboard is not expected to appear (hasZeroKeyboardHeight).
-        const isNonEdgeToEdgeAndroid = Platform.OS === 'android' && !isAndroidEdgeToEdge;
-        const hasZeroKbHeight = stateContext.hasZeroKeyboardHeight.value;
-        const isPickerActive = stateMachine.isEmojiPickerActive();
-        const shouldDispatch = (hasZeroKbHeight || isNonEdgeToEdgeAndroid) && isPickerActive;
+        // Only dispatch when the keyboard is not expected to appear (hasZeroKeyboardHeight).
+        const shouldDispatch = stateContext.hasZeroKeyboardHeight.value && stateMachine.isEmojiPickerActive();
         if (shouldDispatch || asHardwareKeyboard) {
             stateMachine.onUserFocusInput(asHardwareKeyboard);
         }

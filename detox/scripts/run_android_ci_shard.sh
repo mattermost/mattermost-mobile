@@ -23,8 +23,29 @@ RESULTS="${DETOX_DIR}/artifacts/jest-results.json"
 ATTEMPT1_RESULTS="${DETOX_DIR}/artifacts/jest-results-attempt1.json"
 FAILED_SPECS_JS="${DETOX_DIR}/utils/failed-jest-specs.js"
 
-write_missing_results_stub() {
+# Jest --outputFile can miss the shutdown flush while jest-stare still wrote
+# android-data.json (CI 33915931136 machine-2) — and `timeout` killing an attempt
+# always lands there. Recovering it BETWEEN attempts is what makes the retry
+# correct: listRetrySpecs treats a missing report as "retry the whole shard", so a
+# timed-out attempt 1 re-runs specs that already passed, and mergeJestResultsPreferLater
+# then lets the retry's result win. That is how channel_summary and settings — both
+# green at 08:47 — were reported as 8 failures (CI 34099282816 machine-2).
+# Returns 0 when a usable report exists afterwards, 1 when there is nothing to promote.
+promote_jest_stare_results() {
     if [ -f "$RESULTS" ]; then
+        return 0
+    fi
+    local stare="${DETOX_DIR}/artifacts/jest-stare/android-data.json"
+    if [ -f "$stare" ]; then
+        echo "==> Detox left no jest-results.json — promoting jest-stare/android-data.json"
+        cp "$stare" "$RESULTS"
+        return 0
+    fi
+    return 1
+}
+
+write_missing_results_stub() {
+    if promote_jest_stare_results; then
         return
     fi
     echo "==> Detox left no jest-results.json — writing shard stub"
@@ -86,6 +107,9 @@ while (( attempt <= MAX_ATTEMPTS )); do
     if (( attempt == 1 )); then
         run_detox_attempt false "${SHARD_SPECS[@]}"
         rc=$?
+        # Recover the results of the suites that did finish before deciding what to
+        # retry — a `timeout` kill (exit 124) never lets Jest write --outputFile.
+        promote_jest_stare_results || true
     else
         retry_out="$(node "${FAILED_SPECS_JS}" \
             --results "${RESULTS}" \
@@ -123,6 +147,9 @@ while (( attempt <= MAX_ATTEMPTS )); do
             run_detox_attempt false "${retry_specs[@]}"
             rc=$?
         fi
+        # Same recovery for the retry: a second timeout must not throw away the
+        # suites it did finish, which merge_attempt_results would otherwise drop.
+        promote_jest_stare_results || true
         merge_attempt_results
     fi
 

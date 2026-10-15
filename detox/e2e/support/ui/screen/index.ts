@@ -41,6 +41,7 @@ import Invite from './invite';
 import LoginScreen from './login';
 import ManageChannelMembersScreen from './manage_channel_members';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
+import MfaScreen from './mfa';
 import NotificationSettingsScreen from './notification_settings';
 import PermalinkScreen from './permalink';
 import PinnedMessagesScreen from './pinned_messages';
@@ -99,6 +100,7 @@ export {
     LoginScreen,
     ManageChannelMembersScreen,
     MentionNotificationSettingsScreen,
+    MfaScreen,
     NotificationSettingsScreen,
     PermalinkScreen,
     PinnedMessagesScreen,

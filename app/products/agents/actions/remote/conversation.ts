@@ -17,7 +17,22 @@ import type {ConversationResponse} from '@agents/types';
 
 const inflight = new Map<string, Promise<void>>();
 
-const inflightKey = (serverUrl: string, conversationId: string) => `${serverUrl}:${conversationId}`;
+// Callbacks waiting for the next fetch result applied for a conversation,
+// whichever request ends up delivering it.
+const settleCallbacks = new Map<string, Array<() => void>>();
+
+function drainSettleCallbacks(key: string) {
+    const callbacks = settleCallbacks.get(key);
+    if (callbacks) {
+        settleCallbacks.delete(key);
+        callbacks.forEach((callback) => callback());
+    }
+}
+
+// Server URLs contain ':' (and one can prefix another, e.g. a host with and
+// without a port), so the separator must be a character URLs can't hold.
+const KEY_SEPARATOR = '\n';
+const inflightKey = (serverUrl: string, conversationId: string) => `${serverUrl}${KEY_SEPARATOR}${conversationId}`;
 
 // Backend may serialise turn.content as the JSON literal `null`; coerce to []
 // so downstream code can iterate without a guard.
@@ -42,20 +57,28 @@ export async function fetchConversation(
         const data = await client.getConversation(conversationId);
         return {data};
     } catch (error) {
-        logError('[fetchConversation] Failed to fetch conversation', error);
+        const errorMessage = getFullErrorMessage(error);
+        logError('[fetchConversation] Failed to fetch conversation', errorMessage);
         forceLogoutIfNecessary(serverUrl, error);
-        return {error: getFullErrorMessage(error)};
+        return {error: errorMessage};
     }
 }
 
 function runFetch(serverUrl: string, conversationId: string): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
     const promise = fetchConversation(serverUrl, conversationId).then(({data, error}) => {
+        // Identity-check the inflight promise so a fetch superseded mid-flight
+        // by refetchConversation can't overwrite the newer fetch's result with
+        // stale pre-stream-end data.
+        if (inflight.get(key) !== promise) {
+            return;
+        }
         inflight.delete(key);
         const prev = conversationStore.getState(serverUrl, conversationId);
         if (error) {
             // Preserve cached data on error so transient failures don't blank
-            // the UI; invalidate() is required to drop it.
+            // the UI. Settle callbacks stay queued: the cache doesn't hold the
+            // new turns yet.
             conversationStore.setState(serverUrl, conversationId, {
                 conversation: prev.conversation,
                 loading: false,
@@ -63,10 +86,15 @@ function runFetch(serverUrl: string, conversationId: string): Promise<void> {
             });
             return;
         }
+
         conversationStore.setState(serverUrl, conversationId, {
             conversation: data && normalizeConversationResponse(data),
             loading: false,
         });
+
+        // Synchronously after the store update so subscribers see both
+        // changes in one render.
+        drainSettleCallbacks(key);
     });
     inflight.set(key, promise);
     return promise;
@@ -93,10 +121,17 @@ export function ensureConversation(serverUrl: string, conversationId: string): P
 /**
  * Force a fresh fetch. Drops any inflight request and any cached error, but
  * keeps the cached conversation visible while the new fetch is in flight so
- * the UI doesn't blank out during streaming-end re-syncs.
+ * the UI doesn't blank out during streaming-end re-syncs. runFetch replaces
+ * the inflight map entry, so a superseded fetch that resolves later fails the
+ * identity check and its result is discarded.
+ * `onSettled` runs once a successful result from this or a superseding fetch
+ * has been written to the store.
  */
-export function refetchConversation(serverUrl: string, conversationId: string): Promise<void> {
+export function refetchConversation(serverUrl: string, conversationId: string, onSettled?: () => void): Promise<void> {
     const key = inflightKey(serverUrl, conversationId);
+    if (onSettled) {
+        settleCallbacks.set(key, [...(settleCallbacks.get(key) ?? []), onSettled]);
+    }
     inflight.delete(key);
     const prev = conversationStore.getState(serverUrl, conversationId);
     conversationStore.setState(serverUrl, conversationId, {
@@ -107,20 +142,17 @@ export function refetchConversation(serverUrl: string, conversationId: string): 
     return runFetch(serverUrl, conversationId);
 }
 
-/**
- * Drop the cached entry without re-fetching. Subscribers see the initial
- * (loading: false, no conversation) state.
- */
-export function invalidateConversation(serverUrl: string, conversationId: string): void {
-    inflight.delete(inflightKey(serverUrl, conversationId));
-    conversationStore.evict(serverUrl, conversationId);
-}
-
 /** Drop every cached conversation belonging to a single server (per-server logout). */
 export function clearConversationCacheForServer(serverUrl: string): void {
+    const prefix = `${serverUrl}${KEY_SEPARATOR}`;
     for (const key of [...inflight.keys()]) {
-        if (key.startsWith(`${serverUrl}:`)) {
+        if (key.startsWith(prefix)) {
             inflight.delete(key);
+        }
+    }
+    for (const key of [...settleCallbacks.keys()]) {
+        if (key.startsWith(prefix)) {
+            settleCallbacks.delete(key);
         }
     }
     conversationStore.removeServer(serverUrl);

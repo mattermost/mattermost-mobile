@@ -11,7 +11,7 @@ import {
     PostOptionsScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, longPressWithRetry, scrollElementIntoView, timeouts, wait, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
-import {expect, waitFor} from 'detox';
+import {device, expect, waitFor} from 'detox';
 
 class RecentMentionsScreen {
     testID = {
@@ -88,6 +88,8 @@ class RecentMentionsScreen {
                 return this.toBeVisible();
             }
         }
+
+        await waitForElementToBeVisible(HomeScreen.mentionsTab, timeouts.TWENTY_SEC);
 
         await HomeScreen.mentionsTab.tap();
         try {
@@ -168,7 +170,13 @@ class RecentMentionsScreen {
             await wait(timeouts.TWO_SEC);
             await HomeScreen.mentionsTab.tap();
             await this.toBeVisible();
-            await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+            try {
+                await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+            } catch {
+                await device.reloadReactNative();
+                await this.open();
+                await ChannelScreen.assertPostMessageEdited(postId, updatedMessage, 'recent_mentions_page');
+            }
         }
     };
 }

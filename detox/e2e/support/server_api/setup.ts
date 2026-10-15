@@ -63,7 +63,7 @@ const isNameCollisionError = (error: any): boolean => {
  */
 const TRANSIENT_RETRY_BUDGET_MS = 120_000;
 
-const retryTransient = async <T extends {error?: any; status?: number}>(
+export const retryTransient = async <T extends {error?: any; status?: number}>(
     fn: () => Promise<T>,
     label: string,
     maxAttempts = 3,
@@ -83,7 +83,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
     }
     if (Date.now() >= deadlineAt) {
         // eslint-disable-next-line no-console
-        console.warn(`[apiInit] ${label} retry budget spent after attempt ${attempt}; returning the transient error`);
+        console.warn(`[retryTransient] ${label} retry budget spent after attempt ${attempt}; returning the transient error`);
         return result;
     }
 
@@ -93,7 +93,7 @@ const retryTransient = async <T extends {error?: any; status?: number}>(
         1000 * (2 ** (attempt - 1));
 
     // eslint-disable-next-line no-console
-    console.warn(`[apiInit] ${label} transient error attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${JSON.stringify(err).slice(0, 200)}`);
+    console.warn(`[retryTransient] ${label} transient error attempt ${attempt}/${maxAttempts}, retry in ${delayMs}ms: ${JSON.stringify(err).slice(0, 200)}`);
     await new Promise((resolve) => setTimeout(resolve, delayMs));
     return retryTransient(fn, label, maxAttempts, attempt + 1, deadlineAt);
 };
@@ -146,6 +146,7 @@ export const apiInit = async (baseUrl: string, {
 
 export const Setup = {
     apiInit,
+    retryTransient,
 };
 
 export default Setup;

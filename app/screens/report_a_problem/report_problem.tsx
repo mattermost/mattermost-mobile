@@ -209,6 +209,7 @@ const ReportProblem = ({
                         iconName='open-in-new'
                         size='lg'
                         isIconOnTheRight={true}
+                        testID='report_problem.report.button'
                     />
                 </View>
             )}

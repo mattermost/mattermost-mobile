@@ -28,6 +28,9 @@ type Props = {
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
+
+    // Replaces the subtitle row when provided. See NavigationHeader's Props.
+    subtitleComponent?: React.ReactElement;
     theme: Theme;
     title?: string;
     titleCompanion?: React.ReactElement;
@@ -137,6 +140,7 @@ const Header = ({
     showBackButton = true,
     subtitle,
     subtitleCompanion,
+    subtitleComponent,
     theme,
     title,
     titleCompanion,
@@ -227,7 +231,12 @@ const Header = ({
                             {titleCompanion}
                         </View>
                         }
-                        {!isLargeTitle && Boolean(subtitle || subtitleCompanion) &&
+                        {!isLargeTitle && Boolean(subtitleComponent) &&
+                        <View style={styles.subtitleContainer}>
+                            {subtitleComponent}
+                        </View>
+                        }
+                        {!isLargeTitle && !subtitleComponent && Boolean(subtitle || subtitleCompanion) &&
                         <View style={styles.subtitleContainer}>
                             <Text
                                 ellipsizeMode='tail'

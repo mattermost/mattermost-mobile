@@ -11,26 +11,6 @@ import {
     type StateEvent,
 } from '@keyboard/state_machine/types';
 
-/**
- * Transitions for non-edge-to-edge devices (Android API < 30).
- * The OS handles keyboard avoidance via adjustResize — no KEYBOARD_EVENT_* fire.
- * Only emoji picker user events are handled.
- */
-export const idleTransitionsNonEdgeToEdge: StateTransition[] = [
-    {
-        from: InputContainerStateType.IDLE,
-        event: StateMachineEventType.USER_OPEN_EMOJI,
-        to: InputContainerStateType.EMOJI_PICKER_OPEN,
-        action: (): ActionUpdates => {
-            'worklet';
-
-            return {
-                isWaitingForKeyboard: {value: true, animated: false},
-            };
-        },
-    },
-];
-
 export const idleTransitions: StateTransition[] = [
     {
         from: InputContainerStateType.IDLE,

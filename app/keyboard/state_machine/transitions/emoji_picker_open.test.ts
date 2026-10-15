@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {calculateKeyboardUpdates, getEmojiSearchActiveHeight} from '@keyboard/state_machine/keyboard_utils';
+import {calculateKeyboardUpdates} from '@keyboard/state_machine/keyboard_utils';
 import {InputContainerStateType, StateMachineEventType, type StateSnapshot, type StateEvent} from '@keyboard/state_machine/types';
 
-import {emojiPickerOpenTransitions, emojiPickerOpenTransitionsNonEdgeToEdge} from './emoji_picker_open';
+import {emojiPickerOpenTransitions} from './emoji_picker_open';
 
 jest.mock('@keyboard/state_machine/keyboard_utils', () => ({
     calculateKeyboardUpdates: jest.fn((snapshot, height) => ({
         postInputTranslateY: {value: height, animated: false},
     })),
     isSoftwareKeyboard: jest.fn(() => true),
-    isZeroHeight: jest.fn(() => false),
+    isZeroHeight: jest.fn((snapshot, event) => (event.height ?? snapshot.keyboardEventHeight) < 75),
     getEmojiSearchActiveHeight: jest.fn(() => 150),
     calculateSearchHeight: jest.fn((kbH) => kbH + 150),
 }));
@@ -42,69 +42,6 @@ function makeSnapshot(overrides = {}): StateSnapshot {
 function makeEvent(overrides: Partial<StateEvent> = {}): StateEvent {
     return {type: StateMachineEventType.KEYBOARD_EVENT_MOVE, ...overrides};
 }
-
-describe('emojiPickerOpenTransitionsNonEdgeToEdge', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        (getEmojiSearchActiveHeight as jest.Mock).mockReturnValue(150);
-    });
-
-    describe('[0] EMOJI_PICKER_OPEN → USER_FOCUS_EMOJI_SEARCH → EMOJI_SEARCH_ACTIVE', () => {
-        const t = emojiPickerOpenTransitionsNonEdgeToEdge[0];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_PICKER_OPEN);
-            expect(t.event).toBe(StateMachineEventType.USER_FOCUS_EMOJI_SEARCH);
-            expect(t.to).toBe(InputContainerStateType.EMOJI_SEARCH_ACTIVE);
-        });
-
-        it('action calls getEmojiSearchActiveHeight and returns inputAccessoryHeight and targetHeight', () => {
-            const snapshot = makeSnapshot({tabBarHeight: 49, safeAreaBottom: 0});
-            const result = t.action!(snapshot, makeEvent());
-            expect(getEmojiSearchActiveHeight).toHaveBeenCalledWith(49, 0);
-            expect(result).toEqual({
-                inputAccessoryHeight: {value: 150, animated: true},
-                targetHeight: {value: 150, animated: false},
-            });
-        });
-    });
-
-    describe('[1] EMOJI_PICKER_OPEN → USER_FOCUS_INPUT → IDLE', () => {
-        const t = emojiPickerOpenTransitionsNonEdgeToEdge[1];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_PICKER_OPEN);
-            expect(t.event).toBe(StateMachineEventType.USER_FOCUS_INPUT);
-            expect(t.to).toBe(InputContainerStateType.IDLE);
-        });
-
-        it('action returns inputAccessoryHeight=0 and targetHeight=0 both animated', () => {
-            const result = t.action!(makeSnapshot(), makeEvent());
-            expect(result).toEqual({
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            });
-        });
-    });
-
-    describe('[2] EMOJI_PICKER_OPEN → USER_CLOSE_EMOJI → IDLE', () => {
-        const t = emojiPickerOpenTransitionsNonEdgeToEdge[2];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_PICKER_OPEN);
-            expect(t.event).toBe(StateMachineEventType.USER_CLOSE_EMOJI);
-            expect(t.to).toBe(InputContainerStateType.IDLE);
-        });
-
-        it('action returns inputAccessoryHeight=0 and targetHeight=0', () => {
-            const result = t.action!(makeSnapshot(), makeEvent());
-            expect(result).toEqual({
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            });
-        });
-    });
-});
 
 describe('emojiPickerOpenTransitions', () => {
     beforeEach(() => {

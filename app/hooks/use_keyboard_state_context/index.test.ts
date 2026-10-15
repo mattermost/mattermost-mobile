@@ -11,11 +11,6 @@ import {KEYBOARD_TRANSITION_DURATION} from '@keyboard/constants';
 
 import {useKeyboardStateContext} from './index';
 
-jest.mock('@constants/device', () => ({
-    isAndroidEdgeToEdge: false,
-    isEdgeToEdge: false,
-}));
-
 jest.mock('react-native-safe-area-context', () => ({
     useSafeAreaInsets: jest.fn(() => ({bottom: 0, top: 0, left: 0, right: 0})),
 }));
@@ -713,13 +708,11 @@ describe('useKeyboardStateContext', () => {
         });
     });
 
-    describe('processEvent: edge-to-edge skips fake-event filter', () => {
-        it('should not filter backwards-progress events on edge-to-edge', () => {
-            const deviceModule = require('@constants/device');
-            deviceModule.isAndroidEdgeToEdge = true;
-
+    describe('processEvent: fake-event filter', () => {
+        it('should not filter backwards-progress events while dragging the keyboard', () => {
             mockFindTransition.mockReturnValue(makeTransition(InputContainerStateType.KEYBOARD_OPENING));
             const result = renderContext();
+            result.current.isDraggingKeyboard.value = true;
 
             // First: reach max progress
             act(() => {
@@ -742,8 +735,6 @@ describe('useKeyboardStateContext', () => {
             });
 
             expect(mockFindTransition).toHaveBeenCalled();
-
-            deviceModule.isAndroidEdgeToEdge = false;
         });
     });
 });

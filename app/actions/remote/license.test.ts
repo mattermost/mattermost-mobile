@@ -8,8 +8,8 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 
-jest.mock('@constants/device', () => ({}), {virtual: true});
-jest.mock('@database/manager', () => ({}), {virtual: true});
+jest.mock('@constants/device', () => ({}));
+jest.mock('@database/manager', () => ({}));
 
 jest.mock('@managers/network_manager');
 jest.mock('./session');

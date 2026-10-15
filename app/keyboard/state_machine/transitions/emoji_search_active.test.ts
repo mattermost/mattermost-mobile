@@ -6,7 +6,7 @@ import {Platform} from 'react-native';
 import {calculateSearchHeight, isZeroHeight} from '@keyboard/state_machine/keyboard_utils';
 import {InputContainerStateType, StateMachineEventType, type StateSnapshot, type StateEvent} from '@keyboard/state_machine/types';
 
-import {emojiSearchActiveTransitions, emojiSearchActiveTransitionsNonEdgeToEdge} from './emoji_search_active';
+import {emojiSearchActiveTransitions} from './emoji_search_active';
 
 jest.mock('@keyboard/state_machine/keyboard_utils', () => ({
     calculateKeyboardUpdates: jest.fn((snapshot, height) => ({
@@ -44,60 +44,6 @@ function makeSnapshot(overrides = {}): StateSnapshot {
 function makeEvent(overrides: Partial<StateEvent> = {}): StateEvent {
     return {type: StateMachineEventType.KEYBOARD_EVENT_END, ...overrides};
 }
-
-describe('emojiSearchActiveTransitionsNonEdgeToEdge', () => {
-    describe('[0] EMOJI_SEARCH_ACTIVE → USER_BLUR_EMOJI_SEARCH → EMOJI_PICKER_OPEN', () => {
-        const t = emojiSearchActiveTransitionsNonEdgeToEdge[0];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_SEARCH_ACTIVE);
-            expect(t.event).toBe(StateMachineEventType.USER_BLUR_EMOJI_SEARCH);
-            expect(t.to).toBe(InputContainerStateType.EMOJI_PICKER_OPEN);
-        });
-
-        it('action returns inputAccessoryHeight and targetHeight set to preSearchHeight, and resets preSearchHeight', () => {
-            const snapshot = makeSnapshot({preSearchHeight: 300});
-            const result = t.action!(snapshot, makeEvent());
-            expect(result).toEqual({
-                inputAccessoryHeight: {value: 300, animated: true},
-                targetHeight: {value: 300, animated: false},
-                preSearchHeight: {value: 0, animated: false},
-            });
-        });
-    });
-
-    describe('[1] EMOJI_SEARCH_ACTIVE → USER_CLOSE_EMOJI → IDLE', () => {
-        const t = emojiSearchActiveTransitionsNonEdgeToEdge[1];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_SEARCH_ACTIVE);
-            expect(t.event).toBe(StateMachineEventType.USER_CLOSE_EMOJI);
-            expect(t.to).toBe(InputContainerStateType.IDLE);
-        });
-
-        it('should have no action', () => {
-            expect(t.action).toBeUndefined();
-        });
-    });
-
-    describe('[2] EMOJI_SEARCH_ACTIVE → USER_FOCUS_INPUT → IDLE', () => {
-        const t = emojiSearchActiveTransitionsNonEdgeToEdge[2];
-
-        it('should have correct from/event/to', () => {
-            expect(t.from).toBe(InputContainerStateType.EMOJI_SEARCH_ACTIVE);
-            expect(t.event).toBe(StateMachineEventType.USER_FOCUS_INPUT);
-            expect(t.to).toBe(InputContainerStateType.IDLE);
-        });
-
-        it('action returns inputAccessoryHeight=0 (animated) and targetHeight=0', () => {
-            const result = t.action!(makeSnapshot(), makeEvent());
-            expect(result).toEqual({
-                inputAccessoryHeight: {value: 0, animated: true},
-                targetHeight: {value: 0, animated: false},
-            });
-        });
-    });
-});
 
 describe('emojiSearchActiveTransitions', () => {
     beforeEach(() => {

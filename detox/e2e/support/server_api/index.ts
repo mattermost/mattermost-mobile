@@ -7,8 +7,7 @@ import ChannelBookmark from './channel_bookmark';
 import Command, {apiGetTeamCommands, waitForSlashCommandTrigger} from './command';
 import CustomProfileAttributes from './custom_profile_attributes';
 import Ldap from './ldap';
-import Playbooks from './playbooks';
-import PlaybooksHelpers from './playbooks_helpers';
+import Mfa from './mfa';
 import Plugin, {AgentsPlugin, CallsPlugin, DemoPlugin} from './plugin';
 import Post from './post';
 import Preference from './preference';
@@ -33,8 +32,7 @@ export {
     CustomProfileAttributes,
     DemoPlugin,
     Ldap,
-    Playbooks,
-    PlaybooksHelpers,
+    Mfa,
     Plugin,
     Post,
     Preference,

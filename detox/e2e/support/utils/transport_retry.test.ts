@@ -101,6 +101,8 @@ describe('isTransportFailure', () => {
         {name: 'Cloudflare 524 with error payload', result: {error: {message: 'Error 524'}, status: 524}, expected: true},
         {name: 'timeout message even without status 0', result: {error: {message: 'timeout of 30000ms exceeded'}, status: 504}, expected: true},
         {name: 'AggregateError with no status', result: {error: {message: 'No response from server: AggregateError'}}, expected: true},
+        {name: 'socket hang up without status 0', result: {error: {message: 'socket hang up'}}, expected: true},
+        {name: 'ECONNRESET message without status 0', result: {error: {message: 'read ECONNRESET'}}, expected: true},
         {name: 'empty object', result: {}, expected: false},
     ];
 
@@ -131,6 +133,18 @@ describe('transport retry idempotency gate', () => {
         );
 
         assert.equal(counter.calls, 2, 'explicit opt-in restores the retry');
+        assert.deepEqual(result, SUCCESS);
+    });
+
+    it('should retry a socket hang up when the caller opts into duplicate writes', async () => {
+        const hangup = {error: {message: 'socket hang up'}} as const;
+        const counter: CallCounter = {calls: 0};
+        const result = await withTransportRetry(
+            replay([hangup, SUCCESS], counter),
+            {delayMs: 0, idempotent: false, allowDuplicateWrites: true},
+        );
+
+        assert.equal(counter.calls, 2, 'hangup is a transport failure even without status 0');
         assert.deepEqual(result, SUCCESS);
     });
 

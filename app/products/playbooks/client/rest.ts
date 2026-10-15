@@ -23,7 +23,7 @@ export interface ClientPlaybooksMix {
     postStatusUpdate: (playbookRunID: string, payload: PostStatusUpdatePayload, ids: PostStatusUpdateIds) => Promise<void>;
 
     // Checklist Management
-    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => Promise<void>;
+    setChecklistItemState: (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState, requirementValues?: Record<string, string>) => Promise<void>;
     skipChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     restoreChecklistItem: (playbookRunID: string, checklistNum: number, itemNum: number) => Promise<void>;
     setAssignee: (playbookRunId: string, checklistNum: number, itemNum: number, assigneeId?: string) => Promise<void>;
@@ -42,6 +42,9 @@ export interface ClientPlaybooksMix {
     fetchRunPropertyFields: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyField[]>;
     fetchRunPropertyValues: (runId: string, updatedSince?: number) => Promise<PlaybookRunPropertyValue[]>;
     setRunPropertyValue: (runId: string, fieldId: string, value: string, fieldType?: string) => Promise<PlaybookRunPropertyValue>;
+
+    // Settings
+    fetchPlaybooksSettings: () => Promise<PlaybooksGlobalSettings>;
 }
 
 const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
@@ -169,10 +172,22 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
     };
 
     // Checklist Management
-    setChecklistItemState = async (playbookRunID: string, checklistNum: number, itemNum: number, newState: ChecklistItemState) => {
+    setChecklistItemState = async (
+        playbookRunID: string,
+        checklistNum: number,
+        itemNum: number,
+        newState: ChecklistItemState,
+        requirementValues?: Record<string, string>,
+    ) => {
         await this.doFetch(
             `${this.getPlaybookRunRoute(playbookRunID)}/checklists/${checklistNum}/item/${itemNum}/state`,
-            {method: 'put', body: {new_state: newState}},
+            {
+                method: 'put',
+                body: {
+                    new_state: newState,
+                    ...(requirementValues && {requirement_values: requirementValues}),
+                },
+            },
         );
     };
 
@@ -288,6 +303,18 @@ const ClientPlaybooks = <TBase extends Constructor<ClientBase>>(superclass: TBas
             {method: 'put', body: {value: bodyValue}},
         );
         return data;
+    };
+
+    // Settings
+    fetchPlaybooksSettings = async () => {
+        const data = await this.doFetch(
+            `${this.getPlaybooksRoute()}/settings`,
+            {method: 'get'},
+        );
+        return data || {
+            enable_experimental_features: false,
+            enable_task_requirements: false,
+        };
     };
 };
 

@@ -195,6 +195,39 @@ describe('SearchScreen', () => {
         expect(queryByTestId('search_results.post_list.flat_list')).toBeNull();
     });
 
+    it('should not show results when the search is cleared while the request is in flight', async () => {
+        let resolveSearch: (value: {order: string[]; matches: Record<string, string[]>}) => void = () => undefined;
+        jest.mocked(searchPosts).mockReturnValueOnce(new Promise((resolve) => {
+            resolveSearch = resolve;
+        }));
+
+        const {getByTestId, queryByTestId} = renderWithEverything(
+            <SearchScreen {...baseProps}/>,
+            {database},
+        );
+
+        const searchInput = getByTestId('navigation.header.search_bar.search.input');
+        await act(async () => {
+            fireEvent.changeText(searchInput, 'test search');
+        });
+        await act(async () => {
+            fireEvent(searchInput, 'submitEditing');
+        });
+        await waitFor(() => {
+            expect(searchPosts).toHaveBeenCalled();
+        });
+
+        await act(async () => {
+            fireEvent.press(getByTestId('navigation.header.search_bar.search.clear.button'));
+        });
+        await act(async () => {
+            resolveSearch({order: ['post1'], matches: {}});
+        });
+
+        expect(searchInput.props.value).toBe('');
+        expect(queryByTestId('search_results.post_list.flat_list')).toBeNull();
+    });
+
     it('adds search to team history when searching in a specific team', async () => {
         const {getByTestId} = renderWithEverything(
             <SearchScreen {...baseProps}/>,

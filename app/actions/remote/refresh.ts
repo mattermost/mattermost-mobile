@@ -3,6 +3,7 @@
 
 import {wipeServerDatabaseWithRetry, wipeServerFiles} from '@actions/local/ephemeral_mode/wipe';
 import {cancelSessionNotification, terminateSession} from '@actions/local/session';
+import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import EphemeralModeManager from '@managers/ephemeral_mode_manager';
@@ -10,6 +11,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, prepareCommonSystemValues} from '@queries/servers/system';
 import {getFullErrorMessage} from '@utils/errors';
 import {logError, logWarning} from '@utils/log';
+import {showSnackBar} from '@utils/snack_bar';
 
 import {refetchCurrentUser} from './user';
 
@@ -86,6 +88,14 @@ export const applyPersistenceModeChange = async (serverUrl: string): Promise<{er
         if (resumeServerTracking) {
             // restart tracking; file cache was already wiped during the transition
             await EphemeralModeManager.addServer(serverUrl, {cleanFileCache: false});
+
+            // Notify the user post-remount so the persistent banner survives the withServerDatabase key flip.
+            const activeServerUrl = await DatabaseManager.getActiveServerUrl();
+            const isActive = activeServerUrl === serverUrl;
+            const isZpm = EphemeralModeManager.isZeroPersistenceMode(serverUrl);
+            if (isActive && isZpm) {
+                showSnackBar({barType: SNACK_BAR_TYPE.EPHEMERAL_MODE_ZERO_PERSISTENCE_ACTIVE});
+            }
         }
     }
 };
