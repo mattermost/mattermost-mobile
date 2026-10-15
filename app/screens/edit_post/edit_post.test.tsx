@@ -87,6 +87,7 @@ const TEST_FILES = {
 
 const ERROR_MESSAGES = {
     uploadsDisabled: 'File uploads from mobile are disabled.',
+    uploadsDeniedByPolicy: 'File uploads are restricted in this channel',
     maxFilesReached: 'Uploads limited to 1 files maximum.',
     fileTooLarge: 'Files must be less than 1000 B',
     confirmDelete: 'Delete attachment',
@@ -113,6 +114,7 @@ describe('Edit Post', () => {
         maxFileCount: TEST_CONFIG.maxFileCount,
         maxFileSize: TEST_CONFIG.maxFileSize,
         canUploadFiles: true,
+        canUploadFilesByPolicy: true,
     };
 
     const setupPickerMock = (file: Partial<ExtractedFileInfo>) => {
@@ -205,6 +207,18 @@ describe('Edit Post', () => {
             await waitFor(() => {
                 expect(screen.getByText(ERROR_MESSAGES.uploadsDisabled)).toBeVisible();
             });
+        });
+
+        it('should show the policy error when a permission policy denies uploads in the channel', async () => {
+            setupPickerMock(TEST_FILES.smallFile);
+            const props = {...baseProps, canUploadFilesByPolicy: false};
+            const screen = renderEditPost(props);
+            await triggerFileUpload(screen);
+
+            await waitFor(() => {
+                expect(screen.getByText(ERROR_MESSAGES.uploadsDeniedByPolicy)).toBeVisible();
+            });
+            expect(DraftEditPostUploadManager.prepareUpload).not.toHaveBeenCalled();
         });
 
         it('should show error when maximum file count is reached', async () => {

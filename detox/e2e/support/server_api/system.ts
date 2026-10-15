@@ -231,7 +231,7 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
 const getFeatureFlags = (baseUrl: string): Promise<any> => {
     return withTransportRetry(async () => {
         const {config, error, status} = await apiGetConfig(baseUrl);
-        return error ? {error, status} : {flags: config.FeatureFlags ?? {}};
+        return error ? {error, status} : {config, flags: config.FeatureFlags ?? {}};
     }, {idempotent: true, label: 'getFeatureFlags'});
 };
 
@@ -250,6 +250,35 @@ export const apiPatchFeatureFlags = async (baseUrl: string, flags: Record<string
 
         return patchConfigOnce(baseUrl, {FeatureFlags: {...current, ...flags}});
     }, {idempotent: true, label: 'apiPatchFeatureFlags'});
+};
+
+/**
+ * Turn feature flags on without touching the others, and only where needed.
+ *
+ * FeatureFlags fields are plain bools, so the server cannot tell an omitted flag from a
+ * false one: patching {FeatureFlags: {A: true}} sets every other flag to false. (Only servers
+ * with a Split key accept flag writes at all, as the cloud test servers do; elsewhere the
+ * server ignores them.) This reads the current flags and patches them back in full, and
+ * skips the write when every named flag is already on or absent from this server version.
+ * @param {string} baseUrl - the base server URL
+ * @param {string[]} names - the flags to turn on, e.g. ['PermissionPolicies']
+ * @return {Object} returns {config} on success or {error, status} on error
+ */
+export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+    const {config, flags: current, error, status} = await getFeatureFlags(baseUrl);
+    if (error) {
+        return {error, status};
+    }
+
+    const toEnable = names.filter((name) => name in current && current[name] !== true);
+    if (!toEnable.length) {
+        return {config};
+    }
+
+    const enabled = Object.fromEntries(toEnable.map((name) => [name, true]));
+    return apiPatchConfig(baseUrl, {
+        FeatureFlags: {...current, ...enabled},
+    });
 };
 
 /**
@@ -558,6 +587,7 @@ export const System = {
     apiGetClientLicense,
     apiGetConfig,
     apiGetRemoteClusters,
+    apiEnableFeatureFlags,
     apiPatchConfig,
     apiPatchFeatureFlags,
     apiPingServerStatus,
