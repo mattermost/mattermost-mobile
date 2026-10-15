@@ -53,6 +53,16 @@ describe('ChannelBanner', () => {
         await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: License.SKU_SHORT_NAME.EnterpriseAdvanced}}], prepareRecordsOnly: false});
     });
 
+    afterEach(async () => {
+        // Cleared here rather than at the end of the test that sets them, so a
+        // failed assertion cannot leave the flag on for the tests after it.
+        await operator.handleConfigs({
+            configs: [],
+            configsToDelete: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            prepareRecordsOnly: false,
+        });
+    });
+
     it('renders correctly with valid props', () => {
         renderWithEverything(
             <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
@@ -179,6 +189,31 @@ describe('ChannelBanner', () => {
         );
 
         expect(screen.getByText('Test Banner Text')).toBeVisible();
+    });
+
+    it('should strip attribute tokens without a value from the native banner text', async () => {
+        const channel = await getChannelById(database, TestHelper.basicChannel!.id);
+        await database.write(async () => {
+            await channel?.update(() => {
+                channel.bannerInfo = {
+                    enabled: true,
+                    text: 'Test Banner Text{{classification}} {{program}}',
+                    background_color: '#FF0000',
+                };
+            });
+        });
+        await operator.handleConfigs({
+            configs: [{id: 'FeatureFlagChannelAttributes', value: 'true'}, {id: 'BuildEnterpriseReady', value: 'true'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        renderWithEverything(
+            <ChannelBanner channelId={TestHelper.basicChannel!.id}/>,
+            {database},
+        );
+
+        expect(await screen.findByText('Test Banner Text')).toBeVisible();
     });
 
     it('opens bottom sheet when banner is pressed', async () => {

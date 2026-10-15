@@ -8,7 +8,6 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useTheme} from '@context/theme';
-import {useFocusAfterEmojiDismiss} from '@hooks/use_focus_after_emoji_dismiss';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
@@ -41,9 +40,6 @@ export default function InputQuickAction({
 }: Props) {
     const theme = useTheme();
     const {inputRef, getCursorPosition, setCursorPosition, updateCursorPosition} = useKeyboardState();
-
-    // Use hook to handle focus after emoji picker dismissal
-    const {focus: focusWithEmojiDismiss} = useFocusAfterEmojiDismiss(inputRef, focus);
 
     const onPress = useCallback(() => {
         if (getCursorPosition && updateCursorPosition) {
@@ -88,11 +84,11 @@ export default function InputQuickAction({
                 return '/';
             });
         }
-        focusWithEmojiDismiss();
+        focus();
 
     // inputRef is a stable MutableRefObject from useKeyboardState — its identity never changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputType, updateValue, focusWithEmojiDismiss, getCursorPosition, setCursorPosition, updateCursorPosition]);
+    }, [inputType, updateValue, focus, getCursorPosition, setCursorPosition, updateCursorPosition]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const style = getStyleSheet(theme);

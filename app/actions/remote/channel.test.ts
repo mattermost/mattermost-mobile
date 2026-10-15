@@ -466,6 +466,20 @@ describe('app/actions/remote/channel', () => {
             expect(result).not.toHaveProperty('error');
         });
 
+        it('should fall back to the channel name when an ID-shaped identifier is not an ID', async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
+            const identifier = 'channelname123456789012345';
+            mockClient.getChannel.mockClear();
+            mockClient.getChannelByName.mockClear();
+            (mockClient.getChannel as jest.Mock).mockRejectedValueOnce({status_code: 404});
+
+            const result = await joinIfNeededAndSwitchToChannel(serverUrl, {id: identifier, name: identifier}, {name: 'teamname'}, () => {}, intl);
+
+            expect(result).not.toHaveProperty('error');
+            expect(mockClient.getChannel).toHaveBeenNthCalledWith(1, identifier);
+            expect(mockClient.getChannelByName).toHaveBeenCalledWith(teamId, identifier, true);
+        });
+
         it('switchToChannelByName - team redirect', async () => {
             await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user.id}, {id: SYSTEM_IDENTIFIERS.CURRENT_TEAM_ID, value: teamId}], prepareRecordsOnly: false});
 

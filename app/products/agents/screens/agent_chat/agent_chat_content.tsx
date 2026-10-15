@@ -1,18 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {useKeyboardState as useControllerKeyboardState} from 'react-native-keyboard-controller';
 import Animated, {scrollTo, useAnimatedProps, useAnimatedReaction, useAnimatedStyle} from 'react-native-reanimated';
-import {scheduleOnRN, scheduleOnUI} from 'react-native-worklets';
+import {scheduleOnUI} from 'react-native-worklets';
 
-import {isAndroidEdgeToEdge, isEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import useDidMount from '@hooks/did_mount';
 import {useInputAccessoryViewGesture} from '@hooks/use_input_accessory_view_gesture';
-import {DEFAULT_INPUT_ACCESSORY_HEIGHT} from '@keyboard';
 
 import AgentChatIntro from './agent_chat_intro';
 
@@ -24,6 +21,8 @@ type Props = {
 const emptyList: string[] = [];
 const renderItem = () => null;
 
+const isAndroid = Platform.OS === 'android';
+
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
@@ -31,15 +30,12 @@ const styles = StyleSheet.create({
 });
 
 const AgentChatContent = ({error, loading}: Props) => {
-    const {isVisible: isKeyboardVisible} = useControllerKeyboardState();
-    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, stateMachine, isEmojiSearchFocused, listRef} = useKeyboardState();
-    const [emojiPickerPadding, setEmojiPickerPadding] = useState(0);
+    const {stateContext, onScroll: onScrollProp, postInputContainerHeight, isEmojiSearchFocused, listRef} = useKeyboardState();
 
     const {
         scrollOffset: scrollOffsetShared,
         scrollPosition: scrollPositionShared,
         postInputTranslateY,
-        inputAccessoryHeight,
     } = stateContext;
 
     useAnimatedReaction(
@@ -69,18 +65,6 @@ const AgentChatContent = ({error, loading}: Props) => {
         [],
     );
 
-    useAnimatedReaction(
-        () => {
-            const shouldAddEmojiPickerPadding = Platform.OS === 'android' && !isAndroidEdgeToEdge && !isKeyboardVisible && stateMachine.isEmojiPickerActive();
-            const emojiPickerHeight = shouldAddEmojiPickerPadding ? (inputAccessoryHeight.value || DEFAULT_INPUT_ACCESSORY_HEIGHT) : 0;
-            return emojiPickerHeight;
-        },
-        (emojiPickerHeight) => {
-            scheduleOnRN(setEmojiPickerPadding, emojiPickerHeight);
-        },
-        [isKeyboardVisible],
-    );
-
     const scrollToEnd = useCallback(() => {
         if (listRef) {
             scheduleOnUI(() => {
@@ -101,8 +85,8 @@ const AgentChatContent = ({error, loading}: Props) => {
     });
 
     const contentContainerStyleWithPadding = useMemo(() => {
-        return {paddingTop: isEdgeToEdge ? postInputContainerHeight + emojiPickerPadding : 0};
-    }, [emojiPickerPadding, postInputContainerHeight]);
+        return {paddingTop: postInputContainerHeight};
+    }, [postInputContainerHeight]);
 
     const animatedProps = useAnimatedProps(
         () => {
@@ -116,7 +100,7 @@ const AgentChatContent = ({error, loading}: Props) => {
     );
 
     const androidExtra = useAnimatedStyle(() => {
-        if (isAndroidEdgeToEdge) {
+        if (isAndroid) {
             return {
                 marginBottom: Math.max(postInputTranslateY.value, 0),
             };

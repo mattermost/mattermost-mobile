@@ -335,10 +335,52 @@ run_maestro_batch() {
   return "${PIPESTATUS[0]}"
 }
 
+# True when the driver died before driving the app: Android then writes JUnit with every
+# time="0.0". Any digit 1-9 means non-zero, so "0.0" is zero and "0.5" is not.
 driver_startup_failed() {
-  local batch_log=$1
-  [[ -f "$batch_log" ]] || return 1
-  grep -q "IOSDriverTimeoutException\|iOS driver not ready in time" "$batch_log"
+  local batch_log=$1 batch_xml=${2:-}
+  { [[ -f "$batch_log" ]] && grep -qE 'IOSDriverTimeoutException|iOS driver not ready in time|StatusRuntimeException: UNAVAILABLE|Command failed \(tcp:' "$batch_log"; } || return 1
+  [[ -s "$batch_xml" ]] || return 0
+  ! grep -qE '<testcase\b[^>]*\btime="[0-9.]*[1-9]' "$batch_xml"
+}
+
+ensure_android_driver_healthy() {
+  [[ "$PLATFORM" != "android" ]] && return 0
+  command -v adb >/dev/null 2>&1 || return 0
+
+  echo "==> Reconnecting adb after Maestro driver loss"
+  adb start-server >/dev/null 2>&1 || true
+  # Never returns when no device comes back, and `|| true` cannot help, so bound it.
+  timeout 60 adb wait-for-device || echo "==> adb wait-for-device timed out — continuing"
+  reset_android_app_state
+  ensure_android_app_launchable
+}
+
+# Flow paths come from the filesystem, so `&`, `<` or `"` in a name would otherwise
+# emit XML the report parser cannot read.
+xml_escape() {
+  printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
+}
+
+# Failures, not skips: a flow that never ran must not shrink the suite and still pass. One
+# <testcase> per flow, not per batch, so the report names which flows died and why.
+write_driver_failure_junit() {
+  local batch_xml=$1
+  shift
+  local msg
+  msg="$(xml_escape 'Maestro driver died before the flow started (gRPC UNAVAILABLE / tcp closed / iOS driver timeout) and did not recover after one retry')"
+  {
+    printf "<?xml version='1.0' encoding='UTF-8'?>\n<testsuites>\n"
+    printf '  <testsuite name="maestro-driver-unavailable" tests="%d" failures="%d" errors="0" skipped="0" time="0">\n' "$#" "$#"
+    local flow base id flow_xml id_xml
+    for flow in "$@"; do
+      base="${flow##*/}"; id="${base%.yml}"
+      flow_xml="$(xml_escape "$flow")"; id_xml="$(xml_escape "$id")"
+      printf '    <testcase id="%s" name="%s" classname="%s" file="%s" time="0" status="ERROR">\n' "$id_xml" "$id_xml" "$flow_xml" "$flow_xml"
+      printf '      <failure>%s</failure>\n    </testcase>\n' "$msg"
+    done
+    printf '  </testsuite>\n</testsuites>\n'
+  } > "$batch_xml"
 }
 
 BATCH_XMLS=()
@@ -435,18 +477,29 @@ for batch_paths in "${BATCHES[@]}"; do
   echo "[BATCH-TIME] batch ${batch_idx} wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
   log_resource_snapshot "batch-${batch_idx}-post"
 
-  # Retry once when the driver never started. Restricted to that one signature, and to the
-  # case where no JUnit XML was produced, so a genuine flow failure is never re-run and
-  # never masked -- a flow that ran and failed writes its XML and is reported as-is.
-  if [[ $rc -ne 0 && "$PLATFORM" == "ios" && ! -s "$batch_xml" ]] && driver_startup_failed "${batch_xml%.xml}.log"; then
-    echo "==> Batch ${batch_idx}: Maestro's iOS driver never started (no flow ran). Restarting the simulator and retrying this batch once."
-    ensure_ios_simulator_healthy
+  # Retry once when the driver never drove the app. A flow that ran and failed writes
+  # real elapsed times and is reported as-is.
+  if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+    echo "==> Batch ${batch_idx}: Maestro driver never drove the app. Recovering and retrying this batch once."
+    if [[ "$PLATFORM" == "ios" ]]; then
+      ensure_ios_simulator_healthy
+    else
+      ensure_android_driver_healthy
+    fi
     rm -f "$batch_xml"
     batch_start_epoch=$(date +%s)
     run_maestro_batch "$batch_xml" "${path_arr[@]}"
     rc=$?
     batch_end_epoch=$(date +%s)
     echo "[BATCH-TIME] batch ${batch_idx} retry wall=$((batch_end_epoch - batch_start_epoch))s exit=${rc}"
+
+    if [[ $rc -ne 0 ]] && driver_startup_failed "${batch_xml%.xml}.log" "$batch_xml"; then
+      echo "==> Batch ${batch_idx}: driver still unavailable — recording ${#path_arr[@]} flow(s) as failed"
+      write_driver_failure_junit "$batch_xml" "${path_arr[@]}"
+      # Recover the device for the next batch, but leave rc non-zero so the batch stays red.
+      [[ "$PLATFORM" == "ios" ]] && ensure_ios_simulator_healthy
+      [[ "$PLATFORM" == "android" ]] && ensure_android_driver_healthy
+    fi
   fi
 
   if [[ $rc -ne 0 ]]; then
@@ -457,9 +510,6 @@ for batch_paths in "${BATCHES[@]}"; do
       flow_label="${path_arr[0]:-unknown_flow}"
       flow_base="${flow_label##*/}"
       flow_id="${flow_base%.yml}"
-      xml_escape() {
-        printf '%s' "$1" | sed -e 's/\&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g'
-      }
       flow_label_xml="$(xml_escape "$flow_label")"
       flow_id_xml="$(xml_escape "$flow_id")"
       cat > "$batch_xml" <<EOF

@@ -5,6 +5,7 @@ type PropertyFieldType =
     | 'text'
     | 'select'
     | 'multiselect'
+    | 'rank'
     | 'date'
     | 'user'
     | 'multiuser'
@@ -21,7 +22,15 @@ type PropertyFieldObjectType = 'card' | 'post' | 'channel' | 'user' | 'system' |
 
 type PropertyFieldTargetLevel = 'system' | 'team' | 'channel';
 
-type PermissionLevel = 'none' | 'viewer' | 'editor' | 'admin';
+// Mirrors model.PermissionLevel. An empty string means the server fills in the
+// default for the field's object type, which for a channel field is 'member'
+// (see defaultPermissionValuesForObjectType in the server's property hooks).
+type PermissionLevel = 'none' | 'sysadmin' | 'admin' | 'member' | '';
+
+// How a channel attribute's value may move once it is set, mirroring
+// attrs.change_policy. The directional policies compare option ranks, so the
+// server strips them from any field that is not rank-typed.
+type PropertyChangePolicy = 'any' | 'raise_only' | 'lower_only' | 'never';
 
 type PropertyFieldOption = {
     id: string;
@@ -30,9 +39,28 @@ type PropertyFieldOption = {
     rank?: number;
 };
 
+type PropertyFieldAction = 'display_banner_top' | 'display_banner_bottom' | 'display_label_header' | 'display_label_info';
+
 type PropertyFieldAttrs = {
     sort_order?: number;
     options?: PropertyFieldOption[];
+
+    // Where a channel attribute's value displays. Server-validated allow-list;
+    // see @constants/channel_attributes. An empty array means an administrator
+    // chose no locations, which is not the same as the key being absent.
+    // Unknown values from a future server are retained via the index signature below.
+    actions?: PropertyFieldAction[];
+
+    // Channel-attribute configuration written by the System Console's Channels
+    // resource row. `editable` predates `change_policy`; false reads as 'never'.
+    required?: boolean;
+    change_policy?: PropertyChangePolicy;
+    editable?: boolean;
+
+    // Admin-facing override for the field's CEL-safe machine name. Not copied
+    // onto linked fields by the server, so channel fields usually lack it.
+    display_name?: string;
+
     [key: string]: unknown;
 };
 
@@ -47,9 +75,9 @@ type PropertyField = {
     target_type: PropertyFieldTargetLevel;
     linked_field_id?: string;
     protected?: boolean;
-    permission_field?: string;
-    permission_values?: unknown;
-    permission_options?: unknown;
+    permission_field?: PermissionLevel;
+    permission_values?: PermissionLevel;
+    permission_options?: PermissionLevel;
     create_at: number;
     update_at: number;
     delete_at: number;

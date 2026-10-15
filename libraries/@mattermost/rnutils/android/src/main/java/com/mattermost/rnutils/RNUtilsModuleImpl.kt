@@ -2,8 +2,6 @@ package com.mattermost.rnutils
 
 import android.app.Activity
 import android.graphics.Color
-import android.os.Build
-import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.WindowInsetsControllerCompat
@@ -227,34 +225,8 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
         promise?.resolve(null)
     }
 
-    fun setSoftKeyboardToAdjustNothing() {
-        val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-            return
-        }
-
-        currentActivity.runOnUiThread {
-            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
-        }
-    }
-
-    fun setSoftKeyboardToAdjustResize() {
-        val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
-            return
-        }
-
-        currentActivity.runOnUiThread {
-            currentActivity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        }
-    }
-
     fun setNavigationBarColor(colorHex: String, lightIcons: Boolean) {
         val currentActivity: Activity = reactContext.currentActivity ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return
-        }
-
         lastHex = colorHex
         lastLightIcons = lightIcons
 
@@ -268,12 +240,8 @@ class RNUtilsModuleImpl(private val reactContext: ReactApplicationContext): Life
                     val controller = WindowInsetsControllerCompat(w, w.decorView)
                     controller.isAppearanceLightNavigationBars = lightIcons
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        w.isNavigationBarContrastEnforced = false
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        w.navigationBarDividerColor = Color.TRANSPARENT
-                    }
+                    w.isNavigationBarContrastEnforced = false
+                    w.navigationBarDividerColor = Color.TRANSPARENT
                 }
             } catch (e: Exception) {
                 android.util.Log.e("RNUtils", "Error setting navigation bar color: $colorHex", e)

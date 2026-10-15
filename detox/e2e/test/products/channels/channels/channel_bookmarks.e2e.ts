@@ -27,6 +27,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {isAndroid, isIos, timeouts, wait, waitForElementToExist, waitForElementToNotExist} from '@support/utils';
+import {withTransportRetry} from '@support/utils/transport_retry';
 import {expect, waitFor} from 'detox';
 
 describe('Channels - Channel Bookmarks', () => {
@@ -71,13 +72,54 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.waitForBookmarkInChannelInfo(bookmarkMatcher, options);
     };
 
+    // apiCreateChannel owns no retry by design (apiInit's retryTransient is the single owner),
+    // but these 11 bare calls have nothing above them, so one dropped request failed all 11 tests.
+    // Generating the payload once makes the replay idempotent rather than duplicate-tolerant: the
+    // server rejects a second channel with the same name, so a lost response is recovered by
+    // fetching that name instead of leaving an untracked channel behind.
     const createChannel = async () => {
-        const {channel} = await Channel.apiCreateChannel(siteOneUrl, {
-            type: 'O',
-            teamId: testTeam.id,
-        });
-        await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
-        return channel;
+        const payload = Channel.generateRandomChannel(testTeam.id, 'O', 'channel');
+        const {channel, error} = await withTransportRetry(
+            () => Channel.apiCreateChannel(siteOneUrl, {channel: payload}),
+            {
+                idempotent: false,
+                allowDuplicateWrites: true,
+                label: 'channel_bookmarks createChannel',
+                budgetMs: timeouts.HALF_MIN,
+            },
+        );
+
+        let created = channel;
+        if (!created?.id) {
+            // This read only runs because the network just failed, so it is the likeliest call to
+            // hit the same blip. It is a GET, so replaying it is free.
+            const {channel: existing} = await withTransportRetry(
+                () => Channel.apiGetChannelByName(siteOneUrl, testTeam.id, payload.name),
+                {idempotent: true, label: 'channel_bookmarks recover created channel', budgetMs: timeouts.HALF_MIN},
+            );
+            created = existing;
+        }
+        if (!created?.id) {
+            throw new Error(`channel_bookmarks: failed to create channel: ${JSON.stringify(error ?? 'no channel in response')}`);
+        }
+
+        // openChannel taps the sidebar row, which only exists for a member, so an ignored
+        // failure here resurfaces as a missing row several steps later. A lost response can
+        // still hide a committed write, so read the membership back rather than replaying the
+        // POST, which would report success without knowing the user was added.
+        const membership = await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, created.id);
+        if (membership.error || !membership.member) {
+            const {channels} = await withTransportRetry(
+                () => Channel.apiGetChannelsForUser(siteOneUrl, testUser.id, testTeam.id),
+                {idempotent: true, label: 'channel_bookmarks recover membership', budgetMs: timeouts.HALF_MIN},
+            );
+            const joined = Array.isArray(channels) && channels.some((c: {id: string}) => c.id === created.id);
+            if (!joined) {
+                throw new Error(`channel_bookmarks: failed to add the test user to ${payload.name}: ${JSON.stringify(membership.error ?? 'no member in response')}`);
+            }
+        }
+
+        return created;
     };
 
     // The last sidebar row sits under the tab bar, so it can never satisfy Detox's default 75%
@@ -225,8 +267,8 @@ describe('Channels - Channel Bookmarks', () => {
         await ChannelInfoScreen.open();
 
         // * Verify that the "Add a bookmark" option is visible in channel info (Bookmarks Bar).
-        // waitFor — FeatureFlagChannelBookmarks / canAddBookmarks may still be settling
-        // after beforeAll reload (bare expect raced Config changed).
+        // waitFor — the server's bookmark gate and canAddBookmarks may still be settling
+        // after the beforeAll reload (a bare expect raced "Config changed").
         await waitFor(element(by.id('channel_info.add_bookmark.button'))).
             toBeVisible().
             withTimeout(timeouts.TWENTY_SEC);

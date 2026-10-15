@@ -121,7 +121,7 @@ const Thread = ({
             )}
             {showFloatingCallContainer &&
             <FloatingCallContainer
-                channelId={rootPost!.channelId}
+                channelId={rootPost?.channelId}
                 showJoinCallBanner={showJoinCallBanner}
                 showIncomingCalls={showIncomingCalls}
                 isInACall={isInACall}

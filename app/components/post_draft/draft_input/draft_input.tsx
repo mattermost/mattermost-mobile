@@ -10,7 +10,6 @@ import {scheduleOnRN} from 'react-native-worklets';
 
 import RewritingIndicator from '@agents/components/rewriting_indicator';
 import {Screens} from '@constants';
-import {isAndroidEdgeToEdge} from '@constants/device';
 import {useKeyboardState} from '@context/keyboard_state';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -172,7 +171,9 @@ function DraftInput({
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         const {height} = e.nativeEvent.layout;
         setLayoutHeight(height);
-        if (!isAndroidEdgeToEdge) {
+
+        // Android tracks the input top from the keyboard animation instead, see below.
+        if (Platform.OS === 'ios') {
             updatePostInputTop(height + bottom);
         }
     }, [bottom, updatePostInputTop]);
@@ -214,7 +215,7 @@ function DraftInput({
     useAnimatedReaction(
         () => stateContext.postInputTranslateY.value,
         (translateY) => {
-            if (isAndroidEdgeToEdge) {
+            if (Platform.OS === 'android') {
                 scheduleOnRN(updatePostInputTop, layoutHeight + translateY + (2 * bottom));
             }
         },

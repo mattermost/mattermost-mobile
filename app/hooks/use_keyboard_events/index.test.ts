@@ -2,17 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {renderHook} from '@testing-library/react-native';
+import {Platform} from 'react-native';
 import {useKeyboardHandler} from 'react-native-keyboard-controller';
 
 import {StateMachineEventType, InputContainerStateType, type InputContainerState} from '@keyboard';
 
 import {useKeyboardEvents} from './index';
-
-// isAndroidEdgeToEdge is a module-level constant — mock the whole module
-jest.mock('@constants/device', () => ({
-    isAndroidEdgeToEdge: false,
-    isEdgeToEdge: false,
-}));
 
 jest.mock('react-native-keyboard-controller', () => ({
     useKeyboardHandler: jest.fn(),
@@ -45,6 +40,26 @@ function renderAndCapture(
     });
 
     renderHook(() => useKeyboardEvents(context as never, inputTag));
+
+    return capturedHandlers;
+}
+
+function renderAndCaptureOnAndroid(
+    context: ReturnType<typeof makeContext>,
+    inputTag: number | null = 1,
+) {
+    let capturedHandlers: Record<string, (e: KeyboardEvent) => void> = {};
+
+    jest.mocked(useKeyboardHandler).mockImplementation((handlers) => {
+        capturedHandlers = handlers as typeof capturedHandlers;
+    });
+
+    Platform.OS = 'android';
+    jest.isolateModules(() => {
+        const {useKeyboardEvents: hook} = require('./index');
+        renderHook(() => hook(context as never, inputTag));
+    });
+    Platform.OS = 'ios';
 
     return capturedHandlers;
 }
@@ -150,15 +165,12 @@ describe('useKeyboardEvents', () => {
             );
         });
 
-        it('should use input.value.target (from useReanimatedFocusedInput) as focusedInputTag on edge-to-edge', () => {
+        it('should use input.value.target (from useReanimatedFocusedInput) as focusedInputTag on Android', () => {
             const {useReanimatedFocusedInput} = require('react-native-keyboard-controller');
             jest.mocked(useReanimatedFocusedInput).mockReturnValue({input: {value: {target: 1}}});
 
-            const deviceModule = require('@constants/device');
-            deviceModule.isAndroidEdgeToEdge = true;
-
             const ctx = makeContext();
-            const handlers = renderAndCapture(ctx, 1);
+            const handlers = renderAndCaptureOnAndroid(ctx, 1);
 
             // e.target is 99 (different), but input.value.target is 1 (matches inputTag)
             handlers.onStart({height: 300, progress: 0, target: 99});
@@ -167,7 +179,6 @@ describe('useKeyboardEvents', () => {
                 expect.objectContaining({type: StateMachineEventType.USER_FOCUS_INPUT}),
             );
 
-            deviceModule.isAndroidEdgeToEdge = false;
             jest.mocked(useReanimatedFocusedInput).mockReturnValue({input: {value: null}});
         });
 
@@ -209,7 +220,7 @@ describe('useKeyboardEvents', () => {
     });
 
     describe('onMove', () => {
-        it('should dispatch KEYBOARD_EVENT_MOVE when progress < 1 (non-edge-to-edge)', () => {
+        it('should dispatch KEYBOARD_EVENT_MOVE when progress < 1 on iOS', () => {
             const ctx = makeContext();
             const handlers = renderAndCapture(ctx);
 
@@ -222,7 +233,7 @@ describe('useKeyboardEvents', () => {
             });
         });
 
-        it('should dispatch KEYBOARD_EVENT_END instead of MOVE when progress=1 on non-edge-to-edge', () => {
+        it('should dispatch KEYBOARD_EVENT_END instead of MOVE when progress=1 on iOS', () => {
             const ctx = makeContext();
             const handlers = renderAndCapture(ctx);
 
@@ -235,14 +246,9 @@ describe('useKeyboardEvents', () => {
             });
         });
 
-        it('should dispatch KEYBOARD_EVENT_MOVE even when progress=1 on edge-to-edge', () => {
-            // isAndroidEdgeToEdge is a module-level constant frozen at import time.
-            // We override the module's exported value directly for this test.
-            const deviceModule = require('@constants/device');
-            deviceModule.isAndroidEdgeToEdge = true;
-
+        it('should dispatch KEYBOARD_EVENT_MOVE even when progress=1 on Android', () => {
             const ctx = makeContext();
-            const handlers = renderAndCapture(ctx);
+            const handlers = renderAndCaptureOnAndroid(ctx);
 
             handlers.onMove({height: 300, progress: 1});
 
@@ -251,8 +257,6 @@ describe('useKeyboardEvents', () => {
                 rawHeight: 300,
                 progress: 1,
             });
-
-            deviceModule.isAndroidEdgeToEdge = false;
         });
     });
 
