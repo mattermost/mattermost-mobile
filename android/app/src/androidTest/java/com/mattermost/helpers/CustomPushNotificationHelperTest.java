@@ -209,27 +209,37 @@ public class CustomPushNotificationHelperTest {
     }
 
     /**
-     * CustomPushNotification marks call notifications insistent so the channel
-     * sound repeats instead of playing once. That class needs the react-native
-     * lifecycle facade to construct, so assert the contract it relies on: the
-     * call notification it is handed is the one isCallsNotification() selects,
-     * and the flag it sets does survive on the built notification.
+     * applyCallDeliveryFlags is what CustomPushNotification calls before
+     * posting. Covered here for the decision itself; that the production path
+     * actually calls it is covered by CustomPushNotificationCallFlagsTest,
+     * which reads the flag back off the posted notification.
      */
     @Test
-    public void callNotificationCanBeMarkedInsistent() {
+    public void applyCallDeliveryFlags_marksCallsInsistent() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-
-        Bundle bundle = callBundle();
-        assertTrue("Call bundle is not recognised as a call",
-                CustomPushNotificationHelper.isCallsNotification(bundle));
-
         Notification notification = CustomPushNotificationHelper.createNotificationBuilder(
-                context, noopIntent(context), bundle, false).build();
+                context, noopIntent(context), callBundle(), false).build();
         assertEquals("Builder should not set the insistent flag itself",
                 0, notification.flags & Notification.FLAG_INSISTENT);
 
-        notification.flags = notification.flags | Notification.FLAG_INSISTENT;
-        assertEquals("Insistent flag did not stick on the built notification",
+        CustomPushNotificationHelper.applyCallDeliveryFlags(notification, callBundle());
+
+        assertEquals("Call notification was not marked insistent",
                 Notification.FLAG_INSISTENT, notification.flags & Notification.FLAG_INSISTENT);
+    }
+
+    @Test
+    public void applyCallDeliveryFlags_leavesMessagesAlone() {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Bundle bundle = bundleWithSubType(null);
+        bundle.putString("channel_id", "abc123channelidxxxxxxxxxxx");
+        bundle.putString("post_id", "p0stid0000000000000000001");
+
+        Notification notification = CustomPushNotificationHelper.createNotificationBuilder(
+                context, noopIntent(context), bundle, false).build();
+        CustomPushNotificationHelper.applyCallDeliveryFlags(notification, bundle);
+
+        assertEquals("A message notification must not be marked insistent",
+                0, notification.flags & Notification.FLAG_INSISTENT);
     }
 }

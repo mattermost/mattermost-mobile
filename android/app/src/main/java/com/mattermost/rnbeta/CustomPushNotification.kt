@@ -1,9 +1,9 @@
 package com.mattermost.rnbeta
 
-import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
@@ -139,17 +139,12 @@ class CustomPushNotification(
         }
     }
 
-    private fun buildNotification(notificationId: Int, createSummary: Boolean) {
+    @VisibleForTesting
+    internal fun buildNotification(notificationId: Int, createSummary: Boolean) {
         val pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, mNotificationProps)
         val notification = buildNotification(pendingIntent)
 
-        // A channel sound plays once. An incoming call has to keep ringing for
-        // the caller's ring window, so mark it insistent; the sound and
-        // vibration then repeat until the notification is dismissed, answered,
-        // or times out via setTimeoutAfter.
-        if (CustomPushNotificationHelper.isCallsNotification(mNotificationProps.asBundle())) {
-            notification.flags = notification.flags or Notification.FLAG_INSISTENT
-        }
+        CustomPushNotificationHelper.applyCallDeliveryFlags(notification, mNotificationProps.asBundle())
 
         if (createSummary) {
             val summary = getNotificationSummaryBuilder(pendingIntent).build()

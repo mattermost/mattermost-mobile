@@ -289,6 +289,19 @@ public class CustomPushNotificationHelper {
         return Objects.equals(bundle.getString("sub_type"), PUSH_SUB_TYPE_CALLS);
     }
 
+    /**
+     * A channel sound plays once, so an incoming call would make a few seconds
+     * of noise rather than ringing for the caller's ring window. FLAG_INSISTENT
+     * repeats the sound and vibration until the notification is answered,
+     * dismissed, or removed by setTimeoutAfter. It has to be applied to the
+     * built notification because NotificationCompat.Builder has no setter.
+     */
+    public static void applyCallDeliveryFlags(Notification notification, Bundle bundle) {
+        if (isCallsNotification(bundle)) {
+            notification.flags |= Notification.FLAG_INSISTENT;
+        }
+    }
+
     private static Uri getCallRingtoneUri(Context context) {
         String packageName = context.getPackageName();
 
