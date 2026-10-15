@@ -16,6 +16,8 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -59,6 +61,7 @@ import static com.mattermost.helpers.database_extension.UserKt.getLastPictureUpd
 public class CustomPushNotificationHelper {
     public static final String CHANNEL_HIGH_IMPORTANCE_ID = "channel_01";
     public static final String CHANNEL_MIN_IMPORTANCE_ID = "channel_02";
+    public static final String CHANNEL_CALL_ID = "channel_03";
     public static final String KEY_TEXT_REPLY = "CAN_REPLY";
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION = "notification";
@@ -66,9 +69,23 @@ public class CustomPushNotificationHelper {
     public static final String PUSH_TYPE_CLEAR = "clear";
     public static final String PUSH_TYPE_SESSION = "session";
     public static final String CATEGORY_CAN_REPLY = "CAN_REPLY";
+    public static final String PUSH_SUB_TYPE_CALLS = "calls";
+
+    // Matches Calls.RING_LENGTH on the JS side, so the incoming-call
+    // notification stops ringing when the caller's ring window expires.
+    private static final long CALL_RING_TIMEOUT_MS = 30000L;
+
+    // Name of the ringtone in res/raw. That directory is gitignored and
+    // populated from assets/sounds by scripts/postinstall.sh, so the resource
+    // is resolved by name at runtime rather than through R.raw.
+    private static final String CALL_RINGTONE_RES_NAME = "calls_calm";
+
+    private static final long[] CALL_VIBRATION_PATTERN =
+            new long[]{0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000};
 
     private static NotificationChannel mHighImportanceChannel;
     private static NotificationChannel mMinImportanceChannel;
+    private static NotificationChannel mCallChannel;
 
     private static final OkHttpClient client = new OkHttpClient();
 
@@ -205,7 +222,9 @@ public class CustomPushNotificationHelper {
         setNotificationGroup(notification, groupId, createSummary);
         setNotificationBadgeType(notification);
 
-        setNotificationChannel(context, notification);
+        final boolean isCall = isCallsNotification(bundle);
+
+        setNotificationChannel(context, notification, isCall);
         setNotificationDeleteIntent(context, notification, bundle, notificationId);
         addNotificationReplyAction(context, notification, bundle, notificationId);
 
@@ -213,8 +232,16 @@ public class CustomPushNotificationHelper {
                 .setContentIntent(intent)
                 .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setCategory(isCall ? Notification.CATEGORY_CALL : Notification.CATEGORY_MESSAGE)
                 .setAutoCancel(true);
+
+        if (isCall) {
+            // Show the call over the lock screen instead of as a banner, and
+            // stop ringing once the caller's ring window has elapsed.
+            notification
+                    .setFullScreenIntent(intent, true)
+                    .setTimeoutAfter(CALL_RING_TIMEOUT_MS);
+        }
 
         return notification;
     }
@@ -233,6 +260,40 @@ public class CustomPushNotificationHelper {
             mMinImportanceChannel.setShowBadge(true);
             notificationManager.createNotificationChannel(mMinImportanceChannel);
         }
+
+        if (mCallChannel == null) {
+            mCallChannel = new NotificationChannel(CHANNEL_CALL_ID, "Incoming Calls", NotificationManager.IMPORTANCE_HIGH);
+            mCallChannel.setShowBadge(true);
+            mCallChannel.enableVibration(true);
+            mCallChannel.setVibrationPattern(CALL_VIBRATION_PATTERN);
+
+            // Only honored when the user has granted notification policy
+            // access; silently ignored otherwise.
+            mCallChannel.setBypassDnd(true);
+
+            Uri ringtone = getCallRingtoneUri(context);
+            if (ringtone != null) {
+                mCallChannel.setSound(ringtone, new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build());
+            }
+
+            notificationManager.createNotificationChannel(mCallChannel);
+        }
+    }
+
+    public static boolean isCallsNotification(Bundle bundle) {
+        return Objects.equals(bundle.getString("sub_type"), PUSH_SUB_TYPE_CALLS);
+    }
+
+    private static Uri getCallRingtoneUri(Context context) {
+        String packageName = context.getPackageName();
+        int resId = context.getResources().getIdentifier(CALL_RINGTONE_RES_NAME, "raw", packageName);
+        if (resId == 0) {
+            return null;
+        }
+        return Uri.parse("android.resource://" + packageName + "/" + resId);
     }
 
     public static boolean verifySignature(final Context context, String signature, String serverUrl, String ackId) {
@@ -520,11 +581,11 @@ public class CustomPushNotificationHelper {
         notification.setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE);
     }
 
-    private static void setNotificationChannel(Context context, NotificationCompat.Builder notification) {
-        if (mHighImportanceChannel == null) {
+    private static void setNotificationChannel(Context context, NotificationCompat.Builder notification, boolean isCall) {
+        if (mHighImportanceChannel == null || mCallChannel == null) {
             createNotificationChannels(context);
         }
-        NotificationChannel notificationChannel = mHighImportanceChannel;
+        NotificationChannel notificationChannel = isCall ? mCallChannel : mHighImportanceChannel;
         notification.setChannelId(notificationChannel.getId());
     }
 

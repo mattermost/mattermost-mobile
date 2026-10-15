@@ -232,6 +232,7 @@ dependencies {
     }
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
 
     // For animated GIF support
     implementation 'com.facebook.fresco:animated-gif:3.6.0'
