@@ -42,9 +42,11 @@ export const RedactionInvalidationReason = {
     UserAttributes: 'user_attributes',
     UserRoles: 'user_roles',
     ChannelRoles: 'channel_roles',
+    ChannelAttributes: 'channel_attributes',
     UserFields: 'user_fields',
     SessionAttributes: 'session_attributes',
     ConfigChanged: 'config_changed',
+    LicenseChanged: 'license_changed',
     Resync: 'resync',
     AttributeViewRetry: 'attribute_view_retry',
 } as const;

@@ -7,6 +7,8 @@ class PostDraft {
         postDraftArchivedSuffix: 'post_draft.archived',
         postDraftReadOnlySuffix: 'post_draft.read_only',
         postInputSuffix: 'post_draft.post.input',
+        attachmentActionSuffix: 'post_draft.quick_actions.attachment_action',
+        attachmentActionDisabledSuffix: 'post_draft.quick_actions.attachment_action.disabled',
     };
 
     getPostDraft = (screenPrefix: string) => {
@@ -27,6 +29,14 @@ class PostDraft {
 
     getPostInput = (screenPrefix: string) => {
         return element(by.id(`${screenPrefix}${this.testID.postInputSuffix}`));
+    };
+
+    getAttachmentAction = (screenPrefix: string) => {
+        return element(by.id(`${screenPrefix}${this.testID.attachmentActionSuffix}`));
+    };
+
+    getAttachmentActionDisabled = (screenPrefix: string) => {
+        return element(by.id(`${screenPrefix}${this.testID.attachmentActionDisabledSuffix}`));
     };
 }
 

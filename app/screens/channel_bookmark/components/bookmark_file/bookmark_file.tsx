@@ -12,11 +12,13 @@ import FileIcon from '@components/files/file_icon';
 import FormattedText from '@components/formatted_text';
 import ProgressBar from '@components/progress_bar';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useDidMount from '@hooks/did_mount';
-import {fileSizeWarning, getExtensionFromMime, getFormattedFileSize} from '@utils/file';
+import RenderPermissionsStore from '@store/render_permissions_store';
+import {fileSizeWarning, getExtensionFromMime, getFormattedFileSize, uploadDisabledByPolicyWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -145,21 +147,29 @@ const BookmarkFile = ({channelId, close, disabled, initialFile, maxFileSize, set
         setFile(f);
     }, [file]);
 
-    const setUploadError = useCallback(() => {
+    const setUploadError = useCallback((serverErrorId?: string) => {
         setProgress(0);
         setUploading(false);
         setFailed(true);
+
+        // Retrying cannot help when a permission policy refused the upload, and the channel's stored
+        // decision that allowed it is out of date.
+        if (serverErrorId === ServerErrors.UPLOAD_DENIED_BY_POLICY_ERROR) {
+            RenderPermissionsStore.expireEntry(serverUrl, channelId);
+            setError(uploadDisabledByPolicyWarning(intl));
+            return;
+        }
 
         setError(intl.formatMessage({
             id: 'channel_bookmark.add.file_upload_error',
             defaultMessage: 'Error uploading file. Please try again.',
         }));
-    }, [intl]);
+    }, [intl, serverUrl, channelId]);
 
     const onComplete = useCallback((response: ClientResponse) => {
         cancelUpload.current = undefined;
         if (response.code !== 201 || !response.data) {
-            setUploadError();
+            setUploadError(response.data?.id as string | undefined);
             return;
         }
 
