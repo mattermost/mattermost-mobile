@@ -121,4 +121,19 @@ describe('apiPatchFeatureFlags', () => {
         assert.equal(requests.length, 1);
         assert.equal(requests[0]?.method, 'get');
     });
+
+    it('should return an error without writing when the config body is empty', async () => {
+        const requests: InternalAxiosRequestConfig[] = [];
+
+        client.defaults.adapter = (async (config) => {
+            requests.push(config);
+            return response(config, undefined);
+        }) as AxiosAdapter;
+
+        const result = await apiPatchFeatureFlags(BASE_URL, {ChannelAttributes: true});
+
+        assert.deepEqual(result.error, {message: 'getFeatureFlags: empty config response'});
+        assert.equal(requests.length, 1);
+        assert.equal(requests[0]?.method, 'get');
+    });
 });
