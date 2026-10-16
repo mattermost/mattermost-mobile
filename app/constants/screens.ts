@@ -180,6 +180,7 @@ export default {
 } as const;
 
 export const MODAL_SCREENS = new Set<string>([
+    APPS_FORM,
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CHANNEL_ADD_MEMBERS,
