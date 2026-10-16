@@ -1,9 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
+import {ActionType, Events} from '@constants';
 import DatabaseManager from '@database/manager';
+import EphemeralStore from '@store/ephemeral_store';
+import TestHelper from '@test/test_helper';
+import {deleteDownloadedFiles} from '@utils/file';
 
 import {
+    deleteDownloadedChannelFiles,
     updateLocalFile,
     updateLocalFilePath,
     getLocalFileInfo,
@@ -12,6 +19,11 @@ import {
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type FileModel from '@typings/database/models/servers/file';
+
+jest.mock('@utils/file', () => ({
+    ...jest.requireActual('@utils/file'),
+    deleteDownloadedFiles: jest.fn(),
+}));
 
 describe('files', () => {
     let operator: ServerDataOperator;
@@ -96,5 +108,38 @@ describe('files', () => {
 
         const {file} = await getLocalFileInfo(serverUrl, fileInfo.id!);
         expect(file).toBeUndefined();
+    });
+
+    describe('deleteDownloadedChannelFiles', () => {
+        const seedPostWithFile = async (postId: string, channelId: string, fileId: string) => {
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: [postId],
+                posts: [TestHelper.fakePost({id: postId, channel_id: channelId, file_ids: [fileId]})],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleFiles({files: [TestHelper.fakeFileInfo({id: fileId, post_id: postId})], prepareRecordsOnly: false});
+        };
+
+        afterEach(() => {
+            EphemeralStore.clearCurrentFileViewerPostId();
+        });
+
+        it('should delete only the purged channels\' downloaded files and close a viewer showing one', async () => {
+            await seedPostWithFile('post1', 'channel1', 'file1');
+            await seedPostWithFile('post2', 'channel2', 'file2');
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(serverUrl);
+            EphemeralStore.setCurrentFileViewerPostId('post1');
+            const listener = jest.fn();
+            const subscription = DeviceEventEmitter.addListener(Events.CLOSE_GALLERY, listener);
+
+            await deleteDownloadedChannelFiles(serverUrl, ['channel1']);
+            subscription.remove();
+
+            const deleted = jest.mocked(deleteDownloadedFiles).mock.calls[0][1];
+            expect(deleted).toHaveLength(1);
+            expect(deleted[0].id).toBe('file1');
+            expect(listener).toHaveBeenCalledTimes(1);
+        });
     });
 });

@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {deleteDownloadedChannelFiles} from '@actions/local/file';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -12,6 +13,11 @@ import {fetchRenderPermissions} from './render_permissions';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
+
+jest.mock('@actions/local/file', () => ({
+    ...jest.requireActual('@actions/local/file'),
+    deleteDownloadedChannelFiles: jest.fn(),
+}));
 
 jest.mock('./category', () => ({
     fetchCategories: jest.fn(),
@@ -175,6 +181,8 @@ describe('channel access', () => {
             await reconcileChannelAccess(serverUrl);
 
             expect(await storedChannelIds()).toEqual(['channel1']);
+            expect(deleteDownloadedChannelFiles).toHaveBeenCalledTimes(1);
+            expect(deleteDownloadedChannelFiles).toHaveBeenCalledWith(serverUrl, ['channel2']);
             expect(mockClient.getMyChannels).toHaveBeenCalledTimes(1);
             expect(mockClient.getMyChannels).toHaveBeenCalledWith(teamId);
             expect(mockClient.getMyChannelMembers).not.toHaveBeenCalled();

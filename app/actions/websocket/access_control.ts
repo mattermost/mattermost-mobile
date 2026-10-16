@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
+import {closeFileViewersIfAffected} from '@actions/local/file';
 import {
     RedactionInvalidationReason,
     invalidateChannelsRedaction,
@@ -12,7 +11,8 @@ import {
 } from '@actions/local/redaction';
 import {checkChannelAccess, reconcileChannelAccess} from '@actions/remote/channel_access';
 import {fetchPostThread, refetchPostsForRedaction} from '@actions/remote/post';
-import {Events, WebsocketEvents} from '@constants';
+import {WebsocketEvents} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
 import {CHANNEL_ATTRIBUTE_OBJECT_TYPE, USER_ATTRIBUTE_OBJECT_TYPE} from '@constants/channel_attributes';
 import {SESSION_ATTRIBUTES_OBJECT_TYPE} from '@constants/session_attributes';
 import DatabaseManager from '@database/manager';
@@ -63,34 +63,6 @@ const cleanupTokens = new Map<string, number>();
 const cleanupToken = (serverUrl: string) => cleanupTokens.get(serverUrl) ?? 0;
 
 const scopeKey = (serverUrl: string, channelId?: string) => `${serverUrl}|${channelId ? 'channels' : 'global'}`;
-
-/**
- * The gallery and PDF viewer hold their items by value, so no database change can reach them; they
- * are closed instead. Only when the change can affect what they show: the active server, and for a
- * channel-scoped change, the channel of the post being viewed. An unknown post is closed.
- */
-const closeFileViewersIfAffected = async (serverUrl: string, channelIds?: Set<string>) => {
-    try {
-        if ((await DatabaseManager.getActiveServerUrl()) !== serverUrl) {
-            return;
-        }
-
-        if (channelIds) {
-            const viewedPostId = EphemeralStore.getCurrentFileViewerPostId();
-            if (viewedPostId) {
-                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-                const viewedPost = await getPostById(database, viewedPostId);
-                if (viewedPost && !channelIds.has(viewedPost.channelId)) {
-                    return;
-                }
-            }
-        }
-
-        DeviceEventEmitter.emit(Events.CLOSE_GALLERY);
-    } catch (error) {
-        logError('closeFileViewersIfAffected', getFullErrorMessage(error));
-    }
-};
 
 const refreshVisibleSurfaces = async (serverUrl: string, channelIds?: Set<string>) => {
     try {
@@ -240,9 +212,17 @@ export const scheduleRedactionInvalidation = async (
     }
 };
 
-// The payload carries nothing, so every cached channel has to be treated as affected.
-export const handlePermissionPolicyUpdatedEvent = (serverUrl: string) => {
+// The payload names no channel, so every cached channel has to be treated as affected. It lists the
+// rule actions the edit touched, and the channel list is only refetched when read access is among
+// them; a missing list (older servers) means anything may have changed.
+export const handlePermissionPolicyUpdatedEvent = (serverUrl: string, msg: WebSocketMessage<{actions?: string[]}>) => {
     scheduleRedactionInvalidation(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+
+    const actions = msg.data?.actions;
+    if (actions && !actions.includes(RenderPermissionAction.ChannelReadAccess)) {
+        logDebug('handlePermissionPolicyUpdatedEvent: read access unchanged, skipping channel check');
+        return;
+    }
     reconcileChannelAccess(serverUrl);
 };
 

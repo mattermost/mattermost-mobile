@@ -7,6 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {addChannelToDefaultCategory, removeChannelFromManagedCategoryIfNeeded, handleConvertedGMCategories, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeAllMyChannels, storeMyChannelsForTeam, switchToChannel, deletePostsForChannel} from '@actions/local/channel';
 import {switchToGlobalDrafts} from '@actions/local/draft';
+import {deleteDownloadedChannelFiles} from '@actions/local/file';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens, ServerErrors} from '@constants';
@@ -1532,6 +1533,7 @@ export const handleChannelAccessDenied = async (serverUrl: string, channelId: st
             return {};
         }
 
+        await deleteDownloadedChannelFiles(serverUrl, [channelId]);
         if (channelId === await getCurrentChannelId(database)) {
             await handleKickFromChannel(serverUrl, channelId, Events.CHANNEL_ACCESS_REVOKED);
         }

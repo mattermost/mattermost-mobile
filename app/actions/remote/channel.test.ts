@@ -6,6 +6,7 @@
 import {createIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
+import {deleteDownloadedChannelFiles} from '@actions/local/file';
 import {ActionType, DeepLink, Events, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -78,6 +79,11 @@ const user: UserProfile = {
 } as UserProfile;
 
 let mockIsTablet: jest.Mock;
+jest.mock('@actions/local/file', () => ({
+    ...jest.requireActual('@actions/local/file'),
+    deleteDownloadedChannelFiles: jest.fn(),
+}));
+
 jest.mock('@utils/helpers', () => {
     const original = jest.requireActual('@utils/helpers');
     mockIsTablet = jest.fn(() => false);
@@ -726,6 +732,7 @@ describe('app/actions/remote/channel', () => {
 
             const channels = await operator.database.get('Channel').query().fetch();
             expect(channels).toHaveLength(0);
+            expect(deleteDownloadedChannelFiles).toHaveBeenCalledWith(serverUrl, [channelId]);
         });
 
         it('should kick before purging when it is the current channel', async () => {

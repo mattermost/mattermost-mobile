@@ -5,6 +5,7 @@ import {chunk} from 'lodash';
 
 import {storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, storeAllMyChannels} from '@actions/local/channel';
+import {deleteDownloadedChannelFiles} from '@actions/local/file';
 import {isRedactionEnforced} from '@actions/local/redaction';
 import {License} from '@constants';
 import {CHANNEL_READ_ACCESS_VERSION} from '@constants/versions';
@@ -117,13 +118,15 @@ async function checkTeam(serverUrl: string, database: Database, teamId: string):
             await handleChannelAccessDenied(serverUrl, currentChannelId);
         }
 
-        for (const id of deniedIds) {
-            if (id !== currentChannelId) {
-                // eslint-disable-next-line no-await-in-loop
-                const {models: prepared} = await removeCurrentUserFromChannel(serverUrl, id, true);
-                if (prepared?.length) {
-                    models.push(...prepared);
-                }
+        const otherDeniedIds = deniedIds.filter((id) => id !== currentChannelId);
+        if (otherDeniedIds.length) {
+            await deleteDownloadedChannelFiles(serverUrl, otherDeniedIds);
+        }
+        for (const id of otherDeniedIds) {
+            // eslint-disable-next-line no-await-in-loop
+            const {models: prepared} = await removeCurrentUserFromChannel(serverUrl, id, true);
+            if (prepared?.length) {
+                models.push(...prepared);
             }
         }
     }
