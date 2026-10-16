@@ -9,7 +9,7 @@ import {submitInteractiveDialog, lookupInteractiveDialog} from '@actions/remote/
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import AppsFormComponent from '@screens/apps_form/apps_form_component';
-import {convertAppFormValuesToDialogSubmission, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
+import {convertAppFormValuesToDialogSubmission, flattenDialogElements, flattenFileFieldValues, mergeFileFieldValues} from '@utils/dialog_conversion';
 import {getFullErrorMessage} from '@utils/errors';
 import {InteractiveDialogAdapter} from '@utils/interactive_dialog_adapter';
 import {logDebug} from '@utils/log';
@@ -52,6 +52,31 @@ function getSubmissionErrorMessage(error: unknown, intl: IntlShape): string {
         id: 'interactive_dialog.submission_failed_with_details',
         defaultMessage: 'Submission failed: {error}',
     }, {error: error.message});
+}
+
+// Accumulated values are keyed by leaf field name, and a leaf can sit any number
+// of collapsibles deep, so walk the tree rather than only the top level.
+function applyAccumulatedValues(fields: AppField[], accumulated: AppFormValues): AppField[] {
+    return fields.map((field) => {
+        if (field.collapsible_config) {
+            return {
+                ...field,
+                collapsible_config: {
+                    ...field.collapsible_config,
+                    fields: applyAccumulatedValues(field.collapsible_config.fields, accumulated),
+                },
+            };
+        }
+
+        if (field.name && accumulated[field.name] !== undefined && !field.value) {
+            return {
+                ...field,
+                value: accumulated[field.name],
+            };
+        }
+
+        return field;
+    });
 }
 
 export const DialogRouter = React.memo<DialogRouterProps>(({
@@ -222,9 +247,10 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
         }
     }, [currentConfig]);
 
-    // Helper function to find the dialog element by field name
-    function findDialogElement(elements: any[], fieldName: string) {
-        return elements.find((e) => e.name === fieldName);
+    // Helper function to find the dialog element by field name. A dynamic
+    // select can sit inside a collapsible, so search the flattened elements.
+    function findDialogElement(elements: DialogElement[], fieldName: string) {
+        return flattenDialogElements(elements).find((e) => e.name === fieldName);
     }
 
     // Create performLookupCall for dynamic select fields
@@ -362,15 +388,7 @@ export const DialogRouter = React.memo<DialogRouterProps>(({
     // Pre-populate form fields with accumulated values to preserve field refresh state
     const formWithValues = {
         ...appForm,
-        fields: appForm.fields.map((field) => {
-            if (field.name && accumulatedValues[field.name] !== undefined && !field.value) {
-                return {
-                    ...field,
-                    value: accumulatedValues[field.name],
-                };
-            }
-            return field;
-        }),
+        fields: applyAccumulatedValues(appForm.fields, accumulatedValues),
     };
 
     return (

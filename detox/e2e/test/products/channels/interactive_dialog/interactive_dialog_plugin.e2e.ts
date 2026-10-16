@@ -1327,4 +1327,140 @@ describe('Interactive Dialog - Basic Dialog (Plugin)', () => {
             throw new Error(`Expected manually-entered minutes (:30) in local_manual but got: ${submitted}`);
         }
     });
+
+    // Collapsible sections. The demo plugin's /dialog collapsible sample nests
+    // three levels: level1_section is open with first_name and last_name;
+    // level2_section starts collapsed and holds company plus an inner section
+    // with email and phone; level3_section starts collapsed and nests deeper.
+    //
+    // A collapsed section unmounts its children — their values live in the
+    // form's reducer — so these assert on the content existing, not on a style.
+    it('MM-TXXXX_1 should honour each section expanded state (Plugin)', async () => {
+        // # Open the collapsible sample
+        await postSlashCommandDirect('/dialog collapsible');
+        await ensureDialogOpen();
+
+        // * The section that starts expanded shows its fields
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level1_section');
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('first_name'), timeouts.TEN_SEC);
+
+        // * The sections that start collapsed are present but hold nothing
+        await expect(InteractiveDialogScreen.getCollapsibleSection('level2_section')).toExist();
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
+        await expect(InteractiveDialogScreen.getTextInput('company')).not.toExist();
+
+        await expect(InteractiveDialogScreen.getCollapsibleSection('level3_section')).toExist();
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level3_section', false);
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-TXXXX_2 should open a nested section and reveal its fields (Plugin)', async () => {
+        // # Open the collapsible sample
+        await postSlashCommandDirect('/dialog collapsible');
+        await ensureDialogOpen();
+
+        // # Expand the outer section
+        await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
+
+        // * Its own field and its inner section are now mounted
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section');
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('company'), timeouts.TEN_SEC);
+        await expect(InteractiveDialogScreen.getCollapsibleSection('level2_inner_section')).toExist();
+
+        // * The inner section starts expanded, so its fields come with it
+        await waitForElementToExist(InteractiveDialogScreen.getTextInput('email'), timeouts.TEN_SEC);
+        await expect(InteractiveDialogScreen.getTextInput('phone')).toExist();
+
+        // # Collapsing the outer section takes the inner one with it
+        await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
+        await expect(InteractiveDialogScreen.getTextInput('email')).not.toExist();
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
+
+    it('MM-TXXXX_3 should submit a value typed into a section that was then collapsed (Plugin)', async () => {
+        // # Open the collapsible sample
+        await postSlashCommandDirect('/dialog collapsible');
+        await ensureDialogOpen();
+
+        // # Type into the section that is already open. last_name is required
+        // in the sample, and a required field left empty fails validation
+        // whether or not its section is open, so fill it too.
+        await InteractiveDialogScreen.fillTextElement('first_name', 'Ada');
+        await InteractiveDialogScreen.fillTextElement('last_name', 'Lovelace');
+
+        // # Open a collapsed section, type into it, and close it again. The
+        // fields unmount, which is exactly what this test is about: the value
+        // lives in the form's reducer, not in the mounted input. email sits in
+        // the inner section that comes up expanded with its parent, and is the
+        // other required field in the sample.
+        await InteractiveDialogScreen.expandCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.fillTextElement('company', 'Analytical Engines');
+        await InteractiveDialogScreen.fillTextElement('email', 'ada@example.com');
+        await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
+
+        // # Submit the dialog. Assert it really closed before reading the
+        // channel: ensureDialogClosed() force-cancels a dialog that stayed
+        // open, which would turn a blocked submit into a confusing assertion
+        // against an earlier test's post.
+        await InteractiveDialogScreen.submit();
+        await waitFor(InteractiveDialogScreen.interactiveDialogScreen).not.toExist().withTimeout(timeouts.TEN_SEC);
+        await ensureDialogClosed();
+
+        // * Both values reach the server, flat and keyed by element name, with
+        // no trace of the sections that contained them
+        await wait(timeouts.ONE_SEC);
+        const {post, error: lastPostError} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        if (lastPostError || !post) {
+            throw new Error(`Could not read the submission post from channel ${testChannel.id}: ${JSON.stringify(lastPostError ?? 'no post returned')}`);
+        }
+
+        const readField = (name: string) => post.message.match(new RegExp(`${name}:[ \\t]*([^\\n]*)`))?.[1]?.trim() ?? '';
+
+        if (readField('first_name') !== 'Ada') {
+            throw new Error(`Expected first_name to submit as "Ada". Full message: ${post.message}`);
+        }
+        if (readField('company') !== 'Analytical Engines') {
+            throw new Error(`Expected company to survive collapsing its section. Full message: ${post.message}`);
+        }
+        if (readField('email') !== 'ada@example.com') {
+            throw new Error(`Expected email to survive collapsing the section two levels above it. Full message: ${post.message}`);
+        }
+
+        // * The container itself holds no value and must not be submitted
+        if ((/\blevel2_section\b/).test(post.message)) {
+            throw new Error(`A collapsible container was submitted as a field. Full message: ${post.message}`);
+        }
+    });
+
+    it('MM-TXXXX_4 should keep a nested value through a round trip of collapsing (Plugin)', async () => {
+        // # Open the collapsible sample
+        await postSlashCommandDirect('/dialog collapsible');
+        await ensureDialogOpen();
+
+        // # Reach a field two levels down and fill it
+        await InteractiveDialogScreen.expandCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.expandCollapsibleSection('level2_inner_section');
+        await InteractiveDialogScreen.fillTextElement('email', 'ada@example.com');
+
+        // # Close and reopen the outer section
+        await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section', false);
+        await InteractiveDialogScreen.toggleCollapsibleSection('level2_section');
+        await InteractiveDialogScreen.expectCollapsibleExpanded('level2_section');
+        await InteractiveDialogScreen.expandCollapsibleSection('level2_inner_section');
+
+        // * The field is back with what was typed in it
+        const emailInput = InteractiveDialogScreen.getTextInput('email');
+        await waitForElementToExist(emailInput, timeouts.TEN_SEC);
+        await expect(emailInput).toHaveText('ada@example.com');
+
+        await InteractiveDialogScreen.cancel();
+        await ensureDialogClosed();
+    });
 });

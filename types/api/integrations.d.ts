@@ -84,6 +84,15 @@ type DialogElement = {
     max_date?: string;
     time_interval?: number;
     datetime_config?: DateTimeConfig;
+
+    // Collapsible sections hold child elements and carry no value of their own.
+    collapsible_config?: DialogCollapsibleConfig;
+};
+
+type DialogCollapsibleConfig = {
+    elements: DialogElement[];
+    collapsed?: boolean;
+    borderless?: boolean;
 };
 
 type InteractiveDialogConfig = {
@@ -140,5 +149,5 @@ type PostActionResponse = {
     goto_location?: string;
 };
 
-type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime'
+type InteractiveDialogElementType = 'text' | 'textarea' | 'select' | 'radio' | 'bool' | 'file' | 'date' | 'datetime' | 'collapsible'
 type InteractiveDialogTextSubtype = 'email' | 'number' | 'tel' | 'url' | 'password'
