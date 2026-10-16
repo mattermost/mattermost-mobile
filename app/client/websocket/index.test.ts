@@ -476,6 +476,28 @@ describe('WebSocketClient', () => {
         });
     });
 
+    it('should ignore and close a replaced socket that is still delivering events', async () => {
+        const eventCallback = jest.fn();
+        client.setEventCallback(eventCallback);
+        await client.initialize();
+        await advanceTimers(10);
+
+        // The first socket reports a close but stays open, so the client reconnects on a second one.
+        const replacement = createMockConn();
+        mockedGetOrCreateWebSocketClient.mockResolvedValue({client: replacement} as any);
+        mockConn.onClose.mock.calls[0][0]({});
+        await advanceTimers(3100);
+        expect(replacement.readyState).toBe(WebSocketReadyState.OPEN);
+
+        const closeReplaced = jest.spyOn(mockConn, 'close');
+        mockConn.onMessage.mock.calls[0][0]({message: {event: 'posted', seq: 10, data: {}}});
+
+        expect(eventCallback).not.toHaveBeenCalled();
+        expect(closeReplaced).toHaveBeenCalled();
+        expect(client.isConnected()).toBe(true);
+        expect(logInfo).toHaveBeenCalledWith('websocket ignored an event from a replaced connection', 'message', expect.any(String));
+    });
+
     it('should clear ping interval on close', async () => {
         enableFakeTimers();
 

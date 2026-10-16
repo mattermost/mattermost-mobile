@@ -189,7 +189,13 @@ export default class WebSocketClient {
             return;
         }
 
-        this.conn!.onOpen(() => {
+        const conn = this.conn;
+        conn.onOpen(() => {
+            if (this.isReplaced(conn, 'open')) {
+                conn.close();
+                return;
+            }
+
             clearTimeout(this.connectionTimeout);
             clearInterval(this.pingInterval);
 
@@ -242,7 +248,11 @@ export default class WebSocketClient {
             this.connectFailCount = 0;
         });
 
-        this.conn!.onClose((ev) => {
+        conn.onClose((ev) => {
+            if (this.isReplaced(conn, 'close')) {
+                return;
+            }
+
             clearTimeout(this.connectionTimeout);
             clearInterval(this.pingInterval);
 
@@ -300,7 +310,11 @@ export default class WebSocketClient {
             );
         });
 
-        this.conn!.onError((evt: any) => {
+        conn.onError((evt: any) => {
+            if (this.isReplaced(conn, 'error')) {
+                return;
+            }
+
             if (evt.url === this.url) {
                 if (this.connectFailCount <= 1) {
                     logError('websocket error', 'server', this.serverUrl, 'code', evt?.code, 'reason', evt?.reason);
@@ -312,7 +326,12 @@ export default class WebSocketClient {
             }
         });
 
-        this.conn!.onMessage((evt: any) => {
+        conn.onMessage((evt: any) => {
+            if (this.isReplaced(conn, 'message')) {
+                conn.close();
+                return;
+            }
+
             const msg = evt.message;
 
             // This indicates a reply to a websocket request.
@@ -374,7 +393,7 @@ export default class WebSocketClient {
             }
         });
 
-        this.conn.open();
+        conn.open();
     }
 
     public setConnectingCallback(callback: () => void) {
@@ -445,6 +464,17 @@ export default class WebSocketClient {
         this.pendingVerification = {promise, resolve, seq, timeout};
 
         return promise;
+    }
+
+    // A socket this client no longer holds can still deliver events, e.g. one whose close event arrived
+    // although it stayed open. Acting on them would tear down or desync the current socket.
+    private isReplaced(conn: WebSocketClientInterface, event: string) {
+        if (conn === this.conn) {
+            return false;
+        }
+
+        logInfo('websocket ignored an event from a replaced connection', event, this.url);
+        return true;
     }
 
     private settleVerification(alive: boolean) {
