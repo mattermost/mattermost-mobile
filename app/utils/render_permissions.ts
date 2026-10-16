@@ -18,22 +18,25 @@ export function shouldFetchRenderPermissions(enforced: boolean, requiredEpoch: n
 /**
  * The decision to render for an action. The last known decision is kept while it is revalidated, so a
  * control does not flip to its default and back on every refresh; the server enforces every action on
- * its own, so the client only decides how the control looks. With no evaluated decision yet, the
- * caller's default applies.
+ * its own, so the client only decides how the control looks.
+ * @param allowWhenUnenforced - What to render while ABAC is not enforced
+ * @param allowWhenNotEvaluated - What to render while ABAC is enforced but the server has not answered
+ * for the action yet; defaults to allowWhenUnenforced
  */
 export function resolveRenderPermission(
     enforced: boolean,
     entry: RenderPermissionsEntry | undefined,
     action: RenderPermissionActionName,
-    defaultAllowed: boolean,
+    allowWhenUnenforced: boolean,
+    allowWhenNotEvaluated = allowWhenUnenforced,
 ): boolean {
     if (!enforced) {
-        return defaultAllowed;
+        return allowWhenUnenforced;
     }
 
     const decision = entry?.decisions[action];
     if (!decision?.evaluated) {
-        return defaultAllowed;
+        return allowWhenNotEvaluated;
     }
     return decision.allowed;
 }

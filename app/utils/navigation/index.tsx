@@ -16,7 +16,6 @@ import type {UserProfileProps} from '@screens/user_profile';
 import type {GalleryItemType} from '@typings/screens/gallery';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
-import type {Asset} from 'react-native-image-picker';
 
 export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.ONBOARDING,
@@ -122,7 +121,7 @@ export function openUserProfile(props: UserProfileProps) {
 
 export function openAttachmentOptions(
     props: {
-        onUploadFiles: (files: Asset[]) => void;
+        onUploadFiles: (files: ExtractedFileInfo[]) => void;
         maxFilesReached: boolean;
         canUploadFiles: boolean;
         showAttachLogs?: boolean;

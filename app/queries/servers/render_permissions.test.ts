@@ -59,12 +59,32 @@ describe('render permission observables', () => {
         subscription.unsubscribe();
     });
 
-    it('should use the default without subscribing when there is no channel', async () => {
+    it('should use the not evaluated value when there is no channel and ABAC is enforced', async () => {
         const values: boolean[] = [];
-        observeRenderPermission(operator.database, serverUrl, undefined, upload, false).subscribe((v) => values.push(v));
+        const subscription = observeRenderPermission(operator.database, serverUrl, undefined, upload, true, false).subscribe((v) => values.push(v));
         await flush();
 
         expect(values).toEqual([false]);
+        subscription.unsubscribe();
+    });
+
+    it('should render as not enforced and never ask on a server without the decisions API', async () => {
+        await operator.handleConfigs({
+            configs: [{id: 'Version', value: '11.11.0'}],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const permissions: boolean[] = [];
+        const shouldFetch: boolean[] = [];
+        const permissionSubscription = observeRenderPermission(operator.database, serverUrl, channelId, upload, true, false).subscribe((v) => permissions.push(v));
+        const shouldFetchSubscription = observeShouldFetchRenderPermissions(operator.database, serverUrl, channelId).subscribe((v) => shouldFetch.push(v));
+        await flush();
+
+        expect(permissions).toEqual([true]);
+        expect(shouldFetch).toEqual([false]);
+        permissionSubscription.unsubscribe();
+        shouldFetchSubscription.unsubscribe();
     });
 
     it('should ask again when an answer lands already stale, instead of treating it as a repeat', async () => {

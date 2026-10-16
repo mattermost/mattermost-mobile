@@ -15,6 +15,7 @@ const PLAYBOOKS_SELECT_PLAYBOOK = 'playbooks_select_playbook';
 const PLAYBOOKS_START_A_RUN = 'playbooks_start_a_run';
 const PLAYBOOKS_CREATE_QUICK_CHECKLIST = 'playbooks_create_quick_checklist';
 const PLAYBOOK_EDIT_CHECKLIST_ITEM = 'playbook_edit_checklist_item';
+const PLAYBOOK_FILL_REQUIREMENTS = 'playbook_fill_requirements';
 
 export default {
     PLAYBOOKS_RUNS,
@@ -25,6 +26,7 @@ export default {
     PLAYBOOK_RENAME_CHECKLIST,
     PLAYBOOK_ADD_CHECKLIST_ITEM,
     PLAYBOOK_EDIT_CHECKLIST_ITEM,
+    PLAYBOOK_FILL_REQUIREMENTS,
     PLAYBOOK_RENAME_RUN,
     PLAYBOOK_SELECT_USER,
     PLAYBOOKS_SELECT_DATE,

@@ -18,10 +18,15 @@ describe('resolveRenderPermission', () => {
         expect(resolveRenderPermission(true, {...denied, expired: true}, upload, true)).toBe(false);
     });
 
-    it('should return the default for a decision the server did not evaluate or did not return', () => {
+    it('should return the not evaluated value for a decision the server did not evaluate or did not return', () => {
         const notEvaluated = {epoch: 5, decisions: {[upload]: {allowed: false, evaluated: false}}};
         expect(resolveRenderPermission(true, notEvaluated, upload, true)).toBe(true);
         expect(resolveRenderPermission(true, {epoch: 5, decisions: {}}, upload, false)).toBe(false);
+    });
+
+    it('should tell not enforced apart from not evaluated yet when the caller sets both', () => {
+        expect(resolveRenderPermission(false, undefined, upload, true, false)).toBe(true);
+        expect(resolveRenderPermission(true, undefined, upload, true, false)).toBe(false);
     });
 });
 
