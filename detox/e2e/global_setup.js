@@ -120,14 +120,22 @@ const WARMUP_DELAY_MS = 15000;
  * The permission policy actions this server supports, comma-separated, so suites can gate on one
  * (see serverSupportsPolicyAction). New actions ship without a feature flag, so this asks the
  * render-time decisions endpoint: called without `actions`, it returns a decision for every action
- * the server registers for channels. It evaluates against a real channel, so one is looked up first.
+ * the server registers for channels.
  * Returns '' on servers without the endpoint (before 12.0), and undefined when it can't tell.
  */
 async function detectPolicyActions(headers) {
     const options = {headers, validateStatus: () => true};
     try {
-        const channels = await axios.get(`${SITE_URL}/api/v4/channels?per_page=1`, options);
-        const channelId = Array.isArray(channels.data) ? channels.data[0]?.id : undefined;
+        // The endpoint evaluates against a real channel. The admin's DM with themselves works even on
+        // a server with no teams or channels, and creating it again returns the same one, so there's
+        // nothing to clean up.
+        const me = await axios.get(`${SITE_URL}/api/v4/users/me`, options);
+        const userId = me.data?.id;
+        if (!userId) {
+            return undefined;
+        }
+        const selfDm = await axios.post(`${SITE_URL}/api/v4/channels/direct`, [userId, userId], options);
+        const channelId = selfDm.data?.id;
         if (!channelId) {
             return undefined;
         }
