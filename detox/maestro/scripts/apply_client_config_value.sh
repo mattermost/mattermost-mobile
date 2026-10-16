@@ -28,6 +28,10 @@
 #         set-by-environment=true"), or ExperimentalSettings.RestrictSystemAdmin being true
 #         (drops every write_restrictable/cloud_restrictable field). Caller should skip.
 # Exit 1: the value never took for some other reason. Exit 2: usage error.
+#
+# CONFIG_DIAGNOSIS_FILE, when set, receives the one-line reason for exit 1 or 3, so the
+# caller's failure report says why (an unreachable server, a page instead of JSON, a value
+# that would not stick) instead of only that the pre-condition was not in force.
 set -euo pipefail
 
 if [[ $# -ne 5 ]]; then
@@ -44,23 +48,43 @@ expected="$5"
 # Bound every request so a stalled connection cannot hang the script past its retry path.
 CONNECT_TIMEOUT_SECS="${CONFIG_CONNECT_TIMEOUT_SECS:-5}"
 MAX_TIME_SECS="${CONFIG_MAX_TIME_SECS:-30}"
+DIAGNOSIS_FILE="${CONFIG_DIAGNOSIS_FILE:-}"
+if [[ -n "$DIAGNOSIS_FILE" ]]; then
+    : > "$DIAGNOSIS_FILE"
+fi
 
+# Print the final reason and keep it for the caller's failure report.
+diagnose() {
+    echo "==> $1" >&2
+    if [[ -n "$DIAGNOSIS_FILE" ]]; then
+        printf '%s\n' "$1" > "$DIAGNOSIS_FILE"
+    fi
+}
+
+# What the client config serves for the key; when it can't be read, why (curl's error, or
+# the start of a body that is not JSON, such as an HTML page from a proxy in front of the server).
 read_key() {
-    local response
+    local response err
+    err="$(mktemp)"
     if ! response="$(curl -f -sS --show-error \
         --connect-timeout "${CONNECT_TIMEOUT_SECS}" --max-time "${MAX_TIME_SECS}" \
         -H "Authorization: Bearer ${admin_token}" \
-        "${site_url}/api/v4/config/client?format=old" 2>/dev/null)"; then
-        printf '%s' "<client config could not be read>"
+        "${site_url}/api/v4/config/client?format=old" 2>"$err")"; then
+        printf '<client config could not be read: %s>' "$(tr -s '\r\n' ' ' < "$err" | head -c 160)"
+        rm -f "$err"
         return
     fi
+    rm -f "$err"
     printf '%s' "$response" | python3 -c "
 import json, sys
 key = sys.argv[1]
+raw = sys.stdin.read()
 try:
-    config = json.load(sys.stdin)
+    config = json.loads(raw)
 except ValueError:
-    print('<client config was not JSON>')
+    start = ' '.join(raw.split())[:80]
+    kind = 'an HTML page' if start.lower().startswith(('<!doctype html', '<html')) else 'not JSON'
+    print('<client config was not JSON: the server answered with %s starting %r>' % (kind, start))
     sys.exit(0)
 print(config.get(key, '<key absent from client config>'))
 " "$key"
@@ -131,7 +155,7 @@ print('false')
 restricted="$(read_restricted)"
 env_managed="$(read_env_managed)"
 if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
-    echo "==> ${key} is owned by this installation (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed}), so the flow's pre-condition cannot be created here." >&2
+    diagnose "${key} is owned by this installation (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed}), so the flow's pre-condition cannot be created here."
     exit 3
 fi
 
@@ -170,7 +194,7 @@ done
 restricted="$(read_restricted)"
 env_managed="$(read_env_managed)"
 
-echo "==> ${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})" >&2
+diagnose "${key} never took: wanted '${expected}', client config serves '${actual}' (RestrictSystemAdmin=${restricted}, set-by-environment=${env_managed})"
 
 if [[ "$restricted" == "true" || "$env_managed" == "true" ]]; then
     echo "==> This installation does not allow that write, so the flow's pre-condition cannot be created here." >&2

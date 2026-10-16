@@ -75,9 +75,21 @@ function decideTargetUrl(state, bothTerminal, displayReportUrl, reportId, runUrl
     return `${displayReportUrl}?gid=${reportId}`;
 }
 
-function decideStatus(detail, upstreamSucceeded) {
+function decideStatus(detail, upstreamSucceeded, cancelled = false) {
     const stats = detail.test_stats || {};
     const bothTerminal = TERMINAL_STATUSES.includes(detail.status);
+
+    // Specs a cancelled run never finished are counted as failed, and its server can
+    // be torn down under the steps that still run: none of that says anything about
+    // the change. Report the cancel, not failures.
+    if (cancelled) {
+        return {
+            state: 'error',
+            description: `E2E run cancelled before it finished (${stats.passed || 0} passed by then) · re-run E2E`.slice(0, 140),
+            both_terminal: bothTerminal,
+            timed_out: false,
+        };
+    }
     if (bothTerminal) {
         const clean = (stats.failed || 0) === 0 && detail.status === 'completed' && upstreamSucceeded;
         const passed = stats.passed || 0;
@@ -179,6 +191,42 @@ function overrideCommitStatus(state, description) {
     };
 }
 
+// The PR-wide triage check. Every lane's triage job writes it too (the
+// e2e-triage action's triage-status-context), with the verdict for all lanes.
+const TRIAGE_CHECK_CONTEXT = 'e2e-test/triage';
+
+/**
+ * The pending check that tells a PR its red lanes are waiting for E2E triage.
+ * Triage (the e2e-triage action in mattermost-test-automation-toolkit) runs
+ * only once every lane has finished, which can be an hour after this one, and
+ * then writes the same check with its verdict. Null when there is nothing to
+ * announce: triage is off for this run, the lane isn't red with test failures,
+ * or E2E/Override already turned it green.
+ *
+ * @returns {{state: string, context: string, description: string, target_url: string} | null}
+ */
+function triageAnnouncement({announce, state, overrideApplied, failed, runUrl, cancelled = false}) {
+    // A cancelled run is not triaged (e2e-detox-pr.yml skips tsio-triage), so the
+    // check says so instead of waiting for a verdict that will never come.
+    if (announce && cancelled) {
+        return {
+            state: 'error',
+            context: TRIAGE_CHECK_CONTEXT,
+            description: 'E2E run cancelled before triage · re-run E2E',
+            target_url: runUrl,
+        };
+    }
+    if (!announce || state !== 'failure' || overrideApplied || !(failed > 0)) {
+        return null;
+    }
+    return {
+        state: 'pending',
+        context: TRIAGE_CHECK_CONTEXT,
+        description: 'E2E failures found · triage starts when every lane has finished',
+        target_url: runUrl,
+    };
+}
+
 async function createCommitStatus(token, repository, sha, payload) {
     const [owner, repo] = repository.split('/');
     const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/statuses/${sha}`, {
@@ -200,6 +248,7 @@ async function reportTsioStatus(options) {
         totalReportsExpected,
         commitStatusContext,
         upstreamJobsSucceeded = true,
+        cancelled = false,
         githubToken,
         e2eOverride = false,
         failOnTestFailures = true,
@@ -210,6 +259,7 @@ async function reportTsioStatus(options) {
 
         // Per-job finalize leaves this false so N platform legs do not spam the channel.
         channelNotify = false,
+        announceTriage = false,
     } = options;
 
     const baseUrl = baseUrlOverride || (useStaging ? STAGING_URL : PRODUCTION_URL);
@@ -298,7 +348,7 @@ async function reportTsioStatus(options) {
     result.test_stats = detail.test_stats || {};
 
     const {state, description, both_terminal: bothTerminal, timed_out: timedOut} =
-        decideStatus(detail, upstreamJobsSucceeded);
+        decideStatus(detail, upstreamJobsSucceeded, cancelled);
     result.timed_out = timedOut;
     result.state = state;
 
@@ -309,6 +359,24 @@ async function reportTsioStatus(options) {
     });
 
     await postStatus({state, description, targetUrl});
+
+    const announcement = triageAnnouncement({
+        announce: announceTriage,
+        state: result.state,
+        overrideApplied: result.override_applied,
+        failed: result.test_stats.failed || 0,
+        context: commitStatusContext,
+        runUrl,
+        cancelled,
+    });
+    if (announcement) {
+        // Best effort: the required status above is what gates the PR.
+        try {
+            await createCommitStatus(token, compositeIdentity.repository, compositeIdentity.commit_sha, announcement);
+        } catch (err) {
+            console.warn(`tsio-report-status: triage check not posted: ${err.message}`);
+        }
+    }
 
     if (process.env.GITHUB_STEP_SUMMARY) {
         const stats = result.test_stats;
@@ -500,6 +568,7 @@ async function main() {
             totalReportsExpected,
             commitStatusContext: context,
             upstreamJobsSucceeded: upstreamSucceeded,
+            cancelled: args.cancelled === 'true',
             githubToken: args['github-token'] || process.env.GITHUB_TOKEN,
             e2eOverride: args['e2e-override'] === 'true',
             failOnTestFailures,
@@ -508,6 +577,7 @@ async function main() {
             audience: args.audience || 'mattermost-test-system-io',
             baseUrl: args['base-url'],
             channelNotify: args['channel-notify'] === 'true',
+            announceTriage: args['announce-triage'] === 'true',
         });
         console.log(JSON.stringify(result, null, 2));
         process.exit(0);
@@ -529,6 +599,7 @@ module.exports = {
     overrideCommitStatus,
     reportTsioStatus,
     repoTail,
+    triageAnnouncement,
     mintOidcToken,
     beginGroup,
     pollGroup,

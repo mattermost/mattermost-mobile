@@ -11,9 +11,40 @@ const {
     decideStatus,
     decideTargetUrl,
     overrideCommitStatus,
+    triageAnnouncement,
 } = require('./tsio-report-status');
 
 describe('tsio-report-status', () => {
+    describe('triageAnnouncement', () => {
+        const red = {announce: true, state: 'failure', overrideApplied: false, failed: 7, context: 'e2e-test/detox-ios', runUrl: 'https://github.com/o/r/actions/runs/1'};
+
+        it('marks the PR as waiting for triage on one check shared by every lane', () => {
+            assert.deepEqual(triageAnnouncement(red), {
+                state: 'pending',
+                context: 'e2e-test/triage',
+                description: 'E2E failures found · triage starts when every lane has finished',
+                target_url: 'https://github.com/o/r/actions/runs/1',
+            });
+        });
+
+        it('announces nothing when triage is off for the run, the lane is not red with test failures, or it was overridden', () => {
+            assert.equal(triageAnnouncement({...red, announce: false}), null);
+            assert.equal(triageAnnouncement({...red, state: 'success'}), null);
+            assert.equal(triageAnnouncement({...red, failed: 0}), null, 'a red lane with no failed tests is an infrastructure problem triage does not take');
+            assert.equal(triageAnnouncement({...red, overrideApplied: true}), null);
+        });
+
+        it('says a cancelled run will not be triaged instead of leaving the check pending', () => {
+            assert.deepEqual(triageAnnouncement({...red, cancelled: true}), {
+                state: 'error',
+                context: 'e2e-test/triage',
+                description: 'E2E run cancelled before triage · re-run E2E',
+                target_url: 'https://github.com/o/r/actions/runs/1',
+            });
+            assert.equal(triageAnnouncement({...red, cancelled: true, announce: false}), null);
+        });
+    });
+
     describe('overrideCommitStatus', () => {
         it('reports a failure as success so E2E/Override does not block the merge', () => {
             assert.deepEqual(
@@ -39,6 +70,20 @@ describe('tsio-report-status', () => {
     });
 
     describe('decideStatus', () => {
+        // mattermost-mobile run 37162988043: cancelled mid-run, its unfinished shards
+        // were counted as 132 failed specs and posted as test failures.
+        it('reports a cancelled run as cancelled, not as test failures', () => {
+            const detail = {status: 'completed', test_stats: {passed: 49, failed: 132, skipped: 29}};
+            assert.deepEqual(decideStatus(detail, false, true), {
+                state: 'error',
+                description: 'E2E run cancelled before it finished (49 passed by then) · re-run E2E',
+                both_terminal: true,
+                timed_out: false,
+            });
+            assert.equal(decideStatus({status: 'pending'}, false, true).state, 'error');
+            assert.equal(decideStatus(detail, false).state, 'failure', 'without the cancel flag the failures stand');
+        });
+
         it('returns success for completed report with no failures when upstream succeeded', () => {
             assert.deepEqual(
                 decideStatus(

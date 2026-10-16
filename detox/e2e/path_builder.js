@@ -31,3 +31,4 @@ class CustomPathBuilder {
 module.exports = ({rootDir}) => {
     return new CustomPathBuilder({rootDir});
 };
+module.exports.sanitize = sanitize;
