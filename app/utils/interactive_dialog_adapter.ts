@@ -62,9 +62,8 @@ export class InteractiveDialogAdapter {
         values: AppFormValues,
         config: InteractiveDialogConfig,
     ): DialogSubmission {
-        // Flatten so that leaf fields inside collapsible containers are reachable
-        // by name. Without this, convertAppFormValuesToDialogSubmission cannot find
-        // nested field names in values and silently omits them from submission.
+        // Flatten so nested fields are reachable by name; otherwise they're
+        // silently dropped from the submission.
         const elements = flattenDialogElements(config.dialog.elements || []);
 
         const {submission, errors} = convertAppFormValuesToDialogSubmission(

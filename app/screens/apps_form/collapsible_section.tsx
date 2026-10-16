@@ -13,11 +13,13 @@ import {usePreventDoubleTap} from '@hooks/utils';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-// Duration/easing match CollapsibleBlock (app/components/block_renderer/layout_blocks.tsx),
-// the app's other animated disclosure control, so both feel the same.
+// Match CollapsibleBlock so both disclosure controls feel the same.
 const ANIMATION_MS = 250;
 const EASING = Easing.out(Easing.cubic);
 const INDENT_PER_LEVEL = 12;
+
+// One inset on the container; nested sections compound it via the tree.
+const indentStyle = {marginLeft: INDENT_PER_LEVEL};
 
 const messages = defineMessages({
     collapseHint: {id: 'collapsible_section.hint.collapse', defaultMessage: 'Activates to collapse'},
@@ -62,8 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.errorTextColor,
     },
 
-    // No horizontal padding here: the field components own their own 15px inset,
-    // so adding padding would double-indent fields inside a section.
+    // No horizontal padding: fields own their 15px inset.
     content: {
         paddingBottom: 10,
     },
@@ -72,8 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     label: string;
 
-    // Initial expanded state only — seeds internal state and re-syncs if the prop
-    // changes (e.g. a multistep dialog refresh); the section is not otherwise controlled.
+    // Initial state only; re-syncs on change (e.g. multistep refresh), not controlled.
     initiallyExpanded: boolean;
     bordered: boolean;
     depth: number;
@@ -88,20 +88,11 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
     const intl = useIntl();
     const reducedMotion = useReducedMotion();
 
-    // Seed from forceExpandVersion too: a nested section under a collapsed ancestor
-    // only mounts once the ancestor expands, by which point its force-expand version is
-    // already set. useDidUpdate skips that first run, so without seeding here the section
-    // would mount collapsed and hide the invalid field that triggered the expand.
-    //
-    // Gate the seed on hasError: forceExpandVersion stays non-zero for the rest of the
-    // form's life once bumped, so seeding on it alone would re-expand the section on every
-    // remount — even after the user fixed the error and collapsed it. A live version bump
-    // only ever follows a real error, so the runtime useDidUpdate below needs no such gate.
+    // A nested section mounts already force-expanded, which useDidUpdate skips; seed it
+    // here. Gate on hasError so a stale version doesn't re-expand on every remount.
     const [isExpanded, setIsExpanded] = useState(() => initiallyExpanded || Boolean(forceExpandVersion && hasError));
 
-    // Drives the chevron rotation only. The content itself mounts/unmounts at its
-    // natural height and the container's height change is animated by LinearTransition —
-    // this keeps an initially-expanded section correct without measuring a clipped view.
+    // Chevron rotation only; the container's height is animated by LinearTransition.
     const rotation = useSharedValue(initiallyExpanded || (forceExpandVersion && hasError) ? 1 : 0);
 
     // Re-sync when the prop changes (e.g. multistep dialog refreshes).
@@ -109,9 +100,7 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
         setIsExpanded(initiallyExpanded);
     }, [initiallyExpanded]);
 
-    // Force-expand when the parent increments the version (e.g. after a failed submit
-    // reveals that this section contains invalid fields). Version 0 / undefined = no-op;
-    // any increment triggers an expand regardless of the user's current collapse state.
+    // Force-expand on each version bump (e.g. a failed submit revealed invalid fields).
     useDidUpdate(() => {
         if (forceExpandVersion) {
             setIsExpanded(true);
@@ -135,22 +124,17 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
     const pressableStyle = useCallback(({pressed}: PressableStateCallbackType) => [
         style.header,
         bordered && style.headerBordered,
-        depth > 0 && {paddingLeft: depth * INDENT_PER_LEVEL},
         pressed && style.headerPressed,
-    ], [style.header, style.headerBordered, style.headerPressed, bordered, depth]);
-
-    const contentContainerStyle = depth > 0 ? [style.content, {paddingLeft: depth * INDENT_PER_LEVEL}] : style.content;
+    ], [style.header, style.headerBordered, style.headerPressed, bordered]);
 
     const accessibilityHint = intl.formatMessage(isExpanded ? messages.collapseHint : messages.expandHint);
 
-    // When collapsed with child errors, append to the a11y label so screen readers
-    // announce "Section name, contains an error, collapsed, button" without relying
-    // solely on the error icon color.
+    // Announce the error in the a11y label, not just via the icon color.
     const accessibilityLabel = hasError && !isExpanded ? intl.formatMessage(messages.labelHasError, {label}) : label;
 
     return (
         <Animated.View
-            style={[style.container, bordered && style.containerBordered]}
+            style={[style.container, bordered && style.containerBordered, depth > 0 && indentStyle]}
             layout={reducedMotion ? undefined : LinearTransition.duration(ANIMATION_MS).easing(EASING)}
         >
             <Pressable
@@ -190,10 +174,9 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
                 <Animated.View
                     entering={reducedMotion ? undefined : FadeIn.duration(ANIMATION_MS)}
 
-                    // Fade the content out on collapse so it doesn't pop away before the
-                    // container height finishes animating (symmetry with the FadeIn above).
+                    // Fade out on collapse so content doesn't pop before the height settles.
                     exiting={reducedMotion ? undefined : FadeOut.duration(ANIMATION_MS)}
-                    style={contentContainerStyle}
+                    style={style.content}
                 >
                     {children}
                 </Animated.View>

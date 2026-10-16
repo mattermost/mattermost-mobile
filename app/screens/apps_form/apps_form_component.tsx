@@ -109,12 +109,8 @@ function sectionHasError(field: AppField, errors: Errors): boolean {
     return (field.collapsible_config?.fields || []).some((child) => sectionHasError(child, errors));
 }
 
-// A section's identity for expand tracking and React keys: its name when it has
-// one, otherwise a stable path derived from its position in the field tree. The
-// path lets unnamed sections participate in force-expand and gives sibling
-// sections distinct React keys (an unnamed section would otherwise key on
-// `undefined` and collide with its unnamed siblings). Both this helper and
-// renderField must derive the path the same way over the same (unfiltered) arrays.
+// A section's key for expand tracking and React keys: its name, or a tree path
+// when unnamed. renderField must derive the path the same way (same unfiltered arrays).
 function sectionKeyFor(field: AppField, path: string): string {
     return field.name || path;
 }
@@ -123,9 +119,7 @@ function childPath(parentPath: string, index: number): string {
     return parentPath === '' ? `${index}` : `${parentPath}/${index}`;
 }
 
-// Returns a partial version map — only entries for sections that contain errors,
-// each incremented by 1 relative to `prev`. Extracted here so bumpErroredSections
-// stays within the max-nested-callbacks lint limit.
+// Partial version map: errored sections only, each bumped by 1 from `prev`.
 function computeExpandBumps(
     fields: AppField[],
     errors: Errors,
@@ -153,9 +147,7 @@ function computeExpandBumps(
 type ValuesAction = {name: string; value: AppFormValue} | {elements?: AppField[]}
 function valuesReducer(state: AppFormValues, action: ValuesAction) {
     if (!('name' in action)) {
-        // Merge server-provided values into existing user input so that a field
-        // refresh (triggered by refresh:true) doesn't discard values the user
-        // has already typed. Only fields with a new server value are overwritten.
+        // Merge server values over user input so a refresh keeps what they typed.
         return {...state, ...initValues(action.elements)};
     }
 
@@ -233,9 +225,8 @@ function AppsFormComponent({
     const scrollView = useRef<KeyboardAwareScrollViewRef>(null);
     const isMountedRef = useRef(true);
 
-    // Synchronous in-flight guard. `submitting` state only updates after a re-render,
-    // so a rapid double-tap on the header button would run the same stale closure twice
-    // and submit twice. The ref blocks the second call before any await.
+    // Synchronous in-flight guard: `submitting` state lags a render, so a double-tap
+    // would submit twice. The ref blocks the second call before any await.
     const submittingRef = useRef(false);
     const [submitting, setSubmitting] = useState(false);
     const [uploadingFields, setUploadingFieldsState] = useState<Set<string>>(new Set());
@@ -310,9 +301,7 @@ function AppsFormComponent({
         return hasErrors;
     }, [intl]);
 
-    // Increment the expand-version for every collapsible section (at any nesting depth)
-    // that contains at least one field with a current error. Causes those sections
-    // to open so the user can see and fix the problem without searching manually.
+    // Open every errored section (at any depth) so the user can find the problem.
     const bumpErroredSections = useCallback((fieldErrors: Errors) => {
         setExpandVersions((prev) => ({...prev, ...computeExpandBumps(form.fields || [], fieldErrors, prev)}));
     }, [form.fields]);
@@ -338,14 +327,11 @@ function AppsFormComponent({
                     const errorMsg = errorResponse.text;
                     const newErrors = errorResponse.data?.errors;
 
-                    // Flatten collapsible containers to leaf fields (matching the memoized
-                    // `elements` above) so a server error on a nested field matches its
-                    // element instead of falling back to the generic unknown-field message.
+                    // Flatten to leaf fields so a nested-field server error matches its element.
                     const elements = fieldsAsElements(flattenAppFields(form.fields || []));
                     updateErrors(elements, newErrors, errorMsg);
 
-                    // Open any collapsed section that now holds a refreshed field error so
-                    // the user can see and correct it (mirrors the submit-validation path).
+                    // Open any section holding a refreshed-field error (as submit does).
                     if (newErrors) {
                         bumpErroredSections(newErrors);
                     }
@@ -473,9 +459,8 @@ function AppsFormComponent({
         }
     }, [elements, form, values, submit, uploadingFields, updateErrors, bumpErroredSections, serverUrl, intl]);
 
-    // Present the default submit action in the modal header (matching edit_profile /
-    // custom_status) so it stays above the keyboard and is always reachable. Forms
-    // that define their own submit_buttons keep those inline in the body instead.
+    // Default submit lives in the header (like edit_profile) so it clears the keyboard;
+    // forms with their own submit_buttons keep those inline instead.
     const hasSubmitButtonsField = Boolean(submitButtons?.options?.length);
     const submitLabel = form.submit_label || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'});
     useEffect(() => {
@@ -486,11 +471,8 @@ function AppsFormComponent({
         navigation.setOptions({
             headerRight: () => (
 
-                // The View testID constrains the Detox hit area so a header tap lands
-                // on the button rather than the title (see edit_profile.save.button).
-                // Match the app's header-action convention (NavigationButton, tinted
-                // with sidebarHeaderTextColor, no filled background) — a filled circle
-                // here collides with iOS 26's bar-button glass capsule.
+                // The View testID constrains the Detox hit area to the button, not the title
+                // (see edit_profile.save.button). NavigationButton matches the header convention.
                 <View testID='interactive_dialog.submit.button'>
                     <NavigationButton
                         onPress={() => handleSubmit()}
@@ -567,18 +549,14 @@ function AppsFormComponent({
         };
     }, []);
 
-    // `path` is the section's position in the (unfiltered) field tree; it must be
-    // derived the same way as in computeExpandBumps so force-expand keys line up.
-    // Children are mapped over the raw array (not pre-filtered) so those indices
-    // stay aligned — filtered-out fields simply render as null.
+    // `path` indexes the unfiltered field tree (same as computeExpandBumps) so
+    // force-expand keys line up; filtered-out children just render as null.
     const renderField = useCallback((field: AppField, path: string, depth = 0): React.ReactNode => {
         if (field.type === AppFieldTypes.COLLAPSIBLE) {
             const rawChildren = field.collapsible_config?.fields || [];
             const renderedChildren = rawChildren.map((child, i) => renderField(child, childPath(path, i), depth + 1));
 
-            // Don't render a toggle for a section with no visible fields (matches
-            // CollapsibleBlock, which returns null when it has no content). A section
-            // holding only the submit_buttons field or empty nested sections collapses away.
+            // Drop a section with no visible fields (e.g. only submit_buttons).
             if (!renderedChildren.some(Boolean)) {
                 return null;
             }

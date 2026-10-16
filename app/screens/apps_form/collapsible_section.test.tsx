@@ -278,16 +278,26 @@ describe('CollapsibleSection layout', () => {
         return StyleSheet.flatten(typeof style === 'function' ? style({pressed: false}) : style);
     };
 
-    it('indents the header further for a more deeply nested section', () => {
-        // Depth is the only visible cue that one section sits inside another, so a
-        // deeper section must carry more left inset than a shallower one.
-        const shallow = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 0})}/>);
-        const deep = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 2})}/>);
+    // Walk up from the header to the section container (carries marginVertical).
+    const flattenContainer = (node: any) => {
+        let n = node.parent;
+        while (n) {
+            const s = StyleSheet.flatten(n.props?.style);
+            if (s && s.marginVertical === 4) {
+                return s;
+            }
+            n = n.parent;
+        }
+        return {} as any;
+    };
 
-        const shallowInset = flattenHeader(shallow.getByLabelText('Section')).paddingLeft ?? 0;
-        const deepInset = flattenHeader(deep.getByLabelText('Section')).paddingLeft ?? 0;
+    it('indents a nested section container but not a top-level one', () => {
+        // Indent is one inset on the container; nested sections compound it via the tree.
+        const top = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 0})}/>);
+        const nested = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 1})}/>);
 
-        expect(deepInset).toBeGreaterThan(shallowInset);
+        expect(flattenContainer(top.getByLabelText('Section')).marginLeft ?? 0).toBe(0);
+        expect(flattenContainer(nested.getByLabelText('Section')).marginLeft ?? 0).toBeGreaterThan(0);
     });
 
     it('applies the bordered chrome only when bordered is true', () => {

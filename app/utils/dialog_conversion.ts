@@ -216,10 +216,8 @@ export function convertDialogToAppForm(config: InteractiveDialogConfig): AppForm
         position: index,
     })) || [];
 
-    // Set source only if source_url is provided or if any fields have refresh enabled (matching webapp behavior)
-    // Inspect the flattened element tree so a refresh field nested inside a collapsible
-    // section still causes form.source to be set (otherwise refreshOnSelect errors with
-    // "`source` is not defined").
+    // Flatten first so a refresh field nested in a section still sets form.source
+    // (matches webapp; otherwise refreshOnSelect errors with "`source` is not defined").
     const hasRefreshFields = flattenDialogElements(config.dialog.elements || []).some((element) => element.refresh === true);
     const sourceUrl = config.dialog.source_url;
 
