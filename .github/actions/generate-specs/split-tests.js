@@ -271,7 +271,7 @@ class Specs {
 
     const total = [...byTarget.values()].reduce((n, set) => n + set.size, 0);
     if (total > 0 && available.length === 0) {
-      console.error(`::warning::Server mutation isolation unavailable (no second test server): ${total} spec(s) share one shard on server A.`);
+      throw new Error(`${total} server mutation spec(s) selected but there is no second test server; they would change state on the pool server`);
     }
 
     return [...byTarget.keys()].sort().map((target) => ({
@@ -390,7 +390,12 @@ function main() {
 }
 
 if (require.main === module) {
-  main();
+  try {
+    main();
+  } catch (err) {
+    console.error(`::error::${err.message}`);
+    process.exit(1);
+  }
 }
 
 module.exports = {

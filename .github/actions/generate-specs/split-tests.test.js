@@ -324,11 +324,16 @@ describe('server mutation isolation', () => {
         expect(mutationOf(groups)).toEqual([expect.objectContaining({target: 'B', specs: [m1, m2].sort().join(' ')})]);
     });
 
-    it('should run all mutation specs as one A shard with a warning when there is no second server', () => {
-        const groups = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: [], platform: 'android'});
+    it('should fail when mutation specs are selected and there is no second server', () => {
+        expect(() => splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: [], platform: 'android'})).
+            toThrow('2 server mutation spec(s) selected but there is no second test server');
+    });
 
-        expect(mutationOf(groups)).toEqual([expect.objectContaining({target: 'A', specs: [m1, m2].sort().join(' ')})]);
-        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('::warning::'));
+    it('should split normally without a second server when no mutation spec is selected', () => {
+        const groups = splitWithMutation({files: pool, parallelism: 2, entries, targets: [], platform: 'android'});
+
+        expect(mutationOf(groups)).toEqual([]);
+        expect(groups.length).toBeGreaterThan(0);
     });
 
     it('should not warn about isolation when the manifest has no entries', () => {

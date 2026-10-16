@@ -223,13 +223,13 @@ jobs:
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
         run: |
-          # Mutation specs change server-wide state, so they need a server no pool shard uses.
-          if [ -z "$SERVER_B" ] || [ "$SERVER_B" = "$SERVER_A" ]; then
-            echo "::error::MM_TEST_SERVER_URL_2 must be a second server distinct from MM_TEST_SERVER_URL; mutation specs cannot share the pool server"
-            exit 1
+          # No targets without a distinct second server; split-tests then fails only if a mutation spec is selected.
+          TARGETS=""
+          if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
+            TARGETS="B"
           fi
-          echo "targets=B" >> "$GITHUB_OUTPUT"
-          echo "Mutation targets: B"
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Mutation targets: ${TARGETS:-none}"
 
       - name: Generate Test Specs
         id: generate-specs
