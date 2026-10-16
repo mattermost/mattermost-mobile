@@ -20,6 +20,7 @@ import {getPostById} from '@queries/servers/post';
 import {getAccessControlGroupId} from '@queries/servers/properties';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {getFullErrorMessage} from '@utils/errors';
 import {safeParseJSON} from '@utils/helpers';
 import {logDebug, logError, logWarning} from '@utils/log';
@@ -197,6 +198,8 @@ export const scheduleRedactionInvalidation = async (
     needsAttributeViewRetry = false,
 ) => {
     const token = cleanupToken(serverUrl);
+
+    RenderPermissionsStore.revokeFetches(serverUrl, channelId);
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         if (!(await isRedactionEnforced(database))) {

@@ -78,12 +78,14 @@ export async function fetchRenderPermissions(serverUrl: string, channelId: strin
         } else {
             RenderPermissionsStore.resetRetryDelay(serverUrl, channelId);
         }
-        RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions}, ttlMs);
+        const isCurrent = RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions}, ttlMs);
 
         // A policy deny hides the channel at once instead of at its next view. A fail-closed deny (below
-        // Enterprise Advanced the engine refuses to evaluate) says nothing about the policy.
+        // Enterprise Advanced the engine refuses to evaluate) says nothing about the policy, and neither
+        // does an answer whose claim was revoked: it was evaluated before an ABAC change that may allow
+        // the channel again.
         const readAccess = decisions[RenderPermissionAction.ChannelReadAccess];
-        if (readAccess?.evaluated && !readAccess.allowed && !readAccess.reason) {
+        if (isCurrent && readAccess?.evaluated && !readAccess.allowed && !readAccess.reason) {
             await handleChannelAccessDenied(serverUrl, channelId);
         }
         return {decisions};

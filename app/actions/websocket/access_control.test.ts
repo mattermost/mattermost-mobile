@@ -10,6 +10,7 @@ import {Events, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import {advanceTimers, disableFakeTimers, enableFakeTimers} from '@test/timer_helpers';
 
 import {
@@ -153,6 +154,21 @@ describe('redaction invalidation triggers', () => {
         expect(reconcileChannelAccess).toHaveBeenCalledWith(serverUrl);
         expect(checkChannelAccess).toHaveBeenCalledTimes(1);
         expect(checkChannelAccess).toHaveBeenCalledWith(serverUrl, channelId);
+    });
+
+    it('should revoke decision requests in flight before checking access, for the named channel or every channel', async () => {
+        const channelClaim = RenderPermissionsStore.startFetch(serverUrl, channelId);
+        const otherClaim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+
+        // Asserted synchronously: the access check starts right after, inside the coalescing window.
+        handleChannelAccessControlUpdatedEvent(serverUrl, {broadcast: {channel_id: channelId}} as WebSocketMessage);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, channelId, channelClaim as object)).toBe(false);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, otherClaim as object)).toBe(true);
+
+        const claim = RenderPermissionsStore.startFetch(serverUrl, otherChannelId);
+        handlePermissionPolicyUpdatedEvent(serverUrl);
+        expect(RenderPermissionsStore.finishFetch(serverUrl, otherChannelId, claim as object)).toBe(false);
+        await flushCoalescer();
     });
 
     it('should collapse the duplicate events one CPA write emits into a single generation', async () => {

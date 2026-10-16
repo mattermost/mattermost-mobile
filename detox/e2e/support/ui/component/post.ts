@@ -13,6 +13,7 @@ class Post {
         codeSpan: 'markdown_code_span',
         editedIndicator: 'edited_indicator',
         emoji: 'markdown_emoji',
+        fileContainerSuffix: '-file-container',
         heading: 'markdown_heading',
         html: 'markdown_html',
         image: 'markdown_image',
@@ -36,6 +37,7 @@ class Post {
         postHeaderReplyCount: 'post_header.reply_count',
         postPreHeaderText: 'post_pre_header.text',
         postUnreadDotBadge: 'post_unread_dot.badge',
+        redactedFilesPlaceholder: 'redacted-files-placeholder',
         showLessButton: 'show_more.button.chevron-up',
         showMoreButton: 'show_more.button.chevron-down',
         table: 'markdown_table',
@@ -44,6 +46,14 @@ class Post {
         tableImage: 'markdown_table_image',
         tableRow: 'markdown_table_row',
         thematicBreak: 'markdown_thematic_break',
+        unverifiedFilesPlaceholder: 'unverified-files-placeholder',
+    };
+
+    redactedFilesPlaceholder = element(by.id(this.testID.redactedFilesPlaceholder));
+    unverifiedFilesPlaceholder = element(by.id(this.testID.unverifiedFilesPlaceholder));
+
+    getFileContainer = (fileId: string) => {
+        return element(by.id(`${fileId}${this.testID.fileContainerSuffix}`));
     };
 
     getPost = (postItemSourceTestID: string, postId: string, postMessage: string, postProfileOptions: any = {}) => {

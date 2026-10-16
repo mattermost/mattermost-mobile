@@ -75,6 +75,11 @@ class EphemeralStoreSingleton {
     // websocket events; the set is cleared when the connection drops.
     private channelAttributeValuesSynced: {[serverUrl: string]: Set<string>} = {};
 
+    // Permalink previews whose linked post fetch already ran, keyed per server. Cleared on logout:
+    // keys embed the redaction epoch, which restarts from the same values once the database is
+    // recreated, so a previous session's entry could block a fetch for the next one.
+    private linkedPostFetchAttempts: {[serverUrl: string]: Set<string>} = {};
+
     // Track how many translations are being executed at the same time on the channel.
     // We limit this to avoid overwhelming the device.
     private runningTranslations = new Set<string>();
@@ -540,6 +545,25 @@ class EphemeralStoreSingleton {
 
     clearChannelAttributeValuesSynced = (serverUrl: string) => {
         delete this.channelAttributeValuesSynced[serverUrl];
+    };
+
+    hasLinkedPostFetchAttempt = (serverUrl: string, attemptKey: string) => {
+        return this.linkedPostFetchAttempts[serverUrl]?.has(attemptKey) ?? false;
+    };
+
+    addLinkedPostFetchAttempt = (serverUrl: string, attemptKey: string) => {
+        if (!this.linkedPostFetchAttempts[serverUrl]) {
+            this.linkedPostFetchAttempts[serverUrl] = new Set();
+        }
+        this.linkedPostFetchAttempts[serverUrl]?.add(attemptKey);
+    };
+
+    removeLinkedPostFetchAttempt = (serverUrl: string, attemptKey: string) => {
+        this.linkedPostFetchAttempts[serverUrl]?.delete(attemptKey);
+    };
+
+    clearLinkedPostFetchAttempts = (serverUrl: string) => {
+        delete this.linkedPostFetchAttempts[serverUrl];
     };
 
     // Ephemeral control for rejected files

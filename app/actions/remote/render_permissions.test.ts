@@ -145,6 +145,20 @@ describe('fetchRenderPermissions', () => {
         expect(handleChannelAccessDenied).toHaveBeenCalledWith(serverUrl, channelId);
     });
 
+    it('should keep the channel when an ABAC change revokes the request in flight', async () => {
+        await enforcedOnServer('12.0.0');
+        mockClient.searchChannelActionDecisions.mockImplementationOnce(async () => {
+            // Evaluated under the policy the change replaced.
+            RenderPermissionsStore.revokeFetches(serverUrl, channelId);
+            return {...allowed, decisions: {channel_read_access: {allowed: false, evaluated: true}}};
+        });
+
+        await fetchRenderPermissions(serverUrl, channelId);
+
+        expect(handleChannelAccessDenied).not.toHaveBeenCalled();
+        expect(RenderPermissionsStore.getEntry(serverUrl, channelId)).toBeUndefined();
+    });
+
     it('should keep the channel on a fail-closed read access deny', async () => {
         await enforcedOnServer('12.0.0');
         mockClient.searchChannelActionDecisions.mockResolvedValue({
