@@ -169,6 +169,20 @@ describe('QuickActions burn-on-read permission', () => {
         expect(queryByTestId(borTestID)).toBeNull();
     });
 
+    it('should offer the control on a server that answers without the action', async () => {
+        await setConfigs(true, true);
+
+        // Servers that predate the burn-on-read policy decide uploads only.
+        RenderPermissionsStore.setEntry(serverUrl, channelId, {
+            epoch: 1,
+            decisions: {[RenderPermissionAction.UploadFileAttachment]: {allowed: true, evaluated: true}},
+        }, RENDER_PERMISSIONS_TTL_MS);
+
+        const {getByTestId} = renderQuickActions();
+
+        await waitFor(() => expect(getByTestId(borTestID)).toBeTruthy());
+    });
+
     it('should offer the control when the policy allows it', async () => {
         await setConfigs(true, true);
         setDecision(true);
