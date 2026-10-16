@@ -17,6 +17,7 @@ import {
 } from '@support/server_api';
 import {
     serverOneUrl,
+    serverSupportsPolicyAction,
     siteOneUrl,
 } from '@support/test_config';
 import {
@@ -36,7 +37,10 @@ const setDepartment = async (userId: string, fieldId: string, department: string
     }
 };
 
-describe('Messaging - Burn-on-Read Permission (ABAC)', () => {
+// Skipped on servers without burn-on-read permission policies.
+const describeOrSkip = serverSupportsPolicyAction('create_burn_on_read_post') ? describe : describe.skip;
+
+describeOrSkip('Messaging - Burn-on-Read Permission (ABAC)', () => {
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
 
