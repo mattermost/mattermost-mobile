@@ -7,7 +7,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
 import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
-import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
+import {endNativeCall, getNativeCallUUIDForCall, syncNativeCallId} from '@calls/native_call';
 import {
     callEnded,
     callStarted,
@@ -113,16 +113,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         dismissed: {},
     });
 
-    // Backfill the callId into the native mapping created by the VoIP push.
-    // Until this fires, endNativeCall treats the mapping as unconfirmed and
-    // ignores any call_end events that arrive with a callId.
-    const uuid = getNativeCallUUIDForCall(serverUrl, msg.data.channelID);
-    if (uuid) {
-        const existing = getNativeCallMapping(uuid);
-        if (existing) {
-            setNativeCallMapping(uuid, {...existing, callId: msg.data.id});
-        }
-    }
+    syncNativeCallId(serverUrl, msg.data.channelID, msg.data.id);
 };
 
 export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {

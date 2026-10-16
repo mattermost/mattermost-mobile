@@ -152,6 +152,19 @@ export const endNativeCall = (
     });
 };
 
+// Records which call a ring belongs to once the app learns of the channel's call, whichever way it
+// arrives: call_started, or a sync after the websocket missed it while reconnecting. Until then,
+// endNativeCall ignores any call_end carrying a callId, and the ring outlives the call.
+export const syncNativeCallId = (serverUrl: string, channelId: string, callId: string) => {
+    const uuid = getNativeCallUUIDForCall(serverUrl, channelId);
+    const mapping = uuid ? getNativeCallMapping(uuid) : undefined;
+    if (!uuid || !mapping || mapping.callId === callId) {
+        return;
+    }
+    logInfo('syncNativeCallId: ring matched to call', 'uuid', uuid, 'callId', callId, 'previousCallId', mapping.callId || 'unset');
+    setNativeCallMapping(uuid, {...mapping, callId});
+};
+
 // Reflects in-app mute state into the system call UI overlay so the
 // lock-screen mute indicator stays in sync.
 // No-op when there's no UUID for the current call (foreground-only

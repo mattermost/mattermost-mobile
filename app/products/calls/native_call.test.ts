@@ -18,6 +18,7 @@ import {
     registerOutgoingNativeCall,
     reportNativeCallConnected,
     setNativeCallMapping,
+    syncNativeCallId,
 } from './native_call';
 
 jest.mock('@calls/state/current_call', () => ({
@@ -314,6 +315,20 @@ describe('endNativeCall', () => {
         endNativeCall(serverUrl, 'ch1', 'remoteEnded', 'call-1');
         expect(CallsNative.reportEnded).toHaveBeenCalledWith('uuid-a', 'remoteEnded');
         expect(getNativeCallMapping('uuid-a')).toBeUndefined();
+    });
+
+    it('ends a ring whose call_started was missed once a sync matched it to the call', () => {
+        setNativeCallMapping('uuid-a', {
+            serverUrl,
+            channelId: 'ch1',
+            postId: '',
+            threadId: '',
+            callId: '',
+        });
+        syncNativeCallId(serverUrl, 'ch1', 'call-1');
+
+        endNativeCall(serverUrl, 'ch1', 'remoteEnded', 'call-1');
+        expect(CallsNative.reportEnded).toHaveBeenCalledWith('uuid-a', 'remoteEnded');
     });
 
     it('skips when not on iOS', () => {

@@ -7,7 +7,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
 import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
-import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
+import {endNativeCall, getNativeCallUUIDForCall, syncNativeCallId} from '@calls/native_call';
 import {
     callEnded,
     callStarted,
@@ -82,9 +82,8 @@ jest.mock('@actions/remote/user');
 jest.mock('@calls/actions/calls');
 jest.mock('@calls/native_call', () => ({
     endNativeCall: jest.fn(),
-    getNativeCallMapping: jest.fn(),
     getNativeCallUUIDForCall: jest.fn(),
-    setNativeCallMapping: jest.fn(),
+    syncNativeCallId: jest.fn(),
 }));
 jest.mock('@calls/state');
 jest.mock('@database/manager');
@@ -243,16 +242,7 @@ describe('websocket event handlers', () => {
             });
         });
 
-        it('should backfill callId into an existing native call mapping on call_started', () => {
-            jest.mocked(getNativeCallUUIDForCall).mockReturnValue('uuid-1');
-            jest.mocked(getNativeCallMapping).mockReturnValue({
-                serverUrl,
-                channelId,
-                postId: 'post-id',
-                threadId: 'thread-id',
-                callId: '',
-            });
-
+        it('should match a ringing native call to the started call', () => {
             handleCallStarted(serverUrl, {
                 broadcast: {channel_id: channelId},
                 data: {
@@ -265,31 +255,7 @@ describe('websocket event handlers', () => {
                 },
             } as WebSocketMessage<CallStartData>);
 
-            expect(setNativeCallMapping).toHaveBeenCalledWith('uuid-1', {
-                serverUrl,
-                channelId,
-                postId: 'post-id',
-                threadId: 'thread-id',
-                callId: 'call-b',
-            });
-        });
-
-        it('should not backfill callId when no native mapping exists for the channel', () => {
-            jest.mocked(getNativeCallUUIDForCall).mockReturnValue(undefined);
-
-            handleCallStarted(serverUrl, {
-                broadcast: {channel_id: channelId},
-                data: {
-                    id: 'call-b',
-                    channelID: channelId,
-                    start_at: Date.now(),
-                    thread_id: 'thread-id',
-                    owner_id: 'owner-id',
-                    host_id: 'host-id',
-                },
-            } as WebSocketMessage<CallStartData>);
-
-            expect(setNativeCallMapping).not.toHaveBeenCalled();
+            expect(syncNativeCallId).toHaveBeenCalledWith(serverUrl, channelId, 'call-b');
         });
 
         it('should handle call ended', () => {
