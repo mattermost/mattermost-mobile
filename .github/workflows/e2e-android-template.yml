@@ -43,6 +43,11 @@ on:
         description: "The third test server URL (SITE_3); optional, no automatic fallback"
         required: false
         type: string
+      MM_OTHER_PLATFORM_POOL_URL:
+        description: "The other platform's SITE_1 server, used as this platform's pool SITE_2; empty falls back to SITE_3, then SITE_1"
+        required: false
+        type: string
+        default: ""
       MM_TEST_USER_NAME:
         description: "The admin username of the test instance"
         required: false
@@ -210,6 +215,21 @@ jobs:
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           mode: restore
 
+      # Server B gets a mutation shard when it is distinct from A. Android has no
+      # site3 mutation target; its specs whose iosTarget is site3 run on B.
+      - name: Resolve mutation server targets
+        id: mutation-targets
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+        run: |
+          TARGETS=""
+          if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
+            TARGETS="B"
+          fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Mutation targets: ${TARGETS:-none (single server)}"
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -219,9 +239,11 @@ jobs:
           device_name: ${{ env.AVD_NAME }}
           device_os_version: ${{ env.SDK_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
+          platform: android
+          mutation_targets: ${{ steps.mutation-targets.outputs.targets }}
 
   e2e-android:
-    name: machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
+    name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-api-${{ matrix.deviceOsVersion }}
     runs-on: ubuntu-latest-8-cores
     continue-on-error: true
     timeout-minutes: 150
@@ -239,29 +261,55 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      - name: Rotate logical test sites by shard
+      # Pool shards pair server A with the other platform's A; mutation shards own server B alone.
+      # SITE_3 is also every pool shard's read-only third server, so site3 mutations must not touch login.
+      - name: Assign test sites by shard role
         env:
+          ROLE: ${{ matrix.role }}
+          TARGET: ${{ matrix.target }}
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
           SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-          SHARD_ID: ${{ matrix.runId }}
+          OTHER_PLATFORM_POOL: ${{ inputs.MM_OTHER_PLATFORM_POOL_URL }}
         run: |
-          # Single-server topologies leave SERVER_B unset; without this the even
-          # shards would export an empty SITE_1_URL and test_config would silently
-          # fall back to localhost instead of the provisioned server.
-          SERVER_B="${SERVER_B:-$SERVER_A}"
-          if (( 10#$SHARD_ID % 2 == 1 )); then
-            SITE_1_URL="$SERVER_A"
-            SITE_2_URL="$SERVER_B"
-          else
-            SITE_1_URL="$SERVER_B"
-            SITE_2_URL="$SERVER_A"
+          case "$ROLE" in
+            pool)
+              SITE_1_URL="$SERVER_A"; SITE_1_LABEL="server-a"
+              if [ -n "$OTHER_PLATFORM_POOL" ]; then
+                SITE_2_URL="$OTHER_PLATFORM_POOL"; SITE_2_LABEL="other-platform-a"
+              elif [ -n "$SERVER_SHARED" ]; then
+                SITE_2_URL="$SERVER_SHARED"; SITE_2_LABEL="site3"
+              else
+                SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              fi
+              SITE_3_URL="$SERVER_SHARED"; SITE_3_LABEL="site3"
+              GUARD="enforce"
+              ;;
+            mutation)
+              case "$TARGET" in
+                B) SITE_1_URL="$SERVER_B"; SITE_1_LABEL="server-b" ;;
+                site3) SITE_1_URL="$SERVER_SHARED"; SITE_1_LABEL="site3" ;;
+                A) echo "::error::No isolated server for mutation specs (MM_TEST_SERVER_URL_2 missing or equal to MM_TEST_SERVER_URL); they would change state on the pool server"; exit 1 ;;
+                *) echo "::error::Unknown mutation target '$TARGET'"; exit 1 ;;
+              esac
+              SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              SITE_3_URL=""; SITE_3_LABEL="unset"
+              GUARD="off"
+              ;;
+            *)
+              echo "::error::Unknown shard role '$ROLE'"; exit 1 ;;
+          esac
+          if [ -z "$SITE_1_URL" ]; then
+            echo "::error::SITE_1 is empty for role=$ROLE target=$TARGET"; exit 1
           fi
           {
             echo "SITE_1_URL=$SITE_1_URL"
             echo "SITE_2_URL=$SITE_2_URL"
-            echo "SITE_3_URL=$SERVER_SHARED"
+            echo "SITE_3_URL=$SITE_3_URL"
+            echo "E2E_SERVER_ROLE=$ROLE"
+            echo "E2E_POOL_GUARD=$GUARD"
           } >> "$GITHUB_ENV"
+          echo "role=$ROLE target=$TARGET: SITE_1=$SITE_1_LABEL SITE_2=$SITE_2_LABEL SITE_3=$SITE_3_LABEL pool_guard=$GUARD"
 
       # Only libpulse0 is a real dependency here — the Android emulator needs it for
       # audio. xvfb is already in the runner image (apt reports "already the newest

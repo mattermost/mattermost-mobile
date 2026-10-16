@@ -323,6 +323,16 @@ setup_adb_reverse() {
         exit 1
     fi
     echo "adb reverse verified: $(adb reverse --list)"
+
+    # On an emulator React Native loads the bundle from 10.0.2.2 (the emulator's NAT alias for
+    # the host) unless metro.host is set, so the tunnel above went unused and a broken NAT path
+    # left every launch on "Unable to load script". Point it at the tunnel.
+    adb shell setprop metro.host localhost 2>/dev/null || true
+    if [[ "$(adb shell getprop metro.host | tr -d '\r')" == "localhost" ]]; then
+        echo "metro.host set to localhost"
+    else
+        echo "WARNING: metro.host did not stick (adbd not root?); the app falls back to 10.0.2.2:8081"
+    fi
 }
 
 run_detox_tests() {

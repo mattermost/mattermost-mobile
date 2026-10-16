@@ -7,7 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {Channel, Post, Setup, System} from '@support/server_api';
+import {Channel, Post, Setup} from '@support/server_api';
+import {assertServerBaseline} from '@support/server_baseline';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {Alert} from '@support/ui/component';
 import {
@@ -45,9 +46,7 @@ describe('Channels - Archive Channel from Settings', () => {
     beforeAll(async () => {
         // # Ensure archived channels are visible in browse channels
         // Set config BEFORE login so the config is fetched during connection
-        await System.apiUpdateConfig(siteOneUrl, {
-            TeamSettings: {ExperimentalViewArchivedChannels: true},
-        });
+        await assertServerBaseline(siteOneUrl, ['TeamSettings.ExperimentalViewArchivedChannels']);
         await wait(timeouts.ONE_SEC);
 
         const {team, user} = await Setup.apiInit(siteOneUrl);

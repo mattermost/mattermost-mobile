@@ -7,7 +7,15 @@ const path = require('path');
 
 const {extractDurations, mergeDurations, suiteDuration} = require('../../../detox/utils/spec-durations');
 
-const {DeviceInfo, Specs, loadDurations, packByDuration} = require('./split-tests');
+const {
+    DeviceInfo,
+    Specs,
+    loadDurations,
+    packByDuration,
+    loadMutationManifest,
+    parseTargets,
+    resolveMutationTarget,
+} = require('./split-tests');
 
 // generateSplits() without touching the filesystem: findFiles() is what walks the tree.
 const split = (files, parallelism, durations = {}) => {
@@ -16,6 +24,16 @@ const split = (files, parallelism, durations = {}) => {
     s.generateSplits();
     return s.groupedFiles.map((g) => g.specs.split(' ').filter(Boolean));
 };
+
+// Same as split(), with the mutation manifest and target/platform inputs.
+const splitWithMutation = ({files, parallelism, entries = [], targets = [], platform = 'android', durations = {}}) => {
+    const s = new Specs('detox/e2e/test', parallelism, new DeviceInfo('iPhone', 'iOS 26.2'), durations, {entries, targets, platform});
+    s.rawFiles = files;
+    s.generateSplits();
+    return s.groupedFiles;
+};
+
+const specsOf = (group) => group.specs.split(' ').filter(Boolean);
 
 const shardTotals = (bins) => bins.map((bin) => bin.total);
 
@@ -250,5 +268,178 @@ describe('mergeDurations', () => {
         const merged = mergeDurations({'a.e2e.ts': 1000, 'b.e2e.ts': 4000}, {'a.e2e.ts': 1000}, 0.5);
 
         expect(merged).toEqual({'a.e2e.ts': 1000, 'b.e2e.ts': 4000});
+    });
+});
+
+describe('server mutation isolation', () => {
+    const pool = [
+        'detox/e2e/test/a.e2e.ts',
+        'detox/e2e/test/b.e2e.ts',
+        'detox/e2e/test/c.e2e.ts',
+        'detox/e2e/test/d.e2e.ts',
+    ];
+    const m1 = 'detox/e2e/test/m_login.e2e.ts';
+    const m2 = 'detox/e2e/test/m_flag.e2e.ts';
+    // m2 mutates B on Android but the shared SITE_3 on iOS.
+    const entries = [
+        {spec: m1, target: 'B'},
+        {spec: m2, target: 'B', iosTarget: 'site3'},
+    ];
+    const mutationOf = (groups) => groups.filter((g) => g.role === 'mutation');
+    const poolOf = (groups) => groups.filter((g) => g.role === 'pool');
+
+    let errorSpy;
+    beforeEach(() => {
+        errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+    afterEach(() => {
+        errorSpy.mockRestore();
+    });
+
+    it('should keep mutation specs out of the pool and give each target its own shard', () => {
+        const groups = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: ['B', 'site3'], platform: 'ios'});
+
+        expect(groups.map((g) => [g.runId, g.role, g.target])).toEqual([
+            ['1', 'pool', 'A'],
+            ['2', 'pool', 'A'],
+            ['3', 'mutation', 'B'],
+            ['4', 'mutation', 'site3'],
+        ]);
+        expect(poolOf(groups).flatMap(specsOf).sort()).toEqual(pool);
+        expect(specsOf(groups[2])).toEqual([m1]);
+        expect(specsOf(groups[3])).toEqual([m2]);
+    });
+
+    it('should apply the iOS target override only on iOS', () => {
+        const ios = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: ['B', 'site3'], platform: 'ios'});
+        const android = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: ['B', 'site3'], platform: 'android'});
+
+        expect(mutationOf(ios).map((g) => g.target)).toEqual(['B', 'site3']);
+        expect(mutationOf(android)).toEqual([expect.objectContaining({target: 'B', specs: [m1, m2].sort().join(' ')})]);
+    });
+
+    it('should merge a target without a server into B', () => {
+        const groups = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: ['B'], platform: 'ios'});
+
+        expect(mutationOf(groups)).toEqual([expect.objectContaining({target: 'B', specs: [m1, m2].sort().join(' ')})]);
+    });
+
+    it('should run all mutation specs as one A shard with a warning when there is no second server', () => {
+        const groups = splitWithMutation({files: [...pool, m1, m2], parallelism: 4, entries, targets: [], platform: 'android'});
+
+        expect(mutationOf(groups)).toEqual([expect.objectContaining({target: 'A', specs: [m1, m2].sort().join(' ')})]);
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('::warning::'));
+    });
+
+    it('should not warn about isolation when the manifest has no entries', () => {
+        splitWithMutation({files: pool, parallelism: 2, entries: [], targets: []});
+
+        expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining('::warning::'));
+    });
+
+    it('should count mutation shards toward PARALLELISM and keep runIds contiguous', () => {
+        const many = Array.from({length: 30}, (_, i) => `detox/e2e/test/s${String(i).padStart(2, '0')}.e2e.ts`);
+        const groups = splitWithMutation({files: [...many, m1, m2], parallelism: 28, entries, targets: ['B', 'site3'], platform: 'ios'});
+
+        expect(groups).toHaveLength(28);
+        expect(poolOf(groups)).toHaveLength(26);
+        expect(groups.map((g) => g.runId)).toEqual(Array.from({length: 28}, (_, i) => String(i + 1)));
+    });
+
+    it('should keep at least one pool shard when mutation shards fill PARALLELISM', () => {
+        const groups = splitWithMutation({files: [...pool, m1, m2], parallelism: 2, entries, targets: ['B', 'site3'], platform: 'ios'});
+
+        expect(poolOf(groups)).toHaveLength(1);
+        expect(mutationOf(groups)).toHaveLength(2);
+    });
+
+    it('should keep mm_blocks as the first pool shard at runId 1 and mutation shards after it', () => {
+        const mm = 'detox/e2e/test/mm_blocks_tunnel.e2e.ts';
+        const groups = splitWithMutation({files: [mm, ...pool, m1], parallelism: 3, entries: [{spec: m1, target: 'B'}], targets: ['B'], platform: 'android'});
+
+        expect(groups[0]).toMatchObject({runId: '1', role: 'pool', target: 'A'});
+        expect(specsOf(groups[0])).toEqual([mm]);
+        expect(groups[groups.length - 1]).toMatchObject({role: 'mutation', target: 'B', specs: m1});
+        expect(groups.map((g) => g.runId)).toEqual(['1', '2', '3']);
+    });
+
+    it('should ignore manifest entries that the search path does not contain, with a warning', () => {
+        const missing = 'detox/e2e/test/not_written_yet.e2e.ts';
+        const groups = splitWithMutation({
+            files: pool,
+            parallelism: 2,
+            entries: [{spec: missing, target: 'B'}],
+            targets: ['B'],
+            platform: 'android',
+        });
+
+        expect(groups.every((g) => g.role === 'pool')).toBe(true);
+        expect(groups.flatMap(specsOf).sort()).toEqual(pool);
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(missing));
+    });
+});
+
+describe('mutation manifest and target helpers', () => {
+    let tmpDir;
+
+    beforeEach(() => {
+        tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mutation-manifest-'));
+    });
+
+    afterEach(() => {
+        fs.rmSync(tmpDir, {recursive: true, force: true});
+    });
+
+    it('should load the committed manifest with only B or site3 targets', () => {
+        const entries = loadMutationManifest(path.join(__dirname, '../../../detox/e2e/server_mutation_specs.json'));
+
+        expect(entries.length).toBeGreaterThan(0);
+        for (const entry of entries) {
+            expect(['B', 'site3']).toContain(entry.target);
+            expect(entry.spec.startsWith('detox/e2e/test/')).toBe(true);
+        }
+    });
+
+    it('should return no entries for a missing manifest', () => {
+        const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        expect(loadMutationManifest(path.join(tmpDir, 'nope.json'))).toEqual([]);
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('not found'));
+        errorSpy.mockRestore();
+    });
+
+    it('should throw on malformed JSON instead of silently running mutations on pool servers', () => {
+        const file = path.join(tmpDir, 'bad.json');
+        fs.writeFileSync(file, '{not json');
+
+        expect(() => loadMutationManifest(file)).toThrow();
+    });
+
+    it('should reject entries without a spec or target', () => {
+        const file = path.join(tmpDir, 'partial.json');
+        fs.writeFileSync(file, JSON.stringify({mutation: [{spec: 'detox/e2e/test/a.e2e.ts'}]}));
+
+        expect(() => loadMutationManifest(file)).toThrow(/mutation\[0\]/);
+    });
+
+    it('should reject a manifest without a mutation array', () => {
+        const file = path.join(tmpDir, 'shape.json');
+        fs.writeFileSync(file, JSON.stringify({entries: []}));
+
+        expect(() => loadMutationManifest(file)).toThrow(/"mutation" array/);
+    });
+
+    it('should split and trim MUTATION_TARGETS', () => {
+        expect(parseTargets('B,site3')).toEqual(['B', 'site3']);
+        expect(parseTargets(' B , ')).toEqual(['B']);
+        expect(parseTargets('')).toEqual([]);
+        expect(parseTargets(undefined)).toEqual([]);
+    });
+
+    it('should resolve a target to an available one, preferring the exact match, then B', () => {
+        expect(resolveMutationTarget('site3', ['B', 'site3'])).toBe('site3');
+        expect(resolveMutationTarget('site3', ['B'])).toBe('B');
+        expect(resolveMutationTarget('site3', ['site3'])).toBe('site3');
+        expect(resolveMutationTarget('B', [])).toBe('A');
     });
 });

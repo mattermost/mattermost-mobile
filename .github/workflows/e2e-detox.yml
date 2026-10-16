@@ -65,6 +65,7 @@ jobs:
       durations_key: detox-ios
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_OTHER_PLATFORM_POOL_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       MM_TEST_SERVER_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.IOS_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}
@@ -95,6 +96,7 @@ jobs:
       durations_key: detox-android
       record_tests_in_zephyr: ${{ inputs.run_type == 'RELEASE' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER' }}
       MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+      MM_OTHER_PLATFORM_POOL_URL: ${{ inputs.IOS_SITE_1_URL }}
       MM_TEST_SERVER_URL: ${{ inputs.ANDROID_SITE_1_URL }}
       MM_TEST_SERVER_URL_2: ${{ inputs.ANDROID_SITE_2_URL }}
       MM_TEST_SERVER_URL_3: ${{ inputs.SITE_3_URL }}

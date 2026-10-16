@@ -364,6 +364,7 @@ jobs:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-ios-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
+      MM_OTHER_PLATFORM_POOL_URL: ${{ matrix.server.android_site_1_url }}
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
@@ -495,6 +496,7 @@ jobs:
       tsio-shard-name: detox-android-Server_${{ matrix.server.version }}
       run-android-tests: true
       run-type: "RELEASE"
+      MM_OTHER_PLATFORM_POOL_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.android_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}

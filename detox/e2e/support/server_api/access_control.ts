@@ -39,6 +39,32 @@ export const apiEnableABAC = async (baseUrl: string): Promise<any> => {
     }
 };
 
+/**
+ * Read back the settings a permission policy on user-managed attributes needs.
+ * Another suite on a shared server can turn them off after this one set them, and the server
+ * then rejects the policy with an error that does not say when or how.
+ * Requires admin session.
+ * @param {string} baseUrl - the base server URL
+ * @return {Object} returns {} when ABAC and user-managed attributes are on, or {error} naming what is off
+ */
+export const apiVerifyUserManagedABAC = async (baseUrl: string): Promise<{error?: string}> => {
+    try {
+        const {data: config} = await client.get(`${baseUrl}/api/v4/config`);
+        const settings = config?.AccessControlSettings;
+        if (settings?.EnableAttributeBasedAccessControl === true && settings?.EnableUserManagedAttributes === true) {
+            return {};
+        }
+        return {
+            error: `AccessControlSettings are off at ${new Date().toISOString()}: ` +
+                `EnableAttributeBasedAccessControl=${settings?.EnableAttributeBasedAccessControl} ` +
+                `EnableUserManagedAttributes=${settings?.EnableUserManagedAttributes} ` +
+                `FeatureFlags.PermissionPolicies=${config?.FeatureFlags?.PermissionPolicies}`,
+        };
+    } catch (err) {
+        return {error: `Could not read the server config: ${JSON.stringify(getResponseFromError(err))}`};
+    }
+};
+
 // ------------------------------------------------------------
 // Custom Profile Attribute Fields
 // Used to define user attributes that ABAC policies can reference.
@@ -199,6 +225,31 @@ export const apiCreatePermissionPolicy = async (
 };
 
 /**
+ * Create a channel access policy whose rules gate permission actions in that channel only; channel
+ * membership is unaffected. The policy id is the channel id, so delete it with apiDeletePermissionPolicy.
+ * Requires admin session and the ChannelPermissionPolicies feature flag.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - the channel the policy applies to
+ * @param {Array<{name: string; role: string; actions: string[]; expression: string}>} rules - v0.4 rules; each needs a unique name and a channel role such as 'channel_user'
+ * @return {Object} returns {policy} on success or {error, status} on error
+ */
+export const apiCreateChannelPermissionPolicy = async (
+    baseUrl: string,
+    channelId: string,
+    rules: Array<{name: string; role: string; actions: string[]; expression: string}>,
+): Promise<any> => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/access_control_policies`,
+            {id: channelId, type: 'channel', version: 'v0.4', rules},
+        );
+        return {policy: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Delete an access control policy by ID.
  * Requires admin session.
  * @param {string} baseUrl - the base server URL
@@ -247,12 +298,14 @@ export const apiSetPolicyActive = async (
 
 export const AccessControl = {
     apiEnableABAC,
+    apiVerifyUserManagedABAC,
     apiGetCustomProfileAttributeFields,
     apiGetOrCreateCustomProfileAttributeField,
     apiCreateCustomProfileAttributeField,
     apiDeleteCustomProfileAttributeField,
     apiSetUserPropertyValues,
     apiCreatePermissionPolicy,
+    apiCreateChannelPermissionPolicy,
     apiDeletePermissionPolicy,
     apiSetPolicyActive,
 };

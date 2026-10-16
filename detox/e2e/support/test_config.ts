@@ -71,3 +71,7 @@ export const hasCustomProfileAttributes =
  * global_setup.js. Presence is the signal; the suite still toggles the flag's value itself.
  */
 export const hasChannelAttributes = process.env.MM_SERVER_HAS_CHANNEL_ATTRIBUTES === 'true';
+
+/** Whether the server's license and remote-cluster service support Shared Channels, set by global_setup.js. */
+export const hasSharedChannels = process.env.MM_SERVER_HAS_SHARED_CHANNELS === 'true';
+export const maxFileSizePinned = process.env.MM_SERVER_MAX_FILE_SIZE_PINNED === 'true';

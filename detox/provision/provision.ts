@@ -7,7 +7,7 @@ import {createMattermostClient, login} from './http-client';
 import {ensureTrialLicense} from './license';
 import {logInfo, logWarn} from './log';
 import {ensureAgentsPlugin, ensureDemoPluginReady, installRequiredPlugin} from './plugins';
-import {configureTestServer, getServerMmVersion} from './server-config';
+import {applyProvisionBaseline, getServerMmVersion, verifyProvisionBaseline} from './server-config';
 
 import type {MattermostClient, ProvisionCredentials} from './types';
 
@@ -30,7 +30,10 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
     logInfo(`Mattermost server version: ${serverMmVersion}`);
 
     await ensureTrialLicense(client, token);
-    await configureTestServer(client, token);
+
+    // Applied before plugins: the demo plugin's readiness wait depends on its DialogOnlyMode being set
+    // before install, which is the order that has been validated. Verified again after plugins settle.
+    await applyProvisionBaseline(client, token, serverUrl, serverMmVersion);
 
     await ensureAgentsPlugin(client, token);
 
@@ -49,6 +52,8 @@ export async function provisionServer(serverUrl: string, credentials: ProvisionC
         }
     }
     /* eslint-enable no-await-in-loop */
+
+    await verifyProvisionBaseline(client, token, serverUrl);
 
     const agentsOk = await verifyAgentsSetup(client, token);
     if (!agentsOk) {
