@@ -11,6 +11,7 @@ import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
 import {logDebug, logError, logInfo, logWarning} from '@utils/log';
+import {isSecureUrl} from '@utils/url';
 
 const MAX_WEBSOCKET_FAILS = 7;
 const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
@@ -146,8 +147,8 @@ export default class WebSocketClient {
                 headers.Authorization = `Bearer ${this.token}`;
             }
 
-            // Add shared password header if available
-            if (this.preauthSecret) {
+            // Add shared password header if available, only over TLS
+            if (this.preauthSecret && isSecureUrl(this.url)) {
                 headers[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = this.preauthSecret;
                 logDebug('WebSocket: Added shared password header for', this.serverUrl);
             }

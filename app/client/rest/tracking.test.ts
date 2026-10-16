@@ -881,6 +881,14 @@ describe('ClientTracking', () => {
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
         });
 
+        it('should persist but not send the shared password when the server URL is not https', () => {
+            const httpClient = new ClientTracking({...apiClientMock, baseUrl: 'http://example.com'} as unknown as APIClientInterface);
+            httpClient.setClientCredentials('bearer-token', 'shared-password');
+
+            expect(httpClient.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith('http://example.com', 'bearer-token', 'shared-password');
+        });
+
         it('should remove shared password header when undefined', () => {
             // First set a shared password
             client.setClientCredentials('bearer-token', 'shared-password');

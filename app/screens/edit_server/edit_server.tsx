@@ -13,10 +13,12 @@ import DatabaseManager from '@database/manager';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {getServerCredentials, setServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {navigateBack} from '@screens/navigation';
-import {getErrorMessage} from '@utils/errors';
+import {getErrorMessage, getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect} from '@utils/url';
 
@@ -98,8 +100,11 @@ const EditServer = ({server, theme}: ServerProps) => {
             // Test with the actual preauth secret value (or undefined if empty)
             const secretForValidation = trimmedSecret || undefined;
 
-            // First try HEAD request
-            const headRequest = await getServerUrlAfterRedirect(server.url, true, secretForValidation);
+            // HTTPS first, then HTTP; the secret is only sent over HTTPS
+            let headRequest = await getServerUrlAfterRedirect(server.url, false, secretForValidation);
+            if (!headRequest.url) {
+                headRequest = await getServerUrlAfterRedirect(server.url.replace('https:', 'http:'), true, secretForValidation);
+            }
             if (!headRequest.url) {
                 setPreauthSecretError(getErrorMessage(headRequest.error, intl));
                 setShowAdvancedOptions(true);
@@ -183,13 +188,19 @@ const EditServer = ({server, theme}: ServerProps) => {
 
         // Save preauth secret to credentials (or remove if empty)
         const credentials = await getServerCredentials(server.url);
-        setServerCredentials(server.url, credentials?.token || '', preauthSecret.trim() || undefined);
+        const newPreauthSecret = preauthSecret.trim() || undefined;
+        setServerCredentials(server.url, credentials?.token || '', newPreauthSecret);
 
-        // Create and cache new client if preauth secret changed
+        // Create and cache new clients so the new secret is used without an app restart
         try {
-            await NetworkManager.createClient(server.url, credentials?.token, preauthSecret.trim() || undefined);
+            await NetworkManager.createClient(server.url, credentials?.token, newPreauthSecret);
+            if (preauthSecretChanged && credentials?.token) {
+                await WebsocketManager.createClient(server.url, credentials.token, newPreauthSecret);
+                await WebsocketManager.initializeClient(server.url);
+            }
         } catch (error) {
             // Client creation failed, but credentials are saved - continue with modal dismissal
+            logDebug('EditServer.handleUpdate client recreation failed', getFullErrorMessage(error));
         }
 
         navigateBack();

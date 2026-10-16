@@ -14,7 +14,7 @@ import {isErrorWithStatusCode} from '@utils/errors';
 import {getFormattedFileSize} from '@utils/file';
 import {logDebug, logInfo} from '@utils/log';
 import {semverFromServerVersion} from '@utils/server';
-import {cleanUrlForLogging} from '@utils/url';
+import {cleanUrlForLogging, isSecureUrl} from '@utils/url';
 
 import * as ClientConstants from './constants';
 import ClientError from './error';
@@ -77,7 +77,8 @@ export default class ClientTracking {
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
 
-        if (preauthSecret) {
+        // The secret is still persisted below, but it is only sent over TLS.
+        if (preauthSecret && isSecureUrl(this.apiClient.baseUrl)) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         } else {
             // Remove shared password header when undefined
