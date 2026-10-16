@@ -3,7 +3,7 @@
 
 import {getIntlShape} from '@utils/general';
 
-import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday, parseTimeString} from './datetime';
+import {formatTime, getReadableTimestamp, isSameDate, isSameMonth, isSameYear, isToday, isYesterday, parseTimeString, toValidMinuteInterval} from './datetime';
 
 describe('Datetime', () => {
     test('isSameDate (isSameMonth / isSameYear)', () => {
@@ -258,5 +258,34 @@ describe('parseTimeString', () => {
 
     it('returns null for partial minutes (single-digit)', () => {
         expect(parseTimeString('14:3')).toBeNull();
+    });
+});
+
+describe('toValidMinuteInterval', () => {
+    it('should return the interval unchanged when it is supported', () => {
+        for (const interval of [1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30]) {
+            expect(toValidMinuteInterval(interval)).toBe(interval);
+        }
+    });
+
+    it('should clamp unsupported intervals to 30', () => {
+        expect(toValidMinuteInterval(60)).toBe(30);
+        expect(toValidMinuteInterval(45)).toBe(30);
+        expect(toValidMinuteInterval(7)).toBe(30);
+        expect(toValidMinuteInterval(0)).toBe(30);
+        expect(toValidMinuteInterval(-10)).toBe(30);
+    });
+
+    it('should clamp to 30 when no interval is provided', () => {
+        expect(toValidMinuteInterval()).toBe(30);
+    });
+
+    it('should honor supported intervals regardless of platform', () => {
+        // Regression: Android used to be short-circuited to 30, which snapped both the
+        // time picker and the rounded min/default dates to half-hour steps.
+        // The fix removed the Platform.OS branch entirely — this test is platform-agnostic.
+        expect(toValidMinuteInterval(10)).toBe(10);
+        expect(toValidMinuteInterval(15)).toBe(15);
+        expect(toValidMinuteInterval(60)).toBe(30);
     });
 });
