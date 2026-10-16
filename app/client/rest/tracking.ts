@@ -64,6 +64,7 @@ export default class ClientTracking {
     apiClient: APIClientInterface;
     csrfToken = '';
     requestHeaders: {[x: string]: string} = {};
+    preauthSecret?: string;
     serverVersion = '';
     urlVersion = '/api/v4';
     enableLogging = false;
@@ -77,7 +78,8 @@ export default class ClientTracking {
     setClientCredentials(bearerToken: string, preauthSecret?: string) {
         this.requestHeaders[ClientConstants.HEADER_AUTH] = `${ClientConstants.HEADER_BEARER} ${bearerToken}`;
 
-        // The secret is still persisted below, but it is only sent over TLS.
+        // Kept apart from the header, which is only set over TLS, so token refreshes keep the persisted secret.
+        this.preauthSecret = preauthSecret || undefined;
         if (preauthSecret && isSecureUrl(this.apiClient.baseUrl)) {
             this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET] = preauthSecret;
         } else {
@@ -430,8 +432,7 @@ export default class ClientTracking {
 
         const bearerToken = headers[ClientConstants.HEADER_TOKEN] || headers[ClientConstants.HEADER_TOKEN.toLowerCase()];
         if (bearerToken) {
-            const existingSharedPassword = this.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET];
-            this.setClientCredentials(bearerToken, existingSharedPassword);
+            this.setClientCredentials(bearerToken, this.preauthSecret);
         }
 
         if (response.ok) {
