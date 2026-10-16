@@ -7,6 +7,7 @@ import Autocomplete from './autocomplete';
 import CameraQuickAction from './camera_quick_action';
 import ChannelAttributeLabels from './channel_attribute_labels';
 import FileQuickAction from './file_quick_action';
+import Files from './files';
 import GlobalClassificationBanner from './global_classification_banner';
 import ImageQuickAction from './image_quick_action';
 import InputQuickAction from './input_quick_action';
@@ -28,6 +29,7 @@ export {
     CameraQuickAction,
     ChannelAttributeLabels,
     FileQuickAction,
+    Files,
     GlobalClassificationBanner,
     ImageQuickAction,
     InputQuickAction,

@@ -22,6 +22,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
+import {Files} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -213,21 +214,21 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Sales user does not satisfy the policy — placeholder is shown, the file is not
-        await waitFor(element(by.id('redacted-files-placeholder'))).
+        await waitFor(Files.redactedFilesPlaceholder).
             toBeVisible().
             withTimeout(timeouts.TEN_SEC);
 
         // `-file-container`, not `-file`: the attachment is a .txt, and only image and video files
         // carry the `-file` testID
-        await expect(element(by.id(`${fileId}-file-container`))).not.toExist();
+        await expect(Files.getFileContainer(fileId)).not.toExist();
 
         // * The same user's file remains available in a channel without the policy
         await ChannelScreen.back();
         await ChannelScreen.open(channelsCategory, controlChannel.name);
-        await waitFor(element(by.id(`${controlFileId}-file-container`))).
+        await waitFor(Files.getFileContainer(controlFileId)).
             toExist().
             withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('redacted-files-placeholder'))).not.toExist();
+        await expect(Files.redactedFilesPlaceholder).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
@@ -241,11 +242,11 @@ describe('Messaging - Redacted Files (ABAC)', () => {
 
         // * Wait for the attachment itself: absence of the placeholder alone would also hold before
         // the list loads, or while the post is still unverified
-        await waitFor(element(by.id(`${fileId}-file-container`))).
+        await waitFor(Files.getFileContainer(fileId)).
             toExist().
             withTimeout(timeouts.TEN_SEC);
-        await expect(element(by.id('redacted-files-placeholder'))).not.toExist();
-        await expect(element(by.id('unverified-files-placeholder'))).not.toExist();
+        await expect(Files.redactedFilesPlaceholder).not.toExist();
+        await expect(Files.unverifiedFilesPlaceholder).not.toExist();
 
         await ChannelScreen.back();
         await HomeScreen.logout();
