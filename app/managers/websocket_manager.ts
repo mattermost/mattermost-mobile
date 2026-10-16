@@ -129,11 +129,15 @@ class WebsocketManagerSingleton {
         }
     };
 
-    // Until the ping is answered the socket counts as connecting, so nothing waiting on 'connected'
-    // reaches the server mid-switch.
-    private verifyAll = () => {
+    // An open socket may or may not have survived a network switch, so ping it rather than closing a
+    // working connection. Until the ping is answered it counts as connecting, so nothing waiting on
+    // 'connected' reaches the server mid-switch. Any other socket is mid-attempt or backing off on the
+    // previous network, so it is closed to drop that attempt and its retry timer.
+    private verifyOrResetAll = () => {
         for (const [url, client] of Object.entries(this.clients)) {
             if (!client.isConnected()) {
+                client.close(true);
+                this.getConnectedSubject(url).next('not_connected');
                 continue;
             }
 
@@ -334,11 +338,10 @@ class WebsocketManagerSingleton {
         }
 
         if (switchedNetworks) {
-            // An open socket may or may not have survived the switch, so ping it rather than closing a
-            // working connection. Sockets that aren't open are reconnected right away by openAll below,
-            // instead of waiting out their retry backoff.
-            logDebug('WebSocketManager: verifying all connections, network switched', 'from', previousNetType, 'to', currentNetType);
-            this.verifyAll();
+            // Closed sockets are reopened by openAll below if the app is active, instead of waiting out
+            // their retry backoff, and otherwise when it next becomes active.
+            logDebug('WebSocketManager: verifying or resetting all connections, network switched', 'from', previousNetType, 'to', currentNetType);
+            this.verifyOrResetAll();
         }
 
         if (currentIsActive) {

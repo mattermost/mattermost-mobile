@@ -382,7 +382,7 @@ describe('WebsocketManager', () => {
             subscription.unsubscribe();
         });
 
-        it('should reconnect a socket that is not open when the device switches networks', async () => {
+        it('should restart a socket that is not open when the device switches networks', async () => {
             const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockAppStateChange('active');
@@ -395,7 +395,9 @@ describe('WebsocketManager', () => {
             await new Promise((resolve) => setImmediate(resolve));
 
             expect(mockWebSocketClient.verifyConnection).not.toHaveBeenCalled();
+            expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
             expect(mockWebSocketClient.initialize).toHaveBeenCalled();
+            expect(mockWebSocketClient.close.mock.invocationCallOrder[0]).toBeLessThan(mockWebSocketClient.initialize.mock.invocationCallOrder[0]);
         });
 
         it('should revalidate render-time permission decisions when the device changes networks', () => {
