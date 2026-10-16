@@ -44,7 +44,13 @@ describe('renderSystemMessage', () => {
         );
         expect(toJSON()).toMatchSnapshot();
         expect(getByText('@username')).toBeTruthy();
-        expect(getByText('updated the channel header from: old header to: new header')).toBeTruthy();
+        expect(getByText('updated the channel header')).toBeTruthy();
+
+        expect(getByText('From:')).toBeTruthy();
+        expect(getByText('old header')).toBeTruthy();
+
+        expect(getByText('To:')).toBeTruthy();
+        expect(getByText('new header')).toBeTruthy();
     });
 
     test('uses renderer for Channel Display Name update', () => {
