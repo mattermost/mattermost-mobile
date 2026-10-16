@@ -3,8 +3,11 @@
 
 import {firstValueFrom} from 'rxjs';
 
-import {General, Permissions} from '@constants';
+import {General, License, Permissions} from '@constants';
+import {RenderPermissionAction} from '@constants/access_control';
+import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import RenderPermissionsStore, {RENDER_PERMISSIONS_TTL_MS} from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 
 import {
@@ -12,6 +15,7 @@ import {
     getRoleById,
     queryRolesByNames,
     observePermissionForChannel,
+    observePermissionForChannelRBACOnly,
     observePermissionForTeam,
     observePermissionForPost,
     observeCanManageChannelMembers,
@@ -148,6 +152,116 @@ describe('Role Queries', () => {
                 true,
             ));
             expect(hasPermission).toBe(true);
+        });
+    });
+
+    describe('channel access policies', () => {
+        const user = TestHelper.fakeUserModel({id: 'user1', roles: 'system_user'});
+        const channel = TestHelper.fakeChannelModel({id: 'channel1', type: General.OPEN_CHANNEL, teamId: 'team1'});
+        const writeDenied = {[RenderPermissionAction.ChannelWriteAccess]: {allowed: false, evaluated: true}};
+        const managementDenied = {[RenderPermissionAction.ChannelManagementAccess]: {allowed: false, evaluated: true}};
+
+        const setLicenseSku = (sku: string) => operator.handleSystem({
+            systems: [{id: SYSTEM_IDENTIFIERS.LICENSE, value: {IsLicensed: 'true', SkuShortName: sku}}],
+            prepareRecordsOnly: false,
+        });
+
+        const storeDecisions = (channelId: string, decisions: Record<string, RenderPermissionDecision>) => {
+            RenderPermissionsStore.setEntry(serverUrl, channelId, {epoch: 1, decisions}, RENDER_PERMISSIONS_TTL_MS);
+        };
+
+        beforeEach(async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await setLicenseSku(License.SKU_SHORT_NAME.EnterpriseAdvanced);
+            await operator.handleRole({
+                roles: [{
+                    id: 'system_user',
+                    name: 'system_user',
+                    permissions: [Permissions.CREATE_POST, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES, Permissions.READ_CHANNEL],
+                }],
+                prepareRecordsOnly: false,
+            });
+        });
+
+        afterEach(() => {
+            RenderPermissionsStore.removeServer(serverUrl);
+        });
+
+        it('should deny a write permission when a write policy denies the channel', async () => {
+            storeDecisions(channel.id, writeDenied);
+
+            const canPost = await firstValueFrom(observePermissionForChannel(database, channel, user, Permissions.CREATE_POST, false));
+            expect(canPost).toBe(false);
+        });
+
+        it('should deny a management permission when a management policy denies the channel', async () => {
+            storeDecisions(channel.id, managementDenied);
+
+            const canManage = await firstValueFrom(observePermissionForChannel(database, channel, user, Permissions.MANAGE_PUBLIC_CHANNEL_PROPERTIES, false));
+            expect(canManage).toBe(false);
+        });
+
+        it('should not apply a policy to a permission outside the write and management sets', async () => {
+            storeDecisions(channel.id, {...writeDenied, ...managementDenied});
+
+            const canRead = await firstValueFrom(observePermissionForChannel(database, channel, user, Permissions.READ_CHANNEL, false));
+            expect(canRead).toBe(true);
+        });
+
+        it('should not apply a policy in a DM', async () => {
+            const dm = TestHelper.fakeChannelModel({id: 'dm1', type: General.DM_CHANNEL, teamId: ''});
+            storeDecisions(dm.id, writeDenied);
+
+            const canPost = await firstValueFrom(observePermissionForChannel(database, dm, user, Permissions.CREATE_POST, false));
+            expect(canPost).toBe(true);
+        });
+
+        it('should not apply a policy below Enterprise Advanced', async () => {
+            await setLicenseSku(License.SKU_SHORT_NAME.Enterprise);
+            storeDecisions(channel.id, writeDenied);
+
+            const canPost = await firstValueFrom(observePermissionForChannel(database, channel, user, Permissions.CREATE_POST, false));
+            expect(canPost).toBe(true);
+        });
+
+        it('should not apply a policy when attribute-based access control is not enforced', async () => {
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'false'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            storeDecisions(channel.id, writeDenied);
+
+            const canPost = await firstValueFrom(observePermissionForChannel(database, channel, user, Permissions.CREATE_POST, false));
+            expect(canPost).toBe(true);
+        });
+
+        it('should ignore a policy denial in the RBAC-only variant', async () => {
+            storeDecisions(channel.id, writeDenied);
+
+            const canPost = await firstValueFrom(observePermissionForChannelRBACOnly(database, channel, user, Permissions.CREATE_POST, false));
+            expect(canPost).toBe(true);
+        });
+
+        it('should let the channel settings check ignore a policy denial when asked for the role grant only', async () => {
+            await operator.handleChannel({
+                channels: [TestHelper.fakeChannel({id: channel.id, type: General.OPEN_CHANNEL, team_id: 'team1', delete_at: 0})],
+                prepareRecordsOnly: false,
+            });
+            storeDecisions(channel.id, managementDenied);
+
+            expect(await firstValueFrom(observeCanManageChannelSettings(database, channel.id, user))).toBe(false);
+            expect(await firstValueFrom(observeCanManageChannelSettings(database, channel.id, user, true))).toBe(true);
         });
     });
 

@@ -5,7 +5,9 @@
 // server/channels/app/access_control_decision.go). Adding an action here is all the client needs:
 // decisions are requested in discovery mode, so every registered action comes back in one request.
 export const RenderPermissionAction = {
+    ChannelManagementAccess: 'channel_management_access',
     ChannelReadAccess: 'channel_read_access',
+    ChannelWriteAccess: 'channel_write_access',
     UploadFileAttachment: 'upload_file_attachment',
 } as const;
 export type RenderPermissionActionName = typeof RenderPermissionAction[keyof typeof RenderPermissionAction];

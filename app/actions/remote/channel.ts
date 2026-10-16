@@ -26,6 +26,7 @@ import {navigateToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
+import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
 import {getFullErrorMessage, getServerError, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
@@ -76,6 +77,7 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
     } catch (error) {
         logDebug('error on removeMemberFromChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -121,6 +123,7 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
     } catch (error) {
         logDebug('error on updateChannelMemberSchemeRoles', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -190,6 +193,7 @@ export async function addMembersToChannel(serverUrl: string, channelId: string, 
     } catch (error) {
         logDebug('error on addMembersToChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -298,6 +302,7 @@ export async function patchChannel(serverUrl: string, channelId: string, channel
     } catch (error) {
         logDebug('error on patchChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 }
@@ -1324,6 +1329,7 @@ export const setChannelAutotranslation = async (serverUrl: string, channelId: st
     } catch (error) {
         logDebug('error on setChannelAutotranslation', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     }
 };
@@ -1413,6 +1419,7 @@ export const archiveChannel = async (serverUrl: string, channelId: string) => {
     } catch (error) {
         logDebug('error on archiveChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeArchivingChannel(channelId);
@@ -1429,6 +1436,7 @@ export const unarchiveChannel = async (serverUrl: string, channelId: string) => 
     } catch (error) {
         logDebug('error on unarchiveChannel', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeArchivingChannel(channelId);
@@ -1454,6 +1462,7 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
     } catch (error) {
         logDebug('error on convertChannelToPrivate', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
+        expireChannelDecisionsOnDenial(serverUrl, channelId, error);
         return {error};
     } finally {
         EphemeralStore.removeConvertingChannel(channelId);
@@ -1529,6 +1538,12 @@ export const handleChannelAccessDenied = async (serverUrl: string, channelId: st
         const myChannel = await getMyChannel(database, channelId);
         if (!myChannel) {
             logDebug('handleChannelAccessDenied: no membership for channel', channelId);
+            return {};
+        }
+
+        const channel = await myChannel.channel.fetch();
+        if (isDMorGM(channel)) {
+            logDebug('handleChannelAccessDenied: ignoring denial for a direct or group channel', channelId);
             return {};
         }
 

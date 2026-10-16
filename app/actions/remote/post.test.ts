@@ -10,6 +10,7 @@ import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
 import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
 import EphemeralStore from '@store/ephemeral_store';
+import RenderPermissionsStore from '@store/render_permissions_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
@@ -267,6 +268,22 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - should expire the channel decisions and keep the post failed when a channel policy denies it', async () => {
+        const expireEntry = jest.spyOn(RenderPermissionsStore, 'expireEntry');
+        mockClient.createPost.mockImplementationOnce(jest.fn(() => {
+            // eslint-disable-next-line no-throw-literal
+            throw {message: 'error', server_error_id: ServerErrors.CHANNEL_WRITE_ACCESS_DENIED, status_code: 403};
+        }));
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+
+        const result = await createPost(serverUrl, {...post1, pending_post_id: 'pendingid1'});
+        expect(result.error).toBeUndefined();
+        expect(expireEntry).toHaveBeenCalledWith(serverUrl, channelId);
+
+        const stored = await getPostById(operator.database, 'pendingid1');
+        expect(stored?.props?.failed).toBe(true);
     });
 
     it('createPost - root', async () => {

@@ -8,6 +8,7 @@ import Autocomplete from '@components/autocomplete';
 import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useFetchRenderPermissions} from '@hooks/render_permissions';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
@@ -33,6 +34,7 @@ type Props = {
     location: AvailableScreens;
     onPostCreated?: (postId: string) => void;
     portalName?: string;
+    writeDenied: boolean;
 }
 
 function PostDraft({
@@ -52,6 +54,7 @@ function PostDraft({
     location,
     onPostCreated,
     portalName,
+    writeDenied,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -60,6 +63,10 @@ function PostDraft({
     const headerHeight = useDefaultHeaderHeight();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
+
+    // Above the read-only return, so a locked composer keeps revalidating and unlocks once the policy
+    // is lifted. No decision can unlock an archived or deactivated channel.
+    useFetchRenderPermissions(channelIsArchived || deactivatedChannel ? undefined : channelId);
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -93,6 +100,7 @@ function PostDraft({
         return (
             <ReadOnly
                 testID={readOnlyTestID}
+                writeDenied={writeDenied}
             />
         );
     }

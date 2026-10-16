@@ -25,6 +25,7 @@ import {queryAllUsers} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {isBoRPost} from '@utils/bor';
+import {expireChannelDecisionsOnDenial} from '@utils/channel_policy';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {hasArrayChanged} from '@utils/helpers';
@@ -154,6 +155,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         created = await client.createPost({...newPost, create_at: 0});
     } catch (error) {
         logDebug('Error sending a post', getFullErrorMessage(error));
+        expireChannelDecisionsOnDenial(serverUrl, newPost.channel_id, error);
         const errorPost = {
             ...newPost,
             id: pendingPostId,
@@ -277,6 +279,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         await operator.batchRecords(models, 'retryFailedPost - success update');
     } catch (error) {
         logDebug('error on retryFailedPost', getFullErrorMessage(error));
+        expireChannelDecisionsOnDenial(serverUrl, post.channelId, error);
         if (isServerError(error) && (
             error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
             error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||

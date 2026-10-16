@@ -24,6 +24,7 @@ import {useFetchRenderPermissions} from '@hooks/render_permissions';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
 import PostError from '@screens/edit_post/post_error';
 import {navigateBack} from '@screens/navigation';
+import {expireChannelDecisionsOnDenial, writeDenialMessage} from '@utils/channel_policy';
 import {fileMaxWarning, fileSizeWarning, getUploadErrorMessage, uploadDisabledByPolicyWarning, uploadDisabledWarning} from '@utils/file';
 import {dismissKeyboard} from '@utils/keyboard';
 
@@ -42,6 +43,7 @@ type EditPostProps = {
     maxFileSize: number;
     canUploadFiles: boolean;
     canUploadFilesByPolicy: boolean;
+    writeDenied: boolean;
 }
 
 const AUTOCOMPLETE_SEPARATION = 8;
@@ -74,6 +76,7 @@ const EditPost = ({
     maxFileSize,
     canUploadFiles,
     canUploadFilesByPolicy,
+    writeDenied,
 }: EditPostProps) => {
     const editingMessage = post.messageSource || post.message;
     const navigation = useNavigation();
@@ -334,14 +337,15 @@ const EditPost = ({
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
             setIsUpdating(false);
-            const errorMessage = intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
+            expireChannelDecisionsOnDenial(serverUrl, post.channelId, res.error);
+            const errorMessage = writeDenialMessage(intl, res.error) ?? intl.formatMessage({id: 'mobile.edit_post.error', defaultMessage: 'There was a problem editing this message. Please try again.'});
             setErrorLine(errorMessage);
             postInputRef?.current?.focus();
         } else {
             setIsUpdating(false);
             onClose();
         }
-    }, [intl, onClose]);
+    }, [intl, onClose, serverUrl, post.channelId]);
 
     const handleDeletePost = useCallback(async () => {
         Alert.alert(
@@ -394,13 +398,13 @@ const EditPost = ({
             headerRight: () => (
                 <NavigationButton
                     onPress={onSavePostMessage}
-                    disabled={!canSave}
+                    disabled={!canSave || writeDenied}
                     testID={'edit_post.save.button'}
                     text={intl.formatMessage({id: 'mobile.edit_post.save', defaultMessage: 'Save'})}
                 />
             ),
         });
-    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, intl]);
+    }, [navigation, onSavePostMessage, theme.sidebarHeaderTextColor, canSave, writeDenied, intl]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
