@@ -179,8 +179,6 @@ export default function Lightbox({
                             <ExpoImageAnimated
                                 id={target.cacheKey}
                                 source={imageSource}
-                                placeholder={imageSource}
-                                placeholderContentFit='cover'
                                 style={itemStyles}
                                 autoplay={false}
                             />
