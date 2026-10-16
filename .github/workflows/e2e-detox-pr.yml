@@ -109,6 +109,8 @@ jobs:
   compute-build-fingerprints:
     name: Compute build fingerprints
     runs-on: ubuntu-24.04
+    needs: resolve-e2e-policy
+    if: needs.resolve-e2e-policy.outputs.trusted == 'true'
     outputs:
       ios: ${{ steps.ios.outputs.fingerprint }}
       android-detox: ${{ steps.android-detox.outputs.fingerprint }}
@@ -179,6 +181,7 @@ jobs:
     outputs:
       e2e_override: ${{ steps.policy.outputs.e2e_override }}
       skip_reason: ${{ steps.policy.outputs.skip_reason }}
+      trusted: ${{ steps.policy.outputs.trusted }}
     steps:
       # Per-branch cancellation used to happen here via cancel-e2e-runs (removed —
       # see the workflow-level `concurrency:` group above, which supersedes it via
@@ -192,8 +195,14 @@ jobs:
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           MOBILE_VERSION: ${{ inputs.MOBILE_VERSION }}
+          RUN_TYPE: ${{ inputs.run_type || 'PR' }}
         with:
           script: |
+            const runType = (process.env.RUN_TYPE || 'PR').toUpperCase();
+            // Matterwick still sends MASTER for main-branch pushes; treat as MAIN.
+            const isBaseRun = runType === 'MAIN' || runType === 'MASTER' || runType === 'RELEASE';
+            const repoFullName = `${context.repo.owner}/${context.repo.repo}`;
+
             const prInput = parseInt(process.env.PR_NUMBER, 10);
             let prNumber = Number.isFinite(prInput) ? prInput : null;
 
@@ -218,6 +227,7 @@ jobs:
               core.info('No PR number available — assuming E2E/Override is not set.');
               core.setOutput('e2e_override', 'false');
               core.setOutput('skip_reason', '');
+              core.setOutput('trusted', isBaseRun ? 'true' : 'false');
               return;
             }
 
@@ -226,6 +236,12 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber,
             });
+
+            const headRepo = pr.head && pr.head.repo && pr.head.repo.full_name;
+            const trusted = (isBaseRun || headRepo === repoFullName) ? 'true' : 'false';
+            core.info(`PR #${prNumber} head repo match=${headRepo === repoFullName} trusted=${trusted}`);
+            core.setOutput('trusted', trusted);
+
             if (pr.base.ref !== 'main') {
               core.info(`PR #${prNumber} targets ${pr.base.ref}, not main — skipping E2E.`);
               core.setOutput('e2e_override', 'true');
@@ -278,7 +294,7 @@ jobs:
       contents: read
       pull-requests: read
     needs: resolve-e2e-policy
-    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+    if: needs.resolve-e2e-policy.outputs.e2e_override != 'true' && needs.resolve-e2e-policy.outputs.trusted == 'true'
     outputs:
       job-configs: ${{ steps.id.outputs.job-configs }}
       job-keys: ${{ steps.id.outputs.job-keys }}
@@ -367,6 +383,7 @@ jobs:
       - calculate-tsio-identity
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && needs.calculate-tsio-identity.result == 'success'
       && (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     permissions:
@@ -435,6 +452,7 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both')
     # Runner / Xcode image is not in the git tree. Changing this label (or the
     # Xcode on it) without bumping CACHE_VERSION in
@@ -519,6 +537,7 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     # Runner image is not in the git tree — bump CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml when changing this label.
@@ -615,6 +634,7 @@ jobs:
     if: >-
       !cancelled()
       && needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
       && (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both')
     # Runner image is not in the git tree — bump CACHE_VERSION in
     # compute-e2e-build-fingerprint/action.yml when changing this label.
@@ -700,6 +720,7 @@ jobs:
       - resolve-server-topology
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -752,6 +773,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-ios-simulator.result == 'success' || needs.build-ios-simulator.result == 'skipped')
@@ -788,6 +810,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       (needs.build-android-apk.result == 'success' || needs.build-android-apk.result == 'skipped')
@@ -810,6 +833,7 @@ jobs:
     needs: resolve-e2e-policy
     if: >-
       needs.resolve-e2e-policy.outputs.e2e_override != 'true'
+      && needs.resolve-e2e-policy.outputs.trusted == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
@@ -847,6 +871,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'ios' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -886,6 +911,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       (inputs.PLATFORM == 'android' || inputs.PLATFORM == 'both') &&
       needs.provision-servers.result == 'success' &&
       needs.validate-maestro-flow-headers.result == 'success' &&
@@ -923,6 +949,7 @@ jobs:
     if: |
       !cancelled() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-ios.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-detox-android.result) &&
       contains(fromJSON('["success","failure","skipped"]'), needs.run-maestro-ios.result) &&
@@ -1057,6 +1084,7 @@ jobs:
     if: >-
       always() &&
       needs.resolve-e2e-policy.outputs.e2e_override != 'true' &&
+      needs.resolve-e2e-policy.outputs.trusted == 'true' &&
       needs.calculate-tsio-identity.result == 'success' &&
       (inputs.run_type == 'PR' || inputs.run_type == 'MAIN' || inputs.run_type == 'MASTER')
     needs:
