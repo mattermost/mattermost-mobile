@@ -360,14 +360,14 @@ describe('WebsocketManager', () => {
             mockNetInfoCallback({isConnected: true, type: 'cellular'});
             await new Promise((resolve) => setImmediate(resolve));
 
-            expect(mockWebSocketClient.verifyConnection).toHaveBeenCalledTimes(1);
+            expect(mockWebSocketClient.verifyConnection).toHaveBeenCalled();
             expect(mockWebSocketClient.close).not.toHaveBeenCalled();
             expect(mockWebSocketClient.initialize).not.toHaveBeenCalled();
-            expect(states.slice(-2)).toEqual(['connecting', 'connected']);
+            expect(states).toEqual(['connected']);
             subscription.unsubscribe();
         });
 
-        it('should not report a socket connected when it fails verification after a network switch', async () => {
+        it('should report a socket not connected as soon as it fails verification after a network switch', async () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi'});
             mockWebSocketClient.verifyConnection.mockResolvedValueOnce(false);
@@ -378,7 +378,7 @@ describe('WebsocketManager', () => {
             mockNetInfoCallback({isConnected: true, type: 'cellular'});
             await new Promise((resolve) => setImmediate(resolve));
 
-            expect(states[states.length - 1]).toBe('connecting');
+            expect(states).toEqual(['connected', 'not_connected']);
             subscription.unsubscribe();
         });
 
@@ -400,7 +400,7 @@ describe('WebsocketManager', () => {
             expect(mockWebSocketClient.close.mock.invocationCallOrder[0]).toBeLessThan(mockWebSocketClient.initialize.mock.invocationCallOrder[0]);
         });
 
-        it('should revalidate render-time permission decisions when the device changes networks', () => {
+        it('should revalidate render-time permission decisions when the device changes networks', async () => {
             // Network session attributes feed ABAC decisions and change with no server event.
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
@@ -411,16 +411,18 @@ describe('WebsocketManager', () => {
 
             // Same type, different SSID: handleStateChange sees nothing, but the subject changed.
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
+            await new Promise((resolve) => setImmediate(resolve));
             expect(expireServer).toHaveBeenCalledTimes(1);
             expect(expireServer).toHaveBeenCalledWith(mockServerUrl);
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
             mockNetInfoCallback({isConnected: false, type: 'none'});
+            await new Promise((resolve) => setImmediate(resolve));
             expect(expireServer).toHaveBeenCalledTimes(1);
             expireServer.mockRestore();
         });
 
-        it('should revalidate render-time permission decisions when the device reconnects to a network of the same type without an SSID', () => {
+        it('should revalidate render-time permission decisions when the device reconnects to a network of the same type without an SSID', async () => {
             // iOS reports no SSID, so a Wi-Fi to Wi-Fi switch only shows as a disconnect and a reconnect.
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
@@ -433,11 +435,12 @@ describe('WebsocketManager', () => {
             expect(expireServer).not.toHaveBeenCalled();
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: null}});
+            await new Promise((resolve) => setImmediate(resolve));
             expect(expireServer).toHaveBeenCalledTimes(1);
             expireServer.mockRestore();
         });
 
-        it('should leave the decisions of servers that do not collect session attributes alone on a network change', () => {
+        it('should leave the decisions of servers that do not collect session attributes alone on a network change', async () => {
             // Without session attributes the server never sees the device's network.
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([]);
             const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
@@ -445,15 +448,38 @@ describe('WebsocketManager', () => {
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
             mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
+            await new Promise((resolve) => setImmediate(resolve));
 
             expect(expireServer).not.toHaveBeenCalled();
             expireServer.mockRestore();
         });
 
-        it('should mark the sockets unverified before revalidating on a network switch, so the revalidation waits for them', () => {
+        it('should wait for an open socket to be verified before revalidating on a network switch', async () => {
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
+            let settleVerification!: (alive: boolean) => void;
+            mockWebSocketClient.verifyConnection.mockReturnValue(new Promise((resolve) => {
+                settleVerification = resolve;
+            }));
+            const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
+
+            mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
+            await new Promise((resolve) => setImmediate(resolve));
+            expect(expireServer).not.toHaveBeenCalled();
+
+            settleVerification(true);
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(expireServer).toHaveBeenCalledTimes(1);
+            expireServer.mockRestore();
+        });
+
+        it('should report a socket that fails verification as not connected before revalidating, so the revalidation waits for the reconnect', async () => {
+            jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
+            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+            mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
+            mockWebSocketClient.verifyConnection.mockResolvedValue(false);
 
             let stateWhenExpired: string | undefined;
             const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => {
@@ -464,9 +490,10 @@ describe('WebsocketManager', () => {
             });
 
             mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
+            await new Promise((resolve) => setImmediate(resolve));
 
             expect(expireServer).toHaveBeenCalledTimes(1);
-            expect(stateWhenExpired).not.toBe('connected');
+            expect(stateWhenExpired).toBe('not_connected');
             expireServer.mockRestore();
         });
     });

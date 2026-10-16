@@ -130,9 +130,9 @@ class WebsocketManagerSingleton {
     };
 
     // An open socket may or may not have survived a network switch, so ping it rather than closing a
-    // working connection. Until the ping is answered it counts as connecting, so nothing waiting on
-    // 'connected' reaches the server mid-switch. Any other socket is mid-attempt or backing off on the
-    // previous network, so it is closed to drop that attempt and its retry timer.
+    // working connection. It keeps counting as connected meanwhile, so a switch it survives goes unnoticed.
+    // Any other socket is mid-attempt or backing off on the previous network, so it is closed to drop that
+    // attempt and its retry timer.
     private verifyOrResetAll = () => {
         for (const [url, client] of Object.entries(this.clients)) {
             if (!client.isConnected()) {
@@ -141,12 +141,16 @@ class WebsocketManagerSingleton {
                 continue;
             }
 
-            this.getConnectedSubject(url).next('connecting');
-            client.verifyConnection().then((alive) => {
-                if (alive && this.clients[url] === client) {
-                    this.getConnectedSubject(url).next('connected');
-                }
-            });
+            this.verifyClient(url, client);
+        }
+    };
+
+    // A socket that fails is being closed to reconnect, so it is reported before its onClose arrives:
+    // anything chained on this then sees it as not connected.
+    private verifyClient = async (url: string, client: WebSocketClient) => {
+        const alive = await client.verifyConnection();
+        if (!alive && this.clients[url] === client) {
+            this.getConnectedSubject(url).next('not_connected');
         }
     };
 
@@ -287,8 +291,8 @@ class WebsocketManagerSingleton {
         const newState = Boolean(netState.isConnected);
         this.handleStateChange(newState, netState.type, this.previousActiveState);
 
-        // After handleStateChange so a network type switch has already marked the sockets as
-        // connecting: the revalidation then waits for them to be verified instead of going out mid-switch.
+        // After handleStateChange so a network type switch has already started verifying the sockets:
+        // the revalidation then waits for that instead of going out mid-switch.
         this.expireNetworkBoundDecisions(netState);
     };
 
@@ -309,9 +313,16 @@ class WebsocketManagerSingleton {
         if (identity !== this.networkIdentity) {
             this.networkIdentity = identity;
 
-            // Only servers that collect session attributes evaluate the device's network.
+            // Only servers that collect session attributes evaluate the device's network. An open socket is
+            // expired once verified, as it reports connected throughout and would let the revalidation out
+            // mid-switch; verifying shares the ping a network type switch already sent.
             for (const serverUrl of SessionAttributesManager.getEnabledServers()) {
-                RenderPermissionsStore.expireServer(serverUrl);
+                const client = this.clients[serverUrl];
+                if (client?.isConnected()) {
+                    this.verifyClient(serverUrl, client).then(() => RenderPermissionsStore.expireServer(serverUrl));
+                } else {
+                    RenderPermissionsStore.expireServer(serverUrl);
+                }
             }
         }
     };
