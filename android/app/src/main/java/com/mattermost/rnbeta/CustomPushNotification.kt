@@ -4,9 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import com.mattermost.helpers.ConversationShortcutHelper
 import com.mattermost.helpers.CustomPushNotificationHelper
 import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.Network
+import com.mattermost.helpers.NotificationConversationStore
 import com.mattermost.helpers.PushNotificationDataHelper
 import com.mattermost.helpers.database_extension.getServerUrlForIdentifier
 import com.mattermost.rnutils.helpers.NotificationHelper
@@ -130,7 +132,11 @@ class CustomPushNotification(
                     buildNotification(notificationId, false)
                 }
             }
-            CustomPushNotificationHelper.PUSH_TYPE_CLEAR -> NotificationHelper.clearChannelOrThreadNotifications(mContext, bundle)
+            CustomPushNotificationHelper.PUSH_TYPE_CLEAR -> {
+                NotificationHelper.clearChannelOrThreadNotifications(mContext, bundle)
+                NotificationConversationStore.clearConversation(mContext, bundle)
+                ConversationShortcutHelper.removeShortcut(mContext, bundle)
+            }
         }
 
         if (isReactInit) {
