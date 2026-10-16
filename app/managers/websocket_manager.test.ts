@@ -40,6 +40,8 @@ jest.mock('@queries/servers/system');
 jest.mock('@queries/servers/user');
 jest.mock('@utils/log');
 
+const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+
 describe('WebsocketManager', () => {
     let manager: typeof WebsocketManager;
     let mockWebSocketClient: any;
@@ -261,6 +263,9 @@ describe('WebsocketManager', () => {
     });
 
     describe('scheduleBackgroundCloseIfNeeded', () => {
+        // The manager is a singleton, so its connection state carries over from earlier tests.
+        const reportConnected = () => mockWebSocketClient.setReliableReconnectCallback.mock.calls[0][0]();
+
         beforeEach(async () => {
             await manager.init(mockCredentials);
         });
@@ -352,13 +357,15 @@ describe('WebsocketManager', () => {
         it('should keep a working socket open when the device switches networks', async () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi'});
+            await flushPromises();
+            reportConnected();
             jest.clearAllMocks();
 
             const states: string[] = [];
             const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => states.push(state));
 
             mockNetInfoCallback({isConnected: true, type: 'cellular'});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(mockWebSocketClient.verifyConnection).toHaveBeenCalled();
             expect(mockWebSocketClient.close).not.toHaveBeenCalled();
@@ -370,13 +377,15 @@ describe('WebsocketManager', () => {
         it('should report a socket not connected as soon as it fails verification after a network switch', async () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi'});
+            await flushPromises();
+            reportConnected();
             mockWebSocketClient.verifyConnection.mockResolvedValueOnce(false);
 
             const states: string[] = [];
             const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => states.push(state));
 
             mockNetInfoCallback({isConnected: true, type: 'cellular'});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(states).toEqual(['connected', 'not_connected']);
             subscription.unsubscribe();
@@ -392,7 +401,7 @@ describe('WebsocketManager', () => {
             jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(mockServerUrl);
 
             mockNetInfoCallback({isConnected: true, type: 'cellular'});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(mockWebSocketClient.verifyConnection).not.toHaveBeenCalled();
             expect(mockWebSocketClient.close).toHaveBeenCalledWith(true);
@@ -407,17 +416,18 @@ describe('WebsocketManager', () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
+            await flushPromises();
             expireServer.mockClear();
 
             // Same type, different SSID: handleStateChange sees nothing, but the subject changed.
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
             expect(expireServer).toHaveBeenCalledTimes(1);
             expect(expireServer).toHaveBeenCalledWith(mockServerUrl);
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'home'}});
             mockNetInfoCallback({isConnected: false, type: 'none'});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
             expect(expireServer).toHaveBeenCalledTimes(1);
             expireServer.mockRestore();
         });
@@ -429,13 +439,14 @@ describe('WebsocketManager', () => {
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: null}});
+            await flushPromises();
             expireServer.mockClear();
 
             mockNetInfoCallback({isConnected: false, type: 'none'});
             expect(expireServer).not.toHaveBeenCalled();
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: null}});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
             expect(expireServer).toHaveBeenCalledTimes(1);
             expireServer.mockRestore();
         });
@@ -448,7 +459,7 @@ describe('WebsocketManager', () => {
 
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
             mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(expireServer).not.toHaveBeenCalled();
             expireServer.mockRestore();
@@ -458,6 +469,7 @@ describe('WebsocketManager', () => {
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
+            await flushPromises();
             let settleVerification!: (alive: boolean) => void;
             mockWebSocketClient.verifyConnection.mockReturnValue(new Promise((resolve) => {
                 settleVerification = resolve;
@@ -465,11 +477,11 @@ describe('WebsocketManager', () => {
             const expireServer = jest.spyOn(RenderPermissionsStore, 'expireServer');
 
             mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
             expect(expireServer).not.toHaveBeenCalled();
 
             settleVerification(true);
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(expireServer).toHaveBeenCalledTimes(1);
             expireServer.mockRestore();
@@ -479,6 +491,8 @@ describe('WebsocketManager', () => {
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});
+            await flushPromises();
+            reportConnected();
             mockWebSocketClient.verifyConnection.mockResolvedValue(false);
 
             let stateWhenExpired: string | undefined;
@@ -490,7 +504,7 @@ describe('WebsocketManager', () => {
             });
 
             mockNetInfoCallback({isConnected: true, type: 'cellular', details: {}});
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(expireServer).toHaveBeenCalledTimes(1);
             expect(stateWhenExpired).toBe('not_connected');
@@ -516,7 +530,7 @@ describe('WebsocketManager', () => {
             mockCallbacks.firstConnect();
 
             // Wait for all promises to resolve
-            await new Promise((resolve) => setImmediate(resolve));
+            await flushPromises();
 
             expect(fetchStatusByIds).toHaveBeenCalledWith(mockServerUrl, ['user2']);
 
