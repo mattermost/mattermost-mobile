@@ -258,6 +258,7 @@ export default class WebSocketClient {
 
             if (ev.message && typeof ev.message === 'object' && 'code' in ev.message && ev.message.code === TLS_HANDSHARE_ERROR) {
                 logDebug('websocket did not connect', this.url, ev.message.reason);
+                this.connectFailCount++;
                 this.closeCallback?.(this.connectFailCount);
                 return;
             }
@@ -467,6 +468,10 @@ export default class WebSocketClient {
 
     public isConnected(): boolean {
         return this.conn?.readyState === WebSocketReadyState.OPEN;
+    }
+
+    public hasFailedToConnect(): boolean {
+        return this.connectFailCount > 0;
     }
 
     public getConnectionId(): string {
