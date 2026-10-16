@@ -234,10 +234,7 @@ export default class WebSocketClient {
                         return;
                     }
 
-                    // We are not calling this.close() because we need to auto-restart.
-                    this.responseSequence = 1;
-                    clearInterval(this.pingInterval);
-                    this.conn?.close();
+                    this.close(false);
                 },
                 PING_INTERVAL,
             );
@@ -441,12 +438,7 @@ export default class WebSocketClient {
         });
         const timeout = setTimeout(() => {
             logInfo('websocket did not answer a ping, reconnecting', this.url);
-            this.settleVerification(false);
-
-            // We are not calling this.close() because we need to auto-restart.
-            this.responseSequence = 1;
-            clearInterval(this.pingInterval);
-            this.conn?.close();
+            this.close(false);
         }, VERIFY_CONNECTION_TIMEOUT);
         this.waitingForPong = true;
         const seq = this.ping();
