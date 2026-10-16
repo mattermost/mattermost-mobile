@@ -101,9 +101,6 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         }
         attributeFieldId = field.id;
 
-        // # Wait for the server-side attribute view cache to expire (30s refresh gate)
-        await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
-
         const {team} = await Setup.apiInit(siteOneUrl);
         testTeam = team;
 
@@ -136,6 +133,9 @@ describe('Messaging - Redacted Files (ABAC)', () => {
         await AccessControl.apiSetUserPropertyValues(siteOneUrl, allowedUser.id, {
             [attributeFieldId as string]: 'Engineering',
         });
+
+        // # Wait for the server-side attribute view to pick up the values (30s refresh gate)
+        await wait(timeouts.HALF_MIN + timeouts.ONE_SEC);
 
         const upload = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, path.join(FIXTURES_DIR, 'sample.txt'));
         if (upload.error) {
