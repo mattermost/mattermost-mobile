@@ -881,6 +881,25 @@ describe('ClientTracking', () => {
             expect(client.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBe('shared-password');
         });
 
+        it('should persist but not send the shared password when the server URL is not https', () => {
+            const httpClient = new ClientTracking({...apiClientMock, baseUrl: 'http://example.com'} as unknown as APIClientInterface);
+            httpClient.setClientCredentials('bearer-token', 'shared-password');
+
+            expect(httpClient.requestHeaders[ClientConstants.HEADER_X_MATTERMOST_PREAUTH_SECRET]).toBeUndefined();
+            expect(require('@init/credentials').setServerCredentials).toHaveBeenCalledWith('http://example.com', 'bearer-token', 'shared-password');
+        });
+
+        it('should keep the persisted shared password on a token refresh when the server URL is not https', async () => {
+            const httpApiClient = {...apiClientMock, baseUrl: 'http://example.com'};
+            const httpClient = new ClientTracking(httpApiClient as unknown as APIClientInterface);
+            httpClient.setClientCredentials('bearer-token', 'shared-password');
+            httpApiClient.get.mockResolvedValueOnce({ok: true, data: {}, headers: {[ClientConstants.HEADER_TOKEN]: 'new-token'}});
+
+            await httpClient.doFetchWithTracking('http://example.com/api', {method: 'GET', groupLabel: 'Cold Start' as RequestGroupLabel});
+
+            expect(require('@init/credentials').setServerCredentials).toHaveBeenLastCalledWith('http://example.com', 'new-token', 'shared-password');
+        });
+
         it('should remove shared password header when undefined', () => {
             // First set a shared password
             client.setClientCredentials('bearer-token', 'shared-password');
