@@ -10,10 +10,6 @@ jest.mock('@init/credentials', () => ({
     removePreauthSecret: jest.fn(),
 }));
 
-jest.mock('@utils/log', () => ({
-    logWarning: jest.fn(),
-}));
-
 describe('restorePreviousPreauthSecret', () => {
     const serverUrl = 'https://example.com';
 
