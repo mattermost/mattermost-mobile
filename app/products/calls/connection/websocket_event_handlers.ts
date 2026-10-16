@@ -34,6 +34,7 @@ import {WebsocketEvents} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
+import {logInfo} from '@utils/log';
 
 import type {HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
@@ -132,6 +133,7 @@ export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyDa
     // to endNativeCall lets the stale-replay guard reject events for a prior
     // call whose call_end was buffered and replayed during a new call's ring.
     const callId = getCallsState(serverUrl).calls[channelId]?.id;
+    logInfo('handleCallEnded: call_end received', 'channelId', channelId, 'callId', callId ?? 'unknown');
 
     callEnded(serverUrl, channelId);
 

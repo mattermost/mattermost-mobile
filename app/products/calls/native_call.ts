@@ -9,7 +9,8 @@ import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
-import {logDebug} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 
 import {
     clearNativeCallMapping as clearMapping,
@@ -135,11 +136,19 @@ export const endNativeCall = (
     }
     const uuid = getNativeCallUUIDForCall(serverUrl, channelId, callId);
     if (!uuid) {
+        const unmatched = callId === undefined ? undefined : getNativeCallUUIDForCall(serverUrl, channelId);
+        if (unmatched) {
+            const mappedCallId = getNativeCallMapping(unmatched)?.callId || 'unset';
+            logInfo('endNativeCall: ignored, the ringing call has another callId', 'uuid', unmatched, 'callId', callId, 'mappedCallId', mappedCallId, 'reason', reason);
+        } else {
+            logDebug('endNativeCall: no native call for channel', 'channelId', channelId, 'reason', reason);
+        }
         return;
     }
+    logInfo('endNativeCall: reporting ended', 'uuid', uuid, 'reason', reason);
     clearNativeCallMapping(uuid);
     CallsNative.reportEnded(uuid, reason).catch((err) => {
-        logDebug('CallsNative.reportEnded failed', err);
+        logWarning('endNativeCall: reportEnded failed', 'uuid', uuid, getFullErrorMessage(err));
     });
 };
 
