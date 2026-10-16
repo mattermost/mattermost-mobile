@@ -6,7 +6,7 @@
 // *******************************************************************
 
 import {Channel, Setup, System, User} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {
     hasSharedChannels,
     serverOneUrl,
@@ -108,15 +108,17 @@ jest.setTimeout(360000);
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         await User.apiAdminLogin(siteOneUrl);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
 
         // Hand the shared server back as provisioning left it. TC-MOB-02 switches the workspace
         // flags off mid-suite, so leaving them would strand later shards without shared channels.
         await System.apiPatchConfig(siteOneUrl, {
-            AutoTranslationSettings: {
-                Enable: originalAutoTranslationEnabled ?? false,
-            },
+            ...(originalAutoTranslationEnabled === undefined ? {} : {AutoTranslationSettings: {Enable: originalAutoTranslationEnabled}}),
             ConnectedWorkspacesSettings: {
                 EnableSharedChannels: true,
                 EnableRemoteClusterService: true,

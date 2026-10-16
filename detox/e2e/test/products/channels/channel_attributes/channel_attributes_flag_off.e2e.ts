@@ -16,7 +16,7 @@ import {
 import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Channel, Properties, Team, User} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -58,6 +58,10 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         try {
             await Properties.apiCleanupChannelAttributeFields(siteOneUrl, [...ALL_TEST_FIELD_NAMES]);
 

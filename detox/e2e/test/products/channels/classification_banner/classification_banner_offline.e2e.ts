@@ -9,7 +9,7 @@
 
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -57,6 +57,10 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         // Logout runs even if cleanup fails. ClassificationMarkings stays on, as the baseline expects.
         try {
             await Properties.apiCleanupClassification(siteOneUrl);

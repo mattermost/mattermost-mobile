@@ -9,7 +9,7 @@
 
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Post, Properties, Setup, System} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {
@@ -67,6 +67,10 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         try {
             await Properties.apiCleanupClassification(siteOneUrl);
         } finally {

@@ -13,7 +13,7 @@ import {
     TermsOfService,
     User,
 } from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {
     ChannelListScreen,
@@ -69,6 +69,10 @@ describe('Server Login - Custom Terms of Service', () => {
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         await User.apiAdminLogin(siteOneUrl);
 
         const {error, status} = await TermsOfService.apiDisableCustomTermsOfService(siteOneUrl);

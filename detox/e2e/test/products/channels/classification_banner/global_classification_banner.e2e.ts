@@ -9,7 +9,7 @@
 
 import {enableClassificationMarkings} from '@support/classification_test_helper';
 import {Properties, Setup, System} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {serverOneUrl, siteOneUrl} from '@support/test_config';
 import {GlobalClassificationBanner} from '@support/ui/component';
 import {ChannelListScreen, ChannelScreen, GlobalThreadsScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
@@ -39,6 +39,10 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         try {
             // Clean up the classification config but leave the feature flag enabled.
             await Properties.apiCleanupClassification(siteOneUrl);

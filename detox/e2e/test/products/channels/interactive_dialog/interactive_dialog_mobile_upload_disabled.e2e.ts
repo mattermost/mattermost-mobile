@@ -18,7 +18,7 @@ import {
     setUpDialogSuite,
 } from '@support/interactive_dialog_plugin_helper';
 import {System, User} from '@support/server_api';
-import {requireMutationServer} from '@support/server_role';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {siteOneUrl} from '@support/test_config';
 import {InteractiveDialogScreen} from '@support/ui/screen';
 import {wait} from '@support/utils';
@@ -41,6 +41,10 @@ describe('Interactive Dialog - File Upload Disabled (Plugin)', () => {
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            return;
+        }
+
         try {
             await User.apiAdminLogin(siteOneUrl);
             const {error} = await System.apiUpdateConfig(siteOneUrl, {FileSettings: {EnableMobileUpload: true}});
