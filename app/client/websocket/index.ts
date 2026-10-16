@@ -41,6 +41,7 @@ export default class WebSocketClient {
     private pendingVerification?: {
         promise: Promise<boolean>;
         resolve: (alive: boolean) => void;
+        seq: number;
         timeout: NodeJS.Timeout;
     };
 
@@ -326,7 +327,9 @@ export default class WebSocketClient {
                 }
                 if (msg.data?.text === WebsocketEvents.PONG) {
                     this.waitingForPong = false;
-                    this.settleVerification(true);
+                    if (msg.seq_reply === this.pendingVerification?.seq) {
+                        this.settleVerification(true);
+                    }
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -445,10 +448,9 @@ export default class WebSocketClient {
             clearInterval(this.pingInterval);
             this.conn?.close();
         }, VERIFY_CONNECTION_TIMEOUT);
-        this.pendingVerification = {promise, resolve, timeout};
-
         this.waitingForPong = true;
-        this.ping();
+        const seq = this.ping();
+        this.pendingVerification = {promise, resolve, seq, timeout};
 
         return promise;
     }
@@ -498,6 +500,8 @@ export default class WebSocketClient {
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.send(JSON.stringify(msg));
         }
+
+        return msg.seq;
     }
 
     private sendMessage(action: string, data: any) {

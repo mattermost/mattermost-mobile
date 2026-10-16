@@ -421,6 +421,21 @@ describe('WebSocketClient', () => {
             expect(client.isConnected()).toBe(true);
         });
 
+        it('should not count the pong to an earlier ping as verification', async () => {
+            await client.initialize();
+            await advanceTimers(10);
+
+            const settled = jest.fn();
+            const verified = client.verifyConnection();
+            verified.then(settled);
+            pong(2);
+            await advanceTimers(10);
+            expect(settled).not.toHaveBeenCalled();
+
+            pong(3);
+            await expect(verified).resolves.toBe(true);
+        });
+
         it('should close the socket to reconnect when the ping goes unanswered', async () => {
             await client.initialize();
             await advanceTimers(10);
