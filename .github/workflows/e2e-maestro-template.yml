@@ -162,7 +162,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.maestro
-          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-macos
+          key: maestro-c8c361be1cc89b2e742f185466a302a22778be6b-macos
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -780,7 +780,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.maestro
-          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-linux
+          key: maestro-c8c361be1cc89b2e742f185466a302a22778be6b-linux
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
