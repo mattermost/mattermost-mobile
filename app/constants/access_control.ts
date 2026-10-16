@@ -13,3 +13,7 @@ export const RenderPermissionAction = {
 export type RenderPermissionActionName = typeof RenderPermissionAction[keyof typeof RenderPermissionAction];
 
 export const RENDER_PERMISSION_RESOURCE_CHANNEL = 'channel';
+
+// The permission policy action the server sanitizes post file metadata under, which the client acts on
+// through redaction rather than a render decision.
+export const DOWNLOAD_FILE_ATTACHMENT_ACTION = 'download_file_attachment';

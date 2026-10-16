@@ -113,14 +113,29 @@ class RenderPermissionsStoreSingleton {
      * flight: by a network change (the answer was evaluated for the old network) or by the server being
      * removed (it belongs to a session that no longer exists, even if the user logged straight back in).
      * The slot is released before storing, so an answer that is already stale can be refetched at once.
+     * Returns whether the claim was still current, so the caller acts only on an answer that was kept.
      */
     finishFetch = (serverUrl: string, channelId: string, claim: FetchClaim, entry?: RenderPermissionsEntry, ttlMs = RENDER_PERMISSIONS_TTL_MS) => {
         if (this.claims[serverUrl]?.get(channelId) !== claim) {
-            return;
+            return false;
         }
         this.claims[serverUrl].delete(channelId);
         if (entry) {
             this.setEntry(serverUrl, channelId, entry, ttlMs);
+        }
+        return true;
+    };
+
+    /**
+     * Revokes the claims of requests in flight, for one channel or the whole server, so their answers
+     * are discarded and the next fetch is not deduplicated into them. Used when the server reports an
+     * ABAC change: those requests were evaluated before it.
+     */
+    revokeFetches = (serverUrl: string, channelId?: string) => {
+        if (channelId) {
+            this.claims[serverUrl]?.delete(channelId);
+        } else {
+            this.claims[serverUrl]?.clear();
         }
     };
 

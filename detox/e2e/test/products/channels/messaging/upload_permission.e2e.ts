@@ -64,10 +64,6 @@ describe('Messaging - Upload Permission (ABAC)', () => {
 
         const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
         originalSettings = {
-            FeatureFlags: {
-                AttributeBasedAccessControl: originalConfig?.FeatureFlags?.AttributeBasedAccessControl,
-                PermissionPolicies: originalConfig?.FeatureFlags?.PermissionPolicies,
-            },
             AccessControlSettings: {
                 EnableAttributeBasedAccessControl: originalConfig?.AccessControlSettings?.EnableAttributeBasedAccessControl,
                 EnableUserManagedAttributes: originalConfig?.AccessControlSettings?.EnableUserManagedAttributes,
@@ -81,10 +77,17 @@ describe('Messaging - Upload Permission (ABAC)', () => {
             PasswordSettings: {MinimumLength: 8},
         });
 
-        // # Enable ABAC and PermissionPolicies feature flags
-        await System.apiUpdateConfig(siteOneUrl, {
-            FeatureFlags: {AttributeBasedAccessControl: true, PermissionPolicies: true},
-        });
+        // # Make sure the feature flags are on. Only flags that are off get written, and the others
+        // are left as they are, so suites sharing this server keep their flags. They are not turned
+        // back off afterwards: PermissionPolicies is on by default, the ABAC flag only exists on
+        // servers older than 11.10, and the other ABAC suite may still be running.
+        const {error: flagsError} = await System.apiEnableFeatureFlags(siteOneUrl, [
+            'AttributeBasedAccessControl',
+            'PermissionPolicies',
+        ]);
+        if (flagsError) {
+            throw new Error(`Failed to enable the feature flags: ${JSON.stringify(flagsError)}`);
+        }
         const {error: abacError} = await AccessControl.apiEnableABAC(siteOneUrl);
         if (abacError) {
             throw new Error(`Failed to enable ABAC: ${JSON.stringify(abacError)}`);
