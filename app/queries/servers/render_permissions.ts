@@ -31,9 +31,9 @@ const observeRenderPermissionsEnforced = (database: Database): Observable<boolea
 
 /**
  * Whether the current user may perform an action in a channel, as decided by ABAC permission
- * policies. Emits `allowWhenUnenforced` while ABAC is not enforced or the server predates the decisions
- * API, and `allowWhenNotEvaluated` until a decision is stored; it never fetches one itself (see
- * useFetchRenderPermissions).
+ * policies. Emits `allowWhenUnenforced` while ABAC is not enforced, the server predates the decisions
+ * API or it answered without the action, and `allowWhenNotEvaluated` until an answer is stored; it
+ * never fetches one itself (see useFetchRenderPermissions).
  */
 export const observeRenderPermission = (
     database: Database,
