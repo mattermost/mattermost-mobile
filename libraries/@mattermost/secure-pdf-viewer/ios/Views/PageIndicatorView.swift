@@ -69,7 +69,9 @@ class PageIndicatorView: UIView {
     }
 
     public func updatePage(current: Int, total: Int) {
-        label.text = "\(current) of \(total)"
+        label.text = NSLocalizedString("native.ios.pdf.page_indicator", bundle: .main, value: "{current} of {total}", comment: "Current PDF page and total pages")
+            .replacingOccurrences(of: "{current}", with: String(current))
+            .replacingOccurrences(of: "{total}", with: String(total))
         updateWidth()
     }
     

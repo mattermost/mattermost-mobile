@@ -175,6 +175,28 @@
 		C9A107122BBDA00200753CDC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9A107112BBDA00200753CDC /* PrivacyInfo.xcprivacy */; };
 		C9A107142BBDBC8F00753CDC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C9A107132BBDBC8F00753CDC /* PrivacyInfo.xcprivacy */; };
 		EC5A74C9C7BE208EB8ECA076 /* Pods_Mattermost.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FA24657E0EE0B2378EFED0E /* Pods_Mattermost.framework */; };
+		4A045F0D459D223933A3A4C0 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE1A2A12616500DDF4AE /* Localizable.strings */; };
+		CB2080EAC64A3299AC12BD8C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE022A1260C900DDF4AE /* Localizable.strings */; };
+		D738C2D54E103ECA16158D25 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67AE0FC32A0556A500810C56 /* Localizable.strings */; };
+		4C8B6D9A6E7E4BBE56DAB1D9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE1E2A12616F00DDF4AE /* Localizable.strings */; };
+		03AEB01641B3C9D471A9254B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADF22A1260A900DDF4AE /* Localizable.strings */; };
+		D4666D3931028B12D6C69C93 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADDE2A12603600DDF4AE /* Localizable.strings */; };
+		95DBBE3CE5AE0BEBD9F71CC5 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADE22A12603F00DDF4AE /* Localizable.strings */; };
+		CDD78D8D64BCFF4B56F355D1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADDA2A12602A00DDF4AE /* Localizable.strings */; };
+		7CE2EE3EEC4A7520F7399C88 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADF62A1260B200DDF4AE /* Localizable.strings */; };
+		BAA950F46C427CA9BF66E2BA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE122A12614F00DDF4AE /* Localizable.strings */; };
+		40A3B53BDC9124A2C94E8ACB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADFE2A1260C200DDF4AE /* Localizable.strings */; };
+		3AAD803D745A82D95A3E6A91 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADFA2A1260B900DDF4AE /* Localizable.strings */; };
+		4B117BE45934BB2625E9564E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADEA2A12608900DDF4AE /* Localizable.strings */; };
+		14C89C87B67C41B9D83143F8 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADD62A0E96DD00DDF4AE /* Localizable.strings */; };
+		6E9838EE9AA2C4311CF16E7D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE0E2A12613000DDF4AE /* Localizable.strings */; };
+		B84DC463A6AA70885850359B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADEE2A12609300DDF4AE /* Localizable.strings */; };
+		B125D1A230B9362B23B6F4DC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE062A12611B00DDF4AE /* Localizable.strings */; };
+		8E8ED022F477377144886C0C /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEADE62A12604900DDF4AE /* Localizable.strings */; };
+		A2C7977A9C99CB8D20ED84F7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE162A12615900DDF4AE /* Localizable.strings */; };
+		8C07E3731802AA19357E0A57 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE222A12618000DDF4AE /* Localizable.strings */; };
+		7AE592340B4799A6E19235CC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE0A2A12612500DDF4AE /* Localizable.strings */; };
+		8ED4E7897CC4F03ED4486E65 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 67FEAE262A1261A000DDF4AE /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1206,6 +1228,28 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A045F0D459D223933A3A4C0 /* Localizable.strings in Resources */,
+				CB2080EAC64A3299AC12BD8C /* Localizable.strings in Resources */,
+				D738C2D54E103ECA16158D25 /* Localizable.strings in Resources */,
+				4C8B6D9A6E7E4BBE56DAB1D9 /* Localizable.strings in Resources */,
+				03AEB01641B3C9D471A9254B /* Localizable.strings in Resources */,
+				D4666D3931028B12D6C69C93 /* Localizable.strings in Resources */,
+				95DBBE3CE5AE0BEBD9F71CC5 /* Localizable.strings in Resources */,
+				CDD78D8D64BCFF4B56F355D1 /* Localizable.strings in Resources */,
+				7CE2EE3EEC4A7520F7399C88 /* Localizable.strings in Resources */,
+				BAA950F46C427CA9BF66E2BA /* Localizable.strings in Resources */,
+				40A3B53BDC9124A2C94E8ACB /* Localizable.strings in Resources */,
+				3AAD803D745A82D95A3E6A91 /* Localizable.strings in Resources */,
+				4B117BE45934BB2625E9564E /* Localizable.strings in Resources */,
+				14C89C87B67C41B9D83143F8 /* Localizable.strings in Resources */,
+				6E9838EE9AA2C4311CF16E7D /* Localizable.strings in Resources */,
+				B84DC463A6AA70885850359B /* Localizable.strings in Resources */,
+				B125D1A230B9362B23B6F4DC /* Localizable.strings in Resources */,
+				8E8ED022F477377144886C0C /* Localizable.strings in Resources */,
+				A2C7977A9C99CB8D20ED84F7 /* Localizable.strings in Resources */,
+				8C07E3731802AA19357E0A57 /* Localizable.strings in Resources */,
+				7AE592340B4799A6E19235CC /* Localizable.strings in Resources */,
+				8ED4E7897CC4F03ED4486E65 /* Localizable.strings in Resources */,
 				7FDEF5362C2D01CC0093AADB /* certs in Resources */,
 				83ABFD132C1C90D90029685B /* calls_cheerful.mp3 in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
