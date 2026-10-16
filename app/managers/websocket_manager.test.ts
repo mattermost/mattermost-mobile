@@ -75,6 +75,7 @@ describe('WebsocketManager', () => {
             }),
             initialize: jest.fn(),
             isConnected: jest.fn().mockReturnValue(true),
+            verifyConnection: jest.fn().mockResolvedValue(true),
             close: jest.fn(),
             invalidate: jest.fn(),
             waitForClose: jest.fn().mockResolvedValue(undefined),
@@ -348,6 +349,55 @@ describe('WebsocketManager', () => {
             expect(manager.getClient(mockServerUrl)?.close).toHaveBeenCalled();
         });
 
+        it('should keep a working socket open when the device switches networks', async () => {
+            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+            mockNetInfoCallback({isConnected: true, type: 'wifi'});
+            jest.clearAllMocks();
+
+            const states: string[] = [];
+            const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => states.push(state));
+
+            mockNetInfoCallback({isConnected: true, type: 'cellular'});
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(mockWebSocketClient.verifyConnection).toHaveBeenCalledTimes(1);
+            expect(mockWebSocketClient.close).not.toHaveBeenCalled();
+            expect(mockWebSocketClient.initialize).not.toHaveBeenCalled();
+            expect(states.slice(-2)).toEqual(['connecting', 'connected']);
+            subscription.unsubscribe();
+        });
+
+        it('should not report a socket connected when it fails verification after a network switch', async () => {
+            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+            mockNetInfoCallback({isConnected: true, type: 'wifi'});
+            mockWebSocketClient.verifyConnection.mockResolvedValueOnce(false);
+
+            const states: string[] = [];
+            const subscription = manager.observeWebsocketState(mockServerUrl).subscribe((state) => states.push(state));
+
+            mockNetInfoCallback({isConnected: true, type: 'cellular'});
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(states[states.length - 1]).toBe('connecting');
+            subscription.unsubscribe();
+        });
+
+        it('should reconnect a socket that is not open when the device switches networks', async () => {
+            const mockAppStateChange = (AppState.addEventListener as jest.Mock).mock.calls[0][1];
+            const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
+            mockAppStateChange('active');
+            mockNetInfoCallback({isConnected: true, type: 'wifi'});
+            jest.clearAllMocks();
+            mockWebSocketClient.isConnected.mockReturnValue(false);
+            jest.spyOn(DatabaseManager, 'getActiveServerUrl').mockResolvedValue(mockServerUrl);
+
+            mockNetInfoCallback({isConnected: true, type: 'cellular'});
+            await new Promise((resolve) => setImmediate(resolve));
+
+            expect(mockWebSocketClient.verifyConnection).not.toHaveBeenCalled();
+            expect(mockWebSocketClient.initialize).toHaveBeenCalled();
+        });
+
         it('should revalidate render-time permission decisions when the device changes networks', () => {
             // Network session attributes feed ABAC decisions and change with no server event.
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
@@ -398,7 +448,7 @@ describe('WebsocketManager', () => {
             expireServer.mockRestore();
         });
 
-        it('should close the sockets before revalidating on a network switch, so the revalidation waits for the reconnect', () => {
+        it('should mark the sockets unverified before revalidating on a network switch, so the revalidation waits for them', () => {
             jest.mocked(SessionAttributesManager.getEnabledServers).mockReturnValue([mockServerUrl]);
             const mockNetInfoCallback = (NetInfo.addEventListener as jest.Mock).mock.calls[0][0];
             mockNetInfoCallback({isConnected: true, type: 'wifi', details: {ssid: 'office'}});

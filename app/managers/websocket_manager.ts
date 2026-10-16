@@ -129,9 +129,30 @@ class WebsocketManagerSingleton {
         }
     };
 
+    // Until the ping is answered the socket counts as connecting, so nothing waiting on 'connected'
+    // reaches the server mid-switch.
+    private verifyAll = () => {
+        for (const [url, client] of Object.entries(this.clients)) {
+            if (!client.isConnected()) {
+                continue;
+            }
+
+            this.getConnectedSubject(url).next('connecting');
+            client.verifyConnection().then((alive) => {
+                if (alive && this.clients[url] === client) {
+                    this.getConnectedSubject(url).next('connected');
+                }
+            });
+        }
+    };
+
     public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {
+            if (this.isConnected(clientUrl)) {
+                continue;
+            }
+
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             if (clientUrl === activeServerUrl) {
                 this.initializeClient(clientUrl, groupLabel);
@@ -262,8 +283,8 @@ class WebsocketManagerSingleton {
         const newState = Boolean(netState.isConnected);
         this.handleStateChange(newState, netState.type, this.previousActiveState);
 
-        // After handleStateChange so a network type switch has already closed the sockets: the
-        // revalidation then waits for the reconnect instead of going out mid-switch.
+        // After handleStateChange so a network type switch has already marked the sockets as
+        // connecting: the revalidation then waits for them to be verified instead of going out mid-switch.
         this.expireNetworkBoundDecisions(netState);
     };
 
@@ -313,11 +334,11 @@ class WebsocketManagerSingleton {
         }
 
         if (switchedNetworks) {
-            // Close all connections when we switch from (for example) vpn to wifi
-            // to ensure we are using the right network and doesn't get stuck on
-            // retries.
-            logDebug('WebSocketManager: closing all connections, network switched', 'from', previousNetType, 'to', currentNetType);
-            this.closeAll();
+            // An open socket may or may not have survived the switch, so ping it rather than closing a
+            // working connection. Sockets that aren't open are reconnected right away by openAll below,
+            // instead of waiting out their retry backoff.
+            logDebug('WebSocketManager: verifying all connections, network switched', 'from', previousNetType, 'to', currentNetType);
+            this.verifyAll();
         }
 
         if (currentIsActive) {

@@ -17,6 +17,7 @@ const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
 const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
 const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 const PING_INTERVAL = toMilliseconds({seconds: 30});
+const VERIFY_CONNECTION_TIMEOUT = toMilliseconds({seconds: 5});
 const WAIT_FOR_CLOSE_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
     forceConnection: true,
@@ -37,6 +38,11 @@ export default class WebSocketClient {
     private pingInterval: NodeJS.Timeout | undefined;
     private waitingForPong: boolean = false;
     private pendingCloseResolver?: () => void;
+    private pendingVerification?: {
+        promise: Promise<boolean>;
+        resolve: (alive: boolean) => void;
+        timeout: NodeJS.Timeout;
+    };
 
     // The first time we connect to a server (on init or login)
     // we do the sync out of the websocket lifecycle.
@@ -244,6 +250,7 @@ export default class WebSocketClient {
 
             this.conn = undefined;
             this.responseSequence = 1;
+            this.settleVerification(false);
 
             if (this.pendingCloseResolver) {
                 this.pendingCloseResolver();
@@ -319,6 +326,7 @@ export default class WebSocketClient {
                 }
                 if (msg.data?.text === WebsocketEvents.PONG) {
                     this.waitingForPong = false;
+                    this.settleVerification(true);
                 }
             } else if (this.eventCallback) {
                 if (reliableWebSockets) {
@@ -407,7 +415,52 @@ export default class WebSocketClient {
         this.responseSequence = 1;
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.close();
+    }
+
+    /**
+     * Checks that an open socket still reaches the server, e.g. after the device changes networks, and
+     * closes it (auto-reconnecting) only if the ping goes unanswered. Concurrent calls share one ping.
+     */
+    public verifyConnection(): Promise<boolean> {
+        if (this.pendingVerification) {
+            return this.pendingVerification.promise;
+        }
+
+        if (!this.isConnected()) {
+            return Promise.resolve(false);
+        }
+
+        let resolve!: (alive: boolean) => void;
+        const promise = new Promise<boolean>((r) => {
+            resolve = r;
+        });
+        const timeout = setTimeout(() => {
+            logInfo('websocket did not answer a ping, reconnecting', this.url);
+            this.settleVerification(false);
+
+            // We are not calling this.close() because we need to auto-restart.
+            this.responseSequence = 1;
+            clearInterval(this.pingInterval);
+            this.conn?.close();
+        }, VERIFY_CONNECTION_TIMEOUT);
+        this.pendingVerification = {promise, resolve, timeout};
+
+        this.waitingForPong = true;
+        this.ping();
+
+        return promise;
+    }
+
+    private settleVerification(alive: boolean) {
+        if (!this.pendingVerification) {
+            return;
+        }
+
+        clearTimeout(this.pendingVerification.timeout);
+        this.pendingVerification.resolve(alive);
+        this.pendingVerification = undefined;
     }
 
     public waitForClose(): Promise<void> {
@@ -431,6 +484,7 @@ export default class WebSocketClient {
     public invalidate() {
         clearTimeout(this.connectionTimeout);
         clearInterval(this.pingInterval);
+        this.settleVerification(false);
         this.conn?.invalidate();
         this.conn = undefined;
     }
