@@ -89,9 +89,13 @@ export async function uploadMultipartFile<T = unknown>(
     filePath: string,
     fieldName: string,
     token?: string,
+    fields: Record<string, string> = {},
 ): Promise<ApiResponse<T>> {
     const form = new FormData();
     form.append(fieldName, fs.createReadStream(filePath), path.basename(filePath));
+    for (const [name, value] of Object.entries(fields)) {
+        form.append(name, value);
+    }
 
     const response = await axios.request({
         url: `${client.serverUrl}${requestPath}`,

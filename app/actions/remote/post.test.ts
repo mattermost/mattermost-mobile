@@ -3,16 +3,18 @@
 
 /* eslint-disable max-lines */
 
-import {ActionType, Post, ServerErrors} from '@constants';
+import {ActionType, General, Post, ServerErrors} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import PostModel from '@database/models/server/post';
 import NetworkManager from '@managers/network_manager';
-import {getPostById, getRecentPostsInChannel, queryPostsInChannel} from '@queries/servers/post';
+import {getPostById, getRecentPostsInChannel, queryPostsById, queryPostsInChannel} from '@queries/servers/post';
+import EphemeralStore from '@store/ephemeral_store';
 import TestHelper from '@test/test_helper';
 import {getFullErrorMessage} from '@utils/errors';
 
 import * as LocalChannelActions from '../local/channel';
+import {RedactionInvalidationReason, invalidateRedactionGlobally} from '../local/redaction';
 
 import {
     createPost,
@@ -25,10 +27,12 @@ import {
     unacknowledgePost,
     revealBoRPost,
     fetchPostsForChannel,
+    refetchPostsForRedaction,
     refreshPostsForChannel,
     fetchPostsForUnreadChannels,
     fetchPosts,
     fetchPostsBefore,
+    revalidatePostsBefore,
     fetchPostsSince,
     fetchPostAuthors,
     fetchPostThread,
@@ -272,6 +276,25 @@ describe('create, update & delete posts', () => {
         expect(result).toBeDefined();
         expect(result.error).toBeUndefined();
         expect(result.data).toBeTruthy();
+    });
+
+    it('createPost - should store the created post verified under the current epoch', async () => {
+        // Left unstamped, the author's own attachments would show the unverified placeholder and cost
+        // a re-check, and the channel's newest post would force a page fetch on every visit.
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        await createPost(serverUrl, post1);
+
+        const rows = await queryPostsById(operator.database, ['newid']).fetch();
+        expect(rows[0].redactionVerifiedEpoch).toBe(1);
     });
 
     it('createPost - without reactions', async () => {
@@ -826,6 +849,325 @@ describe('get posts', () => {
         expect(result.error).toBeUndefined();
         expect(result.posts).toBeTruthy();
         expect(result.posts?.length).toBe(2);
+    });
+
+    it('refetchPostsForRedaction - should re-verify with a page after the since-fetch when the channel already has posts', async () => {
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [post1],
+            prepareRecordsOnly: false,
+        });
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+
+        const result = await refetchPostsForRedaction(serverUrl, channelId);
+
+        // The page re-verifies what we hold; only the since-fetch carries deletions and edits.
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
+    });
+
+    it('fetchPosts - should stamp the epoch it was dispatched under, even when a later invalidation lands in flight', async () => {
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+
+        const stored = await fetchPosts(serverUrl, channelId);
+        expect(stored.error).toBeUndefined();
+        expect(stored.redactionVerifiedEpoch).toBe(1);
+        const rows = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(rows[0].redactionVerifiedEpoch).toBe(1);
+
+        // The response is still stored, so its new posts and edits are not lost, but under the epoch
+        // it was dispatched at: the invalidation that landed in flight leaves it behind the gate.
+        let requiredEpoch: number | undefined;
+        (mockClient.getPosts as jest.Mock).mockImplementationOnce(async () => {
+            requiredEpoch = await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+            return {order: [post1.id], posts: {[post1.id]: {...post1, message: 'edited in flight', update_at: post1.update_at + 1}}};
+        });
+
+        const superseded = await fetchPosts(serverUrl, channelId);
+        expect(superseded.posts).toHaveLength(1);
+        const after = await queryPostsById(operator.database, [post1.id]).fetch();
+        expect(after[0].message).toBe('edited in flight');
+        expect(after[0].redactionVerifiedEpoch).toBe(1);
+        expect(requiredEpoch).toBe(2);
+    });
+
+    it('fetchPostsForChannel - should re-verify with a page after the since-fetch when cached posts are behind the required epoch', async () => {
+        // The persisted epoch replaces the in-memory stale flag precisely so this survives a restart:
+        // a since-fetch filters on UpdateAt, which an ABAC change never moves.
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, metadata: {redacted_file_count: 1}}],
+            prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
+        });
+
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+
+        mockClient.getPosts.mockClear();
+        mockClient.getPostsSince.mockClear();
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
+    });
+
+    describe('fetchPostsForChannel - re-verification settles once the newest page is re-stamped', () => {
+        // After an invalidation the first visit needs since + page. A second visit with no new
+        // invalidation must not page again: the page already re-verified everything it can.
+        const setupChannelWithPosts = async (count: number, metadata: PostMetadata = {redacted_file_count: 1}) => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handleMyChannel({channels: [{
+                id: channelId,
+                team_id: teamId,
+                total_msg_count: 0,
+                creator_id: user1.id,
+            } as Channel],
+            myChannels: [{
+                id: 'id',
+                channel_id: channelId,
+                user_id: user1.id,
+                msg_count: 0,
+            } as ChannelMembership],
+            prepareRecordsOnly: false});
+
+            // Every post carries attachment evidence, newest first, all in one PostsInChannel interval,
+            // so only the page cap can explain the second visit not paging.
+            const posts = Array.from({length: count}, (_, i) => TestHelper.fakePost({
+                id: `settle-post-${i}`,
+                channel_id: channelId,
+                user_id: user1.id,
+                create_at: 100000 - i,
+                update_at: 100000 - i,
+                metadata,
+            }));
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: posts.map((p) => p.id),
+                posts,
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+
+            // The server returns the newest POST_CHUNK_SIZE posts for page 0, and nothing new since.
+            const page = posts.slice(0, General.POST_CHUNK_SIZE);
+            const pageResponse = {
+                posts: Object.fromEntries(page.map((p) => [p.id, p])),
+                order: page.map((p) => p.id),
+            };
+            (mockClient.getPosts as jest.Mock).mockImplementation(() => pageResponse);
+            (mockClient.getPostsSince as jest.Mock).mockImplementation(() => ({posts: {}, order: []}));
+            mockClient.getPosts.mockClear();
+            mockClient.getPostsSince.mockClear();
+        };
+
+        // getPosts is the shared genericGetPostsMock, so its original implementation is restored rather
+        // than the mock itself.
+        const originalGetPosts = genericGetPostsMock.getMockImplementation();
+        const originalGetPostsSince = (mockClient.getPostsSince as jest.Mock).getMockImplementation();
+        afterEach(() => {
+            (mockClient.getPosts as jest.Mock).mockImplementation(originalGetPosts);
+            (mockClient.getPostsSince as jest.Mock).mockImplementation(originalGetPostsSince);
+        });
+
+        it.each([
+            ['exactly a page of cached posts (control)', 60],
+            ['more cached posts than one page', 61],
+        ])('should not page again on the second visit with %s', async (_label, count) => {
+            expect(General.POST_CHUNK_SIZE).toBe(60);
+            await setupChannelWithPosts(count);
+
+            const first = await fetchPostsForChannel(serverUrl, channelId);
+            expect(first.error).toBeUndefined();
+            expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
+
+            (mockClient.getPosts as jest.Mock).mockClear();
+            const second = await fetchPostsForChannel(serverUrl, channelId);
+            expect(second.error).toBeUndefined();
+            expect(mockClient.getPosts).not.toHaveBeenCalled();
+        });
+
+        it('should not page for unverified posts whose rendering does not depend on the decision', async () => {
+            // Text-only posts are never re-stamped by anything, so counting them would page every visit.
+            await setupChannelWithPosts(1, {});
+
+            const result = await fetchPostsForChannel(serverUrl, channelId);
+            expect(result.error).toBeUndefined();
+            expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+            expect(mockClient.getPosts).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('revalidatePostsBefore', () => {
+        const history = Array.from({length: 3}, (_, i) => TestHelper.fakePost({
+            id: `history-${i}`,
+            channel_id: channelId,
+            user_id: user1.id,
+            create_at: 5000 - (i * 100),
+            update_at: 5000 - (i * 100),
+            metadata: {redacted_file_count: 1},
+        }));
+
+        const setup = async () => {
+            await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+            await operator.handleConfigs({
+                configs: [
+                    {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                    {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+                ],
+                configsToDelete: [],
+                prepareRecordsOnly: false,
+            });
+            await operator.handlePosts({
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+                order: history.map((p) => p.id),
+                posts: history,
+                prepareRecordsOnly: false,
+                redactionVerifiedEpoch: 1,
+            });
+            await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        };
+
+        it('should re-stamp the block under the dispatch epoch without touching history or the loading state', async () => {
+            await setup();
+            const database = DatabaseManager.serverDatabases[serverUrl]!.database;
+            const intervalsBefore = (await queryPostsInChannel(database, channelId).fetch()).map((c) => [c.earliest, c.latest]);
+
+            // The block reaches past the stored interval: it must not be widened over it.
+            const older = TestHelper.fakePost({id: 'older', channel_id: channelId, user_id: user1.id, create_at: 4000, update_at: 4000});
+            const block = [history[1], history[2], older];
+            (mockClient.getPostsBefore as jest.Mock).mockImplementationOnce(() => ({
+                posts: Object.fromEntries(block.map((p) => [p.id, p])),
+                order: block.map((p) => p.id),
+            }));
+            const loading = jest.spyOn(EphemeralStore, 'addLoadingMessagesForChannel');
+
+            const result = await revalidatePostsBefore(serverUrl, channelId, history[0].id);
+
+            expect(result.error).toBeUndefined();
+            expect(result.oldestCreateAt).toBe(4000);
+            const rows = await queryPostsById(database, [history[0].id, history[1].id, history[2].id]).fetch();
+            const epochs = Object.fromEntries(rows.map((r) => [r.id, r.redactionVerifiedEpoch]));
+            expect(epochs).toEqual({[history[0].id]: 1, [history[1].id]: 2, [history[2].id]: 2});
+            expect((await queryPostsInChannel(database, channelId).fetch()).map((c) => [c.earliest, c.latest])).toEqual(intervalsBefore);
+            expect(loading).not.toHaveBeenCalled();
+            loading.mockRestore();
+        });
+
+        it('should return the error and leave the posts unverified when the page fails', async () => {
+            await setup();
+            (mockClient.getPostsBefore as jest.Mock).mockRejectedValueOnce(new Error('network down'));
+
+            const result = await revalidatePostsBefore(serverUrl, channelId, history[0].id);
+
+            expect(result.error).toBeTruthy();
+            const rows = await queryPostsById(DatabaseManager.serverDatabases[serverUrl]!.database, [history[1].id]).fetch();
+            expect(rows[0].redactionVerifiedEpoch).toBe(1);
+        });
+    });
+
+    it('fetchPostsForChannel - should keep the since-fetch result when the re-verification page fails', async () => {
+        // The since-fetch already stored new content; a failed page only leaves older posts unverified.
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.CURRENT_USER_ID, value: user1.id}], prepareRecordsOnly: false});
+        await operator.handleConfigs({
+            configs: [
+                {id: 'FeatureFlagPermissionPolicies', value: 'true'},
+                {id: 'EnableAttributeBasedAccessControl', value: 'true'},
+            ],
+            configsToDelete: [],
+            prepareRecordsOnly: false,
+        });
+        await operator.handleMyChannel({channels: [{
+            id: channelId,
+            team_id: teamId,
+            total_msg_count: 0,
+            creator_id: user1.id,
+        } as Channel],
+        myChannels: [{
+            id: 'id',
+            channel_id: channelId,
+            user_id: user1.id,
+            msg_count: 0,
+        } as ChannelMembership],
+        prepareRecordsOnly: false});
+        await operator.handlePosts({
+            actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
+            order: [post1.id],
+            posts: [{...post1, metadata: {redacted_file_count: 1}}],
+            prepareRecordsOnly: false,
+            redactionVerifiedEpoch: 1,
+        });
+
+        await invalidateRedactionGlobally(serverUrl, RedactionInvalidationReason.GlobalPolicy);
+        mockClient.getPostsSince.mockClear();
+        mockClient.getPosts.mockClear();
+        (mockClient.getPosts as jest.Mock).mockRejectedValueOnce(new Error('network down'));
+
+        const result = await fetchPostsForChannel(serverUrl, channelId);
+
+        expect(result.error).toBeUndefined();
+        expect(mockClient.getPostsSince).toHaveBeenCalledTimes(1);
+        expect(mockClient.getPosts).toHaveBeenCalledTimes(1);
+        expect(result.posts).toHaveLength(2);
     });
 
     it('fetchPostsForChannel - no posts with since', async () => {

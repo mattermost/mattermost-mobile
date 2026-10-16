@@ -24,7 +24,11 @@ const RENEW = 25;
 const POLL = 10;
 const TIMEOUT = 1_000;
 
-const FAST = {timeoutMs: TIMEOUT, ttlMs: TTL, pollMs: POLL, renewMs: RENEW} as const;
+// Wide enough that the recovery case below (8 polls, ~80ms) clears it with room to spare
+// under CI scheduling jitter, while still far under TIMEOUT so the give-up case stays fast.
+const GRACE = 400;
+
+const FAST = {timeoutMs: TIMEOUT, ttlMs: TTL, pollMs: POLL, renewMs: RENEW, transportGraceMs: GRACE} as const;
 
 const sleep = (ms: number) => new Promise<void>((resolve) => {
     setTimeout(resolve, ms);
@@ -213,11 +217,50 @@ describe('acquireLock', () => {
         const store = createStore();
         store.failReads = true;
 
+        const startedAt = Date.now();
         await assert.rejects(
             () => acquireLock(store, 'owner-a', FAST),
-            /5 consecutive transport failures/,
+            /server unreachable for \d+ms/,
         );
-        assert.ok(store.reads >= 5, `expected at least 5 read attempts, saw ${store.reads}`);
+        assert.ok(store.reads >= 2, `expected repeated read attempts, saw ${store.reads}`);
+        assert.ok(Date.now() - startedAt < TIMEOUT, 'must not burn the whole contention budget');
+    });
+
+    // Eight failures is past the old count-based limit but still inside the grace window, so
+    // this only passes once the give-up rule is measured in time.
+    it('should survive a transport outage shorter than the grace window', async () => {
+        const store = createStore();
+        const failuresBeforeRecovery = 8;
+        let attempts = 0;
+        const readThroughOutage = store.read;
+        store.read = async () => {
+            attempts += 1;
+            store.failReads = attempts <= failuresBeforeRecovery;
+            return readThroughOutage();
+        };
+
+        await acquireLock(store, 'owner-a', FAST);
+
+        assert.ok(attempts > failuresBeforeRecovery, `expected reads past the outage, saw ${attempts}`);
+        assert.equal(ownerOf(store), 'owner-a');
+    });
+
+    it('should not spend the grace window on failures separated by a successful round trip', async () => {
+        const store = createStore();
+
+        // Reads always succeed, writes always fail: the server is reachable, so this is
+        // contention-shaped, not an outage, and must not be reported as "unreachable".
+        store.failWrites = true;
+
+        await assert.rejects(
+            () => acquireLock(store, 'owner-a', FAST),
+            (error: Error) => {
+                assert.doesNotMatch(error.message, /server unreachable for/);
+                assert.match(error.message, /gave up after \d+ms of transport failures/);
+                return true;
+            },
+        );
+        assert.ok(store.writes > 5, `expected repeated write attempts, saw ${store.writes}`);
     });
 });
 

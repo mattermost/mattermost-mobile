@@ -12,6 +12,7 @@ import type {ResolvedChannelAttribute} from '@utils/channel_attributes';
 const resolved = (overrides: Partial<ResolvedChannelAttribute> = {}): ResolvedChannelAttribute => ({
     field: {id: 'fieldid00000000000000000a', name: 'sensitivity', type: 'select', attrs: {}} as ResolvedChannelAttribute['field'],
     displayValue: '',
+    displayValues: [],
     ...overrides,
 });
 
@@ -29,11 +30,27 @@ describe('ChannelInfoAttributes', () => {
 
     it('should render a chip instead of the not-set row once a value is set', () => {
         const {getByTestId, queryByTestId} = renderWithIntlAndTheme(
-            <ChannelInfoAttributes attributes={[resolved({displayValue: 'HIGH'})]}/>,
+            <ChannelInfoAttributes attributes={[resolved({displayValue: 'HIGH', displayValues: [{value: 'HIGH'}]})]}/>,
         );
 
         expect(getByTestId('channel_info.attributes.sensitivity.chip')).toBeTruthy();
         expect(queryByTestId('channel_info.attributes.sensitivity.not_set')).toBeNull();
+    });
+
+    it('should render one chip per value for a multi-valued attribute', () => {
+        const {getByTestId, getByText} = renderWithIntlAndTheme(
+            <ChannelInfoAttributes
+                attributes={[resolved({
+                    displayValue: 'Alpha, Beta',
+                    displayValues: [{value: 'Alpha'}, {value: 'Beta', color: '#FF0000'}],
+                })]}
+            />,
+        );
+
+        expect(getByTestId('channel_info.attributes.sensitivity.chip.0')).toBeTruthy();
+        expect(getByTestId('channel_info.attributes.sensitivity.chip.1')).toBeTruthy();
+        expect(getByText('Alpha')).toBeTruthy();
+        expect(getByText('Beta')).toBeTruthy();
     });
 
     it('should render nothing when there are no attributes', () => {

@@ -36,6 +36,8 @@ const describeApiError = (error: any, status?: number): string => {
     return `status ${status ?? 'unknown'}: ${error?.message ?? error?.id ?? 'unknown error'}`;
 };
 
+const MFA_PATCH_ATTEMPTS = 3;
+
 const describeOrSkip = hasThreeDistinctServers ? describe : describe.skip;
 
 describeOrSkip('Server Login - Login with MFA', () => {
@@ -67,15 +69,29 @@ describeOrSkip('Server Login - Login with MFA', () => {
         }
         await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'false');
 
-        const enableResult = await System.apiPatchConfig(siteThreeUrl, {
-            ServiceSettings: {EnableMultifactorAuthentication: true},
-        });
-        if (enableResult.error) {
-            throw new Error(`Failed to enable MFA: ${describeApiError(enableResult.error, enableResult.status)}`);
+        // An accepted patch does not always reach the client config; re-patch and poll again,
+        // the same way enableChannelAttributes does. Report what was observed on the last try
+        // so a server that owns the setting is distinguishable from one that is just slow.
+        let mfaEnabled = false;
+        /* eslint-disable no-await-in-loop -- sequential re-patch until client config catches up */
+        for (let attempt = 1; attempt <= MFA_PATCH_ATTEMPTS && !mfaEnabled; attempt++) {
+            const enableResult = await System.apiPatchConfig(siteThreeUrl, {
+                ServiceSettings: {EnableMultifactorAuthentication: true},
+            });
+            if (enableResult.error) {
+                throw new Error(`Failed to enable MFA: ${describeApiError(enableResult.error, enableResult.status)}`);
+            }
+            mfaEnabled = await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'true');
         }
-        const mfaEnabled = await System.waitForClientConfigFlag(siteThreeUrl, 'EnableMultifactorAuthentication', 'true');
+        /* eslint-enable no-await-in-loop */
         if (!mfaEnabled) {
-            throw new Error('EnableMultifactorAuthentication never became "true" on SITE_3');
+            const {config: serverConfig} = await System.apiGetConfig(siteThreeUrl);
+            const {config: clientConfig} = await System.apiGetClientConfigOld(siteThreeUrl);
+            throw new Error(
+                'EnableMultifactorAuthentication never became "true" on SITE_3. Last observed ' +
+                `server=${String(serverConfig?.ServiceSettings?.EnableMultifactorAuthentication)} ` +
+                `client=${String(clientConfig?.EnableMultifactorAuthentication)}.`,
+            );
         }
 
         const {user} = await Setup.apiInit(siteThreeUrl);

@@ -55,16 +55,33 @@ export const apiCreateChannel = async (baseUrl: string, {teamId = null, type = '
     // retryTransient is the single retry owner for this call — a local loop on top of
     // it multiplied one stalled request into more than a whole beforeAll budget. The
     // empty-body check stays: a 200 with no id is a real failure, not a transport one.
+    const channelData = channel || generateRandomChannel(teamId, type, prefix);
+
+    // A create whose response is lost still leaves the channel on the server, and the caller
+    // then reads `.channel` as undefined and dies on `.id` many lines later. Read the name back
+    // before reporting a failure, rather than replaying a non-idempotent write. Only for
+    // failures where the write may still have landed: a 4xx is the server rejecting it, so
+    // that answer is final and is returned as-is.
+    const recoverByName = async (failure: any) => {
+        const status = failure?.status ?? 0;
+        const mayHaveLanded = status === 0 || status >= 500;
+        if (!mayHaveLanded || !teamId || !channelData?.name) {
+            return failure;
+        }
+
+        const {channel: existing} = await apiGetChannelByName(baseUrl, teamId, channelData.name);
+        return existing?.id ? {channel: existing} : failure;
+    };
+
     try {
-        const channelData = channel || generateRandomChannel(teamId, type, prefix);
         const body = propertyValues === undefined ? channelData : {...channelData, property_values: propertyValues};
         const response = await client.post(`${baseUrl}/api/v4/channels`, body);
         if (response.data?.id) {
             return {channel: response.data};
         }
-        return {error: {message: 'empty channel in create response'}, status: response.status ?? 0};
+        return recoverByName({error: {message: 'empty channel in create response'}, status: response.status ?? 0});
     } catch (err) {
-        return getResponseFromError(err);
+        return recoverByName(getResponseFromError(err));
     }
 };
 
