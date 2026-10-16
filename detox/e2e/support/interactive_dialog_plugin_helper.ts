@@ -33,7 +33,7 @@ import {
 import {wait, isAndroid, safeEnableSynchronization, timeouts, waitForElementToBeVisible, waitForElementToExist} from '@support/utils';
 import {expect} from 'detox';
 
-export const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, '../../../../support/fixtures/sample.txt');
+export const FILE_UPLOAD_FIXTURE = path.resolve(__dirname, 'fixtures/sample.txt');
 export const ISO_DATETIME_PATTERN = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})/;
 
 // MM-66558: dialog fields use replaceText instead of typeText.
@@ -273,7 +273,11 @@ export async function ensureDialogOpen() {
 
 export async function dismissErrorAlert() {
     try {
-        isAndroid() ? await element(by.text('OK')).tap() : await element(by.label('OK')).atIndex(1);
+        if (isAndroid()) {
+            await element(by.text('OK')).tap();
+        } else {
+            await element(by.label('OK')).atIndex(1).tap();
+        }
         await wait(300);
     } catch {}
 }
