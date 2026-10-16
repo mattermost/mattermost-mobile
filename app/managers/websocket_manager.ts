@@ -129,9 +129,38 @@ class WebsocketManagerSingleton {
         }
     };
 
+    // An open socket may or may not have survived a network switch, so ping it rather than closing a
+    // working connection. It keeps counting as connected meanwhile, so a switch it survives goes unnoticed.
+    // Any other socket is mid-attempt or backing off on the previous network, so it is closed to drop that
+    // attempt and its retry timer.
+    private verifyOrResetAll = () => {
+        for (const [url, client] of Object.entries(this.clients)) {
+            if (!client.isConnected()) {
+                client.close(true);
+                this.getConnectedSubject(url).next('not_connected');
+                continue;
+            }
+
+            this.verifyClient(url, client);
+        }
+    };
+
+    // A socket that fails is being closed to reconnect, so it is reported before its onClose arrives:
+    // anything chained on this then sees it as not connected.
+    private verifyClient = async (url: string, client: WebSocketClient) => {
+        const alive = await client.verifyConnection();
+        if (!alive && this.clients[url] === client) {
+            this.getConnectedSubject(url).next('not_connected');
+        }
+    };
+
     public openAll = async (groupLabel?: BaseRequestGroupLabel) => {
         let queued = 0;
         for await (const clientUrl of Object.keys(this.clients)) {
+            if (this.isConnected(clientUrl)) {
+                continue;
+            }
+
             const activeServerUrl = await DatabaseManager.getActiveServerUrl();
             if (clientUrl === activeServerUrl) {
                 this.initializeClient(clientUrl, groupLabel);
@@ -262,8 +291,8 @@ class WebsocketManagerSingleton {
         const newState = Boolean(netState.isConnected);
         this.handleStateChange(newState, netState.type, this.previousActiveState);
 
-        // After handleStateChange so a network type switch has already closed the sockets: the
-        // revalidation then waits for the reconnect instead of going out mid-switch.
+        // After handleStateChange so a network type switch has already started verifying the sockets:
+        // the revalidation then waits for that instead of going out mid-switch.
         this.expireNetworkBoundDecisions(netState);
     };
 
@@ -284,9 +313,16 @@ class WebsocketManagerSingleton {
         if (identity !== this.networkIdentity) {
             this.networkIdentity = identity;
 
-            // Only servers that collect session attributes evaluate the device's network.
+            // Only servers that collect session attributes evaluate the device's network. An open socket is
+            // expired once verified, as it reports connected throughout and would let the revalidation out
+            // mid-switch; verifying shares the ping a network type switch already sent.
             for (const serverUrl of SessionAttributesManager.getEnabledServers()) {
-                RenderPermissionsStore.expireServer(serverUrl);
+                const client = this.clients[serverUrl];
+                if (client?.isConnected()) {
+                    this.verifyClient(serverUrl, client).then(() => RenderPermissionsStore.expireServer(serverUrl));
+                } else {
+                    RenderPermissionsStore.expireServer(serverUrl);
+                }
             }
         }
     };
@@ -313,11 +349,10 @@ class WebsocketManagerSingleton {
         }
 
         if (switchedNetworks) {
-            // Close all connections when we switch from (for example) vpn to wifi
-            // to ensure we are using the right network and doesn't get stuck on
-            // retries.
-            logDebug('WebSocketManager: closing all connections, network switched', 'from', previousNetType, 'to', currentNetType);
-            this.closeAll();
+            // Closed sockets are reopened by openAll below if the app is active, instead of waiting out
+            // their retry backoff, and otherwise when it next becomes active.
+            logDebug('WebSocketManager: verifying or resetting all connections, network switched', 'from', previousNetType, 'to', currentNetType);
+            this.verifyOrResetAll();
         }
 
         if (currentIsActive) {

@@ -7,7 +7,7 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveCall, muteMyself, unraiseHand} from '@calls/actions';
 import {createCallAndAddToIds} from '@calls/actions/calls';
 import {hostRemovedErr} from '@calls/errors';
-import {endNativeCall, getNativeCallMapping, getNativeCallUUIDForCall, setNativeCallMapping} from '@calls/native_call';
+import {endNativeCall, getNativeCallUUIDForCall, syncNativeCallId} from '@calls/native_call';
 import {
     callEnded,
     callStarted,
@@ -34,6 +34,7 @@ import {WebsocketEvents} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
+import {logInfo} from '@utils/log';
 
 import type {HostControlsLowerHandMsgData, HostControlsMsgData} from '@calls/types/calls';
 import type {
@@ -112,16 +113,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage<CallS
         dismissed: {},
     });
 
-    // Backfill the callId into the native mapping created by the VoIP push.
-    // Until this fires, endNativeCall treats the mapping as unconfirmed and
-    // ignores any call_end events that arrive with a callId.
-    const uuid = getNativeCallUUIDForCall(serverUrl, msg.data.channelID);
-    if (uuid) {
-        const existing = getNativeCallMapping(uuid);
-        if (existing) {
-            setNativeCallMapping(uuid, {...existing, callId: msg.data.id});
-        }
-    }
+    syncNativeCallId(serverUrl, msg.data.channelID, msg.data.id);
 };
 
 export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyData>) => {
@@ -132,6 +124,7 @@ export const handleCallEnded = (serverUrl: string, msg: WebSocketMessage<EmptyDa
     // to endNativeCall lets the stale-replay guard reject events for a prior
     // call whose call_end was buffered and replayed during a new call's ring.
     const callId = getCallsState(serverUrl).calls[channelId]?.id;
+    logInfo('handleCallEnded: call_end received', 'channelId', channelId, 'callId', callId ?? 'unknown');
 
     callEnded(serverUrl, channelId);
 

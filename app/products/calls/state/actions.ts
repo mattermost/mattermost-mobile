@@ -7,7 +7,7 @@ import {AppState, type AppStateStatus, Platform} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
-import {endNativeCall} from '@calls/native_call';
+import {endNativeCall, syncNativeCallId} from '@calls/native_call';
 import {
     getCallsConfig,
     getCallsState,
@@ -86,6 +86,9 @@ export const setCalls = async (serverUrl: string, myUserId: string, calls: Dicti
     setChannelsWithCalls(serverUrl, channelsWithCalls);
 
     setCallsState(serverUrl, {myUserId, calls, enabled});
+    for (const [channelId, call] of Object.entries(calls)) {
+        syncNativeCallId(serverUrl, channelId, call.id);
+    }
 
     await processIncomingCalls(serverUrl, Object.values(calls), false);
 
@@ -458,6 +461,9 @@ export const setCallForChannel = (serverUrl: string, channelId: string, call?: C
     }
 
     setCallsState(serverUrl, {...callsState, calls: nextCalls, enabled: nextEnabled});
+    if (call) {
+        syncNativeCallId(serverUrl, channelId, call.id);
+    }
 
     const channelsWithCalls = getChannelsWithCalls(serverUrl);
     if (call && !channelsWithCalls[channelId]) {

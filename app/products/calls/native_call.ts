@@ -9,7 +9,8 @@ import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
-import {logDebug} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logInfo, logWarning} from '@utils/log';
 
 import {
     clearNativeCallMapping as clearMapping,
@@ -135,12 +136,33 @@ export const endNativeCall = (
     }
     const uuid = getNativeCallUUIDForCall(serverUrl, channelId, callId);
     if (!uuid) {
+        const unmatched = callId === undefined ? undefined : getNativeCallUUIDForCall(serverUrl, channelId);
+        if (unmatched) {
+            const mappedCallId = getNativeCallMapping(unmatched)?.callId || 'unset';
+            logInfo('endNativeCall: ignored, the ringing call has another callId', 'uuid', unmatched, 'callId', callId, 'mappedCallId', mappedCallId, 'reason', reason);
+        } else {
+            logDebug('endNativeCall: no native call for channel', 'channelId', channelId, 'reason', reason);
+        }
         return;
     }
+    logInfo('endNativeCall: reporting ended', 'uuid', uuid, 'reason', reason);
     clearNativeCallMapping(uuid);
     CallsNative.reportEnded(uuid, reason).catch((err) => {
-        logDebug('CallsNative.reportEnded failed', err);
+        logWarning('endNativeCall: reportEnded failed', 'uuid', uuid, getFullErrorMessage(err));
     });
+};
+
+// Records which call a ring belongs to once the app learns of the channel's call, whichever way it
+// arrives: call_started, or a sync after the websocket missed it while reconnecting. Until then,
+// endNativeCall ignores any call_end carrying a callId, and the ring outlives the call.
+export const syncNativeCallId = (serverUrl: string, channelId: string, callId: string) => {
+    const uuid = getNativeCallUUIDForCall(serverUrl, channelId);
+    const mapping = uuid ? getNativeCallMapping(uuid) : undefined;
+    if (!uuid || !mapping || mapping.callId === callId) {
+        return;
+    }
+    logInfo('syncNativeCallId: ring matched to call', 'uuid', uuid, 'callId', callId, 'previousCallId', mapping.callId || 'unset');
+    setNativeCallMapping(uuid, {...mapping, callId});
 };
 
 // Reflects in-app mute state into the system call UI overlay so the
