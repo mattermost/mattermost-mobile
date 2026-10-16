@@ -75,6 +75,27 @@ export const apiDeleteCustomProfileAttributeField = async (baseUrl: string, fiel
 };
 
 /**
+ * Delete a custom profile attribute field by its unique name.
+ * Useful for cleanup when a create response is lost before the field ID is recorded.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} name - field name to delete
+ * @return {Object} returns {} on success or when absent, or {error, status} on error
+ */
+export const apiDeleteCustomProfileAttributeFieldByName = async (baseUrl: string, name: string): Promise<any> => {
+    const {fields, error, status} = await apiGetCustomProfileAttributeFields(baseUrl);
+    if (error) {
+        return {error, status};
+    }
+
+    const field = fields.find((candidate: any) => candidate.name === name);
+    if (!field) {
+        return {};
+    }
+
+    return apiDeleteCustomProfileAttributeField(baseUrl, field.id);
+};
+
+/**
  * Find an existing custom profile attribute field by name, or create it if absent.
  * Returns {field, created} where created=true means this call created the field
  * and the caller is responsible for deleting it in cleanup.
@@ -199,6 +220,41 @@ export const apiCreatePermissionPolicy = async (
 };
 
 /**
+ * Create a permission policy scoped to one channel.
+ * Channel policies are keyed by the channel ID, and v0.4 permission rules
+ * require a unique name and channel role.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - the channel the policy applies to
+ * @param {Array<{actions: string[]; expression: string}>} rules - permission rules to enforce in the channel
+ * @return {Object} returns {policy} on success or {error, status} on error
+ */
+export const apiCreateChannelPermissionPolicy = async (
+    baseUrl: string,
+    channelId: string,
+    rules: Array<{actions: string[]; expression: string}>,
+): Promise<any> => {
+    try {
+        const response = await client.put(
+            `${baseUrl}/api/v4/access_control_policies`,
+            {
+                id: channelId,
+                type: 'channel',
+                version: 'v0.4',
+                revision: 1,
+                rules: rules.map((rule, index) => ({
+                    ...rule,
+                    name: `E2E channel permission rule ${index + 1}`,
+                    role: 'channel_user',
+                })),
+            },
+        );
+        return {policy: response.data};
+    } catch (err) {
+        return getResponseFromError(err);
+    }
+};
+
+/**
  * Delete an access control policy by ID.
  * Requires admin session.
  * @param {string} baseUrl - the base server URL
@@ -214,47 +270,17 @@ export const apiDeletePermissionPolicy = async (baseUrl: string, policyId: strin
     }
 };
 
-// ------------------------------------------------------------
-// Channel (Membership) Policies
-// Controls which users can access / remain members of a channel
-// based on their attributes (CEL expression evaluated per user).
-// ------------------------------------------------------------
-
-/**
- * Activate or deactivate an access control policy.
- * A policy must be active to be enforced by the server.
- * Uses PUT /api/v4/access_control_policies/activate with entries array.
- * @param {string} baseUrl - the base server URL
- * @param {string} policyId - the policy ID
- * @param {boolean} [active] - true to activate (default), false to deactivate
- * @return {Object} returns {} on success or {error, status} on error
- */
-export const apiSetPolicyActive = async (
-    baseUrl: string,
-    policyId: string,
-    active = true,
-): Promise<any> => {
-    try {
-        await client.put(
-            `${baseUrl}/api/v4/access_control_policies/activate`,
-            {entries: [{id: policyId, active}]},
-        );
-        return {};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
 export const AccessControl = {
     apiEnableABAC,
     apiGetCustomProfileAttributeFields,
     apiGetOrCreateCustomProfileAttributeField,
     apiCreateCustomProfileAttributeField,
     apiDeleteCustomProfileAttributeField,
+    apiDeleteCustomProfileAttributeFieldByName,
     apiSetUserPropertyValues,
     apiCreatePermissionPolicy,
+    apiCreateChannelPermissionPolicy,
     apiDeletePermissionPolicy,
-    apiSetPolicyActive,
 };
 
 export default AccessControl;
