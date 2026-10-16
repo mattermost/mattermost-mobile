@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {captureRedactionEpoch} from '@actions/local/redaction';
+import {RenderPermissionAction} from '@constants/access_control';
 import {RENDER_PERMISSIONS_VERSION} from '@constants/versions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -11,6 +12,7 @@ import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {logDebug, logError} from '@utils/log';
 
+import {handleChannelAccessDenied} from './channel';
 import {forceLogoutIfNecessary} from './session';
 
 // The request is malformed, the channel is not readable, or the route does not exist: asking again
@@ -76,7 +78,16 @@ export async function fetchRenderPermissions(serverUrl: string, channelId: strin
         } else {
             RenderPermissionsStore.resetRetryDelay(serverUrl, channelId);
         }
-        RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions}, ttlMs);
+        const isCurrent = RenderPermissionsStore.finishFetch(serverUrl, channelId, claim, {epoch, decisions}, ttlMs);
+
+        // A policy deny hides the channel at once instead of at its next view. A fail-closed deny (below
+        // Enterprise Advanced the engine refuses to evaluate) says nothing about the policy, and neither
+        // does an answer whose claim was revoked: it was evaluated before an ABAC change that may allow
+        // the channel again.
+        const readAccess = decisions[RenderPermissionAction.ChannelReadAccess];
+        if (isCurrent && readAccess?.evaluated && !readAccess.allowed && !readAccess.reason) {
+            await handleChannelAccessDenied(serverUrl, channelId);
+        }
         return {decisions};
     } catch (error) {
         // Anything other than the request failing (a database read, a missing client, a bug) is not

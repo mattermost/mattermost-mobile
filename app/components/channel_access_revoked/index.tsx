@@ -1,0 +1,106 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import React, {useMemo} from 'react';
+import {defineMessages, useIntl, type IntlShape} from 'react-intl';
+import {Text, View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+
+import Button from '@components/button';
+import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
+import {dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
+
+const messages = defineMessages({
+    title: {
+        id: 'channel_access_revoked.title',
+        defaultMessage: 'Channel unavailable',
+    },
+    description: {
+        id: 'channel_access_revoked.description',
+        defaultMessage: 'You no longer have access to {displayName}. It will reappear here if access is restored.',
+    },
+    okay: {
+        id: 'channel_access_revoked.okay',
+        defaultMessage: 'Okay',
+    },
+});
+
+type Props = {
+    text: string;
+}
+
+const BUTTON_HEIGHT = 48; // From /app/utils/buttonStyles.ts, lg button
+const TITLE_HEIGHT = 30 + 12; // typography 600 line height
+const TEXT_MARGIN_TOP = 12;
+const TEXT_MARGIN_BOTTOM = 24;
+const BOTTOM_MARGIN = 10; // between the button and the bottom safe area
+const MARGINS = TEXT_MARGIN_TOP + TEXT_MARGIN_BOTTOM + BOTTOM_MARGIN;
+
+// Everything in the sheet except the description text.
+const FIXED_CONTENT_HEIGHT = TITLE_HEIGHT + BUTTON_HEIGHT + MARGINS;
+const MIN_TEXT_CONTAINER_HEIGHT = 80;
+const MAX_TEXT_CONTAINER_HEIGHT = 320;
+
+// The sheet cannot grow to fit its content, so size it from the rendered text: the channel
+// name and the translation both change how many lines the description wraps to.
+export const snapPointFor = (description: string) => {
+    const length = description.length / 100;
+    return FIXED_CONTENT_HEIGHT + Math.min(Math.max(bottomSheetSnapPoint(length, 100), MIN_TEXT_CONTAINER_HEIGHT), MAX_TEXT_CONTAINER_HEIGHT);
+};
+
+export const description = (intl: IntlShape, displayName: string) => intl.formatMessage(messages.description, {displayName});
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            flex: 1,
+        },
+        title: {
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
+        },
+        body: {
+            color: theme.centerChannelColor,
+            marginTop: TEXT_MARGIN_TOP,
+            marginBottom: TEXT_MARGIN_BOTTOM,
+            ...typography('Body', 200, 'Regular'),
+        },
+    };
+});
+
+const close = () => {
+    dismissBottomSheet();
+};
+
+const ChannelAccessRevoked = ({text}: Props) => {
+    const theme = useTheme();
+    const style = getStyleSheet(theme);
+    const intl = useIntl();
+    const insets = useSafeAreaInsets();
+
+    const containerStyle = useMemo(() => [style.container, {marginBottom: insets.bottom + BOTTOM_MARGIN}], [style, insets.bottom]);
+
+    return (
+        <View style={containerStyle}>
+            <FormattedText
+                {...messages.title}
+                style={style.title}
+            />
+            <Text style={style.body}>
+                {text}
+            </Text>
+            <Button
+                text={intl.formatMessage(messages.okay)}
+                onPress={close}
+                size='lg'
+                theme={theme}
+            />
+        </View>
+    );
+};
+
+export default ChannelAccessRevoked;
