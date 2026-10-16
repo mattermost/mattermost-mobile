@@ -264,7 +264,12 @@ describe('DialogRouter', () => {
             };
             mockLookupInteractiveDialog.mockResolvedValue({data: {items: [{text: 'Paris', value: 'paris'}]}});
 
-            renderWithIntl(<DialogRouter config={nestedConfig} channelId='channel-id-1'/>);
+            renderWithIntl(
+                <DialogRouter
+                    config={nestedConfig}
+                    channelId='channel-id-1'
+                />,
+            );
 
             const performLookupCall = mockAppsFormComponent.mock.calls[0][0].performLookupCall;
             const result = await performLookupCall({name: 'city'} as AppField, {} as AppFormValues, '');
