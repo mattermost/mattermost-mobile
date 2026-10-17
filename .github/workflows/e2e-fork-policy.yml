@@ -36,7 +36,7 @@ concurrency:
 jobs:
   fork-e2e-policy:
     if: >-
-      github.event_name == 'workflow_dispatch'
+      (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
       || (github.event.label.name == 'E2E/Override'
           && github.event.pull_request.head.repo.full_name != github.repository
           && (github.event.pull_request.base.ref == 'main'
@@ -95,13 +95,20 @@ jobs:
                 return false;
               }
             };
-            const reset = (why) => {
+            const reset = async (why, refused = false) => {
               core.setOutput('mode', 'pending');
               core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
+              // A refused waiver must not be silent: the checks just stay pending otherwise.
+              if (refused && process.env.DRY_RUN !== 'true') {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: pr.number,
+                  body: `E2E waiver refused: ${why}. The required E2E checks stay pending; a maintainer with write access must re-apply \`${label}\`.`,
+                });
+              }
             };
 
             if (!pr.labels.some((l) => l.name === label)) {
-              reset(`${label} is not applied`);
+              await reset(`${label} is not applied`);
               return;
             }
 
@@ -119,7 +126,7 @@ jobs:
               filter((e) => Date.parse(e.created_at) === newest).
               map((e) => e.actor?.login || ''))];
             if (newestActors.length > 1) {
-              reset(`${label} was applied by ${newestActors.join(', ')} at the same time`);
+              await reset(`${label} was applied by ${newestActors.join(', ')} at the same time`, waiving);
               return;
             }
             const latest = newestActors[0] || '';
@@ -127,7 +134,7 @@ jobs:
             const required = [...new Set([approver, latest].filter(Boolean))];
             for (const user of required.length ? required : ['']) {
               if (!(await hasWriteAccess(user))) {
-                reset(`${label} was applied by '${user}', who lacks write access`);
+                await reset(`${label} was applied by '${user}', who lacks write access`, waiving);
                 return;
               }
             }
