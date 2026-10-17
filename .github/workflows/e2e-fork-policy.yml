@@ -23,7 +23,13 @@ on:
 permissions: {}
 
 concurrency:
-  group: e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}
+  # A queued run is replaced by a newer queued run in the same group, so only E2E/Override events
+  # share one: an unrelated label can't displace a pending waiver, and a manual re-check (which
+  # never creates a waiver) can't either.
+  group: >-
+    e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}-${{
+    github.event_name == 'workflow_dispatch' && 'dispatch'
+    || (github.event.label.name == 'E2E/Override' && 'override' || github.run_id) }}
   # Queue, don't cancel: a half-finished reset would leave some contexts waived.
   cancel-in-progress: false
 
@@ -31,8 +37,10 @@ jobs:
   fork-e2e-policy:
     if: >-
       github.event_name == 'workflow_dispatch'
-      || (github.event.pull_request.head.repo.full_name != github.repository
-          && github.event.pull_request.base.ref == 'main')
+      || (github.event.label.name == 'E2E/Override'
+          && github.event.pull_request.head.repo.full_name != github.repository
+          && (github.event.pull_request.base.ref == 'main'
+              || startsWith(github.event.pull_request.base.ref, 'release-')))
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -53,8 +61,8 @@ jobs:
             const label = process.env.OVERRIDE_LABEL;
             const dispatched = context.eventName === 'workflow_dispatch';
             const prNumber = dispatched ? Number(process.env.DISPATCH_PR) : context.payload.pull_request.number;
-            // Decide from the PR as it is now, not from the triggering event: a queued run can be
-            // dropped by a newer one, so every run must converge on the current label state.
+            // Decide from the PR as it is now, not from the triggering event, so a run that was
+            // queued behind another still acts on the current label state.
             const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
             const action = dispatched ? 'dispatch' : context.payload.action;
             const eventLabel = dispatched ? '' : (context.payload.label?.name || '');
@@ -68,8 +76,9 @@ jobs:
               core.info(`PR #${pr.number} is not from a fork; the E2E label manager handles it.`);
               return;
             }
-            if (pr.base.ref !== 'main') {
-              core.info(`PR #${pr.number} targets ${pr.base.ref}, not main; nothing to do.`);
+            // Same branches the "Required Status Checks" ruleset covers.
+            if (pr.base.ref !== 'main' && !/^release-.+\..+$/.test(pr.base.ref)) {
+              core.info(`PR #${pr.number} targets ${pr.base.ref}, which requires no E2E status; nothing to do.`);
               return;
             }
 
@@ -177,7 +186,7 @@ jobs:
             const {owner, repo} = context.repo;
             const body = [
               `E2E checks waived by @${process.env.APPROVER} for this fork PR at ${process.env.HEAD_SHA}.`,
-              'Fork PRs cannot run E2E here; the change is covered by the E2E run on `main` after merge.',
+              'Fork PRs cannot run E2E here: it needs repository secrets that fork code must not reach.',
               'The waiver covers this commit only. After a new push, review it and re-apply `E2E/Override` (remove and add it).',
             ].join('\n\n');
             await github.rest.issues.createComment({owner, repo, issue_number: Number(process.env.PR_NUMBER), body});
