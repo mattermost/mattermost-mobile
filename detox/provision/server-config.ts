@@ -1,53 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DEFAULT_MAX_FILE_SIZE_BYTES} from '@support/constants/file_settings';
+import {applyBaseline, formatBaselineReport, verifyBaseline, type BaselineReport, type BaselineTransport} from '../shared/server-baseline';
 
-import {DEMO_PLUGIN_ID} from './constants';
 import {sleep} from './http-client';
 import {logInfo, logWarn} from './log';
 
 import type {MattermostClient} from './types';
 
-type ApiErrorBody = {message?: string};
-
-const CONFIG_PATCH_MAX_ATTEMPTS = 3;
-const CONFIG_PATCH_RETRY_BASE_DELAY_MS = 2_000;
-
-const TEST_SERVER_CONFIG_PATCH = {
-    PluginSettings: {
-        Plugins: {
-            'com.mattermost.calls': {
-                DefaultEnabled: true,
-            },
-            [DEMO_PLUGIN_ID]: {
-                DialogOnlyMode: true,
-            },
-        },
-        PluginStates: {
-            [DEMO_PLUGIN_ID]: {
-                Enable: true,
-            },
-        },
-    },
-    FileSettings: {
-        MaxFileSize: DEFAULT_MAX_FILE_SIZE_BYTES,
-    },
-    SupportSettings: {
-        AllowDownloadLogs: true,
-    },
-    TeamSettings: {
-        ExperimentalViewArchivedChannels: true,
-    },
-    ConnectedWorkspacesSettings: {
-        EnableSharedChannels: true,
-        EnableRemoteClusterService: true,
-    },
-    ExperimentalSettings: {
-        EnableSharedChannels: true,
-        EnableRemoteClusterService: true,
-    },
-};
+const REQUEST_MAX_ATTEMPTS = 3;
+const REQUEST_RETRY_BASE_DELAY_MS = 2_000;
 
 export async function getServerMmVersion(client: MattermostClient, token: string): Promise<string> {
     const res = await client.request<{Version?: string; version?: string}>('GET', '/api/v4/config/client?format=old', undefined, token);
@@ -59,41 +21,61 @@ export async function getServerMmVersion(client: MattermostClient, token: string
     return res.data?.Version || res.data?.version || '0.0.0';
 }
 
-async function patchTestServerConfig(client: MattermostClient, token: string) {
-    /* eslint-disable no-await-in-loop -- retry an idempotent config patch after transient cloud failures */
-    for (let attempt = 1; attempt <= CONFIG_PATCH_MAX_ATTEMPTS; attempt++) {
-        try {
-            const response = await client.request<ApiErrorBody>(
-                'PUT',
-                '/api/v4/config/patch',
-                TEST_SERVER_CONFIG_PATCH,
-                token,
-            );
-            if (response.status < 500 || attempt === CONFIG_PATCH_MAX_ATTEMPTS) {
-                return response;
+/** Admin transport for the baseline: retries transport errors and 5xx, as the old config patch did. */
+export function createBaselineTransport(client: MattermostClient, token: string): BaselineTransport {
+    /* eslint-disable no-await-in-loop -- retry sequence */
+    return {
+        async request<T = any>(method: 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH', path: string, body?: unknown) {
+            for (let attempt = 1; ; attempt++) {
+                try {
+                    const response = await client.request<T>(method, path, body, token);
+                    if (response.status < 500 || attempt === REQUEST_MAX_ATTEMPTS) {
+                        return {status: response.status, data: response.data};
+                    }
+
+                    logWarn(`${method} ${path} returned HTTP ${response.status}; retrying (${attempt}/${REQUEST_MAX_ATTEMPTS})...`);
+                } catch (error) {
+                    if (attempt === REQUEST_MAX_ATTEMPTS) {
+                        throw error;
+                    }
+
+                    const detail = error instanceof Error ? error.message : String(error);
+                    logWarn(`${method} ${path} failed (${detail}); retrying (${attempt}/${REQUEST_MAX_ATTEMPTS})...`);
+                }
+
+                await sleep(REQUEST_RETRY_BASE_DELAY_MS * attempt);
             }
-
-            logWarn(`Config patch returned HTTP ${response.status}; retrying (${attempt}/${CONFIG_PATCH_MAX_ATTEMPTS})...`);
-        } catch (error) {
-            if (attempt === CONFIG_PATCH_MAX_ATTEMPTS) {
-                throw error;
-            }
-
-            const detail = error instanceof Error ? error.message : String(error);
-            logWarn(`patchTestServerConfig: request failed (${detail}); retrying (${attempt}/${CONFIG_PATCH_MAX_ATTEMPTS})...`);
-        }
-
-        await sleep(CONFIG_PATCH_RETRY_BASE_DELAY_MS * attempt);
-    }
+        },
+    };
     /* eslint-enable no-await-in-loop */
-
-    throw new Error('Config patch retries exhausted.');
 }
 
-export async function configureTestServer(client: MattermostClient, token: string): Promise<void> {
-    logInfo('Updating suite-mutable server and plugin settings...');
-    const updateRes = await patchTestServerConfig(client, token);
-    if (updateRes.status >= 400) {
-        throw new Error(`Config patch failed (HTTP ${updateRes.status}): ${updateRes.data?.message ?? 'unknown error'}`);
+function logReport(label: string, report: BaselineReport): void {
+    formatBaselineReport(report).split('\n').forEach((line) => {
+        if (report.ok) {
+            logInfo(`${label}: ${line}`);
+        } else {
+            logWarn(`${label}: ${line}`);
+        }
+    });
+}
+
+/** Applies the baseline (with leftover E2E cleanup). Throws when the server cannot be brought to the baseline. */
+export async function applyProvisionBaseline(client: MattermostClient, token: string, serverUrl: string, serverVersion: string): Promise<void> {
+    logInfo(`Applying server baseline (server ${serverVersion})...`);
+    const report = await applyBaseline(createBaselineTransport(client, token), {serverUrl, serverVersion, log: logInfo});
+    logReport('Baseline apply', report);
+    if (!report.ok) {
+        throw new Error('Server baseline could not be applied; see the report above.');
+    }
+}
+
+/** Read-only check of the baseline, including client-side flag propagation. Throws when it does not hold. */
+export async function verifyProvisionBaseline(client: MattermostClient, token: string, serverUrl: string): Promise<void> {
+    logInfo('Verifying server baseline...');
+    const report = await verifyBaseline(createBaselineTransport(client, token), {serverUrl});
+    logReport('Baseline verify', report);
+    if (!report.ok) {
+        throw new Error('Server baseline verification failed; see the report above.');
     }
 }

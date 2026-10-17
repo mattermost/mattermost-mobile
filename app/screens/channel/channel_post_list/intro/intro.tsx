@@ -7,7 +7,6 @@ import {ActivityIndicator, DeviceEventEmitter, Platform, StyleSheet, View} from 
 import {Events, General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 import {isDefaultChannel} from '@utils/channel';
 
@@ -82,11 +81,11 @@ const Intro = ({channel, roles}: Props) => {
             }
         });
 
-        return () => listener.remove();
-    }, [serverUrl, channel?.id]);
-
-    useDidUpdate(() => {
+        // A load can finish between the render that read the store and this subscription,
+        // and its event is then missed, so read the store again now that we are listening.
         setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
+
+        return () => listener.remove();
     }, [serverUrl, channel?.id]);
 
     useEffect(() => {

@@ -6,7 +6,9 @@
 // *******************************************************************
 
 import {Channel, Setup, System, User} from '@support/server_api';
+import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {
+    hasSharedChannels,
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
@@ -26,15 +28,15 @@ import {expect, device, element, by, waitFor} from 'detox';
 // beforeAll: apiInit + config + login under CI load — 6min hook timeout.
 jest.setTimeout(360000);
 
-describe('Share with connected workspaces', () => {
-    // Skipped on PR/main CI: beforeAll hits 360s hook timeout without Shared Channels
-    // license + EnableSharedChannels + remote clusters.
+(hasSharedChannels ? describe : describe.skip)('Share with connected workspaces', () => {
+    // Runs only where the license and remote-cluster service support it (probed in global_setup.js), alone
+    // on the mutation server because it turns shared channels off and deletes remote clusters.
     const serverOneDisplayName = 'Server 1';
     const channelsCategory = 'channels';
     let testUser: any;
     let testTeam: any;
     let testChannel: any;
-    let sharedChannelsAvailable = false;
+    let originalAutoTranslationEnabled: boolean | undefined;
 
     const channelShareScreen = element(by.id('channel_share.screen'));
     const channelShareToggle = element(by.id('channel_share.toggle'));
@@ -66,25 +68,24 @@ describe('Share with connected workspaces', () => {
     const channelInfoCloseButtonId = 'close.channel_info.button';
 
     beforeAll(async () => {
+        requireMutationServer('share_with_connected_workspaces');
+
         const {user, channel, team} = await Setup.apiInit(siteOneUrl);
         testUser = user;
         testChannel = channel;
         testTeam = team;
 
         await User.apiAdminLogin(siteOneUrl);
-        const {license} = await System.apiGetClientLicense(siteOneUrl);
 
-        // Provisioning already enables both ConnectedWorkspacesSettings flags, and the
-        // remote-cluster service only starts at boot — patching them here never made the probe
-        // answer, and resetting them afterwards disabled shared channels for every other shard.
-        if (license?.SharedChannels === 'true') {
-            const {error: rcError} = await System.apiGetRemoteClusters(siteOneUrl);
-            sharedChannelsAvailable = !rcError;
+        // With shared channels off (TC-MOB-02) only autotranslation keeps the Configuration row, and the
+        // client sees it only when both the AutoTranslation flag and AutoTranslationSettings.Enable are on.
+        const {config: originalConfig} = await System.apiGetConfig(siteOneUrl);
+        originalAutoTranslationEnabled = originalConfig?.AutoTranslationSettings?.Enable;
+        const {error: flagError} = await System.apiEnableFeatureFlags(siteOneUrl, ['AutoTranslation']);
+        if (flagError) {
+            throw new Error(`Failed to enable the AutoTranslation flag: ${JSON.stringify(flagError)}`);
         }
-
-        // Enable autotranslation so the Configuration option is always visible in Channel Settings
-        // (required when shared channels is disabled, e.g. TC-MOB-02).
-        await System.apiPatchConfig(siteOneUrl, {
+        const {error: autoTranslationError} = await System.apiPatchConfig(siteOneUrl, {
             AutoTranslationSettings: {
                 Enable: true,
                 Provider: 'libretranslate',
@@ -94,21 +95,31 @@ describe('Share with connected workspaces', () => {
                 },
             },
         });
+        if (autoTranslationError) {
+            throw new Error(`Failed to enable autotranslation: ${JSON.stringify(autoTranslationError)}`);
+        }
+        const autoTranslationLive = await System.waitForClientConfigFlag(siteOneUrl, 'EnableAutoTranslation', 'true', {maxAttempts: 30});
+        if (!autoTranslationLive) {
+            throw new Error('EnableAutoTranslation did not read true in the client config, so TC-MOB-02 would find no Configuration row');
+        }
 
         await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
         await LoginScreen.login(testUser);
     });
 
     afterAll(async () => {
+        if (!canMutateServer) {
+            await HomeScreen.logout();
+            return;
+        }
+
         await User.apiAdminLogin(siteOneUrl);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
 
         // Hand the shared server back as provisioning left it. TC-MOB-02 switches the workspace
         // flags off mid-suite, so leaving them would strand later shards without shared channels.
         await System.apiPatchConfig(siteOneUrl, {
-            AutoTranslationSettings: {
-                Enable: false,
-            },
+            ...(originalAutoTranslationEnabled === undefined ? {} : {AutoTranslationSettings: {Enable: originalAutoTranslationEnabled}}),
             ConnectedWorkspacesSettings: {
                 EnableSharedChannels: true,
                 EnableRemoteClusterService: true,
@@ -129,12 +140,15 @@ describe('Share with connected workspaces', () => {
 
     const setSharedChannelsFeature = async (enabled: boolean) => {
         await User.apiAdminLogin(siteOneUrl);
-        await System.apiPatchConfig(siteOneUrl, {
+        const {error} = await System.apiPatchConfig(siteOneUrl, {
             ConnectedWorkspacesSettings: {
                 EnableSharedChannels: enabled,
                 EnableRemoteClusterService: enabled,
             },
         });
+        if (error) {
+            throw new Error(`Failed to set shared channels to ${enabled}: ${JSON.stringify(error)}`);
+        }
     };
 
     const grantUserSystemAdminRole = async (userId: string) => {
@@ -175,9 +189,6 @@ describe('Share with connected workspaces', () => {
     };
 
     it('TC-MOB-01: Section visible when all conditions are met', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
         await setSharedChannelsFeature(true);
         await grantUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();
@@ -196,9 +207,6 @@ describe('Share with connected workspaces', () => {
     });
 
     it('TC-MOB-02: Section hidden when feature disabled', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
         await setSharedChannelsFeature(false);
         await grantUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();
@@ -213,9 +221,6 @@ describe('Share with connected workspaces', () => {
     });
 
     it('TC-MOB-03: No connected workspaces when no remotes exist', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
         await setSharedChannelsFeature(true);
         await System.apiDeleteAllRemoteClusters(siteOneUrl);
         await grantUserSystemAdminRole(testUser.id);
@@ -235,9 +240,6 @@ describe('Share with connected workspaces', () => {
     });
 
     it('TC-MOB-04: Section hidden for users without Shared channel manager role', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
         await setSharedChannelsFeature(true);
         await removeUserSystemAdminRole(testUser.id);
         await device.reloadReactNative();
@@ -264,9 +266,6 @@ describe('Share with connected workspaces', () => {
     });
 
     it('TC-MOB-06: Enable sharing toggle', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
         await setSharedChannelsFeature(true);
         await User.apiAdminLogin(siteOneUrl);
         await System.apiPatchConfig(siteOneUrl, {
@@ -318,9 +317,6 @@ describe('Share with connected workspaces', () => {
     });
 
     it('TC-MOB-07: Disable sharing toggle', async () => {
-        if (!sharedChannelsAvailable) {
-            return;
-        }
 
         await setSharedChannelsFeature(true);
         await User.apiAdminLogin(siteOneUrl);

@@ -11,6 +11,8 @@ import {CookieJar} from 'tough-cookie';
 
 import {logError} from '../../../provision/log';
 
+import {poolGuardInterceptor} from './pool_guard';
+
 // Force IPv4 — axios-cookiejar-support v5 uses global agents.
 (http.globalAgent as any).options.family = 4;
 (https.globalAgent as any).options.family = 4;
@@ -56,6 +58,8 @@ baseClient.interceptors.request.use(async (config) => {
 
     return config;
 });
+
+baseClient.interceptors.request.use(poolGuardInterceptor);
 
 // Auto-retry on 401 by re-logging in as admin.
 let isRetrying = false;

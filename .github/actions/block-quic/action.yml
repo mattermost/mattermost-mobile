@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: Block QUIC on the macOS runner
+description: >-
+  Test servers advertise HTTP/3, and QUIC connections on the macOS runners die on missed
+  keep-alives (NSURLError -1005 on whatever request is in flight). Rejecting outbound UDP 443
+  makes URLSession fall back to HTTP/2 over TCP at once. CI only; the app is unchanged.
+
+inputs:
+  probe_url:
+    description: Server URL whose host is used to prove the block is active
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Reject outbound UDP 443
+      shell: bash
+      env:
+        PROBE_URL: ${{ inputs.probe_url }}
+      run: |
+        set -euo pipefail
+        # Only anchors directly under com.apple/ are evaluated by the stock pf.conf. 001 sorts after
+        # the offline harness's 000 anchor, which flushes only its own rules.
+        anchor="com.apple/001.mattermostE2EnoQUIC"
+        if ! sudo -n pfctl -s info 2>/dev/null | grep -q 'Status: Enabled'; then
+          sudo -n pfctl -E
+        fi
+        echo "block return out quick proto udp from any to any port 443" | sudo -n pfctl -a "$anchor" -f -
+        sudo -n pfctl -a "$anchor" -s rules
+
+        # `block return` answers with ICMP port-unreachable, so a connected UDP socket sees
+        # ECONNREFUSED; without the rule the probe just times out.
+        host="${PROBE_URL#*://}"; host="${host%%[/:]*}"
+        result=$(python3 - "$host" <<'PY'
+        import socket, sys
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(3)
+        try:
+            s.connect((sys.argv[1], 443))
+            s.send(b'probe')
+            s.recv(1)
+            print('answered')
+        except ConnectionRefusedError:
+            print('refused')
+        except OSError as err:
+            print(f'not-refused ({err})')
+        PY
+        )
+        echo "UDP 443 probe to ${host}: ${result}"
+        if [[ "$result" != "refused" ]]; then
+          echo "::warning::QUIC block is not active (${result}); HTTP/3 keep-alive drops can still fail requests"
+        fi

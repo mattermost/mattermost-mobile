@@ -94,6 +94,10 @@ const SITE_URL = process.env.SITE_1_URL || _platformSiteOneUrl || 'http://localh
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'sysadmin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Sys@dmin-sample1';
 
+// Installed by provisioning (REQUIRED_PLUGINS in provision/constants.ts); disabling them here
+// made the Agents suites skip silently.
+const PROVISIONED_PLUGINS = new Set(['mattermost-ai', 'com.mattermost.calls', 'com.mattermost.demo-plugin']);
+
 // Prepackaged plugins to keep enabled.
 const PREPACKAGED_PLUGINS = new Set([
     'antivirus',
@@ -289,20 +293,39 @@ async function serverSetup() {
         process.stderr.write(`[globalSetup] ⚠️ post-login ping failed (${err.message}) — continuing\n`);
     }
 
-    try {
-        await axios.put(`${SITE_URL}/api/v4/config/patch`, {
-            ConnectedWorkspacesSettings: {EnableRemoteClusterService: true},
-        }, {headers});
-        process.stdout.write('[globalSetup] ✅ Mutable server config initialized for E2E tests\n');
-    } catch (err) {
-        process.stderr.write(`[globalSetup] ⚠️ Could not patch server config: ${err.message}\n`);
+    // Server config comes from provisioning (detox/shared/server-baseline.ts); shards only probe it.
+
+    // Shared Channels needs the license feature and a running remote-cluster service; probing here
+    // lets the suite report as skipped rather than passed on a server that cannot run it.
+    const license = await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/license/client?format=old`, {headers}),
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'client license'},
+    );
+    let sharedChannelsReason = `license ${license.data?.SkuShortName || 'none'} has no SharedChannels`;
+    process.env.MM_SERVER_HAS_SHARED_CHANNELS = 'false';
+    if (license.data?.SharedChannels === 'true') {
+        const remotes = await retryAxios(
+            () => axios.get(`${SITE_URL}/api/v4/remotecluster`, {headers, validateStatus: () => true}),
+            {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'remote cluster probe'},
+        );
+        process.env.MM_SERVER_HAS_SHARED_CHANNELS = remotes.status === 200 ? 'true' : 'false';
+        sharedChannelsReason = `license ${license.data.SkuShortName}, GET /remotecluster returned ${remotes.status}`;
     }
+    process.stdout.write(`[globalSetup] Shared Channels available: ${process.env.MM_SERVER_HAS_SHARED_CHANNELS} (${sharedChannelsReason})\n`);
+
+    // An env-pinned MaxFileSize ignores API patches, so a spec that must shrink it cannot run.
+    const environment = await retryAxios(
+        () => axios.get(`${SITE_URL}/api/v4/config/environment`, {headers}),
+        {retries: WARMUP_RETRIES, delayMs: WARMUP_DELAY_MS, label: 'config environment'},
+    );
+    process.env.MM_SERVER_MAX_FILE_SIZE_PINNED = environment.data?.FileSettings?.MaxFileSize === true ? 'true' : 'false';
+    process.stdout.write(`[globalSetup] MaxFileSize env-pinned: ${process.env.MM_SERVER_MAX_FILE_SIZE_PINNED}\n`);
 
     try {
         const plugins = await axios.get(`${SITE_URL}/api/v4/plugins`, {headers});
         const active = plugins.data?.active || [];
         const toDisable = active.filter(
-            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && plugin.id !== 'com.mattermost.demo-plugin',
+            (plugin) => !PREPACKAGED_PLUGINS.has(plugin.id) && !PROVISIONED_PLUGINS.has(plugin.id),
         );
         await Promise.all(toDisable.map((plugin) => {
             process.stdout.write(`[globalSetup] Disabling plugin: ${plugin.id}\n`);
