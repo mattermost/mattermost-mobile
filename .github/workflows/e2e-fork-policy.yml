@@ -1,13 +1,11 @@
 # Fork PRs can't run E2E (it holds secrets), so E2E/Override from a writer waives the required
-# e2e-test/* statuses. Runs from the base branch: never check out or execute PR code here.
+# e2e-test/* statuses for the current head SHA only. Never check out or execute PR code here.
 name: E2E fork policy
 
 on:
   pull_request_target:
+    # Label events only: a fork author can't trigger, cancel or extend a waiver by pushing.
     types:
-      - opened
-      - reopened
-      - synchronize
       - labeled
       - unlabeled
   workflow_dispatch:
@@ -92,18 +90,18 @@ jobs:
               return;
             }
 
-            const labeled = pr.labels.some((l) => l.name === label);
-            if (!labeled || (action === 'labeled' && eventLabel !== label)) {
+            if (dispatched ? !pr.labels.some((l) => l.name === label) : (action !== 'labeled' || eventLabel !== label)) {
               core.info(`Fork PR #${pr.number}: ${label} not applied by this event; nothing to post.`);
               return;
             }
 
-            // The latest labeler decides, not the sender: on a synchronize that is the fork author.
-            const events = await github.paginate(github.rest.issues.listEvents, {
-              owner, repo, issue_number: pr.number, per_page: 100,
-            });
-            const applied = events.filter((e) => e.event === 'labeled' && e.label?.name === label).pop();
-            const approver = applied?.actor?.login || '';
+            let approver = context.payload.sender?.login || '';
+            if (dispatched) {
+              const events = await github.paginate(github.rest.issues.listEvents, {
+                owner, repo, issue_number: pr.number, per_page: 100,
+              });
+              approver = events.filter((e) => e.event === 'labeled' && e.label?.name === label).pop()?.actor?.login || '';
+            }
             if (!(await hasWriteAccess(approver))) {
               core.warning(`${label} on fork PR #${pr.number} was applied by '${approver}', who lacks write access; not waiving E2E.`);
               return;
@@ -111,7 +109,6 @@ jobs:
 
             core.setOutput('mode', 'success');
             core.setOutput('approver', approver);
-            core.setOutput('announce', action === 'labeled' || dispatched ? 'true' : 'false');
             core.info(`Fork PR #${pr.number} @ ${pr.head.sha}: waiving E2E on behalf of @${approver}.`);
 
       # Base revision only: the composite action and the file it require()s load from here.
@@ -141,10 +138,7 @@ jobs:
           target_url: ''
 
       - name: Record the waiver on the PR
-        if: >-
-          steps.decide.outputs.mode == 'success'
-          && steps.decide.outputs.announce == 'true'
-          && steps.decide.outputs.dry_run != 'true'
+        if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ steps.decide.outputs.pr_number }}
@@ -156,6 +150,6 @@ jobs:
             const body = [
               `E2E checks waived by @${process.env.APPROVER} for this fork PR at ${process.env.HEAD_SHA}.`,
               'Fork PRs cannot run E2E here; the change is covered by the E2E run on `main` after merge.',
-              'Later pushes keep the waiver while `E2E/Override` stays applied; removing the label re-blocks the PR.',
+              'The waiver covers this commit only. After a new push, review it and re-apply `E2E/Override` (remove and add it).',
             ].join('\n\n');
             await github.rest.issues.createComment({owner, repo, issue_number: Number(process.env.PR_NUMBER), body});
