@@ -98,6 +98,7 @@ describe('Server Login - Login with MFA', () => {
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

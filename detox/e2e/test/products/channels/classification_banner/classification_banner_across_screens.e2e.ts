@@ -68,6 +68,7 @@ jest.setTimeout(timeouts.ONE_MIN * 30);
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

@@ -109,6 +109,7 @@ jest.setTimeout(360000);
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

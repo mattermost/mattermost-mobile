@@ -58,6 +58,7 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

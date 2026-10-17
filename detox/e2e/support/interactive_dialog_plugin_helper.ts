@@ -20,7 +20,7 @@ import {
     serverOneUrl,
     siteOneUrl,
 } from '@support/test_config';
-import {AttachmentOptions} from '@support/ui/component';
+import {AttachmentOptions, NavigationHeader} from '@support/ui/component';
 import {
     ChannelListScreen,
     ChannelScreen,
@@ -113,22 +113,22 @@ export async function selectUser(user: {id: string; username: string}, {multisel
 
     if (multiselect) {
         // Selected chip + Done stay on the selector; field is optional so submit alone is not proof.
-        await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+        await waitFor(IntegrationSelectorScreen.doneButton).
             toExist().
             withTimeout(timeouts.FIVE_SEC);
-        await expect(element(by.id('integration_selector.screen'))).toExist();
+        await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
         await expect(userItem).toExist();
         return;
     }
 
-    await waitFor(element(by.id('integration_selector.screen'))).
+    await waitFor(IntegrationSelectorScreen.integrationSelectorScreen).
         not.toExist().
         withTimeout(timeouts.TEN_SEC);
 }
 
 export async function selectChannel(channel?: {id: string; display_name: string}, {multiselect = false} = {}) {
     const waitForSelectorClosed = async () => {
-        await waitFor(element(by.id('integration_selector.screen'))).
+        await waitFor(IntegrationSelectorScreen.integrationSelectorScreen).
             not.toExist().
             withTimeout(timeouts.TEN_SEC);
     };
@@ -142,10 +142,10 @@ export async function selectChannel(channel?: {id: string; display_name: string}
             rowTapped = true;
             await wait(timeouts.ONE_SEC);
             if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                await waitFor(IntegrationSelectorScreen.doneButton).
                     toExist().
                     withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
+                await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
             } else {
                 await waitForSelectorClosed();
             }
@@ -160,14 +160,14 @@ export async function selectChannel(channel?: {id: string; display_name: string}
 
         try {
             // Only use text fallback while the selector is still open.
-            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
             await element(by.text(channel.display_name)).tap();
             await wait(timeouts.ONE_SEC);
             if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                await waitFor(IntegrationSelectorScreen.doneButton).
                     toExist().
                     withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
+                await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
             } else {
                 await waitForSelectorClosed();
             }
@@ -178,16 +178,16 @@ export async function selectChannel(channel?: {id: string; display_name: string}
     }
 
     try {
-        await expect(element(by.id('integration_selector.screen'))).toExist();
-        const sharedRow = element(by.id('integration_selector.channel_list')).atIndex(0);
+        await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
+        const sharedRow = IntegrationSelectorScreen.channelList.atIndex(0);
         await expect(sharedRow).toExist();
         await sharedRow.tap();
         await wait(timeouts.ONE_SEC);
         if (multiselect) {
-            await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+            await waitFor(IntegrationSelectorScreen.doneButton).
                 toExist().
                 withTimeout(timeouts.FIVE_SEC);
-            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
         } else {
             await waitForSelectorClosed();
         }
@@ -198,14 +198,14 @@ export async function selectChannel(channel?: {id: string; display_name: string}
 
     for (const name of ['Town Square', 'Off-Topic', 'General']) {
         try {
-            await expect(element(by.id('integration_selector.screen'))).toExist();
+            await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
             await element(by.text(name)).tap();
             await wait(timeouts.ONE_SEC);
             if (multiselect) {
-                await waitFor(element(by.id('integration_selector.multiselect.submit.button'))).
+                await waitFor(IntegrationSelectorScreen.doneButton).
                     toExist().
                     withTimeout(timeouts.FIVE_SEC);
-                await expect(element(by.id('integration_selector.screen'))).toExist();
+                await expect(IntegrationSelectorScreen.integrationSelectorScreen).toExist();
             } else {
                 await waitForSelectorClosed();
             }
@@ -241,21 +241,21 @@ export async function ensureDialogClosed() {
     }
 
     try {
-        await element(by.id('channel.post_list.flat_list')).tapAtPoint({x: 200, y: 10});
+        await ChannelScreen.getFlatPostList().tapAtPoint({x: 200, y: 10});
         await wait(500);
     } catch {}
 
     // Swipe up on post list to reveal new posts that might be hidden behind input
     try {
-        await element(by.id('channel.post_list.flat_list')).swipe('up', 'fast', 0.2);
+        await ChannelScreen.getFlatPostList().swipe('up', 'fast', 0.2);
         await wait(300);
     } catch {}
 
     try {
-        await waitFor(element(by.id('channel.post_draft.post.input'))).toBeVisible().withTimeout(2000);
+        await waitFor(ChannelScreen.postInput).toBeVisible().withTimeout(2000);
     } catch {
         try {
-            await element(by.id('navigation.header.back')).tap();
+            await NavigationHeader.backButton.tap();
             await wait(500);
         } catch {}
     }

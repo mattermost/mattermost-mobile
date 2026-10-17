@@ -59,6 +59,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

@@ -40,6 +40,7 @@ describe('Classification Banner - Global Classification Banner', () => {
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await HomeScreen.logout();
             return;
         }
 

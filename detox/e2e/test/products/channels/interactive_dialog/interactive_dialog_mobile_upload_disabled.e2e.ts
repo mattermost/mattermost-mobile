@@ -42,6 +42,7 @@ describe('Interactive Dialog - File Upload Disabled (Plugin)', () => {
 
     afterAll(async () => {
         if (!canMutateServer) {
+            await logOutAfterDialogSuite();
             return;
         }
 
