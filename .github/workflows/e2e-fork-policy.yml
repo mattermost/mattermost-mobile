@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: Fork PR number to evaluate
+        description: Fork PR number to re-check (resets an invalid waiver; never creates one)
         required: true
         type: number
       dry_run:
@@ -96,14 +96,18 @@ jobs:
               return;
             }
 
-            // The labeling event's sender is authoritative for that run (the events list can lag it);
-            // whoever the history shows as the latest labeler must have write access too.
-            const waiving = dispatched || (action === 'labeled' && eventLabel === label);
+            // Only the labeling run itself creates a waiver; its sender is authoritative (the events
+            // list can lag it), and the latest labeler in the history must have write access too.
+            const waiving = !dispatched && action === 'labeled' && eventLabel === label;
             const events = await github.paginate(github.rest.issues.listEvents, {
               owner, repo, issue_number: pr.number, per_page: 100,
             });
-            const latest = events.filter((e) => e.event === 'labeled' && e.label?.name === label).pop()?.actor?.login || '';
-            const approver = waiving && !dispatched ? (context.payload.sender?.login || '') : latest;
+            // The events API promises no ordering, so take the most recent labeling by time.
+            const latest = events.
+              filter((e) => e.event === 'labeled' && e.label?.name === label).
+              sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)).
+              pop()?.actor?.login || '';
+            const approver = waiving ? (context.payload.sender?.login || '') : latest;
             const required = [...new Set([approver, latest].filter(Boolean))];
             for (const user of required.length ? required : ['']) {
               if (!(await hasWriteAccess(user))) {
@@ -112,13 +116,13 @@ jobs:
               }
             }
 
-            // Only the labeling itself (or a manual run) creates a waiver, and only for the commit
-            // that was labeled: a push after the label leaves the new commit unwaived.
+            // A waiver covers only the commit that was labeled: a push after the label leaves the new
+            // commit unwaived, and a manual run never creates one.
             if (!waiving) {
               core.info(`Fork PR #${pr.number}: ${label} by @${approver} stands; nothing new to post.`);
               return;
             }
-            const labeledSha = dispatched ? pr.head.sha : context.payload.pull_request.head.sha;
+            const labeledSha = context.payload.pull_request.head.sha;
             if (labeledSha !== pr.head.sha) {
               core.info(`Fork PR #${pr.number} moved from ${labeledSha} to ${pr.head.sha} since it was labeled; not waiving the new commit.`);
               return;
