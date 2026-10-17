@@ -78,12 +78,27 @@ start_adb_server() {
     adb start-server
 }
 
+# Give the emulator explicit resolvers instead of inheriting the host's systemd-resolved stub:
+# the runner's upstream servers plus public fallbacks (the emulator takes at most 4).
+emulator_dns_servers() {
+    {
+        if [[ -r /run/systemd/resolve/resolv.conf ]]; then
+            awk '$1 == "nameserver" && $2 !~ /^127\./ {print $2}' /run/systemd/resolve/resolv.conf
+        fi
+        echo 1.1.1.1
+        echo 8.8.8.8
+    } | awk 'NF && !seen[$0]++' | head -4 | paste -sd, -
+}
+
 start_emulator() {
     echo "Starting the emulator..."
     local emulator_opts="-avd $AVD_NAME -no-snapshot -no-snapshot-load -no-snapshot-save -no-boot-anim -no-audio -gpu off -no-window"
 
     if [[ "$CI" == "true" || "$(uname -s)" == "Linux" ]]; then
-        emulator $emulator_opts -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
+        local dns_servers
+        dns_servers=$(emulator_dns_servers)
+        echo "Emulator DNS servers: ${dns_servers}"
+        emulator $emulator_opts -dns-server "$dns_servers" -gpu swiftshader_indirect -accel on -qemu -m "$EMULATOR_RAM_MB" &
     else
         emulator $emulator_opts -gpu guest -verbose -qemu -vnc :0
     fi
@@ -187,7 +202,7 @@ ensure_emulator_network() {
         return 0
     fi
     echo "::warning::Emulator cannot resolve ${host}; cold-booting it once"
-    adb shell dumpsys connectivity 2>/dev/null | tr -d '\r' | grep -m2 -E 'Active default network|NetworkAgentInfo' || true
+    dump_dns_state
     stop_emulator
     prepare_avd_for_boot
     start_emulator
@@ -195,8 +210,19 @@ ensure_emulator_network() {
     if emulator_resolves_host "$host" 60; then
         return 0
     fi
+    dump_dns_state
     echo "::error::Emulator still cannot resolve ${host} after a cold boot: this runner's emulator has no working DNS"
     exit 1
+}
+
+# What the next DNS failure needs to show its cause: guest DNS and network state, host resolvers.
+dump_dns_state() {
+    echo "--- emulator DNS properties"
+    adb shell getprop 2>/dev/null | tr -d '\r' | grep -iE 'dns|net\.' | head -20 || true
+    echo "--- emulator connectivity"
+    adb shell dumpsys connectivity 2>/dev/null | tr -d '\r' | grep -m6 -E 'Active default network|NetworkAgentInfo|VALIDATED|DnsAddresses' || true
+    echo "--- host resolvers"
+    grep -E '^nameserver' /etc/resolv.conf /run/systemd/resolve/resolv.conf 2>/dev/null || true
 }
 
 resolve_app_apk() {
