@@ -23,9 +23,7 @@ on:
 permissions: {}
 
 concurrency:
-  # A queued run is replaced by a newer queued run in the same group, so only E2E/Override events
-  # share one: an unrelated label can't displace a pending waiver, and a manual re-check (which
-  # never creates a waiver) can't either.
+  # Only E2E/Override events share a group, so other labels can't replace a queued waiver.
   group: >-
     e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}-${{
     github.event_name == 'workflow_dispatch' && 'dispatch'
@@ -61,8 +59,7 @@ jobs:
             const label = process.env.OVERRIDE_LABEL;
             const dispatched = context.eventName === 'workflow_dispatch';
             const prNumber = dispatched ? Number(process.env.DISPATCH_PR) : context.payload.pull_request.number;
-            // Decide from the PR as it is now, not from the triggering event, so a run that was
-            // queued behind another still acts on the current label state.
+            // Decide from the PR's current state, not the event, so a queued run acts on what is true now.
             const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
             const action = dispatched ? 'dispatch' : context.payload.action;
             const eventLabel = dispatched ? '' : (context.payload.label?.name || '');
@@ -98,7 +95,7 @@ jobs:
             const reset = async (why, refused = false) => {
               core.setOutput('mode', 'pending');
               core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
-              // A refused waiver must not be silent: the checks just stay pending otherwise.
+              // Say so on the PR; otherwise the checks just stay pending.
               if (refused && process.env.DRY_RUN !== 'true') {
                 try {
                   await github.rest.issues.createComment({
@@ -117,14 +114,12 @@ jobs:
               return;
             }
 
-            // Only the labeling run itself creates a waiver; its sender is authoritative (the events
-            // list can lag it), and the latest labeler in the history must have write access too.
+            // Only the labeling run creates a waiver. Its sender and the latest labeler must both have write access.
             const waiving = !dispatched && action === 'labeled' && eventLabel === label;
             const events = await github.paginate(github.rest.issues.listEvents, {
               owner, repo, issue_number: pr.number, per_page: 100,
             });
-            // The events API promises no ordering, so take the most recent labeling by time; two
-            // different actors at that same instant are ambiguous and reset rather than pick one.
+            // Events have no guaranteed order: take the newest labeling by time; a tie between actors resets.
             const labelings = events.filter((e) => e.event === 'labeled' && e.label?.name === label);
             const newest = Math.max(...labelings.map((e) => Date.parse(e.created_at)));
             const newestActors = [...new Set(labelings.
@@ -144,8 +139,7 @@ jobs:
               }
             }
 
-            // A waiver covers only the commit that was labeled: a push after the label leaves the new
-            // commit unwaived, and a manual run never creates one.
+            // The waiver covers only the labeled commit; a manual run never creates one.
             if (!waiving) {
               core.info(`Fork PR #${pr.number}: ${label} by @${approver} stands; nothing new to post.`);
               return;
