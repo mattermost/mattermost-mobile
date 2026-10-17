@@ -120,6 +120,48 @@ const PREPACKAGED_PLUGINS = new Set([
 const WARMUP_RETRIES = 8;
 const WARMUP_DELAY_MS = 15000;
 
+/**
+ * The permission policy actions this server supports, comma-separated, so suites can gate on one
+ * (see serverSupportsPolicyAction). New actions ship without a feature flag, so this asks the
+ * render-time decisions endpoint: called without `actions`, it returns a decision for every action
+ * the server registers for channels.
+ * Returns '' on servers without the endpoint (before 12.0), and undefined when it can't tell.
+ */
+async function detectPolicyActions(headers) {
+    const options = {headers, validateStatus: () => true};
+    try {
+        // The endpoint evaluates against a real channel. The admin's DM with themselves works even on
+        // a server with no teams or channels, and creating it again returns the same one, so there's
+        // nothing to clean up.
+        const me = await axios.get(`${SITE_URL}/api/v4/users/me`, options);
+        const userId = me.data?.id;
+        if (!userId) {
+            return undefined;
+        }
+        const selfDm = await axios.post(`${SITE_URL}/api/v4/channels/direct`, [userId, userId], options);
+        const channelId = selfDm.data?.id;
+        if (!channelId) {
+            return undefined;
+        }
+
+        const search = await axios.post(
+            `${SITE_URL}/api/v4/access_control/decisions/actions/search`,
+            {resource: {type: 'channel', id: channelId}},
+            options,
+        );
+        if (search.status === 404) {
+            return '';
+        }
+        const decisions = search.data?.decisions;
+        if (search.status !== 200 || !decisions || typeof decisions !== 'object') {
+            return undefined;
+        }
+        return Object.keys(decisions).join(',');
+    } catch {
+        return undefined;
+    }
+}
+
 async function retryAxios(fn, {retries = 4, delayMs = 3000, label = 'request'} = {}) {
     let lastErr;
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -234,6 +276,14 @@ async function serverSetup() {
     }
     const headers = {Authorization: `Bearer ${token}`};
     process.stdout.write('[globalSetup] ✅ Admin login successful\n');
+
+    const policyActions = await detectPolicyActions(headers);
+    if (policyActions === undefined) {
+        process.stderr.write('[globalSetup] ⚠️ Could not detect supported permission policy actions — no suite will be skipped for them\n');
+    } else {
+        process.env.MM_SERVER_POLICY_ACTIONS = policyActions;
+        process.stdout.write(`[globalSetup] Permission policy actions: ${policyActions || '(none)'}\n`);
+    }
 
     // Pre-warm the server so the first app request isn't also the server's cold start. This
     // does not warm the simulator's TLS session, so -1005 drops are still possible.
