@@ -111,7 +111,7 @@ export const CONFIG_BASELINE: Readonly<Record<string, BaselineEntry>> = {
     'AutoTranslationSettings.LibreTranslate.URL': {value: 'https://example.com', optional: true},
 };
 
-/** Server FeatureFlags that must be on. Only flags the server defines are written. */
+/** Server FeatureFlags and the value each must have. Only flags the server defines are written. */
 export const FEATURE_FLAG_BASELINE: Readonly<Record<string, boolean>> = {
     ChannelAttributes: true,
     PermissionPolicies: true,
@@ -120,6 +120,9 @@ export const FEATURE_FLAG_BASELINE: Readonly<Record<string, boolean>> = {
     AutoTranslation: true,
     ContentFlagging: true,
     ClassificationMarkings: true,
+
+    // MM-T6306_1 turns this on for itself; a failed reset must not leak into later mutation specs.
+    ChannelAttributesRequired: false,
 };
 
 const E2E_POLICY_PREFIXES = ['abac-', 'e2e-', 'probe-'];
@@ -138,7 +141,7 @@ type Segment = {name: string; mapKey: boolean};
 type JsonRecord = Record<string, unknown>;
 
 type ConfigTarget = {kind: 'config'; key: string; segments: Segment[]; entry: BaselineEntry};
-type FlagTarget = {kind: 'flag'; key: string; name: string};
+type FlagTarget = {kind: 'flag'; key: string; name: string; value: boolean};
 type Written = {target: Target; evaluation: Evaluation};
 type Target = ConfigTarget | FlagTarget;
 
@@ -340,10 +343,10 @@ function buildTargets(only?: readonly string[]): Target[] {
         }
     }
 
-    for (const name of Object.keys(FEATURE_FLAG_BASELINE)) {
+    for (const [name, value] of Object.entries(FEATURE_FLAG_BASELINE)) {
         const key = `FeatureFlags.${name}`;
         if (!onlySet || onlySet.has(key)) {
-            targets.push({kind: 'flag', key, name});
+            targets.push({kind: 'flag', key, name, value});
         }
     }
 
@@ -360,11 +363,11 @@ function evaluate(target: Target, snapshot: Snapshot, host: string): Evaluation 
             key: target.key,
             supported,
             pinned: readPath(snapshot.environment, ['FeatureFlags', target.name]).value === true,
-            matches: current === true,
+            matches: current === target.value,
             optional: false,
-            expected: 'true',
+            expected: String(target.value),
             actual: supported ? String(current) : 'absent',
-            desired: true,
+            desired: target.value,
             segments: [],
             flagName: target.name,
         };
@@ -690,7 +693,7 @@ export async function applyBaseline(transport: BaselineTransport, opts: Baseline
             report.alreadyOk.push(evaluation.key);
         } else {
             flagWrites.push({target, evaluation});
-            changes[target.name] = true;
+            changes[target.name] = target.value;
         }
     }
 
@@ -777,7 +780,7 @@ export async function verifyBaseline(transport: BaselineTransport, opts: VerifyO
         }
     }
 
-    const flagsOn = evaluations.filter((evaluation) => evaluation.kind === 'flag' && evaluation.matches);
+    const flagsOn = evaluations.filter((evaluation) => evaluation.kind === 'flag' && evaluation.matches && evaluation.desired === true);
     if (flagsOn.length > 0) {
         await checkClientFlags(transport, flagsOn, opts, report);
     }

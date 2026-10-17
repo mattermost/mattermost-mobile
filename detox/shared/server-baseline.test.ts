@@ -72,6 +72,7 @@ const freshConfig = (): JsonRecord => ({
         BurnOnRead: false,
         AutoTranslation: false,
         ContentFlagging: false,
+        ChannelAttributesRequired: true,
         ClassificationMarkings: false,
         MobileEphemeralMode: true,
     },
@@ -400,6 +401,16 @@ describe('applyBaseline', () => {
         assert.ok(report.info.some((line) => line.includes(`hides it until ${demo} is installed`)));
     });
 
+    it('drives a flag the baseline wants off back to false in the full-map write', async () => {
+        const server = createFakeServer();
+        const report = await applyBaseline(server.transport, {serverUrl: SERVER_URL});
+
+        assert.equal(server.config.FeatureFlags.ChannelAttributesRequired, false);
+        assert.ok(report.applied.includes('FeatureFlags.ChannelAttributesRequired'));
+        const flagWrite = patchCalls(server.calls).find((call) => call.body?.FeatureFlags !== undefined);
+        assert.equal(flagWrite?.body?.FeatureFlags?.ChannelAttributesRequired, false);
+    });
+
     it('is idempotent: a second apply sends no PUT or DELETE', async () => {
         const server = createFakeServer();
         await applyBaseline(server.transport, {serverUrl: SERVER_URL});
@@ -584,6 +595,7 @@ describe('baseline declarations', () => {
         assert.equal(isBaselineKey('FeatureFlags.NotAFlag'), false);
         assert.equal(isBaselineKey('ServiceSettings.NotASetting'), false);
         assert.equal(isBaselineKey('ServiceSettings.EnableGifPicker'), true);
-        assert.equal(Object.keys(FEATURE_FLAG_BASELINE).every((name) => FEATURE_FLAG_BASELINE[name] === true), true);
+        assert.equal(Object.values(FEATURE_FLAG_BASELINE).every((value) => typeof value === 'boolean'), true);
+        assert.equal(FEATURE_FLAG_BASELINE.ChannelAttributesRequired, false);
     });
 });
