@@ -100,10 +100,15 @@ jobs:
               core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
               // A refused waiver must not be silent: the checks just stay pending otherwise.
               if (refused && process.env.DRY_RUN !== 'true') {
-                await github.rest.issues.createComment({
-                  owner, repo, issue_number: pr.number,
-                  body: `E2E waiver refused: ${why}. The required E2E checks stay pending; a maintainer with write access must re-apply \`${label}\`.`,
-                });
+                try {
+                  await github.rest.issues.createComment({
+                    owner, repo, issue_number: pr.number,
+                    body: `E2E waiver refused: ${why}. The required E2E checks stay pending; a maintainer with write access must re-apply \`${label}\`.`,
+                  });
+                } catch (err) {
+                  // Don't fail the step: the reset below still has to run.
+                  core.warning(`Could not comment on PR #${pr.number}: ${err.message}`);
+                }
               }
             };
 
