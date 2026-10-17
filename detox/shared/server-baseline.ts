@@ -96,6 +96,7 @@ export const CONFIG_BASELINE: Readonly<Record<string, BaselineEntry>> = {
     'ServiceSettings.EnableCrossTeamSearch': {value: true},
     'ServiceSettings.ScheduledPosts': {value: true},
     'ServiceSettings.EnablePostUsernameOverride': {value: true},
+    'ServiceSettings.EnableBurnOnRead': {value: true},
     'ServiceSettings.EnableGifPicker': {value: true},
     'ServiceSettings.AllowCorsFrom': {value: '*'},
     'ServiceSettings.AllowedUntrustedInternalConnections': {value: '', listContainsServerHost: true},
