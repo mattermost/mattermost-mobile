@@ -29,7 +29,12 @@ class Alert {
     };
     markAllAsReadTitle = isAndroid() ? element(by.text('Are you sure you want to mark all threads as read?')) : element(by.label('Are you sure you want to mark all threads as read?')).atIndex(0);
     messageLengthTitle = isAndroid() ? element(by.text('Message Length')) : element(by.label('Message Length')).atIndex(0);
+
+    // The push proxy raises two distinct alerts: push_proxy_unknown ("could not") when the
+    // status is unverified, and push_proxy_error ("cannot") when the server has no push
+    // config at all. Both block the login form, so both need dismissing.
     notificationsCannotBeReceivedTitle = isAndroid() ? element(by.text('Notifications could not be received from this server')) : element(by.label('Notifications could not be received from this server')).atIndex(0);
+    notificationsCannotBeReceivedErrorTitle = isAndroid() ? element(by.text('Notifications cannot be received from this server')) : element(by.label('Notifications cannot be received from this server')).atIndex(0);
     removeServerTitle = (serverDisplayName: string) => {
         const title = `Are you sure you want to remove ${serverDisplayName}?`;
 

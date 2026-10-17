@@ -139,8 +139,12 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
             return;
         }
 
+        if (control === 'speed' && !showSpeedMenu) {
+            return;
+        }
+
         scheduleAutoHideControls(control);
-    }, [cancelHideControls, scheduleAutoHideControls, visible]);
+    }, [cancelHideControls, scheduleAutoHideControls, showSpeedMenu, visible]);
 
     const handleBackgroundPress = useCallback(() => {
         if (isInteractingWithControlsRef.current) {
@@ -179,52 +183,58 @@ const VideoControls: React.FC<VideoControlsWithSeekProps> = ({
 
     return (
         <Animated.View style={[StyleSheet.absoluteFill, containerStyle]}>
-            <Animated.View style={[styles.container, controlsOpacityStyle]}>
-                <ViewPositionProvider>
-                    <View
-                        onTouchEnd={handleBackgroundPress}
-                        style={[styles.controlsArea, styles.controlsBackground]}
-                    >
+            <View
+                testID='gallery.video.controls'
+                onTouchEnd={handleBackgroundPress}
+                style={styles.container}
+            >
+                <Animated.View
+                    testID='gallery.video.controls.overlay'
+                    pointerEvents={visible ? 'auto' : 'none'}
+                    style={[styles.container, controlsOpacityStyle]}
+                >
+                    <ViewPositionProvider>
+                        <View style={[styles.controlsArea, styles.controlsBackground]}>
+                            <TopControls
+                                captionsEnabled={captionsEnabled}
+                                handleControlAction={handleControlAction}
+                                hasCaptions={hasCaptions}
+                                isFullscreen={isFullscreen}
+                                onFullscreen={onFullscreen}
+                                onCaptionsToggle={onCaptionsToggle}
+                                onShowSpeedMenu={onShowSpeedMenu}
+                            />
 
-                        <TopControls
-                            captionsEnabled={captionsEnabled}
-                            handleControlAction={handleControlAction}
-                            hasCaptions={hasCaptions}
-                            isFullscreen={isFullscreen}
-                            onFullscreen={onFullscreen}
-                            onCaptionsToggle={onCaptionsToggle}
-                            onShowSpeedMenu={onShowSpeedMenu}
-                        />
+                            <PlaybackControls
+                                handleControlAction={handleControlAction}
+                                paused={paused}
+                                seekSeconds={seekSeconds}
+                                onPlay={onPlay}
+                                onPause={onPause}
+                                onRewind={onRewind}
+                                onForward={onForward}
+                            />
 
-                        <PlaybackControls
-                            handleControlAction={handleControlAction}
-                            paused={paused}
-                            seekSeconds={seekSeconds}
-                            onPlay={onPlay}
-                            onPause={onPause}
-                            onRewind={onRewind}
-                            onForward={onForward}
-                        />
+                            <BottomControls
+                                currentTime={currentTime}
+                                duration={duration}
+                                handleControlAction={handleControlAction}
+                                onSeek={onSeek}
+                                paddingBottom={isFullscreen ? 0 : insets.bottom}
+                            />
 
-                        <BottomControls
-                            currentTime={currentTime}
-                            duration={duration}
-                            handleControlAction={handleControlAction}
-                            onSeek={onSeek}
-                            paddingBottom={isFullscreen ? 0 : insets.bottom}
-                        />
-
-                        <PlaybackSpeedMenu
-                            visible={showSpeedMenu}
-                            currentSpeed={speed}
-                            handleControlAction={handleControlAction}
-                            isFullscreen={isFullscreen}
-                            onSpeedChange={onSpeedChange}
-                            setShowSpeedMenu={setShowSpeedMenu}
-                        />
-                    </View>
-                </ViewPositionProvider>
-            </Animated.View>
+                            <PlaybackSpeedMenu
+                                visible={showSpeedMenu}
+                                currentSpeed={speed}
+                                handleControlAction={handleControlAction}
+                                isFullscreen={isFullscreen}
+                                onSpeedChange={onSpeedChange}
+                                setShowSpeedMenu={setShowSpeedMenu}
+                            />
+                        </View>
+                    </ViewPositionProvider>
+                </Animated.View>
+            </View>
         </Animated.View>
     );
 };

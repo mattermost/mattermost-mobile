@@ -367,10 +367,23 @@ class ChannelListScreen {
                 // Recovery is best-effort.
             }
             await waitForElementToExist(this.channelListScreen, timeout);
+
+            // Only wait the loader out if it actually appeared. Against a fast server the
+            // indicator never mounts, and waiting for a never-present element to disappear
+            // burned most of the TWENTY_SEC budget on every call.
+            const categoriesLoading = element(by.id('categories.loading'));
             try {
-                await waitForElementToNotExist(element(by.id('categories.loading')), timeouts.TWENTY_SEC);
+                await waitForElementToExist(categoriesLoading, timeouts.ONE_SEC);
             } catch {
-                // Loading indicator already gone or never shown.
+                // Loader never shown — categories are already rendered.
+                await waitForElementToExist(this.channelList, timeout);
+                return;
+            }
+
+            try {
+                await waitForElementToNotExist(categoriesLoading, timeouts.TWENTY_SEC);
+            } catch {
+                // Loading indicator still up — fall through and let the list wait below fail.
             }
 
             try {
