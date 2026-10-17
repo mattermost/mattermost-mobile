@@ -3,6 +3,7 @@
 
 import client from './client';
 import {getResponseFromError} from './common';
+import {apiEnableFeatureFlags, apiPatchConfig} from './system';
 
 // ****************************************************************
 // Access Control (ABAC)
@@ -219,16 +220,35 @@ export const apiCreatePermissionPolicy = async (
     }
 };
 
-/**
- * Create a permission policy scoped to one channel.
- * Channel policies are keyed by the channel ID, and v0.4 permission rules
- * require a unique name and channel role.
- * @param {string} baseUrl - the base server URL
- * @param {string} channelId - the channel the policy applies to
- * @param {Array<{actions: string[]; expression: string}>} rules - permission rules to enforce in the channel
- * @return {Object} returns {policy} on success or {error, status} on error
- */
-export const apiCreateChannelPermissionPolicy = async (
+const CHANNEL_PERMISSION_POLICY_FLAGS = [
+    'AttributeBasedAccessControl',
+    'PermissionPolicies',
+    'ChannelPermissionPolicies',
+];
+
+const isChannelPermissionPoliciesDisabled = (result: {error?: {id?: string; status_code?: number}; status?: number}) => {
+    return result.status === 501 ||
+        result.error?.status_code === 501 ||
+        result.error?.id === 'api.access_control_policy.channel_permission_policies.feature_disabled';
+};
+
+const ensureChannelPermissionPolicyFlags = async (baseUrl: string): Promise<any> => {
+    const enabled = await apiEnableFeatureFlags(baseUrl, CHANNEL_PERMISSION_POLICY_FLAGS);
+    if (enabled.error) {
+        return enabled;
+    }
+
+    const currentFlags = enabled.config?.FeatureFlags;
+    if (!currentFlags || currentFlags.ChannelPermissionPolicies === true) {
+        return enabled;
+    }
+
+    return apiPatchConfig(baseUrl, {
+        FeatureFlags: {...currentFlags, ChannelPermissionPolicies: true},
+    });
+};
+
+const putChannelPermissionPolicy = async (
     baseUrl: string,
     channelId: string,
     rules: Array<{actions: string[]; expression: string}>,
@@ -252,6 +272,41 @@ export const apiCreateChannelPermissionPolicy = async (
     } catch (err) {
         return getResponseFromError(err);
     }
+};
+
+/**
+ * Create a permission policy scoped to one channel.
+ * Channel policies are keyed by the channel ID, and v0.4 permission rules
+ * require a unique name and channel role.
+ * Re-enables ChannelPermissionPolicies immediately before the write so a
+ * shared-server FeatureFlags patch during the suite's 30s attribute wait
+ * cannot leave the flag off.
+ * @param {string} baseUrl - the base server URL
+ * @param {string} channelId - the channel the policy applies to
+ * @param {Array<{actions: string[]; expression: string}>} rules - permission rules to enforce in the channel
+ * @return {Object} returns {policy} on success or {error, status} on error
+ */
+export const apiCreateChannelPermissionPolicy = async (
+    baseUrl: string,
+    channelId: string,
+    rules: Array<{actions: string[]; expression: string}>,
+): Promise<any> => {
+    const {error: flagsError, status: flagsStatus} = await ensureChannelPermissionPolicyFlags(baseUrl);
+    if (flagsError) {
+        return {error: flagsError, status: flagsStatus};
+    }
+
+    const created = await putChannelPermissionPolicy(baseUrl, channelId, rules);
+    if (!isChannelPermissionPoliciesDisabled(created)) {
+        return created;
+    }
+
+    const {error: retryFlagsError, status: retryFlagsStatus} = await ensureChannelPermissionPolicyFlags(baseUrl);
+    if (retryFlagsError) {
+        return {error: retryFlagsError, status: retryFlagsStatus};
+    }
+
+    return putChannelPermissionPolicy(baseUrl, channelId, rules);
 };
 
 /**
