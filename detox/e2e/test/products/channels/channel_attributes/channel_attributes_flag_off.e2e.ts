@@ -90,11 +90,23 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
 
     describe('with a required attribute', () => {
         // The server refuses to create a required channel attribute unless this flag is on (off by default).
+        // Read back after each write: a lost or env-pinned write still returns success.
         const setRequiredAttributes = async (enabled: boolean) => {
-            const {error} = await System.apiPatchFeatureFlags(siteOneUrl, {ChannelAttributesRequired: enabled});
-            if (error) {
-                throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
+            let actual: unknown;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                // eslint-disable-next-line no-await-in-loop -- each attempt checks the previous write
+                const {error} = await System.apiPatchFeatureFlags(siteOneUrl, {ChannelAttributesRequired: enabled});
+                if (error) {
+                    throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
+                }
+                // eslint-disable-next-line no-await-in-loop -- read-back of this attempt's write
+                const {config} = await System.apiGetConfig(siteOneUrl);
+                actual = config?.FeatureFlags?.ChannelAttributesRequired;
+                if (actual === enabled) {
+                    return;
+                }
             }
+            throw new Error(`FeatureFlags.ChannelAttributesRequired stayed ${String(actual)} after 3 writes of ${enabled}`);
         };
 
         beforeAll(async () => {
