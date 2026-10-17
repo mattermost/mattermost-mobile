@@ -780,18 +780,18 @@ export async function verifyBaseline(transport: BaselineTransport, opts: VerifyO
         }
     }
 
-    const flagsOn = evaluations.filter((evaluation) => evaluation.kind === 'flag' && evaluation.matches && evaluation.desired === true);
-    if (flagsOn.length > 0) {
-        await checkClientFlags(transport, flagsOn, opts, report);
+    const flagsAtBaseline = evaluations.filter((evaluation) => evaluation.kind === 'flag' && evaluation.matches);
+    if (flagsAtBaseline.length > 0) {
+        await checkClientFlags(transport, flagsAtBaseline, opts, report);
     }
 
     return finalize(report);
 }
 
-/** Polls the client config until every server-true flag shows as 'true' to clients, or the poll budget ends. */
+/** Polls the client config until clients see every flag at its baseline value, or the poll budget ends. */
 async function checkClientFlags(
     transport: BaselineTransport,
-    flagsOn: Evaluation[],
+    flags: Evaluation[],
     opts: VerifyOptions,
     report: BaselineReport,
 ): Promise<void> {
@@ -801,13 +801,13 @@ async function checkClientFlags(
     const attempts = Math.floor(timeoutMs / intervalMs) + 1;
 
     try {
-        let pending: Array<{key: string; clientValue: unknown}> = [];
+        let pending: Array<{key: string; clientValue: unknown; expected: string}> = [];
         for (let attempt = 1; attempt <= attempts; attempt++) {
             // eslint-disable-next-line no-await-in-loop -- propagation polling
             const client = await readClientConfig(transport);
-            pending = flagsOn.
-                filter((evaluation) => String(client[`FeatureFlag${evaluation.flagName ?? ''}`]) !== 'true').
-                map((evaluation) => ({key: evaluation.key, clientValue: client[`FeatureFlag${evaluation.flagName ?? ''}`]}));
+            pending = flags.
+                filter((evaluation) => String(client[`FeatureFlag${evaluation.flagName ?? ''}`]) !== String(evaluation.desired)).
+                map((evaluation) => ({key: evaluation.key, clientValue: client[`FeatureFlag${evaluation.flagName ?? ''}`], expected: String(evaluation.desired)}));
             if (pending.length === 0 || attempt === attempts) {
                 break;
             }
@@ -817,7 +817,7 @@ async function checkClientFlags(
         }
 
         for (const item of pending) {
-            report.failed.push(`${item.key}: client reports ${String(item.clientValue)} while server is true (not propagated within ${timeoutMs}ms)`);
+            report.failed.push(`${item.key}: client reports ${String(item.clientValue)} while server is ${item.expected} (not propagated within ${timeoutMs}ms)`);
         }
     } catch (error) {
         report.failed.push(`client config unavailable for flag propagation check: ${errorMessage(error)}`);

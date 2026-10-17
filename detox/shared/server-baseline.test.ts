@@ -89,6 +89,9 @@ type FakeOptions = {
     remoteClusters?: Array<{remote_id: string; name: string}>;
     classificationFields?: Record<string, Array<{id: string; name: string; delete_at: number}>>;
 
+    /** Client config values that differ from the server's flags, e.g. a stale client copy. */
+    clientOverrides?: Record<string, string>;
+
     /** When set, GET /config hides Plugins entries of other plugins, as the server does for uninstalled ones. */
     installedPlugins?: string[];
 };
@@ -194,6 +197,7 @@ function createFakeServer(options: FakeOptions = {}) {
                 for (const [name, value] of Object.entries(flags)) {
                     client[`FeatureFlag${name}`] = lagging ? 'false' : String(value);
                 }
+                Object.assign(client, options.clientOverrides);
                 return respond(200, client) as {status: number; data: T};
             }
             if (method === 'PUT' && pathname === '/api/v4/config/patch') {
@@ -505,6 +509,15 @@ describe('verifyBaseline', () => {
 
         assert.ok(report.info.some((line) => line.startsWith(`PluginSettings.Plugins[${demo}].DialogOnlyMode: ${demo} is not installed`)));
         assert.equal(report.failed.some((line) => line.includes('DialogOnlyMode')), false);
+    });
+
+    it('fails when clients still see a flag on that the baseline wants off', async () => {
+        const config = freshConfig();
+        config.FeatureFlags.ChannelAttributesRequired = false;
+        const server = createFakeServer({config, clientOverrides: {FeatureFlagChannelAttributesRequired: 'true'}});
+        const report = await verifyBaseline(server.transport, {serverUrl: SERVER_URL, clientPollTimeoutMs: 0, sleep: sleepNoop});
+
+        assert.ok(report.failed.some((line) => line.startsWith('FeatureFlags.ChannelAttributesRequired: client reports true while server is false')));
     });
 
     it('reports maestro-owned drift as info, not failure', async () => {
