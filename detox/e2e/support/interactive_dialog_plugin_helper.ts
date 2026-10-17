@@ -134,7 +134,7 @@ export async function selectChannel(channel?: {id: string; display_name: string}
     };
 
     if (channel) {
-        const rowContent = element(by.id(`integration_selector.channel_list.${channel.id}`));
+        const rowContent = IntegrationSelectorScreen.getChannelRow(channel.id);
         let rowTapped = false;
         try {
             await waitFor(rowContent).toExist().withTimeout(timeouts.FIVE_SEC);

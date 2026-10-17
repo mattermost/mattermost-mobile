@@ -105,25 +105,25 @@ import {expect} from 'detox';
             };
         };
 
-        // # Set MaxFileSize just under the fixture size so the upload is rejected
-        let {applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit);
-        if (!applied) {
-            ({applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit));
-        }
-        if (!applied) {
-            throw new Error(
-                `MaxFileSize patch to ${maxFileSizeLimit} did not apply (client MaxFileSize=${appliedLimit}, ` +
-                `error=${JSON.stringify(patchError)}); the server may own FileSettings via env.`,
-            );
-        }
-
-        // * Server rejects over-limit uploads — use a temp file sized above the applied
-        // limit (image.png may be under an env-locked minimum MaxFileSize on CI).
-        const oversizeBytes = Math.max(appliedLimit + 1024, fileSize + 1024);
         const oversizePath = path.join(os.tmpdir(), `detox-oversize-${Date.now()}.bin`);
 
+        // Everything after the first write is inside the try so the finally always restores MaxFileSize.
         try {
-            // Inside the try so a write failure still restores MaxFileSize in the finally.
+            // # Set MaxFileSize just under the fixture size so the upload is rejected
+            let {applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit);
+            if (!applied) {
+                ({applied, appliedLimit, error: patchError} = await patchMaxFileSize(maxFileSizeLimit));
+            }
+            if (!applied) {
+                throw new Error(
+                    `MaxFileSize patch to ${maxFileSizeLimit} did not apply (client MaxFileSize=${appliedLimit}, ` +
+                    `error=${JSON.stringify(patchError)}); the server may own FileSettings via env.`,
+                );
+            }
+
+            // * Server rejects over-limit uploads — use a temp file sized above the applied
+            // limit (image.png may be under an env-locked minimum MaxFileSize on CI).
+            const oversizeBytes = Math.max(appliedLimit + 1024, fileSize + 1024);
             fs.writeFileSync(oversizePath, Buffer.alloc(oversizeBytes, 0));
 
             const {error: uploadError} = await Post.apiUploadFileToChannel(siteOneUrl, testChannel.id, oversizePath);

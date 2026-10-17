@@ -21,7 +21,7 @@ import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_conf
 import {ChannelAttributeLabels} from '@support/ui/component';
 import {ChannelInfoScreen, ChannelListScreen, ChannelScreen, HomeScreen, LoginScreen, ServerScreen} from '@support/ui/screen';
 import {timeouts} from '@support/utils';
-import {by, device, element, waitFor} from 'detox';
+import {device, waitFor} from 'detox';
 
 jest.setTimeout(timeouts.ONE_MIN * 30);
 
@@ -113,9 +113,9 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             await ChannelInfoScreen.open();
 
             // * Required row is listed with the "not set" indicator.
-            await waitFor(element(by.id('channel_info.attributes'))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
-            await waitFor(element(by.id(`channel_info.attributes.${TEST_FIELD_NAME}.not_set`))).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelInfoScreen.attributes).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelInfoScreen.getAttributeRow(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelInfoScreen.getAttributeNotSet(TEST_FIELD_NAME)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
             await ChannelInfoScreen.close();
             await ChannelScreen.back();
@@ -191,7 +191,7 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
             // * Use waitFor with a timeout: after reload the WatermelonDB may briefly hold a
             // * stale FeatureFlagChannelAttributes=true value (from the previous banner test)
             // * until the fresh server config sync completes.
-            await waitFor(element(by.id('channel.banner'))).not.toExist().withTimeout(timeouts.TEN_SEC);
+            await waitFor(ChannelScreen.banner).not.toExist().withTimeout(timeouts.TEN_SEC);
 
             await ChannelScreen.back();
         });

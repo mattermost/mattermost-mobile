@@ -72,7 +72,9 @@ describe('Classification Banner - Offline / Cache Behaviour', () => {
 
     afterEach(async () => {
         try {
-            await Properties.apiCleanupClassification(siteOneUrl);
+            if (canMutateServer) {
+                await Properties.apiCleanupClassification(siteOneUrl);
+            }
         } finally {
             await device.setURLBlacklist([]);
         }

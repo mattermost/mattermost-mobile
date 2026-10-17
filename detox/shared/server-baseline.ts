@@ -122,7 +122,9 @@ export const FEATURE_FLAG_BASELINE: Readonly<Record<string, boolean>> = {
 };
 
 const E2E_POLICY_PREFIXES = ['abac-', 'e2e-', 'probe-'];
-const E2E_REMOTE_CLUSTER_PREFIX = 'e2e_';
+
+// e2e_ from share_with_connected_workspaces; e2e-remote- from System.apiEnsureAtLeastOneConfirmedRemoteCluster.
+const E2E_REMOTE_CLUSTER_PREFIXES = ['e2e_', 'e2e-remote-'];
 const CLASSIFICATION_GROUP = 'access_control';
 const CLASSIFICATION_FIELD = 'classification';
 const CLASSIFICATION_OBJECT_TYPES = ['channel', 'system', 'user', 'template'];
@@ -553,7 +555,7 @@ async function deleteE2eRemoteClusters(transport: BaselineTransport, report: Bas
 
         const rows = Array.isArray(res.data) ? res.data : [];
         for (const row of rows) {
-            if (row.remote_id && row.name?.startsWith(E2E_REMOTE_CLUSTER_PREFIX)) {
+            if (row.remote_id && E2E_REMOTE_CLUSTER_PREFIXES.some((prefix) => row.name?.startsWith(prefix))) {
                 remoteIds.push(row.remote_id);
             }
         }

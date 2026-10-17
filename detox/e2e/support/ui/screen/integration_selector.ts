@@ -21,6 +21,8 @@ class IntegrationSelectorScreen {
     searchInput = element(by.id(this.testID.searchInput));
     doneButton = element(by.id(this.testID.doneButton));
     channelList = element(by.id(this.testID.channelList));
+
+    getChannelRow = (channelId: string) => element(by.id(`${this.testID.channelList}.${channelId}`));
     cancelButton = element(by.id(this.testID.cancelButton));
 
     // Helper to select an option by value

@@ -437,7 +437,7 @@ describe('applyBaseline', () => {
                 {id: 'pol3', name: 'probe-old', type: 'permission'},
                 {id: 'pol4', name: 'customer-policy', type: 'permission'},
             ],
-            remoteClusters: [{remote_id: 'rc1', name: 'e2e_leftover'}, {remote_id: 'rc2', name: 'prod_cluster'}],
+            remoteClusters: [{remote_id: 'rc1', name: 'e2e_leftover'}, {remote_id: 'rc2', name: 'prod_cluster'}, {remote_id: 'rc3', name: 'e2e-remote-ab12cd'}],
             classificationFields: {
                 channel: [{id: 'f4', name: 'sensitivity_a1b2c3', delete_at: 0}, {id: 'f6', name: 'customer_field', delete_at: 0}],
                 system: [{id: 'f1', name: 'classification', delete_at: 0}, {id: 'f2', name: 'other', delete_at: 0}],
@@ -447,7 +447,7 @@ describe('applyBaseline', () => {
         });
         const report = await applyBaseline(server.transport, {serverUrl: SERVER_URL});
 
-        assert.deepEqual(report.cleanup, {permission_policies: 3, remote_clusters: 1, property_fields: 4});
+        assert.deepEqual(report.cleanup, {permission_policies: 3, remote_clusters: 2, property_fields: 4});
         assert.deepEqual(server.classificationFields.channel?.map((field) => field.name), ['customer_field']);
         assert.deepEqual(server.policies.map((policy) => policy.name), ['customer-policy']);
         assert.deepEqual(server.remoteClusters.map((rc) => rc.name), ['prod_cluster']);

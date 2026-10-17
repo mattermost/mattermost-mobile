@@ -3,7 +3,7 @@
 
 import {ChannelListScreen, ChannelScreen} from '@support/ui/screen';
 import {getRandomId, timeouts, wait} from '@support/utils';
-import {by, device, element, waitFor} from 'detox';
+import {device, waitFor} from 'detox';
 
 // Option IDs for the test attribute field. Server requires exactly 26 alphanumeric characters
 // (model.IsValidId).
@@ -56,7 +56,7 @@ export function requireOption(optionIdsByName: Record<string, string | undefined
 
 // Navigate into a public channel by name from the channel list sidebar.
 export async function openChannel(channelName: string) {
-    await waitFor(element(by.id('channel_list_header.team_display_name'))).toExist().withTimeout(timeouts.TEN_SEC * 3);
+    await waitFor(ChannelListScreen.headerTeamDisplayName).toExist().withTimeout(timeouts.TEN_SEC * 3);
     await wait(timeouts.TWO_SEC);
     await ChannelScreen.open('channels', channelName);
 }
@@ -74,9 +74,9 @@ export async function assertOnReloadedApp(steps: () => Promise<void>) {
 
     /* eslint-disable no-await-in-loop -- each attempt reloads the app the previous one left behind */
     for (let attempt = 1; attempt <= ATTRIBUTE_RENDER_ATTEMPTS; attempt++) {
-        await device.reloadReactNative();
-        await ChannelListScreen.toBeVisible();
         try {
+            await device.reloadReactNative();
+            await ChannelListScreen.toBeVisible();
             await steps();
             return;
         } catch (error) {

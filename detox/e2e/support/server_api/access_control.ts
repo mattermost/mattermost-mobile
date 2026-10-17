@@ -39,32 +39,6 @@ export const apiEnableABAC = async (baseUrl: string): Promise<any> => {
     }
 };
 
-/**
- * Read back the settings a permission policy on user-managed attributes needs.
- * Another suite on a shared server can turn them off after this one set them, and the server
- * then rejects the policy with an error that does not say when or how.
- * Requires admin session.
- * @param {string} baseUrl - the base server URL
- * @return {Object} returns {} when ABAC and user-managed attributes are on, or {error} naming what is off
- */
-export const apiVerifyUserManagedABAC = async (baseUrl: string): Promise<{error?: string}> => {
-    try {
-        const {data: config} = await client.get(`${baseUrl}/api/v4/config`);
-        const settings = config?.AccessControlSettings;
-        if (settings?.EnableAttributeBasedAccessControl === true && settings?.EnableUserManagedAttributes === true) {
-            return {};
-        }
-        return {
-            error: `AccessControlSettings are off at ${new Date().toISOString()}: ` +
-                `EnableAttributeBasedAccessControl=${settings?.EnableAttributeBasedAccessControl} ` +
-                `EnableUserManagedAttributes=${settings?.EnableUserManagedAttributes} ` +
-                `FeatureFlags.PermissionPolicies=${config?.FeatureFlags?.PermissionPolicies}`,
-        };
-    } catch (err) {
-        return {error: `Could not read the server config: ${JSON.stringify(getResponseFromError(err))}`};
-    }
-};
-
 // ------------------------------------------------------------
 // Custom Profile Attribute Fields
 // Used to define user attributes that ABAC policies can reference.
@@ -298,7 +272,6 @@ export const apiSetPolicyActive = async (
 
 export const AccessControl = {
     apiEnableABAC,
-    apiVerifyUserManagedABAC,
     apiGetCustomProfileAttributeFields,
     apiGetOrCreateCustomProfileAttributeField,
     apiCreateCustomProfileAttributeField,
