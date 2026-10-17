@@ -52,9 +52,10 @@ jobs:
             const {owner, repo} = context.repo;
             const label = process.env.OVERRIDE_LABEL;
             const dispatched = context.eventName === 'workflow_dispatch';
-            const pr = dispatched ?
-              (await github.rest.pulls.get({owner, repo, pull_number: Number(process.env.DISPATCH_PR)})).data :
-              context.payload.pull_request;
+            const prNumber = dispatched ? Number(process.env.DISPATCH_PR) : context.payload.pull_request.number;
+            // Decide from the PR as it is now, not from the triggering event: a queued run can be
+            // dropped by a newer one, so every run must converge on the current label state.
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
             const action = dispatched ? 'dispatch' : context.payload.action;
             const eventLabel = dispatched ? '' : (context.payload.label?.name || '');
 
@@ -85,27 +86,41 @@ jobs:
                 return false;
               }
             };
-
-            if (action === 'unlabeled' && eventLabel === label) {
+            const reset = (why) => {
               core.setOutput('mode', 'pending');
-              core.info(`${label} removed from fork PR #${pr.number}; resetting waived contexts.`);
+              core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
+            };
+
+            if (!pr.labels.some((l) => l.name === label)) {
+              reset(`${label} is not applied`);
               return;
             }
 
-            if (dispatched ? !pr.labels.some((l) => l.name === label) : (action !== 'labeled' || eventLabel !== label)) {
-              core.info(`Fork PR #${pr.number}: ${label} not applied by this event; nothing to post.`);
-              return;
+            // The labeling event's sender is authoritative for that run (the events list can lag it);
+            // whoever the history shows as the latest labeler must have write access too.
+            const waiving = dispatched || (action === 'labeled' && eventLabel === label);
+            const events = await github.paginate(github.rest.issues.listEvents, {
+              owner, repo, issue_number: pr.number, per_page: 100,
+            });
+            const latest = events.filter((e) => e.event === 'labeled' && e.label?.name === label).pop()?.actor?.login || '';
+            const approver = waiving && !dispatched ? (context.payload.sender?.login || '') : latest;
+            const required = [...new Set([approver, latest].filter(Boolean))];
+            for (const user of required.length ? required : ['']) {
+              if (!(await hasWriteAccess(user))) {
+                reset(`${label} was applied by '${user}', who lacks write access`);
+                return;
+              }
             }
 
-            let approver = context.payload.sender?.login || '';
-            if (dispatched) {
-              const events = await github.paginate(github.rest.issues.listEvents, {
-                owner, repo, issue_number: pr.number, per_page: 100,
-              });
-              approver = events.filter((e) => e.event === 'labeled' && e.label?.name === label).pop()?.actor?.login || '';
+            // Only the labeling itself (or a manual run) creates a waiver, and only for the commit
+            // that was labeled: a push after the label leaves the new commit unwaived.
+            if (!waiving) {
+              core.info(`Fork PR #${pr.number}: ${label} by @${approver} stands; nothing new to post.`);
+              return;
             }
-            if (!(await hasWriteAccess(approver))) {
-              core.warning(`${label} on fork PR #${pr.number} was applied by '${approver}', who lacks write access; not waiving E2E.`);
+            const labeledSha = dispatched ? pr.head.sha : context.payload.pull_request.head.sha;
+            if (labeledSha !== pr.head.sha) {
+              core.info(`Fork PR #${pr.number} moved from ${labeledSha} to ${pr.head.sha} since it was labeled; not waiving the new commit.`);
               return;
             }
 
@@ -136,7 +151,7 @@ jobs:
         with:
           commit_sha: ${{ steps.decide.outputs.head_sha }}
           state: pending
-          description: E2E/Override removed; fork PRs need it to merge
+          description: E2E/Override missing or not applied by a writer; fork PRs need it to merge
           target_url: ''
 
       - name: Record the waiver on the PR
