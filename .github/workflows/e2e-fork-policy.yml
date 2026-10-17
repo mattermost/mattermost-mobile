@@ -1,0 +1,183 @@
+# Fork PRs can't run E2E (it holds secrets), so E2E/Override from a writer waives the required
+# e2e-test/* statuses for the current head SHA only. Never check out or execute PR code here.
+name: E2E fork policy
+
+on:
+  pull_request_target:
+    # Label events only: a fork author can't trigger, cancel or extend a waiver by pushing.
+    types:
+      - labeled
+      - unlabeled
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Fork PR number to re-check (resets an invalid waiver; never creates one)
+        required: true
+        type: number
+      dry_run:
+        description: Only log what would be posted
+        required: false
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}
+  # Queue, don't cancel: a half-finished reset would leave some contexts waived.
+  cancel-in-progress: false
+
+jobs:
+  fork-e2e-policy:
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || (github.event.pull_request.head.repo.full_name != github.repository
+          && github.event.pull_request.base.ref == 'main')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Decide what to post
+        id: decide
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          OVERRIDE_LABEL: E2E/Override
+          DISPATCH_PR: ${{ inputs.pr_number }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const label = process.env.OVERRIDE_LABEL;
+            const dispatched = context.eventName === 'workflow_dispatch';
+            const prNumber = dispatched ? Number(process.env.DISPATCH_PR) : context.payload.pull_request.number;
+            // Decide from the PR as it is now, not from the triggering event: a queued run can be
+            // dropped by a newer one, so every run must converge on the current label state.
+            const {data: pr} = await github.rest.pulls.get({owner, repo, pull_number: prNumber});
+            const action = dispatched ? 'dispatch' : context.payload.action;
+            const eventLabel = dispatched ? '' : (context.payload.label?.name || '');
+
+            core.setOutput('mode', 'none');
+            core.setOutput('dry_run', process.env.DRY_RUN === 'true' ? 'true' : 'false');
+            core.setOutput('pr_number', String(pr.number));
+            core.setOutput('head_sha', pr.head.sha);
+
+            if (pr.head.repo?.full_name === `${owner}/${repo}`) {
+              core.info(`PR #${pr.number} is not from a fork; the E2E label manager handles it.`);
+              return;
+            }
+            if (pr.base.ref !== 'main') {
+              core.info(`PR #${pr.number} targets ${pr.base.ref}, not main; nothing to do.`);
+              return;
+            }
+
+            const hasWriteAccess = async (username) => {
+              if (!username) {
+                return false;
+              }
+              try {
+                const {data} = await github.rest.repos.getCollaboratorPermissionLevel({owner, repo, username});
+                // `permission` is the base level (maintain reads as write, triage as read), so custom roles work too.
+                return ['admin', 'write'].includes(data.permission);
+              } catch (err) {
+                core.warning(`Permission lookup for ${username}: ${err.message}`);
+                return false;
+              }
+            };
+            const reset = (why) => {
+              core.setOutput('mode', 'pending');
+              core.info(`Fork PR #${pr.number}: ${why}; resetting any waived contexts.`);
+            };
+
+            if (!pr.labels.some((l) => l.name === label)) {
+              reset(`${label} is not applied`);
+              return;
+            }
+
+            // Only the labeling run itself creates a waiver; its sender is authoritative (the events
+            // list can lag it), and the latest labeler in the history must have write access too.
+            const waiving = !dispatched && action === 'labeled' && eventLabel === label;
+            const events = await github.paginate(github.rest.issues.listEvents, {
+              owner, repo, issue_number: pr.number, per_page: 100,
+            });
+            // The events API promises no ordering, so take the most recent labeling by time; two
+            // different actors at that same instant are ambiguous and reset rather than pick one.
+            const labelings = events.filter((e) => e.event === 'labeled' && e.label?.name === label);
+            const newest = Math.max(...labelings.map((e) => Date.parse(e.created_at)));
+            const newestActors = [...new Set(labelings.
+              filter((e) => Date.parse(e.created_at) === newest).
+              map((e) => e.actor?.login || ''))];
+            if (newestActors.length > 1) {
+              reset(`${label} was applied by ${newestActors.join(', ')} at the same time`);
+              return;
+            }
+            const latest = newestActors[0] || '';
+            const approver = waiving ? (context.payload.sender?.login || '') : latest;
+            const required = [...new Set([approver, latest].filter(Boolean))];
+            for (const user of required.length ? required : ['']) {
+              if (!(await hasWriteAccess(user))) {
+                reset(`${label} was applied by '${user}', who lacks write access`);
+                return;
+              }
+            }
+
+            // A waiver covers only the commit that was labeled: a push after the label leaves the new
+            // commit unwaived, and a manual run never creates one.
+            if (!waiving) {
+              core.info(`Fork PR #${pr.number}: ${label} by @${approver} stands; nothing new to post.`);
+              return;
+            }
+            const labeledSha = context.payload.pull_request.head.sha;
+            if (labeledSha !== pr.head.sha) {
+              core.info(`Fork PR #${pr.number} moved from ${labeledSha} to ${pr.head.sha} since it was labeled; not waiving the new commit.`);
+              return;
+            }
+
+            core.setOutput('mode', 'success');
+            core.setOutput('approver', approver);
+            core.info(`Fork PR #${pr.number} @ ${pr.head.sha}: waiving E2E on behalf of @${approver}.`);
+
+      # Base revision only: the composite action and the file it require()s load from here.
+      - name: Check out base revision
+        if: steps.decide.outputs.mode != 'none' && steps.decide.outputs.dry_run != 'true'
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Waive required E2E contexts
+        if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ steps.decide.outputs.head_sha }}
+          # Must contain "e2e overridden": the pending path matches on it.
+          description: e2e overridden by @${{ steps.decide.outputs.approver }} (fork PR, E2E not run)
+          target_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Reset waived E2E contexts
+        if: steps.decide.outputs.mode == 'pending' && steps.decide.outputs.dry_run != 'true'
+        uses: ./.github/actions/e2e-override-status
+        with:
+          commit_sha: ${{ steps.decide.outputs.head_sha }}
+          state: pending
+          description: E2E/Override missing or not applied by a writer; fork PRs need it to merge
+          target_url: ''
+
+      - name: Record the waiver on the PR
+        if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ steps.decide.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.decide.outputs.head_sha }}
+          APPROVER: ${{ steps.decide.outputs.approver }}
+        with:
+          script: |
+            const {owner, repo} = context.repo;
+            const body = [
+              `E2E checks waived by @${process.env.APPROVER} for this fork PR at ${process.env.HEAD_SHA}.`,
+              'Fork PRs cannot run E2E here; the change is covered by the E2E run on `main` after merge.',
+              'The waiver covers this commit only. After a new push, review it and re-apply `E2E/Override` (remove and add it).',
+            ].join('\n\n');
+            await github.rest.issues.createComment({owner, repo, issue_number: Number(process.env.PR_NUMBER), body});
