@@ -299,6 +299,11 @@ jobs:
           echo $! > build/sim-device.pid
           echo "==> Device log capture started (pid $(cat build/sim-device.pid))"
 
+      - name: Block QUIC so requests use HTTP/2 over TCP
+        uses: ./.github/actions/block-quic
+        with:
+          probe_url: ${{ env.SITE_1_URL }}
+
       - name: Pre-flight — simulator can reach test server
         id: maestro-ios-preflight
         env:
