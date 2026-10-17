@@ -102,11 +102,18 @@ jobs:
             const events = await github.paginate(github.rest.issues.listEvents, {
               owner, repo, issue_number: pr.number, per_page: 100,
             });
-            // The events API promises no ordering, so take the most recent labeling by time.
-            const latest = events.
-              filter((e) => e.event === 'labeled' && e.label?.name === label).
-              sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)).
-              pop()?.actor?.login || '';
+            // The events API promises no ordering, so take the most recent labeling by time; two
+            // different actors at that same instant are ambiguous and reset rather than pick one.
+            const labelings = events.filter((e) => e.event === 'labeled' && e.label?.name === label);
+            const newest = Math.max(...labelings.map((e) => Date.parse(e.created_at)));
+            const newestActors = [...new Set(labelings.
+              filter((e) => Date.parse(e.created_at) === newest).
+              map((e) => e.actor?.login || ''))];
+            if (newestActors.length > 1) {
+              reset(`${label} was applied by ${newestActors.join(', ')} at the same time`);
+              return;
+            }
+            const latest = newestActors[0] || '';
             const approver = waiving ? (context.payload.sender?.login || '') : latest;
             const required = [...new Set([approver, latest].filter(Boolean))];
             for (const user of required.length ? required : ['']) {
