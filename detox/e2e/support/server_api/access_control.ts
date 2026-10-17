@@ -3,7 +3,7 @@
 
 import client from './client';
 import {getResponseFromError} from './common';
-import {apiEnableFeatureFlags, apiPatchConfig} from './system';
+import {apiEnsureChannelPermissionPolicyFlags} from './system';
 
 // ****************************************************************
 // Access Control (ABAC)
@@ -220,32 +220,10 @@ export const apiCreatePermissionPolicy = async (
     }
 };
 
-const CHANNEL_PERMISSION_POLICY_FLAGS = [
-    'AttributeBasedAccessControl',
-    'PermissionPolicies',
-    'ChannelPermissionPolicies',
-];
-
 const isChannelPermissionPoliciesDisabled = (result: {error?: {id?: string; status_code?: number}; status?: number}) => {
     return result.status === 501 ||
         result.error?.status_code === 501 ||
         result.error?.id === 'api.access_control_policy.channel_permission_policies.feature_disabled';
-};
-
-const ensureChannelPermissionPolicyFlags = async (baseUrl: string): Promise<any> => {
-    const enabled = await apiEnableFeatureFlags(baseUrl, CHANNEL_PERMISSION_POLICY_FLAGS);
-    if (enabled.error) {
-        return enabled;
-    }
-
-    const currentFlags = enabled.config?.FeatureFlags;
-    if (!currentFlags || currentFlags.ChannelPermissionPolicies === true) {
-        return enabled;
-    }
-
-    return apiPatchConfig(baseUrl, {
-        FeatureFlags: {...currentFlags, ChannelPermissionPolicies: true},
-    });
 };
 
 const putChannelPermissionPolicy = async (
@@ -291,7 +269,7 @@ export const apiCreateChannelPermissionPolicy = async (
     channelId: string,
     rules: Array<{actions: string[]; expression: string}>,
 ): Promise<any> => {
-    const {error: flagsError, status: flagsStatus} = await ensureChannelPermissionPolicyFlags(baseUrl);
+    const {error: flagsError, status: flagsStatus} = await apiEnsureChannelPermissionPolicyFlags(baseUrl);
     if (flagsError) {
         return {error: flagsError, status: flagsStatus};
     }
@@ -301,7 +279,7 @@ export const apiCreateChannelPermissionPolicy = async (
         return created;
     }
 
-    const {error: retryFlagsError, status: retryFlagsStatus} = await ensureChannelPermissionPolicyFlags(baseUrl);
+    const {error: retryFlagsError, status: retryFlagsStatus} = await apiEnsureChannelPermissionPolicyFlags(baseUrl);
     if (retryFlagsError) {
         return {error: retryFlagsError, status: retryFlagsStatus};
     }

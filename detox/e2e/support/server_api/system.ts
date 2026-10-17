@@ -3,6 +3,7 @@
 
 import path from 'path';
 
+import {withFeatureFlagsLock} from '@support/feature_flags_lock';
 import {timeouts, wait} from '@support/utils';
 import {withTransportRetry} from '@support/utils/transport_retry';
 import jestExpect from 'expect';
@@ -238,7 +239,13 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
  * @param {string[]} names - the flags to turn on, e.g. ['PermissionPolicies']
  * @return {Object} returns {config} on success or {error, status} on error
  */
-export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+const CHANNEL_PERMISSION_POLICY_FLAGS = [
+    'AttributeBasedAccessControl',
+    'PermissionPolicies',
+    'ChannelPermissionPolicies',
+];
+
+const enableFeatureFlagsUnlocked = async (baseUrl: string, names: string[]): Promise<any> => {
     const {config, error, status} = await apiGetConfig(baseUrl);
     if (error) {
         return {error, status};
@@ -253,6 +260,32 @@ export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): P
     const enabled = Object.fromEntries(toEnable.map((name) => [name, true]));
     return apiPatchConfig(baseUrl, {
         FeatureFlags: {...current, ...enabled},
+    });
+};
+
+export const apiEnableFeatureFlags = async (baseUrl: string, names: string[]): Promise<any> => {
+    return withFeatureFlagsLock(baseUrl, () => enableFeatureFlagsUnlocked(baseUrl, names));
+};
+
+/**
+ * Turn on ChannelPermissionPolicies (and its ABAC prerequisites) under the
+ * FeatureFlags lock, including when the key is present but still false.
+ */
+export const apiEnsureChannelPermissionPolicyFlags = async (baseUrl: string): Promise<any> => {
+    return withFeatureFlagsLock(baseUrl, async () => {
+        const enabled = await enableFeatureFlagsUnlocked(baseUrl, CHANNEL_PERMISSION_POLICY_FLAGS);
+        if (enabled.error) {
+            return enabled;
+        }
+
+        const currentFlags = enabled.config?.FeatureFlags;
+        if (!currentFlags || currentFlags.ChannelPermissionPolicies === true) {
+            return enabled;
+        }
+
+        return apiPatchConfig(baseUrl, {
+            FeatureFlags: {...currentFlags, ChannelPermissionPolicies: true},
+        });
     });
 };
 
@@ -564,6 +597,7 @@ export const System = {
     apiGetRemoteClusters,
     apiPatchConfig,
     apiEnableFeatureFlags,
+    apiEnsureChannelPermissionPolicyFlags,
     apiPingServerStatus,
     apiReplaceConfig,
     waitForClientConfigFlag,
