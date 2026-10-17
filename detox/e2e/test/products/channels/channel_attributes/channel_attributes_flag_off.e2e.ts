@@ -15,7 +15,7 @@ import {
 } from '@support/channel_attributes_fixtures';
 import {disableChannelAttributes, enableChannelAttributes} from '@support/channel_attributes_test_helper';
 import {enableClassificationMarkings} from '@support/classification_test_helper';
-import {Channel, Properties, Team, User} from '@support/server_api';
+import {Channel, Properties, System, Team, User} from '@support/server_api';
 import {canMutateServer, requireMutationServer} from '@support/server_role';
 import {hasChannelAttributes, serverOneUrl, siteOneUrl} from '@support/test_config';
 import {ChannelAttributeLabels} from '@support/ui/component';
@@ -89,6 +89,26 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
     });
 
     describe('with a required attribute', () => {
+        // The server refuses to create a required channel attribute unless this flag is on (off by default).
+        const setRequiredAttributes = async (enabled: boolean) => {
+            const {error} = await System.apiPatchFeatureFlags(siteOneUrl, {ChannelAttributesRequired: enabled});
+            if (error) {
+                throw new Error(`Failed to set FeatureFlags.ChannelAttributesRequired=${enabled}: ${JSON.stringify(error)}`);
+            }
+        };
+
+        beforeAll(async () => {
+            if (canMutateServer) {
+                await setRequiredAttributes(true);
+            }
+        });
+
+        afterAll(async () => {
+            if (canMutateServer) {
+                await setRequiredAttributes(false);
+            }
+        });
+
         it('MM-T6306_1 - should show "Not set" for a required attribute with no value in Channel Info', async () => {
             // # Create the channel BEFORE the required attribute field exists. The server enforces
             // # required attribute values only at channel creation time. Creating the field after the
