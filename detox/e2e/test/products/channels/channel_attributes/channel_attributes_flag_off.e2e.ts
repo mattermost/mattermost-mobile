@@ -78,6 +78,9 @@ const {TEST_FIELD_NAME, ALL_TEST_FIELD_NAMES} = makeChannelAttributeFieldNames()
     });
 
     afterEach(async () => {
+        if (!canMutateServer) {
+            return;
+        }
         if (testChannel) {
             await Channel.apiDeleteChannel(siteOneUrl, testChannel.id);
             testChannel = null;

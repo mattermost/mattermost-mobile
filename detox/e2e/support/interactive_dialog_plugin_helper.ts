@@ -89,9 +89,6 @@ export async function waitForDialogSelectorButton(testId: string) {
 }
 
 export async function selectUser(user: {id: string; username: string}, {multiselect = false} = {}) {
-    const userItemId = `integration_selector.user_list.user_item.${user.id}.${user.id}`;
-    const displayNameId = `${userItemId}.display_name`;
-
     await IntegrationSelectorScreen.searchFor(user.username);
     try {
         await IntegrationSelectorScreen.searchInput.tapReturnKey();
@@ -100,8 +97,8 @@ export async function selectUser(user: {id: string; username: string}, {multisel
     }
     await wait(timeouts.HALF_SEC);
 
-    const displayName = element(by.id(displayNameId));
-    const userItem = element(by.id(userItemId));
+    const displayName = IntegrationSelectorScreen.getUserItemDisplayName(user.id);
+    const userItem = IntegrationSelectorScreen.getUserItem(user.id);
     await waitFor(displayName).toExist().withTimeout(timeouts.TEN_SEC);
 
     try {

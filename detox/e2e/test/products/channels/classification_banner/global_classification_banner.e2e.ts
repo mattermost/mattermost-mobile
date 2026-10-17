@@ -53,7 +53,9 @@ describe('Classification Banner - Global Classification Banner', () => {
     });
 
     afterEach(async () => {
-        await Properties.apiCleanupClassification(siteOneUrl);
+        if (canMutateServer) {
+            await Properties.apiCleanupClassification(siteOneUrl);
+        }
     });
 
     it('MM-T6197_1 - should render the banner on the channel list screen when classification is configured', async () => {
