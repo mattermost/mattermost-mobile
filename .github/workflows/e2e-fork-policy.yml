@@ -24,7 +24,8 @@ permissions: {}
 
 concurrency:
   group: e2e-fork-policy-${{ github.event.pull_request.number || inputs.pr_number }}
-  cancel-in-progress: true
+  # Queue, don't cancel: a half-finished reset would leave some contexts waived.
+  cancel-in-progress: false
 
 jobs:
   fork-e2e-policy:
@@ -77,7 +78,8 @@ jobs:
               }
               try {
                 const {data} = await github.rest.repos.getCollaboratorPermissionLevel({owner, repo, username});
-                return ['admin', 'maintain', 'write'].includes(data.role_name || data.permission);
+                // `permission` is the base level (maintain reads as write, triage as read), so custom roles work too.
+                return ['admin', 'write'].includes(data.permission);
               } catch (err) {
                 core.warning(`Permission lookup for ${username}: ${err.message}`);
                 return false;
