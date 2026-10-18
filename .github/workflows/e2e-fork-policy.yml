@@ -180,6 +180,64 @@ jobs:
           description: E2E/Override missing or not applied by a writer; fork PRs need it to merge
           target_url: ''
 
+      # The reset above covers the current head. Reset commits waived earlier too: the author
+      # could push away and back. The waiver comment (written by this workflow's bot) records each one.
+      - name: Reset earlier waived commits
+        if: "!cancelled() && steps.decide.outputs.mode == 'pending' && steps.decide.outputs.dry_run != 'true'"
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ steps.decide.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.decide.outputs.head_sha }}
+        with:
+          script: |
+            const {E2E_STATUS_CONTEXTS} = require('./detox/utils/build-tsio-job-config.js');
+            const {owner, repo} = context.repo;
+            // Present only in descriptions written by the waiver, so a reset never touches a real result.
+            const MARKER = 'e2e overridden';
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: Number(process.env.PR_NUMBER), per_page: 100,
+            });
+            const shas = new Set();
+            for (const comment of comments) {
+              const waived = comment.user?.login === 'github-actions[bot]' &&
+                /^E2E checks waived by @\S+ for this fork PR at ([0-9a-f]{40})\./.exec(comment.body || '');
+              if (waived && waived[1] !== process.env.HEAD_SHA) {
+                shas.add(waived[1]);
+              }
+            }
+
+            const failures = [];
+            for (const sha of shas) {
+              const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                owner, repo, ref: sha, per_page: 100,
+              });
+              // Newest first: the first entry per context is its current state.
+              const latest = new Map();
+              for (const status of statuses) {
+                if (!latest.has(status.context)) {
+                  latest.set(status.context, status);
+                }
+              }
+              for (const statusContext of E2E_STATUS_CONTEXTS) {
+                if (!latest.get(statusContext)?.description?.includes(MARKER)) {
+                  continue;
+                }
+                try {
+                  await github.rest.repos.createCommitStatus({
+                    owner, repo, sha, state: 'pending', context: statusContext,
+                    description: 'E2E/Override missing or not applied by a writer; fork PRs need it to merge',
+                  });
+                  core.info(`Reset ${statusContext} on ${sha}`);
+                } catch (err) {
+                  failures.push(`${statusContext} on ${sha}: ${err.message}`);
+                }
+              }
+            }
+            if (failures.length > 0) {
+              throw new Error(`Failed to reset ${failures.length} status(es): ${failures.join('; ')}`);
+            }
+
       - name: Record the waiver on the PR
         if: steps.decide.outputs.mode == 'success' && steps.decide.outputs.dry_run != 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
