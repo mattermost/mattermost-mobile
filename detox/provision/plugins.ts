@@ -7,6 +7,7 @@ import https from 'node:https';
 import path from 'node:path';
 
 import {DEMO_PLUGIN_VERSION, ensureDemoPluginFixture} from '../shared/demo-plugin-fixture';
+import PREPACKAGED_PLUGINS from '../shared/prepackaged-plugins.json';
 
 import {
     AGENTS_PLUGIN_ID,
@@ -16,6 +17,7 @@ import {
     DEMO_PLUGIN_ID,
     PLUGIN_STATE_FAILED,
     PLUGIN_STATE_RUNNING,
+    REQUIRED_PLUGINS,
 } from './constants';
 import {getAgentsPluginDownloadUrl} from './env';
 import {sleep, uploadMultipartFile} from './http-client';
@@ -482,4 +484,29 @@ export async function installRequiredPlugin(
     } else {
         logInfo(`Plugin ${pluginId} installed and enabled from Marketplace.`);
     }
+}
+
+/** Active plugins that are neither prepackaged nor installed by provisioning. */
+export function strayPluginIds(active: PluginListEntry[] = []): string[] {
+    const keep = new Set<string>([...PREPACKAGED_PLUGINS, ...REQUIRED_PLUGINS.map((plugin) => plugin.id)]);
+    return active.map((plugin) => plugin.id).filter((id) => !keep.has(id));
+}
+
+/** Disables stray plugins once per run, so shards on read-only pool servers never have to. */
+export async function disableStrayPlugins(client: MattermostClient, token: string): Promise<void> {
+    const res = await client.request<PluginsPayload>('GET', '/api/v4/plugins', undefined, token);
+    if (res.status !== 200) {
+        logWarn(`Could not list plugins to disable stray ones (HTTP ${res.status})`);
+        return;
+    }
+    /* eslint-disable no-await-in-loop -- one plugin at a time for clear provisioning logs */
+    for (const id of strayPluginIds(res.data?.active)) {
+        const disableRes = await client.request<ApiErrorBody>('POST', `/api/v4/plugins/${encodeURIComponent(id)}/disable`, {}, token);
+        if (disableRes.status === 200) {
+            logInfo(`Disabled stray plugin ${id}`);
+        } else {
+            logWarn(`Failed to disable stray plugin ${id} (HTTP ${disableRes.status}): ${disableRes.data?.message || ''}`);
+        }
+    }
+    /* eslint-enable no-await-in-loop */
 }
