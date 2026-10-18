@@ -43,6 +43,11 @@ on:
         description: "The third test server URL (SITE_3); optional, no automatic fallback"
         required: false
         type: string
+      MM_OTHER_PLATFORM_POOL_URL:
+        description: "The other platform's SITE_1 server, used as this platform's pool SITE_2; empty falls back to SITE_1"
+        required: false
+        type: string
+        default: ""
       MM_TEST_USER_NAME:
         description: "The admin username of the test instance"
         required: false
@@ -209,6 +214,26 @@ jobs:
           bucket: ${{ env.DETOX_AWS_S3_BUCKET }}
           mode: restore
 
+      # Server B gets a mutation shard when it is distinct from A; the iOS-only site3
+      # target needs SITE_3 to be distinct from both A and B.
+      - name: Resolve mutation server targets
+        id: mutation-targets
+        env:
+          SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
+          SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
+          SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
+        run: |
+          # No targets without a distinct second server; split-tests then fails only if a mutation spec is selected.
+          TARGETS=""
+          if [ -n "$SERVER_B" ] && [ "$SERVER_B" != "$SERVER_A" ]; then
+            TARGETS="B"
+            if [ -n "$SERVER_SHARED" ] && [ "$SERVER_SHARED" != "$SERVER_A" ] && [ "$SERVER_SHARED" != "$SERVER_B" ]; then
+              TARGETS="B,site3"
+            fi
+          fi
+          echo "targets=$TARGETS" >> "$GITHUB_OUTPUT"
+          echo "Mutation targets: ${TARGETS:-none}"
+
       - name: Generate Test Specs
         id: generate-specs
         uses: ./.github/actions/generate-specs
@@ -218,9 +243,11 @@ jobs:
           device_name: ${{ env.DEVICE_NAME }}
           device_os_version: ${{ env.DEVICE_OS_VERSION }}
           durations_file: ${{ inputs.durations_key != '' && 'detox/artifacts/spec-durations.json' || '' }}
+          platform: ios
+          mutation_targets: ${{ steps.mutation-targets.outputs.targets }}
 
   e2e-ios:
-    name: machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
+    name: ${{ matrix.role == 'mutation' && 'mutation-' || '' }}machine-${{ matrix.runId }}-os-${{ matrix.deviceOsVersion }}
     # Temporarily reverted to macos-15 due to Metro stabilization issues on macos-26.
     # macos-26 ships the iOS 26.2 runtime pre-installed, avoiding a ~10min
     # LaunchServicesMigrator + runtime install on every shard, but has timing issues.
@@ -241,36 +268,55 @@ jobs:
         with:
           ref: ${{ inputs.MOBILE_VERSION }}
 
-      # Each platform gets two provisioned test servers. SITE_1_URL is where a spec
-      # does most of its setup, so pinning every shard to the same server would put
-      # all parallel shards on one instance while the second sits mostly idle —
-      # concurrent setup on one server is what drives API rate limiting and
-      # cross-shard interference. Alternating SITE_1/SITE_2 on shard parity spreads
-      # that load evenly while still giving each shard two distinct sites for the
-      # multi-server specs.
-      - name: Rotate logical test sites by shard
+      # Pool shards pair server A with the other platform's A; mutation shards own server B alone.
+      # SITE_3 is also every pool shard's read-only third server, so site3 mutations must not touch login.
+      - name: Assign test sites by shard role
         env:
+          ROLE: ${{ matrix.role }}
+          TARGET: ${{ matrix.target }}
           SERVER_A: ${{ inputs.MM_TEST_SERVER_URL }}
           SERVER_B: ${{ inputs.MM_TEST_SERVER_URL_2 }}
           SERVER_SHARED: ${{ inputs.MM_TEST_SERVER_URL_3 }}
-          SHARD_ID: ${{ matrix.runId }}
+          OTHER_PLATFORM_POOL: ${{ inputs.MM_OTHER_PLATFORM_POOL_URL }}
         run: |
-          # Single-server topologies leave SERVER_B unset; without this the even
-          # shards would export an empty SITE_1_URL and test_config would silently
-          # fall back to localhost instead of the provisioned server.
-          SERVER_B="${SERVER_B:-$SERVER_A}"
-          if (( 10#$SHARD_ID % 2 == 1 )); then
-            SITE_1_URL="$SERVER_A"
-            SITE_2_URL="$SERVER_B"
-          else
-            SITE_1_URL="$SERVER_B"
-            SITE_2_URL="$SERVER_A"
+          case "$ROLE" in
+            pool)
+              SITE_1_URL="$SERVER_A"; SITE_1_LABEL="server-a"
+              if [ -n "$OTHER_PLATFORM_POOL" ]; then
+                SITE_2_URL="$OTHER_PLATFORM_POOL"; SITE_2_LABEL="other-platform-a"
+              else
+                # Never SITE_3: on iOS it is also a mutation target.
+                echo "::warning::MM_OTHER_PLATFORM_POOL_URL is empty; pool SITE_2 falls back to this shard's own server A"
+                SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              fi
+              SITE_3_URL="$SERVER_SHARED"; SITE_3_LABEL="site3"
+              GUARD="enforce"
+              ;;
+            mutation)
+              case "$TARGET" in
+                B) SITE_1_URL="$SERVER_B"; SITE_1_LABEL="server-b" ;;
+                site3) SITE_1_URL="$SERVER_SHARED"; SITE_1_LABEL="site3" ;;
+                A) echo "::error::No isolated server for mutation specs (MM_TEST_SERVER_URL_2 missing or equal to MM_TEST_SERVER_URL); they would change state on the pool server"; exit 1 ;;
+                *) echo "::error::Unknown mutation target '$TARGET'"; exit 1 ;;
+              esac
+              SITE_2_URL="$SERVER_A"; SITE_2_LABEL="server-a"
+              SITE_3_URL=""; SITE_3_LABEL="unset"
+              GUARD="off"
+              ;;
+            *)
+              echo "::error::Unknown shard role '$ROLE'"; exit 1 ;;
+          esac
+          if [ -z "$SITE_1_URL" ]; then
+            echo "::error::SITE_1 is empty for role=$ROLE target=$TARGET"; exit 1
           fi
           {
             echo "SITE_1_URL=$SITE_1_URL"
             echo "SITE_2_URL=$SITE_2_URL"
-            echo "SITE_3_URL=$SERVER_SHARED"
+            echo "SITE_3_URL=$SITE_3_URL"
+            echo "E2E_SERVER_ROLE=$ROLE"
+            echo "E2E_POOL_GUARD=$GUARD"
           } >> "$GITHUB_ENV"
+          echo "role=$ROLE target=$TARGET: SITE_1=$SITE_1_LABEL SITE_2=$SITE_2_LABEL SITE_3=$SITE_3_LABEL pool_guard=$GUARD"
 
       - name: ci/prepare-node-deps
         uses: ./.github/actions/prepare-node-deps

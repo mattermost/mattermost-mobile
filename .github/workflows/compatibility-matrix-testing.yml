@@ -170,6 +170,21 @@ jobs:
         env:
           CMT_MATRIX: ${{ inputs.CMT_MATRIX }}
         run: |
+          # Full-suite rows run the server-mutation specs, which need their own site 2; fail here, not after the builds.
+          BAD_ROWS=$(echo "$CMT_MATRIX" | jq -r '
+            .server[]
+            | select(.latest == true)
+            | . as $row
+            | ["android", "ios"][]
+            | select(($row[. + "_site_2_url"] // "") == "" or $row[. + "_site_2_url"] == $row[. + "_site_1_url"])
+            | "\($row.version // "unknown"): \(.)_site_2_url is missing or equals \(.)_site_1_url"
+          ')
+          if [ -n "$BAD_ROWS" ]; then
+            echo "::error::Full-suite CMT rows need a distinct site 2 URL per platform:"
+            printf '%s\n' "$BAD_ROWS"
+            exit 1
+          fi
+
           URLS=$(echo "$CMT_MATRIX" | jq -r '
             .server[]
             | .android_site_1_url, .android_site_2_url, .ios_site_1_url, .ios_site_2_url, .site_3_url
@@ -364,6 +379,7 @@ jobs:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-ios-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
+      MM_OTHER_PLATFORM_POOL_URL: ${{ matrix.server.android_site_1_url }}
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
@@ -408,6 +424,7 @@ jobs:
       tsio-config: ${{ needs.cmt-identity.outputs.tsio-base-config }}
       tsio-shard-name: detox-ipad-Server_${{ matrix.server.version }}
       run-type: "RELEASE"
+      MM_OTHER_PLATFORM_POOL_URL: ${{ matrix.server.android_site_1_url }}
       MM_TEST_SERVER_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.ios_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
@@ -495,6 +512,7 @@ jobs:
       tsio-shard-name: detox-android-Server_${{ matrix.server.version }}
       run-android-tests: true
       run-type: "RELEASE"
+      MM_OTHER_PLATFORM_POOL_URL: ${{ matrix.server.ios_site_1_url }}
       MM_TEST_SERVER_URL: ${{ matrix.server.android_site_1_url }}
       MM_TEST_SERVER_URL_2: ${{ matrix.server.android_site_2_url }}
       MM_TEST_SERVER_URL_3: ${{ matrix.server.site_3_url }}
