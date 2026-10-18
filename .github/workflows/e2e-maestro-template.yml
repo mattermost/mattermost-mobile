@@ -162,7 +162,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.maestro
-          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-macos
+          key: maestro-c8c361be1cc89b2e742f185466a302a22778be6b-macos
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -421,8 +421,10 @@ jobs:
               exit 1
             }
 
+          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
+            --env MAESTRO_APP_RESET_BY_RUNNER=true \
             --format junit \
             --output build/maestro-report-T67856_4.xml \
             --test-output-dir build/maestro-artifacts-T67856_4 \
@@ -483,8 +485,10 @@ jobs:
               exit 1
             }
 
+          bash detox/maestro/scripts/reset_ios_app.sh "$SIMULATOR_ID" com.mattermost.rnbeta
           ~/.maestro/bin/maestro test \
             --device "$SIMULATOR_ID" \
+            --env MAESTRO_APP_RESET_BY_RUNNER=true \
             --format junit \
             --output build/maestro-report-T3261_1.xml \
             --test-output-dir build/maestro-artifacts-T3261_1 \
@@ -514,11 +518,10 @@ jobs:
           # true is a harmless no-op, which keeps this safe when multiple jobs
           # share one server and a concurrent job re-flipped the flag.
           echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
-          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+          # Not curl --retry: a timed-out patch is still applied, and resending queues more saves behind it.
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            AllowDownloadLogs true && \
             echo "==> Restored AllowDownloadLogs=true"
 
       - name: Upload Maestro Artifacts
@@ -780,7 +783,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.maestro
-          key: maestro-00f516729f57d48f36ded55244cfbe358ada6b00-linux
+          key: maestro-c8c361be1cc89b2e742f185466a302a22778be6b-linux
 
       - name: Install Maestro CLI
         if: steps.maestro-cache.outputs.cache-hit != 'true'
@@ -1072,11 +1075,10 @@ jobs:
           # # Android copy of the iOS restore step — see that step for the
           # rationale (trap-less hard-kill and skip-path coverage).
           echo "==> Restoring SupportSettings.AllowDownloadLogs=true on ${SITE_1_URL}"
-          curl -f -sS --show-error --connect-timeout 10 --max-time 30 --retry 3 --retry-delay 2 --retry-connrefused -X PUT \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{"SupportSettings":{"AllowDownloadLogs":true}}' \
-            "${SITE_1_URL}/api/v4/config/patch" > /dev/null && \
+          # Not curl --retry: a timed-out patch is still applied, and resending queues more saves behind it.
+          bash detox/maestro/scripts/apply_client_config_value.sh \
+            "${SITE_1_URL}" "$ADMIN_TOKEN" '{"SupportSettings":{"AllowDownloadLogs":true}}' \
+            AllowDownloadLogs true && \
             echo "==> Restored AllowDownloadLogs=true"
 
       - name: Run MM-T3261_2 with ReportAProblemType=email (Android)
