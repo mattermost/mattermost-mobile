@@ -228,14 +228,12 @@ export const apiPatchConfig = async (baseUrl: string, patchConfig: any): Promise
     return withTransportRetry(() => patchConfigOnce(baseUrl, patchConfig), {idempotent: true, label: 'apiPatchConfig'});
 };
 
-const getFeatureFlags = (baseUrl: string): Promise<any> => {
-    return withTransportRetry(async () => {
-        const {config, error, status} = await apiGetConfig(baseUrl);
-        if (error || !config) {
-            return {error: error ?? {message: 'getFeatureFlags: empty config response'}, status};
-        }
-        return {config, flags: config.FeatureFlags ?? {}};
-    }, {idempotent: true, label: 'getFeatureFlags'});
+const getFeatureFlags = async (baseUrl: string): Promise<any> => {
+    const {config, error, status} = await apiGetConfig(baseUrl);
+    if (error || !config) {
+        return {error: error ?? {message: 'getFeatureFlags: empty config response'}, status};
+    }
+    return {config, flags: config.FeatureFlags ?? {}};
 };
 
 /**
