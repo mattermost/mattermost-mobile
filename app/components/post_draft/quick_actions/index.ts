@@ -34,6 +34,16 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
         distinctUntilChanged(),
     );
+
+    // Denied by policy hides the control rather than dimming it. Unlike upload, it is withheld until
+    // the server answers: showing it first would flicker.
+    const isBoREnabled = combineLatest([
+        observeIsBoREnabled(database),
+        observeRenderPermission(database, serverUrl, channelId, RenderPermissionAction.CreateBurnOnReadPost, true, false),
+    ]).pipe(
+        map(([allowedByConfig, allowedByPolicy]) => allowedByConfig && allowedByPolicy),
+        distinctUntilChanged(),
+    );
     const maxFileCount = observeMaxFileCount(database);
     const allowDownloadLogs = observeConfigBooleanValue(database, 'AllowDownloadLogs', true);
     const attachLogsEnabled = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.ADVANCED_SETTINGS, Preferences.ATTACH_APP_LOGS).
@@ -44,7 +54,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId, serverUrl
         canUploadFiles,
         isAgentsEnabled: observeIsAgentsEnabled(serverUrl),
         isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
-        isBoREnabled: observeIsBoREnabled(database),
+        isBoREnabled,
         maxFileCount,
         showAttachLogs: combineLatest([allowDownloadLogs, attachLogsEnabled]).pipe(
             map(([allowed, enabled]) => allowed && enabled),
