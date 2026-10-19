@@ -291,6 +291,15 @@ describe('CollapsibleSection layout', () => {
         return {} as any;
     };
 
+    it('exposes toggle and content testIDs derived from the testID prop', () => {
+        const {getByTestId} = renderWithIntlAndTheme(
+            <CollapsibleSection {...getProps({testID: 'AppFormSection.level1', initiallyExpanded: true})}/>,
+        );
+
+        expect(getByTestId('AppFormSection.level1.toggle')).toBeTruthy();
+        expect(getByTestId('AppFormSection.level1.content')).toBeTruthy();
+    });
+
     it('indents a nested section container but not a top-level one', () => {
         // Indent is one inset on the container; nested sections compound it via the tree.
         const top = renderWithIntlAndTheme(<CollapsibleSection {...getProps({depth: 0})}/>);

@@ -79,10 +79,11 @@ type Props = {
     depth: number;
     hasError?: boolean;
     forceExpandVersion?: number;
+    testID?: string;
     children: React.ReactNode;
 }
 
-const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError, forceExpandVersion, children}: Props) => {
+const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError, forceExpandVersion, testID, children}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const intl = useIntl();
@@ -140,6 +141,7 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
             <Pressable
                 onPress={toggle}
                 style={pressableStyle}
+                testID={testID ? `${testID}.toggle` : undefined}
                 accessibilityRole='button'
                 accessibilityLabel={accessibilityLabel}
                 accessibilityHint={accessibilityHint}
@@ -177,6 +179,7 @@ const CollapsibleSection = ({label, initiallyExpanded, bordered, depth, hasError
                     // Fade out on collapse so content doesn't pop before the height settles.
                     exiting={reducedMotion ? undefined : FadeOut.duration(ANIMATION_MS)}
                     style={style.content}
+                    testID={testID ? `${testID}.content` : undefined}
                 >
                     {children}
                 </Animated.View>

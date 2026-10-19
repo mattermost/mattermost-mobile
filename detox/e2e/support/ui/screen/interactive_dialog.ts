@@ -237,6 +237,30 @@ class InteractiveDialogScreen {
         await wait(500);
     };
 
+    getSectionToggle = (sectionName: string) => element(by.id(`AppFormSection.${sectionName}.toggle`));
+
+    getFieldInput = (fieldName: string) => element(by.id(`AppFormElement.${fieldName}.input`));
+
+    // Tap a collapsible section header to expand or collapse it.
+    toggleSection = async (sectionName: string) => {
+        const toggle = this.getSectionToggle(sectionName);
+        await waitFor(toggle).toBeVisible().withTimeout(timeouts.TEN_SEC);
+        await toggle.tap();
+        await wait(timeouts.ONE_SEC);
+    };
+
+    // A field inside a collapsed section is unmounted, so existence doubles as a
+    // proxy for whether its enclosing section is expanded.
+    expectFieldVisible = async (fieldName: string, shouldExist = true) => {
+        const input = this.getFieldInput(fieldName);
+        if (shouldExist) {
+            await waitFor(input).toExist().withTimeout(timeouts.TEN_SEC);
+            await expect(input).toExist();
+        } else {
+            await expect(input).not.toExist();
+        }
+    };
+
     toBeVisible = async (shouldBeVisible: boolean = true) => {
         if (shouldBeVisible) {
             await waitFor(this.interactiveDialogScreen).toExist().withTimeout(timeouts.TEN_SEC);

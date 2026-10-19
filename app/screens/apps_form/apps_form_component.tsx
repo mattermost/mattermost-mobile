@@ -570,6 +570,7 @@ function AppsFormComponent({
                     depth={depth}
                     hasError={sectionHasError(field, errors)}
                     forceExpandVersion={expandVersions[key]}
+                    testID={`AppFormSection.${key}`}
                 >
                     {renderedChildren}
                 </CollapsibleSection>
